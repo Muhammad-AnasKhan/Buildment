@@ -1,0 +1,183 @@
+---
+title: "Checkout page"
+module: 20
+lesson: 5
+summary: "**Why this step matters:** This is where cart, Stripe, and checkout API meet — the climax of Week 3. Customers review their order, pay with a test card, and trigger gated `POST /checkout`."
+---
+# 20.5 — Checkout page
+
+> **[Build]** · Chapter 20 — Track orders · *Stripe Elements: create intent → confirm → POST checkout*
+
+**Why this step matters:** This is where cart, Stripe, and checkout API meet — the climax of Week 3. Customers review their order, pay with a test card, and trigger gated `POST /checkout`.
+
+**Where the project is now:** Cart page groups items by store (Ch 17); Ch 19 provides payment intent + gated checkout API. No `/checkout` screen with payment form yet.
+
+**After this step:** Customer reviews cart at `/checkout`, pays via **Stripe Payment Element**, then `POST /checkout` with `paymentIntentId`, then navigates to confirmation.
+
+## Payment flow — contract
+
+```
+/cart → /checkout
+  1. Load cart (grouped, read-only)
+  2. POST /payments/intent → clientSecret
+  3. Render Payment Element with clientSecret
+  4. Customer clicks "Pay and place order"
+  5. stripe.confirmPayment() → succeeded
+  6. POST /checkout { paymentIntentId }
+  7. Navigate to /orders/confirmation with { orders }
+```
+
+**❌ Don't** call `POST /checkout` before step 5 succeeds.  
+**❌ Don't** send prices in checkout body — server snapshots from cart.
+
+## Prerequisites
+
+| Gate | Verify |
+|---|---|
+| Ch 17 cart UI | Two store groups on `/cart` |
+| Ch 19 payment intent | curl `POST /payments/intent` returns `clientSecret` |
+| Ch 19 gated checkout | curl with paid intent returns `201` |
+| Ch 7 auth | Customer logged in; Bearer interceptor |
+| Stripe publishable key | `VITE_STRIPE_PUBLISHABLE_KEY` in client `.env` |
+
+Install client packages (spec — you choose versions per Stripe React docs):
+
+- `@stripe/stripe-js`
+- `@stripe/react-stripe-js`
+
+Both terminals running: `server` + `client` dev scripts.
+
+## Target files
+
+| File | Purpose |
+|---|---|
+| `client/src/pages/Checkout.jsx` | Review cart + Payment Element + submit |
+| `client/src/api/client.js` | `createPaymentIntent()`, `checkout({ paymentIntentId })` |
+| `client/src/App.jsx` | Register `/checkout` as protected customer route |
+| `client/src/pages/Cart.jsx` | Wire CTA → `/checkout` |
+
+Optional: `client/src/components/StripeProvider.jsx` — wrap checkout with `Elements` provider.
+
+## Step 1 — API helpers
+
+| Helper | Contract |
+|---|---|
+| `createPaymentIntent()` | `POST /payments/intent` → `{ clientSecret, paymentIntentId }` |
+| `checkout({ paymentIntentId })` | `POST /checkout` with body → `{ orders: [...] }` |
+
+Bearer via Ch 7 interceptor on both.
+
+## Step 2 — Page load
+
+1. On mount: `getCart()` — reuse `StoreCartGroup` / `CartItemRow` **read-only**.
+2. Parallel or sequential: `createPaymentIntent()` when cart non-empty.
+3. Wrap payment section in `<Elements stripe={stripePromise} options={{ clientSecret }}>`.
+4. Empty cart → redirect to `/cart` or `/shop`.
+5. Render per-store sections + **grand total** (sum of store subtotals).
+
+| Data | Display |
+|---|---|
+| Group by `storeId` | One section per store |
+| `storeName` | Section heading |
+| Line name, unit, price, qty | Read-only rows |
+| Per-store subtotal | Sum of line totals |
+| Payment Element | Below totals — card entry |
+
+## Step 3 — Pay and place order
+
+1. **Pay and place order** button:
+   - `isSubmitting` disables button
+   - Call `stripe.confirmPayment({ elements, redirect: 'if_required' })`
+2. On `succeeded`:
+   - `checkout({ paymentIntentId })` from payment-intent response
+3. Success `201` → navigate to `/orders/confirmation` with `{ orders }` in state
+4. On payment error → show Stripe/message inline; stay on checkout
+5. On checkout API error after payment succeeded → show urgent message (payment captured — document support flow in README); log for mentor
+6. On full success, refresh cart badge so header count clears
+
+## POST /checkout — API contract (Ch 19)
+
+```
+POST /api/checkout
+Authorization: Bearer <customer-token>
+Content-Type: application/json
+
+{ "paymentIntentId": "pi_..." }
+```
+
+| Response | UI action |
+|---|---|
+| `201` + `{ orders: [...] }` | Navigate to confirmation |
+| `400` empty cart / bad intent | Message; do not navigate |
+| `409` intent reused | Message; link to order history |
+| `401` | Redirect login |
+| `5xx` | Message + retry guidance |
+
+## Stripe test card
+
+Use `4242 4242 4242 4242`, any future expiry, any CVC — test mode only.
+
+## Navigation flow
+
+```
+/cart → [Proceed to checkout] → /checkout
+  → [Pay and place order] → /orders/confirmation
+```
+
+Fallback refetch on confirmation is **20.6**, not this step.
+
+## Commit
+
+```bash
+git add client/src/pages/Checkout.jsx client/src/api/client.js client/src/App.jsx
+git commit -m "feat(client): checkout page with Stripe Payment Element"
+```
+
+Document `/checkout` in README — customer login; Stripe test mode; flow order (pay then checkout POST).
+
+## ✅ Do / ❌ Don't
+
+**✅ Do:** Create intent only when cart has items; remount Elements when `clientSecret` changes.
+
+**✅ Do:** Disable button during confirm + checkout POST; show two store sections for two-vendor carts.
+
+**✅ Do:** Clear cart badge on success via cart refetch.
+
+**❌ Don't:** POST /checkout before Stripe reports `succeeded`.
+
+**❌ Don't:** Put secret key in client — publishable key only.
+
+**❌ Don't:** Skip auth header — interceptor from Ch 7 must attach Bearer token.
+
+## Verify in browser
+
+| Step | Expected |
+|---|---|
+| Two-store cart | `/checkout` shows two sections + grand total + Payment Element |
+| Test card pay | Stripe succeeds; Network shows checkout POST with `paymentIntentId` |
+| Success | Redirect to confirmation; cart badge clears |
+| Empty cart visit | Redirect away |
+| Declined card (`4000...9995`) | Error visible; no checkout POST |
+
+## Troubleshooting
+
+| Observation | Likely cause | Action |
+|---|---|---|
+| Payment Element blank | Missing `clientSecret` or publishable key | Check env; intent created? |
+| 401 on checkout | Token missing/expired | Re-login |
+| Payment ok, checkout 400 | Amount mismatch or intent not succeeded | Server logs; re-create intent |
+| 201 but one order | Single-store cart | Add second vendor's products |
+| CORS error | URL mismatch | Align `VITE_API_URL` |
+
+## Verify checklist
+
+- [ ] `/checkout` loads grouped cart + Payment Element for logged-in customer
+- [ ] Test card `4242...` → 201 → confirmation with state
+- [ ] Two-store checkout shows two orders on confirmation
+- [ ] Cart badge clears; empty cart redirects
+- [ ] Declined card shows error without checkout POST
+- [ ] Logged-out access redirects to login
+
+## Next
+
+**Sub-chapter 20.6:** Order confirmation page — receipt-style split orders after checkout.

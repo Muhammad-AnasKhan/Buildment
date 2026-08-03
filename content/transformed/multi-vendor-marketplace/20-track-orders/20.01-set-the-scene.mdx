@@ -1,0 +1,117 @@
+---
+title: "Set the scene"
+module: 20
+lesson: 1
+summary: "**Where the project is now:** Chapters 18–19 gave you **checkout API** with Stripe gate — split orders, snapshots, stock decrement, cart clear, `paymentStatus: paid`, Payment Intent verified. Payment works via curl/Stripe CLI; the customer still needs a checkout screen with a car"
+---
+# 20.1 — Set the scene
+
+> **[Read]** · Chapter 20 — Track orders · *Bridge from Ch 19 payment; Week 3 UI finish; plain English + FAQ*
+
+**Where the project is now:** Chapters 18–19 gave you **checkout API** with Stripe gate — split orders, snapshots, stock decrement, cart clear, `paymentStatus: paid`, Payment Intent verified. Payment works via curl/Stripe CLI; the customer still needs a checkout screen with a card form.
+
+**Where this chapter goes:** **Both sides see orders in the browser** — checkout with **Stripe Payment Element**, confirmation with split orders, customer history, vendor fulfilment list, status updates. This chapter completes the **Week 3 demo**.
+
+Frontend build chapter paired with Chapters 18–19. Gate: **full commerce flow with Stripe test payment** demoable in browser.
+
+## Bridge from last chapter
+
+Chapter 19 was the **payment half** of commerce — Stripe Payment Intents, webhook, gated `POST /checkout`. Chapter 18 was the **order engine** underneath.
+
+| You finished in Ch 19 | What still feels missing in the browser |
+|---|---|
+| Paid checkout via API | Customer has no review + card form on `/checkout` |
+| `GET /orders/my` returns history | No `/orders` page |
+| `GET /vendor/orders` returns fulfilment queue | Vendor dashboard has products, not orders |
+| Price snapshots on embedded lines | UI never renders them |
+
+**Week 3 is almost done.** Customers can browse (Ch 15), fill a cart (Ch 17), and the server can charge and create orders (Ch 18–19). Chapter 20 is the **UI finish line** — the screens both actors use after payment succeeds.
+
+If your Week 3 demo script stops at "checkout returns 201 in curl," you are not at the phase gate yet. This chapter makes the demo **watchable** — a mentor opens your browser, not your terminal.
+
+## In plain English
+
+| Term | Simple meaning |
+|---|---|
+| **Checkout page** | Review cart + Stripe card form + Place order |
+| **Payment Element** | Stripe's embeddable payment UI — safe card entry on your page |
+| **Order confirmation** | "Thank you" after pay — may show **more than one order** if items came from different stores |
+| **Order history** | Past orders the customer can return to |
+| **Vendor order inbox** | Vendor's list of orders to pack — only **their** store's orders |
+| **Order status** | Fulfilment progress — `pending` → `packed` → `dispatched` |
+| **Snapshot fields** | Prices and names **frozen at purchase** on each line |
+
+## Think of it like a real grocery run
+
+You filled your basket at two stalls (multi-vendor cart). At checkout you review totals, tap your card on the machine (Payment Element), and the system prints **two receipts** — one per stall.
+
+Chapter 20 builds those screens:
+
+- Customer sees both receipts on confirmation and in order history.
+- Each stall owner sees only **their** receipt.
+- Status badges update when a stall marks "packed."
+
+## The gap
+
+| Actor | Has API | Has UI |
+|---|---|---|
+| Customer | ✓ orders/my + payments | ✗ checkout card form |
+| Vendor | ✓ vendor/orders | ✗ |
+| Checkout | ✓ gated POST /checkout | ✗ Payment Element flow |
+
+Chapter 20 closes the UI gap.
+
+## Week 3 demo script (target)
+
+1. Customer browses two vendors' products.
+2. Adds to cart — grouped cart visible.
+3. Proceeds to checkout — review cart + enter test card (`4242...`).
+4. Payment succeeds → place order → **confirmation with two orders**.
+5. Vendor A logs in — sees their order only.
+6. Vendor updates status — customer sees badge change (refresh/poll).
+
+Record screen capture for Chapter 99.
+
+## Common beginner questions
+
+**Q: Why UI after payment API?**  
+Same pairing as auth API (Ch 6) then login screens (Ch 7). Server contract first; human-facing flow second.
+
+**Q: Do I need new payment routes?**  
+No — use Ch 19 routes. This chapter wires **Payment Element** to them.
+
+**Q: Why show two orders on confirmation?**  
+One payment, multiple fulfilments — multi-vendor truth. Short copy ("Each store fulfils separately") prevents confusion.
+
+**Q: Can I use live product prices on order history?**  
+No — snapshot fields only (`nameAtPurchase`, `priceAtPurchase`).
+
+**Q: Chapter 21 is cache — can I skip straight there?**  
+No. Chapter 20 gate is **Week 3 phase demo** with Stripe test payment in browser.
+
+## What this chapter is not
+
+- **Not** new Stripe server routes — consume Ch 19
+- **Not** shipping tracking maps — status enum only
+- **Not** email notifications — Chapter 22
+- **Not** Redis/cache — Chapter 21
+
+## Reading pace
+
+| Sub-chapter | Cluster |
+|---|---|
+| 20.1–20.3 | Open |
+| 20.4–20.11 | Build |
+| 20.12–20.13 | Wrap |
+
+Estimated time: **one to two days**.
+
+## Self-check
+
+- [ ] Chapter 19 gate cleared
+- [ ] Test payment succeeded in Stripe Dashboard
+- [ ] Two vendor accounts + one customer from seed
+
+## Next
+
+**Sub-chapter 20.2:** Snapshots make UI easy — read embedded fields only.

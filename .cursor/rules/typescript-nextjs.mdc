@@ -1,0 +1,28 @@
+---
+description: TypeScript and Next.js App Router conventions
+globs: **/*.ts,**/*.tsx
+alwaysApply: false
+---
+
+# TypeScript / Next.js conventions
+
+- Strict TypeScript. No `any`; no non-null `!` assertion without a comment explaining why it's safe.
+- React Server Components by default. Add `"use client"` only when a component needs hooks, event
+  handlers, or browser APIs — push it as far down the tree as possible, not at the page level.
+- Mutations go through server actions (`src/server/actions/`), not client-side fetch to a route
+  handler — except the routes the spec calls for explicitly: `/api/blocks/[blockId]/respond`,
+  `/api/progress/heartbeat`, `/api/webhooks/*`.
+- Validate all external input (server actions, route handlers) with Zod schemas shared with the
+  client form, per `docs/09-security.mdx`.
+- Auth: import from `auth.config.ts` in anything that runs on the Edge (middleware); import from
+  `auth.ts` (which pulls in the Prisma adapter) everywhere else. Never import `auth.ts` from
+  middleware.
+
+```typescript
+// BAD — untyped, no validation
+export async function respondToBlock(blockId: string, payload: any) { ... }
+
+// GOOD
+const payload = ResponsePayloadSchema.parse(rawPayload);
+export async function respondToBlock(blockId: string, payload: ResponsePayload) { ... }
+```

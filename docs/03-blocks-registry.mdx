@@ -1,0 +1,181 @@
+---
+title: Interactive blocks and the block registry
+status: draft v1
+---
+
+# The interactive blocks
+
+**Reads:** [`01-domain-model.mdx`](01-domain-model.mdx), [`02-content-authoring.mdx`](02-content-authoring.mdx)
+
+Six block types in v1. Each is defined by: MDX authoring syntax, config schema (server), learner
+UI, completion rule, and what it contributes to reports.
+
+Common shape — every block is an MDX component with an `id` and grading-relevant config passed as
+props at *author* time, stripped before reaching the client (see
+[`09-security.mdx`](09-security.mdx)).
+
+## The registry pattern (read this before adding or changing a block type)
+
+Each block type is declared **once** in a registry: `type`, a Zod config schema, a server grader, a
+client component, a report projector, and (per
+[`02-content-authoring.mdx`](02-content-authoring.mdx)) an MDXEditor `JsxComponentDescriptor`.
+
+```
+src/blocks/
+  registry.ts                # maps BlockType -> { schema, grade, Component, report, editorDescriptor }
+  quiz/
+    schema.ts                # Zod config schema
+    grade.ts                 # server-side grading function
+    Component.tsx            # learner-facing React component
+    report.ts                # report projector (what this block contributes to reports)
+    editorDescriptor.tsx      # MDXEditor JsxComponentDescriptor
+  test/       ...same shape
+  must-read/  ...same shape
+  open-question/ ...same shape
+  code/       ...same shape
+  presentation/               # Callout, Steps, Diagram — no grader, no report projector
+```
+
+**Adding a seventh block type must mean touching exactly one registry entry plus its own folder —
+never fifteen switch statements scattered across submission handling, progress computation,
+reports, and the editor.** This is the single most important structural decision in the codebase;
+treat any code that special-cases a `BlockType` outside `src/blocks/<type>/` as a bug.
+
+---
+
+## `<Quiz>` — inline knowledge check
+
+A single question dropped between paragraphs. Lightweight, low-stakes, immediate feedback. This is
+the "did that paragraph land?" block.
+
+```mdx
+<Quiz id="01J8..." type="single">
+  In a multi-vendor system, who owns the product inventory record?
+  <Option correct>The vendor</Option>
+  <Option>The platform</Option>
+  <Option>The customer</Option>
+  <Explanation>
+    Vendors own their catalog. The platform owns the *order*, which may
+    span multiple vendors' inventory.
+  </Explanation>
+</Quiz>
+```
+
+- Types: `single`, `multiple`, `true-false`.
+- Auto-graded. Instant feedback with explanation revealed after submit.
+- Config: `options[]`, `correctOptionIds[]`, `explanation`, `allowRetry` (default `true`), `shuffle`
+  (default `false`).
+- Completion: answered (correctness recorded but does not block by default).
+- Reports: per-block correct rate; flags blocks where >50% of the cohort got it wrong ("confusing
+  content" signal — see [`06-reports.mdx`](06-reports.mdx)).
+
+## `<Test>` — MCQ assessment
+
+A gated, multi-question assessment. Higher stakes than a quiz.
+
+```mdx
+<Test id="01J8..." passingScore={70} timeLimitMinutes={20} maxAttempts={3}>
+  <Question id="q1" points={2}>
+    Which failure mode is unique to multi-vendor checkout?
+    <Option correct>Partial fulfillment across vendors</Option>
+    <Option>Card decline</Option>
+  </Question>
+  <Question id="q2">...</Question>
+</Test>
+```
+
+- Rendered as a distinct, focused surface (not inline prose) — one question at a time or
+  all-at-once, mentor's choice.
+- Config: `questions[]`, `passingScore`, `timeLimitMinutes?`, `maxAttempts`, `shuffleQuestions`,
+  `showAnswersAfter: never | submit | pass`.
+- Auto-graded on submit; **server-side scoring only.**
+- **Blocking by default** — chapter not complete until passed.
+- Timer is enforced server-side (attempt has `startedAt`; late submissions are marked but scored
+  honestly, with a flag on the report). Client timer is advisory UI only.
+- Reports: score, attempts used, per-question breakdown, time taken.
+
+## `<MustRead>` — required external reading
+
+The mentee has to go read something and confirm it.
+
+```mdx
+<MustRead id="01J8..." url="https://stripe.com/docs/connect" minSeconds={60}>
+  Stripe Connect — read the "Separate charges and transfers" section.
+  <Checkpoint>I understand how funds are split between vendors.</Checkpoint>
+</MustRead>
+```
+
+- Renders as a card: title, source link (opens in new tab), and a checkbox.
+- `minSeconds` — the checkbox stays disabled for N seconds after the link is opened. **Honest-effort
+  nudge, not enforcement** — be explicit with users that this is an honor system, not surveillance.
+- Optional `<Checkpoint>` — the checkbox label becomes an attestation statement instead of "I read
+  this".
+- Optional `requireNote` — mentee must write one takeaway sentence, turning it into a light open
+  question.
+- Completion: checked (+ note submitted if required).
+- Reports: read/unread, time-to-check, note content.
+
+## `<OpenQuestion>` — free-text answer, human-reviewed
+
+The block that carries the most learning value and the most product risk (it needs a human in the
+loop).
+
+```mdx
+<OpenQuestion id="01J8..." minWords={80} rubric="Mentions vendor payouts, order splitting, and inventory ownership.">
+  Explain how you would model an order that contains items from three
+  different vendors. What happens if one vendor cancels?
+</OpenQuestion>
+```
+
+- Markdown-capable textarea, autosaves a draft, explicit submit.
+- Config: `minWords`, `maxWords?`, `rubric` (mentor-only), `sampleAnswer?` (revealed after submit or
+  after review, mentor's choice).
+- Completion: **submitted.** Not blocked on mentor review — the mentee keeps moving; review arrives
+  asynchronously.
+- Goes into the **mentor review queue** — see [`05-review-queue.mdx`](05-review-queue.mdx).
+- Reports: submitted / pending review / reviewed, mentor score and feedback.
+
+## `<CodeBlock>` — runnable code
+
+Interactive editor + runtime + optional automated checks.
+
+```mdx
+<CodeBlock id="01J8..." runtime="node" template="node-basic" checks="hidden">
+```js
+// Implement splitOrder(items) -> Map<vendorId, Item[]>
+export function splitOrder(items) {
+  // your code here
+}
+```
+</CodeBlock>
+```
+
+- **Runtimes in v1: JavaScript/TypeScript via Sandpack, and Python via Pyodide.** Both execute
+  **in the learner's browser tab** — zero server compute for v1. (The original idea of using
+  WebContainers for the Node runtime was replaced — see
+  [`07-architecture.mdx`](07-architecture.mdx) for why, and [`11-decisions-and-open-questions.mdx`](11-decisions-and-open-questions.mdx)
+  for the decision record.)
+- Three modes:
+  - `playground` — run it, no grading. Completion = ran once.
+  - `checked` — mentor supplies test cases; they run in the same sandbox and the pass/fail result
+    is posted to the server. Completion = tests pass.
+  - `submit` — output/source is submitted for mentor review, like an open question.
+- **Important limitation, stated openly:** since checks run client-side, results are *trusted
+  client input* and can be forged by a determined learner. That is acceptable for a mentorship
+  platform where the mentor knows the students. If a course needs tamper-proof grading, that's the
+  server-runner upgrade in [`10-deferred-v2.mdx`](10-deferred-v2.mdx).
+- Config: `runtime`, `mode`, `starterFiles`, `visibleTests`, `hiddenTests`, `timeoutMs`,
+  `dependencies`.
+- Reports: attempts, passed/failed, final source snapshot, time spent.
+
+## `<Callout>` / `<Steps>` / `<Diagram>` — non-interactive presentation
+
+Not graded, but part of the component library: styled callouts (info/warn/tip), numbered step
+lists, and Mermaid diagrams. No grader, no report projector, no `Response` rows — these live in
+`src/blocks/presentation/` and skip most of the registry contract (no `schema`/`grade`/`report`
+needed, just `Component` + `editorDescriptor`). Cheap to build, big effect on how a course *feels*.
+
+## Response payload shapes
+
+See [`08-data-model.mdx`](08-data-model.mdx) for the `ResponsePayload` union type — one variant per
+block type that produces a `Response` (the three presentation components do not).

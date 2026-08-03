@@ -1,0 +1,53 @@
+---
+phase: M0
+title: Foundation
+week: 1
+status: not started
+---
+
+# M0 — Foundation
+
+**Demo:** Log in as mentor and as mentee, see different shells.
+
+**Reads:** [`../07-architecture.mdx`](../07-architecture.mdx), [`../08-data-model.mdx`](../08-data-model.mdx), [`../00-product-overview.mdx`](../00-product-overview.mdx)
+
+## Goal
+
+Stand up the repo, the schema, and auth so every later phase has ground to build on. Nothing
+interactive yet — this phase proves the shells for both roles exist and are distinct.
+
+## Tasks
+
+- [ ] Scaffold Next.js 15 (App Router) + TypeScript strict + Tailwind + shadcn/ui, matching the
+      repo layout in [`../07-architecture.mdx`](../07-architecture.mdx).
+- [ ] Add Prisma, copy the schema from [`../08-data-model.mdx`](../08-data-model.mdx) into
+      `prisma/schema.prisma` **verbatim**, add the Auth.js adapter models (`Account`, `Session`,
+      `VerificationToken`) per `@auth/prisma-adapter` docs, run the initial migration.
+  - From this point on, `prisma/schema.prisma` is canonical; keep
+    [`../08-data-model.mdx`](../08-data-model.mdx) in sync when the schema changes, not vice versa.
+- [ ] Set up Auth.js v5 with email magic link + Google, DB sessions, split `auth.config.ts` /
+      `auth.ts` (required for Prisma + Edge middleware compatibility — see
+      [`../07-architecture.mdx`](../07-architecture.mdx) §"Auth.js v5 status").
+- [ ] Role-gated layouts: `(learn)` route group for `MENTEE`, `(teach)` route group for `MENTOR`,
+      redirect logic based on `User.role`. `ADMIN` can view both for v1 (superset of mentor per
+      [`../00-product-overview.mdx`](../00-product-overview.mdx)).
+- [ ] `server/auth/guards.ts` — the single place route handlers/actions check "is this user allowed
+      to touch this course/enrollment," per the invariant in [`/AGENTS.md`](../../AGENTS.md). Even
+      though there's nothing to guard yet, establish the pattern now so M1+ don't invent ad-hoc
+      checks.
+- [ ] Seed script (`prisma/seed.ts`): one mentor, three mentees, one course (no chapters yet, or
+      one placeholder chapter with empty `source`), enrollments for the three mentees.
+- [ ] Sentry + PostHog wired up (even minimally) — cheap to add now, easy to forget later.
+
+## Out of scope for this phase
+
+- Any MDX content, blocks, or the editor (M1).
+- Progress, gating, reports (M3, M6).
+- Anything under [`../10-deferred-v2.mdx`](../10-deferred-v2.mdx).
+
+## Acceptance criteria
+
+- `npx prisma migrate dev` runs clean from scratch.
+- Logging in as the seeded mentor lands in `(teach)`; logging in as a seeded mentee lands in
+  `(learn)`; the two shells are visibly different (even if mostly empty).
+- `server/auth/guards.ts` exists with at least one real guard function and a test.

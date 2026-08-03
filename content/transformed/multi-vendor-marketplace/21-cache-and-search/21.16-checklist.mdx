@@ -1,0 +1,72 @@
+---
+title: "Checklist and learning log"
+module: 21
+lesson: 16
+summary: "Gate for Chapter 21 — Cache and search. Tick every box and answer the learning log on this page before continuing."
+---
+# 20.16 — Checklist and learning log
+> **[Gate]** · Chapter 21 — Cache and search
+
+This is the **gate** for Chapter 21. Tick every box honestly and answer the learning log below before opening Chapter 22.
+
+## Chapter 21 — Cache and search checklist (gate)
+
+Do **not** open Chapter 22 until every box is ticked and learning log answers are written below.
+
+### Redis
+
+- [ ] `REDIS_URL` in `server/.env.example`
+- [ ] `shared/redis.js` connects when Redis available
+- [ ] API boots when Redis down (fallback)
+
+### Cache
+
+- [ ] `GET /products` uses cache-aside
+- [ ] HIT/MISS observable in dev logs
+- [ ] TTL documented in README
+- [ ] Second identical request hits cache
+
+### Invalidation
+
+- [ ] Product POST/PATCH/DELETE invalidates catalogue cache
+- [ ] Price change visible on next GET without waiting TTL
+
+### Search
+
+- [ ] Text index on `name` + `category`
+- [ ] `?search=` uses `$text` query
+- [ ] explain() or Compass shows index used
+
+### Performance
+
+- [ ] README before/after timing notes
+
+### Prior gates
+
+- [ ] Chapter 19 Week 3 demo complete
+- [ ] Chapter 14 public catalogue works
+
+### Learning log — write now
+
+Answer **in your own words** in the fields below:
+
+1. **Cache key:** How do you build cache keys? What invalidation strategy?
+
+2. **Stale trap:** Describe test proving PATCH busts cache (20.11).
+
+3. **Fallback:** What happens when Redis stops? Paste boot log line.
+
+4. **Text index:** Paste explain winning plan or describe index in Compass.
+
+5. **TTL choice:** What TTL did you pick and why?
+
+6. **Chapter 21 preview:** Will Redis run on same VPS or managed service in production?
+
+
+## All boxes ticked?
+
+Mark this chapter complete in the platform, then continue to **Async jobs and queues** (Chapter 22).
+
+## Final gate statement
+
+*"I confirm catalogue caching with invalidation, text search on index, Redis fallback, and performance notes in README. Ready for Chapter 21 deploy."*

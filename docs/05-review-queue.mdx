@@ -1,0 +1,57 @@
+---
+title: Mentor review queue
+status: draft v1
+---
+
+# Mentor review queue
+
+**Reads:** [`03-blocks-registry.mdx`](03-blocks-registry.mdx) (`OpenQuestion`, `CodeBlock` `submit` mode), [`04-progress-and-gating.mdx`](04-progress-and-gating.mdx)
+
+The human-in-the-loop surface. If this is slow or annoying, mentors stop grading and the
+platform's value collapses — so it gets first-class treatment, not a form buried in a table.
+
+## Queue view
+
+All pending items across the mentor's courses, filterable by course / mentee / block type / age.
+Sorted oldest-first by default. Shows an aging indicator (**>48h waiting is highlighted**).
+
+## Review view
+
+One submission at a time, keyboard-driven.
+
+- **Left:** the original question + the mentor's own rubric + reference answer.
+- **Right:** the mentee's answer, rendered Markdown (or code with syntax highlighting + the run
+  output they got).
+- **Actions:** score (rubric-based or 1-5), written feedback (Markdown), and a verdict:
+  **Approved** / **Needs revision**.
+- `j` / `k` to move through the queue, `⌘+Enter` to submit and advance.
+- Canned feedback snippets, saved per mentor, for repeated comments.
+
+## Needs-revision loop
+
+**Needs revision** reopens the block for the mentee, notifies them in-app, and puts the
+resubmission back at the **front** of the queue with the previous exchange threaded (so the mentor
+sees their own prior feedback alongside the new attempt).
+
+Note: a needs-revision verdict does **not** revert chapter completion — see the note in
+[`04-progress-and-gating.mdx`](04-progress-and-gating.mdx). Completion tracks submission, review
+tracks quality; these are intentionally decoupled so mentees are never blocked waiting on a mentor.
+
+## Data model touch points
+
+- `Response.status` drives what's in the queue: `PENDING_REVIEW` items are queued;
+  `NEEDS_REVISION` items are reopened for the mentee; `REVIEWED` items are done.
+- `Review` is `1:1` with `Response` (`Review.responseId @unique`). A resubmission creates a **new**
+  `Response` (new `attempt`), not a new `Review` on the old response — the "previous exchange
+  threaded" UI reads across the `Response` history for that `(blockId, userId)` pair.
+- `Review.reviewerId` is independent of `Course.mentorId` — this is deliberate, so that adding
+  co-teachers/TAs later (deferred, see [`10-deferred-v2.mdx`](10-deferred-v2.mdx)) is an
+  access-control change only, not a schema change.
+
+Full `Review` model: see [`08-data-model.mdx`](08-data-model.mdx).
+
+## Open question
+
+**Mentor capacity** — what happens when a mentor has 200 pending reviews? v1 answer: aging
+highlights + bulk-approve. AI-drafted feedback is a v2 idea. See
+[`11-decisions-and-open-questions.mdx`](11-decisions-and-open-questions.mdx).

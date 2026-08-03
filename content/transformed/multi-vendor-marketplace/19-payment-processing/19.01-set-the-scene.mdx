@@ -1,0 +1,137 @@
+---
+title: "Set the scene"
+module: 19
+lesson: 1
+summary: "**Where the project is now:** Chapter 18 gave you a **working checkout pipeline** — one `POST /checkout` turns a multi-vendor cart into split orders with price snapshots, atomic stock decrement, and cart cleared on success. Proof so far is curl and Compass. **No money moves.** An"
+---
+# 19.1 — Set the scene
+
+> **[Read]** · Chapter 19 — Payment processing · *Bridge from Ch 18; payment after checkout logic; Stripe test mode*
+
+**Where the project is now:** Chapter 18 gave you a **working checkout pipeline** — one `POST /checkout` turns a multi-vendor cart into split orders with price snapshots, atomic stock decrement, and cart cleared on success. Proof so far is curl and Compass. **No money moves.** Anyone with a customer token can create orders for free.
+
+**Where this chapter goes:** **Real Stripe payment processing** — one Payment Intent for the full cart total, client confirmation with Stripe.js, server verification before checkout runs, webhooks as backup. Every split order from one checkout shares the same `stripePaymentIntentId` and `paymentStatus: 'paid'`.
+
+This is a **backend build chapter**. It pairs with Chapter 20 the way Chapter 18 paired with Chapter 17's cart UI. The gate is **payment-gated checkout**: no order without a succeeded Payment Intent.
+
+## Bridge from last chapter
+
+Chapter 18 was deliberate: you built **order logic first** — split by store, snapshots, stock, fail-all semantics — without a payment gateway in the way. That ordering matters.
+
+| Why orders before payment | What would break if reversed |
+|---|---|
+| Checkout pipeline is already tested | Payment succeeds but order creation fails → charged customer, no receipt |
+| Snapshots and stock are the hard part | You debug Stripe *and* commerce bugs at once |
+| `POST /checkout` is a clear seam | Payment verification plugs in **before** the existing pipeline runs |
+
+Chapter 18's FAQ said payment was out of scope **for that chapter**. Chapter 19 is where FreshMarket stops being a demo shop that gives groceries away.
+
+**Gate chain:** Clear the Chapter 18 gate before opening this lesson.
+
+What you carry into Chapter 19:
+
+| From Chapter 18 | Why payment depends on it |
+|---|---|
+| `POST /checkout` pipeline | Payment gate wraps **existing** split-order logic — do not rewrite snapshots |
+| Cart total from server-side cart | Payment Intent amount must match **your** computed total, not client guess |
+| Split orders (one per store) | One charge, many orders — same Payment Intent id on each |
+| Customer auth | Payment routes scoped to logged-in customer |
+
+If checkout without payment still creates orders, **fix Chapter 18 first**. Payment is a guardrail on top, not a replacement.
+
+## In plain English
+
+| Term | Simple meaning |
+|---|---|
+| **Payment Intent** | Stripe's object for "collect this amount from this customer" — tracks status from `requires_payment_method` to `succeeded` |
+| **Stripe.js** | Stripe's browser library — collects card details safely; card numbers never touch your server |
+| **Payment-gated checkout** | Server refuses to create orders until Stripe confirms the Payment Intent **succeeded** |
+| **Platform collects** | FreshMarket (your platform) charges the customer once — vendors are paid out separately in real life; **not** Stripe Connect in this course |
+| **Webhook** | Stripe calls your server when status changes — backup if the client disconnects after paying |
+| **Test mode** | Fake money, test keys (`pk_test_…`, `sk_test_…`) — no real charges |
+
+## Think of it like paying at the market hall desk
+
+Chapter 18 built the **receipt printer** — sort items by stall, freeze prices, reduce stock, clear the basket. But the customer walked through without opening their wallet.
+
+Chapter 19 adds the **card reader at the desk**:
+
+1. Cashier totals the basket (`POST /payments/intent`).
+2. Customer taps card on the reader (Stripe.js confirms the Payment Intent).
+3. Cashier checks the reader says **Approved** (server verifies with Stripe API).
+4. **Only then** the receipts print (existing checkout pipeline).
+
+One swipe. Multiple stall receipts. Same transaction reference on every receipt.
+
+## The payment flow (overview)
+
+```
+Customer cart (server total = ₹345)
+        │
+        POST /payments/intent
+        │  → Stripe returns clientSecret + paymentIntentId
+        │
+        Client: Stripe.js confirmCardPayment(clientSecret)
+        │
+        POST /checkout { paymentIntentId }
+        │  → Server: stripe.paymentIntents.retrieve(id)
+        │  → status === 'succeeded' && amount matches cart
+        │  → run Ch 18 pipeline (split, snapshot, stock, clear cart)
+        │  → each Order gets stripePaymentIntentId, paymentStatus: 'paid'
+        │
+        POST /webhooks/stripe (async backup)
+        │  → signature verify, idempotent handling
+```
+
+Chapter 20 wires Stripe.js in the browser. This chapter proves the **server** refuses unpaid checkout.
+
+## Common beginner questions
+
+**Q: Why not Stripe Connect for multi-vendor payouts?**  
+Connect splits money to vendor Stripe accounts — powerful, but heavy for a medium course. Here the **platform collects one payment**; vendor settlement is a business process outside this build. You still get real Payment Intents, webhooks, and production-shaped checkout.
+
+**Q: Why verify on checkout if the client already confirmed?**  
+Never trust the browser. A modified client could POST `/checkout` with a fake id. Your server must **retrieve the Payment Intent from Stripe** and check `status` and `amount`.
+
+**Q: One Payment Intent for a two-store cart?**  
+Yes. Customer pays **once** at the hall desk. Two orders share `stripePaymentIntentId` — accounting can tie them together.
+
+**Q: Do I replace Chapter 18 checkout?**  
+You **extend** it. Same split/snapshot/stock/clear logic — add a payment verification step at the top.
+
+**Q: Real money in this chapter?**  
+**No.** Test mode only. Test card `4242 4242 4242 4242`. Live keys stay out of the course.
+
+**Q: What if payment succeeds but checkout crashes?**  
+Webhook + idempotency (19.12–19.13) reduce duplicate orders on retry. Document edge cases in learning log.
+
+## What this chapter is not
+
+- **Not** Stripe Connect or per-vendor charges
+- **Not** checkout UI — Chapter 20
+- **Not** refunds or disputes — mention in README only
+- **Not** storing raw card numbers — Stripe.js + Payment Intents forbid this
+
+## Reading pace
+
+| Sub-chapter | Cluster | Focus |
+|---|---|---|
+| 19.1–19.3 | Open | Bridge, fake-checkout trap, blueprint |
+| 19.4–19.6 | Learn | One payment / many orders, test mode, Stripe docs |
+| 19.7 | Check | Quiz reserved |
+| 19.8–19.14 | Build | Config → intent → gated checkout → webhooks → verify |
+| 19.15–19.16 | Wrap | Recap + gate |
+
+Estimated time: **two full days** — payment bugs are expensive; go carefully.
+
+## Self-check before continuing
+
+- [ ] Chapter 18 gate cleared (`18.18`)
+- [ ] `POST /checkout` creates split orders without payment today
+- [ ] You understand why server must verify Payment Intent status
+
+## Next
+
+**Sub-chapter 19.2:** Fake checkout trap — why "Place order" without payment is not production.
+
+Real money is next. First understand why free checkout fails the moment you demo to anyone serious.

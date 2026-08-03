@@ -1,0 +1,125 @@
+---
+title: Content authoring
+status: draft v1 — editor decision resolved 2026-08-03
+---
+
+# Content authoring
+
+**Reads:** [`01-domain-model.mdx`](01-domain-model.mdx), [`03-blocks-registry.mdx`](03-blocks-registry.mdx)
+
+**Format:** MDX — Markdown with our custom React components.
+**Where it lives:** in Postgres (`Chapter.source` holds the raw MDX string). Not in git. Mentors
+are not expected to know git.
+
+## Why MDX and not a JSON block editor (Notion-style)
+
+- Mentors writing technical courses already think in Markdown.
+- Copy-paste from README/docs just works.
+- Custom components give us arbitrary interactivity without building a block editor from scratch.
+
+The trade-off — a raw-text editor is less friendly than pure drag-and-drop — is mitigated by the
+editor decision below: mentors get a rich editing surface for prose *and* structured, form-like
+editors for each interactive block, not a bare textarea.
+
+## The in-app editor — decision
+
+> **Resolved 2026-08-03.** The original idea of "raw MDX left pane / live preview right pane" is
+> replaced by a richer, better-researched approach below. See
+> [`11-decisions-and-open-questions.mdx`](11-decisions-and-open-questions.mdx) for the decision log entry.
+
+**Use [`@mdxeditor/editor`](https://mdxeditor.dev)** — a Lexical-based (Meta's rich text framework)
+MDX editor — as the mentor's authoring surface, instead of a bare CodeMirror-6 + compiled-preview
+split pane.
+
+### Why this over a raw-text + preview split
+
+1. **Structured editors per block type, not raw JSX typing.** MDXEditor's `jsxPlugin` lets you
+   register each of the six block types (`Quiz`, `Test`, `MustRead`, `OpenQuestion`, `CodeBlock`,
+   plus `Callout`/`Steps`/`Diagram`) as a `JsxComponentDescriptor` with its own custom editor
+   component — e.g. the `Quiz` descriptor renders an actual option-list UI with an "add option" /
+   "mark correct" affordance, not a mentor hand-typing `<Option correct>`. This maps directly onto
+   the block-registry principle already established in
+   [`03-blocks-registry.mdx`](03-blocks-registry.mdx): one registry entry gets one editor
+   descriptor, not fifteen bespoke text-editing conventions mentors have to memorize.
+2. **Nested rich-text children work naturally.** `NestedLexicalEditor` lets a block's markdown
+   children (an `<Explanation>`, the question prose inside a `<Question>`, the note inside a
+   `<MustRead>`) be edited as normal rich text inside the block's own UI, round-tripping cleanly
+   back to mdast/MDX on save.
+3. **Built-in raw-source mode covers the "raw MDX" need.** MDXEditor ships `diffSourcePlugin`,
+   which adds a **Rich Text / Diff / Source** tab toggle out of the box. This is the "raw MDX pane"
+   the original spec wanted, but as an escape hatch rather than the primary surface — useful for:
+   - technical mentors who prefer typing MDX directly,
+   - pasting in content drafted by an LLM (ChatGPT/Claude/Cursor) as raw MDX text,
+   - copy-pasting from existing docs/READMEs.
+4. **The document model is mdast, not a string.** Because MDXEditor round-trips through
+   `remark`/`mdast` internally, whatever produced the MDX (a mentor, or an LLM asked to draft a
+   chapter) just needs to produce valid MDX text — the editor, the compiler, and the block-sync
+   logic in this doc all operate on the same representation. No separate "block editor JSON" schema
+   to keep in sync with MDX.
+
+### What does NOT change
+
+- **Storage.** `Chapter.source` is still a raw MDX string in Postgres. MDXEditor is a *view* over
+  that string; it is not a new storage format.
+- **Compilation.** Publish-time compilation to `Chapter.compiled` (below) is unchanged — MDXEditor
+  produces the same MDX text a hand-written file would.
+- **Sanitization and block sync.** The rules in this document (extraction, versioning, config
+  stripping) apply identically regardless of which pane the mentor was looking at when they typed.
+- **The "/" insert palette.** Implemented as MDXEditor toolbar/insert commands per registered
+  `JsxComponentDescriptor`, same UX intent as the original spec, different implementation surface.
+
+### Implementation notes for M1
+
+- One `JsxComponentDescriptor` per block type, colocated with that block's registry folder (see
+  `src/blocks/<type>/editorDescriptor.tsx` in [`03-blocks-registry.mdx`](03-blocks-registry.mdx)).
+- `codeBlockPlugin` + `codeMirrorPlugin` (bundled with MDXEditor) handle the fenced-code editing
+  *inside* a `CodeBlock` block's starter-code prop — reuse rather than hand-rolling a second code
+  editor.
+- Autosave: debounce `onChange` to a server action that writes `Chapter.source` as a draft; explicit
+  "Publish" button triggers compilation (below). Do not compile on every keystroke.
+- Validation errors (unknown block id conflicts, malformed props) surface inline near the block,
+  using MDXEditor's error boundary per JSX node — not a separate lint panel.
+
+## Rendering pipeline
+
+1. Mentor saves MDX → server **parses and validates** it (block extraction, below) → stores
+   `source` + extracted block metadata.
+2. On publish, server compiles MDX to a serialized form via `next-mdx-remote-client` (built on
+   `@mdx-js/mdx`) and caches it in `Chapter.compiled`. **Compilation happens at publish time, not
+   request time.**
+3. The reader route renders the compiled output through our component map. Only components in the
+   allowlist are available — **no arbitrary JSX/JS execution from author input.** Compilation runs
+   server-side in a restricted MDX config with raw HTML disabled. See
+   [`09-security.mdx`](09-security.mdx).
+
+## Block extraction and the sync problem
+
+The hard part of MDX + interactivity: the answers live in the DB, the questions live in a text
+blob. If a mentor edits a question after students have answered it, what happens?
+
+Rules:
+
+- Every block in MDX carries an explicit `id` (auto-inserted by the editor, a ULID). The `id` is
+  the join key to `Block` rows.
+- On save, the server diffs blocks in the source against `Block` rows:
+  - **New id** → create `Block`.
+  - **Missing id** → soft-delete `Block` (`archivedAt`), keep responses for history.
+  - **Existing id, content changed** → bump `Block.version`, keep the row.
+- If a block with existing responses changes in a way that invalidates them (correct answer
+  changes, options removed), the editor shows a warning and the mentor chooses: **keep existing
+  responses** or **invalidate and require re-answer**.
+- Correct answers, explanations, and rubrics are **never** part of the source sent to the client.
+  They live in `Block.config`, server-side only. The client receives a sanitized projection — see
+  [`09-security.mdx`](09-security.mdx) for the sanitizer contract and its required test.
+
+## Where this lives in the repo
+
+```
+src/mdx/
+  compile.ts       # server-side MDX -> compiled, via next-mdx-remote-client
+  extract.ts        # source -> block metadata (the diff/sync logic above)
+  sanitize.ts        # strip answers for client, tested per 09-security.mdx
+  components.tsx      # allowlisted component map for the reader
+src/blocks/<type>/
+  editorDescriptor.tsx # MDXEditor JsxComponentDescriptor for this block type
+```

@@ -1,0 +1,106 @@
+---
+title: "Recap and what's next"
+module: 19
+lesson: 15
+summary: "**Why this step matters:** Chapter 20 adds checkout **UI** with Stripe.js on top of this API — you need a crisp story for Payment Intents, gated checkout, and one-payment-many-orders before building buttons."
+---
+# 19.15 — Recap and what's next
+
+> **[Wrap]** · Chapter 19 — Payment processing · *Recap — what you built and what comes next*
+
+**Why this step matters:** Chapter 20 adds checkout **UI** with Stripe.js on top of this API — you need a crisp story for Payment Intents, gated checkout, and one-payment-many-orders before building buttons.
+
+You entered Chapter 19 with free checkout. You leave with **real Stripe test-mode payments** — intent from cart, server verification, shared PI on split orders, webhooks with signature verify, idempotent checkout.
+
+## What you built — narrative recap
+
+**POST /payments/intent:** Loads cart, validates lines, computes total, creates Stripe Payment Intent, returns `clientSecret`.
+
+**POST /checkout {"{"} paymentIntentId {"}"}:** Retrieves PI from Stripe; requires `succeeded` and amount match; runs Chapter 18 pipeline; sets `stripePaymentIntentId` and `paymentStatus: 'paid'` on every split order.
+
+**POST /webhooks/stripe:** Raw body + `Stripe-Signature` verification; handles `payment_intent.succeeded` without duplicate orders.
+
+**Idempotency:** Same PI never creates two order sets — checkout replay and webhook retries safe.
+
+## Server tree now
+
+```
+server/src/shared/
+  stripe.js                 ← Stripe SDK client
+
+server/src/modules/payments/
+  payments.routes.js        ← POST /payments/intent
+  payments.service.js
+
+server/src/modules/orders/
+  orders.service.js         ← verify PI + existing checkout pipeline
+
+server/src/modules/webhooks/
+  webhooks.routes.js        ← POST /webhooks/stripe
+  webhooks.service.js
+```
+
+Order model includes `stripePaymentIntentId`, `paymentStatus`.
+
+## Architecture diagram
+
+```
+Cart total (server)
+       │
+       ▼
+POST /payments/intent ──► Stripe PI (amount, metadata)
+       │
+       ▼
+Stripe.js confirm (Ch 20 UI; CLI in 19.14)
+       │
+       ▼
+POST /checkout ──► retrieve PI ──► succeeded? ──► Ch 18 pipeline
+       │                                    │
+       └────────────────────────────────────┘
+                    │
+                    ▼
+         N orders, same pi_..., paid
+                    │
+       POST /webhooks/stripe (backup)
+```
+
+## Viva-ready answers
+
+1. **Why orders before payment in course order?** — Test commerce pipeline without gateway; payment plugs in at clear seam.
+2. **Why one Payment Intent for multi-vendor cart?** — One customer charge; split fulfilment stays per-store orders.
+3. **Why server retrieve PI?** — Client untrusted; Stripe API is source of truth.
+4. **Why webhooks?** — Async confirmation, retries, client disconnect resilience.
+5. **Why raw body on webhook?** — Signature over exact bytes; JSON parser breaks verify.
+6. **Why idempotency on PI id?** — Double submit and webhook retries must not duplicate stock/orders.
+
+## Week 3 progress
+
+| Target | Status |
+|---|---|
+| Multi-vendor cart UI | ✓ Ch 17 |
+| Checkout → split orders API | ✓ Ch 18 |
+| Stripe payment-gated checkout | ✓ **this chapter** |
+| Browser checkout + order UI | Chapter 20 |
+| Week 3 phase demo | Chapter 20 gate |
+
+## Next — Track orders (Chapter 20)
+
+Frontend chapter paired with Chapters 18–19:
+
+- Checkout review page → intent → Stripe.js → gated checkout
+- Order confirmation showing **split paid orders**
+- Customer order history with snapshot prices
+- Vendor orders inbox + status updates
+- **Full Week 3 commerce demo** with test card
+
+**Chapter 21 preview:** Catalogue cache — unrelated to payment; do not skip Chapter 20.
+
+**Chapter 22 preview:** Order-created jobs enqueue notifications — orders API stays; side effects move async.
+
+## Continue to gate
+
+**Sub-chapter 19.16:** Checklist + learning log.
+
+**Do not open `20-track-orders/20.01-set-the-scene.md` until 19.16 is fully ticked.**
+
+Payment is honest on the server. Next both actors see paid orders in the browser.

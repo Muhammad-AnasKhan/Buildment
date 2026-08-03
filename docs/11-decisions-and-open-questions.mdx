@@ -1,0 +1,56 @@
+---
+title: Decisions and open questions
+status: living document — update in the same change that resolves something
+---
+
+# Decisions and open questions
+
+**Reads:** none — but cross-referenced from every other doc. Check here before assuming something
+is undecided.
+
+## Decision log
+
+| Decision | Choice | Why |
+|---|---|---|
+| Stack | Next.js + Postgres + Prisma | One deploy, strong MDX story, typed reports |
+| Content format | MDX in DB, web editor | Mentors need no git; copy-paste from docs works |
+| **Content editor** | **MDXEditor (Lexical) with per-block `JsxComponentDescriptor`s + `diffSourcePlugin`** | Structured editing per block type + a raw-source escape hatch for technical mentors and LLM-drafted content, in one library. Resolved 2026-08-03 — see [`02-content-authoring.mdx`](02-content-authoring.mdx). |
+| MDX rendering | `next-mdx-remote-client`, not `next-mdx-remote` | `next-mdx-remote` is archived/unmaintained; the client fork is what Next.js docs now recommend for the App Router. Resolved 2026-08-03 — see [`07-architecture.mdx`](07-architecture.mdx). |
+| **Code execution** | **Pyodide (Python) + Sandpack (JS/TS), client-side** | WebContainers requires a paid commercial license for for-profit production use (quote-based pricing) — replaced to avoid an open-ended cost commitment before v1 has revenue. Same zero-server-compute property preserved. Server runner remains the v2 upgrade path. Resolved 2026-08-03 — see [`07-architecture.mdx`](07-architecture.mdx). |
+| Grading | Server-side for quiz/test; client-reported for code | Integrity where it's cheap, pragmatism where it isn't |
+| Progress | Append-only responses + denormalized rollups | Free history, fast reports |
+| v1 scope | Core blocks + code runner + review queue | A functional loop end to end |
+| Auth | Auth.js v5 (stable), Better Auth flagged for v2 | Auth.js v5 is production-ready now; it's in security-fix-only maintenance, so a future migration is plausible but not urgent. Noted 2026-08-03 — see [`07-architecture.mdx`](07-architecture.mdx). |
+| Deferred | Cohorts, deadlines, notifications, server runner, Better Auth migration | Not needed to prove the loop works — see [`10-deferred-v2.mdx`](10-deferred-v2.mdx) |
+| Next.js version | 16 (not 15) | `create-next-app@latest` shipped 16 by the time M0 was built; no breaking impact on the plan. Noted 2026-08-03. |
+| Prisma version | 7, with `@prisma/adapter-pg` driver adapter | Prisma 7 removed `datasource.url` from `schema.prisma` in favor of `prisma.config.ts` + a required driver adapter at runtime — see `src/server/db.ts`. Noted 2026-08-03 — see [`07-architecture.mdx`](07-architecture.mdx). |
+| shadcn/ui primitive layer | Base UI, not Radix | shadcn/ui switched its underlying primitive library since the original spec was written. Polymorphism uses `render`/`buttonVariants()` instead of `asChild`. Noted 2026-08-03 — see [`07-architecture.mdx`](07-architecture.mdx). |
+| `(teach)` course route param | `[courseSlug]`, not `[courseId]` | Next.js requires one dynamic-segment name per URL position across the whole app regardless of route group; `(learn)` already claims `[courseSlug]` under `/courses/`. Mentor URLs use the slug too now. Noted 2026-08-03. |
+| Local dev login | `/api/dev-login?email=` dev-only route | Lets M0's acceptance criteria (mentor → `(teach)`, mentee → `(learn)`) be verified without real Google/Resend credentials. Mints a real DB `Session` row via the same cookie Auth.js's database strategy reads; 404s when `NODE_ENV=production`. See `src/app/api/dev-login/route.ts`. Noted 2026-08-03. |
+
+## Open questions to resolve before M4
+
+1. **Scoring model** — is a course score a percentage of points earned, or just completion?
+   *Recommendation: track points, display completion; surface score only in reports.*
+2. **Retakes** — should a passed test be retakeable to improve a score?
+   *Recommendation: no in v1; keep first pass.*
+3. **Mentor capacity** — what happens when a mentor has 200 pending reviews?
+   *v1 answer: aging highlights + bulk approve; v2: AI-drafted feedback (see [`10-deferred-v2.mdx`](10-deferred-v2.mdx)).*
+4. **Course editing while students are mid-course** — v1 warns the mentor; v2 needs versioned
+   releases (see [`10-deferred-v2.mdx`](10-deferred-v2.mdx)).
+5. **Multi-mentor courses / TAs** — not in v1. `Review.reviewerId` is already independent of
+   `Course.mentorId`, so adding co-teachers later is an access-control change only.
+
+These are carried over from the original spec unresolved — pick these up explicitly before starting
+[`phases/m4-open-questions-and-review.mdx`](phases/m4-open-questions-and-review.mdx), since that
+phase is where scoring/retake behavior first becomes user-visible.
+
+## How to use this file
+
+- Before assuming a technical question is unresolved, check the decision log above.
+- When you resolve one of the open questions, move it into the decision log (with the date and a
+  one-line "why") in the same change that implements it — don't leave both an "open" and a
+  "resolved" version floating around.
+- When a past decision needs revisiting (e.g. WebContainers pricing becomes acceptable, Better Auth
+  migration becomes worth doing), add a new row rather than editing the old one, so the history of
+  *why* something changed stays visible.

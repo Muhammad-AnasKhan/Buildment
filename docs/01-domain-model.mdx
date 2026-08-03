@@ -1,0 +1,66 @@
+---
+title: Domain model
+status: draft v1
+---
+
+# Domain model — the vocabulary
+
+**Reads:** [`00-product-overview.mdx`](00-product-overview.mdx)
+
+Getting these words fixed prevents a lot of churn later. Use exactly these terms in code, docs,
+and conversation — don't introduce synonyms (e.g. "lesson" for "chapter", "task" for "block").
+
+## Course
+The top-level container. Has a title, description, cover, difficulty, estimated hours, and a
+publish state. Owned by exactly one mentor (`Course.mentorId`).
+
+## Module *(optional grouping)*
+An ordered section of a course (e.g. "Part 1: Foundations"). A course with no modules is fine —
+chapters can hang directly off the course. This stays in the schema from day one (`Chapter.moduleId`
+is nullable) but is hidden in the UI until a mentor actually needs it.
+
+## Chapter
+The atom of learning. One page of MDX content. Ordered within its module or course. Has a
+completion rule — see [`04-progress-and-gating.mdx`](04-progress-and-gating.mdx).
+
+## Block
+An interactive element inside a chapter's MDX. Six types in v1 — see
+[`03-blocks-registry.mdx`](03-blocks-registry.mdx). Each block has a stable `id` and lives in the
+DB alongside the chapter, so responses can reference it independent of the surrounding prose.
+
+## Project
+The spine of the course. A project-based course states an outcome (e.g. "build a multi-vendor
+marketplace"); chapters build toward it. In v1 a project is metadata on the course
+(`Course.projectGoal`) plus optionally-flagged **milestone chapters** (`Chapter.isMilestone`). There
+is **no separate submission system** in v1 — a milestone is just a chapter whose blocks happen to be
+heavier (code + long-form answer).
+
+## Enrollment
+The link between a mentee and a course. Created when a mentor assigns a course, or when a mentee
+joins via an invite link.
+
+## Attempt / Response
+A mentee's answer to a block. Rows are immutable and append-only; the latest one is "current" per
+`(blockId, userId)`. This gives free history for reports and review threads — see
+[`08-data-model.mdx`](08-data-model.mdx) for the `Response` model and its `attempt` field.
+
+## Progress
+Derived state, computed and stored, not queried live: per block → per chapter → per course. Stored
+denormalized for read speed. See [`04-progress-and-gating.mdx`](04-progress-and-gating.mdx).
+
+## Review
+A mentor's grade + feedback on a response that needs human judgement — open questions, and code
+submissions without automated checks. See [`05-review-queue.mdx`](05-review-queue.mdx).
+
+## Entity relationships
+
+```
+User ──< Course (as mentor)
+Course ──< Module ──< Chapter ──< Block
+Course ──< Enrollment >── User (as mentee)
+Enrollment ──< ChapterProgress
+Block ──< Response >── User
+Response ──< Review >── User (as mentor)
+```
+
+The full Prisma schema implementing this vocabulary is in [`08-data-model.mdx`](08-data-model.mdx).

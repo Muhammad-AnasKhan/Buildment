@@ -1,0 +1,62 @@
+# buildment docs — map
+
+This folder is the full product + technical spec for **buildment**, split into small files so any
+one work session (yours, or an LLM agent's) only has to load what's relevant to the task at hand,
+instead of one giant document.
+
+If you haven't already, read [`/AGENTS.md`](../AGENTS.md) first — it has the invariants that apply
+regardless of which part of the doc set you're working from.
+
+## How to use these docs
+
+- **Starting a new build phase?** Go straight to `docs/phases/mN-*.mdx`. Each phase file names the
+  topic docs it depends on — open only those, not the whole folder.
+- **Making a product decision?** Check [`11-decisions-and-open-questions.mdx`](11-decisions-and-open-questions.mdx)
+  first — it may already be resolved, or it may be explicitly listed as open with a recommendation.
+- **Touching the schema?** [`08-data-model.mdx`](08-data-model.mdx) is the source of truth until
+  `prisma/schema.prisma` exists, after which the schema file leads and this doc follows.
+- **Adding or changing a block type?** [`03-blocks-registry.mdx`](03-blocks-registry.mdx) has the
+  registry pattern and all six block specs — this is the single most-referenced doc in the set.
+
+## Topic docs
+
+| File | Covers |
+|---|---|
+| [`00-product-overview.mdx`](00-product-overview.mdx) | Pitch, non-goals, roles, entity relationships |
+| [`01-domain-model.mdx`](01-domain-model.mdx) | Course / Module / Chapter / Block / Project / Enrollment / Response / Progress / Review vocabulary |
+| [`02-content-authoring.mdx`](02-content-authoring.mdx) | MDX pipeline, block versioning/sync rules, the in-app editor (MDXEditor) |
+| [`03-blocks-registry.mdx`](03-blocks-registry.mdx) | All 6 interactive block types, authoring syntax, registry pattern |
+| [`04-progress-and-gating.mdx`](04-progress-and-gating.mdx) | Completion rules, sequential gating, denormalized progress, time tracking |
+| [`05-review-queue.mdx`](05-review-queue.mdx) | Mentor review queue UX and needs-revision loop |
+| [`06-reports.mdx`](06-reports.mdx) | Chapter / course / mentee reports, confusion flags, at-risk rule, export |
+| [`07-architecture.mdx`](07-architecture.mdx) | Stack, repo layout, why-this-stack, runner/editor/auth research |
+| [`08-data-model.mdx`](08-data-model.mdx) | Prisma schema, response payload shapes, submission flow |
+| [`09-security.mdx`](09-security.mdx) | Server-only answers, gating enforcement, MDX sandboxing, rate limits |
+| [`10-deferred-v2.mdx`](10-deferred-v2.mdx) | Explicitly out of scope for v1 |
+| [`11-decisions-and-open-questions.mdx`](11-decisions-and-open-questions.mdx) | Decision log + unresolved product questions |
+
+## Build phases
+
+| Phase | File | Demo |
+|---|---|---|
+| M0 | [`phases/m0-foundation.mdx`](phases/m0-foundation.mdx) | Log in as mentor and as mentee, see different shells |
+| M1 | [`phases/m1-content-pipeline.mdx`](phases/m1-content-pipeline.mdx) | Write a chapter in the editor, read it as a mentee |
+| M2 | [`phases/m2-blocks-part1.mdx`](phases/m2-blocks-part1.mdx) | Answer a quiz, get feedback, see progress move |
+| M3 | [`phases/m3-progress-and-gating.mdx`](phases/m3-progress-and-gating.mdx) | Get locked out of chapter 3 until the test is passed |
+| M4 | [`phases/m4-open-questions-and-review.mdx`](phases/m4-open-questions-and-review.mdx) | Mentee submits an answer, mentor reviews it, mentee resubmits |
+| M5 | [`phases/m5-code-runner.mdx`](phases/m5-code-runner.mdx) | Run and pass a coding exercise inside a chapter |
+| M6 | [`phases/m6-reports.mdx`](phases/m6-reports.mdx) | Mentor sees which block confused the cohort |
+| M7 | [`phases/m7-assignment-and-polish.mdx`](phases/m7-assignment-and-polish.mdx) | End-to-end: create course, assign, learn, review, report |
+
+Roughly 8 focused weeks for one developer, one milestone at a time. M1, M2, and M5 carry the most
+implementation risk; M0, M6, M7 are predictable.
+
+## Keeping these docs honest
+
+These files are meant to be edited as the project evolves, not treated as immutable history:
+
+- When you resolve an open question, move it from "open" to the decision table in
+  `11-decisions-and-open-questions.mdx` in the same change that implements it.
+- When architecture changes (a library swap, a new constraint discovered mid-build), update
+  `07-architecture.mdx` and/or `08-data-model.mdx` — don't let the docs and the code diverge.
+- If a phase's scope changes, edit that phase file directly rather than leaving stale tasks in it.

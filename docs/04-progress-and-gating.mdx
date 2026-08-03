@@ -1,0 +1,72 @@
+---
+title: Progress and completion
+status: draft v1
+---
+
+# Progress and completion
+
+**Reads:** [`01-domain-model.mdx`](01-domain-model.mdx), [`03-blocks-registry.mdx`](03-blocks-registry.mdx)
+
+## Levels
+
+1. **Block progress** — a `Response` exists for `(user, block)` and satisfies the block's
+   completion rule.
+2. **Chapter progress** — derived from its blocks + scroll/read state.
+3. **Course progress** — derived from its chapters.
+
+## Chapter completion rule
+
+A chapter is complete when **all required blocks are complete**. Every block is required by
+default; a mentor can mark any block `optional`. Chapters with zero blocks complete via an explicit
+"Mark as read" button.
+
+## Blocking / gating
+
+Two independent switches per course:
+
+- `sequentialChapters` (default **on**) — chapter N+1 is locked until chapter N is complete.
+- Per-block `blocking` — `<Test>` defaults to blocking; everything else defaults to non-blocking. A
+  blocking block prevents chapter completion, and therefore the next chapter, until satisfied.
+
+**Gating is enforced server-side** on the chapter data route, not just hidden in the UI. A locked
+chapter's loader returns 403, full stop — see [`09-security.mdx`](09-security.mdx). This is a
+load-bearing invariant (see [`/AGENTS.md`](../AGENTS.md)), not a nice-to-have.
+
+## Storage strategy
+
+- **`Response`** — append-only source of truth, one row per submission attempt.
+- **`ChapterProgress`** — denormalized per `(enrollment, chapter)`: `status`, `blocksCompleted`,
+  `blocksTotal`, `score`, `startedAt`, `completedAt`, `timeSpentSeconds`.
+- **`Enrollment`** — denormalized course rollup: `percentComplete`, `chaptersCompleted`,
+  `lastActiveAt`, `status`.
+
+Denormalized rows are **recomputed inside the same transaction** that writes a `Response`. Reports
+read only denormalized tables — never `Response` directly (see
+[`06-reports.mdx`](06-reports.mdx) and the invariants in [`/AGENTS.md`](../AGENTS.md)).
+
+A `recomputeProgress(enrollmentId)` job exists as the repair path — run it:
+- after content edits that change block counts or point values,
+- as a nightly consistency check (Vercel Cron — see [`07-architecture.mdx`](07-architecture.mdx)).
+
+## Time tracking
+
+Client sends heartbeats (every 15s while the tab is visible and focused) to
+`POST /api/progress/heartbeat`. Server accumulates into `ChapterProgress.timeSpentSeconds`, capped
+per session to reject a tab left open overnight. This is **approximate by design** — used for
+"which chapter is taking people forever," not for billing. Don't over-engineer precision here.
+
+## Where this lives in the repo
+
+```
+src/server/progress/
+  compute.ts   # recomputeProgress(enrollmentId) and the per-write incremental update
+  gate.ts      # gating checks used by chapter data loaders and the submit endpoint
+```
+
+## Related
+
+- Grading and submission flow that triggers recomputation: [`08-data-model.mdx`](08-data-model.mdx) §"Answer submission flow".
+- What the review queue does when a response later gets a "needs revision" verdict (does progress
+  un-complete?): see [`05-review-queue.mdx`](05-review-queue.mdx) — completion is based on
+  *submission*, not review outcome, so a needs-revision verdict does not revert `ChapterProgress`
+  to incomplete; it reopens the block for a new attempt while the chapter may already show complete.

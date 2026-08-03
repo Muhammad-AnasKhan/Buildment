@@ -1,0 +1,101 @@
+---
+title: "Checklist and learning log"
+module: 11
+lesson: 15
+summary: "Gate for Chapter 11 — Manage products API. Tick every box and answer the learning log on this page before continuing."
+---
+# 11.15 — Checklist and learning log
+> **[Gate]** · Chapter 11 — Manage products API
+
+This is the **gate** for Chapter 11. Tick every box honestly and answer the learning log below before opening Chapter 12.
+
+## Chapter 11 — Manage products API checklist (gate)
+
+Do **not** open Chapter 12 until every box is ticked and learning log answers are written below.
+
+### Products module
+
+- [ ] `products.routes.js`, `products.service.js`, `products.schema.js` exist
+- [ ] Router mounted; paths documented in README
+- [ ] `GET /vendor/products` registered before `/:id` if shared router
+- [ ] `assertProductOwner` (or equivalent) in shared ownership helpers
+
+### POST /api/products
+
+- [ ] Vendor + valid body → 201; `storeId` set server-side
+- [ ] Vendor without store → 404 (or documented alternative)
+- [ ] Customer → 403; no token → 401
+- [ ] Invalid body → 400
+- [ ] `storeId` in body ignored or rejected
+
+### GET /api/vendor/products
+
+- [ ] Returns only authenticated vendor's store products
+- [ ] Includes unpublished/draft products
+- [ ] Vendor B does not see Vendor A products
+- [ ] Customer → 403
+
+### PATCH /api/products/:id
+
+- [ ] Owner → 200; changes persist
+- [ ] Vendor B → **403**
+- [ ] `isPublished` toggle works via PATCH
+- [ ] `storeId` cannot change
+
+### DELETE /api/products/:id
+
+- [ ] Owner → 204 (or documented 200)
+- [ ] Vendor B → **403**
+- [ ] Product removed from list and Compass
+
+### Testing & docs
+
+- [ ] 11.13 test matrix executed — steps 5–6 are 403
+- [ ] `docs/AUTHORIZATION.md` includes product routes
+- [ ] Ch 9–10 gates still pass
+- [ ] Explain vendor vs public product views
+- [ ] Explain storeId resolution on POST
+- [ ] Explain product ownership check chain
+- [ ] Explain why cross-vendor PATCH is 403 not 404 (per course convention)
+- [ ] Explain how Ch 12 will list and publish products
+
+### Learning log — write now
+
+Answer **in your own words** in the fields below:
+
+1. **Create:** Trace POST /products to MongoDB document. How is storeId determined?
+
+2. **List:** How does GET /vendor/products scope results? Could Vendor B ever see A's products if query were wrong?
+
+3. **Isolation:** Paste status codes from PATCH and DELETE cross-vendor tests (11.13 steps 5–6).
+
+4. **Grocery fields:** Which domain fields did you validate? Give one example invalid payload → 400.
+
+5. **Publish:** How is draft vs published represented? Default on create?
+
+6. **Delete:** Hard or soft delete? Any cart/order caveats you noted?
+
+7. **Route design:** Exact paths for POST, GET list, PATCH, DELETE — why separate /vendor/products?
+
+8. **Chapter 12 preview:** What pages will call which endpoints? How will publish toggle work?
+
+
+## All boxes ticked?
+
+Mark this chapter complete in the platform, then continue to **Vendor dashboard** (Chapter 12).
+
+## Phase progress — Week 2
+
+| Demo target | After Ch 11 |
+|---|---|
+| Product API | ✓ |
+| Product UI in browser | Chapter 12 |
+| Product with photo | Chapter 13 |
+
+---
+
+## Final gate statement
+
+*"Vendor product CRUD works via API; cross-vendor PATCH and DELETE return 403; list scoped to own store. Ready for Chapter 12."*
+
+**Open Chapter 12 — Vendor dashboard.**

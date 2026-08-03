@@ -1,0 +1,134 @@
+---
+title: "Fake checkout trap"
+module: 19
+lesson: 2
+summary: "Chapter 18's `POST /checkout` creates orders, reduces stock, and clears the cart — **without checking whether anyone paid**. That was the right teaching order. It is **not** production."
+---
+# 19.2 — Fake checkout trap
+
+> **[Read]** · Chapter 19 — Payment processing · *Free checkout / charge-without-order failure modes*
+
+Chapter 18's `POST /checkout` creates orders, reduces stock, and clears the cart — **without checking whether anyone paid**. That was the right teaching order. It is **not** production.
+
+This sub-chapter names the trap **before** you wire Stripe in 19.9–19.14.
+
+## The bug in one sentence
+
+**Anyone with a customer JWT can empty your vendors' stock for free.**
+
+## How teams accidentally ship this
+
+| Step | What goes wrong |
+|---|---|
+| Build checkout API first (correct for learning) | Orders and stock work — demo feels "done" |
+| Defer payment to "Phase 2" | Phase 2 never ships; app stays free |
+| Trust client "paid" flag | `{ paid: true }` in JSON — trivial to forge |
+| Skip server-side Stripe verify | Attacker skips Stripe.js entirely; POST `/checkout` directly |
+| No webhook | Client closes tab after pay; order never created — angry customer **and** lost revenue |
+
+MongoDB does not know about money. Stripe does not create your orders. **Your server** must connect the two.
+
+## In plain English
+
+| Term | Simple meaning |
+|---|---|
+| **Fake checkout** | Order pipeline runs without payment verification |
+| **Trust boundary** | Anything from the browser is untrusted; server re-checks with Stripe |
+| **Revenue leak** | Stock goes down, fulfilment work happens, platform collects ₹0 |
+| **Double loss** | Free groceries **plus** oversell if retries duplicate orders |
+
+## Think of it like a self-service checkout with no scanner
+
+Customers bag items and walk out. The **receipt printer** (Chapter 18) works perfectly — split receipts, frozen prices, inventory down. Nobody watched the **till**.
+
+A mentor runs one curl:
+
+```bash
+curl -X POST http://localhost:5000/api/checkout \\
+  -H "Authorization: Bearer <customer-token>" \\
+  -d '{}'
+```
+
+If that still creates orders after Chapter 19, your payment gate failed.
+
+## What production requires
+
+| Requirement | Chapter 19 answer |
+|---|---|
+| Money collected before order commit | Verify Payment Intent `succeeded` before Ch 18 pipeline |
+| Amount matches cart | Compare Stripe `amount` to server-computed cart total |
+| Card data never on your server | Stripe.js + Payment Intents — PCI scope stays small |
+| Backup if client disconnects | `POST /webhooks/stripe` with signature verification |
+| Test without real charges | Test mode keys + `4242…` card only |
+
+## Grocery marketplace makes it worse
+
+| Scenario | Cost of fake checkout |
+|---|---|
+| Perishable stock decremented | Vendor throws away packed orders nobody paid for |
+| Multi-vendor split | **Every** stall loses inventory on one free POST |
+| Price snapshots on orders | Legal receipt says ₹400 owed — customer paid ₹0 |
+| Demo to investor | One curl destroys credibility |
+
+## The fix (preview — you build in 19.10–19.12)
+
+```
+Before (Chapter 18):
+  POST /checkout → orders
+
+After (Chapter 19):
+  POST /payments/intent → clientSecret
+  Stripe.js confirm
+  POST /checkout { paymentIntentId }
+    → retrieve PI from Stripe API
+    → status === 'succeeded' && amount OK
+    → then Chapter 18 pipeline
+```
+
+**Do not** delete the Chapter 18 pipeline. **Wrap** it.
+
+## UI consequence (Chapter 20)
+
+"Place order" must not call bare `POST /checkout`. Flow becomes:
+
+1. Create Payment Intent (server).
+2. Confirm payment (Stripe.js).
+3. Checkout with `paymentIntentId` (server).
+
+Chapter 20 builds the screens. Chapter 19 makes the API **honest**.
+
+## Common beginner questions
+
+**Q: Was Chapter 18 wasted?**  
+No. You tested the hardest commerce logic without payment noise. Professional teams often stub checkout, then add the gateway at a clear seam.
+
+**Q: Can I check payment in the browser only?**  
+No. Browser checks are UX; **server retrieve** is authority.
+
+**Q: What about cash on delivery?**  
+Different product decision — would skip Stripe but still need a `paymentStatus` enum. This course is card checkout via Stripe test mode.
+
+**Q: Is a webhook optional?**  
+For learning gate: **required**. It teaches signature verification and idempotency — standard in every Stripe integration.
+
+## ✅ Do / ❌ Don't
+
+**✅ Do:** Treat unpaid checkout as a **bug** after this chapter.
+
+**✅ Do:** Keep Chapter 18 tests — extend them with payment setup.
+
+**❌ Don't:** Add `{ paid: true }` to checkout body without Stripe verify.
+
+**❌ Don't:** Store card numbers in MongoDB "for later".
+
+## Self-check
+
+- [ ] I can explain fake checkout in one sentence
+- [ ] I know why server must call Stripe API, not trust client
+- [ ] I understand payment wraps Ch 18, not replaces it
+
+## Next
+
+**Sub-chapter 19.3:** What you'll build — endpoints, env vars, module tree.
+
+Blueprint before keys touch `.env`.

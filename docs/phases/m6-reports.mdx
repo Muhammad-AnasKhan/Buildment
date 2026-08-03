@@ -1,0 +1,51 @@
+---
+phase: M6
+title: Reports
+week: 7
+status: not started
+---
+
+# M6 — Reports
+
+**Demo:** Mentor sees which block confused the cohort.
+
+**Reads:** [`../06-reports.mdx`](../06-reports.mdx), [`../04-progress-and-gating.mdx`](../04-progress-and-gating.mdx)
+
+## Goal
+
+Turn the denormalized progress data accumulated since M2 into the three report surfaces mentors and
+mentees actually look at.
+
+## Tasks
+
+- [ ] `server/reports/chapter.ts` — completion rate, median time spent, drop-off point, per-block
+      table (attempts, correct rate, average score, pending reviews), **confusion flags** (correct
+      rate < 50% or average attempts > 2), per-mentee row.
+- [ ] `server/reports/course.ts` — cohort funnel (enrolled → started → % through → completed),
+      chapter-by-chapter completion curve, mentee table (% complete, average score, last active,
+      items awaiting review, at-risk flag), **at-risk rule** (no activity in 7 days, OR failed the
+      same test twice, OR >3 chapters behind cohort median), one-click nudge action.
+- [ ] `server/reports/mentee.ts` — progress ring, current chapter + next action, per-chapter
+      timeline with scores, all mentor feedback in one place, weak-area tags (`Block.tags`).
+- [ ] `(teach)/courses/[courseId]/reports/` — chapter report + course report UI.
+- [ ] Mentee-facing progress page reusing `server/reports/mentee.ts` (visible to both mentee and
+      mentor per [`../06-reports.mdx`](../06-reports.mdx)).
+- [ ] CSV export for any report table.
+- [ ] Per-mentee PDF summary export.
+
+## Out of scope for this phase
+
+- Any new data collection — this phase should read exclusively from `ChapterProgress`/`Enrollment`/
+  `Response`/`Review` as they exist after M2-M5. If a report needs a field that doesn't exist yet,
+  that's a small addition to the denormalized write path (see
+  [`../04-progress-and-gating.mdx`](../04-progress-and-gating.mdx)), not a new subsystem.
+- Assignment/invite flows (M7).
+
+## Acceptance criteria
+
+- Confusion flags correctly surface a block where a seeded cohort's correct rate is artificially
+  set below 50%.
+- At-risk rule correctly flags a seeded mentee matching any of the three conditions.
+- All three report queries run against denormalized tables only — verify by checking they don't
+  issue aggregate queries against `Response` directly (per the invariant in [`/AGENTS.md`](../../AGENTS.md)).
+- CSV export produces a correct file for at least the course report's mentee table.

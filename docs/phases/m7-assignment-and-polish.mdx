@@ -1,0 +1,50 @@
+---
+phase: M7
+title: Assignment + polish
+week: 8
+status: not started
+---
+
+# M7 — Assignment + polish
+
+**Demo:** End-to-end — create course, assign, learn, review, report.
+
+**Reads:** [`../00-product-overview.mdx`](../00-product-overview.mdx), [`../01-domain-model.mdx`](../01-domain-model.mdx) §Enrollment
+
+## Goal
+
+Close the loop from "mentor creates a course" to "mentee is assigned" and polish the rough edges
+left behind by M0-M6, which were deliberately scoped to defer UI polish.
+
+## Tasks
+
+- [ ] Assign by email + bulk assign (CSV or textarea of emails) — creates `Enrollment` rows,
+      `assignedById` set to the mentor.
+- [ ] Invite link — mentee self-enrolls via a course-scoped link; creates `Enrollment` the same way
+      as an assignment but without `assignedById`.
+- [ ] Course publish flow: `DRAFT` → `PUBLISHED` transition, warning shown if mentees are already
+      enrolled and the mentor edits a published course (per the "course editing while students are
+      mid-course" open question — v1 answer is a warning, not versioning; see
+      [`../11-decisions-and-open-questions.mdx`](../11-decisions-and-open-questions.mdx)).
+- [ ] Empty states for every list view built in M0-M6 (no courses yet, no reviews pending, no
+      reports data yet, etc.).
+- [ ] Mobile responsive pass across the reader, review queue, and reports (the spec targets
+      responsive web only — no native app work here).
+- [ ] Drag-reorder for chapters/modules in the course editor (stubbed as up/down controls since M1
+      — implement properly here).
+- [ ] Playwright E2E: full learner journey — mentor creates a course with at least one of each
+      block type, assigns a mentee, mentee completes the course including a review round-trip,
+      mentor pulls a report.
+- [ ] Confirm Sentry + PostHog are capturing real events across all the surfaces built since M0.
+
+## Out of scope for this phase
+
+- Anything in [`../10-deferred-v2.mdx`](../10-deferred-v2.mdx) — this is the last v1 phase, not the
+  start of v2.
+
+## Acceptance criteria
+
+- The Playwright E2E test in the task list passes end-to-end against a fresh seeded database.
+- A brand-new mentor account with zero courses sees sensible empty states, not blank/broken pages.
+- Editing a published course with active enrollments shows the mid-course-edit warning rather than
+  silently applying changes.

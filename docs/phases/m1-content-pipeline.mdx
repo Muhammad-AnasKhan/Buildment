@@ -1,0 +1,61 @@
+---
+phase: M1
+title: Content pipeline
+week: 2
+status: not started
+---
+
+# M1 — Content pipeline
+
+**Demo:** Write a chapter in the editor, read it as a mentee.
+
+**Reads:** [`../02-content-authoring.mdx`](../02-content-authoring.mdx), [`../09-security.mdx`](../09-security.mdx), [`../07-architecture.mdx`](../07-architecture.mdx)
+
+## Goal
+
+Get MDX from mentor keystrokes to a mentee's screen, safely, with no blocks yet. This is one of the
+three highest-risk phases (see [`../README.mdx`](../README.mdx)) — the editor and the reader are
+the product.
+
+## Tasks
+
+- [ ] Install `@mdxeditor/editor` and build the base authoring surface: `headingsPlugin`,
+      `listsPlugin`, `linkPlugin`, `quotePlugin`, `codeBlockPlugin` + `codeMirrorPlugin` for fenced
+      code, and `diffSourcePlugin` for the Rich Text / Source toggle. No custom block descriptors
+      yet — those come with each block type starting in M2.
+- [ ] Autosave: debounce `onChange` → server action writing `Chapter.source` as a draft. Explicit
+      "Publish" button, separate from autosave.
+- [ ] `mdx/compile.ts` — server-side compilation via `next-mdx-remote-client`, restricted config:
+      raw HTML disabled, no arbitrary imports. Writes `Chapter.compiled` + `Chapter.publishedAt` on
+      publish. Compilation happens **only** at publish time (see
+      [`../02-content-authoring.mdx`](../02-content-authoring.mdx) §"Rendering pipeline") — do not
+      compile on every keystroke or every read request.
+- [ ] `mdx/extract.ts` — parse the source for block `id`s (no block types registered yet, so this
+      is scaffolding: the diff/sync logic from
+      [`../02-content-authoring.mdx`](../02-content-authoring.mdx) §"Block extraction", ready for
+      M2 to plug real block types into).
+- [ ] `mdx/sanitize.ts` — stand up the sanitizer function and its required test now, even with an
+      empty registry, so M2 can't add a block type without also adding a passing sanitizer case
+      (see [`../09-security.mdx`](../09-security.mdx) §"The sanitizer contract").
+- [ ] `mdx/components.tsx` — the allowlisted component map for the reader route. Start with basic
+      Markdown elements only.
+- [ ] Reader route `(learn)/courses/[courseSlug]/[chapterSlug]/page.tsx` — renders
+      `Chapter.compiled` via the component map. No progress bar, no gating yet (M3).
+- [ ] Mentor chapter list + create/reorder (drag-reorder can be a stub — a simple up/down control is
+      fine for this phase; polish is M7).
+
+## Out of scope for this phase
+
+- Any of the six block types (M2, M3, M4, M5).
+- Progress, time tracking, gating (M3).
+- Review queue, reports (M4, M6).
+
+## Acceptance criteria
+
+- A mentor can write plain Markdown (headings, lists, code fences, links) in MDXEditor, autosave a
+  draft, and publish.
+- A mentee can open the published chapter and see correctly rendered content.
+- Attempting to render a component **not** in the allowlist fails safely (doesn't execute, doesn't
+  crash the page).
+- The sanitizer test from [`../09-security.mdx`](../09-security.mdx) exists and passes against an
+  empty registry.

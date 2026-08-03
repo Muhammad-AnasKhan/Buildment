@@ -1,0 +1,55 @@
+---
+phase: M3
+title: Progress and gating
+week: 4
+status: not started
+---
+
+# M3 — Progress and gating
+
+**Demo:** Get locked out of chapter 3 until the test is passed.
+
+**Reads:** [`../04-progress-and-gating.mdx`](../04-progress-and-gating.mdx), [`../03-blocks-registry.mdx`](../03-blocks-registry.mdx), [`../08-data-model.mdx`](../08-data-model.mdx)
+
+## Goal
+
+Make progress and gating real and server-enforced, and add the first blocking, timed, scored block
+type (`<Test>`).
+
+## Tasks
+
+- [ ] `server/progress/compute.ts` — implement `recomputeProgress(enrollmentId)` per
+      [`../04-progress-and-gating.mdx`](../04-progress-and-gating.mdx), called inside the same
+      transaction as every `Response` write (not as a separate async step).
+- [ ] `server/progress/gate.ts` — the gating check used by both the chapter data loader and the
+      submit endpoint: `sequentialChapters` (course-level) + per-block `blocking` (defaults:
+      `<Test>` blocking, everything else non-blocking).
+- [ ] Enforce gating **server-side** on the chapter route: a locked chapter's loader returns 403.
+      This is a load-bearing invariant (see [`/AGENTS.md`](../../AGENTS.md)) — do not implement
+      this as a client-side redirect only.
+- [ ] `src/blocks/test/` — full registry entry: `schema.ts` (`questions[]`, `passingScore`,
+      `timeLimitMinutes?`, `maxAttempts`, `shuffleQuestions`, `showAnswersAfter`), `grade.ts`
+      (server-side scoring, honest scoring of late submissions with a flag), `Component.tsx`
+      (one-question-at-a-time or all-at-once per mentor's config), `report.ts`, `editorDescriptor.tsx`.
+  - Timer: `Response`/attempt record carries `startedAt`; server computes elapsed time at submit.
+    Client-side timer is advisory UI only — never trust it for grading.
+- [ ] `POST /api/progress/heartbeat` — client sends every 15s while tab visible+focused; server
+      accumulates into `ChapterProgress.timeSpentSeconds`, capped per session.
+- [ ] Nightly `recomputeProgress` sweep via Vercel Cron, as the repair path for drift.
+
+## Out of scope for this phase
+
+- `<OpenQuestion>`, review queue (M4).
+- `<CodeBlock>` (M5).
+- Reports UI beyond what's needed to see progress move in the M2/M3 demos (full reports are M6).
+
+## Acceptance criteria
+
+- With `sequentialChapters` on, a mentee cannot open chapter 3's data route until chapter 2 shows
+  `COMPLETED` in `ChapterProgress` — verified by a direct request to the route, not just by hiding
+  the UI link.
+- A `<Test>` blocks chapter completion until `passingScore` is met, respects `maxAttempts`, and
+  scores a late submission honestly while flagging it.
+- Heartbeats visibly accumulate `timeSpentSeconds` and stop counting when the tab loses focus/visibility.
+- `recomputeProgress(enrollmentId)` run manually against a mutated `Response` history produces the
+  same `ChapterProgress`/`Enrollment` state as the live incremental updates did.

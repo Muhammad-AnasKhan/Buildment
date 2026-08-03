@@ -1,0 +1,97 @@
+---
+title: "Prime your thinking"
+module: 19
+lesson: 6
+summary: "Before scaffolding Stripe config and routes, read how Payment Intents and webhooks work in production. You will not paste Stripe's sample Express app wholesale — but you must understand **why** the flow is two-step (intent → confirm → verify) and **why** webhooks use raw bodies."
+---
+# 19.6 — Prime your thinking
+
+> **[Learn]** · Chapter 19 — Payment processing · *Mandatory read: Stripe Payment Intents*
+
+Before scaffolding Stripe config and routes, read how Payment Intents and webhooks work in production. You will not paste Stripe's sample Express app wholesale — but you must understand **why** the flow is two-step (intent → confirm → verify) and **why** webhooks use raw bodies.
+
+## Extra FAQ before the build cluster
+
+**Q: I'm overwhelmed — where do I start?**  
+Read 19.3 blueprint. Build in order: config (19.9) → intent route (19.10) → gated checkout (19.11) → webhook (19.12) → idempotency (19.13) → test (19.14). One sub-chapter per sitting.
+
+**Q: Payment Intents vs Charges API?**  
+Payment Intents are the **current** Stripe model — handles SCA, status lifecycle, client confirmation. Do not use legacy Charges API for new work.
+
+**Q: Why raw body on webhook route?**  
+Signature is computed over **exact bytes** Stripe sent. `express.json()` parses and re-serializes — signature verify fails. Mount `express.raw({ type: 'application/json' })` on webhook path only.
+
+**Q: Confirm on client or server?**  
+This course: **confirm with Stripe.js on client** (Ch 20 UI; you can test with Stripe CLI or API in 19.14). **Verify on server** before orders — always.
+
+## Mandatory read topics
+
+| Topic | Official doc area | Why for FreshMarket |
+|---|---|---|
+| Payment Intents API | [Stripe Payment Intents](https://stripe.com/docs/payments/payment-intents) | Entire checkout money flow |
+| Payment Intent lifecycle | Same doc — status states | Know when `succeeded` is safe for orders |
+| Stripe.js confirm | [Accept a payment](https://stripe.com/docs/payments/accept-a-payment) | Client step before `/checkout` |
+| Webhooks | [Stripe webhooks](https://stripe.com/docs/webhooks) | Backup + signature verification |
+| Test cards | [Testing](https://stripe.com/docs/testing) | Gate verification without live money |
+
+**Time box:** 60 minutes reading. Skim Dashboard while reading — open Payment Intents list in another tab.
+
+## Payment Intent lifecycle — what to remember
+
+Typical happy path:
+
+```
+requires_payment_method → requires_confirmation → processing → succeeded
+```
+
+Your server creates the Intent (`requires_payment_method`). Client confirms card. You only run order creation when status is **`succeeded`** — retrieved via server SDK, not from client JSON alone.
+
+Failed paths (`requires_payment_method`, `canceled`, `payment_failed`) must **not** create orders.
+
+## Webhooks — what to remember
+
+| Event | Your handler |
+|---|---|
+| `payment_intent.succeeded` | If orders missing for this PI, trigger checkout logic or mark audit log |
+| `payment_intent.payment_failed` | Log; return 200 — do not create orders |
+
+Stripe retries failed webhook delivery — handler must be **idempotent** (19.13).
+
+Respond **200 quickly**. Long MongoDB transactions inside webhook without idempotency → duplicate orders on retry.
+
+## Questions to answer after reading
+
+1. What is the difference between `clientSecret` and `paymentIntentId`?
+2. Why must checkout retrieve the Payment Intent from Stripe instead of trusting client status?
+3. Why does webhook verification need the raw request body?
+4. What happens if you return 500 from webhook and Stripe retries?
+5. How does test mode differ from live mode at the API level?
+
+Write answers in the chapter learning log on the platform
+
+## Connection to Chapter 18 idempotency (18.6)
+
+Chapter 18 documented double-click on bare checkout. Payment adds a **stronger** key: `paymentIntentId`. Same PI must not create two order sets — whether from double POST `/checkout` or webhook + checkout racing.
+
+## ✅ Do / ❌ Don't
+
+**✅ Do:** Read Payment Intents doc end-to-end once — not just the quickstart code block.
+
+**✅ Do:** Run `stripe listen` during 19.14 even if webhooks "work" without it — see real payloads.
+
+**❌ Don't:** Copy-paste Stripe's sample server into your repo without adapting to Ch 18 checkout pipeline.
+
+**❌ Don't:** Skip webhook reading because "I'll add it later".
+
+## Self-check
+
+- [ ] I read Payment Intents overview
+- [ ] I read webhooks + signature verification section
+- [ ] I can explain raw body requirement in one sentence
+- [ ] I know test card 4242… succeeds
+
+## Next
+
+**Sub-chapter 19.7:** Quiz — reserved.
+
+Continue to **19.8** to start the build cluster.

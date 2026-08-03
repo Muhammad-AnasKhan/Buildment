@@ -1,0 +1,29 @@
+---
+description: React component structure and patterns
+globs: **/*.tsx
+alwaysApply: false
+---
+
+# React component patterns
+
+- Functional components only.
+- Colocate a feature's pieces: a block type's `schema.ts`, `grade.ts`, `Component.tsx`, `report.ts`,
+  and `editorDescriptor.tsx` all live together in `src/blocks/<type>/` — don't scatter them by
+  "type of file" across the tree.
+- Extract a custom hook when stateful logic (e.g. heartbeat sending, autosave debouncing) is used
+  by more than one component.
+- Prefer composition over prop-drilling, especially for MDXEditor's `JsxComponentDescriptor`
+  editors — build small nested editor components rather than one giant props object.
+- Name components after what they render, not their file location (`QuizComponent`, not `Index`).
+
+```tsx
+// BAD — logic and markup for two concerns tangled together
+function ChapterPage() { /* fetch + heartbeat + render all inline */ }
+
+// GOOD
+function useHeartbeat(chapterId: string) { /* ... */ }
+function ChapterPage() {
+  useHeartbeat(chapterId);
+  return <ChapterReader ... />;
+}
+```

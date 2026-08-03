@@ -1,0 +1,60 @@
+---
+title: Reports
+status: draft v1
+---
+
+# Reports
+
+**Reads:** [`04-progress-and-gating.mdx`](04-progress-and-gating.mdx), [`05-review-queue.mdx`](05-review-queue.mdx)
+
+Three report surfaces. **All read from denormalized tables**; none run heavy aggregate queries on
+the read path (this is a load-bearing invariant — see [`/AGENTS.md`](../AGENTS.md)).
+
+## Chapter report (mentor, one chapter × whole cohort)
+
+Answers: *did this chapter work?*
+
+- Completion rate, median time spent, drop-off point (last block reached by those who abandoned).
+- Per-block table: attempts, correct rate, average score, pending reviews.
+- **Confusion flags** — blocks where correct rate < 50% or average attempts > 2. This is the
+  feature that makes the report actionable rather than decorative: it tells the mentor which
+  paragraph to rewrite.
+- Per-mentee row: status, score, time, outstanding items.
+
+## Course report (mentor, one course × whole cohort)
+
+Answers: *how is the cohort doing overall?*
+
+- Cohort funnel: enrolled → started → % through → completed.
+- Chapter-by-chapter completion curve (where people stall).
+- Mentee table (no leaderboard): name, % complete, average score, last active, items awaiting
+  review, at-risk flag.
+- **At-risk rule (v1):** no activity in 7 days, OR failed the same test twice, OR >3 chapters
+  behind the cohort median. Surfaced as a list the mentor can act on, with a one-click nudge.
+
+## Mentee report (visible to both mentee and mentor)
+
+Answers: *how am I doing?*
+
+- Progress ring, current chapter, next action.
+- Per-chapter timeline with scores.
+- All mentor feedback in one place — this is what a learner actually wants to re-read.
+- Weak areas: block topics/tags (`Block.tags`) with lowest scores.
+
+## Export
+
+CSV export of any report table, and a per-mentee PDF summary. Cheap to add, disproportionately
+asked for — don't skip it to save time in M6.
+
+## Implementation notes
+
+```
+src/server/reports/
+  chapter.ts   # reads ChapterProgress + Response aggregates precomputed at write time
+  course.ts    # reads Enrollment rollups
+  mentee.ts    # reads ChapterProgress + Review for one enrollment
+```
+
+If a report needs a number that isn't already in `ChapterProgress`/`Enrollment`, the fix is to add
+it to the denormalized write path in [`04-progress-and-gating.mdx`](04-progress-and-gating.mdx),
+not to query `Response` live from a report route.

@@ -1,0 +1,61 @@
+---
+phase: M5
+title: Code runner
+week: 6
+status: not started
+---
+
+# M5 — Code runner
+
+**Demo:** Run and pass a coding exercise inside a chapter.
+
+**Reads:** [`../03-blocks-registry.mdx`](../03-blocks-registry.mdx) §`<CodeBlock>`, [`../07-architecture.mdx`](../07-architecture.mdx) §"Code runner", [`../09-security.mdx`](../09-security.mdx)
+
+## Before you start this phase
+
+Confirm the runner decision in [`../11-decisions-and-open-questions.mdx`](../11-decisions-and-open-questions.mdx)
+still holds: **Pyodide (Python) + Sandpack (JS/TS)**, not WebContainers, because of WebContainers'
+commercial licensing requirement for production use. If that calculus has changed (e.g. a license
+was purchased), update the decision log before diverging from this phase's tasks.
+
+## Goal
+
+Runnable, sandboxed code inside a chapter, with three modes (`playground`, `checked`, `submit`),
+without any server-side execution.
+
+## Tasks
+
+- [ ] `src/blocks/code/` — full registry entry: `schema.ts` (`runtime`, `mode`, `starterFiles`,
+      `visibleTests`, `hiddenTests`, `timeoutMs`, `dependencies`), `grade.ts` (for `checked` mode:
+      validates the client-reported pass/fail shape, marks the result as **client-reported, not
+      authoritative** per [`../09-security.mdx`](../09-security.mdx)), `Component.tsx`,
+      `report.ts`, `editorDescriptor.tsx`.
+- [ ] Integrate Sandpack (`@codesandbox/sandpack-react`) for `runtime: node` — lazy-loaded per
+      chapter, not bundled globally.
+- [ ] Integrate Pyodide for `runtime: python` — lazy-loaded per chapter, WASM bundle cached.
+- [ ] CodeMirror 6 editor pane for source editing (MDXEditor's bundled CodeMirror integration can
+      likely be reused for the in-block editor — check before adding a second CodeMirror setup).
+- [ ] `playground` mode: run button, output pane, completion = ran once.
+- [ ] `checked` mode: mentor-authored visible + hidden tests run in the same client sandbox; result
+      posted to `POST /api/blocks/[blockId]/respond` as a `CODE` payload
+      (`checksPassed`/`checksTotal`) per [`../08-data-model.mdx`](../08-data-model.mdx); completion
+      = tests pass.
+- [ ] `submit` mode: source + output submitted to the review queue (M4), same flow as
+      `<OpenQuestion>`.
+- [ ] Reports: attempts, pass/fail, final source snapshot, time spent, all labeled in the UI as
+      client-reported where relevant (see [`../09-security.mdx`](../09-security.mdx)).
+- [ ] Cross-origin isolation for the sandbox iframe — no access to app cookies or parent DOM.
+
+## Out of scope for this phase
+
+- Server-side/tamper-proof execution — explicitly deferred (see [`../10-deferred-v2.mdx`](../10-deferred-v2.mdx)).
+- Any language beyond JS/TS and Python.
+- WebContainers integration of any kind, unless the licensing decision has been formally revisited.
+
+## Acceptance criteria
+
+- A mentee can run JS/TS code in-browser with no server round-trip for execution.
+- A mentee can run Python code in-browser via Pyodide with no server round-trip for execution.
+- `checked` mode correctly reflects pass/fail in progress, and the report clearly marks these
+  results as client-reported/trusted-by-design, not server-verified.
+- `submit` mode code lands in the same review queue built in M4 with syntax-highlighted rendering.

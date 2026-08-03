@@ -1,0 +1,213 @@
+---
+title: Data model
+status: draft v1 — source of truth until prisma/schema.prisma exists
+---
+
+# Data model
+
+**Reads:** [`01-domain-model.mdx`](01-domain-model.mdx), [`03-blocks-registry.mdx`](03-blocks-registry.mdx)
+
+> **This file is the source of truth for the schema until `prisma/schema.prisma` exists (M0).**
+> Once the real schema file exists, treat it as canonical — update this doc to match the schema
+> when they diverge, not the other way around. See [`/AGENTS.md`](../AGENTS.md).
+
+## Prisma schema
+
+```prisma
+enum Role            { MENTEE MENTOR ADMIN }
+enum CourseStatus    { DRAFT PUBLISHED ARCHIVED }
+enum EnrollStatus    { ASSIGNED IN_PROGRESS COMPLETED DROPPED }
+enum ProgressStatus  { NOT_STARTED IN_PROGRESS COMPLETED }
+enum BlockType       { QUIZ TEST MUST_READ OPEN_QUESTION CODE }
+enum ResponseStatus  { DRAFT SUBMITTED AUTO_GRADED PENDING_REVIEW REVIEWED NEEDS_REVISION }
+enum ReviewVerdict   { APPROVED NEEDS_REVISION }
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  image         String?
+  role          Role     @default(MENTEE)
+  createdAt     DateTime @default(now())
+  coursesOwned  Course[]     @relation("CourseMentor")
+  enrollments   Enrollment[]
+  responses     Response[]
+  reviewsGiven  Review[]     @relation("Reviewer")
+}
+
+model Course {
+  id            String       @id @default(cuid())
+  slug          String       @unique
+  title         String
+  description   String?
+  coverUrl      String?
+  projectGoal   String?      // "Build a multi-vendor marketplace"
+  difficulty    String?
+  estimatedHours Int?
+  status        CourseStatus @default(DRAFT)
+  sequential    Boolean      @default(true)
+  mentorId      String
+  mentor        User         @relation("CourseMentor", fields: [mentorId], references: [id])
+  modules       Module[]
+  chapters      Chapter[]
+  enrollments   Enrollment[]
+  publishedAt   DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  @@index([mentorId, status])
+}
+
+model Module {
+  id        String    @id @default(cuid())
+  courseId  String
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title     String
+  order     Int
+  chapters  Chapter[]
+  @@unique([courseId, order])
+}
+
+model Chapter {
+  id          String   @id @default(cuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  moduleId    String?
+  module      Module?  @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  slug        String
+  title       String
+  summary     String?
+  order       Int
+  source      String   @db.Text        // raw MDX (draft)
+  compiled    String?  @db.Text        // compiled MDX at publish
+  publishedAt DateTime?
+  isMilestone Boolean  @default(false)
+  blocks      Block[]
+  progress    ChapterProgress[]
+  @@unique([courseId, slug])
+  @@index([courseId, order])
+}
+
+model Block {
+  id          String    @id            // ULID authored into the MDX
+  chapterId   String
+  chapter     Chapter   @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  type        BlockType
+  order       Int
+  version     Int       @default(1)
+  required    Boolean   @default(true)
+  blocking    Boolean   @default(false)
+  points      Int       @default(1)
+  config      Json                     // answers, rubric, tests — SERVER ONLY
+  tags        String[]                 // for weak-area reporting
+  archivedAt  DateTime?
+  responses   Response[]
+  @@index([chapterId, order])
+}
+
+model Enrollment {
+  id                String       @id @default(cuid())
+  courseId          String
+  course            Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status            EnrollStatus @default(ASSIGNED)
+  assignedById      String?
+  percentComplete   Int          @default(0)
+  chaptersCompleted Int          @default(0)
+  totalScore        Int          @default(0)
+  maxScore          Int          @default(0)
+  lastActiveAt      DateTime?
+  startedAt         DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime     @default(now())
+  chapterProgress   ChapterProgress[]
+  @@unique([courseId, userId])
+  @@index([userId, status])
+}
+
+model ChapterProgress {
+  id              String         @id @default(cuid())
+  enrollmentId    String
+  enrollment      Enrollment     @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  chapterId       String
+  chapter         Chapter        @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  status          ProgressStatus @default(NOT_STARTED)
+  blocksCompleted Int            @default(0)
+  blocksTotal     Int            @default(0)
+  score           Int            @default(0)
+  maxScore        Int            @default(0)
+  timeSpentSeconds Int           @default(0)
+  startedAt       DateTime?
+  completedAt     DateTime?
+  @@unique([enrollmentId, chapterId])
+  @@index([chapterId, status])
+}
+
+model Response {
+  id           String         @id @default(cuid())
+  blockId      String
+  block        Block          @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollmentId String
+  attempt      Int            @default(1)
+  status       ResponseStatus @default(SUBMITTED)
+  payload      Json           // shape depends on block type
+  score        Int?
+  maxScore     Int?
+  isCorrect    Boolean?
+  durationMs   Int?
+  startedAt    DateTime?
+  submittedAt  DateTime       @default(now())
+  review       Review?
+  @@index([blockId, userId, attempt])
+  @@index([enrollmentId])
+  @@index([status])            // drives the review queue
+}
+
+model Review {
+  id         String        @id @default(cuid())
+  responseId String        @unique
+  response   Response      @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  reviewerId String
+  reviewer   User          @relation("Reviewer", fields: [reviewerId], references: [id])
+  score      Int?
+  feedback   String        @db.Text
+  verdict    ReviewVerdict
+  createdAt  DateTime      @default(now())
+}
+```
+
+Auth.js v5 additionally requires its standard `Account`, `Session`, and `VerificationToken` models
+via `@auth/prisma-adapter` — add those in M0 alongside `User` (see
+[`phases/m0-foundation.mdx`](phases/m0-foundation.mdx)); they're omitted above since they're
+boilerplate from the adapter's own docs, not domain-specific.
+
+## Response payload shapes
+
+```ts
+type ResponsePayload =
+  | { type: 'QUIZ';          selected: string[] }
+  | { type: 'TEST';          answers: Record<string, string[]>; startedAt: string }
+  | { type: 'MUST_READ';     acknowledged: true; openedAt?: string; note?: string }
+  | { type: 'OPEN_QUESTION'; text: string; wordCount: number }
+  | { type: 'CODE';          files: Record<string,string>; stdout?: string;
+                             checksPassed?: number; checksTotal?: number; ranAt: string }
+```
+
+## Answer submission flow
+
+1. Client `POST`s to `/api/blocks/[blockId]/respond` with a typed payload.
+2. Server: authenticate → verify enrollment → verify block belongs to an accessible chapter →
+   verify gating allows it (see [`04-progress-and-gating.mdx`](04-progress-and-gating.mdx)) →
+   verify attempt limits.
+3. Look up `Block.config` (server-only) and run the type's grader from the registry (see
+   [`03-blocks-registry.mdx`](03-blocks-registry.mdx)).
+4. In **one transaction**: insert `Response`, upsert `ChapterProgress`, recompute `Enrollment`
+   rollup, enqueue a review row if the type needs one.
+5. Return the sanitized result: score, correctness, explanation (if the block reveals it), and
+   updated progress.
+
+**Never** send `Block.config` to the client. The sanitizer in `mdx/sanitize.ts` produces the client
+projection and must be covered by a test that fails if a `correct`, `rubric`, `sampleAnswer`, or
+`hiddenTests` key ever reaches the client payload — see [`09-security.mdx`](09-security.mdx).

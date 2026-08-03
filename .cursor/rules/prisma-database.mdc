@@ -1,0 +1,20 @@
+---
+description: Prisma schema and database conventions
+globs: prisma/**,src/server/**
+alwaysApply: false
+---
+
+# Prisma / database conventions
+
+- IDs: `String @id @default(cuid())` unless a field must be human-authored (e.g. `Block.id`, which
+  is a ULID authored into the MDX source — see `docs/02-content-authoring.mdx`).
+- Field naming: camelCase in the schema, matching the TypeScript conventions everywhere else.
+- Add `@@index` on any column used to filter or sort in a hot path (report queries, the review
+  queue's `Response.status` index, etc.) — check `docs/08-data-model.mdx` for the indexes already
+  called out before adding new ones ad hoc.
+- Use `prisma migrate dev` for schema changes once the schema is shared across a team, not
+  `prisma db push`.
+- `docs/08-data-model.mdx` must be updated to match `schema.prisma` in the same change whenever
+  they diverge — it's documentation, not a second source of truth to maintain separately.
+- Any write to `Response` must happen in the same transaction as the corresponding
+  `ChapterProgress`/`Enrollment` rollup update — never split these across separate requests.

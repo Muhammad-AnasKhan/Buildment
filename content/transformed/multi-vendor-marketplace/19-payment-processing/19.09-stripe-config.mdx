@@ -1,0 +1,97 @@
+---
+title: "Stripe config"
+module: 19
+lesson: 9
+summary: "**Why this step matters:** Every payment and webhook route shares one Stripe SDK client configured from env — duplicate `new Stripe(...)` calls scatter key handling and make test/live mistakes easier."
+---
+# 19.9 — Stripe config
+
+> **[Build]** · Chapter 19 — Payment processing · *Env vars; Stripe SDK module*
+
+**Why this step matters:** Every payment and webhook route shares one Stripe SDK client configured from env — duplicate `new Stripe(...)` calls scatter key handling and make test/live mistakes easier.
+
+**Where the project is now:** Chapter 18 checkout works; no Stripe dependency in `package.json`; config validates MongoDB only.
+
+**After this step:** `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` validated in config; `shared/stripe.js` exports a configured Stripe client for server routes.
+
+## Env contract
+
+Add to `server/.env.example`:
+
+```bash
+STRIPE_SECRET_KEY=sk_test_replace_me
+STRIPE_WEBHOOK_SECRET=whsec_replace_me
+```
+
+Add to `client/.env.example` (used in Ch 20):
+
+```bash
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_replace_me
+```
+
+Extend `server/src/shared/config.js`:
+
+| Variable | Required at boot? | Notes |
+|---|---|---|
+| `STRIPE_SECRET_KEY` | Yes for Ch 19 gate | Must start with `sk_test_` in course |
+| `STRIPE_WEBHOOK_SECRET` | Yes when testing webhooks | From `stripe listen` locally |
+
+Fail fast with clear error if secret key missing — same pattern as `MONGODB_URI` from Chapter 4.
+
+## Install dependency
+
+Add official Stripe Node SDK to server `package.json` — use current major version from [Stripe Node docs](https://stripe.com/docs/api/node).
+
+Document pinned version in README.
+
+## Step — Create `server/src/shared/stripe.js`
+
+**Exports (spec — you implement):**
+
+| Export | Purpose |
+|---|---|
+| `getStripe()` | Returns singleton Stripe client constructed with `config.stripeSecretKey` |
+| Optional `assertTestModeKey()` | Dev-only guard: throw or warn if key does not start with `sk_test_` |
+
+**Rules:**
+
+- Read secret **only** from config — never `process.env` scattered in routes.
+- Set `apiVersion` explicitly if your Stripe account recommends pinning — document in README.
+- No network calls in this file — construction only.
+
+## Boot wiring
+
+No Stripe connect on boot required — SDK is stateless HTTP. Import `getStripe()` inside payment/checkout/webhook handlers when needed.
+
+Optional: call `assertTestModeKey()` once in `server.js` after config load in development.
+
+## Commit
+
+```bash
+git add server/src/shared/stripe.js server/src/shared/config.js \\
+  server/.env.example client/.env.example server/package.json
+git commit -m "feat(server): add stripe config and shared client module"
+```
+
+## ✅ Do / ❌ Don't
+
+**✅ Do:** Keep real keys in `.env` only — placeholders in `.env.example`.
+
+**✅ Do:** Reject or warn on `sk_live_` during course development.
+
+**❌ Don't:** Import Stripe secret in client code or Vite bundle.
+
+**❌ Don't:** Log full secret key — log `sk_test_…` prefix at most.
+
+## Verify checklist
+
+- [ ] Server boots with valid `STRIPE_SECRET_KEY` in `.env`
+- [ ] Server fails clearly if key missing
+- [ ] `getStripe()` importable from a scratch script or route without throw
+- [ ] `.env.example` updated; `.env` still gitignored
+
+## Next
+
+**Sub-chapter 19.10:** Payment Intent route — `POST /payments/intent` from cart total.
+
+Create intents before checkout can require them.

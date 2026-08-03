@@ -1,0 +1,129 @@
+---
+title: "The product and its people"
+module: 1
+lesson: 3
+summary: "Before you meet the vendors and customers, meet the **product** — the thing you're building, described the way a user would experience it."
+---
+# 1.3 — The product and its people
+
+> **[Read]** · Chapter 01 — Introduction · *Product narrative first; then vendor & customer actors*
+
+Before you meet the vendors and customers, meet the **product** — the thing you're building, described the way a user would experience it, not the way a system diagram would decompose it.
+
+Imagine a Saturday morning. Someone opens your app on their phone. They're buying from **every local shop in the neighbourhood**, in one session — rice from Ali's Grocer, coriander from Green Valley Farm, oil from The Pantry. One cart. One checkout. Behind that button, your platform splits the purchase into **three separate orders**, notifies each shop, and locks the prices on each receipt.
+
+## The product in one sentence
+
+**A local grocery marketplace where independent shops sell through one platform, customers shop across all of them in a single cart and checkout, and every vendor sees only their own business.**
+
+Name it yourself. The course cares about behaviour and structure, not your exact shade of green.
+
+## Why "local grocery" is a deliberate choice
+
+**Units matter** — kg, pieces, litres. **Stock can be decimal.** **Perishables** are a first-class flag. **Photos are load-bearing.** **Multi-vendor cart** is the architectural heart. If you swapped "grocery" for "generic goods" and nothing in the schema changed, the domain would be a label, not a design force.
+
+## The two actors
+
+### The vendor — a local shop owner
+
+Independent seller using your marketplace. They register, open **one store**, manage **their own products**, upload photos, and see **only their orders**. They must never view or edit another vendor's data.
+
+### The customer — a shopper
+
+They browse the full catalogue, search and filter, add items from **multiple vendors** to **one cart**, check out once, and see order history with **frozen prices**.
+
+## There is no platform admin in this course
+
+Admin panels are **out of scope**. The course focuses on vendor isolation and customer commerce — where the hard engineering lives.
+
+## How the two actors meet — the core flows
+
+### Flow 1 — Vendor onboarding
+
+```mermaid
+flowchart TD
+  A[Register as vendor] --> B[Verify email OTP]
+  B --> C[Log in]
+  C --> D{Store exists?}
+  D -->|No| E[Open your shop]
+  D -->|Yes| F[Manage products]
+  E --> F
+  F --> G[Publish listings]
+  G --> H[Receive orders]
+```
+
+### Flow 2 — Customer purchase
+
+```mermaid
+flowchart TD
+  A[Register as customer] --> B[Log in]
+  B --> C[Browse catalogue]
+  C --> D[Add items from multiple stores]
+  D --> E[Review cart grouped by store]
+  E --> F[Checkout once]
+  F --> G[Platform splits into per-vendor orders]
+  G --> H[Customer history + vendor dashboards]
+```
+
+### Flow 3 — Price change after purchase
+
+1. Customer bought 1 kg rice at **₹80** last Tuesday
+2. Vendor updates rice to **₹95** this Monday
+3. Customer opens order history
+
+**Correct:** Order history still shows **₹80** — snapshotted at checkout.
+
+**Wrong:** Order history shows **₹95** — order line only stored `productId`.
+
+## Roles — one account, one role
+
+| Action | Customer | Vendor |
+|---|---|---|
+| Browse public catalogue | ✓ | ✓ |
+| Manage own cart & checkout | ✓ | ✓ |
+| Create / edit products | ✗ | ✓ (own only) |
+| Open a store | ✗ | ✓ (one store) |
+| View vendor order dashboard | ✗ | ✓ (own orders only) |
+
+**Authentication** = who is calling. **Authorization** = what they're allowed to do.
+
+## The ownership chain — preview
+
+```mermaid
+flowchart TD
+  V[User vendor] --> S[Store]
+  S --> P[Product]
+  P --> C[CartItem]
+  P --> O[OrderItem snapshot at checkout]
+  CU[User customer] --> C
+  CU --> OR[Order per vendor]
+```
+
+## Grocery-specific product shape — preview
+
+| Field | Example | Why |
+|---|---|---|
+| `unit` | kg / piece | Grocery sells by measure |
+| `stockQty` | 45.5 | Decimal stock |
+| `isPerishable` | true/false | Domain flag |
+| `imageUrl` | Cloudinary URL | Photo, not blob |
+| `storeId` | ref → Store | Ownership |
+
+## What the product is not
+
+Not a delivery tracker, review site, chat app, or admin SaaS. Those exclusions keep four weeks focused on **identity, isolation, catalogue, cart, checkout, deploy**.
+
+## Picture the finished demo
+
+**Minute one — vendor:** Log in → create product with photo → see it in the table.
+
+**Minute two — customer:** Browse → add from two vendors → checkout → two orders → change vendor price → customer history unchanged.
+
+## Key ideas from this page
+
+- **Local grocery marketplace** — one cart, many vendors, split checkout
+- **Two actors:** vendor (back office) and customer (shop front)
+- **Ownership chain:** User → Store → Product → Cart / Order
+- **Price snapshots** protect order history
+
+Next: the explicit scope list — what's in, what's out.

@@ -1,0 +1,160 @@
+---
+title: Technical architecture
+status: draft v1 — updated 2026-08-03 with editor/runner/auth research
+---
+
+# Technical architecture
+
+**Reads:** [`02-content-authoring.mdx`](02-content-authoring.mdx), [`03-blocks-registry.mdx`](03-blocks-registry.mdx)
+
+## Stack
+
+- **Framework:** Next.js 15 (App Router), TypeScript strict, React Server Components by default.
+- **DB:** Postgres (Supabase or Neon). **ORM:** Prisma.
+- **Auth:** Auth.js v5 (formerly NextAuth) with email magic link + Google. Session in DB. See
+  "Auth.js v5 status" below.
+- **Styling:** Tailwind CSS + shadcn/ui (built on Base UI primitives as of the current shadcn/ui
+  release — the original spec assumed Radix; shadcn switched its primitive layer since then. Use
+  the `render` prop for polymorphism, e.g. `buttonVariants()` applied to a `<Link>`, not `asChild`).
+- **Content:** MDX authored via **MDXEditor** (see [`02-content-authoring.mdx`](02-content-authoring.mdx)),
+  rendered via `next-mdx-remote-client` (see below), compiled server-side at publish.
+- **Validation:** Zod, shared between client forms and server actions.
+- **Code sandbox (v1):** **Pyodide** (Python) + **Sandpack** (JS/TS), loaded lazily per chapter. See
+  "Code runner" below — this replaces the original WebContainers plan.
+- **Editor:** MDXEditor (Lexical) for MDX authoring; MDXEditor's bundled CodeMirror 6 integration
+  for fenced-code editing inside blocks.
+- **Background jobs:** Vercel Cron for nightly `recomputeProgress` sweep; a queue is deferred (see
+  [`10-deferred-v2.mdx`](10-deferred-v2.mdx)).
+- **Email:** Resend (invites, review notifications, nudges).
+- **File storage:** S3-compatible (Supabase Storage / R2) for course covers and attachments.
+- **Analytics/errors:** PostHog + Sentry.
+- **Testing:** Vitest (unit — graders, progress math), Playwright (E2E — the learner flow end to end).
+- **Hosting:** Vercel.
+
+## Why this stack
+
+One repo, one deploy, server-side grading in the same codebase as the UI, and a strong MDX story.
+Prisma keeps report queries typed and readable. The whole thing is deployable by one person on a
+free tier and scales to thousands of learners before anything needs rethinking.
+
+## Research-driven decisions (2026-08-03)
+
+### MDX rendering: `next-mdx-remote-client`, not `next-mdx-remote`
+
+`next-mdx-remote` (HashiCorp) is **archived and unmaintained**. Its actively-maintained fork,
+`next-mdx-remote-client`, is the library the Next.js docs themselves now point to for remote MDX in
+the App Router. Use `next-mdx-remote-client/rsc` for the server-rendered reader route. Requires
+React 19.1+ and Next 15+/16 (confirmed compatible), which lines up with the rest of the stack.
+
+### Content editor: MDXEditor (Lexical), not a bare CodeMirror split pane
+
+See the full rationale in [`02-content-authoring.mdx`](02-content-authoring.mdx). Short version:
+MDXEditor gives per-block-type structured editors (via `jsxPlugin` + `JsxComponentDescriptor`) plus
+a built-in rich/diff/source toggle (`diffSourcePlugin`), which covers both non-technical mentors
+and raw-MDX power users / LLM-drafted content in one library, and keeps the "one registry entry per
+block type" principle intact end-to-end (schema → grader → learner component → report → **editor
+UI**, all in one folder per block type).
+
+### Code runner: Pyodide + Sandpack for v1, not WebContainers
+
+The spec's original plan (WebConterless Node runtime) has a real licensing problem:
+
+- **StackBlitz's WebContainers API requires a paid commercial license for any for-profit production
+  use.** Prototypes and open-source projects are free; a production SaaS is not. Pricing is
+  quote-based (no published tiers) — you'd need to talk to their sales team before committing to it
+  as v1 infrastructure.
+- This directly conflicts with the spec's own stated rationale for client-side execution ("zero
+  server compute, zero sandbox-escape risk to our infra") — that rationale doesn't automatically
+  extend to "zero cost," and WebContainers' cost is opaque until you ask.
+
+**v1 decision:** use **Pyodide** (Python — fully open-source, WASM, no licensing) for the Python
+runtime, and **Sandpack** (`@codesandbox/sandpack-react`, MIT-licensed bundler) for the JavaScript/
+TypeScript runtime, instead of WebContainers. Both still run **in the learner's browser tab**, so
+the "zero server compute" property is preserved. The only thing that changes is which library
+provides the sandboxed execution environment.
+
+This does **not** require a redesign: the spec already isolated this decision behind
+`Block.config.runtime` and the `mode: playground | checked | submit` contract (see
+[`03-blocks-registry.mdx`](03-blocks-registry.mdx)). Swapping in WebContainers later — once there's
+revenue to justify the license, or if Node-specific features (native npm packages, filesystem APIs)
+become a hard requirement — is a runner-module swap, not a schema or grading-flow change.
+
+### Auth.js v5 status
+
+Confirmed stable and production-ready. One thing worth flagging: Auth.js v5 is now maintained by
+the **Better Auth** team in a security-fix-only capacity — no new features are planned for Auth.js
+itself, and the team's own guidance is that new projects consider Better Auth instead. For v1, stick
+with Auth.js v5 as specified (it fully supports magic link + Google + Prisma adapter + DB sessions,
+which is all v1 needs), but treat **migrating to Better Auth** as a reasonable v2 candidate rather
+than a hard commitment — see [`11-decisions-and-open-questions.mdx`](11-decisions-and-open-questions.mdx).
+
+Implementation note: Prisma depends on Node.js APIs unavailable in the Edge runtime, so Auth.js
+config must be split into `auth.config.ts` (edge-safe, used in middleware) and `auth.ts` (adapter +
+full config, used everywhere else) — this is a hard requirement on Vercel, not an optional pattern.
+
+## Repository layout
+
+```
+buildment/
+├─ AGENTS.md
+├─ docs/
+│  ├─ README.mdx
+│  ├─ 00-product-overview.mdx ... 11-decisions-and-open-questions.mdx
+│  └─ phases/
+├─ prisma/
+│  ├─ schema.prisma
+│  └─ seed.ts
+├─ src/
+│  ├─ app/
+│  │  ├─ (marketing)/                 # landing, pricing later
+│  │  ├─ (auth)/login, /verify
+│  │  ├─ (learn)/                     # MENTEE surfaces
+│  │  │  ├─ dashboard/
+│  │  │  ├─ courses/[courseSlug]/
+│  │  │  │  ├─ page.tsx               # course overview / syllabus
+│  │  │  │  └─ [chapterSlug]/page.tsx # the reader — the core screen
+│  │  │  └─ progress/
+│  │  ├─ (teach)/                     # MENTOR surfaces
+│  │  │  ├─ courses/[courseSlug]/     # same param name as (learn) — Next.js requires one
+│  │  │  │  │                         # dynamic-segment name per URL position across the whole
+│  │  │  │  │                         # app, route groups notwithstanding
+│  │  │  │  ├─ edit/                  # course settings
+│  │  │  │  ├─ chapters/[chapterId]/edit/   # MDX editor
+│  │  │  │  ├─ mentees/               # assign + manage
+│  │  │  │  └─ reports/               # course + chapter reports
+│  │  │  └─ review/                   # the review queue
+│  │  ├─ (admin)/
+│  │  └─ api/
+│  │     ├─ blocks/[blockId]/respond/route.ts
+│  │     ├─ progress/heartbeat/route.ts
+│  │     └─ webhooks/
+│  ├─ blocks/                         # THE BLOCK REGISTRY — see 03-blocks-registry.mdx
+│  │  ├─ registry.ts
+│  │  ├─ quiz/{schema,grade,Component,report,editorDescriptor}.ts(x)
+│  │  ├─ test/
+│  │  ├─ must-read/
+│  │  ├─ open-question/
+│  │  ├─ code/
+│  │  └─ presentation/                # Callout, Steps, Diagram
+│  ├─ mdx/
+│  │  ├─ compile.ts                   # server-side MDX -> compiled (next-mdx-remote-client)
+│  │  ├─ extract.ts                   # source -> block metadata
+│  │  ├─ sanitize.ts                  # strip answers for client
+│  │  └─ components.tsx               # allowlisted component map
+│  ├─ server/
+│  │  ├─ auth/                        # auth.config.ts, auth.ts, guards.ts
+│  │  ├─ db.ts
+│  │  ├─ progress/{compute,gate}.ts
+│  │  ├─ reports/{chapter,course,mentee}.ts
+│  │  └─ actions/                     # server actions
+│  ├─ components/ui/                  # shadcn
+│  └─ lib/
+├─ e2e/
+└─ tests/
+```
+
+## Related
+
+- Prisma schema and payload shapes: [`08-data-model.mdx`](08-data-model.mdx).
+- Security boundaries this architecture must uphold: [`09-security.mdx`](09-security.mdx).
+- What's deliberately not built yet: [`10-deferred-v2.mdx`](10-deferred-v2.mdx).

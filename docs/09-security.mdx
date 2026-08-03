@@ -1,0 +1,47 @@
+---
+title: Security and integrity
+status: draft v1
+---
+
+# Security and integrity
+
+**Reads:** [`03-blocks-registry.mdx`](03-blocks-registry.mdx), [`08-data-model.mdx`](08-data-model.mdx)
+
+- **Answers server-side only.** Correct answers, rubrics, hidden tests never leave the server.
+  Enforced by the sanitizer (`mdx/sanitize.ts`) + a test that fails if a `correct`, `rubric`,
+  `sampleAnswer`, or `hiddenTests` key ever reaches a client payload.
+- **Grading server-side only** for quiz/test. Client-reported code-check results are trusted by
+  design and labeled as such in reports — see [`03-blocks-registry.mdx`](03-blocks-registry.mdx)
+  §`<CodeBlock>`.
+- **Authorization on every route:** mentors can only touch their own courses; mentees only
+  enrolled ones. Centralized in `server/auth/guards.ts` — no ad-hoc checks in route handlers.
+- **Gating enforced server-side** — a locked chapter returns 403 from its data loader, not just a
+  hidden link. See [`04-progress-and-gating.mdx`](04-progress-and-gating.mdx).
+- **MDX is untrusted author input:** raw HTML disabled, component allowlist, no arbitrary imports,
+  compiled in a restricted config. Mentors are semi-trusted, but a compromised mentor account must
+  not become XSS against every student. See [`02-content-authoring.mdx`](02-content-authoring.mdx)
+  §"Rendering pipeline".
+- **Rate limits** on submit endpoints (per user, per block) to stop brute-forcing MCQ answers;
+  combine with `maxAttempts`.
+- **Code sandbox** runs in the browser inside a cross-origin-isolated iframe (Sandpack for JS/TS,
+  Pyodide's own WASM isolation for Python — see [`07-architecture.mdx`](07-architecture.mdx)); no
+  access to app cookies or the parent DOM.
+- **PII:** mentee answers are course-scoped; only the owning mentor and admins can read them.
+  Deleting a user cascades responses (`onDelete: Cascade` throughout — see
+  [`08-data-model.mdx`](08-data-model.mdx)).
+
+## The sanitizer contract (required test)
+
+`mdx/sanitize.ts` is the single choke point between `Block.config` (server) and what the reader
+route sends to the client. Any new block type's config schema must be run through this test before
+it ships:
+
+```
+Given any Block.config for any registered block type,
+sanitize(config) must never include keys: correct, correctOptionIds, rubric, sampleAnswer, hiddenTests
+```
+
+This should be a property-style test over the Zod schemas in the registry (see
+[`03-blocks-registry.mdx`](03-blocks-registry.mdx)), not a hand-maintained list of block types —
+so a new block type fails this test by default until its sanitizer projection is written, rather
+than silently leaking config.

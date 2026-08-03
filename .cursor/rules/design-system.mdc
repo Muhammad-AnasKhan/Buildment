@@ -1,0 +1,30 @@
+---
+description: Tailwind + shadcn/ui design system conventions
+globs: src/components/**,**/*.tsx
+alwaysApply: false
+---
+
+# Design system conventions
+
+- Check `src/components/ui/` (shadcn primitives) before writing custom markup for something
+  standard (buttons, dialogs, dropdowns, form fields). Add a missing primitive via the shadcn CLI
+  rather than hand-rolling it.
+- Use Tailwind's design tokens / CSS variables (`bg-background`, `text-muted-foreground`, etc.), not
+  inline hex colors — this is what makes dark mode work for free.
+- Icons: `lucide-react` exclusively, for consistency.
+- Every interactive element must be keyboard-accessible. Base UI primitives (which shadcn wraps in
+  this project) handle most of this already — don't bypass them with raw `<div onClick>`.
+- shadcn/ui components here are built on Base UI, not Radix — polymorphism uses the `render` prop
+  (e.g. `buttonVariants()` applied directly to a `<Link>`), not an `asChild` prop.
+- Build with dark mode in mind from the start (use theme tokens), even before a toggle exists in
+  the UI.
+- Keep the palette neutral/zinc per the current design direction — don't introduce a new accent
+  color without checking with the product owner first.
+
+```tsx
+// BAD
+<div style={{ color: '#71717a' }} onClick={submit}>Submit</div>
+
+// GOOD
+<Button variant="secondary" onClick={submit}>Submit</Button>
+```

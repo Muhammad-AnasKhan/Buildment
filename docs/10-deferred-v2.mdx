@@ -1,0 +1,34 @@
+---
+title: Deliberately deferred (v2+)
+status: draft v1
+---
+
+# Deliberately deferred (v2+)
+
+**Reads:** none — reference doc, consult when scoping any phase to keep it from creeping.
+
+Listed so v1 gets built without painting into a corner. If a phase task starts to look like one of
+these, stop and check [`phases/`](phases/) — it's probably out of scope for the current milestone.
+
+- **Server-side code execution** (Docker/Firecracker or E2B, or a paid WebContainers license) for
+  tamper-proof grading and more languages. The `Block.config.runtime` field and `mode: checked`
+  contract (see [`03-blocks-registry.mdx`](03-blocks-registry.mdx)) are designed so this is a
+  runner swap, not a redesign — see [`07-architecture.mdx`](07-architecture.mdx) for why v1 uses
+  Pyodide + Sandpack instead.
+- **Cohorts, deadlines, scheduled drip release, email nudges.** `Enrollment` already carries the
+  fields a cohort would group on; add a `Cohort` model later.
+- **Notifications** beyond in-app + transactional email.
+- **AI-assisted review** — draft feedback on open answers for the mentor to edit. The `Review`
+  model already separates score/feedback/verdict, so an AI draft is just a pre-filled form. See
+  [`05-review-queue.mdx`](05-review-queue.mdx) §"Mentor capacity".
+- **Git import/export of MDX bundles.**
+- **Real project submissions** (repo links, deployed URLs, peer review).
+- **Public catalog, payments, certificates, analytics for learners.**
+- **Versioned course releases** so editing a live course doesn't affect in-flight learners. See the
+  open question in [`11-decisions-and-open-questions.mdx`](11-decisions-and-open-questions.mdx).
+- **Multi-mentor courses / TAs.** `Review.reviewerId` is already independent of `Course.mentorId`
+  (see [`08-data-model.mdx`](08-data-model.mdx)), so this is an access-control change only when it
+  happens.
+- **Migrating Auth.js v5 → Better Auth.** Not required for v1 (Auth.js v5 is stable), but Auth.js is
+  now in security-fix-only maintenance — worth revisiting once v1 ships. See
+  [`07-architecture.mdx`](07-architecture.mdx) §"Auth.js v5 status".

@@ -1,0 +1,139 @@
+---
+title: "Scaffold models folder"
+module: 5
+lesson: 9
+summary: "**Why this step matters:** Model files belong inside feature modules — `users/`, `stores/`, `products/` — not a global `models/` junk drawer. This step creates the exact paths Chapter 5 sub-chapters fill one schema at a time."
+---
+# 5.9 — Scaffold models folder
+
+> **[Build]** · Chapter 05 — Data model & seed · *`server/src/modules/users/`, `stores/`, `products/`, `cart/`, `orders/`*
+
+**Why this step matters:** Model files belong inside feature modules — `users/`, `stores/`, `products/` — not a global `models/` junk drawer. This step creates the exact paths Chapter 5 sub-chapters fill one schema at a time.
+
+**Where the project is now:** Empty module folders from Chapter 2; no `.model.js` files yet.
+
+**After this step:** Each feature module contains a placeholder or first model file path confirmed; folder structure matches course convention for all six collections.
+
+## Target module layout
+
+```
+server/src/modules/
+├── users/
+│   ├── user.model.js           ← 5.10
+│   └── profile.model.js        ← 5.10
+├── stores/
+│   └── store.model.js          ← 5.11
+├── products/
+│   └── product.model.js        ← 5.12
+├── cart/
+│   └── cartItem.model.js       ← 5.13
+├── orders/
+│   └── order.model.js          ← 5.13
+└── auth/                       ← routes in Ch 6 — no model here
+```
+
+**Naming convention:**
+
+- File: `kebab-case.model.js` or `camelCase.model.js` — pick one, stay consistent
+- Model name passed to `mongoose.model()`: PascalCase singular — `'User'`, `'Store'`, `'Product'`, `'CartItem'`, `'Order'`
+
+## Create missing folders
+
+If any folder from Chapter 2 is missing, create now:
+
+```bash
+mkdir -p server/src/modules/users
+mkdir -p server/src/modules/stores
+mkdir -p server/src/modules/products
+mkdir -p server/src/modules/cart
+mkdir -p server/src/modules/orders
+mkdir -p server/scripts
+```
+
+`auth/` should already exist — stays empty of models (User lives in `users/`).
+
+## What NOT to create yet
+
+| File | Chapter |
+|---|---|
+| `auth.routes.js` | 6 |
+| `stores.routes.js` | 9 |
+| `*.service.js` | Various |
+| `*.schema.js` (HTTP validation) | 6+ |
+
+Models only — routes import models later.
+
+## Model registration rule
+
+Each model file:
+
+1. Imports mongoose
+2. Defines schema
+3. Exports **single** default model
+
+**Do not** export schema and model from separate files unless you have reason — one file per model for this course.
+
+**Do not** call `mongoose.model('User', schema)` in multiple files — OverwriteModelError.
+
+## Cross-module imports (preview)
+
+Later chapters import across modules:
+
+```
+stores.service.js  →  import Store from './store.model.js'
+                   →  import Product from '../products/product.model.js'
+auth.service.js    →  import User from '../users/user.model.js'
+```
+
+Keep model paths stable — `./store.model.js` inside same module folder.
+
+## Index file optional
+
+Some codebases use `users/index.js` re-exporting models. **Not required** for course gate — direct imports fine.
+
+## README note (optional)
+
+Under **Project structure**, add:
+
+```
+server/src/modules/
+  users/     — User, Profile models
+  stores/    — Store model
+  products/  — Product model
+  cart/      — CartItem model
+  orders/    — Order model
+```
+
+## Commit
+
+After folders confirmed (empty model files OK as stubs):
+
+```bash
+git add server/src/modules/ server/scripts/
+git commit -m "chore(server): scaffold module folders for data models"
+```
+
+Or wait until 5.10 first model — your choice; gate requires models not empty folders.
+
+## ✅ Do / ❌ Don't
+
+**✅ Do:** Put User in `users/` not `auth/` — auth module is HTTP layer only.
+
+**✅ Do:** Use `CartItem` model name — collection `cartitems` in MongoDB.
+
+**❌ Don't:** Create `models/` flat folder at server root — breaks module convention.
+
+**❌ Don't:** Add barrel exports that circular-import models.
+
+## Verify checklist
+
+- [ ] `users/`, `stores/`, `products/`, `cart/`, `orders/` exist
+- [ ] `server/scripts/` exists for seed
+- [ ] No route files added
+- [ ] Folder names match COURSE-OUTLINE module list
+
+## Next
+
+**Sub-chapter 5.10:** User and Profile models — identity vs profile split.
+
+Folders ready — first schemas next.

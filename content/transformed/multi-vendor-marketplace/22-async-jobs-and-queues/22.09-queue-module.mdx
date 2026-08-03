@@ -1,0 +1,97 @@
+---
+title: "Queue module"
+module: 22
+lesson: 9
+summary: "**Why this step matters:** The queue module is the API's outbound mailbox — every async job in this chapter enqueues through here. One shared module prevents queue-name typos that silently drop jobs."
+---
+# 22.9 — Queue module
+
+> **[Build]** · Chapter 22 — Async jobs & queues · *`server/src/shared/queue.js` — BullMQ connection*
+
+**Why this step matters:** The queue module is the API's outbound mailbox — every async job in this chapter enqueues through here. One shared module prevents queue-name typos that silently drop jobs.
+
+**After this step:** `server/src/shared/queue.js` exports a BullMQ `Queue` (or factory) connected via `REDIS_URL` from Chapter 21 config.
+
+## Env contract
+
+Reuse existing — no new variable required:
+
+```
+# server/.env.example (already from Ch 21)
+REDIS_URL=redis://127.0.0.1:6379
+```
+
+`config.js` already exposes `redisUrl` — import in `queue.js`.
+
+## queue.js exports — spec
+
+| Export | Purpose |
+|---|---|
+| `getNotificationsQueue()` | Returns singleton Queue instance |
+| `enqueueJob(jobName, data, opts?)` | Thin wrapper around `queue.add` — optional |
+| `closeQueues()` | Graceful shutdown on API exit — optional |
+
+**Queue name:** `notifications` (or constant from `jobs.constants.js`).
+
+**Connection:** `new IORedis(redisUrl, { maxRetriesPerRequest: null })` — BullMQ requires `maxRetriesPerRequest: null` on shared connection (document in README comment).
+
+## Implementation constraints
+
+| Rule | Reason |
+|---|---|
+| Lazy init or init on first enqueue | API boots even if worker down |
+| Do not block `server.js` boot on queue connect | Same spirit as Redis cache fallback |
+| Log queue connection errors at warn level | Ops visibility |
+
+If `REDIS_URL` missing: **your choice** — fail enqueue with log, or throw at first `add`. Gate requires Redis up for job chapter — document behaviour.
+
+## jobs.constants.js — spec
+
+Co-locate in `modules/jobs/` or `shared/jobs/`:
+
+```javascript
+export const QUEUE_NAMES = {
+  NOTIFICATIONS: 'notifications',
+};
+
+export const JOB_NAMES = {
+  ORDER_CREATED: 'order.created',
+  ORDER_STATUS_UPDATED: 'order.statusUpdated',
+  PRODUCT_UPDATED: 'product.updated',
+};
+```
+
+Import in `queue.js` and processors — single source of truth.
+
+## Boot wiring
+
+**API (`server.js`):** No worker here. Optional: import `getNotificationsQueue()` once to verify connection — not required for gate.
+
+**Do not** register Worker in `server.js` — that belongs in `worker.js` (21.10).
+
+## Commit
+
+```bash
+git add server/src/shared/queue.js server/src/modules/jobs/jobs.constants.js server/package.json
+git commit -m "feat(server): add bullmq queue module"
+```
+
+## ✅ Do / ❌ Don't
+
+**✅ Do:** Share `REDIS_URL` with cache — one Redis instance.
+
+**✅ Do:** Export typed job name constants — avoid string typos.
+
+**❌ Don't:** Instantiate Worker in queue module — separation of concerns.
+
+**❌ Don't:** Hardcode Redis host — use config.
+
+## Verify
+
+- [ ] API boots with new module imported (smoke import in orders service or test script)
+- [ ] No Worker required for API start
+- [ ] `jobs.constants.js` defines three job names
+
+## Next
+
+**Sub-chapter 22.10:** Worker process — `worker.js` + npm script.

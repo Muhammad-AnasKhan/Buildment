@@ -1,0 +1,119 @@
+---
+title: "Scaffold vendor layout"
+module: 10
+lesson: 6
+summary: "Vendor pages share navigation, header, and auth context — a layout component avoids copy-pasting shell markup into every page. This is the container for open-shop, settings, and (later) product routes. Get routing structure right before form logic."
+---
+# 10.6 — Scaffold vendor layout
+
+> **[Build]** · Chapter 10 — Open your shop · *`layouts/VendorLayout.jsx`, `pages/vendor/`*
+
+## Why this step matters
+
+Vendor pages share navigation, header, and auth context — a layout component avoids copy-pasting shell markup into every page. This is the container for open-shop, settings, and (later) product routes. Get routing structure right before form logic.
+
+**Where the project is now:** No vendor-specific layout or pages.
+
+**After this step:** `VendorLayout.jsx` exists with shell (header/nav); `pages/vendor/` folder exists; router nests vendor routes; layout checks auth role — store gate logic lands in 10.9.
+
+## Target structure
+
+```
+client/src/
+  layouts/
+    VendorLayout.jsx
+  pages/vendor/
+    OpenShop.jsx          ← stub
+    StoreSettings.jsx     ← stub
+    VendorHome.jsx        ← optional stub
+  api/
+    stores.js             ← stub functions
+```
+
+## VendorLayout responsibilities (phase 1)
+
+| Concern | This step | 10.9 |
+|---|---|---|
+| Require vendor auth | ✓ redirect if not logged in | |
+| Require vendor role | ✓ not customer | |
+| Store exists gate | stub | full GET me redirect |
+| Nav links | ✓ Settings, Dashboard, Products stub | |
+| `<Outlet />` | ✓ child routes render | |
+
+Use `useAuth` — if `role !== 'vendor'`, redirect to appropriate home.
+
+## Router structure (spec)
+
+Nested under `/vendor`:
+
+| Path | Component |
+|---|---|
+| `open-shop` | OpenShop |
+| `settings` | StoreSettings |
+| ` ` index | VendorHome or redirect |
+| `products` | Stub — "Products in Ch 12" |
+
+Parent route `element={<VendorLayout />}`.
+
+## Shell UI (editorial)
+
+Minimal clean header:
+
+- Product name + "Vendor" label  
+- Nav: Dashboard · Settings · Products  
+- Logout  
+
+Match editorial style from course intro — no component library required.
+
+## stores.js API stub
+
+Export function signatures:
+
+| Export | Returns |
+|---|---|
+| `getMyStore()` | fetch GET /stores/me |
+| `createStore(data)` | fetch POST /stores |
+| `updateStore(id, data)` | fetch PATCH /stores/:id |
+
+Throw or return parsed JSON + status — match pattern from auth API helpers.
+
+## Page stubs
+
+Each stub: heading + "Implement in 10.7/10.8" — proves routing works.
+
+## Protected route integration
+
+Reuse `ProtectedRoute` from Ch 7 or inline in layout:
+
+- Unauthenticated → `/login`  
+- Customer → `/` or `/shop`  
+
+## Commit
+
+```bash
+git add client/src/layouts/ client/src/pages/vendor/ client/src/api/stores.js
+git commit -m "feat(client): scaffold vendor layout and vendor routes"
+```
+
+Update router in same commit.
+
+## ✅ Do / ❌ Don't
+
+**✅ Do:** Use `Outlet` for nested routes — one layout wraps all vendor pages.
+
+**✅ Do:** Keep layout readable — extract `useVendorStore` hook in 10.9 if needed.
+
+**❌ Don't:** Implement full forms in this step — stubs only.
+
+**❌ Don't:** Gate products API — no product routes on server needed yet.
+
+## Verify checklist
+
+- [ ] Navigate `/vendor/open-shop` logged in as vendor — stub renders inside layout  
+- [ ] Customer cannot access `/vendor` — redirected  
+- [ ] Logged out → login redirect  
+- [ ] Nav links route correctly  
+
+## Next
+
+**Sub-chapter 10.7:** Store setup page — OpenShop form POST /stores.

@@ -1,0 +1,109 @@
+---
+title: "Idempotency and double-submit"
+module: 19
+lesson: 13
+summary: "Chapter 18 warned: double-click \"Place order\" could create duplicate order sets. Payment adds a **natural idempotency key** — the Payment Intent id. Same charge must never produce two sets of split orders."
+---
+# 19.13 — Idempotency and double-submit
+
+> **[Build]** · Chapter 19 — Payment processing · *Intent idempotency; double submit*
+
+Chapter 18 warned: double-click "Place order" could create duplicate order sets. Payment adds a **natural idempotency key** — the Payment Intent id. Same charge must never produce two sets of split orders.
+
+This sub-chapter is **learn + build**: understand retry semantics, then enforce them in checkout and webhook.
+
+## In plain English
+
+| Term | Simple meaning |
+|---|---|
+| **Idempotent** | Doing the same operation twice has the **same effect** as once |
+| **Idempotency key** | Unique id — here `paymentIntentId` — that identifies one logical purchase |
+| **Double submit** | User double-clicks checkout or client retries POST on timeout |
+| **Webhook retry** | Stripe sends same event again if your server returned 500 or timed out |
+| **At-most-once orders** | One succeeded PI → one set of orders — never two |
+
+## Think of it like a receipt number
+
+The card terminal assigns transaction ref **`pi_abc123`**. If the cashier prints receipts twice for the same ref, accounting is broken. Your database must say: "I already fulfilled **`pi_abc123`**" — second attempt returns the **same orders**, not new ones.
+
+## Failure modes without idempotency
+
+| Scenario | Bad outcome |
+|---|---|
+| Double POST `/checkout` same PI | Two order sets, stock decremented twice |
+| Webhook + checkout both run | Race creates duplicate orders |
+| Client retry after 504 | Customer charged once, two fulfilment queues |
+| Webhook retry after 500 | Duplicate vendor packing lists |
+
+Payment succeeded **once** — your system must commit orders **once**.
+
+## Build — idempotency contract
+
+Implement in **both** `verifyAndCheckout` (19.11) and webhook handler (19.12):
+
+**Before** stock decrement or order insert:
+
+1. Query Order collection: `find({ stripePaymentIntentId: paymentIntentId })`.
+2. If one or more orders exist:
+   - Return `{ orders: existingOrders }` with **200** (or 201 on first create only — pick one, document).
+   - **Do not** decrement stock again.
+   - **Do not** clear cart again if already empty — safe no-op.
+3. If none exist, proceed with full Ch 18 pipeline inside **transaction** if available.
+
+**Index:** `{ stripePaymentIntentId: 1 }` on Order — fast lookup under webhook retries.
+
+## Cart + PI timing edge case
+
+| Situation | Policy |
+|---|---|
+| PI succeeded, cart cleared, idempotent replay | Return existing orders — OK |
+| PI succeeded, cart still full (checkout crashed mid-way) | Retry checkout with same PI should **complete or return existing** — never second charge |
+| PI succeeded, cart changed before retry | Reject — amount mismatch vs PI; manual support path in README |
+
+Document chosen policy in learning log.
+
+## Webhook vs checkout race
+
+Both may run within milliseconds when payment succeeds.
+
+**Spec:** Use same `verifyAndCheckout` function with idempotency guard at top — MongoDB unique index on `stripePaymentIntentId` **optional stretch** on single order doc — for split orders, **query count > 0** is enough.
+
+Optional stretch: partial unique index per PI on a `CheckoutSession` collection — not required for gate.
+
+## Client guidance (Chapter 20 preview)
+
+- Disable "Place order" button after first click.
+- On network error, retry checkout with **same** `paymentIntentId` — server idempotency makes retry safe.
+- Do not create a **new** Payment Intent for the same cart unless user explicitly restarts checkout.
+
+## Connection to Stripe idempotency keys
+
+Stripe API accepts `Idempotency-Key` header on **create** calls — prevents duplicate Payment Intents if client retries `POST /payments/intent`. Optional stretch: store key header, replay same intent response.
+
+Separate from **order** idempotency on `paymentIntentId` — implement order guard for gate.
+
+## ✅ Do / ❌ Don't
+
+**✅ Do:** Check existing orders by `stripePaymentIntentId` at start of checkout.
+
+**✅ Do:** Make webhook handler safe to run 10 times for same event.
+
+**✅ Do:** Log idempotent replays at info — "checkout replay pi_…".
+
+**❌ Don't:** Rely on button disable alone — network retries bypass UI.
+
+**❌ Don't:** Create new PI on checkout retry — same payment, same PI.
+
+## Verify checklist
+
+- [ ] Two identical POST `/checkout` with same succeeded PI → one order set in Compass
+- [ ] Second response returns same order ids
+- [ ] Stock decremented once only
+- [ ] Webhook retry does not duplicate orders
+- [ ] README mentions idempotency strategy
+
+## Next
+
+**Sub-chapter 19.14:** Verify with test cards — curl + Stripe CLI end-to-end proof.
+
+Run the full money path before the gate.

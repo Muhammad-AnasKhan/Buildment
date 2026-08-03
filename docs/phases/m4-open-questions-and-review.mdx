@@ -1,0 +1,61 @@
+---
+phase: M4
+title: Open questions + review queue
+week: 5
+status: not started
+---
+
+# M4 — Open questions + review queue
+
+**Demo:** Mentee submits an answer, mentor reviews it, mentee sees feedback and resubmits.
+
+**Reads:** [`../05-review-queue.mdx`](../05-review-queue.mdx), [`../03-blocks-registry.mdx`](../03-blocks-registry.mdx), [`../11-decisions-and-open-questions.mdx`](../11-decisions-and-open-questions.mdx)
+
+## Before you start this phase
+
+Resolve the open questions listed in
+[`../11-decisions-and-open-questions.mdx`](../11-decisions-and-open-questions.mdx) — scoring model
+and retakes in particular become user-visible the moment `<OpenQuestion>` and its review flow
+exist. Update that doc's decision log in the same change that implements your answer.
+
+## Goal
+
+Add the human-in-the-loop loop: the block type that needs a reviewer, and the reviewer surface
+itself.
+
+## Tasks
+
+- [ ] `src/blocks/open-question/` — full registry entry: `schema.ts` (`minWords`, `maxWords?`,
+      `rubric`, `sampleAnswer?`), `grade.ts` (not auto-graded — sets `status: PENDING_REVIEW`
+      instead of computing a score), `Component.tsx` (Markdown-capable textarea, autosave draft,
+      explicit submit), `report.ts`, `editorDescriptor.tsx` (nested rich-text editor for the
+      question prose + rubric field, per [`../02-content-authoring.mdx`](../02-content-authoring.mdx)).
+  - Completion = **submitted**, not reviewed — do not block chapter progress on review outcome (see
+    [`../04-progress-and-gating.mdx`](../04-progress-and-gating.mdx) note on this).
+- [ ] `(teach)/review/` — queue view: all pending items across the mentor's courses, filterable by
+      course/mentee/block type/age, oldest-first, aging indicator (>48h highlighted).
+- [ ] Review detail view: left = question + rubric + reference answer, right = mentee's rendered
+      answer; actions = score, Markdown feedback, verdict (`APPROVED`/`NEEDS_REVISION`).
+- [ ] Keyboard nav: `j`/`k` through the queue, `⌘+Enter` submit-and-advance.
+- [ ] Canned feedback snippets, saved per mentor.
+- [ ] Needs-revision loop: reopens the block for the mentee, in-app notification, resubmission goes
+      to the **front** of the queue with the prior exchange threaded (query across `Response`
+      history for that `(blockId, userId)`, not just the latest attempt).
+- [ ] Email notification (Resend) when a review is completed.
+
+## Out of scope for this phase
+
+- `<CodeBlock>` `submit` mode reaching the review queue is fine to include here if convenient (it's
+  the same queue), but building the code runner itself is M5 — don't block this phase on it.
+- Bulk-approve / AI-drafted feedback — deferred (see [`../10-deferred-v2.mdx`](../10-deferred-v2.mdx)).
+- Full reports (M6) — the mentee should see feedback on their own progress page, but the
+  cross-cohort report views are not part of this phase.
+
+## Acceptance criteria
+
+- A mentee submits an `<OpenQuestion>` answer and their chapter progress reflects "submitted,"
+  independent of whether a mentor has reviewed it yet.
+- A mentor sees the submission in the queue within the aging/sort rules above, reviews it with a
+  verdict, and the mentee sees the feedback.
+- A "needs revision" verdict reopens the block, and the resubmission appears at the front of the
+  queue with the original feedback visible alongside it.

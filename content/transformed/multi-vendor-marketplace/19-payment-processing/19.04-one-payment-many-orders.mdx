@@ -1,0 +1,129 @@
+---
+title: "One payment, many orders"
+module: 19
+lesson: 4
+summary: "FreshMarket is a **market hall**, not a single shop. The customer fills one basket from Green Valley and Harbor Market, pays **once**, and receives **two fulfilment orders**. This sub-chapter teaches the payment model beginners confuse most."
+---
+# 19.4 — One payment, many orders
+
+> **[Learn]** · Chapter 19 — Payment processing · *One charge, split orders; shared `stripePaymentIntentId`*
+
+FreshMarket is a **market hall**, not a single shop. The customer fills one basket from Green Valley and Harbor Market, pays **once**, and receives **two fulfilment orders**. This sub-chapter teaches the payment model beginners confuse most.
+
+## In plain English
+
+| Term | Simple meaning |
+|---|---|
+| **One payment** | Single Stripe charge for the **entire cart total** |
+| **Many orders** | Still one Order document per vendor/store (Chapter 18) |
+| **Platform collects** | Money lands in **your** Stripe account (test mode) — not split automatically to vendors |
+| **Shared payment reference** | Every order from one checkout stores the same `stripePaymentIntentId` |
+| **Fulfilment ≠ billing** | Vendors pack their order; payout to vendors is a separate business step |
+
+## Think of it like one receipt roll, two stall tickets
+
+At the hall checkout you swipe **once** for ₹345 total. The system prints:
+
+- Ticket A — Green Valley's items — ₹305 — ref `pi_abc123`
+- Ticket B — Harbor Market's items — ₹40 — ref **`pi_abc123`** (same)
+
+Accounting asks: "Which card charge covers both stalls?" → one Payment Intent id links them.
+
+## Why not one Payment Intent per vendor?
+
+| Approach | Problem for this course |
+|---|---|
+| One PI per store | Customer confirms **multiple** card taps — terrible UX |
+| Stripe Connect per vendor | Correct for marketplaces at scale — out of scope here |
+| One PI for cart total | Matches "one checkout button" — **this course** |
+
+You still **split orders** for fulfilment. You do **not** split card charges in Stripe for the medium-course build.
+
+## Data model consequence
+
+After successful checkout, Compass shows:
+
+```
+Order 1: { storeId: A, total: 305, stripePaymentIntentId: "pi_...", paymentStatus: "paid" }
+Order 2: { storeId: B, total: 40,  stripePaymentIntentId: "pi_...", paymentStatus: "paid" }
+```
+
+**Invariant:** Sum of order totals for one checkout ≤ Payment Intent amount (should match exactly if no fees in test).
+
+## Amount must come from the server
+
+| Wrong | Right |
+|---|---|
+| Client sends `{ amount: 100 }` to create intent | Server sums cart lines |
+| Client sends discounted total | Server re-validates stock and prices at intent **and** checkout |
+| Trust Stripe amount alone at checkout | Recompute cart total; compare to PI `amount` |
+
+Both `POST /payments/intent` and `POST /checkout` must use the **same** total function — extract shared helper in `payments.service.js` or `cart.service.js`.
+
+## Metadata for debugging
+
+When creating the Payment Intent, set Stripe **metadata** (strings only):
+
+| Key | Example | Why |
+|---|---|---|
+| `userId` | Mongo user id | Support: which account paid |
+| `cartItemCount` | `3` | Quick sanity check in Dashboard |
+| `storeCount` | `2` | Expect two orders after checkout |
+
+Do not put PII or card data in metadata.
+
+## Common beginner questions
+
+**Q: Does each vendor get paid automatically?**  
+Not in this chapter. Real marketplaces use Connect, invoices, or manual settlement. Your gate is **customer paid platform** + **orders marked paid**.
+
+**Q: What if cart total is 0?**  
+Reject checkout — do not create zero-amount Payment Intents for demo carts.
+
+**Q: Refund one stall only?**  
+Production hard problem — partial refunds against one PI. Document as out of scope; full refund in Stripe Dashboard is the stretch note.
+
+**Q: Why `paymentStatus` if Stripe already says succeeded?**  
+Orders must be readable without calling Stripe on every page load. Enum on the order: `paid`, later `refunded` if you stretch.
+
+**Q: Single-store cart — still one PI?**  
+Yes. One order document, one Payment Intent — same pattern.
+
+## Comparison diagram
+
+```
+                    ┌─────────────────────┐
+                    │  Payment Intent     │
+                    │  amount: ₹345       │
+                    │  status: succeeded  │
+                    └──────────┬──────────┘
+                               │
+              ┌────────────────┴────────────────┐
+              ▼                                 ▼
+     Order (Green Valley)              Order (Harbor Market)
+     total: ₹305                       total: ₹40
+     pi_abc123                         pi_abc123
+     paymentStatus: paid               paymentStatus: paid
+```
+
+## ✅ Do / ❌ Don't
+
+**✅ Do:** Store the same `stripePaymentIntentId` on every order from one checkout.
+
+**✅ Do:** Explain in README that platform collect ≠ vendor payout.
+
+**❌ Don't:** Create two Payment Intents for a two-store cart.
+
+**❌ Don't:** Merge split orders into one because "customer paid once".
+
+## Self-check
+
+- [ ] I can draw one PI → two orders on paper
+- [ ] I know why amount is computed server-side
+- [ ] I understand Connect is intentionally skipped
+
+## Next
+
+**Sub-chapter 19.5:** Stripe test mode — keys, dashboard, test cards.
+
+Get comfortable with fake money before wiring routes.

@@ -1,0 +1,264 @@
+// Source of truth for the schema. Keep docs/08-data-model.mdx in sync with this file
+// whenever they diverge — see .cursor/rules/prisma-database.mdc.
+
+// Prisma 7: the connection URL lives in prisma.config.ts, not here. PrismaClient
+// requires a driver adapter (@prisma/adapter-pg) at runtime — see src/server/db.ts.
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Auth.js v5 (@auth/prisma-adapter) models -------------------------------------------------
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- Domain model — see docs/01-domain-model.mdx and docs/08-data-model.mdx ------------------
+
+enum Role {
+  MENTEE
+  MENTOR
+  ADMIN
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EnrollStatus {
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  DROPPED
+}
+
+enum ProgressStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum BlockType {
+  QUIZ
+  TEST
+  MUST_READ
+  OPEN_QUESTION
+  CODE
+}
+
+enum ResponseStatus {
+  DRAFT
+  SUBMITTED
+  AUTO_GRADED
+  PENDING_REVIEW
+  REVIEWED
+  NEEDS_REVISION
+}
+
+enum ReviewVerdict {
+  APPROVED
+  NEEDS_REVISION
+}
+
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  role          Role         @default(MENTEE)
+  createdAt     DateTime     @default(now())
+  accounts      Account[]
+  sessions      Session[]
+  coursesOwned  Course[]     @relation("CourseMentor")
+  enrollments   Enrollment[]
+  responses     Response[]
+  reviewsGiven  Review[]     @relation("Reviewer")
+}
+
+model Course {
+  id             String       @id @default(cuid())
+  slug           String       @unique
+  title          String
+  description    String?
+  coverUrl       String?
+  projectGoal    String? // "Build a multi-vendor marketplace"
+  difficulty     String?
+  estimatedHours Int?
+  status         CourseStatus @default(DRAFT)
+  sequential     Boolean      @default(true)
+  mentorId       String
+  mentor         User         @relation("CourseMentor", fields: [mentorId], references: [id])
+  modules        Module[]
+  chapters       Chapter[]
+  enrollments    Enrollment[]
+  publishedAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([mentorId, status])
+}
+
+model Module {
+  id       String    @id @default(cuid())
+  courseId String
+  course   Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  title    String
+  order    Int
+  chapters Chapter[]
+
+  @@unique([courseId, order])
+}
+
+model Chapter {
+  id          String            @id @default(cuid())
+  courseId    String
+  course      Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  moduleId    String?
+  module      Module?           @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  slug        String
+  title       String
+  summary     String?
+  order       Int
+  source      String            @db.Text // raw MDX (draft)
+  compiled    String?           @db.Text // compiled MDX at publish
+  publishedAt DateTime?
+  isMilestone Boolean           @default(false)
+  blocks      Block[]
+  progress    ChapterProgress[]
+
+  @@unique([courseId, slug])
+  @@index([courseId, order])
+}
+
+model Block {
+  id         String     @id // ULID authored into the MDX
+  chapterId  String
+  chapter    Chapter    @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  type       BlockType
+  order      Int
+  version    Int        @default(1)
+  required   Boolean    @default(true)
+  blocking   Boolean    @default(false)
+  points     Int        @default(1)
+  config     Json // answers, rubric, tests — SERVER ONLY, never sent to the client
+  tags       String[] // for weak-area reporting
+  archivedAt DateTime?
+  responses  Response[]
+
+  @@index([chapterId, order])
+}
+
+model Enrollment {
+  id                String            @id @default(cuid())
+  courseId          String
+  course            Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  userId            String
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status            EnrollStatus      @default(ASSIGNED)
+  assignedById      String?
+  percentComplete   Int               @default(0)
+  chaptersCompleted Int               @default(0)
+  totalScore        Int               @default(0)
+  maxScore          Int               @default(0)
+  lastActiveAt      DateTime?
+  startedAt         DateTime?
+  completedAt       DateTime?
+  createdAt         DateTime          @default(now())
+  chapterProgress   ChapterProgress[]
+
+  @@unique([courseId, userId])
+  @@index([userId, status])
+}
+
+model ChapterProgress {
+  id               String         @id @default(cuid())
+  enrollmentId     String
+  enrollment       Enrollment     @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  chapterId        String
+  chapter          Chapter        @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  status           ProgressStatus @default(NOT_STARTED)
+  blocksCompleted  Int            @default(0)
+  blocksTotal      Int            @default(0)
+  score            Int            @default(0)
+  maxScore         Int            @default(0)
+  timeSpentSeconds Int            @default(0)
+  startedAt        DateTime?
+  completedAt      DateTime?
+
+  @@unique([enrollmentId, chapterId])
+  @@index([chapterId, status])
+}
+
+model Response {
+  id           String         @id @default(cuid())
+  blockId      String
+  block        Block          @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollmentId String
+  attempt      Int            @default(1)
+  status       ResponseStatus @default(SUBMITTED)
+  payload      Json // shape depends on block type — see docs/08-data-model.mdx
+  score        Int?
+  maxScore     Int?
+  isCorrect    Boolean?
+  durationMs   Int?
+  startedAt    DateTime?
+  submittedAt  DateTime       @default(now())
+  review       Review?
+
+  @@index([blockId, userId, attempt])
+  @@index([enrollmentId])
+  @@index([status]) // drives the review queue
+}
+
+model Review {
+  id         String        @id @default(cuid())
+  responseId String        @unique
+  response   Response      @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  reviewerId String
+  reviewer   User          @relation("Reviewer", fields: [reviewerId], references: [id])
+  score      Int?
+  feedback   String        @db.Text
+  verdict    ReviewVerdict
+  createdAt  DateTime      @default(now())
+}

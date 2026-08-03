@@ -1,0 +1,108 @@
+---
+title: "Where the project is now"
+module: 19
+lesson: 8
+summary: "**Why this step matters:** Payment touches checkout, cart totals, Order schema, and a new webhook route — this pause confirms Chapter 18 gate is real before you add Stripe dependencies."
+---
+# 19.8 — Where the project is now
+
+> **[Build]** · Chapter 19 — Payment processing · *Recap Ch 18 checkout API*
+
+**Why this step matters:** Payment touches checkout, cart totals, Order schema, and a new webhook route — this pause confirms Chapter 18 gate is real before you add Stripe dependencies.
+
+**Where the project is now:** `POST /checkout` works without payment — split orders, snapshots, stock, cart clear, list routes. **No** Payment Intents, **no** `stripePaymentIntentId` on orders, **no** webhook. Anyone authenticated can checkout for free.
+
+**After this chapter:** Unpaid checkout rejected; Payment Intent created from cart; checkout verifies `succeeded` with Stripe API; orders marked `paymentStatus: 'paid'`; webhook verifies signatures.
+
+**Pause before Stripe.** Confirm checkout pipeline and schema are ready. This sub-chapter maps what exists and what Chapter 19 adds.
+
+## Repo tree — relevant slice
+
+```
+server/src/modules/
+  cart/                 ← complete (Ch 16) — total source for PI amount
+  orders/               ← checkout + list routes (Ch 18)
+  products/             ← stockQty
+  auth/                 ← customer role for checkout
+
+server/src/shared/
+  config.js             ← extend for Stripe env vars (19.9)
+  db.js
+
+client/src/
+  pages/Cart.jsx        ← stub checkout (Ch 17) — Stripe.js in Ch 20
+```
+
+**Not built yet:** `payments/` module, `shared/stripe.js`, `POST /webhooks/stripe`, payment fields on Order.
+
+## Order model audit
+
+Open Order schema from Chapter 5 / 18. Add before 19.11:
+
+| Field | Required for Ch 19 |
+|---|---|
+| `stripePaymentIntentId` | ✓ string, indexed recommended |
+| `paymentStatus` | ✓ enum e.g. `pending`, `paid` — set `paid` on success |
+
+Existing Ch 18 fields unchanged: `customerId`, `storeId`, `status`, embedded snapshots, `total`.
+
+**Optional index:** `{ stripePaymentIntentId: 1 }` — speeds idempotency lookup (19.13).
+
+## Pre-payment curl baseline
+
+Logged-in customer with items in cart:
+
+```bash
+# Still succeeds today — must FAIL after 19.11
+curl -s -X POST http://localhost:5000/api/checkout \\
+  -H "Authorization: Bearer <customer-token>" \\
+  -H "Content-Type: application/json" \\
+  -d '{}'
+```
+
+Save this response shape — after 19.11, same call should return **400** with message about missing or unpaid payment.
+
+```bash
+# Cart total source of truth
+curl -s http://localhost:5000/api/cart \\
+  -H "Authorization: Bearer <customer-token>"
+```
+
+Note line totals — Payment Intent amount must match **your server's sum**, not a client calculator.
+
+## Stripe account checklist
+
+- [ ] Test mode enabled in Dashboard
+- [ ] `sk_test_…` and `pk_test_…` copied to local `.env` files (not Git)
+- [ ] Stripe CLI installed for 19.14 (`stripe listen`)
+
+## Authorization preview
+
+| Route | Role | Scope |
+|---|---|---|
+| POST /payments/intent | customer | own cart → own PI |
+| POST /checkout | customer | PI must belong to this user / match cart |
+| POST /webhooks/stripe | none (signature) | Stripe only — no JWT |
+
+## ✅ Do / ❌ Don't
+
+**✅ Do:** Clear Chapter 18 checklist (`18.18`) before changing checkout.
+
+**✅ Do:** Add Order fields **before** 19.11 — migration easier than retrofit.
+
+**❌ Don't:** Start Stripe until bare checkout split test still passes.
+
+**❌ Don't:** Put secret key in `VITE_` client env.
+
+## Self-check
+
+- [ ] Chapter 18 gate cleared
+- [ ] Two-store cart checkout works without payment (baseline)
+- [ ] Order schema plan for payment fields written
+- [ ] Stripe test keys in local `.env` only
+
+## Next
+
+**Sub-chapter 19.9:** Stripe config — env vars and shared module.
+
+Wire the SDK once; every route imports the same client.

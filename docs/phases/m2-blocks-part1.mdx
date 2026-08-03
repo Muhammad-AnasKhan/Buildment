@@ -1,0 +1,61 @@
+---
+phase: M2
+title: Blocks, part 1
+week: 3
+status: not started
+---
+
+# M2 — Blocks, part 1
+
+**Demo:** Answer a quiz, get feedback, see progress move.
+
+**Reads:** [`../03-blocks-registry.mdx`](../03-blocks-registry.mdx), [`../02-content-authoring.mdx`](../02-content-authoring.mdx), [`../08-data-model.mdx`](../08-data-model.mdx)
+
+## Goal
+
+Stand up the block registry pattern itself, then implement the two simplest block types plus the
+non-interactive presentation components. Everything built here establishes the shape every later
+block type (M3-M5) will follow.
+
+## Tasks
+
+- [ ] `src/blocks/registry.ts` — the central map from `BlockType` to
+      `{ schema, grade, Component, report, editorDescriptor }`. Build this generically enough that
+      M3's `<Test>` and M4's `<OpenQuestion>` and M5's `<CodeBlock>` slot in without touching
+      anything outside their own folder (see the registry pattern in
+      [`../03-blocks-registry.mdx`](../03-blocks-registry.mdx)).
+- [ ] `src/blocks/quiz/` — `schema.ts` (Zod), `grade.ts` (server-side correctness check),
+      `Component.tsx` (learner UI: options, submit, reveal explanation), `report.ts` (correct rate
+      projector), `editorDescriptor.tsx` (MDXEditor `JsxComponentDescriptor` with an option-list
+      editor UI, per [`../02-content-authoring.mdx`](../02-content-authoring.mdx)).
+- [ ] `src/blocks/must-read/` — same five files, per [`../03-blocks-registry.mdx`](../03-blocks-registry.mdx)
+      §`<MustRead>` (link-opened timer, checkbox, optional checkpoint/note).
+- [ ] `src/blocks/presentation/` — `Callout`, `Steps`, `Diagram` (Mermaid) components +
+      editor descriptors only; no `schema`/`grade`/`report` (see
+      [`../03-blocks-registry.mdx`](../03-blocks-registry.mdx) §"Callout / Steps / Diagram").
+- [ ] Wire `mdx/extract.ts` and `mdx/sanitize.ts` (stubbed in M1) to the now-real registry entries.
+- [ ] `POST /api/blocks/[blockId]/respond` — implement the full flow from
+      [`../08-data-model.mdx`](../08-data-model.mdx) §"Answer submission flow" for `QUIZ` and
+      `MUST_READ` only: auth → enrollment check → grade → transaction (`Response` insert +
+      `ChapterProgress` upsert) → sanitized result. (Gating checks are still a no-op until M3 —
+      just don't skip the transaction shape.)
+- [ ] Basic per-chapter progress: `ChapterProgress.blocksCompleted` / `blocksTotal` update on each
+      response, chapter marked complete when all required blocks are complete (zero-block chapters
+      still need the "Mark as read" button per [`../04-progress-and-gating.mdx`](../04-progress-and-gating.mdx) —
+      note that doc is a M3 read, but the button itself is cheap to add now).
+
+## Out of scope for this phase
+
+- `<Test>`, `<OpenQuestion>`, `<CodeBlock>` (M3, M4, M5).
+- Sequential chapter gating, blocking blocks, time tracking heartbeat (M3).
+- Review queue (M4). `MUST_READ`'s optional `requireNote` can be built, but routing it to a review
+  queue is not — treat it as stored-but-unreviewed for now if `requireNote` is used before M4.
+
+## Acceptance criteria
+
+- A mentor can insert a `<Quiz>` and a `<MustRead>` via the MDXEditor insert palette, using their
+  structured editor UI (not raw JSX typing).
+- A mentee can answer a quiz, see instant feedback + explanation, and see chapter progress update.
+- A mentee can open a must-read link, wait out `minSeconds`, and check the box.
+- `Block.config` (correct answers) never appears in any network response to the mentee — verify
+  with the sanitizer test from [`../09-security.mdx`](../09-security.mdx).
