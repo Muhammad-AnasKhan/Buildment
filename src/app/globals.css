@@ -128,6 +128,18 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+  /* Fenced code blocks: keep inline-code chip styles off <pre><code> */
+  .prose pre code {
+    background-color: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: 0.875em;
+    font-weight: 400;
+  }
+  .prose pre code::before,
+  .prose pre code::after {
+    content: none;
+  }
   html {
     @apply font-sans;
   }

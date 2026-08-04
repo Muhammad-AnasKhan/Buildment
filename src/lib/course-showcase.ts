@@ -11,6 +11,10 @@ export type ShowcaseTab = {
   id: string;
   label: string;
   moduleHint: string;
+  imageUrl: string;
+  imageAlt: string;
+  imageWidth: number;
+  imageHeight: number;
   items: { title: string; meta: string; badge?: string }[];
 };
 
@@ -67,6 +71,10 @@ export const COURSE_SHOWCASE: Record<string, CourseShowcaseContent> = {
         id: "storefront",
         label: "Customer storefront",
         moduleHint: "Modules 14–17 — Browse catalogue, shop, cart",
+        imageUrl: "/showcase/multi-vendor-marketplace/storefront.png",
+        imageAlt: "FreshMarket customer storefront with product grid and category filters",
+        imageWidth: 891,
+        imageHeight: 1600,
         items: [
           { title: "Organic avocados", meta: "Green Valley Farms · $4.99 / bag", badge: "In stock" },
           { title: "Sourdough loaf", meta: "Riverside Bakery · $6.50 / loaf", badge: "In stock" },
@@ -77,6 +85,10 @@ export const COURSE_SHOWCASE: Record<string, CourseShowcaseContent> = {
         id: "vendor",
         label: "Vendor dashboard",
         moduleHint: "Modules 10–13 — Open your shop, manage products",
+        imageUrl: "/showcase/multi-vendor-marketplace/vendor-dashboard.png",
+        imageAlt: "FreshMarket vendor dashboard with product listings and order stats",
+        imageWidth: 1600,
+        imageHeight: 1280,
         items: [
           { title: "Active listings", meta: "18 products across 3 categories" },
           { title: "Pending orders", meta: "4 orders awaiting fulfillment" },
@@ -87,6 +99,10 @@ export const COURSE_SHOWCASE: Record<string, CourseShowcaseContent> = {
         id: "checkout",
         label: "Checkout & orders",
         moduleHint: "Modules 18–20 — Checkout, payments, tracking",
+        imageUrl: "/showcase/multi-vendor-marketplace/checkout-orders.png",
+        imageAlt: "FreshMarket checkout flow and order tracking with Stripe payment",
+        imageWidth: 1183,
+        imageHeight: 1600,
         items: [
           { title: "Order #ORD-1042", meta: "2 vendors · Stripe payment confirmed", badge: "Paid" },
           { title: "Order #ORD-1041", meta: "1 vendor · Preparing", badge: "In progress" },

@@ -13,6 +13,7 @@
     "db:studio": "prisma studio",
     "content:import": "tsx scripts/import-course.ts",
     "content:validate": "node scripts/validate-chapters.mjs",
+    "showcase:generate": "node scripts/generate-showcase-images.mjs",
     "test": "vitest run"
   },
   "dependencies": {
