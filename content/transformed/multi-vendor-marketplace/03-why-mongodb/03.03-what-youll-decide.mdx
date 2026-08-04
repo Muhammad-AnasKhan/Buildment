@@ -4,10 +4,6 @@ module: 3
 lesson: 3
 summary: "By the end of this chapter you will have made **three decisions** that Chapter 4–5 implement without reopening fundamentals:"
 ---
-# 3.3 — What you'll decide
-
-> **[Read]** · Chapter 03 — Why MongoDB · *MongoDB for this course; when you'd pick SQL instead*
-
 By the end of this chapter you will have made **three decisions** that Chapter 4–5 implement without reopening fundamentals:
 
 1. **Database family:** MongoDB (document store) for this marketplace  
@@ -22,17 +18,34 @@ Beginners often treat database choice as "install whatever the tutorial uses." H
 
 ## Common beginner questions
 
-**Q: Can I use PostgreSQL if I know it better?**  
-A: Not in this repo without mentor agreement — every later chapter assumes Mongoose paths and document examples.
+<FaqGroup>
 
-**Q: What is an ODM and why not raw MongoDB driver?**  
-A: ODM (Mongoose) adds schemas, validation, and `populate()` — taught explicitly when fixing slow catalogue queries. Raw driver works in industry; this course standardizes on Mongoose.
+<FaqItem question="Can I use PostgreSQL if I know it better?">
 
-**Q: What's the one deliverable that gates Chapter 4?**  
-A: `docs/erd-draft.md` plus learning log proving you can explain embed vs reference — not a running database yet.
+Not in this repo without mentor agreement — every later chapter assumes Mongoose paths and document examples.
 
-**Q: Why decide embed/reference before writing code?**  
-A: Wrong choice at checkout is expensive — order history showing live prices instead of paid prices is a data bug, not a UI bug.
+</FaqItem>
+
+<FaqItem question="What is an ODM and why not raw MongoDB driver?">
+
+ODM (Mongoose) adds schemas, validation, and `populate()` — taught explicitly when fixing slow catalogue queries. Raw driver works in industry; this course standardizes on Mongoose.
+
+</FaqItem>
+
+<FaqItem question="What's the one deliverable that gates Chapter 4?">
+
+`docs/erd-draft.md` plus learning log proving you can explain embed vs reference — not a running database yet.
+
+</FaqItem>
+
+<FaqItem question="Why decide embed/reference before writing code?">
+
+Wrong choice at checkout is expensive — order history showing live prices instead of paid prices is a data bug, not a UI bug.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Decision 1 — MongoDB for FreshMarket (mandated)
 
@@ -130,3 +143,6 @@ If you can't sketch answers now, 3.4–3.6 are for you.
 - **Ch 4 connects; Ch 5 implements** — no skipping this chapter  
 
 Next: relational vs document — side by side for marketplace data.
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3E7XD2QGNBFMVDGK5N5" />

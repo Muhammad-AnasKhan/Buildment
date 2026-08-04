@@ -4,10 +4,6 @@ module: 7
 lesson: 1
 summary: "**Where the project is now:** Chapter 6 complete — auth API works via curl. React client still shows health check only. Humans cannot register or login in the browser."
 ---
-# 7.1 — Set the scene
-
-> **[Read]** · Chapter 07 — Login & registration · *API works; humans need screens*
-
 **Where the project is now:** Chapter 6 complete — auth API works via curl. React client still shows health check only. Humans cannot register or login in the browser.
 
 **Where this chapter goes:** Login, Register, and Verify OTP **pages**, a **useAuth** hook or context storing access token in memory, API client attaching Bearer header, **401 refresh loop**, and **protected routes** redirecting unauthenticated users.
@@ -41,20 +37,40 @@ The hat you wear now is **frontend auth integrator**. You are not redesigning th
 
 ## Common beginner questions
 
-**Q: Why not store the JWT in localStorage — it's easier?**  
-A: Any script on your page can read localStorage. Access in **memory** plus refresh in **httpOnly cookie** is the course pattern — harder to steal and industry-aligned for SPAs.
+<FaqGroup>
 
-**Q: Do I need new server endpoints?**  
-A: Usually no — same Chapter 6 routes. You may add `Set-Cookie` on login/refresh for httpOnly refresh and enable `credentials: 'include'` on the client.
+<FaqItem question="Why not store the JWT in localStorage — it's easier?">
 
-**Q: What happens on page reload if access token is in memory?**  
-A: Memory clears — app boot calls refresh with the cookie to get a new access token silently (sub-chapters 7.4–7.5).
+Any script on your page can read localStorage. Access in **memory** plus refresh in **httpOnly cookie** is the course pattern — harder to steal and industry-aligned for SPAs.
 
-**Q: Why separate chapters for API auth and UI auth?**  
-A: So you can debug server vs client independently. Broken curl means fix Chapter 6; broken form with working curl means fix Chapter 7.
+</FaqItem>
 
-**Q: Role-based UI (vendor vs customer) — this chapter?**  
-A: Basic protected routes only. Role-specific guards and IDOR prevention deepen in Chapter 8.
+<FaqItem question="Do I need new server endpoints?">
+
+Usually no — same Chapter 6 routes. You may add `Set-Cookie` on login/refresh for httpOnly refresh and enable `credentials: 'include'` on the client.
+
+</FaqItem>
+
+<FaqItem question="What happens on page reload if access token is in memory?">
+
+Memory clears — app boot calls refresh with the cookie to get a new access token silently (sub-chapters 7.4–7.5).
+
+</FaqItem>
+
+<FaqItem question="Why separate chapters for API auth and UI auth?">
+
+So you can debug server vs client independently. Broken curl means fix Chapter 6; broken form with working curl means fix Chapter 7.
+
+</FaqItem>
+
+<FaqItem question="Role-based UI (vendor vs customer) — this chapter?">
+
+Basic protected routes only. Role-specific guards and IDOR prevention deepen in Chapter 8.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap
 
@@ -102,6 +118,11 @@ Estimated: **1–2 days**
 - [ ] Chapter 6 gate cleared — curl login works
 - [ ] CORS allows Vite origin on server
 - [ ] Test credentials documented in README
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3YBTDAYNFDAYXHPSHTG" />
 
 ## Next
 

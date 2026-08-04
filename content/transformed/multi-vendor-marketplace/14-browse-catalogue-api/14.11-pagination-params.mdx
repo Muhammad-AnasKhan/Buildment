@@ -4,10 +4,6 @@ module: 14
 lesson: 11
 summary: "**Why this step matters:** Without page/limit, every browse request loads the **entire** catalogue — fine with seed data, broken at scale. Chapter 15's shop will call this on every page click; metadata (`total`, `totalPages`) drives the UI controls."
 ---
-# 14.11 — Pagination params
-
-> **[Build]** · Chapter 14 — Browse catalogue API · *`?page=`, `?limit=`*
-
 **Why this step matters:** Without page/limit, every browse request loads the **entire** catalogue — fine with seed data, broken at scale. Chapter 15's shop will call this on every page click; metadata (`total`, `totalPages`) drives the UI controls.
 
 **Where the project is now:** Filtered public list may return entire catalogue in one response.
@@ -112,6 +108,11 @@ git commit -m "feat(products): add pagination to public catalogue API"
 - [ ] total matches Compass count for same filter  
 - [ ] totalPages math correct  
 - [ ] Invalid page/limit → 400
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4NZYSQDEV9XS8241VTR" />
 
 ## Next
 

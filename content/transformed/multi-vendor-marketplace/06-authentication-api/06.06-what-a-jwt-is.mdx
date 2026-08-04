@@ -4,10 +4,6 @@ module: 6
 lesson: 6
 summary: "A JSON Web Token is three Base64 segments separated by dots: **header.payload.signature**. Understanding each part prevents you from treating JWT as magic or putting secrets in the payload."
 ---
-# 6.6 — What a JWT is
-
-> **[Learn]** · Chapter 06 — Authentication API · *Header.payload.signature; role in payload*
-
 A JSON Web Token is three Base64 segments separated by dots: **header.payload.signature**. Understanding each part prevents you from treating JWT as magic or putting secrets in the payload.
 
 ## Why this matters for absolute beginners
@@ -20,14 +16,28 @@ JWT looks like random gibberish — beginners treat it as an opaque session id. 
 
 ## Common beginner questions
 
-**Q: Where does `req.user.role` come from?**  
-A: Verified JWT claims after `jwt.verify` — not from request body on PATCH.
+<FaqGroup>
 
-**Q: Can I skip expiry?**  
-A: No — short-lived access is core to the refresh pattern.
+<FaqItem question="Where does `req.user.role` come from?">
 
-**Q: Refresh token — JWT or random string?**  
-A: Course allows either if hashed in DB; document your choice.
+Verified JWT claims after `jwt.verify` — not from request body on PATCH.
+
+</FaqItem>
+
+<FaqItem question="Can I skip expiry?">
+
+No — short-lived access is core to the refresh pattern.
+
+</FaqItem>
+
+<FaqItem question="Refresh token — JWT or random string?">
+
+Course allows either if hashed in DB; document your choice.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Anatomy
 
@@ -130,7 +140,9 @@ If JWT refresh: include `jti` (unique id) for rotation tracking.
 
 ## Reflect
 
-Why does changing one character in payload invalidate signature? Explain in one sentence.
+<OpenQuestion id="01KZ5FW3TXBVMJ43B76SH3QA46" />
+
+
 
 ## Next
 

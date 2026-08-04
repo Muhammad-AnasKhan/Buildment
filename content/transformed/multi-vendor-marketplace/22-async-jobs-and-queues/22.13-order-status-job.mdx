@@ -4,10 +4,6 @@ module: 22
 lesson: 13
 summary: "**Why this step matters:** Status changes are the second hot path for side effects — vendors PATCH fast, customers learn later. Queuing here keeps fulfilment UI snappy and mirrors how real marketplaces notify on dispatch."
 ---
-# 22.13 — Order status job
-
-> **[Build]** · Chapter 22 — Async jobs & queues · *Enqueue from vendor order status PATCH*
-
 **Why this step matters:** Status changes are the second hot path for side effects — vendors PATCH fast, customers learn later. Queuing here keeps fulfilment UI snappy and mirrors how real marketplaces notify on dispatch.
 
 **After this step:** `PATCH /vendor/orders/:orderId` enqueues `order.statusUpdated` after status saves — customer notification runs in worker.
@@ -112,6 +108,11 @@ Chapter 20 UI refetches orders — status visible without waiting for notificati
 - [ ] Worker shows status notification log
 - [ ] Invalid PATCH does not enqueue
 - [ ] Vendor B cannot trigger jobs for Vendor A's orders
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5CSN1JQWSXYACKX72K6" />
 
 ## Next
 

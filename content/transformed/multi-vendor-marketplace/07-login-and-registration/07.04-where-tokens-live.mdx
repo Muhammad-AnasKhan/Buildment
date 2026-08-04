@@ -4,10 +4,6 @@ module: 7
 lesson: 4
 summary: "Concrete storage map for FreshMarket client — implement in 7.10 and 7.14."
 ---
-# 7.4 — Where tokens live
-
-> **[Learn]** · Chapter 07 — Login & registration · *Access in memory; refresh in httpOnly cookie*
-
 Concrete storage map for FreshMarket client — implement in 7.10 and 7.14.
 
 ## Why this matters for absolute beginners
@@ -16,14 +12,28 @@ Concrete storage map for FreshMarket client — implement in 7.10 and 7.14.
 
 ## Common beginner questions
 
-**Q: Why useRef vs useState for access token?**  
-A: Ref avoids re-rendering whole tree on silent refresh — either works; pick one pattern and stay consistent.
+<FaqGroup>
 
-**Q: Can React read the refresh cookie to debug?**  
-A: httpOnly means **no** — use Network tab Set-Cookie headers instead.
+<FaqItem question="Why useRef vs useState for access token?">
 
-**Q: What is `credentials: 'include'`?**  
-A: Tells fetch to send cookies on cross-origin calls — required for refresh from Vite to Express.
+Ref avoids re-rendering whole tree on silent refresh — either works; pick one pattern and stay consistent.
+
+</FaqItem>
+
+<FaqItem question="Can React read the refresh cookie to debug?">
+
+httpOnly means **no** — use Network tab Set-Cookie headers instead.
+
+</FaqItem>
+
+<FaqItem question="What is `credentials: 'include'`?">
+
+Tells fetch to send cookies on cross-origin calls — required for refresh from Vite to Express.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Access token — memory only
 
@@ -112,6 +122,11 @@ If Ch 6 still returns refresh in JSON body temporarily:
 **✅ Do:** Scope cookie Path to /api/auth minimum.
 
 **❌ Don't:** Expose refresh to window object for debugging in committed code.
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3Z14Z85RTA1FY1CQSSV" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 18
 lesson: 12
 summary: "**Why this step matters:** Atomic decrement prevents **overselling the last item** — conditional `$inc` is production-grade grocery logic, not a nice-to-have. Fail-all if any product cannot decrement."
 ---
-# 18.12 — Stock decrement
-
-> **[Build]** · Chapter 18 — Checkout & orders API · *Atomic decrement; fail all if any OOS*
-
 **Why this step matters:** Atomic decrement prevents **overselling the last item** — conditional `$inc` is production-grade grocery logic, not a nice-to-have. Fail-all if any product cannot decrement.
 
 **Where the project is now:** Orders insert with snapshots; stock unchanged; cart still full.
@@ -73,6 +69,11 @@ Checkout validation (18.10) should reject unpublished products before decrement.
 - [ ] Successful checkout reduces stock in Compass
 - [ ] Failed stock checkout leaves stock and cart unchanged
 - [ ] Concurrent test documented in learning log
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW50HDJ0SBKXWP5K0JXTG" />
 
 ## Next
 

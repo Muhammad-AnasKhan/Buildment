@@ -4,10 +4,6 @@ module: 15
 lesson: 5
 summary: "**Why this step matters:** Routes and API helpers are the **skeleton** of the shop — without `/shop` and `getProducts()` in place, every later component has nowhere to mount. One small scaffold step prevents file-path confusion for the rest of the chapter."
 ---
-# 15.5 — Scaffold customer pages
-
-> **[Build]** · Chapter 15 — Shop the marketplace · *`pages/Shop.jsx`, `pages/ProductDetail.jsx`*
-
 **Why this step matters:** Routes and API helpers are the **skeleton** of the shop — without `/shop` and `getProducts()` in place, every later component has nowhere to mount. One small scaffold step prevents file-path confusion for the rest of the chapter.
 
 **Where the project is now:** No customer-facing product pages.
@@ -28,8 +24,8 @@ In `App.jsx` (or routes module):
 
 | Path | Element |
 |---|---|
-| `/shop` | `<Shop />` |
-| `/shop/:productId` | `<ProductDetail />` |
+| `/shop` | '&lt;Shop />' |`
+| `/shop/:productId` | '&lt;ProductDetail />' |`
 
 **Not** nested under vendor layout — customer-facing top-level routes.
 
@@ -98,6 +94,11 @@ git commit -m "feat(client): scaffold shop and product detail routes"
 **❌ Don't:** Wire cart in this commit.
 
 **❌ Don't:** Copy vendor product edit page — different audience.
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4R1F7DPH7TD6CWJA0BD" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 7
 lesson: 5
 summary: "When access token expires mid-session, user should not see login screen if refresh is valid. The API client implements **refresh once, retry once, else logout**."
 ---
-# 7.5 — The 401 retry loop
-
-> **[Learn]** · Chapter 07 — Login & registration · *Refresh and retry once; else logout*
-
 When access token expires mid-session, user should not see login screen if refresh is valid. The API client implements **refresh once, retry once, else logout**.
 
 ## Why this matters for absolute beginners
@@ -20,14 +16,28 @@ Without retry logic, users get kicked to login every 15 minutes while grocery sh
 
 ## Common beginner questions
 
-**Q: Should login 401 trigger refresh?**  
-A: No — wrong password is not expired token. Interceptor skips public auth routes.
+<FaqGroup>
 
-**Q: Two API calls 401 at once?**  
-A: Optional mutex shares one refresh promise — stretch acceptable to document duplicates.
+<FaqItem question="Should login 401 trigger refresh?">
 
-**Q: 403 after retry — logout?**  
-A: No — user is authenticated but not allowed; show error, keep session.
+No — wrong password is not expired token. Interceptor skips public auth routes.
+
+</FaqItem>
+
+<FaqItem question="Two API calls 401 at once?">
+
+Optional mutex shares one refresh promise — stretch acceptable to document duplicates.
+
+</FaqItem>
+
+<FaqItem question="403 after retry — logout?">
+
+No — user is authenticated but not allowed; show error, keep session.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Algorithm
 
@@ -96,6 +106,11 @@ Document in learning log.
 **❌ Don't:** Refresh on 403 — wrong semantics.
 
 **❌ Don't:** Infinite retry loops.
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3Z86F10X85ESYE7A014" />
 
 ## Next
 

@@ -12,6 +12,7 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "content:import": "tsx scripts/import-course.ts",
+    "content:validate": "node scripts/validate-chapters.mjs",
     "test": "vitest run"
   },
   "dependencies": {

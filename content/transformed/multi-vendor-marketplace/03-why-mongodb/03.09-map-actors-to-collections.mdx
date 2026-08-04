@@ -4,10 +4,6 @@ module: 3
 lesson: 9
 summary: "**Why this step matters:** Diagrams show structure; actor paragraphs show **behaviour** — who reads which collection, how checkout splits orders, why Vendor B must never see Vendor A's products. Chapter 8 isolation tests start as sentences you write here."
 ---
-# 3.9 — Map actors to collections
-
-> **[Build]** · Chapter 03 — Why MongoDB · *User, Store, Product, CartItem, Order — one paragraph each*
-
 **Why this step matters:** Diagrams show structure; actor paragraphs show **behaviour** — who reads which collection, how checkout splits orders, why Vendor B must never see Vendor A's products. Chapter 8 isolation tests start as sentences you write here.
 
 **Where the project is now:** `docs/erd-draft.md` exists with diagram and tables.
@@ -20,14 +16,28 @@ Tables of collections describe **structure**; actor paragraphs describe **behavi
 
 ## Common beginner questions
 
-**Q: Can I copy the sample vendor paragraph?**  
-A: Use it as a template only — rewrite in your words; viva checks understanding, not copy-paste.
+<FaqGroup>
 
-**Q: Why note seed counts (2 vendors, 2 stores)?**  
-A: Chapter 5 seed must support **Vendor A vs Vendor B** isolation tests — one vendor is not enough to prove boundaries.
+<FaqItem question="Can I copy the sample vendor paragraph?">
 
-**Q: What is IDOR in plain English?**  
-A: Changing an id in the URL to access someone else's resource — your vendor paragraph should say queries are **scoped**, never global `find()` on products.
+Use it as a template only — rewrite in your words; viva checks understanding, not copy-paste.
+
+</FaqItem>
+
+<FaqItem question="Why note seed counts (2 vendors, 2 stores)?">
+
+Chapter 5 seed must support **Vendor A vs Vendor B** isolation tests — one vendor is not enough to prove boundaries.
+
+</FaqItem>
+
+<FaqItem question="What is IDOR in plain English?">
+
+Changing an id in the URL to access someone else's resource — your vendor paragraph should say queries are **scoped**, never global `find()` on products.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## What you must add
 
@@ -145,6 +155,11 @@ git commit -m "docs: map actors to collections in ERD draft"
 **❌ Don't:** Describe SQL tables — stay document collections.
 
 **❌ Don't:** Skip vendor isolation language — marketplace core.
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3G0DNWQ5BMGFXMW8DVD" />
 
 ## Next
 

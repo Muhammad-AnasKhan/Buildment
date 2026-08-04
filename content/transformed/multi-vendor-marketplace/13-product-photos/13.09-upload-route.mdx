@@ -4,10 +4,6 @@ module: 13
 lesson: 9
 summary: "JSON routes cannot accept files — multipart needs multer and a dedicated endpoint. This route streams bytes to Cloudinary, runs ownership checks, and saves only the URL in MongoDB. It completes the server half of the photo pipeline."
 ---
-# 13.9 — Upload route
-
-> **[Build]** · Chapter 13 — Product photos · *`POST /products/:id/image` — multer → Cloudinary*
-
 ## Why this step matters
 
 JSON routes cannot accept files — multipart needs multer and a dedicated endpoint. This route streams bytes to Cloudinary, runs ownership checks, and saves only the URL in MongoDB. It completes the server half of the photo pipeline.
@@ -131,6 +127,11 @@ git commit -m "feat(products): add multipart image upload route"
 - [ ] Vendor B + Vendor A product → 403  
 - [ ] Oversized file → 400  
 - [ ] Image URL loads in browser tab
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4JC5CW96GE2NH7GRQ9P" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 8
 lesson: 4
 summary: "Two words, two responsibilities. Conflating them causes either open APIs or 401 loops where 403 is correct."
 ---
-# 8.4 — Authentication vs authorization
-
-> **[Learn]** · Chapter 08 — Authorization & isolation · *Function-level vs object-level*
-
 Two words, two responsibilities. Conflating them causes either open APIs or 401 loops where 403 is correct.
 
 ## Authentication (authn)
@@ -17,7 +13,7 @@ Two words, two responsibilities. Conflating them causes either open APIs or 401 
 | Mechanism | FreshMarket |
 |---|---|
 | JWT access token | requireAuth |
-| Result | req.user = {"{"} id, role {"}"} |
+| Result | req.user = &#123; id, role &#125; |
 | Failure | **401 Unauthorized** |
 
 *"I am Vendor A"*
@@ -90,7 +86,9 @@ Matrix documents each route.
 
 ## Reflect
 
-Customer with valid token tries PATCH /stores/:id — 403 or 401? Why?
+<OpenQuestion id="01KZ5FW42W91HVWTW8QPW22HZF" />
+
+
 
 ## Next
 

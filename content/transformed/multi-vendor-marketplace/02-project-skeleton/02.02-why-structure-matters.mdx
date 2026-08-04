@@ -4,10 +4,6 @@ module: 2
 lesson: 2
 summary: "Folder structure feels like housekeeping. It isn't. It's **architecture written in paths** — the decision about where auth lives, where product routes live, and where shared database code lives. Get it wrong on day one and you'll either refactor under pressure mid-course or menta"
 ---
-# 2.2 — Why structure matters
-
-> **[Read]** · Chapter 02 — Project skeleton · *Layer vs module folders; real cost of picking wrong*
-
 Folder structure feels like housekeeping. It isn't. It's **architecture written in paths** — the decision about where auth lives, where product routes live, and where shared database code lives. Get it wrong on day one and you'll either refactor under pressure mid-course or mentally translate every chapter instruction for twenty chapters.
 
 ## Why this matters for absolute beginners
@@ -20,14 +16,28 @@ When every tutorial puts code in one file, it is easy to believe structure is so
 
 ## Common beginner questions
 
-**Q: Can't I reorganize later when the app grows?**  
-A: You can — teams do — but it costs days of moving files, fixing imports, and re-testing. This chapter spends one day so the next eighteen chapters stay aligned.
+<FaqGroup>
 
-**Q: Is module-based the only valid architecture?**  
-A: No — layer-based works for tiny APIs. Multi-domain marketplaces outgrow layer folders quickly; this course mandates modules for **shared path language**, not because layers are "wrong."
+<FaqItem question="Can't I reorganize later when the app grows?">
 
-**Q: Does folder structure affect users?**  
-A: Not directly — users never see your paths. It affects **you**: speed of fixes, merge conflicts, and whether you can explain your repo in a viva.
+You can — teams do — but it costs days of moving files, fixing imports, and re-testing. This chapter spends one day so the next eighteen chapters stay aligned.
+
+</FaqItem>
+
+<FaqItem question="Is module-based the only valid architecture?">
+
+No — layer-based works for tiny APIs. Multi-domain marketplaces outgrow layer folders quickly; this course mandates modules for **shared path language**, not because layers are "wrong."
+
+</FaqItem>
+
+<FaqItem question="Does folder structure affect users?">
+
+Not directly — users never see your paths. It affects **you**: speed of fixes, merge conflicts, and whether you can explain your repo in a viva.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The two tempting shortcuts
 
@@ -161,3 +171,6 @@ Early PHP marketplaces often started as single `index.php` files. Node ecosystem
 - **Bounded contexts** — optional mental model for why modules scale  
 
 Next: exact tree preview — what you'll have when this chapter gates clear.
+## Before you continue
+
+<OpenQuestion id="01KZ5FW375MSHKHFTXCYH2FB0Z" />

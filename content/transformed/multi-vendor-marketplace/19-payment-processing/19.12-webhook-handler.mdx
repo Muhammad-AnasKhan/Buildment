@@ -4,10 +4,6 @@ module: 19
 lesson: 12
 summary: "**Why this step matters:** Customers close tabs. Networks drop. Your server might crash after Stripe marks a Payment Intent **succeeded** but before `POST /checkout` finishes. Webhooks are Stripe's **retryable phone call** — \"this payment really succeeded.\""
 ---
-# 19.12 — Webhook handler
-
-> **[Build]** · Chapter 19 — Payment processing · *Stripe webhook; signature verify*
-
 **Why this step matters:** Customers close tabs. Networks drop. Your server might crash after Stripe marks a Payment Intent **succeeded** but before `POST /checkout` finishes. Webhooks are Stripe's **retryable phone call** — "this payment really succeeded."
 
 **Where the project is now:** Checkout verifies PI on `POST /checkout`; no webhook route; Stripe cannot notify your app asynchronously.
@@ -94,6 +90,11 @@ Production uses HTTPS URL + Dashboard webhook endpoint. Same handler code; **new
 - [ ] Tampered body → 400
 - [ ] Duplicate `payment_intent.succeeded` → no duplicate orders (with 19.13)
 - [ ] README documents mount order for raw body
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW541K8XZ11YRG4V0XA60" />
 
 ## Next
 

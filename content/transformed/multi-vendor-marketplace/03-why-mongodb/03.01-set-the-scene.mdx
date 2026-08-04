@@ -4,10 +4,6 @@ module: 3
 lesson: 1
 summary: "**Where the project is now:** Chapter 2 left you with a running skeleton — Express API, React client, `GET /health` working in curl and in the browser. Data does not persist yet. Restart the server and the only truth is \"the process is up.\" Vendors, products, carts, and orders ex"
 ---
-# 3.1 — Set the scene
-
-> **[Read]** · Chapter 03 — Why MongoDB · *Every marketplace needs a database — which shape fits?*
-
 **Where the project is now:** Chapter 2 left you with a running skeleton — Express API, React client, `GET /health` working in curl and in the browser. Data does not persist yet. Restart the server and the only truth is "the process is up." Vendors, products, carts, and orders exist only as empty folders under `server/src/modules/`.
 
 **Where this chapter goes:** Before you install Mongoose or paste a connection string (Chapter 4), you decide **what kind of database** this marketplace needs — and you sketch **what collections** you'll create in Chapter 5.
@@ -41,20 +37,40 @@ The hat you wear now is **data architect for FreshMarket**. You are not wiring M
 
 ## Common beginner questions
 
-**Q: Why not install MongoDB in Chapter 2?**  
-A: Because you would connect before knowing **what shape** your data needs. Grocery products need units and perishability; orders need price snapshots. Designing first prevents copy-paste schemas that break at checkout.
+<FaqGroup>
 
-**Q: Is this chapter just reading — does my repo change?**  
-A: You **commit** `docs/erd-draft.md` and actor narratives in sub-chapters 3.8–3.9. That is real project progress — design artifacts live beside code in professional teams.
+<FaqItem question="Why not install MongoDB in Chapter 2?">
 
-**Q: MongoDB was chosen for MERN — do I need to agree?**  
-A: For **this repo**, yes — chapter paths assume Mongoose and documents. You must also articulate **when SQL would compete** (reporting, strict FK enforcement). Interviewers want trade-offs, not fanboyism.
+Because you would connect before knowing **what shape** your data needs. Grocery products need units and perishability; orders need price snapshots. Designing first prevents copy-paste schemas that break at checkout.
 
-**Q: What's the difference between `erd-draft.md` and code in Chapter 5?**  
-A: Draft is your **plan**; Mongoose models are the **enforceable plan**. They should match. If they diverge, fix the draft or the model — do not leave both telling different stories.
+</FaqItem>
 
-**Q: I don't know SQL or MongoDB deeply. Can I still do this chapter?**  
-A: Yes. Sub-chapters 3.4–3.6 explain both styles using **the same marketplace entities** side by side. You need curiosity, not prior DBA experience.
+<FaqItem question="Is this chapter just reading — does my repo change?">
+
+You **commit** `docs/erd-draft.md` and actor narratives in sub-chapters 3.8–3.9. That is real project progress — design artifacts live beside code in professional teams.
+
+</FaqItem>
+
+<FaqItem question="MongoDB was chosen for MERN — do I need to agree?">
+
+For **this repo**, yes — chapter paths assume Mongoose and documents. You must also articulate **when SQL would compete** (reporting, strict FK enforcement). Interviewers want trade-offs, not fanboyism.
+
+</FaqItem>
+
+<FaqItem question="What's the difference between `erd-draft.md` and code in Chapter 5?">
+
+Draft is your **plan**; Mongoose models are the **enforceable plan**. They should match. If they diverge, fix the draft or the model — do not leave both telling different stories.
+
+</FaqItem>
+
+<FaqItem question="I don't know SQL or MongoDB deeply. Can I still do this chapter?">
+
+Yes. Sub-chapters 3.4–3.6 explain both styles using **the same marketplace entities** side by side. You need curiosity, not prior DBA experience.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Why every marketplace needs a deliberate database choice
 
@@ -139,3 +155,6 @@ Estimated time: **half a day to one day** — less typing than Chapter 2, more t
 - [ ] `docs/` folder exists in your repo (created in 2.8)  
 
 Next: why grocery specifically pushes on data shape — not generic e-commerce.
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3DJ8VWHHM15NXS1B0CM" />

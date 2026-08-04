@@ -4,10 +4,6 @@ module: 4
 lesson: 6
 summary: "Before you write `shared/db.js`, read how **Mongoose** expects connections to work in modern Node (async/await, connection events, disconnect). This sub-chapter is a **mandatory reading assignment** — not optional skimming."
 ---
-# 4.6 — Prime your thinking
-
-> **[Learn]** · Chapter 04 — Config & database · *Mandatory read: Mongoose connection docs*
-
 Before you write `shared/db.js`, read how **Mongoose** expects connections to work in modern Node (async/await, connection events, disconnect). This sub-chapter is a **mandatory reading assignment** — not optional skimming.
 
 You already decided *why* MongoDB (Chapter 3). This read covers *how* the driver connects — so your boot sequence in 4.11–4.12 matches official patterns.
@@ -18,14 +14,28 @@ Connection bugs feel mystical — "Mongoose buffering timed out" with no context
 
 ## Common beginner questions
 
-**Q: Can I copy the Mongoose docs sample server verbatim?**  
-A: Adapt to your module layout — use `config.js` for URI, export `connectDB` from `shared/db.js`.
+<FaqGroup>
 
-**Q: Should health use `readyState` or a boolean I set?**  
-A: Either if **accurate** — spec requires health JSON to reflect real connection state.
+<FaqItem question="Can I copy the Mongoose docs sample server verbatim?">
 
-**Q: Why read disconnect if MVP never shuts down gracefully?**  
-A: Optional for gate — good habit for deploy restarts; note in learning log if you implement it.
+Adapt to your module layout — use `config.js` for URI, export `connectDB` from `shared/db.js`.
+
+</FaqItem>
+
+<FaqItem question="Should health use `readyState` or a boolean I set?">
+
+Either if **accurate** — spec requires health JSON to reflect real connection state.
+
+</FaqItem>
+
+<FaqItem question="Why read disconnect if MVP never shuts down gracefully?">
+
+Optional for gate — good habit for deploy restarts; note in learning log if you implement it.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Mandatory read
 
@@ -119,6 +129,11 @@ If `db.js` is wrong, every schema chapter fails for the same reason — fix conn
 **❌ Don't:** Use deprecated callback-only patterns from old Stack Overflow answers.
 
 **❌ Don't:** Skip reading because "I'll figure it out when it breaks" — boot bugs waste evenings.
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3J0VFX80713ZJ173N10" />
 
 ## Next
 

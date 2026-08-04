@@ -4,10 +4,6 @@ module: 9
 lesson: 10
 summary: "Vendors should not hunt MongoDB ids in Compass. `GET /stores/me` resolves the store from the JWT — and returns **404** when no shop exists yet. That 404 is not an error; Chapter 10 turns it into the onboarding redirect signal."
 ---
-# 9.10 — Get my store route
-
-> **[Build]** · Chapter 09 — Vendor store API · *`GET /stores/me`*
-
 ## Why this step matters
 
 Vendors should not hunt MongoDB ids in Compass. `GET /stores/me` resolves the store from the JWT — and returns **404** when no shop exists yet. That 404 is not an error; Chapter 10 turns it into the onboarding redirect signal.
@@ -134,6 +130,11 @@ git commit -m "feat(stores): add GET /stores/me for vendor own store"
 - [ ] Customer → 403  
 - [ ] Unauthenticated → 401  
 - [ ] Response matches POST document shape  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4794Y7F0H31R0SHHHGV" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 18
 lesson: 1
 summary: "**Where the project is now:** Chapter 16–17 gave you a **multi-vendor cart** — persisted, user-scoped, visible in the browser grouped by store. No orders exist yet. Checkout is a button stub. Stock decrements only on manual vendor edits."
 ---
-# 18.1 — Set the scene
-
-> **[Read]** · Chapter 18 — Checkout & orders API · *One checkout → many vendor orders*
-
 **Where the project is now:** Chapter 16–17 gave you a **multi-vendor cart** — persisted, user-scoped, visible in the browser grouped by store. No orders exist yet. Checkout is a button stub. Stock decrements only on manual vendor edits.
 
 **Where this chapter goes:** One `POST /checkout` turns the cart into **one order per vendor** — with **price snapshots** on every line, **atomic stock decrement**, and cart cleared on success. List routes for customer and vendor follow.
@@ -159,6 +155,11 @@ Estimated time: **two full days** — transaction logic deserves care.
 - [ ] Chapter 17 gate cleared
 - [ ] `docs/erd-draft.md` or `docs/erd.md` shows Order with embedded snapshot lines
 - [ ] You understand cart lines carry `storeId`
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4YH78HHV0CQ7J7VB6ER" />
 
 ## Next
 

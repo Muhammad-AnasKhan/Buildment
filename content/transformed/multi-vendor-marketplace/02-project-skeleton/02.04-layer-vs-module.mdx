@@ -4,10 +4,6 @@ module: 2
 lesson: 4
 summary: "You need a **mandated decision** before creating folders. This sub-chapter compares the two mainstream Node/Express layouts honestly, then tells you which one this course requires — and why changing your mind later breaks the guide."
 ---
-# 2.4 — Layer vs module
-
-> **[Learn]** · Chapter 02 — Project skeleton · *Pros/cons table; **mandate module-based** for this course*
-
 You need a **mandated decision** before creating folders. This sub-chapter compares the two mainstream Node/Express layouts honestly, then tells you which one this course requires — and why changing your mind later breaks the guide.
 
 ## Why this matters for absolute beginners
@@ -20,14 +16,28 @@ You need a **mandated decision** before creating folders. This sub-chapter compa
 
 ## Common beginner questions
 
-**Q: My tutorial used `controllers/` — can I keep it?**  
-A: Not if you want chapter paths to match. Translate once now to modules, not twenty times later.
+<FaqGroup>
 
-**Q: What goes in `shared/`?**  
-A: Code every module needs — config, DB connection, shared error helpers — not business logic for one feature.
+<FaqItem question="My tutorial used `controllers/` — can I keep it?">
 
-**Q: Should route handlers contain all the logic?**  
-A: Start thin in Chapter 2; Chapter 6+ grows **service** files inside each module. Routes parse HTTP; services talk to the database.
+Not if you want chapter paths to match. Translate once now to modules, not twenty times later.
+
+</FaqItem>
+
+<FaqItem question="What goes in `shared/`?">
+
+Code every module needs — config, DB connection, shared error helpers — not business logic for one feature.
+
+</FaqItem>
+
+<FaqItem question="Should route handlers contain all the logic?">
+
+Start thin in Chapter 2; Chapter 6+ grows **service** files inside each module. Routes parse HTTP; services talk to the database.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Layer-based structure
 
@@ -196,3 +206,6 @@ Routes stay thin — parse request, call service, send response. Fat services, t
 - **Mandatory** for this course — chapter paths assume it  
 
 Next: client vs server — taught pointing at your two folders.
+## Before you continue
+
+<OpenQuestion id="01KZ5FW380SQ9VKVV1JW26R2J3" />

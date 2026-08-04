@@ -4,10 +4,6 @@ module: 19
 lesson: 13
 summary: "Chapter 18 warned: double-click \"Place order\" could create duplicate order sets. Payment adds a **natural idempotency key** — the Payment Intent id. Same charge must never produce two sets of split orders."
 ---
-# 19.13 — Idempotency and double-submit
-
-> **[Build]** · Chapter 19 — Payment processing · *Intent idempotency; double submit*
-
 Chapter 18 warned: double-click "Place order" could create duplicate order sets. Payment adds a **natural idempotency key** — the Payment Intent id. Same charge must never produce two sets of split orders.
 
 This sub-chapter is **learn + build**: understand retry semantics, then enforce them in checkout and webhook.
@@ -101,6 +97,11 @@ Separate from **order** idempotency on `paymentIntentId` — implement order gua
 - [ ] Stock decremented once only
 - [ ] Webhook retry does not duplicate orders
 - [ ] README mentions idempotency strategy
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5485D473N5XPF8AVFD6" />
 
 ## Next
 

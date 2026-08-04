@@ -4,10 +4,6 @@ module: 18
 lesson: 11
 summary: "**Why this step matters:** This implements the fix for the trap in 18.2 — copy name, price, unit at commit time so order history never changes when vendors edit the catalogue. Skipping this is the most common checkout bug."
 ---
-# 18.11 — Snapshot order lines
-
-> **[Build]** · Chapter 18 — Checkout & orders API · *priceAtPurchase, nameAtPurchase, unitAtPurchase*
-
 **Why this step matters:** This implements the fix for the trap in 18.2 — copy name, price, unit at commit time so order history never changes when vendors edit the catalogue. Skipping this is the most common checkout bug.
 
 **Where the project is now:** Checkout creates orders; lines may still reference live product fields.
@@ -64,6 +60,11 @@ Order history UI reads `priceAtPurchase` and `unitAtPurchase` from embedded line
 - [ ] Compass order document shows snapshot fields on each line
 - [ ] `total` matches sum of line totals
 - [ ] Grocery unit visible in stored line (`kg`, etc.)
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW50BNBWXEBCDRWSTRX23" />
 
 ## Next
 

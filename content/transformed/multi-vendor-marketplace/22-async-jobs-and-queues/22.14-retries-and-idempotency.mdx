@@ -4,10 +4,6 @@ module: 22
 lesson: 14
 summary: "**Why this step matters:** Networks blip and processors crash mid-job — retries turn \"best-effort notify\" into resilient notify. `jobId` dedup stops double-click enqueue from spamming duplicate mock emails."
 ---
-# 22.14 — Retries and idempotency
-
-> **[Build]** · Chapter 22 — Async jobs & queues · *Attempts, backoff, `jobId` dedup*
-
 **Why this step matters:** Networks blip and processors crash mid-job — retries turn "best-effort notify" into resilient notify. `jobId` dedup stops double-click enqueue from spamming duplicate mock emails.
 
 **After this step:** Jobs use **retry policy** for transient failures and **jobId** deduplication to avoid duplicate notifications on re-enqueue.
@@ -103,6 +99,11 @@ No Bull Board required for gate.
 - [ ] Duplicate enqueue with same `jobId` does not create second job (test in dev)
 - [ ] Forced processor error shows retry in worker log
 - [ ] Documented in learning log
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5CZ47ET66Z9FCRX4ANE" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 6
 lesson: 10
 summary: "**Why this step matters:** Auth HTTP code lives in `modules/auth/` while User models stay in `modules/users/` — separation keeps login routes from bloating user schema files. Empty route and service files give Chapter 6 build steps named targets."
 ---
-# 6.10 — Scaffold auth module
-
-> **[Build]** · Chapter 06 — Authentication API · *`auth.routes.js`, `auth.service.js`, `auth.middleware.js`, `auth.schema.js`*
-
 **Why this step matters:** Auth HTTP code lives in `modules/auth/` while User models stay in `modules/users/` — separation keeps login routes from bloating user schema files. Empty route and service files give Chapter 6 build steps named targets.
 
 **Where the project is now:** Empty or missing `server/src/modules/auth/` files.
@@ -109,6 +105,11 @@ git commit -m "chore(server): scaffold auth module with route and service contra
 - [ ] JWT env vars in .env.example
 - [ ] config validates JWT_SECRET
 - [ ] bcrypt + jsonwebtoken installed
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3VSSVM6HYKS86WA7QKW" />
 
 ## Next
 

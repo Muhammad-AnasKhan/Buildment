@@ -4,10 +4,6 @@ module: 7
 lesson: 13
 summary: "**Why this step matters:** Login stores access in memory and refresh via cookie — the security pattern from 7.2–7.4 becomes real here. Successful login should redirect by role and trigger boot-friendly session restore on return visits."
 ---
-# 7.13 — Login page
-
-> **[Build]** · Chapter 07 — Login & registration · *Form → login; store token; redirect by role*
-
 **Why this step matters:** Login stores access in memory and refresh via cookie — the security pattern from 7.2–7.4 becomes real here. Successful login should redirect by role and trigger boot-friendly session restore on return visits.
 
 **Where the project is now:** useAuth.login exists; Login form not fully wired.
@@ -73,6 +69,11 @@ git commit -m "feat(client): wire login with role-based redirect"
 - [ ] Customer login redirects customer route
 - [ ] 403 shows verify message
 - [ ] User object in useAuth after login
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW410VZWY5AYGZ6H4XKXQ" />
 
 ## Next
 

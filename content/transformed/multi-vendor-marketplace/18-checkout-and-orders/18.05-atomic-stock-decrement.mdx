@@ -4,10 +4,6 @@ module: 18
 lesson: 5
 summary: "Two customers checkout the last bag of rice at the same time. Without atomic decrement, both succeed and you oversell by one. Grocery stock is often fractional and low — races are real even in class demos."
 ---
-# 18.5 — Atomic stock decrement
-
-> **[Learn]** · Chapter 18 — Checkout & orders API · *Race condition; `$inc` with filter*
-
 Two customers checkout the last bag of rice at the same time. Without atomic decrement, both succeed and you oversell by one. Grocery stock is often fractional and low — races are real even in class demos.
 
 ## In plain English
@@ -97,6 +93,11 @@ Stock increment on vendor edit is Chapter 11/12 — not checkout. Checkout only 
 - [ ] I can explain conditional `$inc` in plain language
 - [ ] I understand fail-all vs partial checkout
 - [ ] I know my MongoDB setup supports transactions or compensating logic
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4Z9M536E3A37Q8SF8HS" />
 
 ## Next
 

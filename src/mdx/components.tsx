@@ -1,5 +1,6 @@
 import type { MDXComponents } from "next-mdx-remote-client/rsc";
 import { blockRegistry } from "@/blocks/registry";
+import { FaqGroup, FaqItem } from "@/components/learn/faq-group";
 
 // The allowlisted component map for the reader route — see
 // docs/02-content-authoring.mdx "Rendering pipeline": only components in this
@@ -8,6 +9,8 @@ import { blockRegistry } from "@/blocks/registry";
 export const mdxComponents: MDXComponents = {
   Quiz: blockRegistry.QUIZ.Component,
   OpenQuestion: blockRegistry.OPEN_QUESTION.Component,
+  FaqGroup,
+  FaqItem,
   table: (props: React.ComponentProps<"table">) => (
     <div className="my-4 overflow-x-auto">
       <table {...props} />

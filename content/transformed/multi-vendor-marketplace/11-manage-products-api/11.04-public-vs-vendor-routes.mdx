@@ -4,10 +4,6 @@ module: 11
 lesson: 4
 summary: "Route **naming and mount order** prevent accidental exposure of vendor inventory on public paths. This sub-chapter specs how Chapter 11 routes coexist with Chapter 14 stubs in `app.js`."
 ---
-# 11.4 — Public vs vendor routes
-
-> **[Learn]** · Chapter 11 — Manage products API · *`/vendor/products` vs `/products`*
-
 Route **naming and mount order** prevent accidental exposure of vendor inventory on public paths. This sub-chapter specs how Chapter 11 routes coexist with Chapter 14 stubs in `app.js`.
 
 ## Namespace strategy
@@ -85,6 +81,11 @@ Helper name examples: `assertProductOwner`, `assertStoreOwnsProduct`.
 **❌ Don't:** Add `GET /products` public list in Ch 11.
 
 **❌ Don't:** Let vendor pass another store's id in POST body.
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4BDCXEJ0QZ3FQ0V9S9X" />
 
 ## Next
 

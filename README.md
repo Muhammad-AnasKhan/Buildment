@@ -61,6 +61,8 @@ database session for that user — no Google/Resend credentials required. This r
 | `pnpm db:migrate` | `prisma migrate dev` |
 | `pnpm db:seed` | Re-run the seed script (idempotent — upserts) |
 | `pnpm db:studio` | Prisma Studio, a GUI for the local database |
+| `pnpm content:import` | Import course content from `content/import/` into the database |
+| `pnpm content:validate` | Compile-check every chapter's MDX |
 
 ## Observability (optional)
 

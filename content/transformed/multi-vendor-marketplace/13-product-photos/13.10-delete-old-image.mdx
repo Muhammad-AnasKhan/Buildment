@@ -4,10 +4,6 @@ module: 13
 lesson: 10
 summary: "Replacing a photo without deleting the old Cloudinary asset leaks storage cost and clutters your account. `imagePublicId` exists for lifecycle management — remove the previous asset when a vendor uploads a new one."
 ---
-# 13.10 — Delete old image
-
-> **[Build]** · Chapter 13 — Product photos · *Replace image; remove old from storage*
-
 ## Why this step matters
 
 Replacing a photo without deleting the old Cloudinary asset leaks storage cost and clutters your account. `imagePublicId` exists for lifecycle management — remove the previous asset when a vendor uploads a new one.
@@ -105,6 +101,11 @@ git commit -m "feat(products): remove previous cloudinary asset on image replace
 - [ ] Second upload — old publicId destroyed  
 - [ ] Replace on product without prior image — same as first upload  
 - [ ] DB always has latest URL after success
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4JKNWFEWKW321P0YHBT" />
 
 ## Next
 

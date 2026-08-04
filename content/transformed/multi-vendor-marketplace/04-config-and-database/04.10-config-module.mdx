@@ -4,10 +4,6 @@ module: 4
 lesson: 10
 summary: "**Why this step matters:** One validated config object stops `process.env` sprawl across dozens of files. Fail-fast on missing `MONGODB_URI` here turns mysterious Mongoose errors into a clear message the first time you forget to copy `.env.example`."
 ---
-# 4.10 — Config module
-
-> **[Build]** · Chapter 04 — Config & database · *`server/src/shared/config.js` — validate required vars at startup*
-
 **Why this step matters:** One validated config object stops `process.env` sprawl across dozens of files. Fail-fast on missing `MONGODB_URI` here turns mysterious Mongoose errors into a clear message the first time you forget to copy `.env.example`.
 
 **Where the project is now:** `server/.env` exists locally; no code reads `MONGODB_URI` yet.
@@ -162,6 +158,11 @@ Include `dotenv` in commit if installed.
 - [ ] Missing `MONGODB_URI` fails clearly  
 - [ ] Valid `.env` allows module to load without throw  
 - [ ] No MongoDB connection attempted in config module  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3KC9FVC4EWS6E3BKNRF" />
 
 ## Next
 

@@ -16,8 +16,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "devWeekend learning",
+  title: "buildment",
   description: "Interactive courses and guided chapters — learn by building.",
+  icons: { icon: "/logo.png" },
 };
 
 export default function RootLayout({

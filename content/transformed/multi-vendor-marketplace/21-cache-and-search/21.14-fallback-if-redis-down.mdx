@@ -4,10 +4,6 @@ module: 21
 lesson: 14
 summary: "**Why this step matters:** Production Redis restarts, misconfigured URLs, and free-tier limits happen. An app that crashes when cache is unavailable is not shippable — degraded speed is acceptable; downtime is not."
 ---
-# 21.14 — Fallback if Redis down
-
-> **[Build]** · Chapter 21 — Cache & search · *Direct MongoDB read; no crash*
-
 **Why this step matters:** Production Redis restarts, misconfigured URLs, and free-tier limits happen. An app that crashes when cache is unavailable is not shippable — degraded speed is acceptable; downtime is not.
 
 **After this step:** API serves catalogue from MongoDB when Redis unavailable — **no crash**, degraded performance only.
@@ -57,6 +53,11 @@ Do not mark `redis: connected` in `/health` unless you add it — not required f
 
 - [ ] Redis stopped → products still load
 - [ ] Redis restored → cache works again
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW59X1KTKPQ4F2XPNS1Z3" />
 
 ## Next
 

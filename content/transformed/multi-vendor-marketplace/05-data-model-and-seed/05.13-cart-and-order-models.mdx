@@ -4,10 +4,6 @@ module: 5
 lesson: 13
 summary: "**Why this step matters:** Cart references live products; orders embed **snapshot** lines — the hardest modelling choice in the marketplace. Getting embed field names right here makes Chapter 18 checkout a wiring task instead of a schema rescue."
 ---
-# 5.13 — Cart and Order models
-
-> **[Build]** · Chapter 05 — Data model & seed · *CartItem refs; Order embeds snapshot OrderItems*
-
 **Why this step matters:** Cart references live products; orders embed **snapshot** lines — the hardest modelling choice in the marketplace. Getting embed field names right here makes Chapter 18 checkout a wiring task instead of a schema rescue.
 
 **Where the project is now:** User, Profile, Store, and Product models exist. Cart and checkout collections missing.
@@ -151,6 +147,11 @@ git commit -m "feat(server): add CartItem and Order models with embedded snapsho
 - [ ] Embedded schema has nameAtPurchase, priceAtPurchase, unitAtPurchase
 - [ ] OrderItem is subdocument not top-level model
 - [ ] timestamps on CartItem and Order
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3RQ7DB3G1TN6849EDGS" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 22
 lesson: 12
 summary: "**Why this step matters:** Enqueue without a processor is a message nobody reads. `[NOTIFY]` logs here are the gate proof that multi-vendor checkout triggers one vendor line per store plus one customer summary."
 ---
-# 22.12 — Order created processor
-
-> **[Build]** · Chapter 22 — Async jobs & queues · *Vendor + customer mock notifications (console)*
-
 **Why this step matters:** Enqueue without a processor is a message nobody reads. `[NOTIFY]` logs here are the gate proof that multi-vendor checkout triggers one vendor line per store plus one customer summary.
 
 **After this step:** Worker handles `order.created` jobs — logs mock vendor notifications (per order/store) and one mock customer confirmation.
@@ -104,6 +100,11 @@ With `jobId` dedup on enqueue (21.14), duplicate enqueue suppressed — processo
 - [ ] Worker logs one customer line per checkout
 - [ ] 201 returned before logs (timing visible)
 - [ ] Processor registered for `order.created` job name
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5CMMGHXJM0B5BFHN089" />
 
 ## Next
 

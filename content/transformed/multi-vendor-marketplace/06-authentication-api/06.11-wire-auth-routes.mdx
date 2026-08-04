@@ -4,10 +4,6 @@ module: 6
 lesson: 11
 summary: "**Why this step matters:** Unmounted routers are dead code — Express must expose `/api/auth/*` before any handler runs. One mount line in `app.js` is how every future module (stores, products) attaches too."
 ---
-# 6.11 — Wire auth routes
-
-> **[Build]** · Chapter 06 — Authentication API · *Mount `/api/auth` on app*
-
 **Why this step matters:** Unmounted routers are dead code — Express must expose `/api/auth/*` before any handler runs. One mount line in `app.js` is how every future module (stores, products) attaches too.
 
 **Where the project is now:** Auth router exists but not mounted on Express app.
@@ -102,6 +98,11 @@ git commit -m "feat(server): mount auth routes at /api/auth"
 - [ ] GET /health still works
 - [ ] Router imported without circular dependency crash
 - [ ] README lists auth base path
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3W0A3D2RD5M3PS11P63" />
 
 ## Next
 

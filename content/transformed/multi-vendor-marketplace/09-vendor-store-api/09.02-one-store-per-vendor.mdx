@@ -4,10 +4,6 @@ module: 9
 lesson: 2
 summary: "A vendor who runs **Green Valley Organics** should not also appear as **Green Valley Organics (2)** because they clicked \"create store\" twice. Multi-store per vendor is a real product pattern — but **not** for this course. FreshMarket assumes **one local shop per vendor account**"
 ---
-# 9.2 — One store per vendor
-
-> **[Read]** · Chapter 09 — Vendor store API · *Duplicate store = confusing marketplace*
-
 A vendor who runs **Green Valley Organics** should not also appear as **Green Valley Organics (2)** because they clicked "create store" twice. Multi-store per vendor is a real product pattern — but **not** for this course. FreshMarket assumes **one local shop per vendor account**.
 
 ## Why one store matters for grocery
@@ -113,6 +109,11 @@ Defend in viva: *"One store keeps cart split, ownership checks, and onboarding l
 - Enforce at **DB index + service + route**  
 - Duplicate create → **409 Conflict**  
 - **`GET /stores/me`** + 404 enables Chapter 10 gate  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4593ENZZFGXYYHQF5WR" />
 
 ## Next
 

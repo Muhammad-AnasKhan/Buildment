@@ -4,10 +4,6 @@ module: 3
 lesson: 4
 summary: "You need both models in your head — not to pick both, but to explain **why this course picks documents** for FreshMarket while acknowledging relational strengths. This sub-chapter walks the **same marketplace entities** through SQL tables and MongoDB collections so the comparison"
 ---
-# 3.4 — Relational vs document
-
-> **[Learn]** · Chapter 03 — Why MongoDB · *Side-by-side; orders/ownership in both worlds*
-
 You need both models in your head — not to pick both, but to explain **why this course picks documents** for FreshMarket while acknowledging relational strengths. This sub-chapter walks the **same marketplace entities** through SQL tables and MongoDB collections so the comparison is concrete, not abstract.
 
 ## Why this matters for absolute beginners
@@ -20,17 +16,34 @@ You need both models in your head — not to pick both, but to explain **why thi
 
 ## Common beginner questions
 
-**Q: Are MongoDB documents schemaless chaos?**  
-A: The **database** allows flexible documents; **your team** does not. Chapter 5 enforces Mongoose schemas — discipline is on you, not the engine.
+<FaqGroup>
 
-**Q: Does MongoDB mean no joins?**  
-A: You still combine data — via `populate()` or aggregation instead of SQL JOIN. N+1 query traps exist in both worlds (Chapter 14).
+<FaqItem question="Are MongoDB documents schemaless chaos?">
 
-**Q: If SQL is better for reports, why MongoDB here?**  
-A: Teaching path, JSON API fit, embedded order aggregates, and grocery attribute flexibility — weighted in 3.5's scorecard. You must still name one SQL win case in your learning log.
+The **database** allows flexible documents; **your team** does not. Chapter 5 enforces Mongoose schemas — discipline is on you, not the engine.
 
-**Q: What's the denormalisation trap in one sentence?**  
-A: Copying store names onto every product feels fast; vendor rename makes every copy wrong — except **order snapshots**, where stale prices are correct on purpose.
+</FaqItem>
+
+<FaqItem question="Does MongoDB mean no joins?">
+
+You still combine data — via `populate()` or aggregation instead of SQL JOIN. N+1 query traps exist in both worlds (Chapter 14).
+
+</FaqItem>
+
+<FaqItem question="If SQL is better for reports, why MongoDB here?">
+
+Teaching path, JSON API fit, embedded order aggregates, and grocery attribute flexibility — weighted in 3.5's scorecard. You must still name one SQL win case in your learning log.
+
+</FaqItem>
+
+<FaqItem question="What's the denormalisation trap in one sentence?">
+
+Copying store names onto every product feels fast; vendor rename makes every copy wrong — except **order snapshots**, where stale prices are correct on purpose.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The same marketplace in relational form
 
@@ -134,7 +147,7 @@ Don't choose MongoDB believing you avoid transaction thinking.
 | Technique | SQL | MongoDB |
 |---|---|---|
 | Pagination | LIMIT/OFFSET or keyset | limit/skip or cursor |
-| Filter category | WHERE category = | find({"{"} category {"}"}) |
+| Filter category | WHERE category = | find(&#123; category &#125;) |
 | Text search | FULLTEXT index | text index (Chapter 21) |
 | Cache | Redis in front of either | Redis in front of either |
 
@@ -169,3 +182,6 @@ Do it once as tables, once as documents with embedded lines. Label snapshot fiel
 - **Transactions and N+1** exist in both — skill matters more than logo  
 
 Next: the mandated FreshMarket decision — MongoDB + Mongoose in depth.
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3EGP7ZH1KEXDPG8FE7A" />

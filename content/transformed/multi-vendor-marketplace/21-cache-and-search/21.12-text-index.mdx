@@ -4,10 +4,6 @@ module: 21
 lesson: 12
 summary: "**Why this step matters:** Regex search on every product row slows down as the catalogue grows. A text index is the MongoDB-native way to make `?search=rice` scale — Week 4 demo expects search on production."
 ---
-# 21.12 — Text index
-
-> **[Build]** · Chapter 21 — Cache & search · *Index on name + category; `$text` search*
-
 **Why this step matters:** Regex search on every product row slows down as the catalogue grows. A text index is the MongoDB-native way to make `?search=rice` scale — Week 4 demo expects search on production.
 
 **After this step:** Product collection has **text index** on `name` and `category`; `GET /products?search=` uses `$text` query.
@@ -61,6 +57,11 @@ No `search` param → existing list query without `$text`.
 
 - [ ] `?search=rice` returns relevant products
 - [ ] `?search=nonexistentxyz` returns empty list not error
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW59JE6F2TB9JAMDVEX8V" />
 
 ## Next
 

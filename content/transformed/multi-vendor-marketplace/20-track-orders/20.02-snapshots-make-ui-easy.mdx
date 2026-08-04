@@ -4,10 +4,6 @@ module: 20
 lesson: 2
 summary: "Order history UI would be fragile if every row required a live product fetch. **Snapshots mean the list endpoint is the only read** — no N+1 populate for price, no surprise when vendor deletes a product."
 ---
-# 20.2 — Snapshots make UI easy
-
-> **[Read]** · Chapter 20 — Track orders · *No product lookup for prices*
-
 Order history UI would be fragile if every row required a live product fetch. **Snapshots mean the list endpoint is the only read** — no N+1 populate for price, no surprise when vendor deletes a product.
 
 Chapter 18 embedded `nameAtPurchase`, `priceAtPurchase`, and `unitAtPurchase` on each order line for exactly this reason. Chapter 20 is where that design pays off in React.
@@ -92,6 +88,11 @@ That was the **price snapshot trap** in Chapter 18.2 — the whole reason embedd
 - [ ] I know five snapshot fields used in UI
 - [ ] I understand populate for store name only
 - [ ] I can explain why receipts must not use live prices
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW55678TRXXAKE3QJBKNC" />
 
 ## Next
 

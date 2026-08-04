@@ -4,10 +4,6 @@ module: 5
 lesson: 2
 summary: "Every junior marketplace tutorial tempts you to **copy display names onto child documents** so queries feel simple. *\"Just put `vendorName` and `storeName` on every product — one query, no joins.\"*"
 ---
-# 5.2 — The denormalisation trap
-
-> **[Read]** · Chapter 05 — Data model & seed · *Copied `vendorName` on every product — explain, don't build wrong*
-
 Every junior marketplace tutorial tempts you to **copy display names onto child documents** so queries feel simple. *"Just put `vendorName` and `storeName` on every product — one query, no joins."*
 
 That shortcut creates a maintenance nightmare. This sub-chapter explains the trap so you **reference** stores instead of duplicating names — and understand when denormalisation is actually justified (order snapshots in Chapter 18).
@@ -22,14 +18,28 @@ Denormalisation is a real technique — not always wrong. Beginners apply it in 
 
 ## Common beginner questions
 
-**Q: Isn't populate slow — why not copy store name?**  
-A: One batched populate per page is fine (Chapter 14 optimizes further). Copying names onto N products is write amplification on every rename.
+<FaqGroup>
 
-**Q: CartItem — embed product or reference?**  
-A: Reference live product pre-checkout; snapshot at order creation — not permanent embed on cart.
+<FaqItem question="Isn't populate slow — why not copy store name?">
 
-**Q: How do I explain this in the viva?**  
-A: "Reference for mutable shared data; copy for immutable purchase history."
+One batched populate per page is fine (Chapter 14 optimizes further). Copying names onto N products is write amplification on every rename.
+
+</FaqItem>
+
+<FaqItem question="CartItem — embed product or reference?">
+
+Reference live product pre-checkout; snapshot at order creation — not permanent embed on cart.
+
+</FaqItem>
+
+<FaqItem question="How do I explain this in the viva?">
+
+"Reference for mutable shared data; copy for immutable purchase history."
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The tempting pattern
 
@@ -146,7 +156,9 @@ Document this table in your learning log when models are done.
 
 ## Reflect
 
-Answer briefly (learning log preview):
+<OpenQuestion id="01KZ5FW3NS1D2ME985AQEAF22V" />
+
+
 
 1. Why is copying store name onto Product wrong but copying price onto Order right?
 2. What Mongoose method loads store name for a product list without duplicating data?

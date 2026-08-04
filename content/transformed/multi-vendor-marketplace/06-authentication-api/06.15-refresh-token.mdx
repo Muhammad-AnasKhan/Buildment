@@ -4,10 +4,6 @@ module: 6
 lesson: 15
 summary: "**Why this step matters:** Refresh tokens let clients renew access without re-entering passwords — but only if stored hashed and revocable on logout. This step completes the session story Chapter 7's silent refresh depends on."
 ---
-# 6.15 — Refresh token
-
-> **[Build]** · Chapter 06 — Authentication API · *Hashed refresh in DB; `POST /auth/refresh`; revoke*
-
 **Why this step matters:** Refresh tokens let clients renew access without re-entering passwords — but only if stored hashed and revocable on logout. This step completes the session story Chapter 7's silent refresh depends on.
 
 **Where the project is now:** Access JWT works; refresh may be duplicate long JWT or missing persistence.
@@ -111,6 +107,11 @@ git commit -m "feat(auth): refresh token hash storage and rotation endpoint"
 - [ ] Invalid refresh 401
 - [ ] Rotation updates hash in DB
 - [ ] Raw refresh not stored in MongoDB
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3X28V5SBKJCR1GQ9WTJ" />
 
 ## Next
 

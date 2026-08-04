@@ -4,10 +4,6 @@ module: 4
 lesson: 13
 summary: "**Why this step matters:** Chapter 2's health proved the process was up; this extension proves **memory works**. The client Home page and ops tooling rely on honest `db` status — not a green `ok` when MongoDB is down."
 ---
-# 4.13 — Health check DB status
-
-> **[Build]** · Chapter 04 — Config & database · *Extend `/health` with `db: connected`*
-
 **Why this step matters:** Chapter 2's health proved the process was up; this extension proves **memory works**. The client Home page and ops tooling rely on honest `db` status — not a green `ok` when MongoDB is down.
 
 **Where the project is now:** Server connects MongoDB on boot and listens. `/health` still returns only `{ "status": "ok" }` from Chapter 2.
@@ -148,6 +144,11 @@ Platforms poll `/health` to keep instances alive. `db: connected` proves depende
 - [ ] `status: ok` still present  
 - [ ] Public route — no auth  
 - [ ] Committed  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3M6SGWB6QR6Y87QK4HV" />
 
 ## Next
 

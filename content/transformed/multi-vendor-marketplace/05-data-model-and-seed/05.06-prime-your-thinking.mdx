@@ -4,10 +4,6 @@ module: 5
 lesson: 6
 summary: "Before you write `user.model.js`, read how Mongoose expects schemas, refs, and model registration to work. Twenty minutes here saves hours of \"populate returned null\" debugging."
 ---
-# 5.6 — Prime your thinking
-
-> **[Learn]** · Chapter 05 — Data model & seed · *Mandatory read: Mongoose schemas & refs*
-
 Before you write `user.model.js`, read how Mongoose expects schemas, refs, and model registration to work. Twenty minutes here saves hours of "populate returned null" debugging.
 
 ## Why this matters for absolute beginners
@@ -16,17 +12,34 @@ Mongoose errors are opaque when fundamentals are shaky — `OverwriteModelError`
 
 ## Common beginner questions
 
-**Q: Schema vs model — what's the one-line difference?**  
-A: Schema is the blueprint; model is the compiled constructor you query with `User.create()`.
+<FaqGroup>
 
-**Q: Why unique index on email?**  
-A: Duplicate emails break login — "which user is this password for?"
+<FaqItem question="Schema vs model — what's the one-line difference?">
 
-**Q: pre-save password hash in Ch 5 or Ch 6?**  
-A: Hashing lands in auth service Chapter 6 — schemas may store `passwordHash` field now; seed may use placeholder until bcrypt exists.
+Schema is the blueprint; model is the compiled constructor you query with `User.create()`.
 
-**Q: Collection name `users` vs file `user.model.js`?**  
-A: Mongoose pluralizes by default — know what Compass shows vs what you export.
+</FaqItem>
+
+<FaqItem question="Why unique index on email?">
+
+Duplicate emails break login — "which user is this password for?"
+
+</FaqItem>
+
+<FaqItem question="pre-save password hash in Ch 5 or Ch 6?">
+
+Hashing lands in auth service Chapter 6 — schemas may store `passwordHash` field now; seed may use placeholder until bcrypt exists.
+
+</FaqItem>
+
+<FaqItem question="Collection name `users` vs file `user.model.js`?">
+
+Mongoose pluralizes by default — know what Compass shows vs what you export.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Mandatory reads
 
@@ -178,6 +191,11 @@ Transfer to models in build cluster.
 - [ ] I know what `ref: 'Store'` requires on the other model
 - [ ] I know embedded array vs separate collection tradeoff for orderItems
 - [ ] I read timestamps and index docs
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3PZ69GBC6GNX814PR3Y" />
 
 ## Next
 

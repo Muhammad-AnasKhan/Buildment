@@ -4,10 +4,6 @@ module: 21
 lesson: 7
 summary: "**Why this step matters:** You cannot prove cache helped if you never recorded baseline speed. This continuity step captures \"before Redis\" timings and confirms commerce still works — the reference point for every HIT/MISS test in 20.9–20.10."
 ---
-# 21.7 — Where the project is now
-
-> **[Build]** · Chapter 21 — Cache & search · *Full app works; every browse hits MongoDB*
-
 **Why this step matters:** You cannot prove cache helped if you never recorded baseline speed. This continuity step captures "before Redis" timings and confirms commerce still works — the reference point for every HIT/MISS test in 20.9–20.10.
 
 **Build cluster starts here.** Week 3 commerce works in browser. Every `GET /products` still hits MongoDB on every page load — fine for demo, wrong for scale. Chapter 21 adds **Redis cache-aside** on catalogue reads and a **text index** for search.
@@ -112,6 +108,11 @@ Cache does not fix N+1 — it only avoids repeat work.
 - [ ] Redis reachable (`redis-cli ping` or cloud dashboard)  
 - [ ] Public products route works without cache  
 - [ ] Cache key strategy sketched  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW58C2344DDEV3DE1VCD9" />
 
 ## Next
 

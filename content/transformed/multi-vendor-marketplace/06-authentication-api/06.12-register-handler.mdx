@@ -4,10 +4,6 @@ module: 6
 lesson: 12
 summary: "**Why this step matters:** Register is the front door — it creates User + Profile, hashes nothing yet incorrectly, and starts the OTP verification story. Chapter 7's Register page calls exactly what you implement here."
 ---
-# 6.12 — Register handler
-
-> **[Build]** · Chapter 06 — Authentication API · *`POST /auth/register` — hash password; role vendor/customer*
-
 **Why this step matters:** Register is the front door — it creates User + Profile, hashes nothing yet incorrectly, and starts the OTP verification story. Chapter 7's Register page calls exactly what you implement here.
 
 **Where the project is now:** Auth routes mounted; register endpoint returns stub or 501.
@@ -110,6 +106,11 @@ git commit -m "feat(auth): implement register with bcrypt and OTP generation"
 - [ ] Invalid role 400
 - [ ] OTP logged or returned in dev
 - [ ] isVerified false after register
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3W6ZXZE7CFYHSMK28TQ" />
 
 ## Next
 

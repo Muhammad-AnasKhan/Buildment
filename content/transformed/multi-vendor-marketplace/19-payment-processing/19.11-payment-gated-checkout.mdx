@@ -4,10 +4,6 @@ module: 19
 lesson: 11
 summary: "**Why this step matters:** This is the **gate** between money and merchandise — if verification is wrong, you either give away groceries or charge without creating orders. Everything else in Chapter 19 supports this seam."
 ---
-# 19.11 — Payment-gated checkout
-
-> **[Build]** · Chapter 19 — Payment processing · *POST /checkout requires paymentIntentId; verify paid*
-
 **Why this step matters:** This is the **gate** between money and merchandise — if verification is wrong, you either give away groceries or charge without creating orders. Everything else in Chapter 19 supports this seam.
 
 **Where the project is now:** `POST /payments/intent` creates intents; `POST /checkout` still runs Chapter 18 pipeline without payment — the fake-checkout trap.
@@ -114,6 +110,11 @@ Pick one idempotent pattern — document in README.
 - [ ] Same PI id on every order from one checkout
 - [ ] Stock decremented; cart cleared — Ch 18 behaviour preserved
 - [ ] Compass shows payment fields on Order documents
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW53T8VFD67F69KZRQNDH" />
 
 ## Next
 

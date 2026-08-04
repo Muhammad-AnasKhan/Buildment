@@ -4,10 +4,6 @@ module: 6
 lesson: 3
 summary: "By the end of Chapter 6, your API supports **full authentication flow via curl** — register, verify OTP, login, refresh access token, and access a protected route with Bearer token. Passwords hashed; refresh tokens stored hashed in DB."
 ---
-# 6.3 — What you'll build
-
-> **[Read]** · Chapter 06 — Authentication API · *Register, login, refresh, OTP — API only*
-
 By the end of Chapter 6, your API supports **full authentication flow via curl** — register, verify OTP, login, refresh access token, and access a protected route with Bearer token. Passwords hashed; refresh tokens stored hashed in DB.
 
 ## Why this matters for absolute beginners
@@ -16,17 +12,34 @@ This table is your **contract with Chapter 7**. Every path, status code, and tok
 
 ## Common beginner questions
 
-**Q: Why `/api/auth` prefix?**  
-A: Namespaces auth routes away from future `/api/products` — mount once in `app.js`.
+<FaqGroup>
 
-**Q: Refresh in cookie or JSON body?**  
-A: Body OK for 6.18 curl tests; Chapter 7 prefers httpOnly cookie — document both phases.
+<FaqItem question="Why `/api/auth` prefix?">
 
-**Q: Is logout required for gate?**  
-A: Optional — refresh revocation is the important logout semantics.
+Namespaces auth routes away from future `/api/products` — mount once in `app.js`.
 
-**Q: Where do User models live vs auth routes?**  
-A: Models in `modules/users/`; HTTP layer in `modules/auth/` — separation keeps concerns clear.
+</FaqItem>
+
+<FaqItem question="Refresh in cookie or JSON body?">
+
+Body OK for 6.18 curl tests; Chapter 7 prefers httpOnly cookie — document both phases.
+
+</FaqItem>
+
+<FaqItem question="Is logout required for gate?">
+
+Optional — refresh revocation is the important logout semantics.
+
+</FaqItem>
+
+<FaqItem question="Where do User models live vs auth routes?">
+
+Models in `modules/users/`; HTTP layer in `modules/auth/` — separation keeps concerns clear.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## API deliverables
 
@@ -132,6 +145,11 @@ End-to-end:
 **❌ Don't:** Use same secret as tutorial copy-paste — generate local JWT_SECRET.
 
 **❌ Don't:** Skip OTP — Ch 7 VerifyOtp page depends on it.
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3TB3189Q6ND2DNK8KSF" />
 
 ## Next
 

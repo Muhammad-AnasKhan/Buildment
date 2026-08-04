@@ -4,10 +4,6 @@ module: 3
 lesson: 7
 summary: "Before you commit `docs/erd-draft.md`, read MongoDB's guidance on **data modelling** so your sketch reflects official vocabulary — one-to-one, one-to-many, embedding, referencing — not only this course's prose."
 ---
-# 3.7 — Prime your thinking
-
-> **[Learn]** · Chapter 03 — Why MongoDB · *Mandatory read: MongoDB data modelling introduction*
-
 Before you commit `docs/erd-draft.md`, read MongoDB's guidance on **data modelling** so your sketch reflects official vocabulary — one-to-one, one-to-many, embedding, referencing — not only this course's prose.
 
 ## Why this matters for absolute beginners
@@ -16,14 +12,28 @@ Course prose and official docs use slightly different words for the same ideas. 
 
 ## Common beginner questions
 
-**Q: Do I need to read the entire MongoDB manual?**  
-A: No — introduction sections on embed vs reference and the 16 MB limit are enough for this gate.
+<FaqGroup>
 
-**Q: Why skim Mongoose if Chapter 5 implements schemas?**  
-A: So your ERD field names match what `ref: 'Store'` and subdocument arrays will look like — fewer surprises when code meets diagram.
+<FaqItem question="Do I need to read the entire MongoDB manual?">
 
-**Q: What if my ERD tool does not show embedded arrays well?**  
-A: Describe embedded `orderItems` in prose below the diagram — many teams do. Clarity beats pretty pictures.
+No — introduction sections on embed vs reference and the 16 MB limit are enough for this gate.
+
+</FaqItem>
+
+<FaqItem question="Why skim Mongoose if Chapter 5 implements schemas?">
+
+So your ERD field names match what `ref: 'Store'` and subdocument arrays will look like — fewer surprises when code meets diagram.
+
+</FaqItem>
+
+<FaqItem question="What if my ERD tool does not show embedded arrays well?">
+
+Describe embedded `orderItems` in prose below the diagram — many teams do. Clarity beats pretty pictures.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Mandatory read — before you draft the ERD
 
@@ -103,3 +113,6 @@ Have paper, Excalidraw, dbdiagram.io, or Mermaid ready — tool choice yours.
 - **Reflect table** — embed vs ref per entity  
 
 Continue to **Audit Your Planned Schema** in the sidebar.
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3FEE8JEXBARD12JC6KN" />

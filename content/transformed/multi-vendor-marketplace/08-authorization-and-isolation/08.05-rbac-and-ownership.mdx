@@ -4,10 +4,6 @@ module: 8
 lesson: 5
 summary: "FreshMarket uses **two-layer authorization**: role-based access control (RBAC) at the route, then **ownership chain lookup** at the object."
 ---
-# 8.5 — RBAC and ownership
-
-> **[Learn]** · Chapter 08 — Authorization & isolation · *Role check + store chain lookup*
-
 FreshMarket uses **two-layer authorization**: role-based access control (RBAC) at the route, then **ownership chain lookup** at the object.
 
 ## Roles (RBAC)
@@ -102,7 +98,9 @@ Ownership check adds one DB read per mutating request — acceptable for MVP. Ca
 
 ## Reflect
 
-Why is requireRole alone insufficient for PATCH /stores/:id?
+<OpenQuestion id="01KZ5FW4328GPXZ5A1SRY68R8T" />
+
+
 
 ## Next
 

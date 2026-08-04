@@ -4,10 +4,6 @@ module: 18
 lesson: 2
 summary: "Store order lines as `{ productId, quantity }` only. Six months later the vendor changes basmati rice from ₹120/kg to ₹140/kg. Your order history page reloads and shows **₹140** for a purchase that happened at **₹120**. Accounting, customer trust, and your viva all fail."
 ---
-# 18.2 — Price snapshot trap
-
-> **[Read]** · Chapter 18 — Checkout & orders API · *product_id only → price changes rewrite history*
-
 Store order lines as `{ productId, quantity }` only. Six months later the vendor changes basmati rice from ₹120/kg to ₹140/kg. Your order history page reloads and shows **₹140** for a purchase that happened at **₹120**. Accounting, customer trust, and your viva all fail.
 
 This sub-chapter explains the trap **before** you implement the fix in 18.11.
@@ -118,6 +114,11 @@ Not for MVP — cart is mutable intent. **Checkout** is the commit point (18.11)
 - [ ] I can explain the trap without looking at notes
 - [ ] I can list four snapshot fields for a grocery line
 - [ ] I understand why cart prices ≠ order prices
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4YQM3WT70SKDDJ1840E" />
 
 ## Next
 

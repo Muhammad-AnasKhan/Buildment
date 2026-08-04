@@ -4,10 +4,6 @@ module: 22
 lesson: 9
 summary: "**Why this step matters:** The queue module is the API's outbound mailbox — every async job in this chapter enqueues through here. One shared module prevents queue-name typos that silently drop jobs."
 ---
-# 22.9 — Queue module
-
-> **[Build]** · Chapter 22 — Async jobs & queues · *`server/src/shared/queue.js` — BullMQ connection*
-
 **Why this step matters:** The queue module is the API's outbound mailbox — every async job in this chapter enqueues through here. One shared module prevents queue-name typos that silently drop jobs.
 
 **After this step:** `server/src/shared/queue.js` exports a BullMQ `Queue` (or factory) connected via `REDIS_URL` from Chapter 21 config.
@@ -91,6 +87,11 @@ git commit -m "feat(server): add bullmq queue module"
 - [ ] API boots with new module imported (smoke import in orders service or test script)
 - [ ] No Worker required for API start
 - [ ] `jobs.constants.js` defines three job names
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5C058WV4EDRRR8C573M" />
 
 ## Next
 

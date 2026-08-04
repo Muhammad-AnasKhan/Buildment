@@ -4,10 +4,6 @@ module: 3
 lesson: 6
 summary: "MongoDB gives you two ways to relate data: **reference** another document by `_id`, or **embed** subdocuments inside a parent document. Wrong choice causes pain at checkout or bloated documents. This sub-chapter is the decision framework for FreshMarket — apply it in **3.8** on y"
 ---
-# 3.6 — Embedding vs referencing
-
-> **[Learn]** · Chapter 03 — Why MongoDB · *Order lines embedded; products reference stores*
-
 MongoDB gives you two ways to relate data: **reference** another document by `_id`, or **embed** subdocuments inside a parent document. Wrong choice causes pain at checkout or bloated documents. This sub-chapter is the decision framework for FreshMarket — apply it in **3.8** on your ERD.
 
 ## Why this matters for absolute beginners
@@ -20,17 +16,34 @@ Embed vs reference is the **most common MongoDB beginner mistake** after "put ev
 
 ## Common beginner questions
 
-**Q: Why put `storeId` on CartItem if Product already has `storeId`?**  
-A: Checkout groups by vendor in one pass without loading every product document — small, intentional duplication for a hot path.
+<FaqGroup>
 
-**Q: Can order lines be a separate collection instead of embedded?**  
-A: Yes in industry — this course embeds for simpler order history reads and teaching clarity. Your ERD must show snapshot **field names** either way.
+<FaqItem question="Why put `storeId` on CartItem if Product already has `storeId`?">
 
-**Q: Will embedded order lines hit MongoDB's size limit?**  
-A: Not for normal grocery orders — 16 MB is enormous for line items. Embedding thousands of products **inside a store document** is the real anti-pattern.
+Checkout groups by vendor in one pass without loading every product document — small, intentional duplication for a hot path.
 
-**Q: Profile — embed in User or separate collection?**  
-A: Separate — course choice. Login stays lean; profile loads when needed.
+</FaqItem>
+
+<FaqItem question="Can order lines be a separate collection instead of embedded?">
+
+Yes in industry — this course embeds for simpler order history reads and teaching clarity. Your ERD must show snapshot **field names** either way.
+
+</FaqItem>
+
+<FaqItem question="Will embedded order lines hit MongoDB's size limit?">
+
+Not for normal grocery orders — 16 MB is enormous for line items. Embedding thousands of products **inside a store document** is the real anti-pattern.
+
+</FaqItem>
+
+<FaqItem question="Profile — embed in User or separate collection?">
+
+Separate — course choice. Login stays lean; profile loads when needed.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Definitions in plain language
 
@@ -181,3 +194,6 @@ Chapter 14 optimizes catalogue. Chapter 20 relies on snapshots for history simpl
 - **16MB limit** — not a concern for order lines; is for catalog-in-store anti-pattern  
 
 Next: mandatory read before you draft the ERD.
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3F4D8CHZM897BS3JE1H" />

@@ -4,10 +4,6 @@ module: 8
 lesson: 8
 summary: "Writing middleware before you know the rules produces inconsistent guards — one route checks role, another forgets ownership. The matrix is your **spec**: every action, every role, every check type, committed before code. Chapters 9–18 will add rows; Chapter 8 sets the pattern."
 ---
-# 8.8 — Authorization matrix
-
-> **[Build]** · Chapter 08 — Authorization & isolation · *Write `docs/AUTHORIZATION.md` — action × role × check type*
-
 ## Why this step matters
 
 Writing middleware before you know the rules produces inconsistent guards — one route checks role, another forgets ownership. The matrix is your **spec**: every action, every role, every check type, committed before code. Chapters 9–18 will add rows; Chapter 8 sets the pattern.
@@ -67,7 +63,7 @@ Mark rows "planned" for future chapters — honest status column OK.
 | JWT | requireAuth |
 | role | requireRole(...) |
 | ownership | DB lookup chain |
-| scope | query filter {"{"} userId: req.user.id {"}"} |
+| scope | query filter &#123; userId: req.user.id &#125; |
 
 ### 5. IDOR test checklist
 
@@ -107,6 +103,11 @@ git commit -m "docs: add authorization matrix for roles and ownership"
 - [ ] 401 vs 403 documented
 - [ ] IDOR test list present
 - [ ] Roles match JWT payload enum
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW43KEY8Z3DK2VC5SVFAE" />
 
 ## Next
 

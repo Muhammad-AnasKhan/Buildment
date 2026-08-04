@@ -4,10 +4,6 @@ module: 13
 lesson: 2
 summary: "A tempting shortcut: read the file in the browser, base64-encode it, save the string in `product.imageData`. It works in a demo. It fails in production — sometimes within days when document size limits and query latency bite."
 ---
-# 13.2 — The base64 trap
-
-> **[Read]** · Chapter 13 — Product photos · *Document bloat — explain cost, don't build wrong*
-
 A tempting shortcut: read the file in the browser, base64-encode it, save the string in `product.imageData`. It works in a demo. It fails in production — sometimes within days when document size limits and query latency bite.
 
 This sub-chapter explains the **cost** of storing images in MongoDB. You will **not** build this pattern — you will recognize it in code review and reject it.
@@ -96,6 +92,11 @@ Weak answer: "In the database" or "we use multer to save locally" with no deploy
 - [ ] I can explain why base64 in MongoDB hurts list endpoints  
 - [ ] I can draw the flow: file → server → storage → URL → DB  
 - [ ] I know `imageUrl` is a string field, not Binary type
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4GTDTZW82DMZEXR0V2M" />
 
 ## Next
 

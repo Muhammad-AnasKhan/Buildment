@@ -4,10 +4,6 @@ module: 4
 lesson: 1
 summary: "**Where the project is now:** Chapter 2 gave you a running skeleton — Express listens, React loads, `GET /health` returns `{ \"status\": \"ok\" }`. Chapter 3 gave you a **design** — collections, embed vs reference, `docs/erd-draft.md` committed. Nothing persists yet. Restart the serv"
 ---
-# 4.1 — Set the scene
-
-> **[Read]** · Chapter 04 — Config & database · *Apps run but can't persist — time to connect MongoDB*
-
 **Where the project is now:** Chapter 2 gave you a running skeleton — Express listens, React loads, `GET /health` returns `{ "status": "ok" }`. Chapter 3 gave you a **design** — collections, embed vs reference, `docs/erd-draft.md` committed. Nothing persists yet. Restart the server and every vendor, product, and cart item is still imaginary.
 
 **Where this chapter goes:** Your API gets a **real database connection** — configuration from environment variables, Mongoose wired on boot, and a health check that tells the truth about whether MongoDB is reachable.
@@ -41,20 +37,40 @@ The hat you wear now is **platform engineer**. You are wiring infrastructure eve
 
 ## Common beginner questions
 
-**Q: Why config before schemas — isn't the data model the point?**  
-A: Models need an **active connection**. More importantly, teams establish **secret-handling habits** before real user data exists. Leaking a connection string in Git is painful; learning `.env` discipline on an empty database is cheap.
+<FaqGroup>
 
-**Q: Local MongoDB or Atlas — which should I pick?**  
-A: Either works for the gate. Local is fine offline; Atlas matches many deploy guides. Sub-chapter 4.5 helps you decide; the course does not mandate cloud.
+<FaqItem question="Why config before schemas — isn't the data model the point?">
 
-**Q: Will the React app talk to MongoDB directly?**  
-A: **Never.** Only the server reads `MONGODB_URI`. The browser talks HTTP to Express; Express talks to MongoDB. Chapter 2 established that boundary — this chapter implements it on the server side.
+Models need an **active connection**. More importantly, teams establish **secret-handling habits** before real user data exists. Leaking a connection string in Git is painful; learning `.env` discipline on an empty database is cheap.
 
-**Q: What if the server starts but MongoDB is down?**  
-A: You will design honest behaviour — fail at boot and/or report `db: disconnected` on health. The app must not pretend everything is fine when the database is unreachable.
+</FaqItem>
 
-**Q: Do I need to re-debate SQL vs MongoDB here?**  
-A: No. Chapter 3 closed that decision. If the ERD gate is incomplete, finish the draft first — you can connect MongoDB, but implementing models without a blueprint invites rework.
+<FaqItem question="Local MongoDB or Atlas — which should I pick?">
+
+Either works for the gate. Local is fine offline; Atlas matches many deploy guides. Sub-chapter 4.5 helps you decide; the course does not mandate cloud.
+
+</FaqItem>
+
+<FaqItem question="Will the React app talk to MongoDB directly?">
+
+**Never.** Only the server reads `MONGODB_URI`. The browser talks HTTP to Express; Express talks to MongoDB. Chapter 2 established that boundary — this chapter implements it on the server side.
+
+</FaqItem>
+
+<FaqItem question="What if the server starts but MongoDB is down?">
+
+You will design honest behaviour — fail at boot and/or report `db: disconnected` on health. The app must not pretend everything is fine when the database is unreachable.
+
+</FaqItem>
+
+<FaqItem question="Do I need to re-debate SQL vs MongoDB here?">
+
+No. Chapter 3 closed that decision. If the ERD gate is incomplete, finish the draft first — you can connect MongoDB, but implementing models without a blueprint invites rework.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap between "runs" and "remembers"
 
@@ -149,6 +165,11 @@ Estimated time: **one full day** — less conceptual than Chapter 3, more termin
 - [ ] Chapter 2 gate still true — `curl /health` returns 200  
 - [ ] You have **MongoDB available** — local install or Atlas cluster (decide in 4.5)  
 - [ ] Root `.gitignore` includes `.env` (from Chapter 2 — re-verify in 4.9)
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3GFD72Z3MJXTN1PHK30" />
 
 ## Next
 

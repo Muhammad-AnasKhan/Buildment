@@ -4,10 +4,6 @@ module: 13
 lesson: 1
 summary: "**Where the project is now:** Chapters 11–12 gave vendors a product CRUD API and dashboard. Products have names, prices, units, stock — but no photos. A grocery marketplace without images feels like a spreadsheet. Customers need to see what they're buying; vendors need their shel"
 ---
-# 13.1 — Set the scene
-
-> **[Read]** · Chapter 13 — Product photos · *Grocery needs photos; MongoDB is not a photo album*
-
 **Where the project is now:** Chapters 11–12 gave vendors a product CRUD API and dashboard. Products have names, prices, units, stock — but no photos. A grocery marketplace without images feels like a spreadsheet. Customers need to see what they're buying; vendors need their shelves to look real.
 
 **Where this chapter goes:** Product images live in **Cloudinary** (object storage). MongoDB stores only the **URL string** on the product document — never binary data, never base64 blobs.
@@ -146,6 +142,11 @@ Estimated time: **one full day** — Cloudinary account setup plus multer wiring
 - [ ] Product model has `imageUrl` (string, optional)  
 - [ ] Cloudinary free account ready (or account created in 13.8)  
 - [ ] Chapter 4 secrets discipline still true — no `.env` in Git
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4GJ6M679KZYXN1THAFX" />
 
 ## Next
 

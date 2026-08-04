@@ -4,10 +4,6 @@ module: 5
 lesson: 3
 summary: "By the end of Chapter 5, your repo contains **six Mongoose models**, a **runnable seed script**, and a **final ERD** committed to `docs/erd.md`. No API routes yet — only schemas and test data."
 ---
-# 5.3 — What you'll build
-
-> **[Read]** · Chapter 05 — Data model & seed · *All Mongoose models + seed script + ERD*
-
 By the end of Chapter 5, your repo contains **six Mongoose models**, a **runnable seed script**, and a **final ERD** committed to `docs/erd.md`. No API routes yet — only schemas and test data.
 
 ## Why this matters for absolute beginners
@@ -16,17 +12,34 @@ Chapter 5 is where FreshMarket becomes **real in the database** — not health c
 
 ## Common beginner questions
 
-**Q: Why six models before any routes?**  
-A: Routes without schemas guess field names. Register needs User+Profile; checkout needs Order embed shape — define once, reuse everywhere.
+<FaqGroup>
 
-**Q: Must seed create exactly `vendor-a@test.local`?**  
-A: Use deterministic test emails documented in README — Chapter 8 isolation tests assume two distinct vendors.
+<FaqItem question="Why six models before any routes?">
 
-**Q: What's idempotent seed?**  
-A: Running `npm run seed` twice does not duplicate stores — clear-then-insert or upsert; document your approach.
+Routes without schemas guess field names. Register needs User+Profile; checkout needs Order embed shape — define once, reuse everywhere.
 
-**Q: Keep `erd-draft.md`?**  
-A: Yes — add `erd.md` as final; diff them in learning log to show design evolution.
+</FaqItem>
+
+<FaqItem question="Must seed create exactly `vendor-a@test.local`?">
+
+Use deterministic test emails documented in README — Chapter 8 isolation tests assume two distinct vendors.
+
+</FaqItem>
+
+<FaqItem question="What's idempotent seed?">
+
+Running `npm run seed` twice does not duplicate stores — clear-then-insert or upsert; document your approach.
+
+</FaqItem>
+
+<FaqItem question="Keep `erd-draft.md`?">
+
+Yes — add `erd.md` as final; diff them in learning log to show design evolution.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Deliverables checklist
 
@@ -149,6 +162,11 @@ Diff draft vs final in learning log. Explain any change (e.g. added `isPublished
 **❌ Don't:** Add Express routes in model files — separation of concerns.
 
 **❌ Don't:** Skip Profile split — auth chapter expects it.
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3P3Q9B15657HSAKG6KG" />
 
 ## Next
 

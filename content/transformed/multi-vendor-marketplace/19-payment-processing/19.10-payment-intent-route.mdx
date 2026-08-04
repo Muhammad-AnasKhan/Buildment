@@ -4,10 +4,6 @@ module: 19
 lesson: 10
 summary: "**Why this step matters:** The Payment Intent is the **price tag** Stripe will charge — amount must match your server cart total, created before the client collects card details."
 ---
-# 19.10 — Payment Intent route
-
-> **[Build]** · Chapter 19 — Payment processing · *POST `/payments/intent` from cart total*
-
 **Why this step matters:** The Payment Intent is the **price tag** Stripe will charge — amount must match your server cart total, created before the client collects card details.
 
 **Where the project is now:** Stripe client in `shared/stripe.js`; no `payments` module yet; checkout still accepts unpaid requests.
@@ -103,6 +99,11 @@ curl -s -X POST http://localhost:5000/api/payments/intent \\
 - [ ] Dashboard shows intent with correct amount
 - [ ] Vendor role → 403
 - [ ] No orders created by this route alone
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW53KK7GE4MHJV64FBFSS" />
 
 ## Next
 

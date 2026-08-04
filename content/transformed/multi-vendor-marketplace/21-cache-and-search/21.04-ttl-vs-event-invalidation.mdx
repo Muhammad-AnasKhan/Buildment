@@ -4,10 +4,6 @@ module: 21
 lesson: 4
 summary: "Production caches use **both**. TTL is a safety net; invalidation is correctness on writes."
 ---
-# 21.4 — TTL vs event invalidation
-
-> **[Learn]** · Chapter 21 — Cache & search · *Both; implement both in sequence*
-
 Production caches use **both**. TTL is a safety net; invalidation is correctness on writes.
 
 Beginners often pick one and wonder why production still breaks. This sub-chapter gives you the **decision frame** before you implement in 20.9 and 20.11.
@@ -110,6 +106,11 @@ Course order: cache with TTL in 20.9, then invalidation in 20.11 — so you can 
 - [ ] I can defend using both TTL and invalidation in one sentence each
 - [ ] I know where invalidation hooks live (`products.service.js`)
 - [ ] I documented my cache key pattern
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW57SBBK5T20YWX9E3637" />
 
 ## Next
 

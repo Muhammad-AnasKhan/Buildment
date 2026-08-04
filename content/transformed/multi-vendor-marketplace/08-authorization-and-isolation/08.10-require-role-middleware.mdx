@@ -4,10 +4,6 @@ module: 8
 lesson: 10
 summary: "`requireAuth` tells you *who* called the API; `requireRole` tells you *what kind of user* they are. Without it, a customer token could hit vendor-only routes. This middleware is reused on every vendor feature through Week 2 — get the factory pattern right once."
 ---
-# 8.10 — Require role middleware
-
-> **[Build]** · Chapter 08 — Authorization & isolation · *`requireRole('vendor')` — 403 for wrong role*
-
 ## Why this step matters
 
 `requireAuth` tells you *who* called the API; `requireRole` tells you *what kind of user* they are. Without it, a customer token could hit vendor-only routes. This middleware is reused on every vendor feature through Week 2 — get the factory pattern right once.
@@ -98,6 +94,11 @@ git commit -m "feat(auth): add requireRole middleware"
 - [ ] Customer role fails requireRole('vendor') with 403
 - [ ] Missing req.user returns 401
 - [ ] Documented in AUTHORIZATION.md
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW43YAB7DHEDN7PVAA03Z" />
 
 ## Next
 

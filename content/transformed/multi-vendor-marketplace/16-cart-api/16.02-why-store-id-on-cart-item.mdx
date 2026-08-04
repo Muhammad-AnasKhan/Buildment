@@ -4,10 +4,6 @@ module: 16
 lesson: 2
 summary: "Checkout in Chapter 18 creates **one order per vendor** from a single customer checkout click. That split is trivial if every cart line already knows which store it came from."
 ---
-# 16.2 — Why storeId on cart item
-
-> **[Read]** · Chapter 16 — Cart API · *Checkout must group by vendor*
-
 Checkout in Chapter 18 creates **one order per vendor** from a single customer checkout click. That split is trivial if every cart line already knows which store it came from.
 
 This sub-chapter explains why **`storeId` is stored on CartItem** at add time — not derived at checkout from product lookup alone.
@@ -119,6 +115,11 @@ Strong answer starts with cart lines grouped by storeId stored at add time; chec
 - [ ] I can explain grouping by storeId without DB query per line  
 - [ ] I will validate product.storeId === request storeId  
 - [ ] I know cart is user-scoped by userId
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4SSP18FKAFX87XCBB1E" />
 
 ## Next
 

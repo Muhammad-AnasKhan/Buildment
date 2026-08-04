@@ -4,10 +4,6 @@ module: 15
 lesson: 9
 summary: "**Why this step matters:** Customers decide to buy on the **detail** page — larger photo, full description, store name, and the add-to-cart button stub Chapter 17 will wire. Without detail, the marketplace is a window with no door."
 ---
-# 15.9 — Product detail page
-
-> **[Build]** · Chapter 15 — Shop the marketplace · *Single product view + add to cart button stub*
-
 **Why this step matters:** Customers decide to buy on the **detail** page — larger photo, full description, store name, and the add-to-cart button stub Chapter 17 will wire. Without detail, the marketplace is a window with no door.
 
 **Where the project is now:** Shop grid links to `/shop/:productId` but detail may be placeholder.
@@ -34,7 +30,7 @@ Single API call — no second fetch for store.
 | Hero image | Large imageUrl or placeholder |
 | Title | name |
 | Price | price + unit |
-| Store | "Sold by {"{"}store.name{"}"}" — link to shop filtered by storeId stretch |
+| Store | "Sold by &#123;store.name&#125;" — link to shop filtered by storeId stretch |
 | Description | description field if API returns |
 | Meta | category, weightOrQuantity if present |
 | Actions | Quantity selector stretch; **Add to cart** button required |
@@ -98,6 +94,11 @@ git commit -m "feat(client): product detail page with add-to-cart stub"
 - [ ] Invalid id → not found UI  
 - [ ] Add to cart button renders and stub fires  
 - [ ] product.store.id available in handler
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4RTHVKVAMWPFPG070T7" />
 
 ## Next
 

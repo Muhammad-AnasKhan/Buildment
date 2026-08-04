@@ -4,10 +4,6 @@ module: 8
 lesson: 1
 summary: "**Where the project is now:** Users authenticate via JWT — `requireAuth` attaches `req.user.id` and `req.user.role`. Any authenticated vendor could still PATCH any store id if you wrote a naive route. **Logged in ≠ allowed.**"
 ---
-# 8.1 — Set the scene
-
-> **[Read]** · Chapter 08 — Authorization & isolation · *Logged in ≠ allowed*
-
 **Where the project is now:** Users authenticate via JWT — `requireAuth` attaches `req.user.id` and `req.user.role`. Any authenticated vendor could still PATCH any store id if you wrote a naive route. **Logged in ≠ allowed.**
 
 **Where this chapter goes:** **Authorization** — role checks (RBAC), object-level **ownership** checks, IDOR prevention, authorization matrix in `docs/AUTHORIZATION.md`, and proof that Vendor B gets **403** on Vendor A's store.
@@ -91,6 +87,11 @@ Estimated: **1 day**
 
 - [ ] Ch 7 gate — two vendor seed accounts login via UI or curl
 - [ ] Understand User → Store → Product chain from Ch 5
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW428W91EV28K15EEWSHF" />
 
 ## Next
 

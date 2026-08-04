@@ -4,10 +4,6 @@ module: 2
 lesson: 1
 summary: "You cleared the introduction checklist. You know what you're building, how the course gates progress, and what's in scope. **Nothing in your marketplace repo exists yet** — or it shouldn't, if you're starting clean."
 ---
-# 2.1 — Set the scene
-
-> **[Read]** · Chapter 02 — Project skeleton · *What "standing the project on disk" means*
-
 You cleared the introduction checklist. You know what you're building, how the course gates progress, and what's in scope. **Nothing in your marketplace repo exists yet** — or it shouldn't, if you're starting clean.
 
 This chapter is where that changes.
@@ -38,20 +34,40 @@ The hat you wear now is **builder of the skeleton**. You are not designing the d
 
 ## Common beginner questions
 
-**Q: Why not start with MongoDB or login — the interesting parts?**  
-A: Because those features need *somewhere to live*. Without `server/src/modules/` and a running Express app, every later chapter would say "add this somewhere" and you would paste into random files. Structure first; features attach to structure.
+<FaqGroup>
 
-**Q: Do I build inside the course folder (`multi-vendor-marketplace/`)?**  
-A: No. That folder is the textbook. Your app lives in a **separate Git repo** you create in sub-chapter 2.8 — e.g. `~/projects/greenbasket/`.
+<FaqItem question="Why not start with MongoDB or login — the interesting parts?">
 
-**Q: I have never used Express or Vite. Is this chapter too early?**  
-A: This chapter introduces them **one small step at a time**. You will install packages, create entry files, and verify with curl and the browser. Unfamiliar errors are normal; the working rhythm from Chapter 1 applies: read the message, search the docs, fix the smallest failing piece.
+Because those features need *somewhere to live*. Without `server/src/modules/` and a running Express app, every later chapter would say "add this somewhere" and you would paste into random files. Structure first; features attach to structure.
 
-**Q: Why two terminals — can't one command run everything?**  
-A: The client and server are **two separate programs** during development. Two terminals makes it obvious which half broke when something fails. You will run `npm run dev` in `server/` and again in `client/`.
+</FaqItem>
 
-**Q: What if I already have a MERN starter template?**  
-A: Unless it matches this course's **module-based** layout (`server/src/modules/…`), you will fight path instructions for twenty chapters. Safer to scaffold fresh here or adapt your repo to the target tree in 2.3.
+<FaqItem question="Do I build inside the course folder (`multi-vendor-marketplace/`)?">
+
+No. That folder is the textbook. Your app lives in a **separate Git repo** you create in sub-chapter 2.8 — e.g. `~/projects/greenbasket/`.
+
+</FaqItem>
+
+<FaqItem question="I have never used Express or Vite. Is this chapter too early?">
+
+This chapter introduces them **one small step at a time**. You will install packages, create entry files, and verify with curl and the browser. Unfamiliar errors are normal; the working rhythm from Chapter 1 applies: read the message, search the docs, fix the smallest failing piece.
+
+</FaqItem>
+
+<FaqItem question="Why two terminals — can't one command run everything?">
+
+The client and server are **two separate programs** during development. Two terminals makes it obvious which half broke when something fails. You will run `npm run dev` in `server/` and again in `client/`.
+
+</FaqItem>
+
+<FaqItem question="What if I already have a MERN starter template?">
+
+Unless it matches this course's **module-based** layout (`server/src/modules/…`), you will fight path instructions for twenty chapters. Safer to scaffold fresh here or adapt your repo to the target tree in 2.3.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Where you are
 
@@ -177,3 +193,6 @@ You are reading course files in the **guides** repository (or folder) that conta
 Before sub-chapter 2.8, confirm: empty directory chosen, Node 18+, Git installed, Chapter 1 learning log written. Missing any of these is cheaper to fix now than after you've scaffolded the wrong folder.
 
 Next: why folder structure is a real decision — not aesthetics.
+## Before you continue
+
+<OpenQuestion id="01KZ5FW36R45E2D4DXKGZAWZ06" />

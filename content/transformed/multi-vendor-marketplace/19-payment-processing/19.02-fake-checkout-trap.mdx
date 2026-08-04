@@ -4,10 +4,6 @@ module: 19
 lesson: 2
 summary: "Chapter 18's `POST /checkout` creates orders, reduces stock, and clears the cart — **without checking whether anyone paid**. That was the right teaching order. It is **not** production."
 ---
-# 19.2 — Fake checkout trap
-
-> **[Read]** · Chapter 19 — Payment processing · *Free checkout / charge-without-order failure modes*
-
 Chapter 18's `POST /checkout` creates orders, reduces stock, and clears the cart — **without checking whether anyone paid**. That was the right teaching order. It is **not** production.
 
 This sub-chapter names the trap **before** you wire Stripe in 19.9–19.14.
@@ -126,6 +122,11 @@ For learning gate: **required**. It teaches signature verification and idempoten
 - [ ] I can explain fake checkout in one sentence
 - [ ] I know why server must call Stripe API, not trust client
 - [ ] I understand payment wraps Ch 18, not replaces it
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW524WAQEG51ADZSEHAYA" />
 
 ## Next
 

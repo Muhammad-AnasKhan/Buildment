@@ -4,10 +4,6 @@ module: 14
 lesson: 4
 summary: "Mongoose gives two ways to attach store data to product results: **`.populate()`** on a find query and **`$lookup`** in an aggregation pipeline. For FreshMarket's public catalogue, populate is the default — aggregate when you need one round trip or complex shaping."
 ---
-# 14.4 — Populate vs aggregate
-
-> **[Learn]** · Chapter 14 — Browse catalogue API · *Mongoose `.populate('storeId')`*
-
 Mongoose gives two ways to attach store data to product results: **`.populate()`** on a find query and **`$lookup`** in an aggregation pipeline. For FreshMarket's public catalogue, populate is the default — aggregate when you need one round trip or complex shaping.
 
 ## In plain English
@@ -116,6 +112,11 @@ Address on store may be public for marketplace — course choice; document in RE
 - [ ] I can explain why populate is not N+1 in the loop sense  
 - [ ] I know when $lookup would be worth the complexity  
 - [ ] I will map populated `storeId` to public `store` key
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4MBCRD3YRN9J5WRTKAH" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 22
 lesson: 10
 summary: "**Why this step matters:** Jobs enqueued without a running worker sit in Redis forever — checkout \"works\" but nothing notifies. A separate worker entry is the architectural lesson of this chapter and a production requirement in Chapter 23."
 ---
-# 22.10 — Worker process
-
-> **[Build]** · Chapter 22 — Async jobs & queues · *`server/src/worker.js`; `npm run worker`*
-
 **Why this step matters:** Jobs enqueued without a running worker sit in Redis forever — checkout "works" but nothing notifies. A separate worker entry is the architectural lesson of this chapter and a production requirement in Chapter 23.
 
 **After this step:** `server/src/worker.js` is a standalone entry that registers BullMQ `Worker`(s) and processes jobs. `npm run worker` starts it.
@@ -106,6 +102,11 @@ git commit -m "feat(server): add bullmq worker process"
 - [ ] Log shows worker ready
 - [ ] API runs independently in other terminal
 - [ ] Stopping worker does not stop API
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5C8ERCXHTXMJ0HW7S05" />
 
 ## Next
 

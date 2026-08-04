@@ -4,10 +4,6 @@ module: 21
 lesson: 9
 summary: "**Why this step matters:** This is the core cache-aside pattern — the shop window stops hitting MongoDB on every repeat glance. HIT/MISS logs here are your first proof the performance layer works."
 ---
-# 21.9 — Cache catalogue middleware
-
-> **[Build]** · Chapter 21 — Cache & search · *Cache `GET /products` responses*
-
 **Why this step matters:** This is the core cache-aside pattern — the shop window stops hitting MongoDB on every repeat glance. HIT/MISS logs here are your first proof the performance layer works.
 
 **After this step:** `GET /products` checks Redis before MongoDB; stores JSON response on miss.
@@ -70,6 +66,11 @@ Pick one — document in README.
 - [ ] First GET → MISS log
 - [ ] Second identical GET → HIT log
 - [ ] Response body identical
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW58ZD3MN8SN92HKPWM54" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 11
 lesson: 10
 summary: "The vendor back office needs inventory visibility — drafts and published together. `GET /vendor/products` filters by the caller's store only. Chapter 12's product table calls this endpoint; Chapter 14's public catalogue is a different route with different filters."
 ---
-# 11.10 — List vendor products
-
-> **[Build]** · Chapter 11 — Manage products API · *`GET /vendor/products` — scoped to auth vendor*
-
 ## Why this step matters
 
 The vendor back office needs inventory visibility — drafts and published together. `GET /vendor/products` filters by the caller's store only. Chapter 12's product table calls this endpoint; Chapter 14's public catalogue is a different route with different filters.
@@ -87,6 +83,11 @@ git commit -m "feat(products): add GET vendor products scoped to store"
 - [ ] Vendor A sees only own products  
 - [ ] Vendor B list disjoint from A  
 - [ ] Customer GET → 403  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4CTJV57ZZY44CGN53T5" />
 
 ## Next
 

@@ -1,9 +1,35 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CheckCircle2, Circle, CircleDot } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/server/db";
 import { requireEnrolledMentee } from "@/server/auth/guards";
-import { cn } from "@/lib/utils";
+import { CourseOverviewHero } from "@/components/learn/course-overview-hero";
+import { CourseStatsRow } from "@/components/learn/course-stats-row";
+import { CourseTechStack } from "@/components/learn/course-tech-stack";
+import { CourseShowcase } from "@/components/learn/course-showcase";
+import { CourseSkills } from "@/components/learn/course-skills";
+import { CourseSyllabus, type SyllabusModule } from "@/components/learn/course-syllabus";
+import { COURSE_SHOWCASE } from "@/lib/course-showcase";
+import type { ProgressStatus } from "@/generated/prisma/client";
+
+function pickContinueTarget(
+  flatChapters: { slug: string; title: string; status: ProgressStatus }[]
+) {
+  const inProgress = flatChapters.find((c) => c.status === "IN_PROGRESS");
+  if (inProgress) return inProgress;
+
+  const notStarted = flatChapters.find((c) => c.status === "NOT_STARTED");
+  if (notStarted) return notStarted;
+
+  return flatChapters[0] ?? null;
+}
+
+function pickDefaultOpenModule(modules: SyllabusModule[]) {
+  const withProgress = modules.find((mod) =>
+    mod.chapters.some((c) => c.status === "IN_PROGRESS" || c.status === "NOT_STARTED")
+  );
+  return withProgress?.id ?? modules[0]?.id ?? null;
+}
 
 export default async function CourseOverviewPage({
   params,
@@ -17,7 +43,12 @@ export default async function CourseOverviewPage({
     include: {
       modules: {
         orderBy: { order: "asc" },
-        include: { chapters: { orderBy: { order: "asc" } } },
+        include: {
+          chapters: {
+            orderBy: { order: "asc" },
+            include: { _count: { select: { blocks: true } } },
+          },
+        },
       },
     },
   });
@@ -27,67 +58,90 @@ export default async function CourseOverviewPage({
   const progress = await prisma.chapterProgress.findMany({
     where: { enrollmentId: enrollment.id },
   });
-  const progressByChapter = new Map(progress.map((p) => [p.chapterId, p]));
+  const progressByChapter = new Map(progress.map((p) => [p.chapterId, p.status]));
+
+  const modules: SyllabusModule[] = course.modules.map((mod) => {
+    const chapters = mod.chapters.map((chapter) => ({
+      id: chapter.id,
+      slug: chapter.slug,
+      title: chapter.title,
+      status: progressByChapter.get(chapter.id) ?? ("NOT_STARTED" as const),
+      blockCount: chapter._count.blocks,
+    }));
+    return {
+      id: mod.id,
+      order: mod.order,
+      title: mod.title,
+      chapters,
+      completedCount: chapters.filter((c) => c.status === "COMPLETED").length,
+    };
+  });
+
+  const flatChapters = modules.flatMap((mod) => mod.chapters);
+  const continueTarget = pickContinueTarget(flatChapters);
+  const defaultOpenModuleId = pickDefaultOpenModule(modules);
+  const checkpointCount = flatChapters.reduce((sum, c) => sum + c.blockCount, 0);
+
+  const continueLabel =
+    enrollment.percentComplete === 0
+      ? "Start learning"
+      : enrollment.percentComplete >= 100
+        ? "Review course"
+        : "Continue learning";
+
+  const showcaseContent = COURSE_SHOWCASE[course.slug];
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <p className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
-        {course.difficulty ?? "Course"}
-      </p>
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight">{course.title}</h1>
-      {course.description ? (
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">
-          {course.description}
-        </p>
+    <div className="mx-auto max-w-4xl space-y-6 pb-12">
+      <Link
+        href="/dashboard"
+        className="inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-950"
+      >
+        <ArrowLeft className="size-4" />
+        Back to dashboard
+      </Link>
+
+      <CourseOverviewHero
+        difficulty={course.difficulty}
+        title={course.title}
+        description={course.description}
+        projectGoal={course.projectGoal}
+        coverUrl={course.coverUrl}
+        percentComplete={enrollment.percentComplete}
+        continueHref={
+          continueTarget ? `/courses/${course.slug}/${continueTarget.slug}` : null
+        }
+        continueLabel={continueLabel}
+      />
+
+      <CourseStatsRow
+        moduleCount={modules.length}
+        chapterCount={flatChapters.length}
+        estimatedHours={course.estimatedHours}
+        checkpointCount={checkpointCount}
+      />
+
+      {showcaseContent ? (
+        <CourseTechStack techStack={showcaseContent.techStack} />
       ) : null}
 
-      <div className="mt-6 flex items-center gap-3">
-        <div className="h-1.5 w-48 overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-primary transition-all"
-            style={{ width: `${enrollment.percentComplete}%` }}
-          />
-        </div>
-        <span className="text-xs text-muted-foreground">{enrollment.percentComplete}% complete</span>
-      </div>
+      {showcaseContent ? <CourseShowcase tabs={showcaseContent.showcase} /> : null}
 
-      <div className="mt-10 space-y-8">
-        {course.modules.map((mod) => (
-          <div key={mod.id}>
-            <h2 className="text-sm font-semibold text-foreground">{mod.title}</h2>
-            <ul className="mt-2 divide-y divide-border rounded-md border border-border">
-              {mod.chapters.map((chapter) => {
-                const chapterProgress = progressByChapter.get(chapter.id);
-                const status = chapterProgress?.status ?? "NOT_STARTED";
-                return (
-                  <li key={chapter.id}>
-                    <Link
-                      href={`/courses/${course.slug}/${chapter.slug}`}
-                      className="flex items-center gap-3 px-4 py-3 text-sm hover:bg-accent"
-                    >
-                      {status === "COMPLETED" ? (
-                        <CheckCircle2 className="size-4 shrink-0 text-primary" />
-                      ) : status === "IN_PROGRESS" ? (
-                        <CircleDot className="size-4 shrink-0 text-muted-foreground" />
-                      ) : (
-                        <Circle className="size-4 shrink-0 text-muted-foreground/50" />
-                      )}
-                      <span
-                        className={cn(
-                          "flex-1",
-                          status === "COMPLETED" && "text-muted-foreground"
-                        )}
-                      >
-                        {chapter.title}
-                      </span>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-      </div>
+      {showcaseContent ? <CourseSkills skills={showcaseContent.skills} /> : null}
+
+      <CourseSyllabus
+        courseSlug={course.slug}
+        modules={modules}
+        defaultOpenModuleId={defaultOpenModuleId}
+      />
+
+      <footer className="flex items-center justify-between border-t border-neutral-200 pt-4 text-xs text-neutral-400">
+        <span>buildment</span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="size-2 rounded-full bg-emerald-500" aria-hidden />
+          Published
+        </span>
+      </footer>
     </div>
   );
 }

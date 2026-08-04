@@ -4,10 +4,6 @@ module: 23
 lesson: 9
 summary: "**Why this step matters:** A live client that still calls `localhost:5000` is the most common deploy failure — Vite bakes the API URL at build time, so this step locks the browser to your production API forever (until you rebuild)."
 ---
-# 23.9 — Build client for production
-
-> **[Build]** · Chapter 23 — Deploy · *`npm run build`; set `VITE_API_URL`*
-
 **Why this step matters:** A live client that still calls `localhost:5000` is the most common deploy failure — Vite bakes the API URL at build time, so this step locks the browser to your production API forever (until you rebuild).
 
 **Where the project is now:** Production env checklist complete (22.8); production API URL decided; client still runs on Vite dev with local `VITE_API_URL`.
@@ -99,6 +95,11 @@ Usually no `dist/` commit. Commit SPA config (`vercel.json`, `_redirects`) and R
 - [ ] SPA fallback documented for your host  
 - [ ] `dist/` ready for 22.12  
 - [ ] README records build command  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5FHRYK815FPP284GSDR" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 6
 lesson: 4
 summary: "Every authenticated API must answer: **how does the server remember who sent this request?** Two dominant patterns — **server-side sessions** and **JWT (JSON Web Tokens)**. This course mandates JWT for FreshMarket."
 ---
-# 6.4 — Sessions vs JWT
-
-> **[Learn]** · Chapter 06 — Authentication API · *Stateful vs stateless; pros/cons; **JWT for this course***
-
 Every authenticated API must answer: **how does the server remember who sent this request?** Two dominant patterns — **server-side sessions** and **JWT (JSON Web Tokens)**. This course mandates JWT for FreshMarket.
 
 ## Why this matters for absolute beginners
@@ -20,14 +16,28 @@ Sessions and JWT are not interchangeable labels — they change **where state li
 
 ## Common beginner questions
 
-**Q: Are JWTs encrypted?**  
-A: **Signed**, not encrypted — payload is readable; do not put secrets inside.
+<FaqGroup>
 
-**Q: Why short access token if refresh exists?**  
-A: Limits damage if access token leaks from memory — attacker window is minutes, not days.
+<FaqItem question="Are JWTs encrypted?">
 
-**Q: Why not sessions with Express default memory store?**  
-A: Fine for tiny apps — does not scale across processes and teaches less about SPA Bearer patterns this course targets.
+**Signed**, not encrypted — payload is readable; do not put secrets inside.
+
+</FaqItem>
+
+<FaqItem question="Why short access token if refresh exists?">
+
+Limits damage if access token leaks from memory — attacker window is minutes, not days.
+
+</FaqItem>
+
+<FaqItem question="Why not sessions with Express default memory store?">
+
+Fine for tiny apps — does not scale across processes and teaches less about SPA Bearer patterns this course targets.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Server-side sessions
 
@@ -126,7 +136,9 @@ Document in learning log:
 
 ## Reflect
 
-What happens if user clicks logout but access JWT still unexpired? How does refresh revocation help?
+<OpenQuestion id="01KZ5FW3THRV2HF68K4BBQW6Z1" />
+
+
 
 ## Next
 

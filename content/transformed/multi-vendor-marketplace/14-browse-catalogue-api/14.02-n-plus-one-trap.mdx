@@ -4,10 +4,6 @@ module: 14
 lesson: 2
 summary: "A catalogue endpoint that returns 50 products and **51 database queries** looks fine in development with 5 products. It fails under real traffic — latency spikes, connection pool exhaustion, MongoDB CPU climbs."
 ---
-# 14.2 — The N+1 trap
-
-> **[Read]** · Chapter 14 — Browse catalogue API · *One query per product for store name — explain cost*
-
 A catalogue endpoint that returns 50 products and **51 database queries** looks fine in development with 5 products. It fails under real traffic — latency spikes, connection pool exhaustion, MongoDB CPU climbs.
 
 This sub-chapter explains **N+1** in the context of `GET /products` with store names. You will **not** ship the naive pattern — you will verify query count in 14.12 and 14.14.
@@ -124,6 +120,11 @@ Weak answer: "Mongoose is fast" with no measurement.
 - [ ] I can explain N+1 with store lookup example  
 - [ ] I know populate is the course-default fix  
 - [ ] I will log query count before marking gate done
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4KYXSJNBEYSM1BKRF9W" />
 
 ## Next
 

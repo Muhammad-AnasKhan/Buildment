@@ -4,10 +4,6 @@ module: 4
 lesson: 12
 summary: "**Why this step matters:** Boot order — config, connect, then listen — prevents the API from accepting traffic while the database is still disconnected. Production APIs fail startup rather than lie to health checks; you adopt that discipline on localhost first."
 ---
-# 4.12 — Wire DB on boot
-
-> **[Build]** · Chapter 04 — Config & database · *Connect before `app.listen`; log success/failure*
-
 **Why this step matters:** Boot order — config, connect, then listen — prevents the API from accepting traffic while the database is still disconnected. Production APIs fail startup rather than lie to health checks; you adopt that discipline on localhost first.
 
 **Where the project is now:** `config.js` and `db.js` exist but `server.js` may still call `listen()` immediately without connecting MongoDB.
@@ -146,6 +142,11 @@ git commit -m "feat(server): connect mongodb before starting http listener"
 - [ ] MongoDB down → server fails startup (no healthy listen)  
 - [ ] Missing MONGODB_URI → config failure before connect  
 - [ ] `app.js` still does not call listen  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3KYVFJWPBBRYARASW31" />
 
 ## Next
 

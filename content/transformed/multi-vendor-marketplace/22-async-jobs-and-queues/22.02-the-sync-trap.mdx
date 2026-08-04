@@ -4,10 +4,6 @@ module: 22
 lesson: 2
 summary: "You add `sendOrderConfirmationEmail(customer)` inside the checkout handler. Demo day: Mailgun times out after 30 seconds. Checkout returns **500** even though orders were created and stock decremented. Customer sees error; database shows success. Support nightmare."
 ---
-# 22.2 — The sync trap
-
-> **[Read]** · Chapter 22 — Async jobs & queues · *Notify-in-handler latency and failure coupling*
-
 You add `sendOrderConfirmationEmail(customer)` inside the checkout handler. Demo day: Mailgun times out after 30 seconds. Checkout returns **500** even though orders were created and stock decremented. Customer sees error; database shows success. Support nightmare.
 
 This sub-chapter names the trap **before** you wire BullMQ in 21.9–21.12.
@@ -92,6 +88,11 @@ Weak answer: "Email is fast" — describes demo-day timeout.
 - [ ] I can explain sync trap without notes
 - [ ] I know which checkout steps must stay synchronous
 - [ ] I understand N vendors → N+1 notifications
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5AJT47PMHG52EYDTRAF" />
 
 ## Next
 

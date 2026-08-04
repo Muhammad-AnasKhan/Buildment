@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
+  },
 };
 
 // Only wraps the build with Sentry's webpack plugin (sourcemap upload, etc.) when a DSN

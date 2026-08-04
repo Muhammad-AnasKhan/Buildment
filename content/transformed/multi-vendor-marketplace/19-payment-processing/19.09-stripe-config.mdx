@@ -4,10 +4,6 @@ module: 19
 lesson: 9
 summary: "**Why this step matters:** Every payment and webhook route shares one Stripe SDK client configured from env — duplicate `new Stripe(...)` calls scatter key handling and make test/live mistakes easier."
 ---
-# 19.9 — Stripe config
-
-> **[Build]** · Chapter 19 — Payment processing · *Env vars; Stripe SDK module*
-
 **Why this step matters:** Every payment and webhook route shares one Stripe SDK client configured from env — duplicate `new Stripe(...)` calls scatter key handling and make test/live mistakes easier.
 
 **Where the project is now:** Chapter 18 checkout works; no Stripe dependency in `package.json`; config validates MongoDB only.
@@ -89,6 +85,11 @@ git commit -m "feat(server): add stripe config and shared client module"
 - [ ] Server fails clearly if key missing
 - [ ] `getStripe()` importable from a scratch script or route without throw
 - [ ] `.env.example` updated; `.env` still gitignored
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW53D2Y2VMRHABKN6F4DX" />
 
 ## Next
 

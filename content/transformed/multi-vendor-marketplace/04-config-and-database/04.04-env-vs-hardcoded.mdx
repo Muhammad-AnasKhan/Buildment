@@ -4,10 +4,6 @@ module: 4
 lesson: 4
 summary: "Every deployment target — your laptop, a mentor's machine, Render, Railway, Atlas — needs **different** connection strings and ports. Hardcoding those values in `server.js` works until the first time someone else clones your repo or you deploy to production."
 ---
-# 4.4 — Environment variables vs hardcoded
-
-> **[Learn]** · Chapter 04 — Config & database · *12-factor config; `.env.example` vs `.env`*
-
 Every deployment target — your laptop, a mentor's machine, Render, Railway, Atlas — needs **different** connection strings and ports. Hardcoding those values in `server.js` works until the first time someone else clones your repo or you deploy to production.
 
 This sub-chapter explains **12-factor config** as it applies to your FreshMarket server — not enterprise theory, but the rules you'll follow through Chapter 23.
@@ -22,14 +18,28 @@ Hardcoding feels faster on day one — paste the URI, move on. Day thirty, your 
 
 ## Common beginner questions
 
-**Q: Why can't `MONGODB_URI` default to localhost in code?**  
-A: Silent wrong-database bugs — production might think it connected while pointing nowhere useful. Missing URI should **fail loudly** at startup.
+<FaqGroup>
 
-**Q: dotenv vs Node `--env-file` — which wins?**  
-A: Either — course accepts both if documented in README. Env must load **before** config validation.
+<FaqItem question="Why can't `MONGODB_URI` default to localhost in code?">
 
-**Q: Why prefix client vars with `VITE_`?**  
-A: Vite only exposes those to the browser bundle — a safety rail. Still never use `VITE_` for secrets.
+Silent wrong-database bugs — production might think it connected while pointing nowhere useful. Missing URI should **fail loudly** at startup.
+
+</FaqItem>
+
+<FaqItem question="dotenv vs Node `--env-file` — which wins?">
+
+Either — course accepts both if documented in README. Env must load **before** config validation.
+
+</FaqItem>
+
+<FaqItem question="Why prefix client vars with `VITE_`?">
+
+Vite only exposes those to the browser bundle — a safety rail. Still never use `VITE_` for secrets.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The hardcoded anti-pattern
 
@@ -196,7 +206,9 @@ If seed hardcodes a different URI than the API, you'll debug ghost data for hour
 
 ## Reflect
 
-Answer briefly (learning log preview):
+<OpenQuestion id="01KZ5FW3HA7FBK85H61GX1KRRM" />
+
+
 
 1. Why is `PORT` allowed a code default but `MONGODB_URI` is not?  
 2. What file should a new teammate read to know which env vars to set?

@@ -4,10 +4,6 @@ module: 13
 lesson: 8
 summary: "Upload credentials belong in server env — never the React bundle. This step wires Cloudinary the same way Chapter 4 wired MongoDB: validate at boot, document in `.env.example`, fail fast if missing. The shared helper keeps route handlers thin."
 ---
-# 13.8 — Cloudinary config
-
-> **[Build]** · Chapter 13 — Product photos · *Env vars; server-side upload helper*
-
 ## Why this step matters
 
 Upload credentials belong in server env — never the React bundle. This step wires Cloudinary the same way Chapter 4 wired MongoDB: validate at boot, document in `.env.example`, fail fast if missing. The shared helper keeps route handlers thin.
@@ -114,6 +110,11 @@ Do not commit `.env`.
 - [ ] Helper exports upload + delete functions  
 - [ ] `.env.example` updated in same commit  
 - [ ] `git check-ignore` still passes for `.env`
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4J4N86CSHHS1AF6WDZH" />
 
 ## Next
 

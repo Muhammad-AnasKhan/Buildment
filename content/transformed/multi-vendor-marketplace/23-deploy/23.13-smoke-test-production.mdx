@@ -4,10 +4,6 @@ module: 23
 lesson: 13
 summary: "**Why this step matters:** Deployed is not done — smoke tests are the gate. Row 6 (worker log after checkout) catches the API-only deploy mistake that health checks alone never reveal."
 ---
-# 23.13 — Smoke test production
-
-> **[Build]** · Chapter 23 — Deploy · *Health, login, Stripe test checkout, worker on live URL*
-
 **Why this step matters:** Deployed is not done — smoke tests are the gate. Row 6 (worker log after checkout) catches the API-only deploy mistake that health checks alone never reveal.
 
 **Where the project is now:** Client and API on HTTPS (22.10–22.12); env for API and worker (22.8); worker deployed — **must be running**.
@@ -24,7 +20,7 @@ Worker running in host dashboard (not just API). Same `REDIS_URL` on both (22.8)
 
 | # | Test | Pass criteria |
 |---|---|---|
-| 1 | `GET https://api.../health` | 200; `status: ok`, `db: connected` |
+| 1 | `GET https://api.yourdomain.com/health` | 200; `status: ok`, `db: connected` |
 | 2 | Login customer | Works in **browser**; no CORS |
 | 3 | Browse `/shop` | Grid from production API |
 | 4 | Add to cart | Persists after refresh |
@@ -92,6 +88,11 @@ Table: date, client URL, API URL, **worker service name**, pass/fail rows 1–8.
 - [ ] README table with worker service name  
 - [ ] No localhost in Network tab  
 - [ ] Worker running before script started  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5GQ5WJCTJW8KPZF3MT2" />
 
 ## Next
 

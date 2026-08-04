@@ -4,10 +4,6 @@ module: 19
 lesson: 1
 summary: "**Where the project is now:** Chapter 18 gave you a **working checkout pipeline** — one `POST /checkout` turns a multi-vendor cart into split orders with price snapshots, atomic stock decrement, and cart cleared on success. Proof so far is curl and Compass. **No money moves.** An"
 ---
-# 19.1 — Set the scene
-
-> **[Read]** · Chapter 19 — Payment processing · *Bridge from Ch 18; payment after checkout logic; Stripe test mode*
-
 **Where the project is now:** Chapter 18 gave you a **working checkout pipeline** — one `POST /checkout` turns a multi-vendor cart into split orders with price snapshots, atomic stock decrement, and cart cleared on success. Proof so far is curl and Compass. **No money moves.** Anyone with a customer token can create orders for free.
 
 **Where this chapter goes:** **Real Stripe payment processing** — one Payment Intent for the full cart total, client confirmation with Stripe.js, server verification before checkout runs, webhooks as backup. Every split order from one checkout shares the same `stripePaymentIntentId` and `paymentStatus: 'paid'`.
@@ -129,6 +125,11 @@ Estimated time: **two full days** — payment bugs are expensive; go carefully.
 - [ ] Chapter 18 gate cleared (`18.18`)
 - [ ] `POST /checkout` creates split orders without payment today
 - [ ] You understand why server must verify Payment Intent status
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW51XCDFKK8DYK7SFSCJZ" />
 
 ## Next
 

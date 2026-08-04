@@ -4,10 +4,6 @@ module: 7
 lesson: 3
 summary: "Chapter 7 delivers **browser auth UX** wired to Chapter 6 API — register, verify, login, silent refresh, protected navigation."
 ---
-# 7.3 — What you'll build
-
-> **[Read]** · Chapter 07 — Login & registration · *Register, login, OTP verify pages*
-
 Chapter 7 delivers **browser auth UX** wired to Chapter 6 API — register, verify, login, silent refresh, protected navigation.
 
 ## Why this matters for absolute beginners
@@ -16,14 +12,28 @@ This checklist is the **browser-side gate** — three pages, shared auth state, 
 
 ## Common beginner questions
 
-**Q: Do I need Redux for auth?**  
-A: No — Context + `useAuth` hook is enough for this scope.
+<FaqGroup>
 
-**Q: Can I change API shapes from Chapter 6?**  
-A: No — fix server if mismatch; client adapts to existing contract.
+<FaqItem question="Do I need Redux for auth?">
 
-**Q: Where do vendors land after login?**  
-A: Your router choice — document stub path (`/vendor` or similar); full dashboard is Chapter 10+.
+No — Context + `useAuth` hook is enough for this scope.
+
+</FaqItem>
+
+<FaqItem question="Can I change API shapes from Chapter 6?">
+
+No — fix server if mismatch; client adapts to existing contract.
+
+</FaqItem>
+
+<FaqItem question="Where do vendors land after login?">
+
+Your router choice — document stub path (`/vendor` or similar); full dashboard is Chapter 10+.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Pages
 
@@ -103,6 +113,11 @@ May require `cookie-parser` on server. Document if login returns cookie + empty 
 **❌ Don't:** Change API request/response shapes from Ch 6.
 
 **❌ Don't:** Store access in localStorage for gate.
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3YTTE46GY8CPN6RNH31" />
 
 ## Next
 

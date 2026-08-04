@@ -4,10 +4,6 @@ module: 18
 lesson: 14
 summary: "**Why this step matters:** Split orders only matter if vendors can **see their half** — this route scopes by store ownership from Chapter 8 so Vendor B never receives Vendor A's fulfilment list."
 ---
-# 18.14 — Vendor orders route
-
-> **[Build]** · Chapter 18 — Checkout & orders API · *`GET /vendor/orders` — scoped + populate customer*
-
 **Why this step matters:** Split orders only matter if vendors can **see their half** — this route scopes by store ownership from Chapter 8 so Vendor B never receives Vendor A's fulfilment list.
 
 **Where the project is now:** Customers get orders on checkout; vendors cannot list them yet.
@@ -73,6 +69,11 @@ Authorization: Bearer <vendor-token>
 - [ ] Vendor sees orders for own store after customer checkout
 - [ ] Cross-vendor isolation verified
 - [ ] Line prices from snapshots in JSON
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW50XQSADH573JDF34R16" />
 
 ## Next
 

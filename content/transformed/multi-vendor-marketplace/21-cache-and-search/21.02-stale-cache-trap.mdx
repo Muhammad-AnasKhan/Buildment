@@ -4,10 +4,6 @@ module: 21
 lesson: 2
 summary: "Vendor changes milk price from ₹65 to ₹70. Customer still sees ₹65 for an hour because catalogue response was **cached without invalidation**. Trust erodes faster than slow pages."
 ---
-# 21.2 — Stale cache trap
-
-> **[Read]** · Chapter 21 — Cache & search · *Update price → old cache serves wrong data*
-
 Vendor changes milk price from ₹65 to ₹70. Customer still sees ₹65 for an hour because catalogue response was **cached without invalidation**. Trust erodes faster than slow pages.
 
 This sub-chapter names the trap **before** you wire Redis in 20.8–20.11. Speed without correctness is worse than no cache at all.
@@ -99,6 +95,11 @@ Never cache user-specific routes this chapter. Catalogue only.
 - [ ] I can explain stale price scenario to a non-developer
 - [ ] I know invalidation beats TTL alone for writes
 - [ ] I listed which product routes trigger invalidation
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW57DZMMD5KR51043XWE9" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 6
 lesson: 1
 summary: "**Where the project is now:** Week 1 complete — models and seed data in MongoDB. Every API request is **anonymous**. `GET /health` works; no `/api/auth` routes. User documents exist in Compass with password hashes from seed."
 ---
-# 6.1 — Set the scene
-
-> **[Read]** · Chapter 06 — Authentication API · *Server treats every request as anonymous — fix that*
-
 **Where the project is now:** Week 1 complete — models and seed data in MongoDB. Every API request is **anonymous**. `GET /health` works; no `/api/auth` routes. User documents exist in Compass with password hashes from seed.
 
 **Where this chapter goes:** You build the **Authentication API** — register, login, refresh, OTP verification — bcrypt for passwords, JWT for access tokens, hashed refresh tokens in the database, and `requireAuth` middleware that returns 401 when credentials are missing or invalid.
@@ -43,20 +39,40 @@ The hat you wear now is **security-minded API builder**. You test every step wit
 
 ## Common beginner questions
 
-**Q: Why curl before React login pages?**  
-A: If the API is wrong, a pretty form hides nothing. curl proves register, login, and protected routes work **in isolation** — then Chapter 7 wires the same contracts to buttons and inputs.
+<FaqGroup>
 
-**Q: Why JWT instead of sessions?**  
-A: This SPA sends Bearer tokens — a common MERN pattern. Sub-chapter 6.4 compares sessions honestly; the course picks JWT + hashed refresh for teaching and React fit.
+<FaqItem question="Why curl before React login pages?">
 
-**Q: Will OTP emails really send?**  
-A: Not in MVP — log OTP to the server console or return in dev responses. The **flow** must work; production email is out of scope.
+If the API is wrong, a pretty form hides nothing. curl proves register, login, and protected routes work **in isolation** — then Chapter 7 wires the same contracts to buttons and inputs.
 
-**Q: Can I skip OTP because it's annoying in dev?**  
-A: No — Chapter 7's Verify OTP page and vendor onboarding depend on `isVerified`. Build the gate; simplify delivery, not the steps.
+</FaqItem>
 
-**Q: Does auth alone stop Vendor B editing Vendor A's products?**  
-A: Not fully — that is **authorization** (Chapter 8). Auth gives you `req.user.id` and `role`; ownership checks use the chain from Chapter 5.
+<FaqItem question="Why JWT instead of sessions?">
+
+This SPA sends Bearer tokens — a common MERN pattern. Sub-chapter 6.4 compares sessions honestly; the course picks JWT + hashed refresh for teaching and React fit.
+
+</FaqItem>
+
+<FaqItem question="Will OTP emails really send?">
+
+Not in MVP — log OTP to the server console or return in dev responses. The **flow** must work; production email is out of scope.
+
+</FaqItem>
+
+<FaqItem question="Can I skip OTP because it's annoying in dev?">
+
+No — Chapter 7's Verify OTP page and vendor onboarding depend on `isVerified`. Build the gate; simplify delivery, not the steps.
+
+</FaqItem>
+
+<FaqItem question="Does auth alone stop Vendor B editing Vendor A's products?">
+
+Not fully — that is **authorization** (Chapter 8). Auth gives you `req.user.id` and `role`; ownership checks use the chain from Chapter 5.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap between "data exists" and "data is protected"
 
@@ -129,6 +145,11 @@ Estimated time: **2 days** — security-sensitive; test every step with curl.
 - [ ] Chapter 5 gate cleared — seed users in Compass
 - [ ] User model has email, passwordHash, role, isVerified
 - [ ] You understand difference between authentication and authorization
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3SZ55AZ1HX5T40YWY1E" />
 
 ## Next
 

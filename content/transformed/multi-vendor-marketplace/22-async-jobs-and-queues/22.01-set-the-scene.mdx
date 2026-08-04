@@ -4,10 +4,6 @@ module: 22
 lesson: 1
 summary: "**Where the project is now:** Week 4 polish underway — catalogue cached in Redis (Chapter 21), commerce flow complete in browser (Chapters 18–19). Checkout creates orders, decrements stock, clears cart. **No notifications** run after checkout or status changes."
 ---
-# 22.1 — Set the scene
-
-> **[Read]** · Chapter 22 — Async jobs & queues · *Bridge from Ch 21; why async after paid checkout; queues/workers FAQ*
-
 **Where the project is now:** Week 4 polish underway — catalogue cached in Redis (Chapter 21), commerce flow complete in browser (Chapters 18–19). Checkout creates orders, decrements stock, clears cart. **No notifications** run after checkout or status changes.
 
 **Where this chapter goes:** **Async job queue** with **BullMQ + Redis** — checkout and status PATCH return fast; **workers** send vendor and customer notifications in the background (mock email via `console.log` for gate).
@@ -133,6 +129,11 @@ When you demo checkout live: **201 returns before notification logs appear** in 
 - [ ] `POST /checkout` creates split orders (Chapter 18)
 - [ ] `PATCH /vendor/orders/:orderId` updates status (Chapter 20)
 - [ ] Redis running locally or via cloud URL
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5AC9ECNS5RSDQEEYGDM" />
 
 ## Next
 

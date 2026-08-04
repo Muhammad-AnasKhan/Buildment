@@ -4,10 +4,6 @@ module: 14
 lesson: 12
 summary: "**Why this step matters:** Shop cards need **store name**, not a raw ObjectId. This step fixes the N+1 trap from 14.2 — populate on the **paginated page** keeps query count flat when Chapter 15 hammers this endpoint."
 ---
-# 14.12 — Populate store name
-
-> **[Build]** · Chapter 14 — Browse catalogue API · *Store name without N+1 — verify query count*
-
 **Why this step matters:** Shop cards need **store name**, not a raw ObjectId. This step fixes the N+1 trap from 14.2 — populate on the **paginated page** keeps query count flat when Chapter 15 hammers this endpoint.
 
 **Where the project is now:** Paginated list returns products with `storeId` ObjectId only — not enough for shop cards.
@@ -103,6 +99,11 @@ git commit -m "feat(products): populate store name on public catalogue without n
 - [ ] Query count O(1) relative to page size — logged  
 - [ ] Products from two stores show different store names  
 - [ ] Populate applies to paginated slice only
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4P5DKS6FQQXKS3XSN2A" />
 
 ## Next
 

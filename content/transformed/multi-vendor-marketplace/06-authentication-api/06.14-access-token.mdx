@@ -4,10 +4,6 @@ module: 6
 lesson: 14
 summary: "**Why this step matters:** Short-lived access JWT is what `requireAuth` verifies on every protected call — payload must carry user id and role without leaking password hash or email you should not expose."
 ---
-# 6.14 — Access token
-
-> **[Build]** · Chapter 06 — Authentication API · *Short-lived JWT with userId + role*
-
 **Why this step matters:** Short-lived access JWT is what `requireAuth` verifies on every protected call — payload must carry user id and role without leaking password hash or email you should not expose.
 
 **Where the project is now:** Login returns tokens; access JWT structure may be ad hoc.
@@ -95,6 +91,11 @@ git commit -m "feat(auth): standardize short-lived access JWT with role claim"
 - [ ] Expiry matches config (15m default)
 - [ ] login response accessToken present
 - [ ] Tampered token fails verify
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3WVQ830NT9K41TGX54B" />
 
 ## Next
 

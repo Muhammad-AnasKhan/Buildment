@@ -4,10 +4,6 @@ module: 5
 lesson: 4
 summary: "Multi-vendor marketplaces fail in production when **object-level ownership** is unclear. Authentication answers *who are you?* Ownership answers *may you touch this document?*"
 ---
-# 5.4 — Ownership chain
-
-> **[Learn]** · Chapter 05 — Data model & seed · *User → Store → Product → CartItem → Order*
-
 Multi-vendor marketplaces fail in production when **object-level ownership** is unclear. Authentication answers *who are you?* Ownership answers *may you touch this document?*
 
 This sub-chapter maps the **ownership chain** — the reference path every isolation check in Chapter 8 will walk.
@@ -22,14 +18,28 @@ Roles alone are not enough — "vendor" does not tell you **which** store. The c
 
 ## Common beginner questions
 
-**Q: Why `customerId` on Order but `userId` on Store?**  
-A: Same User collection, different semantics — buyer vs vendor owner. Consistent ref naming helps grep and viva clarity.
+<FaqGroup>
 
-**Q: Why `storeId` on CartItem?**  
-A: Multi-vendor checkout splits by store without extra product lookups at checkout time.
+<FaqItem question="Why `customerId` on Order but `userId` on Store?">
 
-**Q: What is IDOR?**  
-A: Insecure Direct Object Reference — changing `:id` in URL to access someone else's row. Schemas must support ownership lookups to prevent it in Chapter 8.
+Same User collection, different semantics — buyer vs vendor owner. Consistent ref naming helps grep and viva clarity.
+
+</FaqItem>
+
+<FaqItem question="Why `storeId` on CartItem?">
+
+Multi-vendor checkout splits by store without extra product lookups at checkout time.
+
+</FaqItem>
+
+<FaqItem question="What is IDOR?">
+
+Insecure Direct Object Reference — changing `:id` in URL to access someone else's row. Schemas must support ownership lookups to prevent it in Chapter 8.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The chain in one diagram
 
@@ -164,7 +174,9 @@ Before 5.10, add to `docs/erd-draft.md` or a scratch note:
 
 ## Reflect
 
-Draw the chain from memory on paper. Can you trace Vendor B trying to edit Vendor A's product — which two documents get loaded?
+<OpenQuestion id="01KZ5FW3PDJSMWYRH1JV1KW9S9" />
+
+
 
 ## Next
 

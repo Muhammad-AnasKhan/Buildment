@@ -4,10 +4,6 @@ module: 21
 lesson: 11
 summary: "**Why this step matters:** Without invalidation, your fast cache serves wrong prices — the stale trap from 20.2 becomes a real bug. This step is what makes caching **safe** for a marketplace, not just fast."
 ---
-# 21.11 — Cache bust on product save
-
-> **[Build]** · Chapter 21 — Cache & search · *Invalidate on POST/PATCH/DELETE product*
-
 **Why this step matters:** Without invalidation, your fast cache serves wrong prices — the stale trap from 20.2 becomes a real bug. This step is what makes caching **safe** for a marketplace, not just fast.
 
 **After this step:** Product POST/PATCH/DELETE invalidates catalogue cache keys — next GET reflects changes.
@@ -53,6 +49,11 @@ If step 3 shows old price — invalidation not wired or wrong key pattern.
 
 - [ ] PATCH product → catalogue shows update immediately
 - [ ] Documented in learning log
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW59BWYD4KAR4R8TT0VDZ" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 2
 lesson: 3
 summary: "This sub-chapter is the blueprint. No code yet — just the **tree** you'll grow over the next twelve build steps. Read it once now; return after 2.16 and confirm your repo matches."
 ---
-# 2.3 — What you'll build
-
-> **[Read]** · Chapter 02 — Project skeleton · *Tree preview: `server/` + `client/` + `docs/`*
-
 This sub-chapter is the blueprint. No code yet — just the **tree** you'll grow over the next twelve build steps. Read it once now; return after 2.16 and confirm your repo matches.
 
 ## Why this matters for absolute beginners
@@ -16,17 +12,34 @@ Staring at a blank folder is overwhelming. This tree is your **map** — not a d
 
 ## Common beginner questions
 
-**Q: Do I create this entire tree in one command?**  
-A: No — build steps add pieces incrementally. Empty module folders may get `.gitkeep` files so Git tracks them.
+<FaqGroup>
 
-**Q: Why `shared/` separate from `modules/`?**  
-A: Config and database connection serve **every** module — they are cross-cutting infrastructure, not one product feature.
+<FaqItem question="Do I create this entire tree in one command?">
 
-**Q: What's the difference between `app.js` and `server.js`?**  
-A: `app.js` **builds** the Express application (middleware, routes). `server.js` **starts listening** on a port. Splitting them helps testing later — you can import `app` without opening a real port.
+No — build steps add pieces incrementally. Empty module folders may get `.gitkeep` files so Git tracks them.
 
-**Q: Why show empty auth/cart/orders folders now?**  
-A: Placeholders remind you where Chapter 5–18 code lands — like labeled empty shelves in a new shop.
+</FaqItem>
+
+<FaqItem question="Why `shared/` separate from `modules/`?">
+
+Config and database connection serve **every** module — they are cross-cutting infrastructure, not one product feature.
+
+</FaqItem>
+
+<FaqItem question="What's the difference between `app.js` and `server.js`?">
+
+`app.js` **builds** the Express application (middleware, routes). `server.js` **starts listening** on a port. Splitting them helps testing later — you can import `app` without opening a real port.
+
+</FaqItem>
+
+<FaqItem question="Why show empty auth/cart/orders folders now?">
+
+Placeholders remind you where Chapter 5–18 code lands — like labeled empty shelves in a new shop.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The repository at the end of Chapter 2
 
@@ -188,3 +201,6 @@ Don't skip ahead. Chapter 4 assumes 2.11's health route exists.
 - **Build steps 2.8–2.16** create this tree incrementally  
 
 Next: formal comparison — layer vs module — and the mandated choice.
+## Before you continue
+
+<OpenQuestion id="01KZ5FW37MW4G78GG37F2XTGM1" />

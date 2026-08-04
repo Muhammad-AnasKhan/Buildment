@@ -4,10 +4,6 @@ module: 18
 lesson: 13
 summary: "**Why this step matters:** Without clearing cart after successful checkout, customers can **double-order** the same lines with one more POST — empty cart is part of the checkout contract, not optional cleanup."
 ---
-# 18.13 — Clear cart on success
-
-> **[Build]** · Chapter 18 — Checkout & orders API · *Cart empty after checkout*
-
 **Why this step matters:** Without clearing cart after successful checkout, customers can **double-order** the same lines with one more POST — empty cart is part of the checkout contract, not optional cleanup.
 
 **Where the project is now:** Orders created and stock decremented; cart may still hold lines — customer could checkout again.
@@ -62,6 +58,11 @@ With cart cleared, second immediate `POST /checkout` → `400` empty cart. Not f
 - [ ] POST /checkout → GET /cart empty
 - [ ] Failed checkout → cart still has items
 - [ ] Compass CartItem collection empty for user
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW50PJ0WRGGW20GKBTPYF" />
 
 ## Next
 

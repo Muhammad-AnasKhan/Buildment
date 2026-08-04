@@ -4,10 +4,6 @@ module: 22
 lesson: 11
 summary: "**Why this step matters:** This is where you escape the sync trap — **paid** checkout commits commerce state, then hands notifications to the queue. The enqueue call site order (after DB writes) is the most common bug in async checkout implementations."
 ---
-# 22.11 — Order created job
-
-> **[Build]** · Chapter 22 — Async jobs & queues · *Enqueue after paid checkout — not inline notify*
-
 **Why this step matters:** This is where you escape the sync trap — **paid** checkout commits commerce state, then hands notifications to the queue. The enqueue call site order (after DB writes) is the most common bug in async checkout implementations.
 
 **After this step:** `POST /checkout` enqueues one `order.created` job **after** paid orders persist, stock decrements, and cart clears — **before** returning 201.
@@ -117,6 +113,11 @@ curl -s -w "\nTIME:%{time_total}\n" -X POST http://localhost:5000/api/checkout \
 - [ ] Enqueue runs only on success path
 - [ ] Failed checkout does not enqueue
 - [ ] Code path has no inline notification calls
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5CEJEX74XAKZPQGHYQ3" />
 
 ## Next
 

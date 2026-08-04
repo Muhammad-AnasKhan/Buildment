@@ -4,10 +4,6 @@ module: 2
 lesson: 13
 summary: "**Why this step matters:** A single Home route is enough for Chapter 2, but you need a **router shell** so Chapter 7 adds `/login` and `/register` without restructuring the app. This step replaces the Vite default with your marketplace entry point."
 ---
-# 2.13 — Client shell and routing
-
-> **[Build]** · Chapter 02 — Project skeleton · *React Router; placeholder Home page; verify browser loads*
-
 **Why this step matters:** A single Home route is enough for Chapter 2, but you need a **router shell** so Chapter 7 adds `/login` and `/register` without restructuring the app. This step replaces the Vite default with your marketplace entry point.
 
 **Where the project is now:** Vite React app runs default template. Course folders exist but Home page not wired.
@@ -32,7 +28,7 @@ Create `client/src/pages/Home.jsx`.
 - Export a functional component `Home`
 - Render a heading with your product name (e.g. "GreenBasket")
 - Render a short subtitle — e.g. "Local grocery marketplace"
-- Include a **placeholder** element where API status will appear later — empty `<p>` or `<div id="api-status">` with text "Checking API…" or similar
+- Include a **placeholder** element where API status will appear later — empty `<p>` or '&lt;div id="api-status">' with text "Checking API…" or similar`
 
 **Do not hardcode `{ status: 'ok' }` as fake success** — 2.15 fetches real data.
 
@@ -50,7 +46,7 @@ Create `client/src/pages/Home.jsx`.
 
 ## Step 4 — Clean `main.jsx`
 
-Ensure `main.jsx` renders `<App />` inside `StrictMode` as Vite template does — no change needed unless you removed it.
+Ensure `main.jsx` renders '&lt;App />' inside ``StrictMode` as Vite template does — no change needed unless you removed it.
 
 ## Step 5 — Run and verify
 
@@ -108,6 +104,11 @@ git commit -m "feat(client): add router and Home page shell"
 ## Hint
 
 Blank page after routing changes? Usually wrong import path to `Home.jsx` or missing `BrowserRouter` wrapper.
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3BBW0DJTKZQEVCPM3PW" />
 
 ## Next
 

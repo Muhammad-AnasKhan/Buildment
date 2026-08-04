@@ -2,6 +2,8 @@ import Link from "next/link";
 import { signOut } from "@/server/auth/auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Logo } from "@/components/brand/logo";
+import { GlassNavShell } from "@/components/glass-nav-shell";
 
 export function NavBar({
   roleLabel,
@@ -15,20 +17,21 @@ export function NavBar({
   const initials = (user.name ?? user.email ?? "?").slice(0, 2).toUpperCase();
 
   return (
-    <header className="flex items-center justify-between border-b px-6 py-3">
-      <div className="flex items-center gap-6">
-        <Link href="/" className="text-base font-semibold tracking-tight">
-          buildment
+    <GlassNavShell>
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+        <Link href="/" className="shrink-0">
+          <Logo size="sm" />
         </Link>
-        <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-secondary-foreground">
+        <span className="hidden shrink-0 rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-indigo-700 sm:inline-flex">
           {roleLabel}
         </span>
-        <nav className="flex items-center gap-4">
+        <span className="h-4 w-px shrink-0 bg-neutral-200" aria-hidden />
+        <nav className="flex min-w-0 items-center gap-1 overflow-x-auto">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="shrink-0 rounded-full px-3 py-1.5 text-sm font-medium text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
             >
               {link.label}
             </Link>
@@ -36,10 +39,12 @@ export function NavBar({
         </nav>
       </div>
 
-      <div className="flex items-center gap-3">
-        <Avatar className="h-8 w-8">
+      <div className="flex shrink-0 items-center gap-2">
+        <Avatar className="h-8 w-8 ring-2 ring-white">
           <AvatarImage src={user.image ?? undefined} alt={user.name ?? user.email ?? "avatar"} />
-          <AvatarFallback>{initials}</AvatarFallback>
+          <AvatarFallback className="bg-indigo-50 text-xs font-semibold text-indigo-700">
+            {initials}
+          </AvatarFallback>
         </Avatar>
         <form
           action={async () => {
@@ -47,11 +52,11 @@ export function NavBar({
             await signOut({ redirectTo: "/" });
           }}
         >
-          <Button type="submit" variant="ghost" size="sm">
+          <Button type="submit" variant="ghost" size="sm" className="rounded-full text-neutral-500">
             Sign out
           </Button>
         </form>
       </div>
-    </header>
+    </GlassNavShell>
   );
 }

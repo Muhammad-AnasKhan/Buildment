@@ -4,10 +4,6 @@ module: 11
 lesson: 9
 summary: "Stocking the shelf starts here. `POST /products` must resolve `storeId` from the JWT — never trust the client body — and reject vendors without a store. This is the highest-risk IDOR surface: a wrong `storeId` assignment puts kale in another vendor's stall."
 ---
-# 11.9 — Create product route
-
-> **[Build]** · Chapter 11 — Manage products API · *`POST /products` — vendor + store ownership*
-
 ## Why this step matters
 
 Stocking the shelf starts here. `POST /products` must resolve `storeId` from the JWT — never trust the client body — and reject vendors without a store. This is the highest-risk IDOR surface: a wrong `storeId` assignment puts kale in another vendor's stall.
@@ -92,6 +88,11 @@ git commit -m "feat(products): add POST create product on vendor store"
 - [ ] 201 + correct storeId in DB  
 - [ ] Customer POST → 403  
 - [ ] Bad payload → 400  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4CJXMNXBBTRFXA2YXZD" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 3
 lesson: 5
 summary: "This sub-chapter is the **mandate** stated with pros, cons, and consequences. After reading it, you should be able to say: *\"We use MongoDB with Mongoose for this marketplace because …, and we accept … as the trade-off.\"*"
 ---
-# 3.5 — The decision for FreshMarket
-
-> **[Learn]** · Chapter 03 — Why MongoDB · ***MongoDB + Mongoose** — mandated; why for this domain*
-
 This sub-chapter is the **mandate** stated with pros, cons, and consequences. After reading it, you should be able to say: *"We use MongoDB with Mongoose for this marketplace because …, and we accept … as the trade-off."*
 
 ## Why this matters for absolute beginners
@@ -16,17 +12,34 @@ A mandate without reasons feels arbitrary. This page gives you **sentences for t
 
 ## Common beginner questions
 
-**Q: Is MongoDB "mandated" because MERN starts with M?**  
-A: No — read the pros table: embedded orders, catalogue + JSON, Mongoose teaching path. MERN coherence is one factor, not the whole argument.
+<FaqGroup>
 
-**Q: What cons must I honestly accept?**  
-A: App-layer enforcement of refs, reporting takes more work, multi-document checkout needs explicit design — say these aloud in 3.10 learning log.
+<FaqItem question="Is MongoDB \"mandated\" because MERN starts with M?">
 
-**Q: Atlas or local — does that change the mandate?**  
-A: No — only the connection string. Modelling decisions are the same.
+No — read the pros table: embedded orders, catalogue + JSON, Mongoose teaching path. MERN coherence is one factor, not the whole argument.
 
-**Q: Can I change my mind at Chapter 10?**  
-A: Practically no — twenty chapters of examples assume MongoDB. Decide here; implement in 4–5.
+</FaqItem>
+
+<FaqItem question="What cons must I honestly accept?">
+
+App-layer enforcement of refs, reporting takes more work, multi-document checkout needs explicit design — say these aloud in 3.10 learning log.
+
+</FaqItem>
+
+<FaqItem question="Atlas or local — does that change the mandate?">
+
+No — only the connection string. Modelling decisions are the same.
+
+</FaqItem>
+
+<FaqItem question="Can I change my mind at Chapter 10?">
+
+Practically no — twenty chapters of examples assume MongoDB. Decide here; implement in 4–5.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The decision (non-negotiable for this course)
 
@@ -159,3 +172,6 @@ The folder name and collection name can differ slightly (`cart/` → `cartitems`
 - **Chapter 4** connects; **Chapter 5** schemas  
 
 Next: embedding vs referencing — the most important modelling choice in the marketplace.
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3ETS0KDJZ4WBMBT7CSD" />

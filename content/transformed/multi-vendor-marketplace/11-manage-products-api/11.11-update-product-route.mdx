@@ -4,10 +4,6 @@ module: 11
 lesson: 11
 summary: "Prices change, stock runs low, typos get fixed. `PATCH /products/:id` needs ownership assert on every call — the route Chapter 8's IDOR test foreshadowed. The publish toggle in Chapter 12 also uses this endpoint."
 ---
-# 11.11 — Update product route
-
-> **[Build]** · Chapter 11 — Manage products API · *`PATCH /products/:id` — ownership*
-
 ## Why this step matters
 
 Prices change, stock runs low, typos get fixed. `PATCH /products/:id` needs ownership assert on every call — the route Chapter 8's IDOR test foreshadowed. The publish toggle in Chapter 12 also uses this endpoint.
@@ -88,6 +84,11 @@ git commit -m "feat(products): add PATCH update product with ownership"
 - [ ] Owner PATCH persists  
 - [ ] Cross-vendor 403  
 - [ ] Publish flag toggles in DB  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4D4B2KDZ0MFJB9JC9AZ" />
 
 ## Next
 

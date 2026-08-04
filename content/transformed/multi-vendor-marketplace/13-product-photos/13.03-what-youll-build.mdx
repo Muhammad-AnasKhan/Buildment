@@ -4,10 +4,6 @@ module: 13
 lesson: 3
 summary: "By the end of Chapter 13, vendors upload product photos through your API. Images live in **Cloudinary**; MongoDB stores **`imageUrl`** only. The vendor dashboard shows thumbnails in the product list and on create/edit forms."
 ---
-# 13.3 — What you'll build
-
-> **[Read]** · Chapter 13 — Product photos · *Cloudinary upload; URL on product*
-
 By the end of Chapter 13, vendors upload product photos through your API. Images live in **Cloudinary**; MongoDB stores **`imageUrl`** only. The vendor dashboard shows thumbnails in the product list and on create/edit forms.
 
 This sub-chapter is the **blueprint** for sub-chapters 13.8–13.12. No code solutions here — contracts and file locations only.
@@ -23,7 +19,7 @@ This sub-chapter is the **blueprint** for sub-chapters 13.8–13.12. No code sol
 | Replace logic | `products.service.js` | Delete old Cloudinary asset when replacing |
 | Product schema | existing | `imageUrl` string; optional `imagePublicId` for deletes |
 | Upload UI | `client/src/components/ImageUpload.jsx` (or inline in EditProduct) | File input → POST multipart |
-| List thumbnails | `ProductList.jsx` | `<img src={imageUrl} />` when present |
+| List thumbnails | `ProductList.jsx` | '&lt;img src=&#123;imageUrl&#125; />' when present |`
 | Learning log 
 **Not in this chapter:** Public shop browse, cart, image galleries (multiple photos per product).
 
@@ -166,6 +162,11 @@ client/src/
 | Replace old image | 13.10 |
 | Client upload UI | 13.11 |
 | End-to-end verify | 13.12 |
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4H0RY1AWD8CHRBAE5TQ" />
 
 ## Next
 

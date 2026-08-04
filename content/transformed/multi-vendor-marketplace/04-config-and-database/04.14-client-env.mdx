@@ -4,10 +4,6 @@ module: 4
 lesson: 14
 summary: "**Why this step matters:** Re-verifying `VITE_API_URL` while adding server secrets reinforces the client/server boundary — the browser still never sees `MONGODB_URI`, but it must display the new health field from your API."
 ---
-# 4.14 — Client env
-
-> **[Build]** · Chapter 04 — Config & database · *`client/.env` — `VITE_API_URL`; update api client*
-
 **Why this step matters:** Re-verifying `VITE_API_URL` while adding server secrets reinforces the client/server boundary — the browser still never sees `MONGODB_URI`, but it must display the new health field from your API.
 
 **Where the project is now:** Server health returns `db: connected`. Client Home page from Chapter 2 likely shows only `status`.
@@ -169,6 +165,11 @@ Do not commit `client/.env` if gitignored.
 - [ ] Home shows error when server down  
 - [ ] No secrets added to client  
 - [ ] Committed  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3MER23HAF0BC0E09FHC" />
 
 ## Next
 

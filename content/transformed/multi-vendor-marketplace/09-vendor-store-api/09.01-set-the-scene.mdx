@@ -4,10 +4,6 @@ module: 9
 lesson: 1
 summary: "**Where the project is now:** Chapters 6–8 gave you identity and isolation — vendors register, log in, and your API knows who they are. `requireAuth` returns 401 without a valid token. `requireRole('vendor')` returns 403 for customers. `assertStoreOwner` blocks cross-vendor store"
 ---
-# 9.1 — Set the scene
-
-> **[Read]** · Chapter 09 — Vendor store API · *Verified vendor needs a shop*
-
 **Where the project is now:** Chapters 6–8 gave you identity and isolation — vendors register, log in, and your API knows who they are. `requireAuth` returns 401 without a valid token. `requireRole('vendor')` returns 403 for customers. `assertStoreOwner` blocks cross-vendor store edits. But a verified vendor still has **no shop** in the database — only a user record with `role: vendor`.
 
 **Where this chapter goes:** Vendors create and manage **their store** through the API — one store per vendor, owned by the authenticated user, protected by the isolation middleware from Chapter 8.
@@ -149,6 +145,11 @@ Estimated time: **one full day** — less conceptual than Chapter 8, more API wi
 - [ ] Chapter 5 Store model exists with vendor ownership field  
 - [ ] Two test vendor accounts available (seed or register fresh)  
 - [ ] `curl` or HTTP client ready with Bearer token workflow from Chapter 6  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW451735AB8JY1Z2CEBC2" />
 
 ## Next
 

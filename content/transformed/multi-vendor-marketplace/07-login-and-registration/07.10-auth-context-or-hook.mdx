@@ -4,10 +4,6 @@ module: 7
 lesson: 10
 summary: "**Why this step matters:** Login state shared across pages needs one source of truth — `useAuth` or Context — so Header, protected routes, and the API client all agree whether someone is signed in without prop drilling."
 ---
-# 7.10 — Auth context or hook
-
-> **[Build]** · Chapter 07 — Login & registration · *`hooks/useAuth.js` or Context — access token in memory*
-
 **Why this step matters:** Login state shared across pages needs one source of truth — `useAuth` or Context — so Header, protected routes, and the API client all agree whether someone is signed in without prop drilling.
 
 **Where the project is now:** Auth pages scaffolded; no shared auth state.
@@ -105,6 +101,11 @@ git commit -m "feat(client): add AuthProvider and useAuth hook"
 - [ ] useAuth available in pages
 - [ ] Boot refresh runs (network tab on load)
 - [ ] isLoading prevents flash redirect
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW40A5YY37CDMV6GM3PJJ" />
 
 ## Next
 

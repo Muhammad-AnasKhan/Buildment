@@ -4,10 +4,6 @@ module: 4
 lesson: 11
 summary: "**Why this step matters:** Centralizing `connectDB()` means the API, Chapter 5 seed script, and future tests share one connection path. Inline `mongoose.connect` in `server.js` would duplicate URI logic and invite inconsistent behaviour."
 ---
-# 4.11 — DB module
-
-> **[Build]** · Chapter 04 — Config & database · *`server/src/shared/db.js` — Mongoose connect/disconnect*
-
 **Why this step matters:** Centralizing `connectDB()` means the API, Chapter 5 seed script, and future tests share one connection path. Inline `mongoose.connect` in `server.js` would duplicate URI logic and invite inconsistent behaviour.
 
 **Where the project is now:** Config module validates env. Mongoose not installed; no database connection.
@@ -140,6 +136,11 @@ git commit -m "feat(server): add mongoose db connection module"
 - [ ] `connectDB()` fails clearly when MongoDB down  
 - [ ] No schemas in this file  
 - [ ] Committed to Git  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3KNAZXKBEE91V5WHV8P" />
 
 ## Next
 

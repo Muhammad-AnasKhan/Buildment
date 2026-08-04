@@ -4,10 +4,6 @@ module: 6
 lesson: 2
 summary: "Authentication failures make headlines. For a marketplace handling vendor inventory and customer orders, **identity integrity** is not optional — it's the foundation every isolation check in Chapter 8 assumes."
 ---
-# 6.2 — Why auth matters
-
-> **[Read]** · Chapter 06 — Authentication API · *LinkedIn breach story; passwords and tokens*
-
 Authentication failures make headlines. For a marketplace handling vendor inventory and customer orders, **identity integrity** is not optional — it's the foundation every isolation check in Chapter 8 assumes.
 
 This sub-chapter motivates bcrypt, JWT discipline, and verification gates — not to scare, but to make lazy shortcuts feel unacceptable.
@@ -22,14 +18,28 @@ Auth is where beginners most often cut corners — plain text passwords in tutor
 
 ## Common beginner questions
 
-**Q: Is bcrypt overkill for a learning project?**  
-A: No — the pattern is identical in production. Use real bcrypt with reasonable cost factor.
+<FaqGroup>
 
-**Q: Why verify email with OTP if email does not really send?**  
-A: The **state machine** matters — `isVerified` gates login and vendor onboarding. Delivery is simplified; flow is not.
+<FaqItem question="Is bcrypt overkill for a learning project?">
 
-**Q: Does auth replace ownership checks?**  
-A: No — authn is who; authz is what you may touch (Chapter 8).
+No — the pattern is identical in production. Use real bcrypt with reasonable cost factor.
+
+</FaqItem>
+
+<FaqItem question="Why verify email with OTP if email does not really send?">
+
+The **state machine** matters — `isVerified` gates login and vendor onboarding. Delivery is simplified; flow is not.
+
+</FaqItem>
+
+<FaqItem question="Does auth replace ownership checks?">
+
+No — authn is who; authz is what you may touch (Chapter 8).
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The LinkedIn lesson (pattern, not year-specific)
 
@@ -102,7 +112,9 @@ GDPR/privacy: email is PII — don't expose in public catalogue. Auth endpoints 
 
 ## Reflect
 
-Why is a leaked MongoDB dump less catastrophic with bcrypt than plain passwords? One sentence for learning log.
+<OpenQuestion id="01KZ5FW3T5QYXW4P9T8SX7328B" />
+
+
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 16
 lesson: 10
 summary: "**Why this step matters:** Quantity changes are the most common cart mutation — PATCH must stay **user-scoped** and re-check stock so customers cannot PATCH another user's itemId or order more than exists."
 ---
-# 16.10 — Update cart item
-
-> **[Build]** · Chapter 16 — Cart API · *`PATCH /cart/:itemId`*
-
 **Why this step matters:** Quantity changes are the most common cart mutation — PATCH must stay **user-scoped** and re-check stock so customers cannot PATCH another user's itemId or order more than exists.
 
 **Where the project is now:** GET and POST work; quantity fixed after add unless re-POST.
@@ -91,6 +87,11 @@ git commit -m "feat(cart): add PATCH /cart/:itemId for quantity updates"
 - [ ] quantity > stock → 400  
 - [ ] Other user's itemId → 404/403  
 - [ ] quantity 0 → 400
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4V99EH0A3AJ78NBN42Y" />
 
 ## Next
 

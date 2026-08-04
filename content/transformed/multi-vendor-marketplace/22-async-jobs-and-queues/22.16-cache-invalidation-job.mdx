@@ -4,10 +4,6 @@ module: 22
 lesson: 16
 summary: "**Why this step matters:** Optional but instructive — it connects Chapters 20 and 21 by moving slow cache bust off the vendor PATCH response. Even if you skip it, reading the tradeoff prepares you for \"sync vs async invalidation\" questions in viva."
 ---
-# 22.16 — Cache invalidation job
-
-> **[Build]** · Chapter 22 — Async jobs & queues · *Optional: async catalogue cache bust*
-
 **Why this step matters:** Optional but instructive — it connects Chapters 20 and 21 by moving slow cache bust off the vendor PATCH response. Even if you skip it, reading the tradeoff prepares you for "sync vs async invalidation" questions in viva.
 
 **Where the project is now:** Async notify jobs verified (21.15). Catalogue cache invalidation may still run **inline** in product save from Ch 21.11.
@@ -109,6 +105,11 @@ worker
 - [ ] PATCH product returns before cache log
 - [ ] Next GET shows updated data after worker runs
 - [ ] TTL still documented as safety net
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5DASR97D2T31BEVNCXB" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 20
 lesson: 10
 summary: "**Why this step matters:** Static order lists are read-only theatre — vendors must advance fulfilment and customers must see progress. This step also rehearses ownership checks you will enqueue notifications for in Chapter 22."
 ---
-# 20.10 — Vendor update status
-
-> **[Build]** · Chapter 20 — Track orders · *PATCH fulfilment status*
-
 **Why this step matters:** Static order lists are read-only theatre — vendors must advance fulfilment and customers must see progress. This step also rehearses ownership checks you will enqueue notifications for in Chapter 22.
 
 **Where the project is now:** Vendor orders page is read-only (19.8). New orders show `pending` — no browser or API path to advance status unless PATCH exists from Ch 18.
@@ -127,6 +123,11 @@ git commit -m "feat: vendor order status update with ownership checks"
 - [ ] Vendor B cannot PATCH Vendor A's order (`403`)
 - [ ] Customer sees new status on `/orders` after refresh
 - [ ] Badge labels match README on both sides
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW56MEWJQNK0PK2C8QMCS" />
 
 ## Next
 

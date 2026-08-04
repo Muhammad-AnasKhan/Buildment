@@ -4,10 +4,6 @@ module: 10
 lesson: 9
 summary: "Without a gate, storeless vendors bookmark `/vendor/products` and hit confusing API errors later. The layout checks `GET /stores/me` on mount — **404 means redirect to open-shop**. This is product-shaped UX: force the lease signing before the stockroom."
 ---
-# 10.9 — Onboarding redirect
-
-> **[Build]** · Chapter 10 — Open your shop · *No store → `/vendor/open-shop` before dashboard*
-
 ## Why this step matters
 
 Without a gate, storeless vendors bookmark `/vendor/products` and hit confusing API errors later. The layout checks `GET /stores/me` on mount — **404 means redirect to open-shop**. This is product-shaped UX: force the lease signing before the stockroom.
@@ -111,6 +107,11 @@ Do not hardcode open-shop in login — layout owns the gate.
 git add client/src/layouts/VendorLayout.jsx
 git commit -m "feat(client): add vendor onboarding gate via GET stores me"
 ```
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4A1G8HNRYKZKCHEQ2D5" />
 
 ## Next
 

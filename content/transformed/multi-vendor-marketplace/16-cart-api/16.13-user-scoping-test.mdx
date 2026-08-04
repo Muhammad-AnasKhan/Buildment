@@ -4,10 +4,6 @@ module: 16
 lesson: 13
 summary: "**Why this step matters:** Cart isolation is a **security gate** — User B must never read or mutate User A's itemIds. This explicit test prevents IDOR bugs that are embarrassing in demo and dangerous in production."
 ---
-# 16.13 — User scoping test
-
-> **[Build]** · Chapter 16 — Cart API · *User A cannot see User B's cart*
-
 **Why this step matters:** Cart isolation is a **security gate** — User B must never read or mutate User A's itemIds. This explicit test prevents IDOR bugs that are embarrassing in demo and dangerous in production.
 
 **Where the project is now:** Cart CRUD implemented; isolation may be untested explicitly.
@@ -100,6 +96,11 @@ Fix any isolation bugs found before commit.
 - [ ] Multi-vendor two storeIds in one cart  
 - [ ] Code audit confirms userId in every write query  
 - [ ] README cart section added
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4VVEW3PH04CM4YWHRBH" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 16
 lesson: 8
 summary: "**Why this step matters:** POST /cart is where **`storeId` enters the system** — validated against the product so multi-vendor grouping works at checkout. Getting add wrong breaks every later chapter."
 ---
-# 16.8 — Add to cart route
-
-> **[Build]** · Chapter 16 — Cart API · *`POST /cart` — productId, storeId, quantity*
-
 **Why this step matters:** POST /cart is where **`storeId` enters the system** — validated against the product so multi-vendor grouping works at checkout. Getting add wrong breaks every later chapter.
 
 **Where the project is now:** Cart router mounted; POST handler empty or stub.
@@ -96,6 +92,11 @@ git commit -m "feat(cart): add POST /cart with storeId validation"
 - [ ] Duplicate add upserts quantity (if implemented)  
 - [ ] Store mismatch rejected  
 - [ ] 401 without token
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4TY8MPBC8847S13Q2GQ" />
 
 ## Next
 

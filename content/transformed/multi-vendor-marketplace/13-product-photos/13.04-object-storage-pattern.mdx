@@ -4,10 +4,6 @@ module: 13
 lesson: 4
 summary: "Every marketplace that serves images at scale follows the same pattern: **bytes in object storage, pointer in the database, CDN in front**. MongoDB, PostgreSQL, and Redis are wrong places for JPEG data — they are right places for URLs."
 ---
-# 13.4 — Object storage pattern
-
-> **[Learn]** · Chapter 13 — Product photos · *File → storage → URL in DB*
-
 Every marketplace that serves images at scale follows the same pattern: **bytes in object storage, pointer in the database, CDN in front**. MongoDB, PostgreSQL, and Redis are wrong places for JPEG data — they are right places for URLs.
 
 This sub-chapter names the pattern you implement with Cloudinary in Chapter 13.
@@ -120,7 +116,12 @@ If missing, add in 13.8 before upload route — migration is one field, no data 
 
 - [ ] I can explain why the API sits between browser and Cloudinary  
 - [ ] I can name what MongoDB stores vs what Cloudinary stores  
-- [ ] I know browse pages will use `imageUrl` directly in `<img>`
+- [ ] I know browse pages will use `imageUrl` directly in '&lt;img>'`
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4H6TQZV591HZFJWZW8J" />
 
 ## Next
 

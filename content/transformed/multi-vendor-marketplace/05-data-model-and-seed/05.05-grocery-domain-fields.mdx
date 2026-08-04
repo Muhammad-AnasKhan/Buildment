@@ -4,10 +4,6 @@ module: 5
 lesson: 5
 summary: "A generic `{ name, price, description }` product schema could serve any marketplace. FreshMarket is **grocery** — bananas sell by the bunch, flour by the kilogram, milk expires. Your Product model must reflect how local shops actually sell food."
 ---
-# 5.5 — Grocery domain fields
-
-> **[Learn]** · Chapter 05 — Data model & seed · *`unit`, `weightOrQuantity`, `isPerishable`, `stockQty`*
-
 A generic `{ name, price, description }` product schema could serve any marketplace. FreshMarket is **grocery** — bananas sell by the bunch, flour by the kilogram, milk expires. Your Product model must reflect how local shops actually sell food.
 
 This sub-chapter specifies **domain fields** mandated for this course. Implement them in 5.12; reference them in seed data and vendor dashboard forms (Chapter 12).
@@ -18,14 +14,28 @@ Without `unit`, your UI cannot show "£2.49 / bunch" vs "£2.49 / kg" — a groc
 
 ## Common beginner questions
 
-**Q: Can I use string price for display formatting?**  
-A: Store **Number** in the database; format in UI. Math and checkout need numbers.
+<FaqGroup>
 
-**Q: What if my local shop sells by weight at counter?**  
-A: MVP cart uses integer unit counts — weighted items are stretch. Still model `unit` enum for kg/pack.
+<FaqItem question="Can I use string price for display formatting?">
 
-**Q: Is `isPublished` necessary before catalogue API?**  
-A: Yes — vendors draft products before they go live; public catalogue filters published items (Chapter 14).
+Store **Number** in the database; format in UI. Math and checkout need numbers.
+
+</FaqItem>
+
+<FaqItem question="What if my local shop sells by weight at counter?">
+
+MVP cart uses integer unit counts — weighted items are stretch. Still model `unit` enum for kg/pack.
+
+</FaqItem>
+
+<FaqItem question="Is `isPublished` necessary before catalogue API?">
+
+Yes — vendors draft products before they go live; public catalogue filters published items (Chapter 14).
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Why domain fields matter
 
@@ -143,7 +153,9 @@ Each seeded product must have:
 
 ## Reflect
 
-Pick three products from your local shop. Assign each a `unit`, `weightOrQuantity`, and `isPerishable` value. Would your schema hold them?
+<OpenQuestion id="01KZ5FW3PQKTJM8FZPPZPMHWB0" />
+
+
 
 ## Next
 

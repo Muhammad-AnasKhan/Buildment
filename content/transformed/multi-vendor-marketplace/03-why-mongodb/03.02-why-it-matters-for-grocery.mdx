@@ -4,10 +4,6 @@ module: 3
 lesson: 2
 summary: "A generic marketplace stores `title`, `price`, and `imageUrl`. A **grocery** marketplace stores **how much** of **what** — kilograms of rice, litres of milk, six eggs, a bunch of coriander marked **perishable**. Those fields are not cosmetic. They change validation, display, chec"
 ---
-# 3.2 — Why it matters for grocery
-
-> **[Read]** · Chapter 03 — Why MongoDB · *Flexible product attributes (unit, weight, perishable)*
-
 A generic marketplace stores `title`, `price`, and `imageUrl`. A **grocery** marketplace stores **how much** of **what** — kilograms of rice, litres of milk, six eggs, a bunch of coriander marked **perishable**. Those fields are not cosmetic. They change validation, display, checkout copy, and the stories you tell in a viva about domain-driven design.
 
 This sub-chapter ties the **FreshMarket domain** to **database modelling** before you choose SQL vs documents.
@@ -22,14 +18,28 @@ This sub-chapter ties the **FreshMarket domain** to **database modelling** befor
 
 ## Common beginner questions
 
-**Q: Can I add grocery fields later in Chapter 5?**  
-A: You could — but deciding them **now** in the ERD prevents a generic schema you must retrofit. Put units and categories on your draft Product shape today.
+<FaqGroup>
 
-**Q: Does perishability change API logic in Week 1?**  
-A: Not yet — it enables UI badges and portfolio narrative later. Still model it; seed data should mix perishable and non-perishable items.
+<FaqItem question="Can I add grocery fields later in Chapter 5?">
 
-**Q: Why mention SQL in a MongoDB chapter?**  
-A: Honest engineers know trade-offs. One paragraph on when relational reporting wins is interview gold — not betrayal of the stack.
+You could — but deciding them **now** in the ERD prevents a generic schema you must retrofit. Put units and categories on your draft Product shape today.
+
+</FaqItem>
+
+<FaqItem question="Does perishability change API logic in Week 1?">
+
+Not yet — it enables UI badges and portfolio narrative later. Still model it; seed data should mix perishable and non-perishable items.
+
+</FaqItem>
+
+<FaqItem question="Why mention SQL in a MongoDB chapter?">
+
+Honest engineers know trade-offs. One paragraph on when relational reporting wins is interview gold — not betrayal of the stack.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Attributes that generic schemas miss
 
@@ -135,3 +145,6 @@ Exact naming (`cartitems` vs `cart_items`) is yours — stay consistent in Chapt
 - Documents ease **optional attributes**; SQL eases some **reporting** — know both  
 
 Next: what decision this chapter commits to — MongoDB for the course, SQL when you'd reconsider.
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3DW5YKQSEHJQ1EEAAT5" />

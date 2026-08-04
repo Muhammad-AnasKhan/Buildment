@@ -4,10 +4,6 @@ module: 7
 lesson: 14
 summary: "**Why this step matters:** Manually attaching Bearer tokens on every fetch does not scale — one interceptor adds auth headers and runs the 401 refresh loop so expired access feels invisible to users shopping the marketplace."
 ---
-# 7.14 — API interceptor
-
-> **[Build]** · Chapter 07 — Login & registration · *Attach Bearer header; 401 → refresh → retry*
-
 **Why this step matters:** Manually attaching Bearer tokens on every fetch does not scale — one interceptor adds auth headers and runs the 401 refresh loop so expired access feels invisible to users shopping the marketplace.
 
 **Where the project is now:** Login sets token manually per call; no centralized auth header or refresh.
@@ -93,6 +89,11 @@ git commit -m "feat(client): add api interceptor with 401 refresh retry"
 - [ ] /me works via apiFetch
 - [ ] 401 triggers refresh + retry (manual or short expiry test)
 - [ ] credentials include on refresh
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW417F82QYC5T1FMC1DTC" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 7
 lesson: 2
 summary: "Where you store JWT in the browser determines **XSS resilience** and **session persistence**. Wrong choice — localStorage for access token — is the most common MERN auth mistake."
 ---
-# 7.2 — Why token storage matters
-
-> **[Read]** · Chapter 07 — Login & registration · *XSS and refresh cookies*
-
 Where you store JWT in the browser determines **XSS resilience** and **session persistence**. Wrong choice — localStorage for access token — is the most common MERN auth mistake.
 
 This sub-chapter motivates Chapter 7's pattern: **access in memory**, **refresh in httpOnly cookie**.
@@ -22,11 +18,22 @@ localStorage survives refresh and is one line for any XSS script to read. Memory
 
 ## Common beginner questions
 
-**Q: If XSS can steal memory token anyway, why bother?**  
-A: XSS is catastrophic either way — goal is not making theft **trivial and persistent** via localStorage.
+<FaqGroup>
 
-**Q: What is CSRF vs XSS here?**  
-A: XSS steals; CSRF tricks browser into unwanted requests — refresh cookie needs SameSite; Bearer access is less CSRF-prone.
+<FaqItem question="If XSS can steal memory token anyway, why bother?">
+
+XSS is catastrophic either way — goal is not making theft **trivial and persistent** via localStorage.
+
+</FaqItem>
+
+<FaqItem question="What is CSRF vs XSS here?">
+
+XSS steals; CSRF tricks browser into unwanted requests — refresh cookie needs SameSite; Bearer access is less CSRF-prone.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Attack surface — XSS
 
@@ -85,7 +92,9 @@ httpOnly refresh + short access limits damage.
 
 ## Reflect
 
-Why does page reload require refresh endpoint if access is memory-only?
+<OpenQuestion id="01KZ5FW3YK0THZQ1KJJPQ1AH7X" />
+
+
 
 ## Next
 

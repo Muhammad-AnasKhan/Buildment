@@ -4,10 +4,6 @@ module: 23
 lesson: 11
 summary: "**Why this step matters:** HTTP-only demos fail the gate and break secure cookies from Chapter 7. HTTPS is what makes your URL pasteable in a portfolio without mentors seeing browser security warnings."
 ---
-# 23.11 — Domain and HTTPS
-
-> **[Build]** · Chapter 23 — Deploy · *DNS + TLS certificate*
-
 **Why this step matters:** HTTP-only demos fail the gate and break secure cookies from Chapter 7. HTTPS is what makes your URL pasteable in a portfolio without mentors seeing browser security warnings.
 
 **After this step:** Custom domain or platform subdomain serves API and client over **TLS** — padlock in browser.
@@ -54,8 +50,13 @@ Trust proxy in Express if needed for secure cookies: `app.set('trust proxy', 1)`
 
 ## Verify
 
-- [ ] `https://api.../health` valid cert
-- [ ] `https://app...` valid cert
+- [ ] `https://api.yourdomain.com/health` valid cert
+- [ ] `https://app.yourdomain.com` valid cert
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5G4FTY4M4D2T72SVX4D" />
 
 ## Next
 

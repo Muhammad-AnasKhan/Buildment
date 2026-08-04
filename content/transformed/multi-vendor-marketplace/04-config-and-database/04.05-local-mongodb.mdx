@@ -4,10 +4,6 @@ module: 4
 lesson: 5
 summary: "Before sub-chapter 4.9 asks you to paste `MONGODB_URI` into `.env`, you need a **running MongoDB instance** and a connection string that works from your machine."
 ---
-# 4.5 — Local MongoDB vs Atlas
-
-> **[Learn]** · Chapter 04 — Config & database · *Atlas vs local; pick one for course*
-
 Before sub-chapter 4.9 asks you to paste `MONGODB_URI` into `.env`, you need a **running MongoDB instance** and a connection string that works from your machine.
 
 This course supports **either** local MongoDB **or** MongoDB Atlas (cloud free tier). Pick one for development; stick with it through Week 1 unless you hit a blocker.
@@ -18,17 +14,34 @@ Nothing in the build cluster works until **mongosh or Compass** connects with th
 
 ## Common beginner questions
 
-**Q: Atlas free tier — do I need a credit card?**  
-A: MongoDB's policy changes — follow Atlas signup flow; M0 free clusters are common for learning.
+<FaqGroup>
 
-**Q: Special characters in Atlas password break my URI — why?**  
-A: URLs parse `@` and `#` specially — URL-encode the password segment.
+<FaqItem question="Atlas free tier — do I need a credit card?">
 
-**Q: How do I test "DB down" on Atlas?**  
-A: Wrong password at boot, paused cluster, or temporary bad URI — goal is honest failure, not only stopping local `mongod`.
+MongoDB's policy changes — follow Atlas signup flow; M0 free clusters are common for learning.
 
-**Q: What database name should I use?**  
-A: A project slug like `freshmarket-dev` — not generic `test`.
+</FaqItem>
+
+<FaqItem question="Special characters in Atlas password break my URI — why?">
+
+URLs parse `@` and `#` specially — URL-encode the password segment.
+
+</FaqItem>
+
+<FaqItem question="How do I test \"DB down\" on Atlas?">
+
+Wrong password at boot, paused cluster, or temporary bad URI — goal is honest failure, not only stopping local `mongod`.
+
+</FaqItem>
+
+<FaqItem question="What database name should I use?">
+
+A project slug like `freshmarket-dev` — not generic `test`.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Option A — Local MongoDB
 
@@ -157,6 +170,11 @@ Learning goal: **the app must not pretend DB is fine when it isn't** — exact m
 - [ ] I have a working `MONGODB_URI` ready to paste  
 - [ ] I can open Compass and see the database (empty is fine)  
 - [ ] I chose local **or** Atlas and know how to test "DB down" for 4.15  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3HNTGE97VWVF7SWBERJ" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 9
 lesson: 11
 summary: "Store settings — name, description, address — change over time. `PATCH /stores/:id` reuses Chapter 8's ownership assert so only the leaseholder edits their stall. Chapter 10's settings page calls this route on save."
 ---
-# 9.11 — Update store route
-
-> **[Build]** · Chapter 09 — Vendor store API · *`PATCH /stores/:id` — ownership check*
-
 ## Why this step matters
 
 Store settings — name, description, address — change over time. `PATCH /stores/:id` reuses Chapter 8's ownership assert so only the leaseholder edits their stall. Chapter 10's settings page calls this route on save.
@@ -120,6 +116,11 @@ git commit -m "feat(stores): add PATCH update store with ownership check"
 - [ ] Bad id → 404  
 - [ ] Invalid body → 400  
 - [ ] Chapter 8 IDOR test still passes with real payload  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW47HNA3G9VKEME3398A6" />
 
 ## Next
 

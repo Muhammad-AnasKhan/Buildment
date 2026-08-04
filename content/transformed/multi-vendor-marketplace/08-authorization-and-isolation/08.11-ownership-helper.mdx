@@ -4,10 +4,6 @@ module: 8
 lesson: 11
 summary: "Role checks are not enough — two vendors share the same role. Ownership helpers load the **object** and compare its owner field to `req.user.id`. This is the core IDOR defense. You'll clone the pattern for products in Chapter 11."
 ---
-# 8.11 — Ownership helper
-
-> **[Build]** · Chapter 08 — Authorization & isolation · *`assertStoreOwner(storeId, userId)` in shared*
-
 ## Why this step matters
 
 Role checks are not enough — two vendors share the same role. Ownership helpers load the **object** and compare its owner field to `req.user.id`. This is the core IDOR defense. You'll clone the pattern for products in Chapter 11.
@@ -95,6 +91,11 @@ git commit -m "feat(server): add assertStoreOwner ownership helper"
 - [ ] Wrong owner throws 403 path
 - [ ] Missing store returns 404 (if chosen)
 - [ ] AUTHORIZATION.md references helper
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW44570G3356H1NHDQ2PQ" />
 
 ## Next
 

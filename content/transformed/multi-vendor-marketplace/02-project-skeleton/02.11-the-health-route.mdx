@@ -4,10 +4,6 @@ module: 2
 lesson: 11
 summary: "**Why this step matters:** `GET /health` is your first **proof the API works** — independent of React, MongoDB, or auth. Load balancers and Chapter 4's extended health both build on this route; Chapter 2's gate requires curl to return honest JSON."
 ---
-# 2.11 — The health route
-
-> **[Build]** · Chapter 02 — Project skeleton · *`GET /health` → `{ status: "ok" }`; curl → 200*
-
 **Why this step matters:** `GET /health` is your first **proof the API works** — independent of React, MongoDB, or auth. Load balancers and Chapter 4's extended health both build on this route; Chapter 2's gate requires curl to return honest JSON.
 
 **Where the project is now:** Express boots and listens. No defined routes yet — or only a catch-all 404.
@@ -146,6 +142,11 @@ Health endpoints are how deploy platforms (Chapter 23) know your API process is 
 - [ ] `curl -i http://localhost:5000/health` → `200`  
 - [ ] Response JSON includes `"status":"ok"`  
 - [ ] Committed to Git  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3AP2HEVS7NE8998SCTB" />
 
 ## Next
 

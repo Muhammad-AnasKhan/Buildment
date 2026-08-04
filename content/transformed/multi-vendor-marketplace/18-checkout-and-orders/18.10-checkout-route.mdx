@@ -4,10 +4,6 @@ module: 18
 lesson: 10
 summary: "**Why this step matters:** This is the **spine** of checkout — load cart, group by `storeId`, create order shells. Snapshots and stock come next, but grouping must work first or multi-vendor fulfilment never happens."
 ---
-# 18.10 — Checkout route
-
-> **[Build]** · Chapter 18 — Checkout & orders API · *`POST /checkout` — group by storeId*
-
 **Why this step matters:** This is the **spine** of checkout — load cart, group by `storeId`, create order shells. Snapshots and stock come next, but grouping must work first or multi-vendor fulfilment never happens.
 
 **Where the project is now:** Orders module scaffolded; checkout handler empty.
@@ -83,6 +79,11 @@ curl -s -X POST http://localhost:5000/api/checkout \\
 - [ ] Single-store cart → one order
 - [ ] Empty cart → 400
 - [ ] Vendor token on checkout → 403
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW505EY4MYSWP1NNZB1PA" />
 
 ## Next
 

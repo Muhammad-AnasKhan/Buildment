@@ -4,10 +4,6 @@ module: 2
 lesson: 14
 summary: "**Why this step matters:** Scattering `fetch('http://localhost:5000/...')` across components breaks the moment you deploy or change ports. One helper reading `VITE_API_URL` is how every professional SPA keeps API calls **configurable and consistent**."
 ---
-# 2.14 — API client helper
-
-> **[Build]** · Chapter 02 — Project skeleton · *`client/src/api/client.js` — base URL from env*
-
 **Why this step matters:** Scattering `fetch('http://localhost:5000/...')` across components breaks the moment you deploy or change ports. One helper reading `VITE_API_URL` is how every professional SPA keeps API calls **configurable and consistent**.
 
 **Where the project is now:** Home page renders; server health works via curl. Client has no configured API base URL yet.
@@ -119,6 +115,11 @@ Do not commit `client/.env` if your ignore rules exclude it — good.
 ## Hint
 
 Vite exposes only variables starting with `VITE_`. `API_URL` without prefix won't work in client code.
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3BPXNWJYPQVF2PJS1YR" />
 
 ## Next
 

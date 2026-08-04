@@ -4,10 +4,6 @@ module: 20
 lesson: 8
 summary: "**Why this step matters:** Vendors cannot fulfil orders they cannot see. This inbox completes the marketplace loop — without it, Week 3 demo stops at the customer side only."
 ---
-# 20.8 — Vendor orders page
-
-> **[Build]** · Chapter 20 — Track orders · *List from `GET /vendor/orders`*
-
 **Why this step matters:** Vendors cannot fulfil orders they cannot see. This inbox completes the marketplace loop — without it, Week 3 demo stops at the customer side only.
 
 **Where the project is now:** Customer has checkout, confirmation, and `/orders` history. Vendors have dashboard and product tools (Ch 10–12) but **no order inbox** — queue exists only in MongoDB and curl.
@@ -132,6 +128,11 @@ curl -s http://localhost:5000/api/vendor/orders \
 - [ ] Other vendor's order absent in separate session
 - [ ] Customer name visible; snapshot lines with units
 - [ ] UI matches curl JSON shape
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW569ZE0V067NTRT737GM" />
 
 ## Next
 

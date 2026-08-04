@@ -4,10 +4,6 @@ module: 16
 lesson: 11
 summary: "**Why this step matters:** DELETE completes CRUD — customers must remove mistakes before checkout. Same ownership rule as PATCH: only the cart owner can delete their line."
 ---
-# 16.11 — Remove cart item
-
-> **[Build]** · Chapter 16 — Cart API · *`DELETE /cart/:itemId`*
-
 **Why this step matters:** DELETE completes CRUD — customers must remove mistakes before checkout. Same ownership rule as PATCH: only the cart owner can delete their line.
 
 **Where the project is now:** Cart lines can be added and quantity updated; no delete.
@@ -72,6 +68,11 @@ git commit -m "feat(cart): add DELETE /cart/:itemId"
 - [ ] Delete own item → gone from GET /cart  
 - [ ] Delete other user's item → 404/403  
 - [ ] Delete random id → 404
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4VGHVNGCTBQXQ74GKN3" />
 
 ## Next
 

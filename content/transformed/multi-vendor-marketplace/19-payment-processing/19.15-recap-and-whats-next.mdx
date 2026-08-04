@@ -4,10 +4,6 @@ module: 19
 lesson: 15
 summary: "**Why this step matters:** Chapter 20 adds checkout **UI** with Stripe.js on top of this API — you need a crisp story for Payment Intents, gated checkout, and one-payment-many-orders before building buttons."
 ---
-# 19.15 — Recap and what's next
-
-> **[Wrap]** · Chapter 19 — Payment processing · *Recap — what you built and what comes next*
-
 **Why this step matters:** Chapter 20 adds checkout **UI** with Stripe.js on top of this API — you need a crisp story for Payment Intents, gated checkout, and one-payment-many-orders before building buttons.
 
 You entered Chapter 19 with free checkout. You leave with **real Stripe test-mode payments** — intent from cart, server verification, shared PI on split orders, webhooks with signature verify, idempotent checkout.
@@ -16,7 +12,7 @@ You entered Chapter 19 with free checkout. You leave with **real Stripe test-mod
 
 **POST /payments/intent:** Loads cart, validates lines, computes total, creates Stripe Payment Intent, returns `clientSecret`.
 
-**POST /checkout {"{"} paymentIntentId {"}"}:** Retrieves PI from Stripe; requires `succeeded` and amount match; runs Chapter 18 pipeline; sets `stripePaymentIntentId` and `paymentStatus: 'paid'` on every split order.
+**POST /checkout &#123; paymentIntentId &#125;:** Retrieves PI from Stripe; requires `succeeded` and amount match; runs Chapter 18 pipeline; sets `stripePaymentIntentId` and `paymentStatus: 'paid'` on every split order.
 
 **POST /webhooks/stripe:** Raw body + `Stripe-Signature` verification; handles `payment_intent.succeeded` without duplicate orders.
 
@@ -82,6 +78,11 @@ POST /checkout ──► retrieve PI ──► succeeded? ──► Ch 18 pipeli
 | Stripe payment-gated checkout | ✓ **this chapter** |
 | Browser checkout + order UI | Chapter 20 |
 | Week 3 phase demo | Chapter 20 gate |
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW54NTFHN7TDHMNSPKWZ1" />
 
 ## Next — Track orders (Chapter 20)
 

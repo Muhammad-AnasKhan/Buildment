@@ -4,10 +4,6 @@ module: 6
 lesson: 17
 summary: "**Why this step matters:** `requireAuth` turns anonymous HTTP into identified requests — every later ownership check starts with `req.user` from a **verified** JWT, not client-supplied ids. `/api/auth/me` is your smoke test before store and product routes use the same guard."
 ---
-# 6.17 — Auth middleware
-
-> **[Build]** · Chapter 06 — Authentication API · *`requireAuth` — 401 on missing/invalid/expired*
-
 **Why this step matters:** `requireAuth` turns anonymous HTTP into identified requests — every later ownership check starts with `req.user` from a **verified** JWT, not client-supplied ids. `/api/auth/me` is your smoke test before store and product routes use the same guard.
 
 **Where the project is now:** Tokens issued; protected routes still open or unguarded.
@@ -135,6 +131,11 @@ git commit -m "feat(auth): add requireAuth middleware and GET /me"
 - [ ] Invalid token → 401
 - [ ] req.user.role matches JWT payload
 - [ ] passwordHash never in /me response
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3XH4A7YBR16GZW55XNX" />
 
 ## Next
 

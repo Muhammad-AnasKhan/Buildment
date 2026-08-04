@@ -4,10 +4,6 @@ module: 22
 lesson: 8
 summary: "**Why this step matters:** BullMQ wiring on top of a broken checkout or dead Redis wastes a day. This checkpoint confirms commerce and cache baselines before you add a second process to your dev workflow."
 ---
-# 22.8 — Where the project is now
-
-> **[Build]** · Chapter 22 — Async jobs & queues · *Recap: cache + commerce complete*
-
 **Why this step matters:** BullMQ wiring on top of a broken checkout or dead Redis wastes a day. This checkpoint confirms commerce and cache baselines before you add a second process to your dev workflow.
 
 **Where the project is now:** Chapter 21 added Redis cache on catalogue reads. Checkout and order status PATCH work synchronously — any notification logic would block HTTP if added inline.
@@ -99,6 +95,11 @@ Add to README **Getting Started** section.
 - [ ] Checkout returns 201 with test cart
 - [ ] Vendor status PATCH works
 - [ ] No inline email/notify code in checkout handler yet (or you're about to remove it)
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5BTQMPKRZ9SPASDHQT8" />
 
 ## Next
 

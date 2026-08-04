@@ -4,10 +4,6 @@ module: 5
 lesson: 1
 summary: "**Where the project is now:** Chapter 4 gave you a connected MongoDB — `shared/config.js`, `shared/db.js`, boot order correct, `GET /health` reports `db: connected`. Compass shows an empty database. `docs/erd-draft.md` sketches collections but no Mongoose schemas exist yet."
 ---
-# 5.1 — Set the scene
-
-> **[Read]** · Chapter 05 — Data model & seed · *Schema is the most consequential decision*
-
 **Where the project is now:** Chapter 4 gave you a connected MongoDB — `shared/config.js`, `shared/db.js`, boot order correct, `GET /health` reports `db: connected`. Compass shows an empty database. `docs/erd-draft.md` sketches collections but no Mongoose schemas exist yet.
 
 **Where this chapter goes:** You implement **every collection** your marketplace needs — User, Profile, Store, Product, CartItem, Order — with grocery-specific fields, a seed script that populates realistic test data, and a final **`docs/erd.md`** aligned with what you actually built.
@@ -41,20 +37,40 @@ The hat you wear now is **domain modeller**. You translate paper design into sch
 
 ## Common beginner questions
 
-**Q: Why models before auth — shouldn't login come first?**  
-A: Login **creates and reads User documents**. Register needs fields (`email`, `passwordHash`, `role`, `isVerified`) defined in a schema. Building auth against imaginary users leads to rework. Data shape first; HTTP auth layer second.
+<FaqGroup>
 
-**Q: Why separate User and Profile?**  
-A: Login identity (email, password, role) changes rarely; display info (name, avatar) updates often. Splitting collections keeps auth lean and matches how Chapter 6 register flow creates both records.
+<FaqItem question="Why models before auth — shouldn't login come first?">
 
-**Q: Can I skip seed and add data manually in Compass?**  
-A: Seed is **required for the gate** — two vendors, two stores, products with grocery fields. Chapter 8 isolation tests assume predictable test emails like `vendor-a@test.local`.
+Login **creates and reads User documents**. Register needs fields (`email`, `passwordHash`, `role`, `isVerified`) defined in a schema. Building auth against imaginary users leads to rework. Data shape first; HTTP auth layer second.
 
-**Q: What's wrong with putting `vendorName` on every product?**  
-A: When the vendor renames their shop, every product copy goes stale. Reference `storeId` and look up the name when displaying — except on **orders**, where copied names are intentional receipts.
+</FaqItem>
 
-**Q: Do I build API routes this chapter?**  
-A: No — models and seed only. Routes arrive from Chapter 6 onward. If you add routes now, you blur the course's step-by-step arc.
+<FaqItem question="Why separate User and Profile?">
+
+Login identity (email, password, role) changes rarely; display info (name, avatar) updates often. Splitting collections keeps auth lean and matches how Chapter 6 register flow creates both records.
+
+</FaqItem>
+
+<FaqItem question="Can I skip seed and add data manually in Compass?">
+
+Seed is **required for the gate** — two vendors, two stores, products with grocery fields. Chapter 8 isolation tests assume predictable test emails like `vendor-a@test.local`.
+
+</FaqItem>
+
+<FaqItem question="What's wrong with putting `vendorName` on every product?">
+
+When the vendor renames their shop, every product copy goes stale. Reference `storeId` and look up the name when displaying — except on **orders**, where copied names are intentional receipts.
+
+</FaqItem>
+
+<FaqItem question="Do I build API routes this chapter?">
+
+No — models and seed only. Routes arrive from Chapter 6 onward. If you add routes now, you blur the course's step-by-step arc.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap between "connected" and "useful"
 
@@ -147,6 +163,11 @@ Estimated time: **1–2 days** — more files than Chapter 4, but each model is 
 - [ ] `docs/erd-draft.md` open beside you
 - [ ] Compass connected to same URI as `server/.env`
 - [ ] Module folders exist under `server/src/modules/`
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3NGEFGXPQHE42ST6P96" />
 
 ## Next
 

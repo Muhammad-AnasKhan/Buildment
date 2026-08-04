@@ -4,10 +4,6 @@ module: 11
 lesson: 13
 summary: "Chapter 8 proved store isolation; this step proves **product** isolation — Vendor B cannot PATCH Vendor A's kale. Same curl template, new resource. The Chapter 11 gate depends on this negative test, not just happy-path create."
 ---
-# 11.13 — Test cross-vendor 403
-
-> **[Build]** · Chapter 11 — Manage products API · *Vendor B cannot PATCH Vendor A's product*
-
 ## Why this step matters
 
 Chapter 8 proved store isolation; this step proves **product** isolation — Vendor B cannot PATCH Vendor A's kale. Same curl template, new resource. The Chapter 11 gate depends on this negative test, not just happy-path create.
@@ -99,6 +95,11 @@ git commit -m "docs: document vendor product API and cross-vendor tests"
 - [ ] Steps 5–6 return 403  
 - [ ] Full lifecycle 1–8 passes  
 - [ ] Results in learning log notes  
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4DSTCZTMKWAYJCFCVXV" />
 
 ## Next
 

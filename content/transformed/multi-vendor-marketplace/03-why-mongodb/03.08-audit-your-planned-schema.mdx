@@ -4,10 +4,6 @@ module: 3
 lesson: 8
 summary: "**Why this step matters:** Concept chapters must still touch your repo — this file is the blueprint Chapter 5 implements. Committing `erd-draft.md` now prevents schema improvisation later and forces embed-vs-reference decisions before Mongoose code exists."
 ---
-# 3.8 — Audit your planned schema
-
-> **[Build]** · Chapter 03 — Why MongoDB · *Sketch ERD on paper; list collections you'll need*
-
 **Why this step matters:** Concept chapters must still touch your repo — this file is the blueprint Chapter 5 implements. Committing `erd-draft.md` now prevents schema improvisation later and forces embed-vs-reference decisions before Mongoose code exists.
 
 **Where the project is now:** Skeleton runs; module folders empty; no `docs/erd-draft.md` yet.
@@ -22,14 +18,28 @@ Concept chapters can feel like homework that never touches code. This step **doe
 
 ## Common beginner questions
 
-**Q: My diagram is ugly — is that OK?**  
-A: Yes — accurate beats beautiful. Mermaid in markdown, Excalidraw, or a phone photo of paper all pass if relationships are clear.
+<FaqGroup>
 
-**Q: Which collections are mandatory on the diagram?**  
-A: users, profiles, stores, products, cartitems, orders — with embedded orderItems described in text.
+<FaqItem question="My diagram is ugly — is that OK?">
 
-**Q: What if I realize I forgot grocery fields?**  
-A: Fix the draft **before** Chapter 5 — that is exactly why this audit exists.
+Yes — accurate beats beautiful. Mermaid in markdown, Excalidraw, or a phone photo of paper all pass if relationships are clear.
+
+</FaqItem>
+
+<FaqItem question="Which collections are mandatory on the diagram?">
+
+users, profiles, stores, products, cartitems, orders — with embedded orderItems described in text.
+
+</FaqItem>
+
+<FaqItem question="What if I realize I forgot grocery fields?">
+
+Fix the draft **before** Chapter 5 — that is exactly why this audit exists.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## What you must produce
 
@@ -156,6 +166,11 @@ git commit -m "docs: add ERD draft before schema implementation"
 ## Hint
 
 Stuck on diagram tools? Mermaid in VS Code/Cursor preview renders `erDiagram`. Start ugly; refine in Chapter 5 when schemas reveal typos.
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3FQEKGZ9G835HJVK3D7" />
 
 ## Next
 

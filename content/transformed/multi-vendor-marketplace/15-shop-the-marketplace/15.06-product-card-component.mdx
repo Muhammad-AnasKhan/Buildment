@@ -4,10 +4,6 @@ module: 15
 lesson: 6
 summary: "**Why this step matters:** The product card is the **atom** of the marketplace UI — reused on every row of the grid. Nailing photo, price/unit, and store name once keeps the multi-vendor identity visible on every tile."
 ---
-# 15.6 — Product card component
-
-> **[Build]** · Chapter 15 — Shop the marketplace · *Reusable card*
-
 **Why this step matters:** The product card is the **atom** of the marketplace UI — reused on every row of the grid. Nailing photo, price/unit, and store name once keeps the multi-vendor identity visible on every tile.
 
 **Where the project is now:** Shop page shell exists; no grid rendering.
@@ -92,7 +88,7 @@ Wire into Shop.jsx in 15.8 when fetch exists — or wire now with empty items ar
 
 **✅ Do:** Use product.id as React key.
 
-**✅ Do:** alt={"{"}product.name{"}"} on images.
+**✅ Do:** alt=&#123;product.name&#125; on images.
 
 **❌ Don't:** Call getProduct(id) inside card — N+1 API on client.
 
@@ -103,6 +99,11 @@ Wire into Shop.jsx in 15.8 when fetch exists — or wire now with empty items ar
 - [ ] Storybook-style: render one card with mock prop in Shop temporarily  
 - [ ] Missing imageUrl shows placeholder  
 - [ ] Link navigates to `/shop/:id`
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4R8NQE6NHQ6YHJCHV8M" />
 
 ## Next
 

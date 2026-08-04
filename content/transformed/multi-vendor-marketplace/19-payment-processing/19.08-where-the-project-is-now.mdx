@@ -4,10 +4,6 @@ module: 19
 lesson: 8
 summary: "**Why this step matters:** Payment touches checkout, cart totals, Order schema, and a new webhook route — this pause confirms Chapter 18 gate is real before you add Stripe dependencies."
 ---
-# 19.8 — Where the project is now
-
-> **[Build]** · Chapter 19 — Payment processing · *Recap Ch 18 checkout API*
-
 **Why this step matters:** Payment touches checkout, cart totals, Order schema, and a new webhook route — this pause confirms Chapter 18 gate is real before you add Stripe dependencies.
 
 **Where the project is now:** `POST /checkout` works without payment — split orders, snapshots, stock, cart clear, list routes. **No** Payment Intents, **no** `stripePaymentIntentId` on orders, **no** webhook. Anyone authenticated can checkout for free.
@@ -100,6 +96,11 @@ Note line totals — Payment Intent amount must match **your server's sum**, not
 - [ ] Two-store cart checkout works without payment (baseline)
 - [ ] Order schema plan for payment fields written
 - [ ] Stripe test keys in local `.env` only
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW537657HD4D12HC9GCYD" />
 
 ## Next
 

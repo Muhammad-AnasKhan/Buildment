@@ -4,10 +4,6 @@ module: 16
 lesson: 7
 summary: "**Why this step matters:** A dedicated `cart/` module with auth on the router sets the **security boundary** once — every cart route inherits `requireAuth` before you write handlers that touch user data."
 ---
-# 16.7 — Scaffold cart module
-
-> **[Build]** · Chapter 16 — Cart API · *cart routes, service, schema*
-
 **Why this step matters:** A dedicated `cart/` module with auth on the router sets the **security boundary** once — every cart route inherits `requireAuth` before you write handlers that touch user data.
 
 **Where the project is now:** CartItem model exists; no HTTP cart API.
@@ -97,6 +93,11 @@ Handlers return 501 until 16.8 — or implement POST immediately in next step.
 - [ ] Server starts after mount  
 - [ ] GET /cart without token → 401  
 - [ ] GET /cart with customer token → 200 empty items (after 16.9) or 501 temporarily
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW4TQH0XENHVQC5S205DQ" />
 
 ## Next
 

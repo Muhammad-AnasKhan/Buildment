@@ -4,10 +4,6 @@ module: 7
 lesson: 6
 summary: "Before building auth pages, skim React patterns for context, protected routes, and fetch credentials."
 ---
-# 7.6 — Prime your thinking
-
-> **[Learn]** · Chapter 07 — Login & registration · *Mandatory read: JWT refresh on client*
-
 Before building auth pages, skim React patterns for context, protected routes, and fetch credentials.
 
 ## Why this matters for absolute beginners
@@ -16,14 +12,28 @@ Chapter 7 combines React Router, forms, cookies, and async boot logic — easy t
 
 ## Common beginner questions
 
-**Q: Why read fetch credentials docs for a React course?**  
-A: Refresh cookies **require** `credentials: 'include'` — missing it looks like "refresh always 401."
+<FaqGroup>
 
-**Q: Controlled inputs without a form library — really?**  
-A: Yes for gate — fewer dependencies; focus on auth flow correctness.
+<FaqItem question="Why read fetch credentials docs for a React course?">
 
-**Q: CORS `*` with credentials?**  
-A: Invalid combo — server must echo specific Vite origin with `Allow-Credentials: true`.
+Refresh cookies **require** `credentials: 'include'` — missing it looks like "refresh always 401."
+
+</FaqItem>
+
+<FaqItem question="Controlled inputs without a form library — really?">
+
+Yes for gate — fewer dependencies; focus on auth flow correctness.
+
+</FaqItem>
+
+<FaqItem question="CORS `*` with credentials?">
+
+Invalid combo — server must echo specific Vite origin with `Allow-Credentials: true`.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Mandatory reads
 
@@ -69,6 +79,11 @@ Access-Control-Allow-Credentials: true
 Update server CORS config in build cluster if not already.
 
 ## Time box — 30 minutes reading
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW3ZFC9DCYZZN8QERE15X" />
 
 ## Next
 

@@ -4,10 +4,6 @@ module: 22
 lesson: 4
 summary: "Not every server action belongs in a worker. Use this table when deciding sync vs async for FreshMarket features."
 ---
-# 22.4 — When to queue
-
-> **[Learn]** · Chapter 22 — Async jobs & queues · *Sync vs async decision table for marketplace*
-
 Not every server action belongs in a worker. Use this table when deciding sync vs async for FreshMarket features.
 
 ## Decision matrix
@@ -94,6 +90,11 @@ For notifications: use **deterministic `jobId`** per event — e.g. `order-creat
 - [ ] I can classify checkout steps as sync vs async
 - [ ] I know why stock decrement stays synchronous
 - [ ] I can explain when cache bust could move to a worker
+
+
+## Before you continue
+
+<OpenQuestion id="01KZ5FW5AY0VQGHJPWTDZW69TY" />
 
 ## Next
 
