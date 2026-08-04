@@ -47,23 +47,46 @@ If the cart UI groups by store now, checkout (Chapter 20 UI) will not surprise t
 
 ## Common beginner questions
 
-**Q: Why build the cart page after the API?**  
+<FaqGroup>
+
+<FaqItem question="Why build the cart page after the API?">
+
 Same reason as login UI after auth API: the **contract exists** before the screen. You test endpoints with curl; then you connect buttons.
 
-**Q: Should I group cart items in the API or in React?**  
+</FaqItem>
+
+<FaqItem question="Should I group cart items in the API or in React?">
+
 **React groups for display** using `storeId` from each line. The API returns a flat `items` array; the UI builds sections. Checkout (Ch 18) groups server-side for order creation.
 
-**Q: Grand total vs store subtotal — which price?**  
+</FaqItem>
+
+<FaqItem question="Grand total vs store subtotal — which price?">
+
 Cart shows **current product prices** from `GET /cart` populate. Orders freeze prices at checkout (Chapter 18 snapshots) — cart totals are estimates until then.
 
-**Q: Badge count: lines or total quantity?**  
+</FaqItem>
+
+<FaqItem question="Badge count: lines or total quantity?">
+
 Pick one, document in README. Either "3 items" (sum of quantities) or "2 lines" (rows) — just be consistent.
 
-**Q: Add to cart fails with 401 — what now?**  
+</FaqItem>
+
+<FaqItem question="Add to cart fails with 401 — what now?">
+
 Customer must log in first. Redirect to login, then return to product detail — optional stretch; minimum gate: login before add works.
 
-**Q: Do I change the server this chapter?**  
+</FaqItem>
+
+<FaqItem question="Do I change the server this chapter?">
+
 No if Chapter 16 gate is complete. Chapter 17 is **client-only**.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap between "cart in the database" and "cart in the customer's head"
 
@@ -157,7 +180,7 @@ Estimated time: **one full day** — mostly React wiring against existing API.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW4WARZ9KBFPAXEJREW9A" />
+<OpenQuestion id="01KZ5P6BEW483SD4253Y1DFSNX" />
 
 ## Next
 

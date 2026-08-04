@@ -34,20 +34,40 @@ Chapter 12 listed what's on each shelf in text. Chapter 13 hires a **market phot
 
 ## Common beginner questions
 
-**Q: Why not store images in MongoDB?**  
+<FaqGroup>
+
+<FaqItem question="Why not store images in MongoDB?">
+
 Documents balloon, queries slow, backups hurt. Store a URL string; let Cloudinary hold bytes. Sub-chapter 13.2 explains the cost in detail.
 
-**Q: Why upload through the server instead of directly from the browser?**  
+</FaqItem>
+
+<FaqItem question="Why upload through the server instead of directly from the browser?">
+
 Your Cloudinary **secret** must never ship in the React bundle. Server upload also reuses ownership checks from Chapter 8.
 
-**Q: Can I skip photos and still pass Week 2?**  
+</FaqItem>
+
+<FaqItem question="Can I skip photos and still pass Week 2?">
+
 Photos are part of the Week 2 demo — *"vendor adds a product with a photo"*. Plan for Cloudinary setup in 13.8.
 
-**Q: One image enough?**  
+</FaqItem>
+
+<FaqItem question="One image enough?">
+
 Yes for MVP. Multiple images per product is out of scope.
 
-**Q: What comes after the checklist?**  
+</FaqItem>
+
+<FaqItem question="What comes after the checklist?">
+
 **13.14** bridges to Week 3 (customer experience). **13.15** is the gate. Chapter 14 builds the public catalogue API — buyer side, not vendor.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap between "text catalogue" and "shop window"
 
@@ -146,7 +166,7 @@ Estimated time: **one full day** — Cloudinary account setup plus multer wiring
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW4GJ6M679KZYXN1THAFX" />
+<OpenQuestion id="01KZ5P6AT1XPSYMNY7AA39KFXM" />
 
 ## Next
 

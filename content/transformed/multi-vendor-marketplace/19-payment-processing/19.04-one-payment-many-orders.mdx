@@ -70,20 +70,40 @@ Do not put PII or card data in metadata.
 
 ## Common beginner questions
 
-**Q: Does each vendor get paid automatically?**  
+<FaqGroup>
+
+<FaqItem question="Does each vendor get paid automatically?">
+
 Not in this chapter. Real marketplaces use Connect, invoices, or manual settlement. Your gate is **customer paid platform** + **orders marked paid**.
 
-**Q: What if cart total is 0?**  
+</FaqItem>
+
+<FaqItem question="What if cart total is 0?">
+
 Reject checkout — do not create zero-amount Payment Intents for demo carts.
 
-**Q: Refund one stall only?**  
+</FaqItem>
+
+<FaqItem question="Refund one stall only?">
+
 Production hard problem — partial refunds against one PI. Document as out of scope; full refund in Stripe Dashboard is the stretch note.
 
-**Q: Why `paymentStatus` if Stripe already says succeeded?**  
+</FaqItem>
+
+<FaqItem question="Why `paymentStatus` if Stripe already says succeeded?">
+
 Orders must be readable without calling Stripe on every page load. Enum on the order: `paid`, later `refunded` if you stretch.
 
-**Q: Single-store cart — still one PI?**  
+</FaqItem>
+
+<FaqItem question="Single-store cart — still one PI?">
+
 Yes. One order document, one Payment Intent — same pattern.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Comparison diagram
 
@@ -121,7 +141,7 @@ Yes. One order document, one Payment Intent — same pattern.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW52GFWAK3ZZJJQJ5EHX8" />
+<OpenQuestion id="01KZ5P6BVA4Q3NHVCXVNBXFTQ1" />
 
 ## Next
 

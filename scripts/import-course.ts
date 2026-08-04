@@ -147,6 +147,14 @@ function escapeMdxProse(body: string): string {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });
+  withMarkers = withMarkers.replace(/<CheckpointIntro>[\s\S]*?<\/CheckpointIntro>/g, (tag) => {
+    blockTags.push(tag);
+    return `\x00BLOCK${blockTags.length - 1}\x00`;
+  });
+  withMarkers = withMarkers.replace(/<MandatoryReadCard[\s\S]*?\/>/g, (tag) => {
+    blockTags.push(tag);
+    return `\x00BLOCK${blockTags.length - 1}\x00`;
+  });
   withMarkers = withMarkers.replace(/<(Quiz|OpenQuestion)\s+id="[^"]+"\s*\/>/g, (tag) => {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
@@ -180,7 +188,7 @@ function parseFaqPairs(section: string): FaqPair[] {
   const blocks = section.trim().split(/\n\n+/);
 
   for (const block of blocks) {
-    const match = block.match(/^\*\*Q:\s*(.+?)\*\*\s*\nA:\s*([\s\S]+)$/);
+    const match = block.match(/^\*\*Q:\s*(.+?)\*\*\s*\n(?:A:\s*)?([\s\S]+)$/);
     if (match) {
       items.push({ question: match[1]!.trim(), answer: match[2]!.trim() });
     }

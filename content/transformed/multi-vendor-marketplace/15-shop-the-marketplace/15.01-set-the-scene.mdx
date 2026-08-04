@@ -47,23 +47,46 @@ Same products. Same prices. Same store names. Now with photos, whitespace, and a
 
 ## Common beginner questions
 
-**Q: Why not build the shop UI in the same chapter as the API?**  
+<FaqGroup>
+
+<FaqItem question="Why not build the shop UI in the same chapter as the API?">
+
 Splitting keeps each gate testable. API proven with curl; UI proven in browser. When the grid is empty, you know whether to debug React or MongoDB.
 
-**Q: Do I need to be logged in to browse?**  
+</FaqItem>
+
+<FaqItem question="Do I need to be logged in to browse?">
+
 Not for the Chapter 15 gate — public shop is fine. Login matters when you add to cart (Chapter 17).
 
-**Q: Should I filter products in React after one big fetch?**  
+</FaqItem>
+
+<FaqItem question="Should I filter products in React after one big fetch?">
+
 No. The API paginates. Send `category` and `page` as query params and **refetch** — do not download the whole catalogue into browser memory.
 
-**Q: The add-to-cart button does nothing — is that a bug?**  
+</FaqItem>
+
+<FaqItem question="The add-to-cart button does nothing — is that a bug?">
+
 Not yet. Chapter 15 spec includes a **stub** (toast or console log). Chapter 17 wires `POST /cart`.
 
-**Q: Can I use a UI component library?**  
+</FaqItem>
+
+<FaqItem question="Can I use a UI component library?">
+
 Yes if you want — the course specifies **behaviour** (card fields, filter refetch), not which CSS framework.
 
-**Q: My images don't show — where do I look first?**  
-Check `imageUrl` in the API response (Chapter 13), then the `<img src=` in your card component, then browser network tab for broken URLs.
+</FaqItem>
+
+<FaqItem question="My images don't show — where do I look first?">
+
+Check `imageUrl` in the API response (Chapter 13), then the `&lt;img src=` in your card component, then browser network tab for broken URLs.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap between "API catalogue" and "marketplace window"
 
@@ -115,7 +138,7 @@ Estimated time: **one full day** — mostly React; API should be stable from Ch 
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW4Q6FZAA84YTX4G5NBJ1" />
+<OpenQuestion id="01KZ5P6B5BXT699GEAYV3R3DR4" />
 
 ## Next
 

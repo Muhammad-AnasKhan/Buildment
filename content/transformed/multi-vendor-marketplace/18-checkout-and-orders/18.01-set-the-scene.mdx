@@ -48,29 +48,58 @@ The customer walks away with one confirmation ("I ordered"). Each vendor sees **
 
 ## Common beginner questions
 
-**Q: Why is checkout harder than cart?**  
+<FaqGroup>
+
+<FaqItem question="Why is checkout harder than cart?">
+
 Cart is mutable intent ("maybe I'll buy this"). Order is a **committed event** — money, stock, legal receipt. Wrong design breaks trust, accounting, and vendor fulfilment.
 
-**Q: One order or many?**  
+</FaqItem>
+
+<FaqItem question="One order or many?">
+
 **Many orders** (one per store in cart) for this marketplace. A single combined order would hide lines from Vendor B.
 
-**Q: Why snapshot price — can't we just read the product?**  
+</FaqItem>
+
+<FaqItem question="Why snapshot price — can't we just read the product?">
+
 If the vendor changes price tomorrow, old orders would show the **new** price. Customers and vendors would both be angry. Snapshots copy price **once** at checkout.
 
-**Q: When is stock reduced?**  
+</FaqItem>
+
+<FaqItem question="When is stock reduced?">
+
 At **successful checkout**, atomically — not when adding to cart.
 
-**Q: What if checkout fails halfway?**  
+</FaqItem>
+
+<FaqItem question="What if checkout fails halfway?">
+
 **Fail-all:** no partial orders, cart unchanged, clear error. Never leave "order created but stock not reduced."
 
-**Q: Do I need Stripe or PayPal?**  
+</FaqItem>
+
+<FaqItem question="Do I need Stripe or PayPal?">
+
 Not in Chapter 18. Checkout creates **orders** with `paymentStatus: 'pending'`. **Chapter 19** adds Stripe Payment Intents and gates checkout on a succeeded payment.
 
-**Q: Double-click "Place order" — two order sets?**  
+</FaqItem>
+
+<FaqItem question="Double-click \"Place order\" — two order sets?">
+
 Known MVP limitation. Chapter 18.6 covers **idempotency** as reading; production uses idempotency keys.
 
-**Q: Can checkout run in the browser without the server?**  
+</FaqItem>
+
+<FaqItem question="Can checkout run in the browser without the server?">
+
 **No.** Client cannot be trusted to set prices, group by store, or decrement stock. All of that is server-side in this chapter.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Extra FAQ — checkout complexity for beginners
 
@@ -159,7 +188,7 @@ Estimated time: **two full days** — transaction logic deserves care.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW4YH78HHV0CQ7J7VB6ER" />
+<OpenQuestion id="01KZ5P6BJWYE7W7GPZARAWWYTK" />
 
 ## Next
 

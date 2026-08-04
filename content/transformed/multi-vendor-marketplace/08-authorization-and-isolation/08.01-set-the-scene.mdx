@@ -32,20 +32,40 @@ Chapter 6–7 gave everyone a **badge** (JWT) that says their name and role. Tha
 
 ## Common beginner questions
 
-**Q: We already have `requireAuth` — isn't that enough?**  
+<FaqGroup>
+
+<FaqItem question="We already have `requireAuth` — isn't that enough?">
+
 No. `requireAuth` only answers "who is this?" A logged-in Vendor B could still `PATCH /stores/vendor-a-id` unless you check ownership. Authentication and authorization are separate layers.
 
-**Q: Why 403 instead of 404 when Vendor B hits Vendor A's store?**  
+</FaqItem>
+
+<FaqItem question="Why 403 instead of 404 when Vendor B hits Vendor A's store?">
+
 Both hide data from attackers. This course uses **403** with a clear message while learning — you can switch to generic 404 in production. The important part is **blocking**, not the exact status code.
 
-**Q: Do I need authorization on GET requests too?**  
+</FaqItem>
+
+<FaqItem question="Do I need authorization on GET requests too?">
+
 For **vendor-private** reads (my store, my products), yes. For **public** catalogue reads in Week 3, unauthenticated GET is intentional — different rules, documented in your matrix.
 
-**Q: Is this only for vendors?**  
+</FaqItem>
+
+<FaqItem question="Is this only for vendors?">
+
 Vendors are the highest-risk actors in a marketplace (many owners, shared platform). Customers need scoping too — cart and orders in later chapters — but store/product isolation starts here.
 
-**Q: Can I skip the matrix doc and just code middleware?**  
+</FaqItem>
+
+<FaqItem question="Can I skip the matrix doc and just code middleware?">
+
 Don't. `docs/AUTHORIZATION.md` is your contract for every later chapter. Without it, each route invents its own rules and IDOR bugs slip in.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap
 
@@ -91,7 +111,7 @@ Estimated: **1 day**
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW428W91EV28K15EEWSHF" />
+<OpenQuestion id="01KZ5P69YGJF4SK9AB2R6RP5PP" />
 
 ## Next
 

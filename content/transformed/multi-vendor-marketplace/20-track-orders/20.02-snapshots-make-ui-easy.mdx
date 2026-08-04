@@ -64,14 +64,28 @@ A paper receipt prints the price **that day**. If the shop raises prices next we
 
 ## Common beginner questions
 
-**Q: Can I populate product for a photo on history rows?**  
+<FaqGroup>
+
+<FaqItem question="Can I populate product for a photo on history rows?">
+
 Optional stretch. Gate does not require it. If you do, photo is cosmetic — price still comes from snapshots.
 
-**Q: What if `nameAtPurchase` is missing on an old test order?**  
+</FaqItem>
+
+<FaqItem question="What if `nameAtPurchase` is missing on an old test order?">
+
 Re-seed or re-checkout. Your UI should handle missing fields gracefully (show "Unknown item") but gate data should have snapshots from Ch 18.
 
-**Q: Why not just store `productId` and look up current price?**  
+</FaqItem>
+
+<FaqItem question="Why not just store `productId` and look up current price?">
+
 That was the **price snapshot trap** in Chapter 18.2 — the whole reason embedded snapshots exist.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## ✅ Do / ❌ Don't
 
@@ -92,7 +106,7 @@ That was the **price snapshot trap** in Chapter 18.2 — the whole reason embedd
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW55678TRXXAKE3QJBKNC" />
+<OpenQuestion id="01KZ5P6C17BQK62055SDQ5NMA9" />
 
 ## Next
 

@@ -95,17 +95,34 @@ Chapter 20 builds the screens. Chapter 19 makes the API **honest**.
 
 ## Common beginner questions
 
-**Q: Was Chapter 18 wasted?**  
+<FaqGroup>
+
+<FaqItem question="Was Chapter 18 wasted?">
+
 No. You tested the hardest commerce logic without payment noise. Professional teams often stub checkout, then add the gateway at a clear seam.
 
-**Q: Can I check payment in the browser only?**  
+</FaqItem>
+
+<FaqItem question="Can I check payment in the browser only?">
+
 No. Browser checks are UX; **server retrieve** is authority.
 
-**Q: What about cash on delivery?**  
+</FaqItem>
+
+<FaqItem question="What about cash on delivery?">
+
 Different product decision — would skip Stripe but still need a `paymentStatus` enum. This course is card checkout via Stripe test mode.
 
-**Q: Is a webhook optional?**  
+</FaqItem>
+
+<FaqItem question="Is a webhook optional?">
+
 For learning gate: **required**. It teaches signature verification and idempotency — standard in every Stripe integration.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## ✅ Do / ❌ Don't
 
@@ -126,7 +143,7 @@ For learning gate: **required**. It teaches signature verification and idempoten
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW524WAQEG51ADZSEHAYA" />
+<OpenQuestion id="01KZ5P6BTA7ZRYTPG11AYQMEH5" />
 
 ## Next
 

@@ -46,23 +46,46 @@ Customers walk the aisle (Chapter 15 UI). Vendors still manage their stall from 
 
 ## Common beginner questions
 
-**Q: Do I delete vendor routes or the vendor dashboard?**  
+<FaqGroup>
+
+<FaqItem question="Do I delete vendor routes or the vendor dashboard?">
+
 No. You **add** public read routes. Vendors keep `GET /vendor/products` for their own inventory.
 
-**Q: Why API before the shop UI (Chapter 15)?**  
+</FaqItem>
+
+<FaqItem question="Why API before the shop UI (Chapter 15)?">
+
 Same pairing as Chapters 6→7 and 11→12: **backend contract first**, React second. Building the grid before `GET /products` exists forces fake hardcoded products you throw away.
 
-**Q: Can customers browse without logging in?**  
+</FaqItem>
+
+<FaqItem question="Can customers browse without logging in?">
+
 Yes for this chapter's gate — public `GET /products` needs no JWT. Cart and checkout (Chapters 16–18) require login.
 
-**Q: What's the difference between `/vendor/products` and `/products`?**  
+</FaqItem>
+
+<FaqItem question="What's the difference between `/vendor/products` and `/products`?">
+
 `/vendor/products` = "show **my** products" (vendor token). `/products` = "show **everyone's published, in-stock** products" (no token).
 
-**Q: I only have products from one store in seed — is that OK?**  
+</FaqItem>
+
+<FaqItem question="I only have products from one store in seed — is that OK?">
+
 Finish Week 2 seed with **two stores** before the gate. Multi-vendor browse is the whole point of a marketplace course.
 
-**Q: What is N+1 and why should I care before I have users?**  
+</FaqItem>
+
+<FaqItem question="What is N+1 and why should I care before I have users?">
+
 It is a pattern bug: 20 products → 21 database trips instead of 2. Dev feels fine; production does not. Chapter 14 teaches you to **measure** query count before shipping the shop UI.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap between "vendor inventory" and "marketplace"
 
@@ -139,7 +162,7 @@ Estimated time: **one to two days** — query tuning and N+1 verification take t
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW4KRJJYFZ8MRKKX0DQMS" />
+<OpenQuestion id="01KZ5P6AZH4RBBM9PDB0XQK4ZJ" />
 
 ## Next
 

@@ -54,26 +54,52 @@ At checkout (Chapter 18), the system splits into **two orders** — one per stal
 
 ## Common beginner questions
 
-**Q: Why not store the cart in React state or localStorage?**  
+<FaqGroup>
+
+<FaqItem question="Why not store the cart in React state or localStorage?">
+
 Browser-only carts vanish on refresh, fail across devices, and cannot be checked securely at checkout. Production carts live on the **server**, tied to the logged-in user.
 
-**Q: Do I need two carts for two vendors?**  
+</FaqItem>
+
+<FaqItem question="Do I need two carts for two vendors?">
+
 **No** — that is the beginner mistake. One cart, many vendors. **`storeId` on each line** tells the server how to split later.
 
-**Q: Why save `storeId` if the product already has `storeId`?**  
+</FaqItem>
+
+<FaqItem question="Why save `storeId` if the product already has `storeId`?">
+
 You could look it up at checkout — but that adds queries, breaks if a product moves stores, and makes grouping fragile. Copy `storeId` at **add time** and validate it matches the product.
 
-**Q: When does stock actually decrease?**  
+</FaqItem>
+
+<FaqItem question="When does stock actually decrease?">
+
 **Checkout (Chapter 18)**, not add-to-cart. Add only **checks** there is enough stock right now.
 
-**Q: Can vendors use the cart?**  
+</FaqItem>
+
+<FaqItem question="Can vendors use the cart?">
+
 Yes — anyone with a customer account. Same API. Vendors shopping as buyers use the same cart routes.
 
-**Q: Guest cart without login?**  
+</FaqItem>
+
+<FaqItem question="Guest cart without login?">
+
 Out of scope for MVP. Customer must log in before `POST /cart`. Chapter 16.4 explains merge-on-login as optional reading.
 
-**Q: Why API-only this chapter — no cart page yet?**  
+</FaqItem>
+
+<FaqItem question="Why API-only this chapter — no cart page yet?">
+
 So you can test user isolation and multi-vendor adds with **curl** before debugging React. Chapter 17 is the UI pair.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap between "browse" and "buy"
 
@@ -132,7 +158,7 @@ Estimated time: **one to two days**.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW4SJMDF26GEBBXYWW7T0" />
+<OpenQuestion id="01KZ5P6B9RSF4REAHY9GKV7536" />
 
 ## Next
 

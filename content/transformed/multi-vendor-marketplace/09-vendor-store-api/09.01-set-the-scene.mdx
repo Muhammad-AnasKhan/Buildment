@@ -32,20 +32,40 @@ Chapter 8 made sure vendors cannot rearrange each other's stalls. Chapter 9 hand
 
 ## Common beginner questions
 
-**Q: Why API before the "Open your shop" UI in Chapter 10?**  
+<FaqGroup>
+
+<FaqItem question="Why API before the \"Open your shop\" UI in Chapter 10?">
+
 Same pattern as auth: Chapter 6 built the API, Chapter 7 built the screens. curl proves the contract before React forms hide bugs behind spinners.
 
-**Q: Can a vendor have two stores?**  
+</FaqItem>
+
+<FaqItem question="Can a vendor have two stores?">
+
 Not in this course. One vendor, one store — enforced at `POST /stores`. Multiple shops per owner is a different product decision.
 
-**Q: Why `GET /stores/me` instead of `GET /stores/:id`?**  
+</FaqItem>
+
+<FaqItem question="Why `GET /stores/me` instead of `GET /stores/:id`?">
+
 Vendors should not need to copy their MongoDB `_id` from Compass. "Me" resolves the store from the JWT — simpler and safer.
 
-**Q: Do customers use these routes?**  
+</FaqItem>
+
+<FaqItem question="Do customers use these routes?">
+
 Not for creating stores. Customers browse products in Week 3. These routes are **vendor-only**, guarded by `requireRole('vendor')`.
 
-**Q: What if I skipped Chapter 8?**  
+</FaqItem>
+
+<FaqItem question="What if I skipped Chapter 8?">
+
 Stop. Store routes without ownership checks are an IDOR vulnerability on day one. Finish the 403 test first.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap between "logged in vendor" and "open shop"
 
@@ -149,7 +169,7 @@ Estimated time: **one full day** — less conceptual than Chapter 8, more API wi
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW451735AB8JY1Z2CEBC2" />
+<OpenQuestion id="01KZ5P6A4V8D1VY1TQBBARY29V" />
 
 ## Next
 

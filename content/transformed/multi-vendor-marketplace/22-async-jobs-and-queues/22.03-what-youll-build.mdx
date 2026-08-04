@@ -19,14 +19,28 @@ If queues are new to you: you are **not** changing what checkout returns — you
 
 ## Common beginner questions
 
-**Q: How many new terminals?**  
+<FaqGroup>
+
+<FaqItem question="How many new terminals?">
+
 Two for server-side async: API (`npm run dev`) + worker (`npm run worker`). Client dev server is a third if you are testing in browser simultaneously.
 
-**Q: Will I change the React app?**  
+</FaqItem>
+
+<FaqItem question="Will I change the React app?">
+
 No client changes required — async is invisible to the browser. Gate proof is server timing + worker logs.
 
-**Q: What if I already added `sendEmail` in checkout?**  
+</FaqItem>
+
+<FaqItem question="What if I already added `sendEmail` in checkout?">
+
 Remove it before 21.11 — you are undoing the sync trap, not adding on top of it.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Server tree at end of Chapter 22
 
@@ -162,7 +176,7 @@ Full checklist in 21.18. Headlines:
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW5AR6YED20RZ9J7MQB9S" />
+<OpenQuestion id="01KZ5P6CCJXRYTSVCJSZAT6ZB8" />
 
 ## Next
 

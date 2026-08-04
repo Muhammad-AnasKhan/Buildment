@@ -32,20 +32,40 @@ The vendor signed the lease (Ch 10) and has an empty stall with a nameplate. Cha
 
 ## Common beginner questions
 
-**Q: Why not let customers see products in this chapter?**  
+<FaqGroup>
+
+<FaqItem question="Why not let customers see products in this chapter?">
+
 Two different audiences, two different routes. Vendor inventory is authenticated and scoped. Public catalogue is unauthenticated read — Chapter 14. Mixing them early leaks drafts.
 
-**Q: Can the client send `storeId` in the POST body?**  
+</FaqItem>
+
+<FaqItem question="Can the client send `storeId` in the POST body?">
+
 **No.** Resolve the store from the JWT. Client-supplied `storeId` is an IDOR vector — Vendor B could pass Vendor A's store id.
 
-**Q: What if a vendor has no store and tries to create a product?**  
+</FaqItem>
+
+<FaqItem question="What if a vendor has no store and tries to create a product?">
+
 Reject with 404 or 403 — pick one, document it in `AUTHORIZATION.md`. No store means no shelves.
 
-**Q: Is delete a hard delete?**  
+</FaqItem>
+
+<FaqItem question="Is delete a hard delete?">
+
 Yes in this course. Soft delete is a valid production choice — note the tradeoff in your learning log.
 
-**Q: Do I need the dashboard UI to test this chapter?**  
+</FaqItem>
+
+<FaqItem question="Do I need the dashboard UI to test this chapter?">
+
 No. curl is enough — same as Chapter 9. Chapter 12 builds the screens.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap between "empty shop" and "stocked shop"
 
@@ -127,7 +147,7 @@ Estimated time: **1–1.5 days** — similar scope to Chapter 9 plus delete verb
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW4APT9PXZ8PVS1NZGHV8" />
+<OpenQuestion id="01KZ5P6AF52X63EC42Y2Y2CDE6" />
 
 ## Next
 

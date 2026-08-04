@@ -78,20 +78,40 @@ Production (Chapter 23) registers a real HTTPS URL — same handler code, differ
 
 ## Common beginner questions
 
-**Q: I accidentally committed `sk_test_…` to Git — is that OK?**  
+<FaqGroup>
+
+<FaqItem question="I accidentally committed `sk_test_…` to Git — is that OK?">
+
 Rotate the key in Dashboard immediately. Test keys are lower risk than live — still bad habit. Never commit **any** secret.
 
-**Q: Test mode vs Sandbox?**  
+</FaqItem>
+
+<FaqItem question="Test mode vs Sandbox?">
+
 Stripe uses **test mode** on your account. No separate sandbox account needed for this course.
 
-**Q: INR vs USD?**  
+</FaqItem>
+
+<FaqItem question="INR vs USD?">
+
 Pick one currency for FreshMarket and stick to it. Stripe supports INR in test mode — confirm currency in Dashboard account settings. Amounts in API are **integer smallest unit** (paise for INR).
 
-**Q: Do I need a business verification for test mode?**  
+</FaqItem>
+
+<FaqItem question="Do I need a business verification for test mode?">
+
 No. Live mode needs verification — you are not going live in this course.
 
-**Q: Can I use Stripe without the Dashboard?**  
+</FaqItem>
+
+<FaqItem question="Can I use Stripe without the Dashboard?">
+
 You need Dashboard or CLI for keys and webhook secrets. API alone is not enough for first setup.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Security habits (course minimum)
 
@@ -119,7 +139,7 @@ You need Dashboard or CLI for keys and webhook secrets. API alone is not enough 
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW52NSN8076TP960Q9YBW" />
+<OpenQuestion id="01KZ5P6BVS0J6FRSBQKNM2PQQW" />
 
 ## Next
 

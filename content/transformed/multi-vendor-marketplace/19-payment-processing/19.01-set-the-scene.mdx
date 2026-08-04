@@ -83,23 +83,46 @@ Chapter 20 wires Stripe.js in the browser. This chapter proves the **server** re
 
 ## Common beginner questions
 
-**Q: Why not Stripe Connect for multi-vendor payouts?**  
+<FaqGroup>
+
+<FaqItem question="Why not Stripe Connect for multi-vendor payouts?">
+
 Connect splits money to vendor Stripe accounts — powerful, but heavy for a medium course. Here the **platform collects one payment**; vendor settlement is a business process outside this build. You still get real Payment Intents, webhooks, and production-shaped checkout.
 
-**Q: Why verify on checkout if the client already confirmed?**  
+</FaqItem>
+
+<FaqItem question="Why verify on checkout if the client already confirmed?">
+
 Never trust the browser. A modified client could POST `/checkout` with a fake id. Your server must **retrieve the Payment Intent from Stripe** and check `status` and `amount`.
 
-**Q: One Payment Intent for a two-store cart?**  
+</FaqItem>
+
+<FaqItem question="One Payment Intent for a two-store cart?">
+
 Yes. Customer pays **once** at the hall desk. Two orders share `stripePaymentIntentId` — accounting can tie them together.
 
-**Q: Do I replace Chapter 18 checkout?**  
+</FaqItem>
+
+<FaqItem question="Do I replace Chapter 18 checkout?">
+
 You **extend** it. Same split/snapshot/stock/clear logic — add a payment verification step at the top.
 
-**Q: Real money in this chapter?**  
+</FaqItem>
+
+<FaqItem question="Real money in this chapter?">
+
 **No.** Test mode only. Test card `4242 4242 4242 4242`. Live keys stay out of the course.
 
-**Q: What if payment succeeds but checkout crashes?**  
+</FaqItem>
+
+<FaqItem question="What if payment succeeds but checkout crashes?">
+
 Webhook + idempotency (19.12–19.13) reduce duplicate orders on retry. Document edge cases in learning log.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## What this chapter is not
 
@@ -129,7 +152,7 @@ Estimated time: **two full days** — payment bugs are expensive; go carefully.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW51XCDFKK8DYK7SFSCJZ" />
+<OpenQuestion id="01KZ5P6BSV18XQ1B5WJ6MMZ0Q6" />
 
 ## Next
 

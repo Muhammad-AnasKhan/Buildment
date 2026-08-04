@@ -70,26 +70,52 @@ Customer waits for SMTP. One slow vendor notification fails the whole checkout. 
 
 ## Common beginner questions
 
-**Q: What is a queue? I thought Redis was for cache.**  
+<FaqGroup>
+
+<FaqItem question="What is a queue? I thought Redis was for cache.">
+
 Redis can hold many data types. Chapter 21 used it for **cached strings**. Chapter 22 uses it for **BullMQ job lists** — same Redis server, different key prefixes. Think of cache as a photograph; the queue is a **to-do inbox**.
 
-**Q: Why a separate worker process? Why not just `setTimeout` in the API?**  
+</FaqItem>
+
+<FaqItem question="Why a separate worker process? Why not just `setTimeout` in the API?">
+
 `setTimeout` dies when you restart the API, cannot retry reliably, and shares memory with HTTP traffic. A worker process **survives independently**, can retry failed jobs, and scales separately in production (Ch 23).
 
-**Q: What if the worker is not running?**  
+</FaqItem>
+
+<FaqItem question="What if the worker is not running?">
+
 Checkout still returns 201 — orders exist. Jobs sit in Redis until you start the worker. That is **eventual** notification delivery — acceptable for email, unacceptable for stock decrement (which stays synchronous).
 
-**Q: Do I need real SendGrid/Mailgun?**  
+</FaqItem>
+
+<FaqItem question="Do I need real SendGrid/Mailgun?">
+
 No. `console.log` with a `[NOTIFY]` prefix satisfies the gate. Swap for a real provider in portfolio — same queue shape.
 
-**Q: Should checkout wait until the worker finishes?**  
+</FaqItem>
+
+<FaqItem question="Should checkout wait until the worker finishes?">
+
 **No.** Gate proof: 201 returns **before** worker logs appear. If you await the worker in the handler, you rebuilt the sync trap.
 
-**Q: What jobs will I build?**  
+</FaqItem>
+
+<FaqItem question="What jobs will I build?">
+
 `order.created` after checkout (notify each vendor + customer), `order.statusUpdated` after vendor PATCH (notify customer of new status). Optional: `product.updated` for async cache bust (21.16).
 
-**Q: Two terminals again?**  
+</FaqItem>
+
+<FaqItem question="Two terminals again?">
+
 Yes. Terminal 1: `npm run dev` (API). Terminal 2: `npm run worker`. Same habit as client + server from Chapter 2 — now three processes if you count the React dev server.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## What this chapter is not
 
@@ -133,7 +159,7 @@ When you demo checkout live: **201 returns before notification logs appear** in 
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW5AC9ECNS5RSDQEEYGDM" />
+<OpenQuestion id="01KZ5P6CBQ1J44QFSNNJ86WDA0" />
 
 ## Next
 

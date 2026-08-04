@@ -1,6 +1,7 @@
 import { prisma } from "@/server/db";
 import { sanitizeBlockConfig } from "@/mdx/sanitize";
 import { OpenQuestionConfigSchema, type SanitizedOpenQuestionConfig } from "./schema";
+import { getOpenQuestionGroupPosition } from "./group-position";
 import { OpenQuestionClient } from "./OpenQuestionClient";
 
 // Registered in the MDX component map as <OpenQuestion id="...">. Server
@@ -15,8 +16,24 @@ export async function OpenQuestionComponent({ id }: { id: string }) {
     );
   }
 
+  const chapterBlocks = await prisma.block.findMany({
+    where: { chapterId: block.chapterId, archivedAt: null },
+    orderBy: { order: "asc" },
+    select: { id: true, type: true },
+  });
+
+  const { position, index, total } = getOpenQuestionGroupPosition(chapterBlocks, id);
+
   const config = OpenQuestionConfigSchema.parse(block.config);
   const sanitized = sanitizeBlockConfig<typeof config, SanitizedOpenQuestionConfig>(config);
 
-  return <OpenQuestionClient id={id} config={sanitized} />;
+  return (
+    <OpenQuestionClient
+      id={id}
+      config={sanitized}
+      groupPosition={position}
+      questionIndex={index}
+      questionTotal={total}
+    />
+  );
 }

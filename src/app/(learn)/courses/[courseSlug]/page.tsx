@@ -112,6 +112,9 @@ export default async function CourseOverviewPage({
           continueTarget ? `/courses/${course.slug}/${continueTarget.slug}` : null
         }
         continueLabel={continueLabel}
+        moduleCount={modules.length}
+        chapterCount={flatChapters.length}
+        estimatedHours={course.estimatedHours}
       />
 
       <CourseStatsRow

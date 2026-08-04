@@ -61,23 +61,46 @@ Catalogue is read-heavy. Chapter 21 adds a cache layer — not for cart or order
 
 ## Common beginner questions
 
-**Q: What is Redis? Do I need another database?**  
+<FaqGroup>
+
+<FaqItem question="What is Redis? Do I need another database?">
+
 Redis is an **in-memory data store** — extremely fast reads and writes. For this course it holds cached catalogue JSON and (in Chapter 22) job queues. MongoDB remains your **source of truth** for products, orders, and users. Redis is a helper, not a replacement.
 
-**Q: Why not just make MongoDB faster?**  
+</FaqItem>
+
+<FaqItem question="Why not just make MongoDB faster?">
+
 MongoDB is already correct. The win is **avoiding repeat work** — the same `GET /products?page=1` asked hundreds of times per minute should not hit MongoDB hundreds of times if the product list has not changed.
 
-**Q: What if cache shows an old price after a vendor update?**  
+</FaqItem>
+
+<FaqItem question="What if cache shows an old price after a vendor update?">
+
 That is the **stale cache trap** (20.2). Fix: **invalidate** cache keys when products change — do not rely on TTL alone for price correctness.
 
-**Q: Will my app break if Redis is not installed?**  
+</FaqItem>
+
+<FaqItem question="Will my app break if Redis is not installed?">
+
 Not if you implement fallback (20.14). The gate requires: Redis stopped → catalogue still loads from MongoDB. Slower, but alive.
 
-**Q: Is this the same Redis as Chapter 22?**  
+</FaqItem>
+
+<FaqItem question="Is this the same Redis as Chapter 22?">
+
 Yes — **one Redis server**, two jobs: cache keys (`catalogue:*`) and BullMQ queue keys (`bull:*`). Different prefixes, same `REDIS_URL`.
 
-**Q: Do customers see "cache" in the UI?**  
+</FaqItem>
+
+<FaqItem question="Do customers see \"cache\" in the UI?">
+
 No. Cache is invisible server-side plumbing. Customers just notice the shop feels snappier on repeat visits.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## What this chapter is not
 
@@ -108,7 +131,7 @@ Estimated time: **two days**.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW578CYNKHMF68WA1AR29" />
+<OpenQuestion id="01KZ5P6C5TGZ55K6Q0M6DJ5CG2" />
 
 ## Next
 

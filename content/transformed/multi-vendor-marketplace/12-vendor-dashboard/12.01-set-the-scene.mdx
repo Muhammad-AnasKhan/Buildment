@@ -31,20 +31,40 @@ Chapter 11 built the **warehouse computer system** for inventory. Chapter 12 put
 
 ## Common beginner questions
 
-**Q: Why UI after API again — didn't we do this with stores?**  
+<FaqGroup>
+
+<FaqItem question="Why UI after API again — didn't we do this with stores?">
+
 Yes — intentional pattern: 9→10 for shops, 11→12 for products. API contract frozen; UI adapts to your response shapes.
 
-**Q: Do I need a fancy table library?**  
+</FaqItem>
+
+<FaqItem question="Do I need a fancy table library?">
+
 No. A plain HTML table is fine for MVP. Focus on wiring and error handling, not DataGrid features.
 
-**Q: Where do photos go?**  
+</FaqItem>
+
+<FaqItem question="Where do photos go?">
+
 Chapter 13. This chapter is text fields only — name, price, unit, stock. Don't mix upload debugging with form routing.
 
-**Q: What if publish fails with 403?**  
+</FaqItem>
+
+<FaqItem question="What if publish fails with 403?">
+
 Usually a token or ownership bug — not a UI bug. Verify you're editing **your** product id with **your** vendor token.
 
-**Q: Can customers see the vendor dashboard?**  
+</FaqItem>
+
+<FaqItem question="Can customers see the vendor dashboard?">
+
 No. `/vendor/*` routes require vendor role and (from Ch 10) an existing store.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap
 
@@ -118,7 +138,7 @@ Estimated time: **1–1.5 days**.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW4EEEEE5J4W1PFF0JQMR" />
+<OpenQuestion id="01KZ5P6ANDYHYKJGATGCSDQJ9R" />
 
 ## Next
 

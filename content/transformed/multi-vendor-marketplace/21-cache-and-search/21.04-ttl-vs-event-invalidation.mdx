@@ -82,14 +82,28 @@ Call `invalidateCatalogueCache()` — not scattered in routes. One function, one
 
 ## Common beginner questions
 
-**Q: What TTL should I pick?**  
+<FaqGroup>
+
+<FaqItem question="What TTL should I pick?">
+
 300–900 seconds (5–15 min) is fine for the course. Document your choice. Shorter TTL reduces stale window but increases MongoDB load.
 
-**Q: Can I use `FLUSHALL` to invalidate?**  
+</FaqItem>
+
+<FaqItem question="Can I use `FLUSHALL` to invalidate?">
+
 **No** in shared Redis — destroys BullMQ jobs from Ch 22 and all cache keys. Use prefix `SCAN` + `DEL` on `catalogue:*` only.
 
-**Q: Implement TTL or invalidation first?**  
+</FaqItem>
+
+<FaqItem question="Implement TTL or invalidation first?">
+
 Course order: cache with TTL in 20.9, then invalidation in 20.11 — so you can **feel** the stale trap before fixing it.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## ✅ Do / ❌ Don't
 
@@ -110,7 +124,7 @@ Course order: cache with TTL in 20.9, then invalidation in 20.11 — so you can 
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW57SBBK5T20YWX9E3637" />
+<OpenQuestion id="01KZ5P6C6XPCJVRG8RP9EJHCSB" />
 
 ## Next
 

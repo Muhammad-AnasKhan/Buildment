@@ -71,14 +71,28 @@ You put a "Milk ₹65" sign in the window (cache). Vendor changes the shelf pric
 
 ## Common beginner questions
 
-**Q: If TTL is 5 minutes, isn't that good enough?**  
+<FaqGroup>
+
+<FaqItem question="If TTL is 5 minutes, isn't that good enough?">
+
 For a demo with no edits, maybe. For a marketplace where vendors change prices and stock, **5 wrong minutes** is a bug. Event invalidation fixes it immediately.
 
-**Q: Should I cache search results too?**  
+</FaqItem>
+
+<FaqItem question="Should I cache search results too?">
+
 Yes, with keys that include the `search` param — and invalidate on the same product writes. Or skip caching search if simpler; document your choice.
 
-**Q: What about cart and orders?**  
+</FaqItem>
+
+<FaqItem question="What about cart and orders?">
+
 Never cache user-specific routes this chapter. Catalogue only.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## ✅ Do / ❌ Don't
 
@@ -99,7 +113,7 @@ Never cache user-specific routes this chapter. Catalogue only.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW57DZMMD5KR51043XWE9" />
+<OpenQuestion id="01KZ5P6C66Y5Z0TCWTGAQ0CJX6" />
 
 ## Next
 

@@ -76,14 +76,28 @@ In learning log 22.16, state:
 
 ## Common beginner questions
 
-**Q: Can I deploy client and API on the same Vercel project?**  
+<FaqGroup>
+
+<FaqItem question="Can I deploy client and API on the same Vercel project?">
+
 Vercel is for **static client** + serverless functions — long-running Express + worker need Render/Railway/VPS. Typical split: Vercel client, Render API+worker.
 
-**Q: Do I need a custom domain?**  
+</FaqItem>
+
+<FaqItem question="Do I need a custom domain?">
+
 No for gate — `*.onrender.com` and `*.vercel.app` HTTPS URLs pass. Custom domain is portfolio polish.
 
-**Q: What is cold start?**  
+</FaqItem>
+
+<FaqItem question="What is cold start?">
+
 Free PaaS tiers sleep when idle — first request after sleep may take 30–60s. Retry smoke test once if health is slow.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## ✅ Do / ❌ Don't
 
@@ -104,7 +118,7 @@ Free PaaS tiers sleep when idle — first request after sleep may take 30–60s.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW5EAGB5D5K2F6P7Q9MQX" />
+<OpenQuestion id="01KZ5P6CKQWQW0GMV85GMJ62WV" />
 
 ## Next
 

@@ -66,26 +66,52 @@ The product inside is the same. The **address and utilities** change.
 
 ## Common beginner questions
 
-**Q: What is "deploy" in one sentence?**  
+<FaqGroup>
+
+<FaqItem question="What is \"deploy\" in one sentence?">
+
 Copy your server and built client to machines that stay online, configure secrets on the host, and get HTTPS URLs that work without your laptop.
 
-**Q: Where do secrets go in production?**  
+</FaqItem>
+
+<FaqItem question="Where do secrets go in production?">
+
 In the **host's environment variable panel** — Render "Environment", Railway "Variables", VPS `/etc/environment` or PM2 ecosystem file. Same **names** as `server/.env.example`, different **values**. Never commit production `.env` to Git.
 
-**Q: What is `VITE_API_URL` and why does it matter at build time?**  
+</FaqItem>
+
+<FaqItem question="What is `VITE_API_URL` and why does it matter at build time?">
+
 Vite **bakes** `import.meta.env.VITE_API_URL` into the JavaScript bundle when you run `npm run build`. Changing the API URL later requires **rebuild and redeploy** the client — it is not read at runtime from a file.
 
-**Q: Do I deploy only the API?**  
+</FaqItem>
+
+<FaqItem question="Do I deploy only the API?">
+
 No. Gate requires **three pieces**: HTTPS API, HTTPS client, **worker process**. Checkout notifications stop if only the API is deployed (Ch 22 jobs enqueue but nobody processes them).
 
-**Q: Which host should I pick?**  
+</FaqItem>
+
+<FaqItem question="Which host should I pick?">
+
 Beginners: API on Render/Railway + client on Vercel — fastest HTTPS. Comfortable with Linux: one VPS with PM2 + Caddy — stronger viva story. Pick one path in 22.4 and document it.
 
-**Q: Will deploy break my local setup?**  
+</FaqItem>
+
+<FaqItem question="Will deploy break my local setup?">
+
 No. Keep `server/.env` and `client/.env` for localhost. Production uses **separate** env values on the host — often a different MongoDB database and a new `JWT_SECRET`.
 
-**Q: What if smoke test fails on production but worked locally?**  
+</FaqItem>
+
+<FaqItem question="What if smoke test fails on production but worked locally?">
+
 Usually: wrong `VITE_API_URL` in client build, CORS still pointing at `localhost`, missing env var on worker, or Atlas IP not allowing the host. Chapter 23.13 walks the fix matrix.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## What this chapter is not
 
@@ -116,7 +142,7 @@ Estimated time: **two to three days** — DNS and TLS wait on propagation.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW5DR1WP8SHC104DKH2BK" />
+<OpenQuestion id="01KZ5P6CJKCRXMEVR8G3RABPN5" />
 
 ## Next
 

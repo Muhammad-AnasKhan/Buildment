@@ -31,20 +31,40 @@ Chapter 9 built the **registry office** where stall applications are filed. Chap
 
 ## Common beginner questions
 
-**Q: Why another frontend chapter — didn't Chapter 7 cover React?**  
+<FaqGroup>
+
+<FaqItem question="Why another frontend chapter — didn't Chapter 7 cover React?">
+
 Chapter 7 was **auth for everyone**. Chapter 10 is **vendor-specific flows** — different routes, different gate, different API helpers (`stores.js`).
 
-**Q: Can I build product pages here since the vendor is already logged in?**  
+</FaqItem>
+
+<FaqItem question="Can I build product pages here since the vendor is already logged in?">
+
 No. Stay on **shop identity only**. Products are Chapters 11 (API) and 12 (UI). Mixing them makes debugging harder.
 
-**Q: What happens when `GET /stores/me` returns 404?**  
+</FaqItem>
+
+<FaqItem question="What happens when `GET /stores/me` returns 404?">
+
 Redirect to `/vendor/open-shop` (or your chosen path). That is the core onboarding story — not an error page.
 
-**Q: Do customers see these pages?**  
+</FaqItem>
+
+<FaqItem question="Do customers see these pages?">
+
 No. `/vendor/*` routes are for sellers. Customers get their own shop experience in Week 3.
 
-**Q: Do I need new server endpoints?**  
+</FaqItem>
+
+<FaqItem question="Do I need new server endpoints?">
+
 Usually no — Chapter 9's API is enough. This chapter is **client-only** unless you discover a gap during testing.
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## The gap between "API works" and "vendor can operate"
 
@@ -127,7 +147,7 @@ Estimated time: **one full day** — mostly React routing and forms.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW48EAXJ9JA7T3NKN5S99" />
+<OpenQuestion id="01KZ5P6AAVZ0E91A9WR022PP7V" />
 
 ## Next
 

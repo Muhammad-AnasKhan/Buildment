@@ -10,112 +10,100 @@ Read this section carefully. Everything else in the course assumes you understan
 
 ## If you're newer to full-stack — how to read this course
 
-You do **not** need to already know MongoDB, JWT, Redis, or deployment. You **do** need patience to read the **Learn it** sections before the **Build it** steps.
+**Don't worry if this feels new.** You do not need to already know MongoDB, JWT, Redis, deployment, or every buzzword on a job posting. This course is built for people who are learning as they go.
 
-**Read in this order within each chapter:**
+We structured it as a **guided path**, not a pile of random tutorials. Every chapter is in a deliberate order. Later chapters only make sense because earlier ones set things up — you are never expected to jump in cold.
 
-1. **Set the scene** — where your repo stands; don't build yet
-2. **Why it matters / What you'll build** — understand the goal
-3. **Learn it** — concepts and trade-offs; use **In plain English** boxes
-4. **Prime your thinking** — skim mandatory links
-5. **Build it** — one sub-chapter at a time; verify before the next
-6. **Gate** — checklist + learning log in the platform before the next chapter
+### How each chapter is organised
 
-**When you're stuck:**
+The same rhythm repeats throughout the course. You always know what kind of step you are on:
 
-| Symptom | What to do |
+1. **Understand the problem** — what we are solving and why it matters for the marketplace
+2. **See what you will build** — the outcome for this chapter, in plain language
+3. **Learn the ideas** — concepts, trade-offs, and "why professionals choose this" before you touch code
+4. **Rethink and check** — short questions and prompts so the idea sticks, not just the syntax
+5. **Build it** — one small step at a time on your own repo, with a way to verify it works
+6. **Gate** — a checklist plus answer questions before the next chapter unlocks
+
+You read and think first. You build at the end. That order is intentional — it is how you actually understand what you are shipping, not just copy files.
+
+### What that means for you
+
+- **Go in order.** The sidebar is your path. Skipping ahead usually means hitting a wall you could have avoided.
+- **It is okay not to know things yet.** The **Learn it** sections and **In plain English** boxes exist for exactly that.
+- **One chapter, one focus.** You are not building the whole app at once. Each chapter adds one real piece.
+- **Verify as you go.** If a step says "check the health route" or "log in as vendor," do that before moving on — that is how you know you are on track.
+
+### When something feels hard
+
+| If you feel… | Try this |
 |---|---|
-| "I don't understand the words" | Re-read **In plain English** in that sub-chapter |
-| "Build step failed" | Read **Troubleshooting**; compare to "Where the project is now" |
-| "Chapter feels like a jump" | Read **Bridge from last chapter** at the top |
-| "I want to skip ahead" | Don't — later chapters assume earlier gates |
+| "I don't understand the words" | Re-read **In plain English** in that lesson — then come back to the main text |
+| "The build step failed" | Read **Troubleshooting** and compare your repo to **Where the project is now** |
+| "This chapter jumped too fast" | Read **Bridge from last chapter** at the top — it links what you just finished to what is new |
+| "I'm not sure I'm doing it right" | Run the verify step for that lesson — if it passes, you are on track; if not, fix that before moving on |
 
-**Two folders, two jobs:** `server/` is your API. `client/` is the browser UI. They talk over HTTP.
+You are not expected to figure everything out alone on the first pass. Read, build a little, get stuck, re-read — that loop is normal. The structure is here so you always know **what to do next** and **why you are doing it**.
 
-## Step type labels
+## How each lesson is labeled
 
-Every lesson shows a step type badge (Read, Learn, Build, Check, Gate) so you know what kind of step you are on:
+Every lesson in the sidebar has a **type badge** — Read, Learn, Build, Check, or Gate. Glance at it and you know what you are about to do: read and think, write code, answer a quiz, or finish the chapter.
 
-| Label | What to do | Touch your repo? |
+| Type | What you do | Code in your repo? | Example |
+|---|---|---|---|
+| **Read** | Set the scene — where you are in the project and what this chapter adds | No | *"Your repo has a server and client folder; this chapter connects them"* |
+| **Learn** | Understand the idea before you code — concepts, trade-offs, why we chose this approach | No | *"Sessions vs JWT — which fits a marketplace, and why"* |
+| **Build** | Hands-on — create files, wire routes, run commands, and verify it works | **Yes** | *"Add the health route, start the server, see a success response in the browser"* |
+| **Check** | Quick quiz in the platform — multiple choice or short answer to see if the idea landed | No | *"What should never be stored in a JWT payload?"* |
+| **Gate** | Finish the chapter — tick the checklist and answer the questions here | Check your work | *"Demo vendor login; answer: why did we hash passwords?"* |
+
+**Simple rule:** finish **Read** and **Learn** before **Build** in the same chapter. On **Gate**, complete every checklist item and answer at the bottom of the page — the next chapter stays locked until you do.
+
+Work through the **sidebar** top to bottom within each module. The badge tells you whether to open your editor or just read and think.
+
+## The gate is mandatory — do not skip it
+
+Every chapter ends with a **Gate** lesson. This is **required**, not optional — it is how we check that you are ready for the next chapter.
+
+We evaluate you in **two ways** at every gate:
+
+### 1. Checklist
+
+A list of things you must be able to **show, demo, or explain**. Each box is concrete — not "I read the chapter," but "I can log in as a vendor and see only my orders."
+
+Tick every box honestly. If a box is not true yet, that is your work before moving on.
+
+### 2. Answer questions
+
+Short written answers **in the platform** — a few sentences in your own words. These check that you understand **why** you built something, not just that it runs.
+
+You are not writing essays. Two or three clear sentences per question is enough.
+
+**Both parts are mandatory.** The next chapter stays **locked** until the checklist is complete and every question is answered. Later chapters assume earlier work is actually finished — skipping the gate means building on gaps you will have to fix later.
+
+At the **end of this page** you will see real examples of both: a sample gate checklist and sample answer questions. Use them to see exactly what every chapter gate looks like.
+
+## Along the way — mandatory reads and more
+
+Between build steps, we point you to **mandatory reads**, **recommended articles**, **case studies**, and **hints**. They are not filler — they sharpen how you think, not just what you type.
+
+| Type | What it is | Do you have to do it? |
 |---|---|---|
-| **Read** | Orient — set the scene, why it matters | No |
-| **Learn** | Understand concepts and trade-offs | No |
-| **Build** | Hands-on — create files, wire routes, verify | **Yes** |
-| **Check** | Quiz — MCQ and short-answer questions in the platform | No |
-| **Gate** | Checklist + learning log — complete in the platform before the next chapter | Review only |
+| **Mandatory read** | An external article or doc you read **before** the next build step | **Yes** — tick "I have read" on the card |
+| **Recommended article / case study** | Extra depth when you want to go further | Optional, but worth it |
+| **Hint** | A nudge when you are stuck | Use when needed — never full solution code |
 
-Read **[Read]** and **[Learn]** lessons fully before **[Build]** steps in the same chapter. On **[Gate]** lessons, use the checklist and answer fields at the bottom of the page — do not open the next chapter until you mark the current one complete.
+Mandatory reads often appear as a **card with a link** — open the article in a new tab, read it, then tick the box. That tick is your confirmation; treat it like part of the lesson.
 
-Use the **sidebar** to move through lessons in order — work top to bottom within each module.
+### Example mandatory read
 
-## The shape: course → chapters → lessons
-
-One project: **your multi-vendor grocery marketplace.** One repository with `server/` and `client/`. One deployed URL at the end.
-
-This course has **22 build chapters** (Chapters 2–23) plus this introduction and a closing chapter. Chapters are grouped into **four weeks** at full-time pace:
-
-| Week | Name | Demo target |
-|---|---|---|
-| Week 1 | Foundations | Both apps run; MongoDB seeded; health check in browser |
-| Week 2 | Vendor experience | Vendor opens shop, lists products with photos |
-| Week 3 | Buyer experience | Customer browses, carts, pays with Stripe test card |
-| Week 4 | Polish & ship | Cache, search, async jobs, live HTTPS URL |
-
-Week labels are **checkpoints**, not folder names. If Week 2 ends and no vendor can add a product in the UI, Week 3 is not where you fix that.
-
-Inside every chapter, you work through **lessons** in order — small, finishable steps following: open & motivate → learn it → build it → wrap → gate.
-
-## How a chapter reads — the rhythm you'll repeat
-
-**1. Set the scene.** Where the project stands and what this chapter adds.
-
-**2. Learn it.** The concept, weak vs strong approaches — taught in prose first.
-
-**3. Build it.** Exact folder and file, contract not implementation, verify steps.
-
-**4. Gate.** Observable outcomes + learning log answers in the platform.
-
-Concept chapters run shorter on *Build it* but still include applied work on your repo.
-
-## The checklist is a gate — the most important rule
-
-Every chapter ends in a **gate** — a Definition of Done checklist plus learning log questions **in this platform**.
-
-**You do not move to the next chapter until every box is ticked and every learning log answer is written.**
-
-- Each item must be something you can **see or demo**
-- Skipping the gate means the next chapter builds on something that isn't there
-- Phrase it as: **"All boxes ticked? Mark chapter complete. If not, that's today's work."**
-
-## Learning log — in the platform
-
-At the end of each chapter gate, you'll answer questions about decisions and trade-offs **here in the course platform**. Your answers are saved in your browser (PostgreSQL sync comes later).
-
-This is evidence you cleared the gate with understanding — rehearsal for the final viva.
-
-## How you're judged
-
-You're evaluated on **understanding**, not just a running demo.
-
-**During the course:** gates keep you honest chapter by chapter.
-
-**At the end:** a **viva** — you walk through how your marketplace works and what would break it.
-
-**AI tools:** You may use Cursor, Copilot, or similar. The viva checks that **you** can explain what you committed.
-
-## Specs, not solutions
-
-**You will get:** API contracts, folder trees, commands, config sketches, diagrams, measured symptoms.
-
-**You will not get:** route handler bodies, middleware implementations, or copy-paste dashboard components.
-
-## Mandatory reads, topics to read, and hints
-
-**Mandatory reads** — blocking; read before the next build step.
-
-**Topics to read** — recommended depth; not blocking.
-
-**Hints** — nudges when stuck; never solution code.
+<MandatoryReadCard
+  title="Functional vs non-functional requirements — plain examples"
+  href="https://www.freshcodeit.com/blog/functional-vs-non-functional-requirements"
+  source="Freshcode"
+  summary="A short beginner-friendly article. Functional = what the system must do. Non-functional = how well it must do it — speed, security, reliability. You will use this language throughout the course."
+  readMinutes={8}
+/>
 
 ## When you're stuck — in order
 
@@ -129,12 +117,37 @@ You're evaluated on **understanding**, not just a running demo.
 ## Key ideas from this page
 
 - Use the **sidebar** — lessons in order, one at a time
-- **Gate before next chapter** — checklist + learning log in the platform
-- **Quizzes** appear on Check lessons (MCQ + short answer)
-- The course gives **specs**, not solution code
-- Week labels are **demo checkpoints**, not repo folders
+- Every gate has **two parts**: checklist + answer questions — both mandatory
+- **Read** and **Learn** before **Build** in the same chapter
+- **Mandatory reads** appear as cards — open the link, read, tick the box
+- Functional = **what** the product does; non-functional = **how well** it must do it
 
 Next: meet the product — what FreshMarket *is*, and the people who use it.
+
+## Gate examples — what this looks like on every chapter
+
+Below is what a real gate feels like. Chapter 1.2 uses the same pattern as every other chapter.
+
+### Example 1 — Checklist
+
+Tick each box when it is true for you before opening Chapter 1.3:
+
+- [ ] I know the five lesson types: **Read**, **Learn**, **Build**, **Check**, and **Gate**
+- [ ] I will finish **Read** and **Learn** before **Build** steps in each chapter
+- [ ] I understand every gate has **two parts**: checklist + answer questions — both mandatory
+- [ ] I know mandatory reads appear as **cards** — I open the link, read, and tick the box
+- [ ] I will follow the **sidebar in order** and not skip ahead
+
+### Example 2 — Answer questions
+
+After the checklist, you answer questions in the platform — like the two below. Write in your own words; there is no single perfect answer.
+
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW33RWRQN831WNBC4HS2R" />
+<CheckpointIntro>
+These are your **answer questions** for this lesson — the same kind you will see at every gate. Answer both before moving to Chapter 1.3.
+</CheckpointIntro>
+
+<OpenQuestion id="01KZ5P68FPR1H04C7V85C2VFVA" />
+
+<OpenQuestion id="01KZ5P68FQ971KKCX9813W270H" />

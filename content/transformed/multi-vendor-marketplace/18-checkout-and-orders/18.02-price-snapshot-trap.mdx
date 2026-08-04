@@ -97,17 +97,34 @@ Weak answer: "We use the product table" — describes the trap.
 
 ## Common beginner questions
 
-**Q: Isn't copying price "bad normalization"?**  
+<FaqGroup>
+
+<FaqItem question="Isn't copying price \"bad normalization\"?">
+
 On **Product**, yes — one price field. On **Order**, the copy **is** the receipt. Different entity, different rules.
 
-**Q: Can I populate product for the product image on order history?**  
+</FaqItem>
+
+<FaqItem question="Can I populate product for the product image on order history?">
+
 Optional for image/link — **never** for price or unit display on fulfilled orders.
 
-**Q: What if the product is deleted later?**  
+</FaqItem>
+
+<FaqItem question="What if the product is deleted later?">
+
 Snapshot fields still show what was bought. `productId` link may 404 — order line remains valid.
 
-**Q: Should cart lines snapshot price too?**  
+</FaqItem>
+
+<FaqItem question="Should cart lines snapshot price too?">
+
 Not for MVP — cart is mutable intent. **Checkout** is the commit point (18.11).
+
+</FaqItem>
+
+</FaqGroup>
+
 
 ## Self-check
 
@@ -118,7 +135,7 @@ Not for MVP — cart is mutable intent. **Checkout** is the commit point (18.11)
 
 ## Before you continue
 
-<OpenQuestion id="01KZ5FW4YQM3WT70SKDDJ1840E" />
+<OpenQuestion id="01KZ5P6BK6SDN05G7C3HXKFFD1" />
 
 ## Next
 
