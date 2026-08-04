@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useId, useSyncExternalStore } from "react";
 import { BookOpen, ExternalLink } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -18,6 +18,22 @@ function storageKey(href: string) {
   return `buildment:read:${href}`;
 }
 
+// localStorage is an external store here: the checkbox reflects it via
+// useSyncExternalStore (SSR-safe through the server snapshot) instead of a
+// mount-time setState.
+const storageListeners = new Set<() => void>();
+
+function subscribeToStorage(listener: () => void) {
+  storageListeners.add(listener);
+  return () => {
+    storageListeners.delete(listener);
+  };
+}
+
+function notifyStorageListeners() {
+  for (const listener of storageListeners) listener();
+}
+
 export function MandatoryReadCard({
   title,
   href,
@@ -26,24 +42,26 @@ export function MandatoryReadCard({
   readMinutes,
 }: MandatoryReadCardProps) {
   const checkboxId = useId();
-  const [read, setRead] = useState(false);
-
-  useEffect(() => {
-    try {
-      setRead(localStorage.getItem(storageKey(href)) === "1");
-    } catch {
-      // ignore private browsing / storage blocks
-    }
-  }, [href]);
+  const read = useSyncExternalStore(
+    subscribeToStorage,
+    () => {
+      try {
+        return localStorage.getItem(storageKey(href)) === "1";
+      } catch {
+        return false; // private browsing / storage blocks
+      }
+    },
+    () => false
+  );
 
   function toggle(checked: boolean) {
-    setRead(checked);
     try {
       if (checked) localStorage.setItem(storageKey(href), "1");
       else localStorage.removeItem(storageKey(href));
     } catch {
       // ignore
     }
+    notifyStorageListeners();
   }
 
   return (

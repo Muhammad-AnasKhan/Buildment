@@ -9,7 +9,8 @@ import { QuizClient } from "./QuizClient";
 // source or client props. See docs/03-blocks-registry.mdx and 09-security.mdx.
 export async function QuizComponent({ id }: { id: string }) {
   const block = await prisma.block.findUnique({ where: { id } });
-  if (!block || block.type !== "QUIZ") {
+  const parsed = block ? QuizConfigSchema.safeParse(block.config) : null;
+  if (!block || block.type !== "QUIZ" || !parsed?.success) {
     return (
       <div className="my-6 rounded-md border border-dashed border-destructive/50 p-4 text-sm text-destructive">
         Quiz block {id} is missing or misconfigured.
@@ -17,8 +18,7 @@ export async function QuizComponent({ id }: { id: string }) {
     );
   }
 
-  const config = QuizConfigSchema.parse(block.config);
-  const sanitized = sanitizeBlockConfig<typeof config, SanitizedQuizConfig>(config);
+  const sanitized = sanitizeBlockConfig<typeof parsed.data, SanitizedQuizConfig>(parsed.data);
 
   return <QuizClient id={id} config={sanitized} />;
 }

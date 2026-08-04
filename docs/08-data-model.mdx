@@ -98,6 +98,7 @@ model Block {
   blocking    Boolean   @default(false)
   points      Int       @default(1)
   config      Json                     // answers, rubric, tests — SERVER ONLY
+  sourceHash  String?                  // hash of the block's MDX subtree; change detection bumps version
   tags        String[]                 // for weak-area reporting
   archivedAt  DateTime?
   responses   Response[]

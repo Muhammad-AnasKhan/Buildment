@@ -8,7 +8,8 @@ import { OpenQuestionClient } from "./OpenQuestionClient";
 // component for the same reason as the Quiz block — see quiz/Component.tsx.
 export async function OpenQuestionComponent({ id }: { id: string }) {
   const block = await prisma.block.findUnique({ where: { id } });
-  if (!block || block.type !== "OPEN_QUESTION") {
+  const parsed = block ? OpenQuestionConfigSchema.safeParse(block.config) : null;
+  if (!block || block.type !== "OPEN_QUESTION" || !parsed?.success) {
     return (
       <div className="my-6 rounded-md border border-dashed border-destructive/50 p-4 text-sm text-destructive">
         Open question block {id} is missing or misconfigured.
@@ -24,7 +25,7 @@ export async function OpenQuestionComponent({ id }: { id: string }) {
 
   const { position, index, total } = getOpenQuestionGroupPosition(chapterBlocks, id);
 
-  const config = OpenQuestionConfigSchema.parse(block.config);
+  const config = parsed.data;
   const sanitized = sanitizeBlockConfig<typeof config, SanitizedOpenQuestionConfig>(config);
 
   return (
