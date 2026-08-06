@@ -6,9 +6,11 @@ summary: "Vendor changes milk price from ₹65 to ₹70. Customer still sees ₹
 ---
 Vendor changes milk price from ₹65 to ₹70. Customer still sees ₹65 for an hour because catalogue response was **cached without invalidation**. Trust erodes faster than slow pages.
 
-This sub-chapter names the trap **before** you wire Redis in 20.8–20.11. Speed without correctness is worse than no cache at all.
+This sub-chapter names the trap **before** you wire Redis in 21.8–21.11. Speed without correctness is worse than no cache at all.
 
 ## The bug
+
+The trap has three steps, and none of them looks wrong in isolation. The cache returns fast data, the write succeeds, and only then does the mismatch appear — on the *next* read. Tracing it later is hard because the stale copy lives outside your database.
 
 | Step | Problem |
 |---|---|
@@ -26,12 +28,14 @@ Caching feels like a win the first time you see `CACHE HIT` in logs. It is easy 
 
 ## Fix — two mechanisms (both in this chapter)
 
+The fix is not one mechanism but two, playing different roles. TTL is your safety net — it guarantees a wrong answer eventually goes away even if you forget a write path. Event invalidation is your correctness — it makes the wrong answer disappear the moment the data changes. Production caches need both; beginners ship one and call it done.
+
 | Mechanism | When |
 |---|---|
 | **TTL** | Safety net — e.g. 5–15 min — catches missed invalidation bugs |
 | **Event invalidation** | On product POST/PATCH/DELETE — delete matching cache keys immediately |
 
-Chapter 21 implements **both in sequence** (20.4).
+Chapter 21 implements **both in sequence** (21.4).
 
 ```
 On GET:  try cache → on miss, query DB → set with TTL
@@ -39,6 +43,8 @@ On POST/PATCH/DELETE product:  delete cache keys for catalogue
 ```
 
 ## What to invalidate
+
+Invalidation is per *write path*, not per cache. List every way a product can change in your API and make sure each one busts the catalogue cache — the DELETE case is the easiest to forget, because the product vanishes from the DB but lingers in Redis.
 
 Minimum: bust catalogue cache keys when **any** product write affects public list:
 
@@ -49,6 +55,8 @@ Minimum: bust catalogue cache keys when **any** product write affects public lis
 Key pattern example: `products:list:*` or hash of query params — document your scheme in README.
 
 ## What not to cache
+
+Not everything belongs in a shared cache. The rule of thumb: cache **shared, slow, read-only** data — never user-specific responses and never writes. Caching a cart would return one customer's cart to another if the key logic is off.
 
 | Route | Why |
 |---|---|
@@ -73,21 +81,33 @@ You put a "Milk ₹65" sign in the window (cache). Vendor changes the shelf pric
 
 <FaqGroup>
 
+<FaqItem question="How does the cache end up showing an old price when MongoDB was updated correctly?">
+
+Because the cached copy and the database can disagree, and nothing tells the cache to catch up. It happens in three steps: a customer reads `GET /products` and the server stores the JSON in Redis with a TTL; the vendor PATCHes the milk price, which updates MongoDB; the next customer reads the same key and gets the old JSON straight from Redis — fast, but wrong. Each step looks fine in isolation; only the mismatch on the next read reveals the bug. That's why invalidation must be planned for every write path, not hoped for.
+
+</FaqItem>
+
 <FaqItem question="If TTL is 5 minutes, isn't that good enough?">
 
-For a demo with no edits, maybe. For a marketplace where vendors change prices and stock, **5 wrong minutes** is a bug. Event invalidation fixes it immediately.
+For data nobody edits, maybe. For a marketplace where vendors change prices and stock daily, five wrong minutes is a bug — a customer adds milk at the stale ₹65, and the surprise shows up at checkout. Event invalidation removes the wrong answer the moment the write happens, shrinking the stale window from minutes to milliseconds. TTL stays useful as a safety net for keys you forgot to invalidate, but it should never be your only line of defence. Production caches run both.
 
 </FaqItem>
 
 <FaqItem question="Should I cache search results too?">
 
-Yes, with keys that include the `search` param — and invalidate on the same product writes. Or skip caching search if simpler; document your choice.
+You can — search queries are also repeated reads, so they benefit. The rule is to build the cache key from the full query (path *plus* sorted parameters, so `?search=milk` and `?search=rice` get different keys) and invalidate on the same product writes as the catalogue. If you'd rather keep version one simple, skipping search caching is acceptable — just document your choice. Whichever way you go, remember the rule from this sub-chapter: every cache needs an invalidation story.
 
 </FaqItem>
 
-<FaqItem question="What about cart and orders?">
+<FaqItem question="What about caching carts and orders?">
 
-Never cache user-specific routes this chapter. Catalogue only.
+Never, this chapter. Those routes are user-specific and change on every action — and a cache key that forgets the user's identity could hand one customer's cart to another. They're also writes or near-writes: an order's status must always reflect the latest vendor update. The rule of thumb: cache **shared, slow, read-only** data (the public catalogue) and never cache writes, per-user responses, or cheap routes like `/health` that must report live database status.
+
+</FaqItem>
+
+<FaqItem question="Why is a stale price worse than a slow page?">
+
+Because customers forgive slowness but not being misled. If the shop takes an extra second to load, the user shrugs; if the shop shows ₹65 and checkout charges ₹70, the user stops trusting the store — and lost trust is far harder to win back than milliseconds. That's the core lesson of this sub-chapter: speed without correctness is worse than no cache at all. Correctness is the minimum bar, and caching is only allowed on top of it.
 
 </FaqItem>
 
@@ -113,7 +133,7 @@ Never cache user-specific routes this chapter. Catalogue only.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5MBVZGAE4JQ29ZSR7BD" />
+<OpenQuestion id="01KZAX78PSTZQMV0132DB8NQ7Z" />
 
 ## Next
 

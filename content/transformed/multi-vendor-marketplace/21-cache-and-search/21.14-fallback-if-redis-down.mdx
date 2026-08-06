@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Production Redis restarts, misconfigured UR
 ---
 **Why this step matters:** Production Redis restarts, misconfigured URLs, and free-tier limits happen. An app that crashes when cache is unavailable is not shippable — degraded speed is acceptable; downtime is not.
 
+**Where the project is now:** Cache, invalidation, and search index work (21.8–21.13) — kill Redis and the catalogue breaks; nothing falls back to MongoDB.
+
 **After this step:** API serves catalogue from MongoDB when Redis unavailable — **no crash**, degraded performance only.
 
 ## Fallback contract
@@ -57,8 +59,8 @@ Do not mark `redis: connected` in `/health` unless you add it — not required f
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5N6Z7SNCRTZN8RN8K39" />
+<OpenQuestion id="01KZAX78TZMG2PSNZEFZZZN9AN" />
 
 ## Next
 
-**Sub-chapter 21.15:** Recap and what's next.
+**Sub-chapter 21.15:** Recap and what's next — caching survives a Redis outage; close the chapter with the gate.

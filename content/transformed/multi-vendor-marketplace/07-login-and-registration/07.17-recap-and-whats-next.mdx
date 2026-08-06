@@ -8,6 +8,8 @@ Chapter 7 paired with Chapter 6 — humans can **register, verify, login, and re
 
 ## What you built
 
+Four client-side pieces, each wrapping a Chapter 6 endpoint. If you can name what each one is *for* without opening the file, this chapter's learning has landed.
+
 **Pages:** Register, VerifyOtp, Login with API error handling.
 
 **useAuth:** Memory access token, boot refresh, login/logout/register/verify.
@@ -33,6 +35,8 @@ client/src/
 
 ## Security properties
 
+The four properties below are the *point* of this chapter — they are what a senior engineer checks when they review your auth. Holding a session in the browser is not the hard part; holding it *safely* is.
+
 - Access not in localStorage  
 - Refresh httpOnly cookie (when server configured)  
 - Short-lived access with renewal  
@@ -49,10 +53,22 @@ client/src/
 
 Logged in ≠ allowed to edit another vendor's store — Chapter 8.
 
+## Handoff to Chapter 8 — client done, server next
+
+| Chapter 7 (complete) | Chapter 8 (next) |
+|---|---|
+| ProtectedRoute hides vendor UI from strangers | `requireRole('vendor')` blocks API calls |
+| Role prop redirects wrong role in browser | Server checks role on every sensitive route |
+| 401 refresh loop keeps session alive | 403 means authenticated but forbidden — no refresh |
+| User identity in React context | `req.user.id` + ownership on store/product ids |
+
+**Demo you can run now:** Vendor A logs in, reaches `/vendor` stub.  
+**Demo you cannot run yet:** Prove Vendor B cannot PATCH Vendor A's store — that requires Chapter 8 middleware.
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P582F1FM04ZTETJDGS6G" />
+<OpenQuestion id="01KZAX76J749VKMCG4ZCJS43K4" />
 
 ## Next chapter — Authorization & isolation (Chapter 8)
 

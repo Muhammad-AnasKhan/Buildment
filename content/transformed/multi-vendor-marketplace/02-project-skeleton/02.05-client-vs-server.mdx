@@ -20,25 +20,31 @@ If you think React "talks to MongoDB," you will put connection strings in the cl
 
 <FaqItem question="Why two ports (5173 and 5000)?">
 
-Vite and Express are separate programs in development. Same machine, different doors — the browser loads UI from one, API calls go to the other.
+Because Vite and Express are two separate programs running on the same machine, and each program listens on its own port — its own door. Port 5173 serves the React UI to the browser; port 5000 serves your API. Think of a restaurant where the dining room has one door and the kitchen has another: customers go in one, orders go in the other, waiters carry plates between them. Different doors also mean different *origins*, which is exactly why CORS shows up next. Two ports, two processes, one product.
 
 </FaqItem>
 
 <FaqItem question="What is CORS and why do I need it?">
 
-Browsers block JavaScript on one origin from calling another unless the server **allows** it. Different ports count as different origins — hence `cors` middleware on Express.
+CORS (Cross-Origin Resource Sharing) is the browser's rule about letting JavaScript on one origin call another. `http://localhost:5173` and `http://localhost:5000` count as different origins — same machine, different port — so by default the browser blocks your React app from calling your API. You fix it with the `cors` package on the server, telling Express "this client origin is allowed." The classic symptom of skipping it: the same URL works fine in curl but fails in the browser with a CORS error. That difference — the browser enforces it, curl doesn't — is why curl alone can lull you into false confidence.
 
 </FaqItem>
 
-<FaqItem question="Can I put API logic inside React `useEffect`?">
+<FaqItem question="Can I put API logic inside a React `useEffect`?">
 
-You can **call** the API from React; you must not **implement** business rules or database access there. All persistence stays on the server.
+You can *call* your API from React — that's normal — but you must never implement business rules or database access there. The browser runs untrusted code anyone can read in DevTools, so anything like "which vendor owns this product?" has to live on the server, where it can enforce the rules. Keep React as the menu — display data, handle clicks and forms — and let the server be the kitchen that owns the ingredients and recipes. All persistence stays server-side; the client just asks and renders.
 
 </FaqItem>
 
 <FaqItem question="Is `VITE_API_URL` a secret?">
 
-No — the browser needs to know where the API lives. Secrets (`JWT_SECRET`, `MONGODB_URI`) stay in `server/.env` only.
+No — and it's worth seeing why. The browser has to know where to send requests, and `VITE_API_URL` is just the public address of your API, like a shop's street address. That's fine to ship. Secrets — `MONGODB_URI`, `JWT_SECRET`, a Cloudinary API secret — are the *keys*, and they live only in `server/.env`. Vite only exposes variables prefixed with `VITE_` to the client bundle precisely so you can't accidentally leak server secrets into code every user can download. The address is public; the keys stay in the kitchen.
+
+</FaqItem>
+
+<FaqItem question="Why can't React talk to MongoDB directly?">
+
+Because MongoDB needs a connection string with credentials, and the only place that should live is the server — anyone could read it out of the client bundle in DevTools. Beyond security, direct access would let every user run any query, destroying the vendor isolation Chapter 8 depends on. Instead every persistence operation flows through HTTP: React sends `POST /api/products`, Express routes it to a service, the service calls Mongoose, and the response travels back. React is the menu, Express is the kitchen, MongoDB is the pantry — only the kitchen opens the pantry.
 
 </FaqItem>
 
@@ -138,9 +144,11 @@ Symptom if you skip CORS: fetch fails in browser with a CORS error; same URL wor
 | `app.js` | Create Express app; register middleware; mount routes; **export** app |
 | `server.js` | Import app; read `PORT`; call `app.listen()` |
 
-**Why split?** Later you'll import `app` in tests and send fake HTTP requests **without** opening a real port. Chapter 30-style isolation tests benefit from this separation. Cost now: one extra file. Benefit later: no refactor.
+**Why split?** Later you'll import `app` in tests and send fake HTTP requests **without** opening a real port — the style of isolation testing used on real server codebases. Cost now: one extra file. Benefit later: no refactor.
 
 ## Client folder roles (Chapter 2)
+
+Each file in `client/src` has one job now and a clear job later — the table shows both, so you know why each file exists rather than copying an empty structure:
 
 | Path | Chapter 2 | Later |
 |---|---|---|
@@ -203,4 +211,4 @@ Answer in your own words in the fields below:
 Next: mandatory read before you create folders — continue to **Prime your thinking** in the sidebar.
 ## Before you continue
 
-<OpenQuestion id="01KZ63P501G18P3JF72ACHGG61" />
+<OpenQuestion id="01KZAX75A9QTHJ6VVF2R3J36XB" />

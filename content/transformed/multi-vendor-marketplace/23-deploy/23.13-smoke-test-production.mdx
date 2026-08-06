@@ -6,7 +6,7 @@ summary: "**Why this step matters:** Deployed is not done — smoke tests are th
 ---
 **Why this step matters:** Deployed is not done — smoke tests are the gate. Row 6 (worker log after checkout) catches the API-only deploy mistake that health checks alone never reveal.
 
-**Where the project is now:** Client and API on HTTPS (22.10–22.12); env for API and worker (22.8); worker deployed — **must be running**.
+**Where the project is now:** Client and API on HTTPS (23.10–23.12); env for API and worker (23.8); worker deployed — **must be running**.
 
 **After this step:** Critical paths on **live HTTPS** verified; worker processes checkout job; results in README.
 
@@ -14,7 +14,7 @@ Prove the **deployed system** — API, client, MongoDB, Redis, Cloudinary, **and
 
 ## Prerequisites
 
-Worker running in host dashboard (not just API). Same `REDIS_URL` on both (22.8). Test customer `test+prod@...`. Incognito browser — no stale dev tokens.
+Worker running in host dashboard (not just API). Same `REDIS_URL` on both (23.8). Test customer `test+prod@...`. Incognito browser — no stale dev tokens.
 
 ## Smoke test script — mandatory
 
@@ -54,7 +54,7 @@ curl -s -X POST https://api.yourdomain.com/api/auth/login \
   -d '{"email":"test+prod@yourdomain.com","password":"..."}'
 ```
 
-Rows 3–5, 8 in browser — Network tab shows 22.9 API host, never localhost. curl can pass row 2 while browser fails (CORS/cookies Ch 7).
+Rows 3–5, 8 in browser — Network tab shows 23.9 API host, never localhost. curl can pass row 2 while browser fails (CORS/cookies Ch 7).
 
 ## README contract
 
@@ -92,7 +92,7 @@ Table: date, client URL, API URL, **worker service name**, pass/fail rows 1–8.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5QN7FS5Z2993V1HV7TK" />
+<OpenQuestion id="01KZAX795TCS1R7DHNZEBZ23CZ" />
 
 ## Next
 

@@ -14,21 +14,33 @@ Chapter 7 combines React Router, forms, cookies, and async boot logic — easy t
 
 <FaqGroup>
 
-<FaqItem question="Why read fetch credentials docs for a React course?">
+<FaqItem question="Why do I need to read fetch credentials docs for a React course?">
 
-Refresh cookies **require** `credentials: 'include'` — missing it looks like "refresh always 401."
+Because your auth depends on a browser feature, not on React. The refresh token lives in a cookie, and cookies only cross origins when the request uses `credentials: 'include'`. Miss that one option and the cookie never leaves the browser, so your silent refresh "always 401s" — even though the same call works fine in curl. Understanding what the browser does with cookies is what turns a mysterious reload bug into an obvious one-line omission. The MDN page is short; skim it once and you'll save hours later.
 
 </FaqItem>
 
 <FaqItem question="Controlled inputs without a form library — really?">
 
-Yes for gate — fewer dependencies; focus on auth flow correctness.
+Really, and it's deliberate. A form library like Formik or React Hook Form brings validation, touched-state tracking, and a pile of concepts you don't need yet. Controlled inputs are just state: `value=&#123;email&#125;` with an `onChange` that updates the state on every keystroke. Three small forms — login, register, verify-otp — don't justify a dependency that hides what's happening. The gate cares that your auth flow sends the right body to the right endpoint, not that you used a library to build the form. Fewer dependencies, clearer learning.
 
 </FaqItem>
 
-<FaqItem question="CORS `*` with credentials?">
+<FaqItem question="Why is `Access-Control-Allow-Origin: *` invalid with credentials?">
 
-Invalid combo — server must echo specific Vite origin with `Allow-Credentials: true`.
+The browser spec forbids a wildcard origin once cookies are involved — sending your cookie to "any origin" would defeat the point of cookies entirely. With `credentials: 'include'`, the server must echo your exact Vite origin — `http://localhost:5173` — plus `Access-Control-Allow-Credentials: true`. This is the classic "works in curl, fails in browser" trap, because curl never enforces CORS; the browser silently blocks the refresh call instead. If refresh mysteriously fails this chapter, check the CORS headers first.
+
+</FaqItem>
+
+<FaqItem question="Why decide the four patterns before writing any UI code?">
+
+Because these decisions come up *during* the build, and pausing mid-build to re-architect is how bugs sneak in. Choosing auth state (Context + `useAuth` hook), the form approach (controlled inputs), error display (single message vs field errors), and how the email reaches `VerifyOtp` (via `location.state` from Register) now makes the build sub-chapters mechanical — you write code instead of making judgment calls. Write the choices in your learning log too, since Chapter 8 and beyond will inherit them and need to know what you picked.
+
+</FaqItem>
+
+<FaqItem question="What's the difference between `Navigate` and `useNavigate`?">
+
+`Navigate` is a component you render to redirect — perfect inside a `ProtectedRoute`, where an unauthenticated user hitting a guarded page simply outputs `&lt;Navigate to="/login" />`. `useNavigate` is a hook that returns a function you call from code, which suits actions — like calling `navigate('/vendor')` right after a successful login or registration. Same outcome, two triggers: declarative rendering for "this page says no," and imperative calls for "this flow finished." Both are in your mandatory reads, and knowing when to use each is exactly what Chapter 8's guards will need.
 
 </FaqItem>
 
@@ -48,6 +60,8 @@ Optional: React Context vs custom hook for auth state — pick one pattern.
 
 ## Patterns to decide
 
+Before you write a line of UI code, make four small decisions. They are independent of each other, but each one *unblocks* a later build step — and deciding them now keeps the build sub-chapters purely mechanical. Write the choices down in your learning log so Chapter 8+ inherits them.
+
 | Decision | Options |
 |---|---|
 | Auth state | Context + useAuth hook |
@@ -59,6 +73,8 @@ Document choices in learning log.
 
 ## Router structure preview
 
+Here is the map of routes this chapter wires. Notice the pattern: public routes live at the top level, and the vendor section is wrapped so it can be guarded later. The exact paths are yours, but this shape is what the build steps assume.
+
 ```
 /              Home (public)
 /login         Login
@@ -68,6 +84,8 @@ Document choices in learning log.
 ```
 
 ## CORS + credentials
+
+This is the classic "works in curl, fails in browser" chapter. The moment you send cookies with `credentials: 'include'`, the browser demands an explicit origin — a wildcard `*` is rejected by spec. If your server still answers `Access-Control-Allow-Origin: *`, refresh calls fail silently with no obvious error.
 
 Server must respond:
 
@@ -80,10 +98,12 @@ Update server CORS config in build cluster if not already.
 
 ## Time box — 30 minutes reading
 
+Do not let this sub-chapter expand into a research day. Read the mandatory links, note the four decisions, and move on to the build. The build steps will reference exactly what you skimmed here — nothing more is needed.
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P57DS684XA88XQKRY0W3" />
+<OpenQuestion id="01KZAX76DSSX3MVZD6WPS0YVA1" />
 
 ## Next
 

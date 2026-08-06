@@ -8,6 +8,8 @@ Before scaffolding auth routes, read how bcrypt and jsonwebtoken behave in Node 
 
 ## Mandatory reads
 
+Read these four in order. The first two are the tools you'll type into `server/src/` this chapter — read their official READMEs so you use the APIs the way the maintainers intend, not the way an old blog post remembers them.
+
 | Resource | Focus |
 |---|---|
 | [bcrypt npm readme](https://www.npmjs.com/package/bcrypt) | hash + compare async API |
@@ -54,7 +56,7 @@ app.use('/api/auth', authRoutes)
 
 ## HTTP validation pattern
 
-auth.schema.js validates:
+`auth.schema.js` decides what each route is allowed to receive. Every field you list here is something a real marketplace API validates — garbage in, garbage out is how bad APIs start.
 
 | Route | Body fields |
 |---|---|
@@ -66,6 +68,8 @@ auth.schema.js validates:
 Return 400 with field errors before service layer.
 
 ## OTP implementation options (pick one)
+
+Both options store the code on the User document; they differ in how much damage a leaked database does. Plain text is fine for a dev-only demo; hashed is what you'd ship.
 
 | Option | Storage |
 |---|---|
@@ -117,7 +121,7 @@ requireAuth:
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P56301BF7K1P3G5HS6QE" />
+<OpenQuestion id="01KZAX765X52QQKDYGBSGSQXJX" />
 
 ## Next
 

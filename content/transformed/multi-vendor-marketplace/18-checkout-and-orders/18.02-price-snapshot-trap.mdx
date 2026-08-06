@@ -56,6 +56,8 @@ Line total = `priceAtPurchase × quantity` — computed from snapshot fields onl
 
 ## What snapshots are not
 
+Three misconceptions that make developers reach for the wrong fix — and the truth that keeps you on snapshots:
+
 | Misconception | Truth |
 |---|---|
 | "Denormalization is always bad" | Orders are **events** — events are immutable |
@@ -99,27 +101,33 @@ Weak answer: "We use the product table" — describes the trap.
 
 <FaqGroup>
 
-<FaqItem question="Isn't copying price \"bad normalization\"?">
+<FaqItem question="Isn't copying the price into the order \"bad normalization\"?">
 
-On **Product**, yes — one price field. On **Order**, the copy **is** the receipt. Different entity, different rules.
+Not on an order — because an order isn't a table of facts about products; it's a record of an **event**. On the Product collection you keep one price field, so editing it once updates the catalogue everywhere, which is what normalization is for. But the moment someone buys something, that event has to stand on its own: what was bought, at what price, that day. The copies on an order line aren't redundant data — they're the receipt. Receipts have always duplicated the shelf price tag; that's exactly the point of a receipt.
 
 </FaqItem>
 
-<FaqItem question="Can I populate product for the product image on order history?">
+<FaqItem question="Why can't I just store productId and look up the price when I show the order?">
 
-Optional for image/link — **never** for price or unit display on fulfilled orders.
+Because by the time you look it up, the catalogue may have moved on. The vendor edits the price, and every old order suddenly displays the *current* price as if it were historical truth — that's the "live join" trap. The fix is to copy `nameAtPurchase`, `priceAtPurchase`, `unitAtPurchase`, and `quantity` onto the line at checkout, and compute totals only from those embedded snapshot fields. Keep `productId` if you like, but treat it as a link for "buy again" — never for pricing display. Historical truth must come from the order, not the product.
+
+</FaqItem>
+
+<FaqItem question="Can I populate the product for the image on order history?">
+
+Yes — for a product image or link, that's an optional extra and it's fine. The rule is specific: never use `populate` to display **price or unit** on a fulfilled order, because those must come from the frozen snapshot. If the vendor renames an item or changes it from ₹120 to ₹140, your old orders must keep showing exactly what was bought and paid. An image going slightly stale is cosmetic; a price going wrong on a receipt is a customer dispute waiting to happen.
 
 </FaqItem>
 
 <FaqItem question="What if the product is deleted later?">
 
-Snapshot fields still show what was bought. `productId` link may 404 — order line remains valid.
+Your order still tells the full story, because the snapshot fields live inside the order line itself — `nameAtPurchase`, `priceAtPurchase`, `unitAtPurchase`, and `quantity` are all right there. The `productId` link might 404 once the product is gone, but that's fine: the receipt is self-contained and doesn't need the product document to render correctly. This is exactly why snapshots exist — your order history survives catalogue cleanups, renames, and price changes without breaking a single historical receipt.
 
 </FaqItem>
 
-<FaqItem question="Should cart lines snapshot price too?">
+<FaqItem question="Should cart lines snapshot the price too?">
 
-Not for MVP — cart is mutable intent. **Checkout** is the commit point (18.11).
+Not for this MVP. A cart is mutable intent — you add, remove, and change quantities, so a cart price is just a preview to help you decide. Checkout is the commit point, and that's the only moment you need a frozen copy. In sub-chapter 18.11 you'll copy the price from the product onto the order line **inside the checkout transaction**, so the snapshot and the stock decrement happen together. Snapshotting the cart too would just mean updating stale copies on every cart change — extra work with no benefit.
 
 </FaqItem>
 
@@ -135,7 +143,7 @@ Not for MVP — cart is mutable intent. **Checkout** is the commit point (18.11)
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5HEWBT9FAC4XJC4D620" />
+<OpenQuestion id="01KZAX785S78CJCHV5P076K8GD" />
 
 ## Next
 

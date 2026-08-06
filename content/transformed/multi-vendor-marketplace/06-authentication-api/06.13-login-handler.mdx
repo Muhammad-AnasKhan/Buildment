@@ -10,6 +10,30 @@ summary: "**Why this step matters:** Login proves bcrypt compare works and gates
 
 **After this step:** `POST /api/auth/login` validates credentials with bcrypt, blocks unverified users, returns access and refresh tokens on success.
 
+## Why login is the critical path
+
+Every marketplace session starts here — vendors opening their dashboard, customers returning to cart. In production, login is among the **highest-traffic endpoints** and the first place attackers probe with credential stuffing.
+
+| Production concern | What this handler must do |
+|---|---|
+| Password safety | Compare with bcrypt — never log or echo the plain password |
+| Account state | Reject unverified users (403) — spam shops blocked at gate |
+| Token issuance | Short access + revocable refresh — feeds Chapter 7 session |
+| Enumeration | Same error message for wrong email vs wrong password (401) |
+| Rate limiting | Optional stretch — document in README for portfolio |
+
+Login is not "just another route." Chapter 8 ownership checks assume `req.user.id` came from a **verified** login. A broken login handler breaks every protected feature downstream.
+
+## Checkpoint — before you code
+
+Answer without opening your editor:
+
+1. What field on User blocks login until email is verified?
+2. Why return 403 for unverified but 401 for wrong password?
+3. What must **never** appear in the JSON response body?
+
+If any answer is unclear, re-read **6.2** (why auth matters) and **5.10** (User schema fields).
+
 ## Request contract
 
 **POST** `/api/auth/login`
@@ -50,6 +74,17 @@ Token structure refined in 6.14–6.15 — login calls `issueTokens(user)` servi
 | 500 | server error |
 
 Use generic "Invalid credentials" for wrong email/password if preventing enumeration.
+
+## Common mistakes
+
+| Mistake | Symptom | Fix |
+|---|---|---|
+| Forgot `isVerified` check | Unverified users reach vendor dashboard | Return 403 before issuing tokens |
+| Return `passwordHash` in user object | Security leak in Network tab | Select fields explicitly; use toJSON transform |
+| Different error for "user not found" vs "wrong password" | Email enumeration attack | Same 401 message for both |
+| Sync bcrypt in handler | Event loop blocks under load | Use `await bcrypt.compare` |
+| Skip Profile lookup | Login works but UI shows blank name | Load displayName for Chapter 7 forms |
+| Hardcode token expiry in handler | Drifts from config | Read `JWT_ACCESS_EXPIRY` from config.js |
 
 ## Service behaviour
 
@@ -118,7 +153,7 @@ git commit -m "feat(auth): implement login with bcrypt verify and token issuance
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P56GQ7ZXEAKXT0RYGGF9" />
+<OpenQuestion id="01KZAX768MGDJPD1G651WXC0ZQ" />
 
 ## Next
 

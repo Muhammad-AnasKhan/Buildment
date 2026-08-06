@@ -24,6 +24,8 @@ Normalization optimizes for **current truth**. Orders record **past truth**.
 
 ## Embedded vs referenced order lines in MongoDB
 
+Two valid schemas exist — they differ in how many collections you touch to read one receipt. The course mandates the first.
+
 **Embedded (mandated for this course):**
 
 ```
@@ -49,6 +51,8 @@ OrderLine { orderId, productId, quantity }  // still need snapshots!
 Extra collection without removing snapshot requirement — more joins, same copy step.
 
 ## What you still reference
+
+Snapshot fields do their own job — but the order still keeps **ids** for other jobs. Three refs survive, each for a different reason:
 
 | Field | Why keep Id |
 |---|---|
@@ -100,7 +104,7 @@ You sketched embedded order lines in Chapter 3.6 and implemented in Chapter 5. C
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5HJKZ2G9HSZHFYT0AHK" />
+<OpenQuestion id="01KZAX786J4BNPPJ433KZZBJJ9" />
 
 ## Next
 

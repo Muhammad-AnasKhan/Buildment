@@ -58,6 +58,8 @@ Single queue with multiple job names is fine for course scope. Multiple queues a
 
 ## Connection sharing with Ch 21
 
+Cache and queue can share the same Redis server without sharing a connection — here are the valid setups:
+
 | Approach | Valid? |
 |---|---|
 | Separate `ioredis` connections — cache client + BullMQ connection | ✓ Recommended |
@@ -77,6 +79,8 @@ Chapter 22 establishes worker locally. Chapter 23 deploys both.
 
 ## Observability (gate-level)
 
+How you prove a job actually ran — from the minimum to the nice-to-have:
+
 | Tool | Purpose |
 |---|---|
 | Worker `console.log` | Mock email output — primary gate proof |
@@ -85,7 +89,7 @@ Chapter 22 establishes worker locally. Chapter 23 deploys both.
 
 ## ✅ Do / ❌ Don't
 
-**✅ Do:** Use same `REDIS_URL` env var as Chapter 21.
+**✅ Do:** Use same `REDIS_URL` env var as Chapter 22.
 
 **✅ Do:** Install `bullmq` — document version in README.
 
@@ -102,7 +106,7 @@ Chapter 22 establishes worker locally. Chapter 23 deploys both.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5NQ2R0VJ17PRBGFCFAG" />
+<OpenQuestion id="01KZAX78XAY6V3ENGV1XNCYZ2E" />
 
 ## Next
 

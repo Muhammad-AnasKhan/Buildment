@@ -8,9 +8,11 @@ summary: "**Mandatory read:** Your chosen host's deploy docs + [Let's Encrypt](h
 
 **Time box:** 60 minutes.
 
-Deploy fails when you skim platform docs. This sub-chapter forces **host-specific literacy** before you paste env vars in 22.8.
+Deploy fails when you skim platform docs. This sub-chapter forces **host-specific literacy** before you paste env vars in 23.8.
 
 ## Topics
+
+Five concepts, each mapped to a real problem you will hit within the next few sub-chapters. If a term in the left column is unfamiliar, read it *before* you begin deploying — every item here is something that silently breaks a deploy when skipped.
 
 | Topic | Why for FreshMarket |
 |---|---|
@@ -22,6 +24,8 @@ Deploy fails when you skim platform docs. This sub-chapter forces **host-specifi
 
 ## Host-specific questions to answer
 
+Generic deploy knowledge gets you 80% of the way; the last 20% is your *specific* host's quirks. Answer these five questions from your platform's own docs — the answers feed directly into the env checklist (23.8) and deploy steps (23.10–23.12).
+
 While reading **your** platform's docs, find answers for:
 
 1. How does your host set `PORT`? (PaaS injects it — API must listen on `process.env.PORT`)
@@ -30,7 +34,7 @@ While reading **your** platform's docs, find answers for:
 4. How do you deploy a **second** service for the worker on your PaaS?
 5. Where do you set build-time `VITE_API_URL` for Vercel/Netlify?
 
-Write answers in learning log draft — you will need them in 22.8–22.12.
+Write answers in learning log draft — you will need them in 23.8–23.12.
 
 ## Reflect questions
 
@@ -38,7 +42,7 @@ Write answers in learning log draft — you will need them in 22.8–22.12.
 2. Why must `VITE_API_URL` be set **before** `npm run build`, not after?
 3. What three processes ran locally at end of Chapter 22?
 
-If #3 is not "API, worker, client" — re-read 22.01 bridge.
+If #3 is not "API, worker, client" — re-read 23.01 bridge.
 
 ## In plain English
 
@@ -58,19 +62,19 @@ If #3 is not "API, worker, client" — re-read 22.01 bridge.
 
 ## ✅ Do / ❌ Don't
 
-**✅ Do:** Read deploy docs for the platform you chose in 22.4 — not all platforms.
+**✅ Do:** Read deploy docs for the platform you chose in 23.4 — not all platforms.
 
 **✅ Do:** Note worker deploy section — search docs for "background worker" or "second service".
 
-**❌ Don't:** Start 22.10 before env checklist 22.8 is complete.
+**❌ Don't:** Start 23.10 before env checklist 23.8 is complete.
 
 **❌ Don't:** Assume local `npm run dev` commands work unchanged on host.
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5Q53B65ACTM2F046SQJ" />
+<OpenQuestion id="01KZAX7934SMWHXR8044WGY0E3" />
 
 ## Next
 
-**Sub-chapter 23.6:** Quiz reserved — skip to **22.7** to start building.
+**Sub-chapter 23.6:** Quiz reserved — skip to **23.7** to start building.

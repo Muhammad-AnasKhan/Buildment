@@ -56,6 +56,8 @@ Separate "Publish" page not needed — toggle on edit is enough.
 
 ## Editorial style
 
+Three style rules keep the dashboard feeling like a shop, not a legacy admin panel:
+
 - Clean typography — no dense admin theme  
 - Generous whitespace — grocery products deserve readable names  
 - Status badges: subtle Draft (muted) vs Published (accent)  
@@ -67,6 +69,8 @@ Vendor layout nav **Products** → `/vendor/products`.
 Breadcrumbs optional: Products → Edit Kale.
 
 ## Loading and empty states
+
+Every UI state needs a decision, not a guess — here's the expected behaviour:
 
 | State | UX |
 |---|---|
@@ -85,10 +89,16 @@ Breadcrumbs optional: Products → Edit Kale.
 
 **❌ Don't:** Build customer-facing product card here — Ch 15.
 
+## Self-check
+
+- [ ] I can split dashboard duties between the read-only table and the edit forms
+- [ ] I can say why edits live on a separate page rather than inline in the table
+- [ ] I know the three UI states every list and form must handle
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5BZ7J3HVVY8V3C1V6VQ" />
+<OpenQuestion id="01KZAX777HP3DQA5B620CK8QKX" />
 
 ## Next
 

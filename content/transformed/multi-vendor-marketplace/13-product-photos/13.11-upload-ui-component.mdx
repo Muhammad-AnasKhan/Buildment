@@ -4,9 +4,7 @@ module: 13
 lesson: 11
 summary: "Vendors choose photos in the browser — file input, preview, upload progress. This component calls the multipart route from 13.9 and updates the edit page. Thumbnails in the product list make Week 2's demo feel like a real shop, not a spreadsheet."
 ---
-## Why this step matters
-
-Vendors choose photos in the browser — file input, preview, upload progress. This component calls the multipart route from 13.9 and updates the edit page. Thumbnails in the product list make Week 2's demo feel like a real shop, not a spreadsheet.
+**Why this step matters:** Vendors choose photos in the browser — file input, preview, upload progress. This component calls the multipart route from 13.9 and updates the edit page. Thumbnails in the product list make Week 2's demo feel like a real shop, not a spreadsheet.
 
 **Where the project is now:** API accepts multipart upload; vendor dashboard has no file picker.
 
@@ -70,6 +68,8 @@ Use `object-fit: cover` for consistent grid. Placeholder: grey box or "No photo"
 
 ## EditProduct integration
 
+The uploader only becomes useful once it's wired into the product form. That integration needs three pieces:
+
 - Pass `product.id` and `product.imageUrl` to ImageUpload  
 - On success, update local product state or refetch product  
 - Show success toast/message optional  
@@ -122,7 +122,7 @@ git commit -m "feat(client): vendor product image upload and list thumbnails"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5DG1DWTXPY0PVHD6H92" />
+<OpenQuestion id="01KZAX77FW98MPD3HAH3AQ674B" />
 
 ## Next
 

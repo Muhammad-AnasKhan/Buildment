@@ -8,6 +8,8 @@ Onboarding forms are deceptively simple — one bad redirect loop wastes an afte
 
 ## Optional reads (pick 1–2)
 
+Each topic below answers a design question you'll face in the next few sub-chapters. Pick the one you least understand — not the one that sounds most impressive.
+
 | Topic | Why |
 |---|---|
 | **Multi-step vs single-page forms** | Course uses single page — know tradeoff |
@@ -18,6 +20,8 @@ Onboarding forms are deceptively simple — one bad redirect loop wastes an afte
 Suggested search terms: "React Router layout route outlet", "SaaS onboarding gate pattern", "form loading state best practices".
 
 ## Single-page vs wizard
+
+Both ship the same data — the difference is how many screens the vendor has to click through before the API call happens.
 
 | | Single form (course default) | Multi-step wizard |
 |---|---|---|
@@ -43,6 +47,8 @@ Route: /vendor element=<VendorLayout>
 3. Else → render nav + Outlet  
 
 ## Loading states
+
+The three phases below cover every request the layout makes. Getting them right is what separates "feels instant" from "flash of wrong screen."
 
 | Phase | UI |
 |---|---|
@@ -73,7 +79,7 @@ Not required for gate — note in learning log if implemented.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5AAAKBWTS1X2TFMZPMG" />
+<OpenQuestion id="01KZAX76YWGJR905ZB9DWRZK0J" />
 
 ## Next
 

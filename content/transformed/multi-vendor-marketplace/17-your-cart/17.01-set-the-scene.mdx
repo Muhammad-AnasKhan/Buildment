@@ -51,37 +51,37 @@ If the cart UI groups by store now, checkout (Chapter 20 UI) will not surprise t
 
 <FaqItem question="Why build the cart page after the API?">
 
-Same reason as login UI after auth API: the **contract exists** before the screen. You test endpoints with curl; then you connect buttons.
+Because the contract must exist before the screen that uses it. In Chapter 16 you proved `GET /cart`, `POST /cart`, `PATCH /cart/:itemId`, and `DELETE /cart/:itemId` with curl — including user isolation and multi-vendor adds. By the time Chapter 17 starts, the response shape is known, so the page is mostly wiring: fetch the cart, render rows, call the endpoints on clicks. Build the UI first and you'd be inventing endpoint names and shapes that might not match the server — rework you'd throw away.
 
 </FaqItem>
 
 <FaqItem question="Should I group cart items in the API or in React?">
 
-**React groups for display** using `storeId` from each line. The API returns a flat `items` array; the UI builds sections. Checkout (Ch 18) groups server-side for order creation.
+In React, and only for display. The API returns a flat `items` array — each line with its `productId`, `storeId`, `quantity`, and populated product and store details. The cart page reads each line's `storeId` and builds visual sections: all Green Valley items under one heading, all Harbor Market items under another. Grouping in React keeps the API simple and reusable. Checkout in Chapter 18 will do its own *server-side* grouping by `storeId` when it creates one order per vendor — a different job for a different layer.
 
 </FaqItem>
 
-<FaqItem question="Grand total vs store subtotal — which price?">
+<FaqItem question="How do the quantity steppers actually change the cart?">
 
-Cart shows **current product prices** from `GET /cart` populate. Orders freeze prices at checkout (Chapter 18 snapshots) — cart totals are estimates until then.
+Each +/− button (or number input) calls the API: `PATCH /cart/:itemId` with the new `&#123; quantity &#125;`. The server updates that line and returns the fresh cart, then your UI **refetches `GET /cart`** and re-renders — the course calls this "refetch after mutation". Never let the displayed number drift from the database. If quantity reaches zero, or the user clicks remove, call `DELETE /cart/:itemId` to drop the line entirely. The stepper is just a button that speaks the API's language.
 
 </FaqItem>
 
-<FaqItem question="Badge count: lines or total quantity?">
+<FaqItem question="Are the totals on the cart page final prices?">
 
-Pick one, document in README. Either "3 items" (sum of quantities) or "2 lines" (rows) — just be consistent.
+No — treat them as estimates. The cart page computes line totals and per-store subtotals from the *current* product prices returned by `GET /cart`'s populate. Real orders freeze prices: checkout in Chapter 18 takes a price snapshot onto each order line, so what you pay is locked at checkout, not when you're browsing. That's why the page uses "subtotal" language rather than presenting a final invoice — prices could shift between adding to cart and paying.
+
+</FaqItem>
+
+<FaqItem question="For the header badge, do I count lines or total quantity?">
+
+Either — just pick one and stay consistent. "3" could mean three cart *lines* (rows) or three total *items* (the sum of quantities, where one line with 2 units plus one line with 1 unit equals 3). The badge is a quick glance indicator, so what matters is that it matches the cart from `GET /cart` and updates after every mutation. Document your choice in the README so the Week 3 demo doesn't leave anyone guessing whether the number is right.
 
 </FaqItem>
 
 <FaqItem question="Add to cart fails with 401 — what now?">
 
-Customer must log in first. Redirect to login, then return to product detail — optional stretch; minimum gate: login before add works.
-
-</FaqItem>
-
-<FaqItem question="Do I change the server this chapter?">
-
-No if Chapter 16 gate is complete. Chapter 17 is **client-only**.
+401 means "not authenticated" — the cart API is scoped to a logged-in user, so a missing or expired token is rejected. The fix is a login redirect: when the add-to-cart call returns 401, send the customer to the login page, and ideally remember the product so they can return to it after logging in. Minimum for the gate: login happens before the add works. It's also a good lesson in reading status codes — 401 asks "who are you?", while 403 would mean "what are you allowed to do?".
 
 </FaqItem>
 
@@ -180,7 +180,7 @@ Estimated time: **one full day** — mostly React wiring against existing API.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5GN00R8AVQH212X7TBB" />
+<OpenQuestion id="01KZAX781HFQN32BFYY42XDHTF" />
 
 ## Next
 

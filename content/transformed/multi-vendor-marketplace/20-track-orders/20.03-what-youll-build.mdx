@@ -6,7 +6,7 @@ summary: "Blueprint for **order tracking UI** — no new backend routes except o
 ---
 Blueprint for **order tracking UI** — no new backend routes except optional status PATCH if not added in Ch 18.
 
-Read this once before the build cluster (19.4 onward). You are not writing logic yet — you are learning **which files and routes** complete Week 3 in the browser.
+Read this once before the build cluster (20.4 onward). You are not writing logic yet — you are learning **which files and routes** complete Week 3 in the browser.
 
 ## What changes in your repo
 
@@ -63,11 +63,11 @@ PATCH /vendor/orders/:orderId
 { "status": "packed" }
 ```
 
-Vendor ownership + store scope required. Implement in 19.10 if missing.
+Vendor ownership + store scope required. Implement in 20.10 if missing.
 
 ## Definition of Done preview
 
-- [ ] Full Week 3 demo in browser (script in 19.11)
+- [ ] Full Week 3 demo in browser (script in 20.11)
 - [ ] Confirmation shows multiple orders when cart had two stores
 - [ ] Vendor isolation in UI — A never sees B's orders
 - [ ] Status badge updates after vendor PATCH + customer refresh
@@ -76,21 +76,33 @@ Vendor ownership + store scope required. Implement in 19.10 if missing.
 
 <FaqGroup>
 
-<FaqItem question="Do I rebuild the cart page?">
+<FaqItem question="Do I need to rebuild the cart page?">
 
-No. Ch 17 cart stays. You add `/checkout` and wire the existing CTA.
-
-</FaqItem>
-
-<FaqItem question="Which page is hardest?">
-
-Usually checkout submit + confirmation state passing. Sub-chapters 19.5–19.6 walk each step.
+No. The Chapter 17 cart page stays exactly as it is — you only add a path from its existing CTA to the new `/checkout` route. This chapter is purely additive: new pages (`Checkout.jsx`, `OrderConfirmation.jsx`, `MyOrders.jsx`, `VendorOrders.jsx`) plus reusable components like `OrderCard`, `OrderStatusBadge`, and `OrderLineRow`. Because the cart already groups items by store, checkout just has to read what the cart hands over and turn it into a request to `POST /checkout`.
 
 </FaqItem>
 
-<FaqItem question="Can vendor and customer share one login session for demo?">
+<FaqItem question="Do I need any new backend work for this chapter?">
 
-Use separate browser profiles or incognito windows — demo script 19.11 requires isolation proof.
+Almost none — and that's a sign you're building on solid APIs. There are no new MongoDB collections, no Redis, no background workers. The only possible server addition is `PATCH /vendor/orders/:orderId` to update order status, and only if Chapter 18 didn't already build it (with vendor ownership and store scope required). Everything else is React calling the routes from Chapters 18–19 through helpers like `checkout()`, `getMyOrders()`, `getVendorOrders()`, and `updateOrderStatus()`.
+
+</FaqItem>
+
+<FaqItem question="How do the customer and vendor see the same order differently?">
+
+They read the same data — the same `orderItems` shape, the same snapshots — but from different routes. The customer's `/orders` page lists the orders they paid for, while the vendor's `/vendor/orders` page shows only orders containing products from *their* store. That isolation is enforced server-side by ownership and store-scope checks, so the UI simply renders what it's given. Reusing one `OrderLineRow` component on both pages keeps the two views from drifting apart as you build.
+
+</FaqItem>
+
+<FaqItem question="What does \"pass state or refetch\" mean for the confirmation page?">
+
+After payment succeeds you need to show what was just ordered — the split orders and their totals. "Pass state" means sending the order data from checkout to `/orders/confirmation` via React Router's `state`, which is instant but lost if the page is refreshed. "Refetch" means calling the order API again when the page mounts, which costs one request but always stays accurate. Either is fine for the course; the key is that confirmation must never depend on data that vanished when the page reloaded.
+
+</FaqItem>
+
+<FaqItem question="Can the vendor and customer share one browser session for the demo?">
+
+No — that would hide the isolation this chapter proves. If both accounts share a session, you can't demonstrate that Vendor A never sees Vendor B's orders, or that the customer badge updates when the vendor marks an order `packed`. Use separate browser profiles or an incognito window: one for the customer, one for the vendor, and let the demo script show the two views side by side. Isolation proof is literally part of the Week 3 gate.
 
 </FaqItem>
 
@@ -100,7 +112,7 @@ Use separate browser profiles or incognito windows — demo script 19.11 require
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5KKV93RM861RMR4PWHJ" />
+<OpenQuestion id="01KZAX78JC3NTRT2X01798A9DA" />
 
 ## Next
 

@@ -12,7 +12,7 @@ This is a **build chapter**. Sub-chapters 14.8 onward add routes and query logic
 
 ## Bridge from last chapter
 
-You finished **Week 2 — the vendor experience** (Chapters 9–13). Vendors can register, open a shop, add products with photos, and see them in the dashboard. Sub-chapter **[13.14 — Bridge to Week 3](../13-product-photos/13.14-bridge-to-week-3-customer-experience.md)** spelled out the biggest **role change** in the course: you stop thinking like a shop owner and start thinking like a shopper.
+You finished **Week 2 — the vendor experience** (Chapters 9–13). Vendors can register, open a shop, add products with photos, and see them in the dashboard. Sub-chapter **13.14 — Bridge to Week 3** spelled out the biggest **role change** in the course: you stop thinking like a shop owner and start thinking like a shopper.
 
 **Read 13.14 if Week 3 feels sudden.** It explains why customer features come after vendor work, why new API routes sit **beside** vendor routes (not instead of them), and why a multi-vendor cart shows up later.
 
@@ -48,39 +48,39 @@ Customers walk the aisle (Chapter 15 UI). Vendors still manage their stall from 
 
 <FaqGroup>
 
-<FaqItem question="Do I delete vendor routes or the vendor dashboard?">
+<FaqItem question="Do I delete the vendor routes or the vendor dashboard?">
 
-No. You **add** public read routes. Vendors keep `GET /vendor/products` for their own inventory.
+No — delete nothing. `GET /vendor/products` stays exactly as it is: that's how a logged-in vendor sees their *own* inventory. Chapter 14 is purely additive: you write a new public route, `GET /products`, that sits beside the vendor routes and reads the same product collection. Vendors still manage their stalls from the back office; customers get the shop window. This "two routes, one collection" pattern is the heart of a marketplace and a classic interview talking point.
 
 </FaqItem>
 
-<FaqItem question="Why API before the shop UI (Chapter 15)?">
+<FaqItem question="Why build the API before the shop UI (Chapter 15)?">
 
-Same pairing as Chapters 6→7 and 11→12: **backend contract first**, React second. Building the grid before `GET /products` exists forces fake hardcoded products you throw away.
+Same pairing as Chapters 6→7 and 11→12: backend contract first, React second. If you built the Chapter 15 grid before `GET /products` existed, you'd have to invent fake hardcoded products — then throw them away and rework the page once the real API arrived. With the API first, you prove it with curl: right shape, right filters, right pagination. Then the shop UI is mostly a matter of wiring fetch calls to fields you already know exist.
 
 </FaqItem>
 
 <FaqItem question="Can customers browse without logging in?">
 
-Yes for this chapter's gate — public `GET /products` needs no JWT. Cart and checkout (Chapters 16–18) require login.
+Yes, for this chapter's gate. `GET /products` is a public read route — no JWT required — which is why it's called the public catalogue. Anyone with the URL can see published, in-stock products from every vendor. Login only becomes mandatory once a customer wants to act: adding to a cart (Chapters 16–17) and checking out (Chapter 18) both require a customer account. Browsing is window-shopping; acting is buying.
 
 </FaqItem>
 
 <FaqItem question="What's the difference between `/vendor/products` and `/products`?">
 
-`/vendor/products` = "show **my** products" (vendor token). `/products` = "show **everyone's published, in-stock** products" (no token).
+Think about who is asking. `GET /vendor/products` answers "show me *my* products" — it needs a vendor JWT and returns only the calling vendor's own inventory, drafts included. `GET /products` answers "show me *everyone's* published, in-stock products" — no token, and drafts and out-of-stock items are hidden. The gate also needs your seed to contain products from at least two stores, so the public route genuinely proves it's a multi-vendor marketplace rather than one shop's shelf.
 
 </FaqItem>
 
-<FaqItem question="I only have products from one store in seed — is that OK?">
+<FaqItem question="What do `page`, `limit`, and `category` do in `GET /products?page=&limit=`?">
 
-Finish Week 2 seed with **two stores** before the gate. Multi-vendor browse is the whole point of a marketplace course.
+They're query parameters that shape the response without changing the route. `limit` sets how many products come back per request (say 20), `page` says which slice you want (page 2 skips the first 20), and `category` narrows results to one kind of product, like `"vegetables"`. The server builds a filtered, paginated query and returns one page plus enough information to know whether more pages exist. Fetching a page at a time keeps responses small and the shop fast — you never download the whole catalogue.
 
 </FaqItem>
 
 <FaqItem question="What is N+1 and why should I care before I have users?">
 
-It is a pattern bug: 20 products → 21 database trips instead of 2. Dev feels fine; production does not. Chapter 14 teaches you to **measure** query count before shipping the shop UI.
+N+1 is a query pattern bug. Imagine listing 20 products and, for each one, running an extra query to fetch its store name — that's 1 query for the list plus 20 more, or 21 database trips, hence "N+1". With 5 products it's invisible; with 500 it's slow enough to feel broken. The fix, which Chapter 14 teaches, is Mongoose `populate`, which fetches the store names in one batched query. The skill you're building is *measuring* query count instead of assuming it's fine — so the shop never ships slow.
 
 </FaqItem>
 
@@ -162,7 +162,7 @@ Estimated time: **one to two days** — query tuning and N+1 verification take t
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5DWRGF1G0FP6AY75XJ9" />
+<OpenQuestion id="01KZAX77HX0MSYRYAJQEY98N53" />
 
 ## Next
 

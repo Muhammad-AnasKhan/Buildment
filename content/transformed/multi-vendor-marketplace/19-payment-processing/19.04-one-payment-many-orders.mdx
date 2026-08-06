@@ -74,31 +74,31 @@ Do not put PII or card data in metadata.
 
 <FaqItem question="Does each vendor get paid automatically?">
 
-Not in this chapter. Real marketplaces use Connect, invoices, or manual settlement. Your gate is **customer paid platform** + **orders marked paid**.
+Not in this build, no. With "platform collects," the money lands in **your** Stripe account as one charge, and splitting it to Green Valley and Harbor Market is a separate business step — real marketplaces handle that with Stripe Connect, invoices, or manual settlement, and this course leaves it out of scope on purpose. Your gate is simpler and fully testable: the customer has paid the platform, and every order from that checkout is marked `paymentStatus: 'paid'`. Explain "platform collect ≠ vendor payout" in your README so it's clear this is a deliberate scope cut, not an accident.
 
 </FaqItem>
 
-<FaqItem question="What if cart total is 0?">
+<FaqItem question="What if the cart total is 0?">
 
-Reject checkout — do not create zero-amount Payment Intents for demo carts.
-
-</FaqItem>
-
-<FaqItem question="Refund one stall only?">
-
-Production hard problem — partial refunds against one PI. Document as out of scope; full refund in Stripe Dashboard is the stretch note.
+Reject the checkout — don't try to create a zero-amount Payment Intent. A ₹0 charge makes no sense at a card reader and will only confuse Stripe, your test Dashboard, and you. An empty or free cart is an invalid state for checkout, so your server should treat it as an error before any Stripe call happens. Check for a valid, positive total in the same place you validate the rest of the cart — fail early, give the customer a clear message, and don't let the flow continue.
 
 </FaqItem>
 
-<FaqItem question="Why `paymentStatus` if Stripe already says succeeded?">
+<FaqItem question="Can I refund just one stall's items?">
 
-Orders must be readable without calling Stripe on every page load. Enum on the order: `paid`, later `refunded` if you stretch.
+That's a genuinely hard production problem, and it's out of scope here. A single Payment Intent covers orders from multiple vendors, and Stripe's built-in refund applies to the whole charge — splitting one refund across vendors while keeping every stall's accounting correct is complex. This course documents it as out of scope; the stretch note is a **full refund from the Stripe Dashboard** for demo purposes. If you want partial refunds later, research how real marketplaces split refunds across vendor balances — but don't let it block your course gate.
 
 </FaqItem>
 
-<FaqItem question="Single-store cart — still one PI?">
+<FaqItem question="Why store paymentStatus on the order if Stripe already knows it's succeeded?">
 
-Yes. One order document, one Payment Intent — same pattern.
+Because your order list shouldn't need to call Stripe just to render a page. Every time you show orders — customer order history, vendor dashboards — reading `paymentStatus: 'paid'` straight from the order document is instant, while asking Stripe about every intent would add network calls and latency to every screen. The order's status is a denormalized copy for fast reads; Stripe stays the source of truth for the actual charge. You set the order's status once, when the webhook or checkout confirms the payment, and keep it in sync.
+
+</FaqItem>
+
+<FaqItem question="Does a single-store cart still use the same pattern?">
+
+Yes — same flow, just less splitting. With only Green Valley in the cart, checkout creates **one** Order document and one Payment Intent, and that single order stores the same `stripePaymentIntentId` and `paymentStatus: 'paid'`. The "one payment, many orders" model simply collapses to one-and-one. Keeping the identical code path for both cases means you never write special logic for single-store carts — the shared helper computes the total, creates the intent, and verifies the amount the same way every time.
 
 </FaqItem>
 
@@ -141,7 +141,7 @@ Yes. One order document, one Payment Intent — same pattern.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5JND334Q5KKY8PVK03M" />
+<OpenQuestion id="01KZAX78D1TMDXK1VKH9T7MDPP" />
 
 ## Next
 

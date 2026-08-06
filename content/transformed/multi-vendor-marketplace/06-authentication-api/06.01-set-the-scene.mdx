@@ -43,31 +43,31 @@ The hat you wear now is **security-minded API builder**. You test every step wit
 
 <FaqItem question="Why curl before React login pages?">
 
-If the API is wrong, a pretty form hides nothing. curl proves register, login, and protected routes work **in isolation** — then Chapter 7 wires the same contracts to buttons and inputs.
+Testing with curl takes the browser out of the picture. When you hit your API directly, any failure is *your server code* — there's no React form, state, or network layer to hide behind. So if `register` works in curl but fails in the browser, you know the bug is on the client; if it fails in curl too, you know it's the server. Later, you'll reuse the exact JSON shapes you prove here when you build the React forms in Chapter 7, so this "boring" step saves you from guessing at field names later.
 
 </FaqItem>
 
 <FaqItem question="Why JWT instead of sessions?">
 
-This SPA sends Bearer tokens — a common MERN pattern. Sub-chapter 6.4 compares sessions honestly; the course picks JWT + hashed refresh for teaching and React fit.
+Because this is a single-page app talking to an API, and JWTs fit that model naturally: the server signs a token, the client sends it on every request, and the server verifies it without looking anything up in the database. Server-side sessions work too — you store a session ID and look it up on each request — but that's extra storage and an extra lookup every time. Sub-chapter 6.4 compares both honestly. The course picks JWT plus a hashed refresh token because it's the pattern you'll see in most MERN projects, and it teaches you exactly what's inside a signed token.
 
 </FaqItem>
 
 <FaqItem question="Will OTP emails really send?">
 
-Not in MVP — log OTP to the server console or return in dev responses. The **flow** must work; production email is out of scope.
+Not in this course — production email is out of scope. In development you'll log the OTP to the server console (or return it in the dev response) so you can copy it into the verify step. What matters is the *flow*: the server generates a code, stores it with an expiry, and only marks the user verified when the right code arrives. Swap the `console.log` for a real email service later and nothing else in the flow changes.
 
 </FaqItem>
 
 <FaqItem question="Can I skip OTP because it's annoying in dev?">
 
-No — Chapter 7's Verify OTP page and vendor onboarding depend on `isVerified`. Build the gate; simplify delivery, not the steps.
+Don't skip the step — simplify the delivery. Chapter 7's Verify OTP page and the vendor onboarding in Chapter 10 both depend on `isVerified` being set correctly. If you rip the gate out now, every later chapter that checks `isVerified` will behave differently than the spec says. Keep the full state machine — generate, store, verify — and just make the code easy to grab in development.
 
 </FaqItem>
 
 <FaqItem question="Does auth alone stop Vendor B editing Vendor A's products?">
 
-Not fully — that is **authorization** (Chapter 8). Auth gives you `req.user.id` and `role`; ownership checks use the chain from Chapter 5.
+Not fully. Authentication answers "who are you?" — after login you have `req.user.id` and `req.user.role`. Whether Vendor B is *allowed* to touch a specific product is authorization, and that's Chapter 8. What auth gives you now is the identity you'll need; Chapter 8 adds the ownership checks that compare that identity against the store that owns the product.
 
 </FaqItem>
 
@@ -149,7 +149,7 @@ Estimated time: **2 days** — security-sensitive; test every step with curl.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P55PVWMYYBFXWGC5YSR5" />
+<OpenQuestion id="01KZAX763AR9FNDQY7P4C3CV79" />
 
 ## Next
 

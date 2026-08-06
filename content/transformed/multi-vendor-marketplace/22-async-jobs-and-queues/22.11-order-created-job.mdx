@@ -6,6 +6,8 @@ summary: "**Why this step matters:** This is where you escape the sync trap — 
 ---
 **Why this step matters:** This is where you escape the sync trap — **paid** checkout commits commerce state, then hands notifications to the queue. The enqueue call site order (after DB writes) is the most common bug in async checkout implementations.
 
+**Where the project is now:** Queue module and worker run (22.9–22.10); checkout commits orders synchronously with no job enqueued.
+
 **After this step:** `POST /checkout` enqueues one `order.created` job **after** paid orders persist, stock decrements, and cart clears — **before** returning 201.
 
 ## Enqueue call site — spec
@@ -40,7 +42,7 @@ summary: "**Why this step matters:** This is where you escape the sync trap — 
 
 ## jobId deduplication — preview
 
-Pass deterministic `jobId` in options — full spec in 21.14:
+Pass deterministic `jobId` in options — full spec in 22.14:
 
 ```javascript
 // illustrative
@@ -95,7 +97,7 @@ curl -s -w "\nTIME:%{time_total}\n" -X POST http://localhost:5000/api/checkout \
   -d '{}'
 ```
 
-**Expected:** 201 quickly. Redis has pending job — verify in 21.15 with `redis-cli` or start worker and see backlog process.
+**Expected:** 201 quickly. Redis has pending job — verify in 22.15 with `redis-cli` or start worker and see backlog process.
 
 ## ✅ Do / ❌ Don't
 
@@ -103,7 +105,7 @@ curl -s -w "\nTIME:%{time_total}\n" -X POST http://localhost:5000/api/checkout \
 
 **✅ Do:** Include all `orderIds` from split checkout in one payload.
 
-**❌ Don't:** `await sendEmail()` in checkout — sync trap from 21.2.
+**❌ Don't:** `await sendEmail()` in checkout — sync trap from 22.2.
 
 **❌ Don't:** Enqueue inside MongoDB transaction before commit — race with worker.
 
@@ -117,7 +119,7 @@ curl -s -w "\nTIME:%{time_total}\n" -X POST http://localhost:5000/api/checkout \
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5P7RET4YJPKYGRGZWPN" />
+<OpenQuestion id="01KZAX78Z57HKB1BEGPW5X3PYV" />
 
 ## Next
 

@@ -18,6 +18,24 @@ What carries forward: exact API request/response shapes from Chapter 6, CORS alr
 
 The hat you wear now is **frontend auth integrator**. You are not redesigning the API; you are making it usable by vendors and customers. Week 2's demo becomes "register in the browser, verify, login, land on the right page" — not just curl output in a terminal.
 
+## Chapter 6 contract you inherit
+
+Chapter 7 adds **zero new business logic** on the server. Every form, hook, and interceptor must call the endpoints you tested in Chapter 6 with the **same JSON shapes**. If Login.jsx sends `{ username }` but the API expects `{ email }`, the bug is client-side — but only because you broke a contract that already worked in curl.
+
+| Chapter 6 endpoint (curl) | Chapter 7 consumer | What must match |
+|---|---|---|
+| `POST /api/auth/register` | Register.jsx | Body: `email`, `password`, `role`, `displayName`; handle 409 duplicate |
+| `POST /api/auth/verify-otp` | VerifyOtp.jsx | Body: `email`, `otp`; then redirect to login |
+| `POST /api/auth/login` | Login.jsx + useAuth | Response: `accessToken`, `refreshToken`, `user` — store per 7.4 |
+| `POST /api/auth/refresh` | useAuth boot + interceptor | Cookie or body refresh → new `accessToken` |
+| `GET /api/auth/me` | ProtectedRoute smoke test | Bearer header; 401 triggers refresh loop (7.5) |
+
+&lt;Callout type="warning" title="Gate before you build UI">
+Finish **Chapter 6.20 checklist** first. Chapter 7 on a broken auth API means debugging React and Express at once — the hardest combination for beginners. curl must pass register → verify → login → `/me` before you open `Login.jsx`.
+&lt;/Callout>
+
+**Phase shift:** Chapter 6 proved identity on the **server**. Chapter 7 proves the **browser** can hold and renew that identity safely — memory for access, httpOnly cookie for refresh, silent retry on 401.
+
 ## In plain English
 
 | Term | Meaning |
@@ -41,31 +59,31 @@ The hat you wear now is **frontend auth integrator**. You are not redesigning th
 
 <FaqItem question="Why not store the JWT in localStorage — it's easier?">
 
-Any script on your page can read localStorage. Access in **memory** plus refresh in **httpOnly cookie** is the course pattern — harder to steal and industry-aligned for SPAs.
+It is easier, and that's exactly the trap. Any script that runs on your page — a bad npm package, an unsanitized HTML string — can read `localStorage` in one line and steal your token, and the token stays there for later visitors too. That's why this course keeps the access token in **memory** and the refresh token in an **httpOnly cookie**: scripts can't read the cookie at all, and the in-memory token disappears when the tab closes. Less convenient on reload, much harder to steal — and it's the pattern real SPAs use.
 
 </FaqItem>
 
 <FaqItem question="Do I need new server endpoints?">
 
-Usually no — same Chapter 6 routes. You may add `Set-Cookie` on login/refresh for httpOnly refresh and enable `credentials: 'include'` on the client.
+Usually no — Chapter 7 calls the same routes you tested in Chapter 6. The one small exception: if your login response returns the refresh token in the JSON body, you may add a `Set-Cookie` header so it moves into an httpOnly cookie, and enable `credentials: 'include'` on the client so that cookie actually gets sent. If you catch yourself inventing a brand-new endpoint, stop — you're probably breaking a contract that already worked in curl.
 
 </FaqItem>
 
-<FaqItem question="What happens on page reload if access token is in memory?">
+<FaqItem question="What happens on page reload if the access token is in memory?">
 
-Memory clears — app boot calls refresh with the cookie to get a new access token silently (sub-chapters 7.4–7.5).
+The token vanishes — memory doesn't survive a reload; only long-term browser storage does. So on boot the app calls `POST /api/auth/refresh` with the httpOnly cookie, the server mints a fresh access token, and the user stays logged in without ever seeing a form. That silent refresh is the heart of sub-chapters 7.4–7.5. If the refresh token is gone too, the app redirects to login. Either way, session continuity is the server's job, not the client remembering things.
 
 </FaqItem>
 
 <FaqItem question="Why separate chapters for API auth and UI auth?">
 
-So you can debug server vs client independently. Broken curl means fix Chapter 6; broken form with working curl means fix Chapter 7.
+So you can debug each half on its own. Chapter 6 proved the server works with curl, where there's no browser, no React state, and no CORS to confuse you — a failure there is your server code. Chapter 7 layers the browser on top. The rule of thumb: if curl passes but the form fails, the bug is client-side; if curl fails too, it's server-side. Building both at once means debugging React and Express simultaneously — the hardest combination for a beginner.
 
 </FaqItem>
 
 <FaqItem question="Role-based UI (vendor vs customer) — this chapter?">
 
-Basic protected routes only. Role-specific guards and IDOR prevention deepen in Chapter 8.
+Not yet — this chapter only guards "are you logged in at all?" A `ProtectedRoute` wrapper redirects strangers to `/login`, and after login a vendor lands on a stub path while a customer lands on the shop stub. Deciding which screens a logged-in vendor may open — and stopping a customer from poking into vendor routes — is authorization, which needs server-side checks too. That's Chapter 8. For now, any authenticated user passes the door.
 
 </FaqItem>
 
@@ -79,6 +97,8 @@ curl proves the API. Customers and vendors need **forms**, **error messages**, a
 Chapter 7 closes Week 2 auth from the **browser side**.
 
 ## What this chapter is not
+
+Keeping scope tight is part of the design: each chapter proves one skill, and the rest is deferred deliberately so no chapter overwhelms you. This chapter only wires the auth flows your API already supports.
 
 - **Not** role-based UI guards beyond auth — Chapter 8
 - **Not** vendor dashboard — Chapter 10+
@@ -118,14 +138,24 @@ Estimated: **1–2 days**
 - [ ] Chapter 6 gate cleared — curl login works
 - [ ] CORS allows Vite origin on server
 - [ ] Test credentials documented in README
+- [ ] You can name which Chapter 6 endpoint each page will call (register, verify, login, refresh)
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P572VRXMR9DEYZHEFNHW" />
+<OpenQuestion id="01KZAX76BRNMZBAPRG115FD3V2" />
 
 ## Next
 
 **Sub-chapter 7.2:** Why token storage matters — XSS, httpOnly cookies, memory.
 
 API auth works — browser storage strategy next.
+
+&lt;ChapterRecap
+  points=&#123;[
+    "Chapter 6 auth works in curl — Chapter 7 adds browser forms and session continuity",
+    "Same API contracts — no new server endpoints unless you add httpOnly refresh cookies",
+    "Access token in memory, refresh in httpOnly cookie — the course security pattern",
+    "Protected routes and 401 refresh loop complete Week 2 auth from the client side"
+  ]&#125;
+/>

@@ -6,13 +6,13 @@ summary: "**Why this step matters:** Optional but instructive — it connects Ch
 ---
 **Why this step matters:** Optional but instructive — it connects Chapters 20 and 21 by moving slow cache bust off the vendor PATCH response. Even if you skip it, reading the tradeoff prepares you for "sync vs async invalidation" questions in viva.
 
-**Where the project is now:** Async notify jobs verified (21.15). Catalogue cache invalidation may still run **inline** in product save from Ch 21.11.
+**Where the project is now:** Async notify jobs verified (22.15). Catalogue cache invalidation may still run **inline** in product save from Ch 21.11.
 
 **After this step (optional):** `product.updated` job busts cache in worker — PATCH returns before `[CACHE]` log.
 
 **Optional stretch:** Move catalogue cache bust from synchronous product save (Chapter 21.11) to async `product.updated` job — ties queue chapter to cache chapter.
 
-**Gate:** Completing 21.11–21.15 is sufficient to proceed. This sub-chapter is **recommended** if invalidation added measurable latency to PATCH.
+**Gate:** Completing 22.11–22.15 is sufficient to proceed. This sub-chapter is **recommended** if invalidation added measurable latency to PATCH.
 
 ## When async invalidation helps
 
@@ -109,7 +109,7 @@ worker
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5PNZVHKCGB9KAQPYJVG" />
+<OpenQuestion id="01KZAX790YVKHNHS8SEWTBJ4G9" />
 
 ## Next
 

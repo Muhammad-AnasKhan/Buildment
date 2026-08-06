@@ -52,10 +52,24 @@ shared/config.js        ← JWT validation
 | requireRole / ownership | 8 |
 | Store API | 9 |
 
+## Handoff to Chapter 7 — keep contracts stable
+
+Chapter 7 will call these exact shapes from React. Do **not** rename fields after the gate.
+
+| Your curl response field | Chapter 7 usage |
+|---|---|
+| `accessToken` | Stored in useAuth memory; sent as Bearer |
+| `refreshToken` | Moved to httpOnly cookie in 7.x (body OK for 6.x curl) |
+| `user.id` | Auth context identity |
+| `user.role` | Post-login redirect (vendor vs customer) |
+| `user.displayName` | Navbar / profile stub |
+| 401 on bad token | Triggers client refresh loop |
+| 403 on unverified | VerifyOtp page redirect from Register |
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P56Y6ABAW0YC6W97RZHH" />
+<OpenQuestion id="01KZAX76B12VNV23FNCBYDTCQ8" />
 
 ## Next chapter — Login & registration (Chapter 7)
 

@@ -12,14 +12,18 @@ This sub-chapter exists so you understand **cache-aside** before typing `redis.j
 
 ## Topics to understand
 
+Four concepts, one chapter. The first is the one that will appear in every interview answer about caching; the others protect you from foot-guns you might otherwise only discover in production. None of them needs to be implemented *perfectly* — they need to be understood before you type `redis.js`.
+
 | Topic | Why for FreshMarket |
 |---|---|
-| Cache-aside pattern | App checks Redis, then MongoDB — your 20.9 flow |
+| Cache-aside pattern | App checks Redis, then MongoDB — your 21.9 flow |
 | Thundering herd | Many requests on TTL expiry at once — note for viva, don't solve for gate |
 | MongoDB text index | `$text` + `$meta: textScore` for `?search=` |
 | `explain("executionStats")` | Prove index scan, not full collection scan |
 
 ## Mandatory reading pointers
+
+Read in this order: start with Redis's own commands so you know the primitive you are building on, then the cache-aside pattern so you know the shape of the flow, then MongoDB text indexes so search in 21.12 does not surprise you.
 
 **Primary:** Redis documentation — `GET`, `SET`, `EX` (expiry), connection URL format.
 
@@ -29,6 +33,8 @@ This sub-chapter exists so you understand **cache-aside** before typing `redis.j
 
 ## Questions after reading
 
+Four questions that test *understanding*, not recall — answer each from memory, then check. If you can explain #2 without re-reading, the stale-cache trap from 21.2 has landed.
+
 Answer in your notebook or learning log draft — without opening articles:
 
 1. What is cache-aside vs read-through?
@@ -36,7 +42,7 @@ Answer in your notebook or learning log draft — without opening articles:
 3. What does `IXSCAN` vs `COLLSCAN` mean in explain output?
 4. What happens to your app if Redis is down and you implemented fallback correctly?
 
-If you cannot answer #2, re-read 20.2 stale cache trap.
+If you cannot answer #2, re-read 21.2 stale cache trap.
 
 ## In plain English
 
@@ -48,7 +54,7 @@ If you cannot answer #2, re-read 20.2 stale cache trap.
 
 ## Common beginner mistakes (read before coding)
 
-1. **Caching before measuring** — 20.7/20.10 want before/after numbers; measure baseline first.
+1. **Caching before measuring** — 21.7/21.10 want before/after numbers; measure baseline first.
 2. **One global cache key** — filters and pagination need distinct keys or you serve wrong pages.
 3. **Forgetting invalidation on DELETE** — product gone from DB but still in cache.
 4. **`KEYS catalogue:*` in production** — blocks Redis; use `SCAN` in invalidation helper.
@@ -60,19 +66,19 @@ Same `REDIS_URL`. Chapter 22 adds BullMQ queue keys beside your `catalogue:*` ke
 
 ## ✅ Do / ❌ Don't
 
-**✅ Do:** Finish reading before 20.8 — connection module is easier with pattern in head.
+**✅ Do:** Finish reading before 21.8 — connection module is easier with pattern in head.
 
-**✅ Do:** Keep docs tab open while implementing 20.9.
+**✅ Do:** Keep docs tab open while implementing 21.9.
 
-**❌ Don't:** Skip text index reading — 20.12 depends on it.
+**❌ Don't:** Skip text index reading — 21.12 depends on it.
 
 **❌ Don't:** Copy a tutorial that caches sessions or JWTs — wrong pattern for this chapter.
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5MH7N44GK6GPGAWXFCM" />
+<OpenQuestion id="01KZAX78R0ZAKKQTFTTEB0SST6" />
 
 ## Next
 
-**Sub-chapter 21.6:** Quiz reserved — skip to **20.7** to start building.
+**Sub-chapter 21.6:** Quiz reserved — skip to **21.7** to start building.

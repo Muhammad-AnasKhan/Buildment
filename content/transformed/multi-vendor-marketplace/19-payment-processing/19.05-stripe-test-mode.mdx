@@ -80,33 +80,33 @@ Production (Chapter 23) registers a real HTTPS URL — same handler code, differ
 
 <FaqGroup>
 
-<FaqItem question="I accidentally committed `sk_test_…` to Git — is that OK?">
+<FaqItem question="I accidentally committed a test key to Git — is that OK?">
 
-Rotate the key in Dashboard immediately. Test keys are lower risk than live — still bad habit. Never commit **any** secret.
-
-</FaqItem>
-
-<FaqItem question="Test mode vs Sandbox?">
-
-Stripe uses **test mode** on your account. No separate sandbox account needed for this course.
+Rotate it in the Stripe Dashboard immediately, and treat the habit as the real problem. Test keys are far lower risk than live keys — they can't move real money — so the practical damage is small. But committing keys trains you to do it when it matters, and committing `sk_live_…` would be catastrophic. The rule is absolute: no secret of any kind gets committed. Remove the key from Git history if you can, rotate it, and confirm `.env` is in `.gitignore` so it can't happen again.
 
 </FaqItem>
 
-<FaqItem question="INR vs USD?">
+<FaqItem question="What's the difference between test mode and a sandbox?">
 
-Pick one currency for FreshMarket and stick to it. Stripe supports INR in test mode — confirm currency in Dashboard account settings. Amounts in API are **integer smallest unit** (paise for INR).
-
-</FaqItem>
-
-<FaqItem question="Do I need a business verification for test mode?">
-
-No. Live mode needs verification — you are not going live in this course.
+In this course, nothing — they're the same idea with different names. Stripe doesn't hand you a separate "sandbox" account; you create **one** Stripe account and flip it into **test mode** with the toggle at the top of the Dashboard. In test mode, every API call uses fake money and your test keys, and nothing is real. Other payment providers literally call this a sandbox, which is why you'll hear both terms. For Stripe, just make sure the Dashboard says "Test mode" before you copy any keys.
 
 </FaqItem>
 
-<FaqItem question="Can I use Stripe without the Dashboard?">
+<FaqItem question="INR or USD — which currency should I use?">
 
-You need Dashboard or CLI for keys and webhook secrets. API alone is not enough for first setup.
+Pick one and stay consistent — FreshMarket is a grocery marketplace, and the course examples use Indian Rupees (₹). Stripe supports INR in test mode, but confirm the currency in your Dashboard account settings before creating intents. One easy bug to remember: Stripe takes amounts in the **smallest currency unit**, so ₹120.50 is sent as `12050` paise — send `120.5` and the charge will be wrong or rejected. Apply that conversion every time you create or compare an intent amount.
+
+</FaqItem>
+
+<FaqItem question="Do I need business verification to use test mode?">
+
+No. Test mode needs nothing from you beyond a free Stripe account — no business documents, no bank details — because no real money moves. Live mode is where Stripe verifies who you are before letting you charge real customers, and this course explicitly doesn't go live. So create the account, flip to test mode, and you're ready to copy your test keys. Keep it that way for the whole course — mentors grade test-mode proof only.
+
+</FaqItem>
+
+<FaqItem question="Can I use Stripe's API without the Dashboard or CLI?">
+
+Not for first setup, no. You need the Dashboard at least once to create your account and copy your publishable and secret keys (`pk_test_…`, `sk_test_…`). And for local webhook testing you need the Stripe CLI (`stripe listen --forward-to localhost:5000/api/webhooks/stripe`), which hands you the `whsec_…` signing secret that proves webhook POSTs really came from Stripe. After that, your code talks to the API on its own — but keys and secrets have to come from somewhere, and that somewhere is the Dashboard or CLI.
 
 </FaqItem>
 
@@ -114,6 +114,8 @@ You need Dashboard or CLI for keys and webhook secrets. API alone is not enough 
 
 
 ## Security habits (course minimum)
+
+Test keys are still secrets — a leaked `sk_test_` key is a leak. Meet this minimum bar on every deliverable:
 
 - [ ] `.env` in `.gitignore` (should already be from Ch 4)
 - [ ] `.env.example` has empty placeholders, not real keys
@@ -139,7 +141,7 @@ You need Dashboard or CLI for keys and webhook secrets. API alone is not enough 
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5JRKNA2PGG4V9MWFVYH" />
+<OpenQuestion id="01KZAX78DDRY15FWEWSF97X064" />
 
 ## Next
 

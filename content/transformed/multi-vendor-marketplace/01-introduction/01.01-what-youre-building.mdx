@@ -66,33 +66,39 @@ You do not need to finish in exactly four calendar weeks. Move at your own pace.
 
 <FaqGroup>
 
-<FaqItem question="I've never built a full-stack app. Can I still do this?">
+<FaqItem question="I've never built a full-stack app before. Can I really handle this?">
 
-If you can build a small REST API and a React page that fetches data, yes — read the **Learn it** sections slowly and use the **In plain English** boxes in each chapter. If CRUD is completely new, spend a few days on a tiny todo app first (see 1.5).
+Yes — the course assumes you can build a small REST API and a React page that fetches data, nothing fancier. Read the **Learn it** sections slowly and use the **In plain English** boxes; they exist exactly for the moments a chapter feels too big. If even basic CRUD is completely new, spend a few days on a tiny todo app first (see 1.5) so the building blocks are warm. Everything else — multi-vendor checkout, price snapshots, Docker on AWS — is taught one small piece at a time, and you're never expected to hold the whole marketplace in your head at once.
 
 </FaqItem>
 
-<FaqItem question="Why one repo with `server/` and `client/`?">
+<FaqItem question="Why keep everything in one repo with `server/` and `client/`?">
 
-So you always know where files live and can demo both halves together. The server handles data and rules; the client is what users see in the browser.
+Because it's one product with two halves, and one repo keeps those halves together. The server holds your data and business rules; the client is what people see in the browser. With both in a single repository you always know where files live, and you can demo the whole thing — start the server, start the client, watch them talk — from one place. Many MERN teams ship exactly this way: one Git repo, two package.json files, two processes. You'll meet the same shape again in real jobs, so it's worth learning now.
 
 </FaqItem>
 
 <FaqItem question="Is this a copy-paste course?">
 
-No. The course tells you **what** each route must do and **how to verify** it — you write the handler logic yourself.
+No. The course tells you **what** each route must do and **how to verify** it works — you write the handler logic yourself. You get specs, contracts, and checklists, not finished code to paste. That's deliberate: if you paste code you don't understand, the next chapter won't make sense and the app will break in ways you can't debug. When you finish, you can explain why every piece exists, which is exactly what a hiring team wants to hear.
 
 </FaqItem>
 
-<FaqItem question="Why grocery and not a generic shop?">
+<FaqItem question="Why build a grocery marketplace and not a generic shop?">
 
-Because units (kg vs pieces), perishables, and multi-vendor checkout change real schema and API decisions — not just the product name.
+Because "grocery" forces real decisions a generic shop can ignore. Fruit is sold per kilo, eggs per piece, milk per bottle — so your schema needs units. Produce goes bad, so stock matters. And a cart holding apples from one vendor and olive oil from another must split into separate orders at checkout. Those aren't cosmetic details; they change the shape of your database and your API routes. Grocery gives you problems worth learning from, not a toy that teaches nothing.
+
+</FaqItem>
+
+<FaqItem question="What does \"many shops, one checkout\" actually mean?">
+
+Imagine adding apples from one farm stall and olive oil from another to the same cart. From the customer's side it's one checkout and one payment. Behind the scenes, the platform splits that purchase into two orders — one per vendor — so each vendor only sees and fulfills their own part. That split is ordinary code you'll write yourself in this course, and the same idea powers real marketplaces like Etsy and Uber Eats. It's also a big part of why multi-vendor is harder than a single shop, and why this project teaches so much.
 
 </FaqItem>
 
 <FaqItem question="What if I get stuck?">
 
-Read the error first, check **Troubleshooting** at the bottom of the sub-chapter, re-read **Bridge from last chapter** if the chapter feels like a jump. See 1.7 for working rhythm.
+First, read the error message — it usually names the exact file and line. Then check **Troubleshooting** at the bottom of the sub-chapter, and if the chapter still feels like a jump, re-read **Bridge from last chapter** to see what should have carried over. Section 1.7 covers a steady working rhythm. The honest truth: you will hit errors, and that is normal and expected. Getting stuck isn't failure; panicking and skipping ahead is what creates real problems.
 
 </FaqItem>
 
@@ -170,6 +176,6 @@ Next: how this course is structured, and the one rule that keeps self-paced work
 Answer both questions below in your own words. There is no single correct answer — they check that the big picture of this lesson is clear before you move on.
 </CheckpointIntro>
 
-<OpenQuestion id="01KZ63P4XHAJSHGN667JWZZPYR" />
+<OpenQuestion id="01KZAX75343WE2G37467QC370E" />
 
-<OpenQuestion id="01KZ63P4XHNPZ29CBNSPZ6HN8A" />
+<OpenQuestion id="01KZAX7535D2XVBS9NKA2BTZGR" />

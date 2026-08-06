@@ -6,13 +6,15 @@ summary: "You add `sendOrderConfirmationEmail(customer)` inside the checkout han
 ---
 You add `sendOrderConfirmationEmail(customer)` inside the checkout handler. Demo day: Mailgun times out after 30 seconds. Checkout returns **500** even though orders were created and stock decremented. Customer sees error; database shows success. Support nightmare.
 
-This sub-chapter names the trap **before** you wire BullMQ in 21.9–21.12.
+This sub-chapter names the trap **before** you wire BullMQ in 22.9–22.12.
 
 ## The bug in one sentence
 
 **Side effects that can fail or slow down should not block the HTTP response for work already committed.**
 
 ## How teams accidentally build this
+
+Nobody *decides* to couple email to checkout — it happens one innocent line at a time: "while I'm here, let me just notify the vendor." The table below walks that line, showing what each step does to your request handler as the side effects pile up.
 
 | Step | What goes wrong |
 |---|---|
@@ -46,7 +48,7 @@ Chapter 18 already did the hard part synchronously — stock and order creation 
 | Email / push notify | ✗ | Best-effort; retryable |
 | Cache invalidation | Either | Sync OK for gate; async cleaner at scale |
 
-Full decision table in 21.4.
+Full decision table in 22.4.
 
 ## Failure modes without a queue
 
@@ -57,7 +59,7 @@ Full decision table in 21.4.
 | Duplicate emails on retry | Client resubmits; no idempotency |
 | No email but 201 | Swallowed errors — silent failure |
 
-Queue + worker + retries address the last three in 21.14.
+Queue + worker + retries address the last three in 22.14.
 
 ## UI consequence (Week 4 demo)
 
@@ -92,7 +94,7 @@ Weak answer: "Email is fast" — describes demo-day timeout.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5NH3NBX5QGMPDC3V6QK" />
+<OpenQuestion id="01KZAX78W9060M6PK0K6BYA3RP" />
 
 ## Next
 

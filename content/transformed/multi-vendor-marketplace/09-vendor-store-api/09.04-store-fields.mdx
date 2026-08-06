@@ -63,6 +63,8 @@ Chapter 9 stores a **URL string only** — vendor may paste a placeholder or lea
 
 ## Fields that belong elsewhere
 
+Before you add a field to Store, ask whether it's really the store's to keep — these look tempting but live somewhere else:
+
 | Field | Why not on Store |
 |---|---|
 | `productCount` | Derived — count products query |
@@ -74,6 +76,8 @@ Chapter 9 stores a **URL string only** — vendor may paste a placeholder or lea
 **❌ Don't:** Denormalize `vendorName` onto Store — duplication drifts when vendor renames profile (Chapter 5 warned this).
 
 ## Mutable vs immutable
+
+Which fields may change after creation — and which must stay frozen for security and data integrity:
 
 | Field | Create | PATCH |
 |---|---|---|
@@ -128,7 +132,7 @@ Product-level `unit` and `isPerishable` live on **Product** — not Store.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P59BZ0XAZKPQ79ZB7W1Z" />
+<OpenQuestion id="01KZAX76SV8FQNW9V6VN370PSJ" />
 
 ## Next
 

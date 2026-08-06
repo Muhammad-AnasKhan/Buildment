@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Enqueue without a processor is a message no
 ---
 **Why this step matters:** Enqueue without a processor is a message nobody reads. `[NOTIFY]` logs here are the gate proof that multi-vendor checkout triggers one vendor line per store plus one customer summary.
 
+**Where the project is now:** Paid checkout enqueues `order.created` (22.11) — the worker has no processor for it yet.
+
 **After this step:** Worker handles `order.created` jobs — logs mock vendor notifications (per order/store) and one mock customer confirmation.
 
 ## Processor location — spec
@@ -20,7 +22,7 @@ Import `handleOrderCreated` in `worker.js` router.
 
 ## handleOrderCreated(data) — behaviour contract
 
-**Input:** Payload from 21.11 — at minimum `orderIds`, `customerId`.
+**Input:** Payload from 22.11 — at minimum `orderIds`, `customerId`.
 
 **Steps (you implement):**
 
@@ -62,7 +64,7 @@ Demo script: point mentor at worker terminal **after** browser shows confirmatio
 
 Return `undefined` or `{ notified: orderIds.length }` on success.
 
-**Throw** only for unexpected errors (DB down) — triggers retry per 21.14.
+**Throw** only for unexpected errors (DB down) — triggers retry per 22.14.
 
 **Do not throw** for "email would fail" — there is no real email.
 
@@ -70,7 +72,7 @@ Return `undefined` or `{ notified: orderIds.length }` on success.
 
 If same job runs twice (retry), logs appear twice — acceptable for mock.
 
-With `jobId` dedup on enqueue (21.14), duplicate enqueue suppressed — processor may still retry on crash mid-run. Document in README.
+With `jobId` dedup on enqueue (22.14), duplicate enqueue suppressed — processor may still retry on crash mid-run. Document in README.
 
 ## Test script
 
@@ -104,7 +106,7 @@ With `jobId` dedup on enqueue (21.14), duplicate enqueue suppressed — processo
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5P9S8FVRDKDATFDKS04" />
+<OpenQuestion id="01KZAX78ZH02C22ZWGN61GZ5QN" />
 
 ## Next
 

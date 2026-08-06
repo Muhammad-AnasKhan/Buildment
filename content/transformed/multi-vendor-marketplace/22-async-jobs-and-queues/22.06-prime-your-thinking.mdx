@@ -6,7 +6,7 @@ summary: "Before you write `shared/queue.js` and `worker.js`, read how **BullMQ*
 ---
 Before you write `shared/queue.js` and `worker.js`, read how **BullMQ** expects Queues and Workers to connect to Redis. This sub-chapter is a **mandatory reading assignment**.
 
-Chapter 21 taught cache-aside. This read covers **producer/consumer job flow** — so your checkout enqueue in 21.11 matches official patterns.
+Chapter 21 taught cache-aside. This read covers **producer/consumer job flow** — so your checkout enqueue in 22.11 matches official patterns.
 
 ## Mandatory read
 
@@ -18,17 +18,17 @@ https://docs.bullmq.io/guide/quick-start
 1. **Adding jobs to the queue** — `queue.add(name, data, opts)`
 2. **Workers** — `new Worker(queueName, processor, { connection })`
 3. **Connections** — `ioredis` / `REDIS_URL` reuse
-4. **Job options** — `attempts`, `backoff`, `jobId` (you use in 21.14)
+4. **Job options** — `attempts`, `backoff`, `jobId` (you use in 22.14)
 5. **Separate processes** — producer and consumer in different Node processes
 
 **Secondary (skim):** Retrying failing jobs  
 https://docs.bullmq.io/guide/retrying-failing-jobs
 
-Enough to configure `attempts: 3` and understand exponential backoff — implement in 21.14.
+Enough to configure `attempts: 3` and understand exponential backoff — implement in 22.14.
 
 ## What to extract for your implementation
 
-While reading, note answers — you'll implement in 21.9–21.12:
+While reading, note answers — you'll implement in 22.9–22.12:
 
 | Question | Why it matters |
 |---|---|
@@ -38,7 +38,7 @@ While reading, note answers — you'll implement in 21.9–21.12:
 | How to pass `jobId` for deduplication? | Prevent duplicate notifications |
 | Graceful worker shutdown? | Optional — `worker.close()` on SIGTERM for Ch 23 |
 
-**Do not copy-paste** the entire quick-start into one file — split `queue.js` vs `worker.js` per 21.3 blueprint.
+**Do not copy-paste** the entire quick-start into one file — split `queue.js` vs `worker.js` per 22.3 blueprint.
 
 ## BullMQ vs raw Redis commands
 
@@ -87,7 +87,7 @@ Worker needs same env: `REDIS_URL`, `MONGODB_URI` (if processor loads User/Order
 
 **✅ Do:** Read official BullMQ docs — version matches `npm install bullmq`.
 
-**✅ Do:** Keep docs tab open while writing `worker.js` in 21.10.
+**✅ Do:** Keep docs tab open while writing `worker.js` in 22.10.
 
 **❌ Don't:** Use deprecated `bull` v3 tutorials — API differs from BullMQ.
 
@@ -96,10 +96,10 @@ Worker needs same env: `REDIS_URL`, `MONGODB_URI` (if processor loads User/Order
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5NTFNNHZX64J46GKM8X" />
+<OpenQuestion id="01KZAX78XKWPTCC8PWW0275VT2" />
 
 ## Next
 
-**Sub-chapter 22.7:** Quiz — reserved, skip to **21.8** to start building.
+**Sub-chapter 22.7:** Quiz — reserved, skip to **22.8** to start building.
 
 Reading done → hands on keyboard in the build cluster.

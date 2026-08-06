@@ -4,9 +4,7 @@ module: 10
 lesson: 9
 summary: "Without a gate, storeless vendors bookmark `/vendor/products` and hit confusing API errors later. The layout checks `GET /stores/me` on mount — **404 means redirect to open-shop**. This is product-shaped UX: force the lease signing before the stockroom."
 ---
-## Why this step matters
-
-Without a gate, storeless vendors bookmark `/vendor/products` and hit confusing API errors later. The layout checks `GET /stores/me` on mount — **404 means redirect to open-shop**. This is product-shaped UX: force the lease signing before the stockroom.
+**Why this step matters:** Without a gate, storeless vendors bookmark `/vendor/products` and hit confusing API errors later. The layout checks `GET /stores/me` on mount — **404 means redirect to open-shop**. This is product-shaped UX: force the lease signing before the stockroom.
 
 **Where the project is now:** OpenShop and StoreSettings work in isolation; layout checks role but **does not enforce store existence**.
 
@@ -111,8 +109,8 @@ git commit -m "feat(client): add vendor onboarding gate via GET stores me"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5ANN2KGDNNVQJASXT3B" />
+<OpenQuestion id="01KZAX770MC1FH3PCFQ0Q01533" />
 
 ## Next
 
-**Sub-chapter 10.10:** Verify full onboarding flow end-to-end.
+**Sub-chapter 10.10:** Verify full onboarding flow end-to-end — the redirect works; walk the whole vendor journey from login to open shop.

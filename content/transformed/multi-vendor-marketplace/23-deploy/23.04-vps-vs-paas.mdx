@@ -67,7 +67,7 @@ Both are valid homes for FreshMarket. Pick one and document it — do not half-d
 
 ## Decision record
 
-In learning log 22.16, state:
+In learning log 23.16, state:
 
 - API host choice + why
 - Client host choice + why
@@ -80,19 +80,37 @@ In learning log 22.16, state:
 
 <FaqItem question="Can I deploy client and API on the same Vercel project?">
 
-Vercel is for **static client** + serverless functions — long-running Express + worker need Render/Railway/VPS. Typical split: Vercel client, Render API+worker.
+Not the Express API and worker. Vercel is built for static sites and serverless functions, which don't fit a long-running Express server or a worker process that must stay alive to watch Redis. The typical split is Vercel for the built React client, and Render or Railway for the API plus a second worker service. You're not picking one host — you're picking where each of the three pieces lives.
 
 </FaqItem>
 
 <FaqItem question="Do I need a custom domain?">
 
-No for gate — `*.onrender.com` and `*.vercel.app` HTTPS URLs pass. Custom domain is portfolio polish.
+No — the gate passes with platform HTTPS URLs like `*.onrender.com` and `*.vercel.app`. A custom domain is portfolio polish, not a requirement. What *is* required is HTTPS: an HTTP-only URL fails the gate, because secure cookies and professional demos both need the padlock. If you add a domain later, it's configuration on top of the same app, not a re-architecture.
 
 </FaqItem>
 
-<FaqItem question="What is cold start?">
+<FaqItem question="What is a cold start?">
 
-Free PaaS tiers sleep when idle — first request after sleep may take 30–60s. Retry smoke test once if health is slow.
+Free PaaS tiers put services to sleep after they've been idle for a while. The next request has to wake the machine and boot your app first, so the first hit can take 30–60 seconds instead of milliseconds. It's not a bug in your code. If your health check is slow after idle, retry it once before worrying — and mention it in your learning log so evaluators aren't surprised.
+
+</FaqItem>
+
+<FaqItem question="How do I decide between PaaS and VPS?">
+
+Match the choice to your comfort level, not to what sounds impressive. PaaS (Render, Railway) is a furnished apartment: HTTPS and env vars are handled, you push code and move in fast. A VPS is an empty flat: you install Node, nginx or Caddy, PM2, and TLS yourself — more setup, but you understand every layer, which makes a stronger viva story. The course requires only that you pick one path, document it, and not half-deploy on three platforms.
+
+</FaqItem>
+
+<FaqItem question="Why does CORS need the production client URL?">
+
+CORS is the browser's rule for which origins may call your API. If your API only allows `localhost:5173`, the deployed site at `https://app.yourdomain.com` gets blocked, and login fails with those confusing "blocked by CORS policy" errors. So you set the CORS `origin` in `app.js` — or `CLIENT_ORIGIN` in env — to the production client URL. It's one of the most common deploy bugs: the app works locally, then mysteriously breaks in production.
+
+</FaqItem>
+
+<FaqItem question="Why is the React app called \"static\" in production?">
+
+Because after `npm run build`, your React app is just a folder of HTML, CSS, and JavaScript files in `client/dist/` — no Node server needed to serve them. A static host like Vercel stores those files and serves them fast; the React code runs in the browser. That's also why `VITE_API_URL` must be correct at build time: the bundle is frozen, and the static host serves exactly what you built.
 
 </FaqItem>
 
@@ -118,7 +136,7 @@ Free PaaS tiers sleep when idle — first request after sleep may take 30–60s.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5Q2W6NQPZ4AQSHDE5HM" />
+<OpenQuestion id="01KZAX792S65TEAHWZNS6CRGW5" />
 
 ## Next
 

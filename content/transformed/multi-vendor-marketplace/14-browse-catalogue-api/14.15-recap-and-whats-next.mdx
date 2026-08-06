@@ -49,7 +49,7 @@ No client changes this chapter — intentional backend-first pairing.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5EXZE3C8NZ83GRY942N" />
+<OpenQuestion id="01KZAX77QC58BQC98F8Z9ZVZ0V" />
 
 ## Next chapter — Shop the marketplace (Chapter 15)
 
@@ -62,6 +62,23 @@ Frontend pair to this chapter:
 - `ProductDetail.jsx` — add to cart **stub** (wired in Ch 17)  
 
 **Consume** `GET /products` — do not duplicate catalogue logic in React.
+
+## Handoff to Chapter 15 — API fields → UI components
+
+Chapter 15 does not invent catalogue rules. Every pixel maps to a field you tested in curl:
+
+| API response field | Chapter 15 component | Student mistake to avoid |
+|---|---|---|
+| `items[].imageUrl` | `ProductCard` photo | Hardcoding placeholder URLs when API has real Cloudinary links |
+| `items[].store.name` | "Sold by …" line on card | Hiding store name — defeats multi-vendor identity |
+| `items[].price` + `unit` | Price line formatter | Client-side filter hiding unpublished items |
+| `page`, `totalPages` | Pagination controls | Fetching all products once and paginating in React |
+| `?category=` / `?storeId=` | Filter bar refetch | Filtering array in memory after one big GET |
+| `GET /products/:id` | ProductDetail page | Duplicating publish/stock checks in UI |
+
+&lt;Callout type="warning" title="Gate before the shop">
+Do not open Chapter 15 until **14.16 checklist** is ticked. An empty shop grid with a broken API feels like a React bug — it is usually a catalogue query or seed problem from Chapter 14.
+&lt;/Callout>
 
 ## Callback to N+1 (competency map)
 

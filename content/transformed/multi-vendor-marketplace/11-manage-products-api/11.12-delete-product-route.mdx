@@ -4,9 +4,9 @@ module: 11
 lesson: 12
 summary: "Vendors discontinue items — hard delete in this course. `DELETE /products/:id` completes the CRUD set and reuses the same ownership chain. Optional in the UI (Ch 12) but required in the API for a complete inventory lifecycle."
 ---
-## Why this step matters
+**Why this step matters:** Vendors discontinue items — hard delete in this course. `DELETE /products/:id` completes the CRUD set and reuses the same ownership chain. Optional in the UI (Ch 12) but required in the API for a complete inventory lifecycle.
 
-Vendors discontinue items — hard delete in this course. `DELETE /products/:id` completes the CRUD set and reuses the same ownership chain. Optional in the UI (Ch 12) but required in the API for a complete inventory lifecycle.
+**Where the project is now:** Create, list, and update work (11.9–11.11); no delete path — discontinued items linger on the shelf.
 
 **After this step:** `DELETE /api/products/:id` removes own product → **204** or **200**. Cross-vendor → **403**.
 
@@ -73,8 +73,8 @@ git commit -m "feat(products): add DELETE product with ownership check"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5BNEX9DTM9MCXGQS901" />
+<OpenQuestion id="01KZAX775TPXSQ5CJQGSPF9BMD" />
 
 ## Next
 
-**Sub-chapter 11.13:** Cross-vendor 403 test suite.
+**Sub-chapter 11.13:** Cross-vendor 403 test suite — CRUD is complete; prove the isolation rules hold with real two-vendor tests.

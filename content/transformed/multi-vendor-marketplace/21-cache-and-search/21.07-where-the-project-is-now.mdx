@@ -2,9 +2,9 @@
 title: "Where the project is now"
 module: 21
 lesson: 7
-summary: "**Why this step matters:** You cannot prove cache helped if you never recorded baseline speed. This continuity step captures \"before Redis\" timings and confirms commerce still works — the reference point for every HIT/MISS test in 20.9–20.10."
+summary: "**Why this step matters:** You cannot prove cache helped if you never recorded baseline speed. This continuity step captures \"before Redis\" timings and confirms commerce still works — the reference point for every HIT/MISS test in 21.9–21.10."
 ---
-**Why this step matters:** You cannot prove cache helped if you never recorded baseline speed. This continuity step captures "before Redis" timings and confirms commerce still works — the reference point for every HIT/MISS test in 20.9–20.10.
+**Why this step matters:** You cannot prove cache helped if you never recorded baseline speed. This continuity step captures "before Redis" timings and confirms commerce still works — the reference point for every HIT/MISS test in 21.9–21.10.
 
 **Build cluster starts here.** Week 3 commerce works in browser. Every `GET /products` still hits MongoDB on every page load — fine for demo, wrong for scale. Chapter 21 adds **Redis cache-aside** on catalogue reads and a **text index** for search.
 
@@ -23,7 +23,7 @@ summary: "**Why this step matters:** You cannot prove cache helped if you never 
 With server running, no cache yet:
 
 ```bash
-# Time three identical requests — note ms in README for 20.10
+# Time three identical requests — note ms in README for 21.10
 curl -s -o /dev/null -w "%{time_total}\n" \
   "http://localhost:5000/api/products?page=1&limit=20"
 
@@ -46,12 +46,12 @@ Record baseline times in README or learning log — Chapter 21 gate compares aft
 
 | Missing | Added in |
 |---|---|
-| `server/src/shared/redis.js` | 20.8 |
-| `REDIS_URL` in `server/.env.example` | 20.8 |
-| Cache middleware on `GET /products` | 20.9 |
-| Invalidation on product POST/PATCH/DELETE | 20.11 |
-| Text index on Product | 20.12 |
-| `?search=` query param | 20.12–20.13 |
+| `server/src/shared/redis.js` | 21.8 |
+| `REDIS_URL` in `server/.env.example` | 21.8 |
+| Cache middleware on `GET /products` | 21.9 |
+| Invalidation on product POST/PATCH/DELETE | 21.11 |
+| Text index on Product | 21.12 |
+| `?search=` query param | 21.12–21.13 |
 
 **Chapter 22 note:** Same Redis instance later hosts BullMQ queues — use different key prefixes (`catalogue:*` vs `bull:*`).
 
@@ -81,7 +81,7 @@ Document in README before implementing:
 | Page 2 + category | `catalogue:products:p2:l20:cat:Dairy` |
 | Search term | Include `search:` segment or skip cache for search (your choice — document) |
 
-Invalidation in 20.11 must delete keys matching catalogue prefix — not `FLUSHALL`.
+Invalidation in 21.11 must delete keys matching catalogue prefix — not `FLUSHALL`.
 
 ## MongoDB query count reminder
 
@@ -95,7 +95,7 @@ Cache does not fix N+1 — it only avoids repeat work.
 
 **✅ Do:** Measure before/after — gate requires evidence in README.
 
-**✅ Do:** Implement fallback when Redis down — direct MongoDB read (20.14).
+**✅ Do:** Implement fallback when Redis down — direct MongoDB read (21.14).
 
 **❌ Don't:** Cache cart, auth, or order routes — catalogue only this chapter.
 
@@ -112,7 +112,7 @@ Cache does not fix N+1 — it only avoids repeat work.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5MMYRP000N5EDARCS2W" />
+<OpenQuestion id="01KZAX78RP0SW6ETJC4YZV61QE" />
 
 ## Next
 

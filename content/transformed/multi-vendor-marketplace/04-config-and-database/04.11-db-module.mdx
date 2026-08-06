@@ -68,6 +68,8 @@ Or health handler imports `mongoose.connection` directly — keep logic consiste
 
 ## What db.js must NOT do
 
+A small, single-purpose module is easier to debug and reuse. Keep `db.js` focused — it must not:
+
 - Define schemas or models — Chapter 5  
 - Start HTTP server  
 - Load dotenv — entry file handles that before config  
@@ -140,7 +142,7 @@ git commit -m "feat(server): add mongoose db connection module"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P53VFKBE1JVXE3EG0BR5" />
+<OpenQuestion id="01KZAX75SGGTT6NRFJ1HVNJ7SQ" />
 
 ## Next
 

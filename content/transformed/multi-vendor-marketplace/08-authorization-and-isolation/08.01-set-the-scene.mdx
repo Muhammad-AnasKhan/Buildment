@@ -10,6 +10,21 @@ summary: "**Where the project is now:** Users authenticate via JWT — `requireA
 
 Concept-heavy with applied middleware — not essay-only.
 
+## What Chapter 7 gave you — and what it cannot do
+
+Chapter 7 completed the **browser identity layer**. You should be able to demo: register → verify → login → protected vendor stub → logout. That proves humans can authenticate.
+
+| Chapter 7 capability | Limitation Chapter 8 fixes |
+|---|---|
+| `ProtectedRoute` blocks `/vendor` in React | curl with Vendor B's JWT still hits any route you write |
+| Role prop redirects customer away from vendor UI | API does not know UI redirected — only middleware knows |
+| Bearer token proves `req.user.id` after `requireAuth` | `requireAuth` does not check **which store** that user owns |
+| 401 refresh loop | 403 on wrong store id is **not** a token problem — do not refresh |
+
+&lt;Callout type="warning" title="The IDOR gap">
+Two vendors both log in successfully. Without ownership checks, either vendor's token can `PATCH /stores/:id` for **any** MongoDB id they guess. Chapter 8 closes that hole before Chapter 9 adds real store CRUD.
+&lt;/Callout>
+
 ## Bridge from last chapter
 
 Chapter 7 gave vendors and customers **login screens**, token storage in memory, and protected routes in React. A vendor can reach a stub page in the browser — but the **server** still trusts any authenticated user with any store id if you write a naive route. Chapter 8 moves the guardrails to the **API**: who may call which endpoint, and who owns which store document. Frontend auth proved identity; this chapter proves **permission**.
@@ -36,31 +51,37 @@ Chapter 6–7 gave everyone a **badge** (JWT) that says their name and role. Tha
 
 <FaqItem question="We already have `requireAuth` — isn't that enough?">
 
-No. `requireAuth` only answers "who is this?" A logged-in Vendor B could still `PATCH /stores/vendor-a-id` unless you check ownership. Authentication and authorization are separate layers.
+No, and it's an easy mix-up because the two words sound so similar. `requireAuth` answers "who is this?" — it checks the JWT, puts `req.user.id` and `req.user.role` on the request, and returns 401 when the token is missing or invalid. It says nothing about what that user may *do*. Authorization is the next question: "is this specific person allowed to PATCH this specific store?" A logged-in Vendor B could still send `PATCH /stores/vendor-a-id` and succeed if you only check the token. Think of `requireAuth` as checking you have a badge; authorization checks the badge opens *this* door.
+
+</FaqItem>
+
+<FaqItem question="What's the difference between `requireAuth` and `requireRole`?">
+
+`requireAuth` asks "are you someone?" and returns 401 when the token is missing or invalid. `requireRole('vendor')` asks "are you a vendor?" and returns 403 when you're someone, but not the right *kind* of someone — a customer who logged in fine clears `requireAuth` and then gets 403 from `requireRole`. So 401 means "I don't know who you are", and 403 means "I know who you are, and I'm still refusing." That distinction matters in the browser too: a 401 usually triggers a refresh or re-login flow, while a 403 should just show "not allowed" — retrying won't change anything.
 
 </FaqItem>
 
 <FaqItem question="Why 403 instead of 404 when Vendor B hits Vendor A's store?">
 
-Both hide data from attackers. This course uses **403** with a clear message while learning — you can switch to generic 404 in production. The important part is **blocking**, not the exact status code.
+Both hide data from attackers, but they reveal different things. A 404 says "this resource doesn't exist"; a 403 says "this exists, and I'm not letting you touch it". The course uses 403 with a clear message while you're learning so you can *see* the ownership check fire — much easier to debug than a wall of silence. In production you might switch to a generic 404 so attackers can't confirm a store with that id exists at all. Either way, the important part is blocking; the exact code is a policy choice your matrix should document.
 
 </FaqItem>
 
 <FaqItem question="Do I need authorization on GET requests too?">
 
-For **vendor-private** reads (my store, my products), yes. For **public** catalogue reads in Week 3, unauthenticated GET is intentional — different rules, documented in your matrix.
+It depends what the GET is for. Vendor-private reads — "my store", "my products" — must be guarded exactly like writes, because leaking another vendor's data through a read is still a breach. Public catalogue reads in Week 3 are the opposite: unauthenticated GET is intentional, so shoppers can browse without accounts. The point is you decide per-route and write that decision in your matrix instead of assuming reads are harmless. An attacker reading Vendor A's store details through `GET /stores/:id` doesn't need to *change* anything to cause real damage.
 
 </FaqItem>
 
 <FaqItem question="Is this only for vendors?">
 
-Vendors are the highest-risk actors in a marketplace (many owners, shared platform). Customers need scoping too — cart and orders in later chapters — but store/product isolation starts here.
+No — authorization applies to every role, but vendors are the highest-risk actors in a marketplace because many sellers share one platform and each owns documents (their store, their products). If customers could read or mutate each other's carts and orders in later chapters, that's the same bug, just a different resource. The course starts the pattern here with store and product isolation because the damage is most obvious, and your `docs/AUTHORIZATION.md` matrix already documents customer scoping so the same discipline carries forward to Week 3.
 
 </FaqItem>
 
 <FaqItem question="Can I skip the matrix doc and just code middleware?">
 
-Don't. `docs/AUTHORIZATION.md` is your contract for every later chapter. Without it, each route invents its own rules and IDOR bugs slip in.
+Please don't. `docs/AUTHORIZATION.md` is the contract every later chapter relies on — for each action it records which roles may call it and which ownership check applies. Without it, each route invents its own rules: one guard checks the store, another forgets, and IDOR bugs slip in exactly where nobody wrote the rule down. Think of it as the floor plan for a building's locks: the locks (middleware) matter, but the map tells you which door gets which lock — and it's how you prove to yourself and reviewers that no route was missed.
 
 </FaqItem>
 
@@ -107,14 +128,24 @@ Estimated: **1 day**
 
 - [ ] Ch 7 gate — two vendor seed accounts login via UI or curl
 - [ ] Understand User → Store → Product chain from Ch 5
+- [ ] You can explain why ProtectedRoute alone does not stop curl IDOR
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P586XMHJKSKBP21WA10N" />
+<OpenQuestion id="01KZAX76JXAZ9S7X58EE689TDE" />
 
 ## Next
 
 **Sub-chapter 8.2:** IDOR and marketplaces — Vendor B edits Vendor A's store.
 
 Identity established — permission boundaries next.
+
+&lt;ChapterRecap
+  points=&#123;[
+    "Chapter 7 proved identity in the browser — Chapter 8 proves permission on the API",
+    "requireAuth answers who; requireRole and ownership answer what they may touch",
+    "IDOR is the core marketplace risk — Vendor B must get 403 on Vendor A's store",
+    "docs/AUTHORIZATION.md becomes the contract for every route in Weeks 2–4"
+  ]&#125;
+/>

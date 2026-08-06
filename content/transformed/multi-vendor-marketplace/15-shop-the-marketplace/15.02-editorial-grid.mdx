@@ -21,6 +21,8 @@ This sub-chapter defines the **card contract** you implement in 15.6 and consume
 
 ## Product card — required elements
 
+A customer decides "should I look closer?" in seconds — so every card needs exactly these five elements, each mapped to an API field:
+
 | Element | Source field | Notes |
 |---|---|---|
 | Photo | `imageUrl` | Placeholder if missing — grey or icon |
@@ -44,6 +46,8 @@ Use CSS grid or flex — no UI library mandated. Consistent gap between cards.
 **Image aspect ratio:** square or 4:3 with `object-fit: cover` — avoids layout jump when Cloudinary images vary.
 
 ## Empty and loading states
+
+The grid must never look broken — every non-ideal situation has a defined UI:
 
 | State | UI |
 |---|---|
@@ -73,6 +77,8 @@ Editorial = restraint — not 12 badges per card.
 
 ## Accessibility
 
+Good cards are keyboard-friendly and readable by screen readers — these three rules cover the shop page:
+
 - `alt` on images — product name or empty alt if decorative with visible title  
 - Card link keyboard focusable  
 - Filter controls labeled  
@@ -96,7 +102,7 @@ Editorial = restraint — not 12 badges per card.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5F40BQ1XTDKSH4YSQX1" />
+<OpenQuestion id="01KZAX77RFYBQQJNKGXCSDXCZP" />
 
 ## Next
 

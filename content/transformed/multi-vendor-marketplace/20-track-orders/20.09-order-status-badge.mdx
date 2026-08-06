@@ -6,6 +6,8 @@ summary: "**Why this step matters:** One shared badge component keeps status lab
 ---
 **Why this step matters:** One shared badge component keeps status labels consistent across confirmation, customer history, and vendor inbox — without it, the same order shows "Pending" in one place and "pending" in another.
 
+**Where the project is now:** Confirmation (20.6), customer history (20.7), and vendor inbox (20.8) render status strings — each page formats them differently.
+
 **After this step:** Orders display **status** consistently — `pending` → `packed` → `dispatched` (or your enum).
 
 ## Component contract
@@ -58,8 +60,8 @@ Badge text readable — not color-only. `aria-label` includes status name.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5M0DDYSD6Q687N5YKFV" />
+<OpenQuestion id="01KZAX78MQZWC0Z7NWV45YWGG6" />
 
 ## Next
 
-**Sub-chapter 20.10:** Vendor update status.
+**Sub-chapter 20.10:** Vendor update status — the badge only means something once vendors can actually move an order through pending → packed → delivered.

@@ -2,9 +2,11 @@
 title: "Cache bust on product save"
 module: 21
 lesson: 11
-summary: "**Why this step matters:** Without invalidation, your fast cache serves wrong prices — the stale trap from 20.2 becomes a real bug. This step is what makes caching **safe** for a marketplace, not just fast."
+summary: "**Why this step matters:** Without invalidation, your fast cache serves wrong prices — the stale trap from 21.2 becomes a real bug. This step is what makes caching **safe** for a marketplace, not just fast."
 ---
-**Why this step matters:** Without invalidation, your fast cache serves wrong prices — the stale trap from 20.2 becomes a real bug. This step is what makes caching **safe** for a marketplace, not just fast.
+**Why this step matters:** Without invalidation, your fast cache serves wrong prices — the stale trap from 21.2 becomes a real bug. This step is what makes caching **safe** for a marketplace, not just fast.
+
+**Where the project is now:** Catalogue reads are cached (21.9) — product saves never touch the cache, so stale prices serve until expiry.
 
 **After this step:** Product POST/PATCH/DELETE invalidates catalogue cache keys — next GET reflects changes.
 
@@ -39,7 +41,7 @@ If step 3 shows old price — invalidation not wired or wrong key pattern.
 
 ## ✅ Do / ❌ Don't
 
-**✅ Do:** Test price change specifically — 20.2 trap.
+**✅ Do:** Test price change specifically — 21.2 trap.
 
 **✅ Do:** Invalidate even if only stock changed — list may filter in-stock.
 
@@ -53,8 +55,8 @@ If step 3 shows old price — invalidation not wired or wrong key pattern.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5N0JYZ5J0T1KH7ESFFQ" />
+<OpenQuestion id="01KZAX78SZRK73K3QMT49XXT8M" />
 
 ## Next
 
-**Sub-chapter 21.12:** Text index.
+**Sub-chapter 21.12:** Text index — writes invalidate the cache; search is the next read path that needs the same treatment.

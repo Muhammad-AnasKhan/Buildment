@@ -8,6 +8,8 @@ Route **naming and mount order** prevent accidental exposure of vendor inventory
 
 ## Namespace strategy
 
+The same `products` resource is spoken to by two very different audiences: a vendor managing their inventory, and a customer browsing the catalogue. Giving each audience its own namespace keeps their rules separate — you protect vendor routes with auth while leaving public routes open, without ever mixing the two stacks in one path.
+
 | Namespace | Mount | Chapter |
 |---|---|---|
 | Vendor writes | `/api/products` POST, PATCH, DELETE | 11 |
@@ -20,6 +22,8 @@ Register routers so **vendor-specific paths** (`/vendor/products`) are not captu
 
 ## Router organization options
 
+Express gives you two ways to organize the same code, and the choice is about future maintenance more than today's feature. One router keeps everything in one file while it is small; split routers isolate the public surface from the vendor surface as the app grows.
+
 | Option | Structure |
 |---|---|
 | A — single products router | All verbs in `products.routes.js` |
@@ -28,6 +32,8 @@ Register routers so **vendor-specific paths** (`/vendor/products`) are not captu
 **Course default:** Option A for Ch 11 — add public GET handlers in same module Ch 14 with clear comments.
 
 ## Middleware stacks
+
+Every vendor route runs the full security stack from Chapter 8 — the middleware does not care whether the resource is a store or a product, which is exactly why it is reusable. Notice that `GET /vendor/products` and the write routes carry the same auth layers; the only new check is ownership on routes that touch a specific product id.
 
 | Route | Middleware |
 |---|---|
@@ -40,6 +46,8 @@ Customer calling vendor routes → **403**.
 
 ## Ownership check strategies
 
+A product is owned *through* its store. There are two ways to check that chain, and the difference is where the `vendorId` lives — on the store document (the ERD's single source of truth) or copied onto the product. Duplicating it is faster but invites drift; the store chain keeps one source of truth.
+
 | Strategy | How |
 |---|---|
 | **Store chain** | Load product → compare `product.storeId` → store.vendorId === userId |
@@ -51,6 +59,8 @@ Helper name examples: `assertProductOwner`, `assertStoreOwnsProduct`.
 
 ## Body tampering vectors
 
+A naive POST /products lets the client dictate *whose* store the product belongs to — the exact hole Chapter 8 taught you to close. The rules below are the authorization contract for the request body, and each one is enforced server-side, not by hiding fields in the UI.
+
 | Field | Rule |
 |---|---|
 | `storeId` | Strip from POST/PATCH body — set on create from vendor's store |
@@ -59,11 +69,15 @@ Helper name examples: `assertProductOwner`, `assertStoreOwnsProduct`.
 
 ## Response shapes
 
+The vendor and public views of a product differ deliberately: back office returns the full document, while the shop window (Chapter 14) will trim internal fields. Deciding this now means Chapter 14 adds a serializer instead of rewriting the route.
+
 **Vendor list item:** full product document for own inventory.
 
 **Public item (Ch 14):** may omit internal fields — not defined here.
 
 ## AUTHORIZATION.md rows
+
+These four rows are the chapter's contract — the same shape as Chapter 8, now applied to products. Add them to `docs/AUTHORIZATION.md` before building, then the routes simply implement what the matrix already promised.
 
 | Action | Role | Check |
 |---|---|---|
@@ -71,6 +85,13 @@ Helper name examples: `assertProductOwner`, `assertStoreOwnsProduct`.
 | GET /vendor/products | vendor | auth + store scope |
 | PATCH /products/:id | vendor | auth + product ownership |
 | DELETE /products/:id | vendor | auth + product ownership |
+
+## Common beginner mistakes
+
+1. **Mounting `/products/:id` before `/vendor/products`** — Express matches in order, so `vendor` gets parsed as a product id. Mount the more specific path first.
+2. **Accepting `storeId` in the body** — a vendor can quietly create a product in another vendor's store. Derive `storeId` from the token.
+3. **Adding the public `GET /products` in Chapter 11** — you do not have the draft/published filtering yet, and shipping it now means rebuilding it in Chapter 14.
+4. **Skipping the ownership check "because POST already validates the vendor"** — the check that stops Vendor B editing Vendor A's product is `assertProductOwner`, not the role check.
 
 ## ✅ Do / ❌ Don't
 
@@ -82,10 +103,16 @@ Helper name examples: `assertProductOwner`, `assertStoreOwnsProduct`.
 
 **❌ Don't:** Let vendor pass another store's id in POST body.
 
+## Self-check
+
+- [ ] I can explain why `/vendor/products` and `/products` are separate route prefixes
+- [ ] I can say where the vendor scope comes from (JWT, not the request body)
+- [ ] I know why `/vendor/products` must mount before a `/products/:id` pattern
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5B29ZZ012VP6RCS93YF" />
+<OpenQuestion id="01KZAX77331SGKHFY86AZE479C" />
 
 ## Next
 

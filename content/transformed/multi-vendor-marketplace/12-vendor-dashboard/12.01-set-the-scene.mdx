@@ -35,31 +35,37 @@ Chapter 11 built the **warehouse computer system** for inventory. Chapter 12 put
 
 <FaqItem question="Why UI after API again — didn't we do this with stores?">
 
-Yes — intentional pattern: 9→10 for shops, 11→12 for products. API contract frozen; UI adapts to your response shapes.
+Yes — and it's intentional, not accidental. The course pairs every backend chapter with a frontend chapter for the same feature: 9→10 for shops, 11→12 for products. The API comes first because it's the contract: once `GET /vendor/products` returns a known JSON shape, the UI is built against something fixed instead of something you're still inventing. When a button misbehaves, you can curl the endpoint and know whether the problem is server or client. Same rhythm, second resource.
 
 </FaqItem>
 
 <FaqItem question="Do I need a fancy table library?">
 
-No. A plain HTML table is fine for MVP. Focus on wiring and error handling, not DataGrid features.
+No — a plain HTML table is fine for this chapter. Your inventory list is name, price, unit, stock, status, and actions; a small `map` over the API response does that without adding a dependency. DataGrid-style libraries are powerful, but they bring their own learning curve, virtual scrolling, and theming — all noise when the real goal is wiring the list to `GET /vendor/products`. Focus on the data flow and error handling; you can swap in a library later without touching the API.
 
 </FaqItem>
 
 <FaqItem question="Where do photos go?">
 
-Chapter 13. This chapter is text fields only — name, price, unit, stock. Don't mix upload debugging with form routing.
+Chapter 13. This chapter is text fields only — name, price, unit, stock — plus the publish flag. Image upload adds a whole separate debugging axis (file input, multipart or base64, Cloudinary, URL handling), and mixing it with form routing makes both harder to debug. Chapter 12's gate is a working inventory flow: create a draft, edit it, publish it. When photos arrive next chapter, they slot into the form you already built. Resist the urge to sneak upload in now.
 
 </FaqItem>
 
 <FaqItem question="What if publish fails with 403?">
 
-Usually a token or ownership bug — not a UI bug. Verify you're editing **your** product id with **your** vendor token.
+403 means the server knows who you are but refuses the action — so this is usually a token or ownership bug, not a UI bug. Check that you're editing *your* product id with *your* vendor token: if the product belongs to Vendor A's store and the request carries Vendor B's token, the ownership guard from Chapter 11 is correctly blocking it. Also check the token isn't stale. Rule of thumb: 400 is a form problem, 401 is "log in again", 403 is "wrong account or wrong resource" — and a 403 on your own product means the ownership chain is wired wrong somewhere.
 
 </FaqItem>
 
 <FaqItem question="Can customers see the vendor dashboard?">
 
-No. `/vendor/*` routes require vendor role and (from Ch 10) an existing store.
+No. Everything under `/vendor/*` requires the vendor role and, from Chapter 10, an existing store — the route guard checks both before rendering. A customer who navigates to `/vendor/products` is redirected or blocked at the router level, and the server reinforces it: Chapter 11's product routes return 403 for non-vendors. The dashboard is a back office for sellers; customers get the catalogue, cart, and checkout in Week 3. Defense is layered — the UI hides it, and the API refuses it even if the UI is bypassed.
+
+</FaqItem>
+
+<FaqItem question="What does \"error mapping\" mean?">
+
+It means translating an API error into a message that makes sense where the user is. When `POST /products` fails, the server returns a status code and maybe a validation message — but "400" or "ValidationError" means nothing to a vendor mid-form. The UI maps the response *by field*: if `unit` is missing, show "Unit is required" under the Unit input, not one vague alert at the top. It's a small touch that separates polished apps from prototypes, and it's one of the few places in the UI that actually reads error data instead of just displaying it.
 
 </FaqItem>
 
@@ -138,7 +144,7 @@ Estimated time: **1–1.5 days**.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5BXBXCK24P5J2S10PKZ" />
+<OpenQuestion id="01KZAX7777H3J9E9MAYQ1BTF7Z" />
 
 ## Next
 

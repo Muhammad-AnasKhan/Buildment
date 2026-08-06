@@ -4,9 +4,9 @@ module: 11
 lesson: 10
 summary: "The vendor back office needs inventory visibility — drafts and published together. `GET /vendor/products` filters by the caller's store only. Chapter 12's product table calls this endpoint; Chapter 14's public catalogue is a different route with different filters."
 ---
-## Why this step matters
+**Why this step matters:** The vendor back office needs inventory visibility — drafts and published together. `GET /vendor/products` filters by the caller's store only. Chapter 12's product table calls this endpoint; Chapter 14's public catalogue is a different route with different filters.
 
-The vendor back office needs inventory visibility — drafts and published together. `GET /vendor/products` filters by the caller's store only. Chapter 12's product table calls this endpoint; Chapter 14's public catalogue is a different route with different filters.
+**Where the project is now:** Vendors can create products (11.9) but have no way to list their own inventory.
 
 **After this step:** `GET /api/vendor/products` returns **200** array of products for authenticated vendor's store only — includes drafts and published.
 
@@ -87,8 +87,8 @@ git commit -m "feat(products): add GET vendor products scoped to store"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5BJW7T5B10G82EBAD5A" />
+<OpenQuestion id="01KZAX7752YMZS0NR96RRCFW4M" />
 
 ## Next
 
-**Sub-chapter 11.11:** Update product route.
+**Sub-chapter 11.11:** Update product route — vendors can list products; the next need is editing price, stock, and publish state.

@@ -21,6 +21,8 @@ A marketplace catalogue without pagination returns every product in one response
 
 ## Offset pagination contract
 
+Three numbers do all the work. Everything else — metadata, UI, caching — derives from these.
+
 | Param | Meaning |
 |---|---|
 | `page` | 1-based index |
@@ -31,7 +33,7 @@ A marketplace catalogue without pagination returns every product in one response
 
 ## Response metadata
 
-Every list response includes:
+Every list response carries the same five fields, so the client never has to guess.
 
 | Field | Source |
 |---|---|
@@ -44,6 +46,8 @@ Every list response includes:
 Client (Chapter 15) uses `totalPages` for page controls or "load more" math.
 
 ## Defaults and caps
+
+Four rules keep the API predictable under bad input. The last one surprises beginners — out-of-range pages are not errors.
 
 | Rule | Value |
 |---|---|
@@ -124,7 +128,7 @@ Preserve query string when user changes filters — URL sync optional stretch.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5E6RMF9V96B8YD1X28N" />
+<OpenQuestion id="01KZAX77KM6WB3M8DT2YA7X9GK" />
 
 ## Next
 

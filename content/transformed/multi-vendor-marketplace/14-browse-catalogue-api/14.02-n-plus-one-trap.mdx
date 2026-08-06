@@ -53,6 +53,8 @@ Course gate: **populate or aggregate** — fix N+1; verify count.
 
 ## Symptoms in production
 
+N+1 rarely shows up in dev — here's what it looks like when real users hit it:
+
 | Symptom | Cause |
 |---|---|
 | p95 latency grows with catalogue size | Linear query count |
@@ -124,7 +126,7 @@ Weak answer: "Mongoose is fast" with no measurement.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5DZVCY3JW6K8N90G2PZ" />
+<OpenQuestion id="01KZAX77JCP1A1ZRSFYB0J89PW" />
 
 ## Next
 

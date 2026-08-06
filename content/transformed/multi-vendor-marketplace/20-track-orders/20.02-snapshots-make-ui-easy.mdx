@@ -10,6 +10,8 @@ Chapter 18 embedded `nameAtPurchase`, `priceAtPurchase`, and `unitAtPurchase` on
 
 ## Why snapshots matter for beginners
 
+Three tempting shortcuts exist, and all three corrupt the receipt. This is the "wrong way" table — read it to recognize the trap, then never build it.
+
 | Approach | What goes wrong |
 |---|---|
 | Show `product.price` from live lookup | Vendor changes milk from ₹65 → ₹70 — last week's receipt shows ₹70 |
@@ -19,6 +21,8 @@ Chapter 18 embedded `nameAtPurchase`, `priceAtPurchase`, and `unitAtPurchase` on
 **Snapshots freeze the truth at purchase time.** The order document is a **receipt**, not a live view of the catalogue.
 
 ## Render contract — order line row
+
+Every row in every order UI reads the same embedded fields. There is no alternative source for these values.
 
 | Display | Source field |
 |---|---|
@@ -30,6 +34,8 @@ Chapter 18 embedded `nameAtPurchase`, `priceAtPurchase`, and `unitAtPurchase` on
 **Forbidden for price display:** `product.price` from populate.
 
 ## Order header row
+
+The header layer adds context around those lines — store, total, date, status — none of which come from the product catalogue.
 
 | Display | Source |
 |---|---|
@@ -66,21 +72,33 @@ A paper receipt prints the price **that day**. If the shop raises prices next we
 
 <FaqGroup>
 
-<FaqItem question="Can I populate product for a photo on history rows?">
+<FaqItem question="Why not just store `productId` and look up the current price when rendering?">
 
-Optional stretch. Gate does not require it. If you do, photo is cosmetic — price still comes from snapshots.
+Because prices change, and a receipt must not change after the sale. This is the price snapshot trap from Chapter 18.2: if milk is ₹65 on the day of purchase and the vendor raises it to ₹70 next week, a live lookup would show last week's order at the new price — and the total wouldn't match what was actually paid. That's why Chapter 18 embedded `nameAtPurchase`, `priceAtPurchase`, and `unitAtPurchase` on each order line. The order document is a receipt, not a live view of the catalogue.
+
+</FaqItem>
+
+<FaqItem question="Why is fetching one product per order line such a bad idea?">
+
+Because a 10-line order turns into 10 extra requests — the "N+1 problem", where N is the number of lines. Every extra request adds latency and another chance to fail, and a busy history page multiplies that. Worse: if a product is deleted, that request 404s and the whole row breaks even though the customer genuinely bought the item. Snapshots avoid all of it — the list endpoint becomes the only read needed, returning everything the UI requires in a single response.
+
+</FaqItem>
+
+<FaqItem question="What if the vendor deletes a product I bought?">
+
+Nothing breaks — and that's the whole point of snapshots. The receipt line renders from `nameAtPurchase` and `priceAtPurchase` stored on the order, so it survives even if the product is unpublished or deleted. The `productId` link behind a "View product" button might 404, but the line still displays correctly. That's a feature, not a bug: the customer keeps proof of what they bought even when the vendor delists the item — a protection a live price lookup could never give.
 
 </FaqItem>
 
 <FaqItem question="What if `nameAtPurchase` is missing on an old test order?">
 
-Re-seed or re-checkout. Your UI should handle missing fields gracefully (show "Unknown item") but gate data should have snapshots from Ch 18.
+That shouldn't happen for real orders — Chapter 18 writes the snapshot fields on every line — but orders created before that chapter won't have them. Fix it by re-seeding or re-checking out so your gate data has snapshots, and make your UI handle a missing field gracefully anyway, rendering something like "Unknown item" instead of crashing. Handling missing optional fields without breaking a row is good practice in every UI, not just this one.
 
 </FaqItem>
 
-<FaqItem question="Why not just store `productId` and look up current price?">
+<FaqItem question="Can I use `populate` to get the store name for the order header?">
 
-That was the **price snapshot trap** in Chapter 18.2 — the whole reason embedded snapshots exist.
+Yes — that's the one join that's fine. Populating `storeId.name` (or `store.name`) is a single lookup per order rather than per line, and store names change rarely, so there's no stale-price problem. The rule to remember: populate for the order **header** is fine; fetching live product data for **line prices** is forbidden. Because both the customer history and the vendor inbox read the same embedded `orderItems` shape, you build one `OrderLineRow` component and reuse it everywhere.
 
 </FaqItem>
 
@@ -106,7 +124,7 @@ That was the **price snapshot trap** in Chapter 18.2 — the whole reason embedd
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5KHAZ032PJR7N3P7XSK" />
+<OpenQuestion id="01KZAX78HZVMXG5PWBRRXP9M6T" />
 
 ## Next
 

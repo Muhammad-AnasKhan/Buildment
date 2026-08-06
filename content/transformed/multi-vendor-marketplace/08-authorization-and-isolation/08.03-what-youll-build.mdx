@@ -6,7 +6,11 @@ summary: "Chapter 8 adds **authorization infrastructure** and proves it with a s
 ---
 Chapter 8 adds **authorization infrastructure** and proves it with a stub store route and two-vendor IDOR test.
 
+Chapter 7 proved *who you are* (identity) in the browser. That's not enough: knowing a user is a vendor says nothing about whether they may touch *this* store's data. This chapter adds the second half of security — *what you're allowed to do* — and ships it as reusable middleware so every future route gets the same check instead of hand-rolled per-route code.
+
 ## Deliverables
+
+Six deliverables, and they split cleanly into two kinds: **design artifacts** (the authorization matrix) and **enforceable code** (middleware, helper, stub routes). The design comes first — the matrix drives which middleware you write, not the other way around.
 
 | Deliverable | Location |
 |---|---|
@@ -19,11 +23,15 @@ Chapter 8 adds **authorization infrastructure** and proves it with a stub store 
 
 ## Stub route scope
 
+This chapter proves the *checks*, not the CRUD. You build just enough of the store route to demonstrate that the ownership check fires before any data changes — the full store API arrives in Chapter 9.
+
 **Not** full store CRUD — Chapter 9 adds POST, GET /me, full PATCH body.
 
 Chapter 8 PATCH may accept minimal body `{ name: "..." }` — enough to prove ownership check runs **before** service mutates document.
 
 ## Middleware stack order
+
+Each request passes through guards in a strict sequence. The order is not arbitrary: you must know *who* is calling before you can check *what role* they have, and you must know their role before you can check whether a resource is theirs.
 
 ```
 requireAuth → requireRole('vendor') → assertStoreOwnerParam → handler
@@ -32,6 +40,8 @@ requireAuth → requireRole('vendor') → assertStoreOwnerParam → handler
 Order matters: auth before role before ownership.
 
 ## docs/AUTHORIZATION.md structure
+
+A written authorization matrix is a live contract, not documentation theater. It lets you (and your mentor) check *every* route at a glance and catches gaps like "oh, we never decided who can delete a product." The six sections below are the minimum for this course.
 
 1. Introduction — authn vs authz  
 2. Roles: vendor, customer  
@@ -44,6 +54,8 @@ Build matrix in **8.8** before middleware — design before code.
 
 ## Status code contract
 
+The client's 401-refresh loop (Chapter 7) depends on these codes meaning exactly one thing each. Lock them in writing here so Chapters 9–11 use the same convention.
+
 | Situation | Status |
 |---|---|
 | No/invalid token | 401 |
@@ -52,6 +64,8 @@ Build matrix in **8.8** before middleware — design before code.
 | Valid token, owner, bad body | 400 |
 
 ## Out of scope this chapter
+
+Three things are deliberately deferred so this chapter stays focused on the pattern itself — you will apply it again, almost unchanged, to products in Chapter 11.
 
 - Product PATCH isolation — Ch 11 repeats pattern  
 - Admin role — not in course  
@@ -68,7 +82,7 @@ Build matrix in **8.8** before middleware — design before code.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P58AV3A7QPQDVE8965DE" />
+<OpenQuestion id="01KZAX76KSHF5T0TJ5W6CDM73M" />
 
 ## Next
 

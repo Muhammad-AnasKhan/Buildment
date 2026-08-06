@@ -8,6 +8,8 @@ summary: "**Insecure Direct Object Reference (IDOR)** — also called **BOLA** (
 
 ## Classic attack
 
+IDOR is the most boring-looking attack in security — no malware, no exploit, just a changed number. That is exactly why it is so common: it needs nothing more than a logged-in user and a guessable id. Watch how it plays out:
+
 Vendor A is authenticated. Legitimate request:
 
 ```
@@ -26,7 +28,11 @@ Authorization: Bearer <vendor A token>
 
 **Secure API:** **403 Forbidden** — ownership check failed.
 
+The id in the URL is just a *reference*. The question every route must answer is: "whoever holds this id — do they own it?" If that check is missing, the reference becomes a key to anyone's data.
+
 ## Why marketplaces are high risk
+
+Marketplaces are a special target because every resource is *someone else's* money. The impact column below is why the OWASP API Top 10 ranks this as the #1 API risk — not because it is clever, but because it is trivial to exploit and devastating when it lands.
 
 | Resource | IDOR impact |
 |---|---|
@@ -38,6 +44,8 @@ Authorization: Bearer <vendor A token>
 One missing check on PATCH becomes front-page incident.
 
 ## Auth without authorization fails
+
+Authentication gets you *into the building*; it says nothing about which rooms you may enter. If your pipeline stops after auth, every authenticated user can reach every resource — which, in a marketplace, means every vendor can reach every other vendor's shop.
 
 ```
 ✅ requireAuth — proves token valid
@@ -51,9 +59,13 @@ All three layers for mutating vendor resources.
 
 ## Real-world pattern
 
+In a real breach, the API returns 200 with a generic message and the attacker just walks id-by-id, harvesting everything reachable. Consistent, unambiguous status codes are part of the defense — 403 tells the client (and your logs) exactly what happened.
+
 API returns 200 with generic message — attacker enumerates ids. Use **403** consistently; optional 404 to hide existence — course uses **403** for clarity in tests.
 
 ## FreshMarket test scenario (8.13)
+
+The proof of the whole chapter fits in one table: two vendors, one store, one forbidden request. Running this scenario after *every* chapter that adds mutating routes keeps the pattern honest.
 
 | Step | Actor | Action | Expected |
 |---|---|---|---|
@@ -66,7 +78,14 @@ Document store ids in test notes — not secrets.
 
 ## Client is not trusted
 
-Hidden form fields, React props, disabled buttons — attacker uses curl. **Every mutating route validates server-side.**
+A common beginner assumption is that the UI *is* the security: "I hid the edit button, so nobody can edit." Hidden form fields, React props, and disabled buttons are all trivially bypassed — the attacker does not use your UI at all, they use curl. **Every mutating route validates server-side.**
+
+## Common beginner mistakes
+
+1. **Relying on "secret" ids** — MongoDB ObjectIds look random, but they are guessable and often leak through other endpoints. Obscurity is a speed bump, not a lock.
+2. **Checking ownership in the UI only** — hiding the button is UX, not security; the API must reject the request itself.
+3. **Returning 401 for a wrong owner** — the user *is* authenticated; a 401 triggers the client's refresh loop and hides the real problem. Wrong owner is 403.
+4. **Only testing the happy path** — the IDOR test (Vendor B on Store A) is the test that matters; if you only ever test with the owner, the missing check goes unnoticed.
 
 ## ✅ Do / ❌ Don't
 
@@ -80,7 +99,7 @@ Hidden form fields, React props, disabled buttons — attacker uses curl. **Ever
 
 ## Reflect
 
-<OpenQuestion id="01KZ63P588GVGFZG40ZCJMWW15" />
+<OpenQuestion id="01KZAX76KBY9ANNM5X73YXWH82" />
 
 
 

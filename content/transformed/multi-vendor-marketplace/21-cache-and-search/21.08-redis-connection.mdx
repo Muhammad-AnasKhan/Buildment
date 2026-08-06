@@ -6,7 +6,9 @@ summary: "**Why this step matters:** Every cache and queue feature in Chapters 2
 ---
 **Why this step matters:** Every cache and queue feature in Chapters 20–21 shares one Redis connection module — wire it once correctly here and both chapters inherit the same `REDIS_URL` discipline.
 
-**After this step:** `server/src/shared/redis.js` connects to Redis from `REDIS_URL`; fails gracefully or logs warning per 20.14 strategy.
+**Where the project is now:** Every `GET /products` hits MongoDB (Ch 14–15); no Redis dependency or connection module exists.
+
+**After this step:** `server/src/shared/redis.js` connects to Redis from `REDIS_URL`; fails gracefully or logs warning per 21.14 strategy.
 
 ## Env contract
 
@@ -15,7 +17,7 @@ summary: "**Why this step matters:** Every cache and queue feature in Chapters 2
 REDIS_URL=redis://127.0.0.1:6379
 ```
 
-Add to `config.js` validation — **optional** for dev if fallback required, or **required** if you want fail-fast. Course gate requires **fallback when down** (20.14) — optional URL with `getRedisClient()` returning null is valid pattern.
+Add to `config.js` validation — **optional** for dev if fallback required, or **required** if you want fail-fast. Course gate requires **fallback when down** (21.14) — optional URL with `getRedisClient()` returning null is valid pattern.
 
 ## redis.js exports — spec
 
@@ -54,8 +56,8 @@ git commit -m "feat(server): add redis connection module"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5MP8QXCHTYSVQK1HWK5" />
+<OpenQuestion id="01KZAX78S13BEY7NRJHMYMBW7J" />
 
 ## Next
 
-**Sub-chapter 21.9:** Cache catalogue middleware.
+**Sub-chapter 21.9:** Cache catalogue middleware — Redis connects; now wrap the read path so the cache is actually used.

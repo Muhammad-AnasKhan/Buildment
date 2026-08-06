@@ -8,6 +8,8 @@ Chapter 11 completes **vendor product CRUD on the API** — create on own store,
 
 ## Narrative recap
 
+Each line below is a *decision* you made, not just a file you created — if you can explain the reasoning behind any of them, the chapter has done its job.
+
 **Products module:** routes, service, schema wired to existing model.
 
 **POST /products:** storeId from vendor's store; grocery fields validated.
@@ -34,6 +36,8 @@ Client unchanged — Chapter 12.
 
 ## Viva prep
 
+Four questions, four one-breath answers. If you can answer these without opening your editor, you understand the chapter's core idea: the API serves two different audiences with one model and two entry points.
+
 1. **Two views of products?** — Vendor inventory (Ch 11) vs public catalogue (Ch 14).
 
 2. **Why GET /vendor/products?** — Token-scoped; no client storeId.
@@ -54,9 +58,11 @@ Client unchanged — Chapter 12.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5BSWPKAV8TGQQT39DQH" />
+<OpenQuestion id="01KZAX776JP00XY183YSN2MTGY" />
 
 ## Next — Vendor dashboard (Chapter 12)
+
+The API now has shelves with products on them; Chapter 12 builds the storefront window the vendor looks through. Every UI screen is a thin layer over an endpoint you just proved with curl — the same "verify with curl before blaming the browser" rhythm from Chapter 7.
 
 - Product table from GET /vendor/products  
 - Create form — grocery fields  
@@ -67,6 +73,8 @@ Client unchanged — Chapter 12.
 Pair chapter — API done; UI consumes it.
 
 ## Not built
+
+Three things deferred on purpose so Chapter 11 stays a pure-API chapter — each one gets its own focused chapter later.
 
 - Public GET /products — Ch 14  
 - Image upload — Ch 13  

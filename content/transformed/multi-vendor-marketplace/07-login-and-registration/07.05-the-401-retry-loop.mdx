@@ -18,21 +18,33 @@ Without retry logic, users get kicked to login every 15 minutes while grocery sh
 
 <FaqGroup>
 
-<FaqItem question="Should login 401 trigger refresh?">
+<FaqItem question="Should a 401 from the login form trigger a refresh?">
 
-No — wrong password is not expired token. Interceptor skips public auth routes.
-
-</FaqItem>
-
-<FaqItem question="Two API calls 401 at once?">
-
-Optional mutex shares one refresh promise — stretch acceptable to document duplicates.
+No — and mixing these up wastes hours. A 401 from `POST /api/auth/login` almost always means a wrong password, not an expired token; refreshing can't fix bad credentials and just fires a pointless call. That's why the interceptor only wraps authenticated requests and must skip public routes like login, register, verify-otp, and health. The rule: refresh only when a request *should* have carried a valid access token but the token was stale. Wrong password and expired session are different problems — keep them separate.
 
 </FaqItem>
 
-<FaqItem question="403 after retry — logout?">
+<FaqItem question="What if two requests 401 at the same time?">
 
-No — user is authenticated but not allowed; show error, keep session.
+Several requests can expire together — the boot refresh, a product list, and a cart call might all come back 401 in the same moment. If each one fires its own refresh, you get a burst of redundant calls. The clean fix is a mutex: the first 401 starts a single refresh promise, and every other request awaits that same promise before retrying. This is optional in this course — sequential refreshes still pass the gate — but if your Network tab shows duplicate refresh calls, note it in your learning log and consider adding the mutex.
+
+</FaqItem>
+
+<FaqItem question="After a retry I get 403 — should I log out?">
+
+No — 403 and 401 are different messages. 401 means "I don't know who you are," so a refresh is worth trying. 403 means "I know who you are, and you're not allowed to do this" — no token will fix it, and retrying would loop forever. The right move is to show a clear "you don't have permission" message and keep the session alive. In FreshMarket terms: a logged-in customer who clicks a vendor-only action gets 403. That's an authorization question, which arrives with Chapter 8 — not a login bug.
+
+</FaqItem>
+
+<FaqItem question="Why retry only once — what is the `_retried` flag for?">
+
+Without a "have I already tried?" marker, one stubborn 401 becomes an infinite loop: refresh, retry, 401 again, refresh, retry — hammering your API forever. The `_retried` flag is that marker. The retry passes with `_retried: true`, so if it still returns 401, the code knows refreshing didn't help and gives up: clear auth state, redirect to login. One retry is enough, because if the second attempt still fails, the problem isn't an expired token — it's something refreshing can never fix.
+
+</FaqItem>
+
+<FaqItem question="What happens when the refresh token itself expires?">
+
+Eventually every refresh token dies — that's its 7-day lifetime doing its job. When `POST /api/auth/refresh` itself returns 401, the session is genuinely over, so the code must not loop: clear the auth state, redirect to `/login` (optionally with a `session=expired` query for a friendly message), and let the user sign in again. This is the graceful end of the chain: access expired → refresh → refresh expired → logout. Anyone returning after a week away will land on exactly this path.
 
 </FaqItem>
 
@@ -40,6 +52,8 @@ No — user is authenticated but not allowed; show error, keep session.
 
 
 ## Algorithm
+
+Here is the full flow the API client runs for every request. Read it as a decision tree, not a script to memorize — the two branches you must internalize are "expired access token" (refresh fixes it) and "authenticated but forbidden" (refresh does *not* fix it).
 
 ```
 apiRequest(url, options):
@@ -61,11 +75,13 @@ apiRequest(url, options):
   return apiRequest(url, { ...options, _retried: true })
 ```
 
-**Critical:** `_retried` flag prevents infinite loop if refresh succeeds but original route still 401 (permission issue).
+**Critical:** the `_retried` flag prevents an infinite loop. Without it, a request that still returns 401 *after* a successful refresh (say, the user genuinely lacks permission on that route) would trigger another refresh, another retry, forever. One retry is enough — if the second attempt still 401s, the problem is not an expired token.
 
 ## Concurrent 401s
 
-Multiple requests expiring together may fire parallel refreshes. **Optional mutex:** first 401 starts refresh; others await same promise.
+Several requests can expire at the same moment — the app boot refresh, a product list, and a cart call may all come back 401 together. Without coordination, each one fires its own refresh, producing a burst of redundant calls. A mutex makes the first 401 start a single refresh promise and everyone else awaits it.
+
+Optional mutex: first 401 starts refresh; others await same promise.
 
 Stretch acceptable: sequential refresh calls — note in learning log if duplicate refresh seen.
 
@@ -80,15 +96,21 @@ Only 401 triggers refresh — not 403.
 
 ## Public routes
 
+Not every 401 means "your session expired." A wrong password on the login form also returns 401 — and refreshing would be pointless and harmful. The interceptor must know which endpoints are public so it never tries to refresh for them.
+
 Login, register, verify, health — **no** Bearer header, **no** refresh on 401 from wrong password.
 
 Interceptor applies to authenticated api client helper — not raw fetch on login form.
 
 ## Expired refresh
 
+Eventually the refresh token itself expires or is revoked. When `/api/auth/refresh` returns 401, the session is truly over — do not loop. Clear the auth state and send the user to the login screen.
+
 Refresh returns 401 → clear auth state → redirect `/login?session=expired` optional query.
 
 ## Testing
+
+This is one of the few flows you genuinely cannot eyeball — it only triggers when a token expires mid-session. So you force an early expiry to observe it. Set the access expiry short, wait it out, then watch the network tab for the exact three-step dance below.
 
 1. Login — set JWT_ACCESS_EXPIRY=30s on server temporarily  
 2. Wait — click protected action  
@@ -96,6 +118,13 @@ Refresh returns 401 → clear auth state → redirect `/login?session=expired` o
 4. User stays on page — no login flash  
 
 Document in learning log.
+
+## Common beginner mistakes
+
+1. **Refreshing on every 401, including 403 and wrong-password** — only *expired token* 401s should refresh; forbidden (403) is a different problem entirely.
+2. **No `_retried` flag** — one lucky 401-then-still-401 turns into an infinite refresh loop that hammers your API.
+3. **Retrying with the old access token** — the retry must use the *new* token or it 401s again instantly.
+4. **Blocking the whole UI on refresh** — several requests expire together; make others wait on one refresh promise instead of each re-fetching.
 
 ## ✅ Do / ❌ Don't
 
@@ -107,10 +136,16 @@ Document in learning log.
 
 **❌ Don't:** Infinite retry loops.
 
+## Self-check
+
+- [ ] I can describe the retry loop in one sentence: refresh once, replay, else logout
+- [ ] I can say why 403 must not trigger a token refresh
+- [ ] I know the two endpoints the interceptor must skip
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P57B68V99CMMS7F8C5VG" />
+<OpenQuestion id="01KZAX76DBVCKVCAK525JTAXPF" />
 
 ## Next
 

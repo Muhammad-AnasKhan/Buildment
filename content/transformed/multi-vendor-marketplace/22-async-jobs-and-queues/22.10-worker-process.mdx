@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Jobs enqueued without a running worker sit 
 ---
 **Why this step matters:** Jobs enqueued without a running worker sit in Redis forever — checkout "works" but nothing notifies. A separate worker entry is the architectural lesson of this chapter and a production requirement in Chapter 23.
 
+**Where the project is now:** `queue.js` can enqueue (22.9) but nothing consumes the queue — jobs would sit in Redis unprocessed.
+
 **After this step:** `server/src/worker.js` is a standalone entry that registers BullMQ `Worker`(s) and processes jobs. `npm run worker` starts it.
 
 ## worker.js responsibilities — spec
@@ -19,7 +21,7 @@ summary: "**Why this step matters:** Jobs enqueued without a running worker sit 
 | 5 | Log startup: `[worker] listening on queue notifications` |
 | 6 | Handle `SIGINT`/`SIGTERM` — `worker.close()` optional |
 
-**Processors** implemented in 21.12 — stub with log-only handler OK for first commit:
+**Processors** implemented in 22.12 — stub with log-only handler OK for first commit:
 
 ```javascript
 // illustrative router
@@ -68,7 +70,7 @@ cd server && npm run dev
 cd server && npm run worker
 ```
 
-Worker must stay running during 21.15 verification.
+Worker must stay running during 22.15 verification.
 
 ## Failure visibility
 
@@ -76,8 +78,8 @@ Worker must stay running during 21.15 verification.
 |---|---|
 | Worker starts | Queue name + Redis connected |
 | Job received | Job id + name |
-| Processor success | `[NOTIFY]` mock lines in 21.12 |
-| Processor throw | BullMQ retry log — configure in 21.14 |
+| Processor success | `[NOTIFY]` mock lines in 22.12 |
+| Processor throw | BullMQ retry log — configure in 22.14 |
 
 ## Commit
 
@@ -106,7 +108,7 @@ git commit -m "feat(server): add bullmq worker process"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5P49A8VQMM8W67AQGAD" />
+<OpenQuestion id="01KZAX78YWZS67AYK2F2ZZ096W" />
 
 ## Next
 

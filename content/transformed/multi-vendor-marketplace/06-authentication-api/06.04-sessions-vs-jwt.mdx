@@ -20,19 +20,19 @@ Sessions and JWT are not interchangeable labels — they change **where state li
 
 <FaqItem question="Are JWTs encrypted?">
 
-**Signed**, not encrypted — payload is readable; do not put secrets inside.
+No — they're *signed*, which is a different thing. Anyone with a token can decode the payload and read its contents (paste one into jwt.io to see). What they can't do is change it, because the signature only verifies if the payload is untouched. So never put secrets, passwords, or anything sensitive in a JWT — treat the payload as public and use the signature only as tamper-evidence.
 
 </FaqItem>
 
 <FaqItem question="Why short access token if refresh exists?">
 
-Limits damage if access token leaks from memory — attacker window is minutes, not days.
+To limit the blast radius of a leak. The access token is what the browser keeps in memory and sends with every request, so it's the most likely thing for a script to steal. If it's short-lived (say 15 minutes), a stolen token becomes useless almost immediately. The refresh token lives somewhere safer — an httpOnly cookie — and can be revoked server-side, which is why it can afford a long lifetime.
 
 </FaqItem>
 
 <FaqItem question="Why not sessions with Express default memory store?">
 
-Fine for tiny apps — does not scale across processes and teaches less about SPA Bearer patterns this course targets.
+For this course, two reasons. First, the default memory store keeps sessions in the server's RAM, so a second server process doesn't know about them — that falls over the moment you restart or scale. Second, the SPA + Bearer token pattern is what the rest of the course (and most real MERN apps) uses, so teaching that pattern here sets you up for the chapters ahead. Sessions are fine for tiny apps; they're just not the pattern this course is built on.
 
 </FaqItem>
 
@@ -100,6 +100,8 @@ Keep access payload minimal — reduces leakage if token stolen.
 
 ## Refresh token pattern
 
+The two tokens do very different jobs — one proves you're still logged in for minutes, the other proves you're still logged in for days:
+
 | | Access JWT | Refresh token |
 |---|---|---|
 | Lifetime | 15 minutes | 7 days |
@@ -110,6 +112,8 @@ Keep access payload minimal — reduces leakage if token stolen.
 **Rotation (recommended):** New refresh on each refresh call — invalidate old hash.
 
 ## Comparison table
+
+Side by side, the practical differences that matter on a real codebase:
 
 | Concern | Sessions | JWT access + refresh |
 |---|---|---|
@@ -136,7 +140,7 @@ Document in learning log:
 
 ## Reflect
 
-<OpenQuestion id="01KZ63P55WWJH0076HR3J5Q1HC" />
+<OpenQuestion id="01KZAX764HTVZVTFHEQNG60T59" />
 
 
 

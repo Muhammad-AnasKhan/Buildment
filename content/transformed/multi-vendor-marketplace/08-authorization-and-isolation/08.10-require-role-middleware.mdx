@@ -4,13 +4,39 @@ module: 8
 lesson: 10
 summary: "`requireAuth` tells you *who* called the API; `requireRole` tells you *what kind of user* they are. Without it, a customer token could hit vendor-only routes. This middleware is reused on every vendor feature through Week 2 — get the factory pattern right once."
 ---
-## Why this step matters
-
-`requireAuth` tells you *who* called the API; `requireRole` tells you *what kind of user* they are. Without it, a customer token could hit vendor-only routes. This middleware is reused on every vendor feature through Week 2 — get the factory pattern right once.
+**Why this step matters:** `requireAuth` tells you *who* called the API; `requireRole` tells you *what kind of user* they are. Without it, a customer token could hit vendor-only routes. This middleware is reused on every vendor feature through Week 2 — get the factory pattern right once.
 
 **Where the project is now:** requireAuth attaches req.user; routes do not check role.
 
 **After this step:** `requireRole(...roles)` returns **403** when authenticated user's role not in allowed list; passes through when match.
+
+## Why middleware order is not optional
+
+Authorization is a **stack of gates**. Each gate answers a different question. Skip or reorder one and the wrong user reaches your handler.
+
+```
+HTTP request
+    │
+    ▼
+┌─────────────────┐
+│  requireAuth    │  "Do I know who this is?"     → 401 if no
+└────────┬────────┘
+         ▼
+┌─────────────────┐
+│  requireRole    │  "Is this a vendor?"          → 403 if customer
+└────────┬────────┘
+         ▼
+┌─────────────────┐
+│ assertStoreOwner│  "Does this store belong      → 403 if Vendor B
+│                 │   to this vendor?"               on Vendor A's id
+└────────┬────────┘
+         ▼
+    handler
+```
+
+&lt;Callout type="warning" title="Customer token must stop at requireRole">
+If a customer reaches `assertStoreOwner`, you still blocked them — but you wasted a database read. More importantly, if you **skip** requireRole, a customer token could hit vendor-only logic paths you add later. Always: auth → role → ownership.
+&lt;/Callout>
 
 ## Function contract
 
@@ -45,6 +71,28 @@ router.patch('/:id',
 
 Customer token stops at requireRole — never hits ownership DB read.
 
+## Middleware order — non-negotiable
+
+```
+Incoming request
+    │
+    ▼
+requireAuth          ← 401 if no valid JWT
+    │
+    ▼
+requireRole('vendor') ← 403 if customer/anonymous
+    │
+    ▼
+assertStoreOwner     ← 403 if wrong vendor (Ch 8.11)
+    │
+    ▼
+route handler        ← 400 validation / 200 success
+```
+
+&lt;Callout type="warning" title="Order matters">
+If you run `requireRole` before `requireAuth`, unauthenticated requests may crash on `req.user.role` or leak wrong status codes. If you skip ownership and only check role, **any vendor** can edit **any store** — the IDOR bug Chapter 8 exists to prevent.
+&lt;/Callout>
+
 ## Role source of truth
 
 Role from **JWT payload** verified by requireAuth — not from request body.
@@ -64,6 +112,16 @@ curl -s -o /dev/null -w "%{http_code}" -X PATCH \
 ```
 
 Before 8.12 — unit test middleware in isolation or temporary test route — remove test route before gate.
+
+## Common mistakes
+
+| Mistake | Symptom | Fix |
+|---|---|---|
+| requireRole before requireAuth | req.user undefined → crash or wrong 401 | Always auth first |
+| Role from request body | Attacker sends `role: vendor` | Role from verified JWT only |
+| 401 for wrong role | Client refresh loop on forbidden action | Wrong role = **403**, not 401 |
+| Typo `'vender'` in requireRole | Everyone gets 403 | Match User schema enum exactly |
+| Single global requireRole on app | Health and register break | Apply per-route or per-router |
 
 ## File location
 
@@ -98,7 +156,7 @@ git commit -m "feat(auth): add requireRole middleware"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P58RTA8JRH49PJSSCREQ" />
+<OpenQuestion id="01KZAX76PJFXMNZ3XYX4NRB24P" />
 
 ## Next
 

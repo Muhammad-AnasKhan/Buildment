@@ -1,71 +1,57 @@
 ---
-title: "Why it matters for grocery"
+title: "Why grocery data is different"
 module: 3
 lesson: 2
-summary: "A generic marketplace stores `title`, `price`, and `imageUrl`. A **grocery** marketplace stores **how much** of **what** — kilograms of rice, litres of milk, six eggs, a bunch of coriander marked **perishable**. Those fields are not cosmetic. They change validation, display, chec"
+summary: "A generic marketplace stores name, price, and image. A grocery marketplace stores how much of what — kilograms of rice, litres of milk, a bunch of coriander marked perishable. These fields change how you model your database."
 ---
-A generic marketplace stores `title`, `price`, and `imageUrl`. A **grocery** marketplace stores **how much** of **what** — kilograms of rice, litres of milk, six eggs, a bunch of coriander marked **perishable**. Those fields are not cosmetic. They change validation, display, checkout copy, and the stories you tell in a viva about domain-driven design.
+# 3.2 — Why grocery data is different
 
-This sub-chapter ties the **FreshMarket domain** to **database modelling** before you choose SQL vs documents.
+## The core insight
 
-## Why this matters for absolute beginners
+A generic marketplace tutorial uses products like "T-shirt" or "Book" — one price, one item. Real grocery breaks that template:
 
-"Marketplace" tutorials often use generic products — a book, a T-shirt, one price. Real grocery breaks that template: price is **per unit**, stock may be decimal, and a receipt without "per kg" is meaningless. If your ERD only has `name` and `price`, you are building a different app than this course — and checkout in Chapter 18 will not make sense. Domain fields are how you prove the product is **FreshMarket**, not a renamed generic shop.
+- Rice sells by **kg**, not by "one item"
+- Milk sells by **litre**
+- Coriander sells as a **bunch**
+- Stock can be **45.5 kg**, not just 45 items
+- **Perishables** need special handling
+
+These aren't cosmetic details. They change your database schema, your validation rules, your checkout copy, and how you explain this project in an interview.
+
+&lt;Callout type="info" title="This is what makes your project real">
+If your Product document is only `{ name, price, imageUrl }`, you built a different app. Checkout in Chapter 18 won't make sense because grocery receipts need units. Domain fields prove this is **FreshMarket**, not a renamed generic shop.
+&lt;/Callout>
 
 ## Think of it like…
 
-**Price tags at a real greengrocer.** Bananas are per bunch; rice is per kilogram; milk is per litre. The tag always says **price per unit**, not just a number. Your Product document is that tag — `unit`, `stockQty`, and `isPerishable` tell the story the customer expects at the shelf.
+**Price tags at a real greengrocer.** Bananas are per bunch; rice is per kilogram; milk is per litre. The tag always says **price per unit** — ₹120/kg means something different from ₹120/piece. Your Product document is that tag.
 
-## Common beginner questions
-
-<FaqGroup>
-
-<FaqItem question="Can I add grocery fields later in Chapter 5?">
-
-You could — but deciding them **now** in the ERD prevents a generic schema you must retrofit. Put units and categories on your draft Product shape today.
-
-</FaqItem>
-
-<FaqItem question="Does perishability change API logic in Week 1?">
-
-Not yet — it enables UI badges and portfolio narrative later. Still model it; seed data should mix perishable and non-perishable items.
-
-</FaqItem>
-
-<FaqItem question="Why mention SQL in a MongoDB chapter?">
-
-Honest engineers know trade-offs. One paragraph on when relational reporting wins is interview gold — not betrayal of the stack.
-
-</FaqItem>
-
-</FaqGroup>
-
-
-## Attributes that generic schemas miss
+## Grocery fields you can't skip
 
 | Field | Example | Why it exists |
 |---|---|---|
 | `unit` | `kg`, `g`, `litre`, `piece` | Price is "per unit" — ₹120/kg ≠ ₹120/piece |
-| `weightOrQuantity` | `0.5`, `1`, `2` | Default pack or increment — loose produce |
-| `stockQty` | `45.5` | Stock is not always integer items |
-| `isPerishable` | `true` / `false` | Drives fulfilment thinking; bar-raiser features |
+| `stockQty` | `45.5` | Stock isn't always whole items |
+| `isPerishable` | `true` / `false` | Drives UI badges and future features |
 | `category` | `Dairy`, `Grains`, `Produce` | Browse filters in Chapter 14 |
 
-If your product document is only `{ name, price }`, you built a different product — not the course scope.
+&lt;Callout type="warning" title="Don't add these later">
+Put grocery fields on your Product shape **now** in the ERD. Retrofitting `unit` after Chapter 5 means rewriting schemas. Decide now, code once.
+&lt;/Callout>
 
-## Flexible attributes without schema explosions
+## How grocery affects database choice
 
-Grocery inventory varies:
+Grocery inventory varies a lot:
 
-- Rice: brand, origin, weight bag size  
-- Cheese: refrigerated, expiry-minded  
-- Herbs: perishable, sold in bunches  
+- Rice: brand, origin, bag size
+- Cheese: refrigerated, expiry-minded
+- Herbs: perishable, sold in bunches
 
-**Relational approach:** `products` table + `product_attributes` EAV table or many nullable columns — workable, verbose migrations for each new attribute class.
+**Relational approach:** `products` table + `product_attributes` table or many nullable columns — works, but every new attribute needs a migration.
 
-**Document approach:** core fields on every product (`unit`, `stockQty`, …) plus optional nested object for category-specific extras when you need them — e.g. `{ organic: true }` for produce without ALTER TABLE.
+**Document approach:** core fields on every product (`unit`, `stockQty`, etc.) plus optional nested objects for category-specific extras — e.g. `{ organic: true }` for produce without `ALTER TABLE`.
 
-Neither is magic. Documents reduce friction when **shape varies by category** and you accept **application-level validation** instead of database-enforced column types on every edge field.
+Neither is magic. Documents reduce friction when **shape varies by category** and you accept **application-level validation** instead of database-enforced column types.
 
 ## Multi-vendor ownership still dominates
 
@@ -77,38 +63,30 @@ Vendor (User) → Store → Product
 
 Customer cart items reference **product + store** so checkout can split by vendor (Chapter 18). Perishability doesn't relax isolation — Vendor A still never edits Vendor B's `stockQty`.
 
-## Orders and grocery units — snapshot includes unit
+## Orders must capture units
 
 When a customer buys **2 kg** of rice at **₹120/kg**, the order line snapshot must record:
 
-- `nameAtPurchase` — "Basmati Rice"  
-- `priceAtPurchase` — 120 (per unit at purchase time)  
-- `unitAtPurchase` — `kg`  
-- quantity — 2  
+- `nameAtPurchase` — "Basmati Rice"
+- `priceAtPurchase` — 120 (per unit at purchase time)
+- `unitAtPurchase` — `kg`
+- `quantity` — 2
 
 Without `unitAtPurchase`, history shows "₹120" with no idea if that was per kg or per bag. Grocery receipts are **unit-aware** by nature.
 
-You'll embed these on order lines in MongoDB (Chapter 5 sketch, Chapter 18 implementation) — the decision is about **correct receipts**, not NoSQL fashion.
-
-## Catalogue reads — hot path
-
-Customers browse more than vendors write. A typical session:
-
-- Many **reads** — list products, filter category, paginate  
-- Fewer **writes** — vendor updates stock or price  
-
-Both SQL and MongoDB handle this with indexes, pagination, and (Chapter 21) caching. The grocery domain adds **filter dimensions** (`category`, `storeId`, `isPerishable` for future features) — your index strategy in Chapter 21 must match fields you define now in the ERD draft.
+&lt;Callout type="tip" title="This is why order lines embed snapshots">
+You'll embed these on order lines in Chapter 18. The decision is about **correct receipts**, not NoSQL fashion.
+&lt;/Callout>
 
 ## When grocery would push you toward SQL
 
-Be honest — MongoDB is not universal:
+Be honest — MongoDB isn't universal:
 
-| Scenario | Relational appeal |
+| Scenario | Why SQL appeals |
 |---|---|
 | Strict inventory ledger with double-entry | Transactions across ledger tables |
-| Complex reporting across vendors for tax | SQL analytics, JOINs, materialized views |
-| Heavy constraints on unit enums at DB level | CHECK constraints on `unit` column |
-| Existing team standard | Skill fit beats greenfield theory |
+| Complex reporting across vendors for tax | SQL analytics, JOINs, window functions |
+| Heavy constraints on unit enums at DB level | `CHECK` constraints on `unit` column |
 
 This course still uses MongoDB — but your learning log must name **one case** where SQL would compete. Interviewers respect trade-offs, not fanboyism.
 
@@ -118,33 +96,60 @@ Use these names consistently in `docs/erd-draft.md`:
 
 | Concept | Collection (MongoDB) | Notes |
 |---|---|---|
-| Login identity | `users` | role: vendor \| customer |
+| Login identity | `users` | role: vendor or customer |
 | Profile fields | `profiles` | linked to user |
 | Shop | `stores` | one per vendor |
 | Listing | `products` | belongs to store |
 | Cart row | `cartitems` | customer + product + store + qty |
 | Purchase | `orders` | one per vendor per checkout; embeds lines |
 
-Exact naming (`cartitems` vs `cart_items`) is yours — stay consistent in Chapter 5.
+Exact naming (`cartitems` vs `cart_items`) is up to you — just stay consistent in Chapter 5.
 
-## ✅ Do / ❌ Don't (design phase)
+## Common questions
+
+<FaqGroup>
+
+<FaqItem question="Can I add grocery fields later in Chapter 5?">
+
+You can, but you'd be designing backwards. If you skip units, categories, and perishability now, you'll build a generic product shape and then try to bolt grocery specifics onto it in Chapter 5 — retrofits always end up messier than deciding once up front. The whole point of this chapter is that grocery changes real schema decisions: is price stored per `unit` (per kg) or as a whole-item price (per bag)? Put those fields on your draft Product shape today, and Chapter 5 becomes "implement what you designed" instead of "rethink what you coded".
+
+</FaqItem>
+
+<FaqItem question="Does perishability change API logic in Week 1?">
+
+Not yet — but you should still model it now. Perishability is what later enables "Fresh" badges on product cards and a nicer portfolio story, and the seed data should mix perishable and non-perishable items so those features have data to work with. The design lesson is the point: a flag like `isPerishable` costs nothing to add to the draft, but retrofitting it after twenty chapters of code is expensive. Decide it once, early.
+
+</FaqItem>
+
+</FaqGroup>
+
+
+## ✅ Do / ❌ Don't
 
 **✅ Do:** Put grocery fields on the Product shape in your ERD — not "we'll add unit later."
 
 **✅ Do:** Note on Order embedded lines that snapshot includes **unit**, not just price.
 
-**❌ Don't:** Model products as strings on the cart without `productId` — checkout needs references before snapshot.
+**❌ Don't:** Model products as strings on the cart without `productId` — checkout needs references.
 
 **❌ Don't:** Skip `storeId` on cart items — multi-vendor split depends on it (Chapter 16).
 
-## Key ideas
+&lt;ChapterRecap
+  points=&#123;[
+    "Grocery needs unit, decimal stock, and perishability — not just name and price",
+    "Ownership chain is unchanged: User → Store → Product",
+    "Order snapshots must capture unit and price per unit",
+    "Documents ease optional attributes; SQL eases some reporting — know both"
+  ]&#125;
+/>
 
-- Grocery needs **unit, decimal stock, perishability** — not generic SKUs only  
-- **Ownership chain** unchanged: User → Store → Product  
-- **Order snapshots** must capture unit and price per unit  
-- Documents ease **optional attributes**; SQL eases some **reporting** — know both  
+## Self-check
 
-Next: what decision this chapter commits to — MongoDB for the course, SQL when you'd reconsider.
+- [ ] I can name two grocery-specific fields that a generic product model would miss
+- [ ] I can say why orders need to snapshot the unit, not just the price
+- [ ] I can explain why the ownership chain survives the grocery additions
+
+**Next:** Relational vs document — side by side for the same marketplace data.
 ## Before you continue
 
-<OpenQuestion id="01KZ63P51ZK83745125Q0X47XY" />
+<OpenQuestion id="01KZAX75HKEQN6WSJ49M2NE2YY" />

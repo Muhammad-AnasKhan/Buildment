@@ -50,27 +50,33 @@ Week 2 you built **stalls** (stores) and **shelves** (products). Week 3 you buil
 
 <FaqGroup>
 
-<FaqItem question="Do I delete vendor pages?">
+<FaqItem question="Do I delete the vendor pages?">
 
-No. Vendor dashboard stays. You **add** customer pages (`/shop`, `/cart`, etc.).
-
-</FaqItem>
-
-<FaqItem question="Why another chapter before the shop UI (Chapter 14)?">
-
-Same pattern as always: **API first, UI second** (Ch 6→7, Ch 11→12). Chapter 14 builds `GET /products` so Chapter 15's React grid has real data — not fake arrays in components.
+No — delete nothing. The vendor dashboard stays exactly as it is: vendors still manage their stall at `/vendor/products`, create products, and upload photos. Week 3 is additive — you build customer-facing pages like `/shop` and `/cart` that sit beside the vendor UI in the same codebase. Both sides read the same MongoDB collection, just through different routes. Throwing away the vendor work would also break your seed data pipeline, and customers need those published products to browse in the first place.
 
 </FaqItem>
 
-<FaqItem question="I'm confused about auth — do customers log in to browse?">
+<FaqItem question="Why another chapter before the shop UI?">
 
-Your public catalogue can allow anonymous browse or require login — course gate usually allows browse, requires login for cart/checkout. Chapter 14 spec defines public read; cart (Ch 16) requires customer auth.
+Same rhythm the course has followed all along: API first, UI second — Chapters 6→7, 11→12, and now 14→15. Chapter 14 builds `GET /products` so the Chapter 15 React grid has real, paginated data from the server instead of hardcoded arrays you throw away. If you built the shop screen first, you'd invent a fake data shape and then rework the whole page once the real API arrived. A stable contract first turns the UI step into mostly wiring.
 
 </FaqItem>
 
-<FaqItem question="Week 3 feels sudden.">
+<FaqItem question="Do customers need to log in to browse?">
 
-Re-read this page whenever that happens. The course intentionally pauses here so the role switch is explicit — not a hidden jump.
+Not necessarily. The course's public catalogue allows browsing without a JWT — anyone can look in the shop window. Login becomes necessary once a customer wants to *do* something persistent: adding to a cart (Chapters 16–17) and checking out (Chapter 18) require a logged-in customer account. So plan for two gates: reading publicly, and acting as a customer. Chapter 14's spec defines the public read; the cart chapters add the auth requirement.
+
+</FaqItem>
+
+<FaqItem question="Why will my one cart split into two orders?">
+
+Because a marketplace has one customer but many vendors. You drop tomatoes from Green Valley and bread from Harbor Market into a single basket and pay once — but behind the scenes each stall is a separate business that needs its own order and its own money. At checkout, the system groups your cart lines by `storeId` and creates one order per vendor (Chapter 18). Your cart page will even show those vendor sections, so the split never surprises the shopper.
+
+</FaqItem>
+
+<FaqItem question="Do customers create products too?">
+
+No — customers browse and buy; they never create products. Products are written by vendors through their dashboard, and customers see only the published, in-stock ones through the public catalogue. That's the marketplace pattern: one collection of product documents, two very different doors — a write door for vendors, a read door for customers. It's also a neat interview line: two routes, one MongoDB collection.
 
 </FaqItem>
 
@@ -87,6 +93,22 @@ client/src/hooks/useAuth.js    ← same hook; customer logs in too
 
 Chapter 14 adds **routes and queries**, not a new database.
 
+## Week 3 roadmap — where you are in the story
+
+Week 3 is **customer commerce**: browse → cart → checkout → track orders. You already built the vendor side; now shoppers use the same product data.
+
+| Chapter | You build | Customer can… |
+|---|---|---|
+| **14** (next) | Public catalogue API | — (curl only) |
+| **15** | Shop UI | Browse and filter products from many vendors |
+| **16–17** | Cart API + UI | Add items from different stores to one basket |
+| **18–19** | Checkout + payment | Pay once; orders split per vendor |
+| **20** | Order tracking UI | See order history; vendors update status |
+
+&lt;Callout type="info" title="Same products, new doors">
+Vendors still manage inventory at `/vendor/products`. Customers browse at `/products` and `/shop`. Two routes, one MongoDB collection — the marketplace pattern you will explain in interviews.
+&lt;/Callout>
+
 ## Self-check before Chapter 14
 
 - [ ] Week 2 demo works in browser (vendor + photo + dashboard)  
@@ -97,7 +119,7 @@ Chapter 14 adds **routes and queries**, not a new database.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5DREAZ592F62DCFW6HQ" />
+<OpenQuestion id="01KZAX77H6F2ED10NARN8PFGT8" />
 
 ## Next
 

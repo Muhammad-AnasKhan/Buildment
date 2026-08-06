@@ -187,10 +187,14 @@ function parseFaqPairs(section: string): FaqPair[] {
   const items: FaqPair[] = [];
   const blocks = section.trim().split(/\n\n+/);
 
+  let current: FaqPair | null = null;
   for (const block of blocks) {
-    const match = block.match(/^\*\*Q:\s*(.+?)\*\*\s*\n(?:A:\s*)?([\s\S]+)$/);
+    const match = block.match(/^\*\*Q:\s*(.+?)\*\*\s*\n(?:A:\s*)?([\s\S]*)$/);
     if (match) {
-      items.push({ question: match[1]!.trim(), answer: match[2]!.trim() });
+      current = { question: match[1]!.trim(), answer: match[2]!.trim() };
+      items.push(current);
+    } else if (current) {
+      current.answer = `${current.answer}\n\n${block.trim()}`;
     }
   }
   return items;
@@ -199,8 +203,8 @@ function parseFaqPairs(section: string): FaqPair[] {
 /** Turn prose Q/A lists into structured FaqGroup MDX for readable callouts. */
 function transformFaqSections(body: string): string {
   return body.replace(
-    /(?:^|\n)## Common beginner questions\n\n([\s\S]*?)(?=\n## |\s*$)/g,
-    (full, section: string) => {
+    /(?:^|\n)(## Common (?:beginner )?questions)\n\n([\s\S]*?)(?=\n## |\n<ChapterRecap|\s*$)/g,
+    (full, heading: string, section: string) => {
       const pairs = parseFaqPairs(section);
       if (pairs.length === 0) return full;
 
@@ -212,7 +216,7 @@ function transformFaqSections(body: string): string {
         .join("\n\n");
 
       const prefix = full.startsWith("\n") ? "\n" : "";
-      return `${prefix}## Common beginner questions\n\n<FaqGroup>\n\n${items}\n\n</FaqGroup>\n\n`;
+      return `${prefix}${heading}\n\n<FaqGroup>\n\n${items}\n\n</FaqGroup>\n\n`;
     }
   );
 }

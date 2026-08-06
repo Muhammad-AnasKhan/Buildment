@@ -4,9 +4,7 @@ module: 10
 lesson: 7
 summary: "This is the first form a new vendor sees after registration — their shop's birth certificate. It wires `POST /stores` to human input: name, description, address. Errors must be readable; success must navigate somewhere sensible. Week 2 demo starts here in the browser."
 ---
-## Why this step matters
-
-This is the first form a new vendor sees after registration — their shop's birth certificate. It wires `POST /stores` to human input: name, description, address. Errors must be readable; success must navigate somewhere sensible. Week 2 demo starts here in the browser.
+**Why this step matters:** This is the first form a new vendor sees after registration — their shop's birth certificate. It wires `POST /stores` to human input: name, description, address. Errors must be readable; success must navigate somewhere sensible. Week 2 demo starts here in the browser.
 
 **Where the project is now:** `OpenShop.jsx` stub inside `VendorLayout`; `api/stores.js` exports `createStore` signature.
 
@@ -81,8 +79,8 @@ Storeless vendor → form. Vendor with store → redirect settings (stretch: GET
 
 ## Troubleshooting
 
-| Symptom | Likely cause |
-|---|---|
+| Symptom | Likely cause | Fix |
+|---|---|---|
 | 201 but gate still redirects | Context not refetched | Call `refetch()` before navigate |
 | 409 on first submit | Double-click or store exists | Disable button; GET me on mount |
 | Form clears on 400 | State reset in catch | Keep values on error |
@@ -112,7 +110,7 @@ git commit -m "feat(client): add open shop form with POST stores"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5AGM5DV53KFARKXMFQF" />
+<OpenQuestion id="01KZAX76ZYPGAHGVJTY5QA0C8Z" />
 
 ## Next
 

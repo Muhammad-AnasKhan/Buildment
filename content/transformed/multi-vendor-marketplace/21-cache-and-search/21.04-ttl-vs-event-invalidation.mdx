@@ -6,9 +6,11 @@ summary: "Production caches use **both**. TTL is a safety net; invalidation is c
 ---
 Production caches use **both**. TTL is a safety net; invalidation is correctness on writes.
 
-Beginners often pick one and wonder why production still breaks. This sub-chapter gives you the **decision frame** before you implement in 20.9 and 20.11.
+Beginners often pick one and wonder why production still breaks. This sub-chapter gives you the **decision frame** before you implement in 21.9 and 21.11.
 
 ## TTL only
+
+If your only tool is an expiry time, here is what you buy and what it costs — cheap and simple, but at the mercy of the clock.
 
 | Pro | Con |
 |---|---|
@@ -19,6 +21,8 @@ Beginners often pick one and wonder why production still breaks. This sub-chapte
 **Example failure:** TTL = 15 minutes. Vendor fixes a typo price at 10:00. Customers see wrong price until 10:15.
 
 ## Event invalidation only
+
+The flip side: freshness on every write, but every write path must remember to invalidate — miss one and the stale data never leaves.
 
 | Pro | Con |
 |---|---|
@@ -74,6 +78,8 @@ Call `invalidateCatalogueCache()` — not scattered in routes. One function, one
 
 ## Think of it like milk expiry dates
 
+The two invalidation strategies map onto a shelf-life decision you already make in real life:
+
 **TTL** = printed expiry date on the carton — good enough if nobody changes the recipe.
 
 **Event invalidation** = pulling all cartons from the shelf the moment the recipe changes.
@@ -86,19 +92,37 @@ Call `invalidateCatalogueCache()` — not scattered in routes. One function, one
 
 <FaqItem question="What TTL should I pick?">
 
-300–900 seconds (5–15 min) is fine for the course. Document your choice. Shorter TTL reduces stale window but increases MongoDB load.
+The course says 300–900 seconds (5–15 minutes) — pick one and document it. Think of TTL as a trade-off dial: shorter TTL means stale data disappears sooner but MongoDB sees more traffic; longer TTL means faster reads but a bigger stale window if invalidation ever misses. Because you'll also invalidate on writes, TTL is your safety net rather than your correctness mechanism, so the exact number matters less than having one and writing it in your README.
 
 </FaqItem>
 
-<FaqItem question="Can I use `FLUSHALL` to invalidate?">
+<FaqItem question="Can I use `FLUSHALL` to clear the cache when things go wrong?">
 
-**No** in shared Redis — destroys BullMQ jobs from Ch 22 and all cache keys. Use prefix `SCAN` + `DEL` on `catalogue:*` only.
+Don't — and especially not in this course. Your Redis instance also holds Chapter 22's BullMQ job queues, and `FLUSHALL` wipes every database, queue keys and all, plus all your cache keys. The right tool is a prefix delete: `SCAN` for keys matching `catalogue:*`, then `DEL` each one. That clears exactly the catalogue variants — different pages, categories, and search terms — and touches nothing you don't own. Remember the rule: avoid `KEYS` in production; `SCAN` is the safe way to find matching keys.
 
 </FaqItem>
 
-<FaqItem question="Implement TTL or invalidation first?">
+<FaqItem question="What happens if I only invalidate and skip TTL?">
 
-Course order: cache with TTL in 20.9, then invalidation in 20.11 — so you can **feel** the stale trap before fixing it.
+You get perfect freshness but a nasty leak: every key you forget to invalidate stays in Redis forever. If you miss one write path — the classic example is `DELETE`, where a deleted product vanishes from MongoDB but lingers in cache — stale data survives until a human manually flushes it. TTL is the janitor: keys expire automatically even when your code forgets them. Freshness comes from invalidation; cleanup comes from TTL. That's why production caches use both, and why this course makes both mandatory.
+
+</FaqItem>
+
+<FaqItem question="What is a prefix delete, and why is it needed once filters exist?">
+
+Different query parameters produce different cache keys — `?page=2`, `?category=Dairy`, `?search=milk` each cache separately — so one product change can affect several cached pages at once. You can't delete a key you don't know by name, so you delete by pattern: scan for keys starting with `catalogue:` and delete them all. That clears every page and filter variant in one operation. A single-key `DEL` only works in the toy case where you cache one unfiltered list; with filters from Chapter 14, prefix delete is the way.
+
+</FaqItem>
+
+<FaqItem question="Where should the invalidation code actually live?">
+
+In `products.service.js`, as a single function like `invalidateCatalogueCache()`, called after `createProduct`, `updateProduct`, and `deleteProduct` succeed. Don't scatter `del` calls through the routes. One function, in the layer where the write happens, means you can audit every invalidation point by reading one file — and when the next cache-related bug appears, you know exactly where to look. That's the professional pattern: a single source of truth for a cross-cutting concern.
+
+</FaqItem>
+
+<FaqItem question="Should I implement TTL or invalidation first?">
+
+The course order matters: build the cache with TTL in 21.9, then add invalidation in 21.11. Doing it in that order lets you *feel* the stale trap — you'll run the price test, watch the old price survive a PATCH because TTL hasn't expired, and then fix it with invalidation. You understand a bug far better after hitting it yourself than when someone simply warns you about it. The sequence isn't ceremony; it's the chapter teaching you why both mechanisms exist.
 
 </FaqItem>
 
@@ -107,7 +131,7 @@ Course order: cache with TTL in 20.9, then invalidation in 20.11 — so you can 
 
 ## ✅ Do / ❌ Don't
 
-**✅ Do:** Implement TTL in 20.9, invalidation in 20.11 — sequence matters for testing.
+**✅ Do:** Implement TTL in 21.9, invalidation in 21.11 — sequence matters for testing.
 
 **✅ Do:** Use Redis `DEL` or `SCAN`+`DEL` for pattern — avoid `KEYS` in production docs note.
 
@@ -124,7 +148,7 @@ Course order: cache with TTL in 20.9, then invalidation in 20.11 — so you can 
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5MF0NCB36BZDZT1AXQG" />
+<OpenQuestion id="01KZAX78QMRK0834HNQG4PXD83" />
 
 ## Next
 

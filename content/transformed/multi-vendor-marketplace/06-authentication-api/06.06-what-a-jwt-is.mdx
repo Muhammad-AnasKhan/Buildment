@@ -20,19 +20,19 @@ JWT looks like random gibberish — beginners treat it as an opaque session id. 
 
 <FaqItem question="Where does `req.user.role` come from?">
 
-Verified JWT claims after `jwt.verify` — not from request body on PATCH.
+From the JWT claims, not from the request body. When a client sends a token, the `requireAuth` middleware calls `jwt.verify`, which returns the payload you signed — including `role` and `sub` (the user id) — and attaches it to the request as `req.user`. Because the token is signed, an attacker can't just send `role: "vendor"` in a request body or even edit their own token; the signature would fail verification.
 
 </FaqItem>
 
 <FaqItem question="Can I skip expiry?">
 
-No — short-lived access is core to the refresh pattern.
+No — expiration is the core of the refresh pattern. A token that never expires is a permanent key: if it leaks, an attacker can impersonate that user forever. Short-lived access tokens (the 15-minute range) mean a leak stops being useful almost immediately, while the refresh token — longer-lived, stored more safely, and revocable — quietly mints a new access token when the old one runs out. Without expiry, you lose that whole safety design.
 
 </FaqItem>
 
 <FaqItem question="Refresh token — JWT or random string?">
 
-Course allows either if hashed in DB; document your choice.
+The course accepts either, as long as you hash it in the database and document your choice. A JWT refresh token can carry claims and an expiry, but it can't be revoked until it expires unless you keep a server-side denylist. A random string stored hashed is simpler and can be revoked by deleting the row. Both are valid; the rule that matters is that whatever you store in the database is hashed, never plain text.
 
 </FaqItem>
 
@@ -111,6 +111,8 @@ Short expiry limits window if token stolen from memory.
 
 ## Common mistakes
 
+Each of these is a real JWT bug in production — recognize the symptom before you ship it:
+
 | Mistake | Consequence |
 |---|---|
 | `jwt.decode` without verify | Attacker forges payload |
@@ -140,7 +142,7 @@ If JWT refresh: include `jti` (unique id) for rotation tracking.
 
 ## Reflect
 
-<OpenQuestion id="01KZ63P561GVGFVW8BFV2EB5EM" />
+<OpenQuestion id="01KZAX765E4HAM9ZYKMWMSQZMX" />
 
 
 

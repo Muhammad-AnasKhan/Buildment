@@ -56,7 +56,7 @@ curl -s -w "\nHTTP:%{http_code} TIME:%{time_total}s\n" \
 **Pass criteria:**
 
 - [ ] Commerce works without worker — notifications eventual
-- [ ] Document behaviour if enqueue fails when Redis down (21.11)
+- [ ] Document behaviour if enqueue fails when Redis down (22.11)
 
 ## Test 3 — Status update notification
 
@@ -83,7 +83,7 @@ Expect keys while jobs pending or completed per retention settings.
 
 **Do not** use `KEYS` in production scripts — dev demonstration only.
 
-## Test 5 — jobId dedup (21.14)
+## Test 5 — jobId dedup (22.14)
 
 Manually call enqueue helper twice with identical `orderIds` batch — or replay checkout idempotency test if built.
 
@@ -123,8 +123,8 @@ Add to README or demo notes:
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5PG9716NFXH54BCJGEE" />
+<OpenQuestion id="01KZAX790M2TNW0ST9A9SKG0BB" />
 
 ## Next
 
-**Sub-chapter 22.16:** Cache invalidation job (optional).
+**Sub-chapter 22.16:** Cache invalidation job (optional) — the core async flow works; an optional stretch ties it to Chapter 21's cache.

@@ -6,11 +6,11 @@ summary: "**Why this step matters:** Apps that die on reboot are hobbies, not de
 ---
 **Why this step matters:** Apps that die on reboot are hobbies, not deployments. Proving API and worker recover within 60 seconds shows you configured process managers — not just SSH sessions.
 
-**Where the project is now:** Smoke tests passed (22.13) — API, client, worker on HTTPS; worker processed checkout.
+**Where the project is now:** Smoke tests passed (23.13) — API, client, worker on HTTPS; worker processed checkout.
 
 **After this step:** App recovers after restart/kill/redeploy — API health within 60s **and** worker resumes jobs.
 
-Two server processes in production: API (HTTP, enqueue) and worker (BullMQ, Ch 22). API up + worker dead = 22.13 row 6 failure. Client static survives reboot — test API + worker.
+Two server processes in production: API (HTTP, enqueue) and worker (BullMQ, Ch 22). API up + worker dead = 23.13 row 6 failure. Client static survives reboot — test API + worker.
 
 **Gate:** Restart **both** → `/health` OK → checkout → worker log within ~30s.
 
@@ -92,7 +92,7 @@ One paragraph: commands used, seconds to health 200, post-restart checkout log. 
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5QYE3MVPY3VE2NS09H4" />
+<OpenQuestion id="01KZAX79636Q5XPEGFSRX1QS9C" />
 
 ## Next
 

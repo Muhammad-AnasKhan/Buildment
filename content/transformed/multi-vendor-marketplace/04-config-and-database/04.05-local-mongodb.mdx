@@ -18,25 +18,25 @@ Nothing in the build cluster works until **mongosh or Compass** connects with th
 
 <FaqItem question="Atlas free tier — do I need a credit card?">
 
-MongoDB's policy changes — follow Atlas signup flow; M0 free clusters are common for learning.
+The free M0 tier is designed for learning and typically doesn't require a card, but Atlas has changed its signup flow before, so follow the prompts on your screen rather than trusting old forum posts. If you'd rather avoid signup, billing questions, and an internet requirement entirely, local MongoDB sidesteps all of it. The course gate doesn't care which you choose — it only requires that Mongoose connects and health reports the real state. Pick whichever gets you a working `MONGODB_URI` fastest and stick with it through Week 1.
 
 </FaqItem>
 
 <FaqItem question="Special characters in Atlas password break my URI — why?">
 
-URLs parse `@` and `#` specially — URL-encode the password segment.
+Because your connection string is a URL, and URLs give special meaning to a few characters. The `@` symbol separates credentials from the host, `#` starts a URL fragment, and `%` starts percent-encoding — so a password like `p@ss#word` makes MongoDB split the string in the wrong places and the connection fails. The fix is URL-encoding: replace each special character with its `%` code, like `@` → `%40` and `#` → `%23`. If that feels fiddly, choose a database-user password with only letters and numbers and the problem disappears entirely.
 
 </FaqItem>
 
 <FaqItem question="How do I test \"DB down\" on Atlas?">
 
-Wrong password at boot, paused cluster, or temporary bad URI — goal is honest failure, not only stopping local `mongod`.
+You can't stop a cloud `mongod` process the way you'd stop a local service, so you simulate the same failure differently. Temporarily put a wrong password in `.env` and confirm the server fails to start with a clear error, pause the cluster in the Atlas UI, or unplug your network. The 4.15 test isn't about the exact mechanism — it's about proving your app refuses to pretend the database is fine when it isn't. Whatever you do, the server should either crash with a readable message or report `db: disconnected` on health, never silently keep running against nothing.
 
 </FaqItem>
 
 <FaqItem question="What database name should I use?">
 
-A project slug like `freshmarket-dev` — not generic `test`.
+Use one logical project name like `freshmarket-dev` or `greenbasket-dev`, not the generic `test`. First, MongoDB creates the database on first write, so the name you put in the URI is exactly what you'll see in Compass — pick one you'll recognize in a week. Second, `test` is ambiguous: when you run Jest later, it typically uses a database named `test`, and you'd be debugging which one holds what. Third, you might host several projects on one Atlas cluster, so a unique, descriptive name keeps their data from colliding.
 
 </FaqItem>
 
@@ -96,6 +96,8 @@ MONGODB_URI=mongodb+srv://dbuser:YOUR_PASSWORD@cluster0.xxxxx.mongodb.net/your-a
 
 ## Decision table — which should you pick?
 
+Both options pass the gate — the table helps you choose based on your OS, internet, and future deploy:
+
 | Factor | Local | Atlas |
 |---|---|---|
 | Setup time | Varies by OS | ~15 min first time |
@@ -117,6 +119,8 @@ Use one logical database name for the whole project, e.g.:
 Avoid `test` — ambiguous when you run Jest later. Production will use a different name or cluster in Chapter 23 — same code, different `MONGODB_URI` on host.
 
 ## Security baseline (both options)
+
+Whichever you pick, these four rules never change — they're the difference between a dev database and a leak:
 
 - **Never commit** URI with password  
 - **Atlas:** dedicated app user, not org owner  
@@ -174,7 +178,7 @@ Learning goal: **the app must not pretend DB is fine when it isn't** — exact m
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P53BMK051553NRAT34DT" />
+<OpenQuestion id="01KZAX75Q0YJTE39MP40FZW2Y5" />
 
 ## Next
 

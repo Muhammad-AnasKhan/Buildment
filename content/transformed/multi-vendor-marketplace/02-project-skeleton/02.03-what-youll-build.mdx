@@ -16,25 +16,31 @@ Staring at a blank folder is overwhelming. This tree is your **map** — not a d
 
 <FaqItem question="Do I create this entire tree in one command?">
 
-No — build steps add pieces incrementally. Empty module folders may get `.gitkeep` files so Git tracks them.
+No — and that's on purpose. The build sub-chapters (2.8–2.16) add pieces incrementally, so after every step you know exactly what changed and why. If you scaffolded everything at once, you'd end up with a folder you can't explain. Empty module folders get `.gitkeep` files so Git tracks them; otherwise Git ignores empty directories and the placeholder silently vanishes. Think of the tree as the blueprint: you're not raising the whole market hall in one swing — you're laying one brick per step and checking each one.
 
 </FaqItem>
 
-<FaqItem question="Why `shared/` separate from `modules/`?">
+<FaqItem question="Why is `shared/` separate from `modules/`?">
 
-Config and database connection serve **every** module — they are cross-cutting infrastructure, not one product feature.
+Because `shared/` holds cross-cutting infrastructure that every module needs — config, database connection, shared error helpers — while `modules/` holds one product feature each. `auth/` is about logging in and `products/` is about listing groceries, but `db.js` isn't about any single feature; it's the water supply all the stalls share. If the database setup lived inside, say, `products/`, then auth and orders would have to import from an unrelated folder. Keeping shared code in one obvious place stops modules from reaching into each other's business.
 
 </FaqItem>
 
 <FaqItem question="What's the difference between `app.js` and `server.js`?">
 
-`app.js` **builds** the Express application (middleware, routes). `server.js` **starts listening** on a port. Splitting them helps testing later — you can import `app` without opening a real port.
+`app.js` **builds** the Express application — it creates the app, registers middleware like JSON parsing and CORS, and mounts routes. `server.js` **starts it** — it imports the app, reads `PORT`, and calls `app.listen()`. The split pays off later: tests can import `app` and send fake HTTP requests without opening a real port. It's the difference between preparing the kitchen and unlocking the doors for customers. One extra file now saves you from a refactor when testing arrives.
 
 </FaqItem>
 
 <FaqItem question="Why show empty auth/cart/orders folders now?">
 
-Placeholders remind you where Chapter 5–18 code lands — like labeled empty shelves in a new shop.
+They're placeholders — labeled empty shelves in a shop that isn't stocked yet. Their job is to remind you where future code lands: Chapters 5–18 create files *inside* those folders, and when a step says "create `modules/auth/auth.routes.js`," you already know the folder exists and why. Seeing the destination first also stops you from improvising paths as you go, which is how repos drift away from the guide. Empty folders are cheap; an unplanned `authStuff/` next to a planned `auth/` is confusing forever.
+
+</FaqItem>
+
+<FaqItem question="Why is `.env` git-ignored but `.env.example` committed?">
+
+Because `.env` holds secrets — database URLs, JWT secrets, API keys — and committing them leaks them to anyone who can read your repository. `.env.example`, by contrast, holds only the *names* of the variables with dummy values, like `PORT=5000` or `MONGODB_URI=`. It's the "here's what you need to set" cheat sheet for anyone cloning your project. The rule is: commit the shape, never the secrets. It looks like housekeeping, but it prevents real-world disasters.
 
 </FaqItem>
 
@@ -203,4 +209,4 @@ Don't skip ahead. Chapter 4 assumes 2.11's health route exists.
 Next: formal comparison — layer vs module — and the mandated choice.
 ## Before you continue
 
-<OpenQuestion id="01KZ63P4ZTDB35VPJ4DFDQ46T1" />
+<OpenQuestion id="01KZAX7599MRYQCFB7CPPFQM5G" />

@@ -6,6 +6,8 @@ summary: "**Why this step matters:** The queue module is the API's outbound mail
 ---
 **Why this step matters:** The queue module is the API's outbound mailbox — every async job in this chapter enqueues through here. One shared module prevents queue-name typos that silently drop jobs.
 
+**Where the project is now:** Commerce, cache, and search are complete (Ch 18–21); no BullMQ dependency or queue module — notifications would have to run inline.
+
 **After this step:** `server/src/shared/queue.js` exports a BullMQ `Queue` (or factory) connected via `REDIS_URL` from Chapter 21 config.
 
 ## Env contract
@@ -63,7 +65,7 @@ Import in `queue.js` and processors — single source of truth.
 
 **API (`server.js`):** No worker here. Optional: import `getNotificationsQueue()` once to verify connection — not required for gate.
 
-**Do not** register Worker in `server.js` — that belongs in `worker.js` (21.10).
+**Do not** register Worker in `server.js` — that belongs in `worker.js` (22.10).
 
 ## Commit
 
@@ -91,7 +93,7 @@ git commit -m "feat(server): add bullmq queue module"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5P2GC50PC4R6KVYM2JP" />
+<OpenQuestion id="01KZAX78YKJD6CR6YTSYPFGEFJ" />
 
 ## Next
 

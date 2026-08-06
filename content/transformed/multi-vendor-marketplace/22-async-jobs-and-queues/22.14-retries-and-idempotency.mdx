@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Networks blip and processors crash mid-job 
 ---
 **Why this step matters:** Networks blip and processors crash mid-job — retries turn "best-effort notify" into resilient notify. `jobId` dedup stops double-click enqueue from spamming duplicate mock emails.
 
+**Where the project is now:** Both jobs enqueue and process (22.11–22.13) — a transient failure loses the job and a double enqueue duplicates notifications.
+
 **After this step:** Jobs use **retry policy** for transient failures and **jobId** deduplication to avoid duplicate notifications on re-enqueue.
 
 ## Retry options — spec
@@ -103,8 +105,8 @@ No Bull Board required for gate.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5PEJ94VPCQQ7HWB5AFV" />
+<OpenQuestion id="01KZAX7908PHX65DJDAQ6XBGB5" />
 
 ## Next
 
-**Sub-chapter 22.15:** Verify async flow end-to-end.
+**Sub-chapter 22.15:** Verify async flow end-to-end — jobs retry safely; prove the whole queue path works before moving on.

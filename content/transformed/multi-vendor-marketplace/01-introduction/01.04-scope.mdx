@@ -22,6 +22,8 @@ Everything below appears in a chapter with a checklist gate. If it's on this lis
 
 ### Identity & access
 
+Every account flows through the same auth system — who can register, how they prove who they are, and what they're allowed to touch:
+
 - **Vendor registration** — email, password, role `vendor`
 - **Customer registration** — email, password, role `customer`
 - **Email verification (OTP)** — account inactive until verified; console-log OTP is acceptable (real email delivery is bar-raiser territory)
@@ -32,6 +34,8 @@ Everything below appears in a chapter with a checklist gate. If it's on this lis
 
 ### Vendor experience
 
+Everything a shop owner needs to run their side of the marketplace:
+
 - **Store profile** — name, description, address, logo URL; one store per vendor
 - **Product CRUD** — create, read, update, delete own products only
 - **Grocery product fields** — price, unit (`kg` / `g` / `litre` / `piece`), weightOrQuantity, stockQty, isPerishable, category
@@ -41,6 +45,8 @@ Everything below appears in a chapter with a checklist gate. If it's on this lis
 - **Onboarding gate** — vendor without a store is routed to "open your shop" before product management
 
 ### Customer experience
+
+Everything a shopper does, from window-shopping to a split checkout:
 
 - **Public catalogue API** — all published in-stock products; category filter; store filter; pagination
 - **Search** — text search on product name/category with MongoDB text index
@@ -54,6 +60,8 @@ Everything below appears in a chapter with a checklist gate. If it's on this lis
 - **N+1 avoidance** — catalogue and order lists use populate/batch patterns; query count verified
 
 ### Platform & production
+
+The infrastructure decisions that make the product real — structure, config, performance, and deployment:
 
 - **Project structure** — `server/` + `client/` in one repo; module-based folders mandated
 - **Configuration** — secrets and connection strings from environment variables; `.env` git-ignored; `.env.example` committed
@@ -174,6 +182,8 @@ Exact paths may vary in your implementation — the **behaviours** are fixed.
 
 ## UI surface — preview
 
+The screens you'll ship, who they're for, and whether they're in scope:
+
 | Screen | Actor | In scope |
 |---|---|---|
 | Home / shop browse | Customer | ✓ |
@@ -240,4 +250,4 @@ If a week ends without its demo, you are **not scope-complete** for that week �
 Next: prerequisites — what you should already be comfortable with before Chapter 2.
 ## Before you continue
 
-<OpenQuestion id="01KZ63P4YHMMXZ1M21YSA9QFQW" />
+<OpenQuestion id="01KZAX755QGX1XFKQ7SPZ4AE88" />

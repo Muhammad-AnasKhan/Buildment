@@ -20,15 +20,33 @@ localStorage survives refresh and is one line for any XSS script to read. Memory
 
 <FaqGroup>
 
-<FaqItem question="If XSS can steal memory token anyway, why bother?">
+<FaqItem question="If XSS can steal the memory token anyway, why bother with memory?">
 
-XSS is catastrophic either way — goal is not making theft **trivial and persistent** via localStorage.
+Because there's a big difference between "stealable if an attack happens" and "sitting in a permanent, easy-to-read location." `localStorage` hands any script your token in one line, and the token stays there for the next visitor too. A memory variable is only reachable while the tab is open — a much smaller window to exploit. The goal isn't to make theft impossible (XSS is bad news regardless) but to make it **not trivial and not persistent**. Memory shrinks the blast radius; httpOnly keeps the long-lived refresh token out of reach entirely.
 
 </FaqItem>
 
-<FaqItem question="What is CSRF vs XSS here?">
+<FaqItem question="What's the difference between XSS and CSRF?">
 
-XSS steals; CSRF tricks browser into unwanted requests — refresh cookie needs SameSite; Bearer access is less CSRF-prone.
+XSS is an attacker getting their script to run on your page — it *steals* things like tokens. CSRF is an attacker tricking your browser into *sending* a request you didn't intend — it *uses* your cookies without ever seeing them. That's why the two tokens need different protections. The Bearer access token travels in a header the browser never auto-sends, so a malicious site can't forge a request carrying it (low CSRF risk). The refresh cookie *is* auto-sent, which is why it needs `SameSite` and the `httpOnly` flag.
+
+</FaqItem>
+
+<FaqItem question="Why can't JavaScript read an httpOnly cookie?">
+
+`httpOnly` is a flag the server sets on the cookie that tells the browser: store this, send it when the API asks, but never expose it to JavaScript. `document.cookie` won't show it and `localStorage` never touches it, so even if an XSS script runs on your page it cannot grab the refresh token. The browser still attaches the cookie automatically on requests to `/api/auth/refresh` (with `credentials: 'include'`), so your app works without ever reading the value. It's a badge the browser holds for you, not one you carry around.
+
+</FaqItem>
+
+<FaqItem question="What's the difference between localStorage and a variable in memory?">
+
+`localStorage` is the browser's long-term filing cabinet — data survives tab closes and restarts, and any script on your site can read it, which is exactly why it's dangerous for tokens. A JavaScript variable lives in memory: fast, private to that tab, and wiped the moment the tab closes or the page reloads. The trade-off is real — a memory token is gone on reload, so the app must silently refresh — but that inconvenience is the point. The access token exists only long enough to be used, not long enough to be harvested at leisure.
+
+</FaqItem>
+
+<FaqItem question="Why do so many tutorials tell beginners to use localStorage?">
+
+Because it's the path of least resistance — one line to save, one line to read, and it survives reloads, so demos "just work." What those tutorials skip is the security conversation: any XSS script can read that token in one line, and it sits there permanently. That's why this course treats localStorage for the access token as the anti-pattern to avoid, not the shortcut to copy. Real-world SPAs use the memory + httpOnly split for a reason, and if you can explain this trade-off in your README and viva, you'll understand auth security better than most junior developers.
 
 </FaqItem>
 
@@ -59,6 +77,8 @@ Survives refresh — convenient but **any script on page reads it**.
 
 ## Course pattern
 
+The two tokens get very different homes, based on one rule: **the shorter-lived and less valuable the credential, the more convenient its storage can be.** The access token lives in memory because losing it costs little (it expires in minutes). The refresh token lives in an httpOnly cookie because losing it costs a lot (it stays valid for days).
+
 | Token | Storage | Lifetime |
 |---|---|---|
 | Access | React state / useAuth ref | Until refresh or logout |
@@ -68,6 +88,8 @@ Page reload loses access token from memory → **silent refresh** on app boot ca
 
 ## CSRF note
 
+Each storage choice also changes your CSRF exposure. A Bearer access token in a header is *not* auto-sent by the browser, so a malicious site cannot trick the browser into attaching it — low CSRF risk on the API. A cookie, however, **is** auto-sent, which is exactly why the refresh cookie needs `SameSite` and why CSRF defenses matter there.
+
 Bearer access in header — not auto-sent like cookies — low CSRF on API.
 
 Refresh cookie **is** auto-sent — use SameSite=Lax or Strict; CSRF token optional stretch for cookie-only auth.
@@ -76,9 +98,18 @@ When server sets refresh cookie in Ch 7, enable `credentials: 'include'` on fetc
 
 ## Real breach pattern
 
+To see why this matters, replay a real theft in your head. An XSS script reads the access token from localStorage and calls the API as the user — but the token dies in 15 minutes, limiting the damage. If instead the attacker stole a refresh token stored in a non-httpOnly cookie, they can mint new access tokens for the whole refresh lifetime. That asymmetry is the entire argument for the split storage pattern.
+
 Stolen access token from localStorage → attacker calls API until expiry (15m). Stolen refresh from non-httpOnly cookie worse — longer window.
 
 httpOnly refresh + short access limits damage.
+
+## Common beginner mistakes
+
+1. **localStorage for the access token** — the single most common MERN auth mistake, and it *works*, which is why it survives. It is the easiest credential for any XSS script to reach.
+2. **Storing the refresh token anywhere JS can read it** — if you store the refresh token in localStorage, the httpOnly cookie step is pointless; you handed the long-lived key to the same attackers.
+3. **No `Secure` flag in production** — without it the refresh cookie travels over plain HTTP on a deployed site. Production needs `Secure`; localhost is the only exception.
+4. **Logging tokens in dev and forgetting** — `console.log(token)` in a shared terminal or demo recording becomes a credential leak.
 
 ## ✅ Do / ❌ Don't
 
@@ -92,7 +123,7 @@ httpOnly refresh + short access limits damage.
 
 ## Reflect
 
-<OpenQuestion id="01KZ63P575R6K0VT0C7SKRZ0BZ" />
+<OpenQuestion id="01KZAX76C6V5RHM3AMXBXK6TXW" />
 
 
 

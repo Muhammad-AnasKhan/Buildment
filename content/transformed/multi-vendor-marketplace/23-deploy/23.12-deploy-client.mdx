@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Mentors evaluate the **shop URL**, not your
 ---
 **Why this step matters:** Mentors evaluate the **shop URL**, not your git repo. This step puts the React build where browsers can load it — with SPA fallback so `/shop` refresh does not 404.
 
+**Where the project is now:** API is live over HTTPS (23.10–23.11); the React client still runs on Vite dev with a local `VITE_API_URL`.
+
 **After this step:** Production client URL loads React app and fetches production API.
 
 ## Deploy contract
@@ -15,7 +17,7 @@ summary: "**Why this step matters:** Mentors evaluate the **shop URL**, not your
 | Vercel / Netlify | Connect repo; root `client/`; build `npm run build`; output `dist` |
 | Same VPS | Copy `dist/` to `/var/www/app`; Nginx static root |
 
-Set build env `VITE_API_URL` in host UI — same as 22.9.
+Set build env `VITE_API_URL` in host UI — same as 23.9.
 
 ## SPA fallback
 
@@ -47,8 +49,8 @@ Without this, `/shop` refresh returns 404.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5QJP150ZY636P4CNHQ8" />
+<OpenQuestion id="01KZAX795FAW1KAYYCJ3342SWA" />
 
 ## Next
 
-**Sub-chapter 23.13:** Smoke test production.
+**Sub-chapter 23.13:** Smoke test production — both halves are deployed; verify the whole system works in the real environment.

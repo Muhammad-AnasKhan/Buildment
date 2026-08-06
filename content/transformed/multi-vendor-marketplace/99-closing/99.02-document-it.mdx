@@ -4,6 +4,12 @@ module: 24
 lesson: 2
 summary: "Hiring managers and mentors cannot read 22 chapters. They read **three docs and watch one video**. This sub-chapter specifies what to commit under `docs/`."
 ---
+**Why this step matters:** Hiring managers and mentors cannot read 22 chapters. They read **three docs and watch one video** — so your documentation is part of the deliverable, not an afterthought.
+
+**Where the project is now:** Marketplace is built and deployed to HTTPS (Ch 23) — but the repo holds no `docs/` story for a reviewer.
+
+**After this step:** Your repo holds `docs/erd.md`, `docs/architecture.md`, `docs/DEMO.md`, and `docs/CHALLENGES.md` — enough for anyone to understand, reproduce, and audit what you built.
+
 Hiring managers and mentors cannot read 22 chapters. They read **three docs and watch one video**. This sub-chapter specifies what to commit under `docs/`.
 
 Good documentation is not busywork — it is how you prove you **understood** what you built, not just followed steps.
@@ -145,19 +151,31 @@ MongoDB · Express · React · Node · Redis · BullMQ · Cloudinary · Stripe
 
 <FaqItem question="Can I use AI to write architecture.md?">
 
-You may draft with AI; you must **verify every box** matches your repo. Viva will expose diagrams that lie.
+You may use AI to draft it, but you must verify every box and arrow matches your actual repo. Viva questions dig into the architecture, and an evaluator will notice a diagram that doesn't match your code — that's worse than no diagram. Open your own files, confirm each connection, and fix anything that's wrong. The doc is evidence of your understanding, so it has to be true, not just pretty.
 
 </FaqItem>
 
-<FaqItem question="My ERD changed since Ch 5. Is that bad?">
+<FaqItem question="My ERD changed since Chapter 5. Is that bad?">
 
-Normal. Update `docs/erd.md` to match reality and note drift in CHALLENGES if significant.
+It's normal, and it usually means you were learning. Projects drift as you add fields and constraints, and the final ERD should reflect the real Mongoose models you shipped, not the draft from the early weeks. Update `docs/erd.md` to match reality, highlight the snapshot fields on orders, and if a change was significant, note it in CHALLENGES. An accurate current ERD beats a pretty stale one.
 
 </FaqItem>
 
 <FaqItem question="How long should CHALLENGES entries be?">
 
-Half page each is plenty. Specific beats long.
+About half a page per entry is plenty. Use the four-part format — Problem, Cause, Fix, Lesson — and keep it specific to your repo. A two-sentence "CORS was broken, I fixed it" teaches nobody; a concrete entry naming the symptom, the file you changed, and what you'd do earlier is gold. Mentors read this file first for signal, so five short honest entries beat one polished novel.
+
+</FaqItem>
+
+<FaqItem question="Why do I need docs if my code works?">
+
+Because a mentor can't read your mind — or your whole codebase — to see why you made the decisions you did. Docs translate your work into evidence of understanding. The comparison in this sub-chapter says it plainly: without docs, "I built a MERN app"; with `architecture.md`, "here's how the API, worker, and Redis interact." Documentation is how you prove the architecture is deliberate, not accidental.
+
+</FaqItem>
+
+<FaqItem question="I didn't hit any serious bugs. What do I put in CHALLENGES.md?">
+
+You almost certainly hit something worth writing about — a CORS error, a stale cache after a PATCH, the worker running but no notifications, a Stripe webhook signature failing. Small debugging sessions count, and they're the most relatable entries anyway. The bar is honesty and specificity, not drama. If genuinely nothing failed, document a design decision you had to think hard about and the alternatives you rejected.
 
 </FaqItem>
 
@@ -186,8 +204,8 @@ Half page each is plenty. Specific beats long.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5R7ZS3JY30MYBJS1AZ5" />
+<OpenQuestion id="01KZAX79732JS2RS43N5K5NWP9" />
 
 ## Next
 
-**Sub-chapter 99.3:** Bar-raiser and evaluation.
+**Sub-chapter 99.3:** Bar-raiser and evaluation — documentation done; the final step is proving you can defend every decision you made.

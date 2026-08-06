@@ -14,6 +14,8 @@ FreshMarket is **not** Amazon shipping from one warehouse. It is **many independ
 
 ## In plain English
 
+Four terms carry the whole chapter. Learn them once and the checkout split in Chapter 18 stops being mysterious.
+
 | Term | Simple meaning |
 |---|---|
 | **Denormalize** | Copy a fact (storeId) onto the cart line even though product already has it — on purpose |
@@ -73,7 +75,7 @@ Server **validates** `product.storeId === body.storeId` — reject mismatch (400
 
 ## Relationship to product ref
 
-Cart line typically stores:
+A cart line carries four fields — three are ordinary, the fourth is the deliberate copy this sub-chapter is about.
 
 | Field | Purpose |
 |---|---|
@@ -119,10 +121,8 @@ Strong answer starts with cart lines grouped by storeId stored at add time; chec
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5FSK56F2213YXDKV4FF" />
+<OpenQuestion id="01KZAX77WTGF5SZSDPNZWTXDR1" />
 
 ## Next
 
-**Sub-chapter 16.3:** What you'll build — cart CRUD API blueprint.
-
-Contract table before module scaffold.
+**Sub-chapter 16.3:** What you'll build — cart CRUD API blueprint with the contract table before the module scaffold.

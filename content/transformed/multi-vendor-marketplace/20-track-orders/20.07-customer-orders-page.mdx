@@ -6,7 +6,7 @@ summary: "**Why this step matters:** Confirmation is a one-time screen — order
 ---
 **Why this step matters:** Confirmation is a one-time screen — order history is where customers return days later. This page proves snapshot prices stay correct when vendors change the catalogue.
 
-**Where the project is now:** Confirmation page shows orders after checkout (19.6). No persistent **order history** route — refresh or return later has no dedicated home.
+**Where the project is now:** Confirmation page shows orders after checkout (20.6). No persistent **order history** route — refresh or return later has no dedicated home.
 
 **After this step:** `/orders` lists customer history from `GET /orders/my` — split orders as separate cards with snapshot line prices.
 
@@ -17,8 +17,8 @@ History is where the **price snapshot trap** (Ch 18) shows in UI. Every line rea
 | Gate | Verify |
 |---|---|
 | Ch 18.15 | `GET /orders/my` works via curl |
-| 19.6 | `OrderLineRow` snapshot display exists |
-| 19.9 | `OrderStatusBadge` wired (can stub `pending` first) |
+| 20.6 | `OrderLineRow` snapshot display exists |
+| 20.9 | `OrderStatusBadge` wired (can stub `pending` first) |
 
 ## Target files
 
@@ -69,7 +69,7 @@ Response: array or `{ orders: [...] }` — match vendor list envelope. Sort `{ c
 | `total` | Prominent total |
 | `orderItems` | `OrderLineRow` list or expandable section |
 
-**Split orders:** Two orders from one checkout → **two cards** — do not merge. Match confirmation formatting (19.6).
+**Split orders:** Two orders from one checkout → **two cards** — do not merge. Match confirmation formatting (20.6).
 
 Add **Orders** nav link; confirmation "View all orders" → `/orders`. Customer role only.
 
@@ -127,7 +127,7 @@ curl -s http://localhost:5000/api/orders/my \
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5KW2WFVQV61SRVRXYZW" />
+<OpenQuestion id="01KZAX78KY0HSWBQ1GESEWRAXD" />
 
 ## Next
 

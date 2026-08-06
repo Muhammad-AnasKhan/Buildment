@@ -8,6 +8,8 @@ Not every server action belongs in a worker. Use this table when deciding sync v
 
 ## Decision matrix
 
+The question is never "is this a cool use of a queue?" — it is "who is allowed to wait?" Read each row as: *does the user need this result now, or can it be delivered in the background?*
+
 | Work | Sync in HTTP handler? | Queue instead? | FreshMarket example |
 |---|---|---|---|
 | Validate input | ✓ Always | ✗ | Cart empty → 400 |
@@ -16,7 +18,7 @@ Not every server action belongs in a worker. Use this table when deciding sync v
 | Third-party API (email, SMS) | ✗ | ✓ | Order confirmation |
 | Retryable side effects | ✗ | ✓ | Notify vendor after timeout |
 | Heavy CPU (image resize) | ✗ | ✓ | Already sync in Ch 13 — could queue later |
-| Cache invalidation | ✓ or queue | Either | Ch 21 sync OK; 21.16 async optional |
+| Cache invalidation | ✓ or queue | Either | Ch 21 sync OK; 22.16 async optional |
 | Read-only aggregation | ✓ | ✗ | GET /products — use cache not queue |
 
 **Rule of thumb:** If the user needs the result **now** to continue the flow → sync. If failure can be **retried later** without blocking UX → queue.
@@ -73,7 +75,7 @@ Split jobs by **bounded context**: commerce commit in API; notifications in work
 
 Client double-clicks checkout → two orders (Ch 18 noted). Queue does not fix that.
 
-For notifications: use **deterministic `jobId`** per event — e.g. `order-created:<checkoutBatchId>` — so duplicate enqueue does not double-email. Details in 21.14.
+For notifications: use **deterministic `jobId`** per event — e.g. `order-created:<checkoutBatchId>` — so duplicate enqueue does not double-email. Details in 22.14.
 
 ## ✅ Do / ❌ Don't
 
@@ -94,7 +96,7 @@ For notifications: use **deterministic `jobId`** per event — e.g. `order-creat
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5NNKPA07XSN651W8EDN" />
+<OpenQuestion id="01KZAX78WZ89BT25P84EVY34FM" />
 
 ## Next
 

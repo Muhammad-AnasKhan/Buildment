@@ -4,9 +4,9 @@ module: 11
 lesson: 11
 summary: "Prices change, stock runs low, typos get fixed. `PATCH /products/:id` needs ownership assert on every call — the route Chapter 8's IDOR test foreshadowed. The publish toggle in Chapter 12 also uses this endpoint."
 ---
-## Why this step matters
+**Why this step matters:** Prices change, stock runs low, typos get fixed. `PATCH /products/:id` needs ownership assert on every call — the route Chapter 8's IDOR test foreshadowed. The publish toggle in Chapter 12 also uses this endpoint.
 
-Prices change, stock runs low, typos get fixed. `PATCH /products/:id` needs ownership assert on every call — the route Chapter 8's IDOR test foreshadowed. The publish toggle in Chapter 12 also uses this endpoint.
+**Where the project is now:** Create (11.9) and list (11.10) work; `PATCH /products/:id` is a stub — prices and stock cannot change.
 
 **After this step:** `PATCH /api/products/:id` updates own product → **200**. Cross-vendor → **403**. Not found → **404**.
 
@@ -88,8 +88,8 @@ git commit -m "feat(products): add PATCH update product with ownership"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5BMPE1CM14ZWBQM5KV4" />
+<OpenQuestion id="01KZAX775BT202SK0DBAE9NSW8" />
 
 ## Next
 
-**Sub-chapter 11.12:** Delete product route.
+**Sub-chapter 11.12:** Delete product route — updates work; round out the lifecycle with removal and its ownership check.

@@ -2,133 +2,105 @@
 title: "Set the scene"
 module: 3
 lesson: 1
-summary: "**Where the project is now:** Chapter 2 left you with a running skeleton — Express API, React client, `GET /health` working in curl and in the browser. Data does not persist yet. Restart the server and the only truth is \"the process is up.\" Vendors, products, carts, and orders ex"
+summary: "Your marketplace skeleton is running — Express API, React client, health check working. Now it's time to give your app a memory. Before installing MongoDB (Chapter 4) or writing schemas (Chapter 5), you need to decide what kind of database fits your grocery marketplace and sketch what collections you'll need."
 ---
-**Where the project is now:** Chapter 2 left you with a running skeleton — Express API, React client, `GET /health` working in curl and in the browser. Data does not persist yet. Restart the server and the only truth is "the process is up." Vendors, products, carts, and orders exist only as empty folders under `server/src/modules/`.
+# 3.1 — Set the scene
 
-**Where this chapter goes:** Before you install Mongoose or paste a connection string (Chapter 4), you decide **what kind of database** this marketplace needs — and you sketch **what collections** you'll create in Chapter 5.
+## Where we are now
 
-This is a **concept chapter**. There is no new API endpoint to demo. The gate is **understanding + applied design work** in your repo: an ERD draft committed to `docs/erd-draft.md`.
+Chapter 2 left you with a running skeleton — Express API, React client, `GET /health` working in curl and in the browser. You can start the server and see "ok" in the browser. But here's the problem: **restart the server and every vendor, product, cart, and order disappears.** Your app has no memory yet.
 
-## Bridge from last chapter
+&lt;Callout type="warning" title="What's missing?">
+Your module folders under `server/src/modules/` exist but they're empty. Data doesn't persist. This chapter is where we decide what goes in those folders — before writing a single line of database code.
+&lt;/Callout>
 
-Chapter 2 left you with something you can **run and demo**: Express on one port, React on another, `GET /health` returning JSON in curl and on the Home page. You created `server/src/modules/` with empty placeholders — auth, stores, products, cart, orders — and a `docs/` folder waiting for design work. That skeleton proves HTTP works; it does not **remember** anything. Restart the server and no vendor, product, or cart survives.
+## Where we're going
 
-What carries forward: your folder names, your two-app habit, and the module boundaries you committed to. What you add now is **deliberate data design** before installing Mongoose or pasting a connection string. Professional teams sketch how entities relate before they write schemas — you will do the same in `docs/erd-draft.md`.
+Before you install Mongoose or paste a connection string (Chapter 4), you'll decide **what kind of database** this marketplace needs and sketch **what collections** you'll create in Chapter 5.
 
-The hat you wear now is **data architect for FreshMarket**. You are not wiring MongoDB yet (Chapter 4) or writing Mongoose models (Chapter 5). You are deciding *why* documents fit this grocery marketplace, *what* collections you need, and *when* to embed vs reference — especially for order receipts. When connection code arrives, it implements a blueprint you already understand.
+This is a **design chapter**. There's no new API endpoint to demo yet. The deliverable is understanding + a design file: `docs/erd-draft.md`.
 
-## In plain English
+&lt;ProjectPreview
+  title="What you'll decide in this chapter"
+  description="By the end of Chapter 3, you'll have a clear data plan for your marketplace — which database to use, what collections to create, and how data relates."
+  features=&#123;[
+    "Database choice: Why MongoDB fits this grocery marketplace",
+    "Collections list: users, stores, products, carts, orders",
+    "Relationships: embed vs reference decisions",
+    "ERD diagram: a visual blueprint committed to your repo"
+  ]&#125;
+  techStack=&#123;["MongoDB", "Mongoose"]&#125;
+/>
 
-| Term | Meaning |
+## Why this chapter matters
+
+Your app will store:
+
+- **Users** with roles (vendor vs customer)
+- **Stores** owned by vendors
+- **Products** with grocery-specific fields (unit, stock, perishability)
+- **Cart items** tied to customers and products
+- **Orders** split per vendor with **snapshotted prices**
+
+You *could* store that in PostgreSQL, MySQL, MongoDB, or something else. The choice affects:
+
+- How you model **ownership** (vendor → store → product)
+- How you model **order lines** (embedded snapshots vs join tables)
+- How you enforce **multi-vendor checkout** (one cart → many orders)
+- How you query the **public catalogue** (filters, pagination, search)
+
+Picking a database because "MERN starts with M" is how tutorials teach. Picking a database because **this product's needs fit** is how engineers ship.
+
+&lt;Callout type="info" title="The order matters">
+decide → connect → implement. Chapter 3 decides. Chapter 4 connects. Chapter 5 implements. Don't skip ahead.
+&lt;/Callout>
+
+## Key terms — plain English
+
+| Term | What it means |
 |---|---|
 | **Database** | Where the app stores data permanently — survives server restarts |
 | **Document** | One JSON-like record in MongoDB — e.g. one product, one order |
-| **Collection** | A named group of documents — like a table, but without fixed columns for every row |
-| **Schema / model** | The rules for what fields a document must have — enforced in code (Chapter 5) |
-| **Reference** | Storing another document's id and looking it up when needed — like a foreign key |
-| **Embed** | Copying sub-objects inside a parent document — e.g. order line items inside an order |
-| **ERD** | Entity-relationship diagram — a picture of collections and how they connect |
-| **ODM (Mongoose)** | A library that defines schemas and talks to MongoDB from Node |
+| **Collection** | A group of documents — like a table, but without fixed columns |
+| **Schema / model** | The rules for what fields a document must have (Chapter 5) |
+| **Reference** | Storing another document's ID and looking it up when needed |
+| **Embed** | Copying sub-objects inside a parent document |
+| **ERD** | Entity-relationship diagram — a map of your data |
 
 ## Think of it like…
 
-**Planning shelf labels before the warehouse opens.** Chapter 2 built the building (skeleton). This chapter decides what goes on each shelf — users here, stores there, products with grocery units, carts, orders with frozen receipt lines. You are not moving stock in yet; you are drawing the layout so Chapter 4 can connect the warehouse and Chapter 5 can fill shelves without guessing where things belong.
+**Planning shelf labels before the warehouse opens.** Chapter 2 built the building (skeleton). This chapter decides what goes on each shelf — users here, stores there, products with grocery units, carts, orders with frozen receipt lines. You're not moving stock in yet; you're drawing the layout so Chapter 4 can connect the warehouse and Chapter 5 can fill shelves without guessing.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
 <FaqItem question="Why not install MongoDB in Chapter 2?">
 
-Because you would connect before knowing **what shape** your data needs. Grocery products need units and perishability; orders need price snapshots. Designing first prevents copy-paste schemas that break at checkout.
+Because you'd be setting up a database before you know what data it has to hold, and that's the fastest way to build a schema you have to throw away. The products in a grocery marketplace don't just have names — they need `unit`, `price`, `stockQty`, and maybe a perishability flag — and orders need price snapshots so a receipt never changes after checkout. Chapters 3–5 make you design the shapes first (the `docs/erd-draft.md`) and only then connect the engine that fits them. Install early and you'll end up fighting a generic schema with copy-paste workarounds exactly when checkout needs it most.
 
 </FaqItem>
 
-<FaqItem question="Is this chapter just reading — does my repo change?">
+<FaqItem question="Is this just reading — does my repo change?">
 
-You **commit** `docs/erd-draft.md` and actor narratives in sub-chapters 3.8–3.9. That is real project progress — design artifacts live beside code in professional teams.
-
-</FaqItem>
-
-<FaqItem question="MongoDB was chosen for MERN — do I need to agree?">
-
-For **this repo**, yes — chapter paths assume Mongoose and documents. You must also articulate **when SQL would compete** (reporting, strict FK enforcement). Interviewers want trade-offs, not fanboyism.
+Your repo changes, just not with code. In sub-chapters 3.8–3.9 you commit `docs/erd-draft.md` — a design document that sketches your collections, their fields, and the relationships between them. That's not busywork: professional teams review a data model on paper before anyone writes a single `mongoose.model()`. So yes, you'll have real git history and a concrete deliverable from this chapter; it's just design-shaped rather than code-shaped.
 
 </FaqItem>
 
-<FaqItem question="What's the difference between `erd-draft.md` and code in Chapter 5?">
+<FaqItem question="I don't know MongoDB deeply. Can I still do this?">
 
-Draft is your **plan**; Mongoose models are the **enforceable plan**. They should match. If they diverge, fix the draft or the model — do not leave both telling different stories.
-
-</FaqItem>
-
-<FaqItem question="I don't know SQL or MongoDB deeply. Can I still do this chapter?">
-
-Yes. Sub-chapters 3.4–3.6 explain both styles using **the same marketplace entities** side by side. You need curiosity, not prior DBA experience.
+Yes — this chapter is built for exactly that situation. Sub-chapters 3.4–3.6 introduce SQL and MongoDB side by side using the same FreshMarket entities (users, stores, products, carts, orders), so you compare how each would model the same thing without needing background in either. You don't need to master MongoDB to follow; you need curiosity and a willingness to sketch. The gate is the ERD draft plus being able to explain embed vs reference in your own words — both fully covered here.
 
 </FaqItem>
 
 </FaqGroup>
 
 
-## Why every marketplace needs a deliberate database choice
-
-Your app will store:
-
-- **Users** with roles (vendor vs customer)  
-- **Stores** owned by vendors  
-- **Products** with grocery-specific fields (unit, weight, perishability, stock)  
-- **Cart items** tied to customers and products  
-- **Orders** split per vendor with **snapshotted prices**  
-
-You could store that in PostgreSQL, MySQL, MongoDB, or something else. The choice affects:
-
-- How you model **ownership** (vendor → store → product)  
-- How you model **order lines** (embedded snapshots vs join tables)  
-- How you enforce **multi-vendor checkout** (one cart → many orders)  
-- How you query the **public catalogue** (filters, pagination, search, cache)
-
-Picking a database because "MERN starts with M" is how tutorials teach. Picking a database because **this product's read/write patterns fit** is how engineers ship.
-
-## The question this chapter answers
-
-> **For a multi-vendor local grocery marketplace, why MongoDB — and when would relational be the better call?**
-
-By the end you will:
-
-- Compare relational and document models **honestly**  
-- Mandate **MongoDB + Mongoose** for this course (with reasons tied to the domain)  
-- Decide **embed vs reference** for orders, cart, and products  
-- Produce **`docs/erd-draft.md`** — collections, refs, embedded shapes — before writing schemas  
-
-Chapter 5 implements what you sketch here. Chapter 4 connects the wire. **Order matters:** decide → connect → implement.
-
-## What this chapter is not
-
-- **Not** installing MongoDB — Chapter 4  
-- **Not** writing Mongoose schemas — Chapter 5  
-- **Not** a MongoDB tutorial from zero — you revise document basics in 1.5; we go deep on **modelling for this app**  
-- **Not** an essay you read without touching your repo — sub-chapters 3.8–3.9 **write files in your project**
-
-## How concept chapters still move the project (Rule 28)
-
-Concept chapters that only produce paragraphs fail the course bar. Here, applied work means:
-
-1. **List collections** your marketplace needs  
-2. **Sketch relationships** — User owns Store, Store has Products, Customer has CartItems, Checkout creates Orders  
-3. **Commit** `docs/erd-draft.md` (paper photo, Excalidraw export, or Mermaid in markdown — your choice)  
-4. **Write learning log** proving you can explain the decision, not parrot it  
-
-When Chapter 5 says *"create `products.model.js` with unit enum"*, you'll already know **why** that file lives in `modules/products/` and **what** references it holds.
-
-## Continuity from Chapter 2
-
-Your module folders were empty placeholders:
+## Your module folders — a quick reminder
 
 ```
 server/src/modules/
-  auth/       ← User, Profile, tokens (Ch 5–6)
+  auth/       ← User, Profile, tokens (Ch 5-6)
   stores/     ← Store (Ch 5, 9)
   products/   ← Product (Ch 5, 11)
   cart/       ← CartItem (Ch 5, 16)
@@ -137,24 +109,35 @@ server/src/modules/
 
 This chapter names **what documents** live in each module before code arrives.
 
-## Reading pace
+## How to read this chapter
 
 | Sub-chapter | Focus |
 |---|---|
-| 3.1–3.3 | Problem framing |
-| 3.4–3.7 | Compare, decide, embed vs ref, reads |
-| 3.8–3.9 | **Your ERD** in repo |
-| 3.10 | Key takeaways gate |
+| 3.1–3.3 | Problem framing — why grocery data is special |
+| 3.4–3.7 | Compare models, decide, learn embed vs reference |
+| 3.8–3.9 | **Your ERD** — the design file in your repo |
+| 3.10 | Checklist gate before Chapter 4 |
 
-Estimated time: **half a day to one day** — less typing than Chapter 2, more thinking.
+&lt;Callout type="tip" title="Pace yourself">
+This chapter is less typing than Chapter 2, more thinking. Estimated time: half a day to one day. There's no shame in re-reading a section.
+&lt;/Callout>
 
 ## Self-check before continuing
 
-- [ ] Chapter 2 gate cleared (health demo works)  
-- [ ] You can name the two actors and the ownership chain at a high level  
-- [ ] `docs/` folder exists in your repo (created in 2.8)  
+- [ ] Chapter 2 gate cleared (health demo works)
+- [ ] You can name the two actors (vendor and customer)
+- [ ] `docs/` folder exists in your repo
 
-Next: why grocery specifically pushes on data shape — not generic e-commerce.
+&lt;ChapterRecap
+  points=&#123;[
+    "Chapter 2 gave us a running skeleton — but no data persists after restart",
+    "This chapter decides what database to use and sketches the data design",
+    "The order is: decide (Ch 3) → connect (Ch 4) → implement (Ch 5)",
+    "Your deliverable is `docs/erd-draft.md` — a blueprint for Chapter 5"
+  ]&#125;
+/>
+
+**Next:** Why grocery data is different from generic products — and why that matters for your database choice.
 ## Before you continue
 
-<OpenQuestion id="01KZ63P51VYM83MKGJ2HARZM2F" />
+<OpenQuestion id="01KZAX75H51R05H4K64S44CKBV" />

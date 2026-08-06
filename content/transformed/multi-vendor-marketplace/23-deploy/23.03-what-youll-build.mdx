@@ -2,9 +2,9 @@
 title: "What you'll build"
 module: 23
 lesson: 3
-summary: "Deploy is not one button — it is a **checklist of deliverables** that prove your localhost app lives on the internet. Read this before choosing a host in 22.4."
+summary: "Deploy is not one button — it is a **checklist of deliverables** that prove your localhost app lives on the internet. Read this before choosing a host in 23.4."
 ---
-Deploy is not one button — it is a **checklist of deliverables** that prove your localhost app lives on the internet. Read this before choosing a host in 22.4.
+Deploy is not one button — it is a **checklist of deliverables** that prove your localhost app lives on the internet. Read this before choosing a host in 23.4.
 
 ## Deliverables
 
@@ -41,7 +41,7 @@ Browser → HTTPS CDN/static host (client)
        → Worker host (same Redis + MongoDB as API)
 ```
 
-**You pick** one path in 22.4 — document yours in README.
+**You pick** one path in 23.4 — document yours in README.
 
 ## Client build contract
 
@@ -58,18 +58,18 @@ The API URL is **frozen at build time** — not read from a runtime file on Verc
 
 | Sub-chapter | Action |
 |---|---|
-| 22.7 | Verify local app + gather env values |
-| 22.8 | Complete `.env.example` + host panels |
-| 22.9 | Production client build |
-| 22.10 | Deploy API |
-| 22.11 | HTTPS / domain |
-| 22.12 | Deploy client |
-| 22.13 | Smoke tests on live URLs |
-| 22.14 | Restart survival — API + worker |
+| 23.7 | Verify local app + gather env values |
+| 23.8 | Complete `.env.example` + host panels |
+| 23.9 | Production client build |
+| 23.10 | Deploy API |
+| 23.11 | HTTPS / domain |
+| 23.12 | Deploy client |
+| 23.13 | Smoke tests on live URLs |
+| 23.14 | Restart survival — API + worker |
 
 ## Gate headline
 
-Paste **live client HTTPS URL** in learning log 22.16.
+Paste **live client HTTPS URL** in learning log 23.16.
 
 ## Common beginner questions
 
@@ -77,19 +77,31 @@ Paste **live client HTTPS URL** in learning log 22.16.
 
 <FaqItem question="Is deploy a coding chapter?">
 
-Mostly **configuration and verification** — few new features. The code is done; ops begins.
+Mostly not — it's a configuration and verification chapter. The code is done; operations begin. You'll copy the API to a host, build the client with a production `VITE_API_URL`, run the worker as a second process, and prove the pieces work over HTTPS with smoke tests. Expect the "coding" here to be small config fixes, not new features. That's normal — a big part of real engineering is shipping what already works.
 
 </FaqItem>
 
-<FaqItem question="Free tier enough?">
+<FaqItem question="Is the free tier enough?">
 
-Usually yes for course gate. Note cold-start delays in learning log if health check is slow after idle.
+Usually yes for the course gate. Render, Railway, and Vercel free tiers can run a small API, worker, and static client — just be ready for cold starts: after being idle, the first request can take 30–60 seconds to wake the service. If your health check is slow after idle, that's expected; note it in your learning log and retry the smoke test once.
 
 </FaqItem>
 
 <FaqItem question="One service or three?">
 
-Minimum: API service + worker service + static client. Can be two on VPS (API+worker via PM2, nginx for client).
+Minimum is three pieces: the API service, the worker service, and the static client host. On a VPS you can compress that to two homes — PM2 runs both the API and worker on one machine, and nginx serves the built client. On PaaS, the worker is a second service from the same repo with the start command `npm run worker`. The worker is non-negotiable: deploy API and client alone and notifications silently stop.
+
+</FaqItem>
+
+<FaqItem question="What is a smoke test, and why run it on the live URL?">
+
+A smoke test is a quick sanity check that the critical paths work — health returns `db: connected`, a customer can log in, browse, and check out, and the worker logs notifications afterward. You run it on the production URLs, not localhost, because that's what a mentor will do. Passing locally proves nothing about DNS, CORS, env vars, or the worker on the host; the live URL is the only place all of those can fail.
+
+</FaqItem>
+
+<FaqItem question="Why is `VITE_API_URL` frozen at build time?">
+
+Because Vite is a build tool: when you run `npm run build`, it replaces `import.meta.env.VITE_API_URL` with whatever value you provided and bakes it into the static files in `client/dist/`. Those files don't load any runtime config — the API URL is literally in the bundle. So the value must be correct *at build time*, and changing it later means rebuilding and redeploying the client.
 
 </FaqItem>
 
@@ -99,7 +111,7 @@ Minimum: API service + worker service + static client. Can be two on VPS (API+wo
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5Q07NAREWG1WPDPPS8E" />
+<OpenQuestion id="01KZAX792D8FNTE9X54TN5TT5E" />
 
 ## Next
 

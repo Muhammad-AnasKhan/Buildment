@@ -4,9 +4,9 @@ module: 11
 lesson: 13
 summary: "Chapter 8 proved store isolation; this step proves **product** isolation — Vendor B cannot PATCH Vendor A's kale. Same curl template, new resource. The Chapter 11 gate depends on this negative test, not just happy-path create."
 ---
-## Why this step matters
+**Why this step matters:** Chapter 8 proved store isolation; this step proves **product** isolation — Vendor B cannot PATCH Vendor A's kale. Same curl template, new resource. The Chapter 11 gate depends on this negative test, not just happy-path create.
 
-Chapter 8 proved store isolation; this step proves **product** isolation — Vendor B cannot PATCH Vendor A's kale. Same curl template, new resource. The Chapter 11 gate depends on this negative test, not just happy-path create.
+**Where the project is now:** Product CRUD works for the owning vendor (11.8–11.12); nothing yet proves Vendor B cannot touch Vendor A's products.
 
 **After this step:** Full **vendor product lifecycle** and **isolation suite** recorded for learning log — the Chapter 11 proof.
 
@@ -99,7 +99,7 @@ git commit -m "docs: document vendor product API and cross-vendor tests"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5BQK3WNQDP9C5ZCSPF2" />
+<OpenQuestion id="01KZAX7767RF6EDEVS9CP7CCFF" />
 
 ## Next
 

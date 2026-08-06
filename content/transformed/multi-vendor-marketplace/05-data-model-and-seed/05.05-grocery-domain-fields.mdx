@@ -16,21 +16,33 @@ Without `unit`, your UI cannot show "£2.49 / bunch" vs "£2.49 / kg" — a groc
 
 <FaqGroup>
 
+<FaqItem question="Why can't price just be a number?">
+
+It is a number — it just needs a partner field to say what the customer gets for it. £2.49 means very different things per bunch, per kilogram, or per litre, and grocery customers care about that. The `unit` field (an enum like `each`, `bunch`, `kg`, `g`, `L`, `ml`, `pack`) explains the price, so the UI can display "£2.49 / bunch" instead of a bare "£2.49". Without `unit`, you'd be showing the same number for bananas and milk with no way to compare value. That one enum is what makes FreshMarket feel like a real shop.
+
+</FaqItem>
+
 <FaqItem question="Can I use string price for display formatting?">
 
-Store **Number** in the database; format in UI. Math and checkout need numbers.
+No — store price as a Number in the database and format it only in the UI. If you save "£2.49" as a string, arithmetic becomes painful: summing cart totals, comparing prices, or computing checkout amounts all need a number. The database is the source of truth for computation, so `price` and `stockQty` should be Numbers; converting to a display string like "£2.49" is a frontend concern that belongs in the UI layer. A string might look nicer in Compass, but it quietly breaks every maths operation your checkout chapter will need.
 
 </FaqItem>
 
-<FaqItem question="What if my local shop sells by weight at counter?">
+<FaqItem question="What's the difference between `unit` and `weightOrQuantity`?">
 
-MVP cart uses integer unit counts — weighted items are stretch. Still model `unit` enum for kg/pack.
+`unit` says how the product is sold; `weightOrQuantity` says the size of one standard unit. Bananas: `unit: 'bunch'`, `weightOrQuantity: 1` (or null) → "£2.49 / bunch". A 500g rice pack: `unit: 'pack'`, `weightOrQuantity: 500` → "£1.89 / pack (500g)". Milk: `unit: 'L'`, `weightOrQuantity: 1` → "£1.20 / L". Not every product needs the size — Cheddar sold per kg can leave it null — but when present, the two fields work as a pair: how it's sold plus how big it is.
 
 </FaqItem>
 
-<FaqItem question="Is `isPublished` necessary before catalogue API?">
+<FaqItem question="What if my local shop sells by weight at the counter?">
 
-Yes — vendors draft products before they go live; public catalogue filters published items (Chapter 14).
+That's a real grocery feature, but the MVP cart counts whole units — so weighted goods are a stretch goal, not part of the core build. For the course, `CartItem.quantity` is a count of units: 2 bunches, 3 packs, never 500 grams. Letting a customer pick "500g of Cheddar at £8.99/kg" needs variable-quantity cart lines and price calculation at checkout, which is extra complexity beyond scope. You still include `unit` in your enum (like `kg`) so the schema isn't painted into a corner, and you note weighted items in the README as a stretch.
+
+</FaqItem>
+
+<FaqItem question="Is `isPublished` necessary before the catalogue API?">
+
+Yes — it's the field that separates "draft" from "on the shelf", and the public catalogue filters on it. Vendors shouldn't be forced to publish a product the moment they create it; they need a draft state while they set price, stock, and photos. Default it to `false`, and the vendor explicitly flips it live in the dashboard (Chapter 12). The public catalogue (Chapter 14) only returns products where `isPublished: true`, so a half-finished product never leaks onto the customer-facing page. A small boolean with a big job.
 
 </FaqItem>
 
@@ -49,6 +61,8 @@ Yes — vendors draft products before they go live; public catalogue filters pub
 Interviewers notice when your portfolio marketplace understands its domain.
 
 ## Product schema — grocery field specification
+
+Every field below earns its place — each one exists because a later chapter needs it for checkout, the catalogue, or photos:
 
 | Field | Type | Required | Example | Notes |
 |---|---|---|---|---|
@@ -112,6 +126,8 @@ Suggested seed mix per store:
 
 ## Fields explicitly out of scope
 
+Real grocery platforms track all of these — here's why each one is deliberately deferred in this course:
+
 | Field | Why omitted |
 |---|---|
 | `nutritionalInfo` | Scope — optional stretch |
@@ -153,7 +169,7 @@ Each seeded product must have:
 
 ## Reflect
 
-<OpenQuestion id="01KZ63P54N9HBF4Y0XGTB63SVC" />
+<OpenQuestion id="01KZAX75XZD725MDH6W1RTPC2S" />
 
 
 

@@ -19,6 +19,8 @@ Building Chapter 11 with this split in mind prevents "fix it later" refactors. Y
 
 ## Mandatory read
 
+Before writing the product service, read how Mongoose links documents together. Population is how a product query pulls in its store's name — you will need it the moment the public catalogue and the cart want to display anything beyond a bare id. The three bullets below are the parts to actually understand, not skim.
+
 **Mongoose populate** — linking refs in queries  
 *Mongoose docs: Population*
 
@@ -32,6 +34,8 @@ Chapter 11 vendor list **may skip populate** — vendor knows their store name.
 
 ## Optional reads
 
+Three short topics you do not need to implement now, but should know *exist* before you make the course's default choices — each saves you from discovering the trade-off the hard way in a later chapter.
+
 | Topic | Why |
 |---|---|
 | **Soft delete vs hard DELETE** | Course uses hard delete — note tradeoff |
@@ -39,6 +43,8 @@ Chapter 11 vendor list **may skip populate** — vendor knows their store name.
 | **MongoDB partial indexes** | Published-only index — Ch 14 preview |
 
 ## Ownership mental model
+
+Here is the shape of the three service functions you are about to write. Notice the pattern: `vendorId` comes from the token, `storeId` comes from the database, and the client's body never supplies either one. Internalize the data flow before the build steps — the code is a direct transcription of these three functions.
 
 Before coding service:
 
@@ -77,8 +83,8 @@ The **stockroom door** (vendor routes) shows everything on the shelves — inclu
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5B47TFC7E4YD2WGWB7H" />
+<OpenQuestion id="01KZAX773EBD7J73KHZQ9VXJV9" />
 
 ## Next
 
-**Sub-chapter 11.6:** Quiz placeholder.
+**Sub-chapter 11.6:** Quiz placeholder — reading done; the quiz checks you absorbed the two-views idea before building.

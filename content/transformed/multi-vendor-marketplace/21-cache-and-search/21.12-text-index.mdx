@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Regex search on every product row slows dow
 ---
 **Why this step matters:** Regex search on every product row slows down as the catalogue grows. A text index is the MongoDB-native way to make `?search=rice` scale — Week 4 demo expects search on production.
 
+**Where the project is now:** Cache layer is correct (21.9–21.11) — search still uses regex over every product row; no index.
+
 **After this step:** Product collection has **text index** on `name` and `category`; `GET /products?search=` uses `$text` query.
 
 ## Index creation — spec
@@ -61,8 +63,8 @@ No `search` param → existing list query without `$text`.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5N2XHC6RFBM2AMMD6SV" />
+<OpenQuestion id="01KZAX78T92RYCN16NCSR1PTK6" />
 
 ## Next
 
-**Sub-chapter 21.13:** Explain query.
+**Sub-chapter 21.13:** Explain query — search returns results; prove the index is doing the work instead of a full scan.

@@ -6,6 +6,8 @@ summary: "**Why this step matters:** This is the core cache-aside pattern — th
 ---
 **Why this step matters:** This is the core cache-aside pattern — the shop window stops hitting MongoDB on every repeat glance. HIT/MISS logs here are your first proof the performance layer works.
 
+**Where the project is now:** `redis.js` connects from `REDIS_URL` (21.8) — but catalogue routes still read MongoDB on every request.
+
 **After this step:** `GET /products` checks Redis before MongoDB; stores JSON response on miss.
 
 ## Cache-aside flow
@@ -70,8 +72,8 @@ Pick one — document in README.
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5MR91A79601C43MRK04" />
+<OpenQuestion id="01KZAX78SBSG3FKZCC84XW1YK1" />
 
 ## Next
 
-**Sub-chapter 21.10:** Measure before/after.
+**Sub-chapter 21.10:** Measure before/after — the middleware runs; the last step is proving it made things faster, not just different.

@@ -16,25 +16,31 @@ Chapter 5 is where FreshMarket becomes **real in the database** — not health c
 
 <FaqItem question="Why six models before any routes?">
 
-Routes without schemas guess field names. Register needs User+Profile; checkout needs Order embed shape — define once, reuse everywhere.
+Because every route you'll write later needs a real, predictable shape to read and write against. Think of a schema as the contract between your database and your handlers: register needs User and Profile fields, vendor CRUD needs Store and Product, cart and checkout need CartItem and Order. Define each shape once and every later chapter reuses it. If you wrote routes first, you'd guess field names like `price` vs `cost`, then refactor both the model and every handler that touched it. Strong schemas now mean later chapters mostly wire routes to shapes that already exist.
+
+</FaqItem>
+
+<FaqItem question="Why build CartItem and Order schemas now when their routes don't arrive until much later?">
+
+Because the schema is the contract that the cart and checkout chapters will code against, and it's far cheaper to define it now than to retrofit it. The Order model must embed `orderItems` with snapshot fields like `priceAtPurchase` — that decision shapes how checkout works in Chapter 18, so it belongs with the rest of the data model, not bolted on later. Your final ERD also needs the full picture, and the gate wants seed data visible in Compass. These models aren't dead weight; Chapter 16 and 18 import them directly.
 
 </FaqItem>
 
 <FaqItem question="Must seed create exactly `vendor-a@test.local`?">
 
-Use deterministic test emails documented in README — Chapter 8 isolation tests assume two distinct vendors.
+You don't need that exact string, but you do need deterministic, documented test identities — and this course uses those emails for a reason. Chapter 8's isolation tests assume two distinct vendors they can look up by email. If your seed uses random or undocumented emails, the tests can't find the vendors, and a teammate can't reproduce your data. Decide your test identities once, use them everywhere — seed, login tests, demo scripts — and document them in the README. Predictability is the whole point of seed data.
 
 </FaqItem>
 
-<FaqItem question="What's idempotent seed?">
+<FaqItem question="What's an idempotent seed?">
 
-Running `npm run seed` twice does not duplicate stores — clear-then-insert or upsert; document your approach.
+An idempotent operation gives the same result no matter how many times you run it — so running `npm run seed` twice doesn't leave you with four stores and double products. Two common patterns: clear-then-insert, where the script wipes the collections first then inserts fresh; or upsert, where it inserts new documents and updates existing ones matched by a stable key like email. The goal for FreshMarket is that seed is safe to run repeatedly without polluting the database in ways that break later tests. Document whichever pattern you choose in the README.
 
 </FaqItem>
 
 <FaqItem question="Keep `erd-draft.md`?">
 
-Yes — add `erd.md` as final; diff them in learning log to show design evolution.
+Yes — keep it as the "before" picture, because the diff between draft and final tells the story of your design evolving. The draft from Chapter 3 is a sketch; the final `erd.md` must match your implemented Mongoose schemas field for field. In your learning log, note what changed and why — for example, you added `isPublished` on Product because vendors need a draft state before a product goes live. Keeping both shows an interviewer you don't just ship code; you can explain how a design changed and what drove that decision.
 
 </FaqItem>
 
@@ -166,7 +172,7 @@ Diff draft vs final in learning log. Explain any change (e.g. added `isPublished
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P54FAZPWNXRN4C2QR08F" />
+<OpenQuestion id="01KZAX75X2SH5FCN2YQCCPK3JY" />
 
 ## Next
 

@@ -8,6 +8,8 @@ FreshMarket uses **two-layer authorization**: role-based access control (RBAC) a
 
 ## Roles (RBAC)
 
+Roles are the coarse-grained layer: they decide *which kind of user* may even reach an endpoint. FreshMarket has exactly two, and no admin role in the MVP — keeping the set small keeps the matrix readable.
+
 | Role | Description |
 |---|---|
 | vendor | Operates one store, products, vendor orders |
@@ -18,6 +20,8 @@ No admin role in MVP.
 **requireRole('vendor')** — rejects customer token with 403 before handler runs.
 
 ## Ownership chain lookup
+
+Roles tell you *who may enter the room*; ownership tells you *which room they may touch*. When a route mutates an object by id, the server must load that object and confirm it belongs to the caller — it can never trust the caller's claim. For stores the check is direct; for products it walks one extra hop (product → store → owner), because products are owned through their store.
 
 For mutating Store identified by `:id`:
 
@@ -40,6 +44,8 @@ For Product (Ch 11 preview):
 
 ## Helper function contract
 
+Ownership logic repeats on every vendor route, so it lives in one helper rather than being copy-pasted. A single `assertStoreOwner` means one place to audit when a future chapter adds a new route — and one place to fix if the logic ever changes.
+
 ```
 assertStoreOwner(storeId, userId) → void | throws ForbiddenError
 ```
@@ -49,6 +55,8 @@ Centralize in `shared/ownership.js` — used by store routes, product routes, or
 Throws or returns `{ ok: false }` — consistent error type for route handlers.
 
 ## Combined stack example
+
+This is the full pipeline for a mutating vendor route. Read it as a filter: each stage rejects a different kind of bad actor, and the ones that slip past are caught by the next stage.
 
 **PATCH /api/stores/:id**
 
@@ -65,6 +73,8 @@ Vendor B reaches step 3 — blocked with 403.
 
 ## Customer-scoped resources
 
+Not every resource is owned through a store chain. Cart items and orders belong to a *customer* directly, so the ownership check is a single field match — no chain to walk. Recognizing when a resource is chain-owned versus directly-owned is the modelling half of authorization.
+
 Cart and orders use **direct userId match**:
 
 ```
@@ -76,6 +86,8 @@ No store chain — different ownership model.
 
 ## Matrix preview (full doc in 8.8)
 
+The matrix is how you *prove* a route is safe without reading every handler. Each row names the role and the exact ownership check — if you can write a row, you can implement it.
+
 | Action | Role | Ownership check |
 |---|---|---|
 | PATCH /stores/:id | vendor | store.userId |
@@ -86,7 +98,16 @@ No store chain — different ownership model.
 
 ## Performance note
 
+Every ownership check is one extra database read per mutating request. That cost is trivial at marketplace scale — correct authorization is worth far more than a millisecond. Only if a handler runs several ownership checks should you cache the loaded store on `req` for reuse.
+
 Ownership check adds one DB read per mutating request — acceptable for MVP. Cache storeId on req in handler if multiple checks — optional.
+
+## Common beginner mistakes
+
+1. **Trusting `:id` from the URL without a DB lookup** — the id is just a claim; the DB is the only source of truth for who owns the record.
+2. **Comparing ObjectIds with `==`** — ObjectId vs string comparisons silently fail. Use `.toString()` or `.equals()`.
+3. **Only requiring the role** — `requireRole('vendor')` makes *every* vendor able to touch *every* store; the ownership check is the layer that actually isolates tenants.
+4. **Putting ownership logic inline in each handler** — it drifts. One `assertStoreOwner` helper is auditable; five copies are not.
 
 ## ✅ Do / ❌ Don't
 
@@ -98,7 +119,7 @@ Ownership check adds one DB read per mutating request — acceptable for MVP. Ca
 
 ## Reflect
 
-<OpenQuestion id="01KZ63P58EVP55WYZN575K0B5P" />
+<OpenQuestion id="01KZAX76MJHG1MVQCMS344MJQS" />
 
 
 

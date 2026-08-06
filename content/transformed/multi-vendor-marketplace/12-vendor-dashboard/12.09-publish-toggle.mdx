@@ -4,9 +4,9 @@ module: 12
 lesson: 9
 summary: "Draft vs published is the line between back office and shop window. The toggle PATCHes `isPublished` — the same field Chapter 14 will filter on for customers. Vendors control when items go live without deleting drafts."
 ---
-## Why this step matters
+**Why this step matters:** Draft vs published is the line between back office and shop window. The toggle PATCHes `isPublished` — the same field Chapter 14 will filter on for customers. Vendors control when items go live without deleting drafts.
 
-Draft vs published is the line between back office and shop window. The toggle PATCHes `isPublished` — the same field Chapter 14 will filter on for customers. Vendors control when items go live without deleting drafts.
+**Where the project is now:** Edit page pre-fills and PATCHes (12.8) — every product goes live the moment it is created; there is no draft state.
 
 **After this step:** Vendor can **publish or unpublish** products from edit page (or table) via `PATCH` with `isPublished` — status visible in product list.
 
@@ -90,8 +90,8 @@ git commit -m "feat(client): add product publish toggle via PATCH"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5CHRMPTFA0ZDFKSKM6F" />
+<OpenQuestion id="01KZAX779ZZKABATEYN49FE9ED" />
 
 ## Next
 
-**Sub-chapter 12.10:** Verify full vendor product flow in browser.
+**Sub-chapter 12.10:** Verify full vendor product flow in browser — the toggle is wired; walk the whole list → create → edit → publish journey end to end.

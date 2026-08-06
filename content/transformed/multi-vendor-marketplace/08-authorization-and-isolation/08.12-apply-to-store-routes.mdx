@@ -4,9 +4,7 @@ module: 8
 lesson: 12
 summary: "Middleware in isolation is untested theory. A minimal `PATCH /stores/:id` proves your stack runs in the correct order — `requireAuth` → `requireRole` → `assertStoreOwner` → handler. Chapter 9 extends this file; Chapter 8 proves the guards work."
 ---
-## Why this step matters
-
-Middleware in isolation is untested theory. A minimal `PATCH /stores/:id` proves your stack runs in the correct order — `requireAuth` → `requireRole` → `assertStoreOwner` → handler. Chapter 9 extends this file; Chapter 8 proves the guards work.
+**Why this step matters:** Middleware in isolation is untested theory. A minimal `PATCH /stores/:id` proves your stack runs in the correct order — `requireAuth` → `requireRole` → `assertStoreOwner` → handler. Chapter 9 extends this file; Chapter 8 proves the guards work.
 
 **Where the project is now:** assertStoreOwner and requireRole exist; no store HTTP routes mounted.
 
@@ -114,7 +112,7 @@ git commit -m "feat(stores): add PATCH route with auth and ownership checks"
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P58WTZG24HP54WDEGVJC" />
+<OpenQuestion id="01KZAX76Q983C09K5VPCF8J7FW" />
 
 ## Next
 

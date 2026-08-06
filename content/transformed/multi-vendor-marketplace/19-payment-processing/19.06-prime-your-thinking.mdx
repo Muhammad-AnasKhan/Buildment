@@ -22,6 +22,8 @@ This course: **confirm with Stripe.js on client** (Ch 20 UI; you can test with S
 
 ## Mandatory read topics
 
+Five official doc areas, each mapped to a specific piece of the checkout flow you'll build. Read them in the order listed — the first three form one continuous story: create intent → confirm on client → verify on server.
+
 | Topic | Official doc area | Why for FreshMarket |
 |---|---|---|
 | Payment Intents API | [Stripe Payment Intents](https://stripe.com/docs/payments/payment-intents) | Entire checkout money flow |
@@ -45,6 +47,8 @@ Your server creates the Intent (`requires_payment_method`). Client confirms card
 Failed paths (`requires_payment_method`, `canceled`, `payment_failed`) must **not** create orders.
 
 ## Webhooks — what to remember
+
+Webhooks are Stripe's way of telling your server about events your client never sees — payment failed, or succeeded when the browser closed early. Each event type maps to one job:
 
 | Event | Your handler |
 |---|---|
@@ -89,7 +93,7 @@ Chapter 18 documented double-click on bare checkout. Payment adds a **stronger**
 
 ## Before you continue
 
-<OpenQuestion id="01KZ63P5JS7Q43Q2NMMG9DJFZ8" />
+<OpenQuestion id="01KZAX78DSB715VH3HSSFQXMD8" />
 
 ## Next
 
