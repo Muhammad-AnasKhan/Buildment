@@ -23,6 +23,10 @@ export const BLOCK_TAG_NAMES = {
   MustRead: "MUST_READ",
   OpenQuestion: "OPEN_QUESTION",
   CodeBlock: "CODE",
+  Steps: "STEPS",
+  ProjectPreview: "PROJECT_PREVIEW",
+  LearningObjectives: "LEARNING_OBJECTIVES",
+  ChapterRecap: "CHAPTER_RECAP",
 } as const;
 
 export interface ExtractedBlock {

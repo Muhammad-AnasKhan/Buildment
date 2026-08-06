@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { CheckCircle2, PenLine, SendHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,7 +26,7 @@ export function OpenQuestionClient({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+  const wordCount = useMemo(() => text.trim().split(/\s+/).filter(Boolean).length, [text]);
   const tooShort = config.minWords > 0 && wordCount < config.minWords;
   const isGrouped = groupPosition !== "single";
 
@@ -50,6 +50,8 @@ export function OpenQuestionClient({
       setSubmitting(false);
     }
   }
+
+  const wordProgress = config.minWords > 0 ? Math.min((wordCount / config.minWords) * 100, 100) : 100;
 
   return (
     <div
@@ -122,11 +124,22 @@ export function OpenQuestionClient({
                 />
 
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-xs text-neutral-500">
+                  <div className="flex items-center gap-3 text-xs text-neutral-500">
                     {config.minWords > 0 ? (
-                      <span className={cn(tooShort && wordCount > 0 && "text-amber-700")}>
-                        {wordCount} / {config.minWords} words minimum
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className={cn(tooShort && wordCount > 0 && "text-amber-700")}>
+                          {wordCount} / {config.minWords} words minimum
+                        </span>
+                        <div className="h-1.5 w-20 overflow-hidden rounded-full bg-neutral-200">
+                          <div
+                            className={cn(
+                              "h-full rounded-full transition-all duration-500",
+                              wordProgress >= 100 ? "bg-emerald-500" : "bg-indigo-500"
+                            )}
+                            style={{ width: `${wordProgress}%` }}
+                          />
+                        </div>
+                      </div>
                     ) : (
                       <span>No word minimum — aim for a clear, complete answer.</span>
                     )}

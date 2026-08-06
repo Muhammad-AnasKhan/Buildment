@@ -15,8 +15,8 @@ export default async function LearnLayout({ children }: { children: React.ReactN
         className="pointer-events-none fixed inset-x-0 top-0 -z-10 h-[420px] bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(79,70,229,0.08),transparent)]"
         aria-hidden
       />
-      <NavBar roleLabel="Mentee" links={LINKS} user={user} />
-      <main className="flex-1 px-4 py-8 sm:px-6 lg:px-10">{children}</main>
+      <NavBar links={LINKS} user={user} />
+      <main className="flex-1">{children}</main>
     </div>
   );
 }

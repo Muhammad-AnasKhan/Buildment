@@ -5,6 +5,11 @@ import { requireEnrolledMentee } from "@/server/auth/guards";
 import { ChapterMdx } from "@/mdx/compile";
 import { ChapterNav } from "@/components/learn/chapter-nav";
 import { cn } from "@/lib/utils";
+import { extractHeadings } from "@/lib/mdx-headings";
+import { learningLogToAnswers, parseLearningLog } from "@/lib/learning-log";
+import { ChapterReaderShell } from "@/components/learn/chapter-reader-shell";
+import type { Heading } from "@/lib/mdx-headings";
+import type { SyllabusModule } from "@/components/learn/course-syllabus";
 
 export default async function ChapterReaderPage({
   params,
@@ -24,11 +29,11 @@ export default async function ChapterReaderPage({
   });
   if (!course) notFound();
 
-  await requireEnrolledMentee(course.id);
+  const { enrollment } = await requireEnrolledMentee(course.id);
 
   const flatChapters = course.modules.flatMap((mod) =>
-    mod.chapters.map((chapter) => ({
-      ...chapter,
+    mod.chapters.map((ch) => ({
+      ...ch,
       moduleTitle: mod.title,
       moduleOrder: mod.order,
     }))
@@ -41,62 +46,50 @@ export default async function ChapterReaderPage({
   const next = flatChapters[index + 1];
   const lessonLabel = `${String(chapter.moduleOrder).padStart(2, "0")}.${String(chapter.order).padStart(2, "0")}`;
 
+  // Extract headings for TOC
+  const source = chapter.compiled ?? chapter.source;
+  const headings = extractHeadings(source);
+
+  // Get progress for sidebar
+  const progress = await prisma.chapterProgress.findMany({
+    where: { enrollmentId: enrollment.id },
+  });
+  const progressByChapter = new Map(progress.map((p) => [p.chapterId, p]));
+  const chapterProgress = progressByChapter.get(chapter.id);
+  const learningLogAnswers = learningLogToAnswers(parseLearningLog(chapterProgress?.learningLog));
+
+  const modules = course.modules.map((mod) => {
+    const chapters = mod.chapters.map((ch) => ({
+      id: ch.id,
+      slug: ch.slug,
+      title: ch.title,
+      status: progressByChapter.get(ch.id)?.status ?? ("NOT_STARTED" as const),
+      blockCount: 0,
+    }));
+    return {
+      id: mod.id,
+      order: mod.order,
+      title: mod.title,
+      chapters,
+      completedCount: chapters.filter((c) => c.status === "COMPLETED").length,
+    };
+  });
+
   return (
-    <div className="mx-auto max-w-3xl pb-12">
-      <nav className="flex flex-wrap items-center gap-2 text-xs text-neutral-500">
-        <Link href={`/courses/${course.slug}`} className="transition-colors hover:text-neutral-950">
-          {course.title}
-        </Link>
-        <span aria-hidden>/</span>
-        <span className="font-mono text-neutral-400">{lessonLabel}</span>
-      </nav>
-
-      <h1 className="mt-6 text-2xl font-bold tracking-tight text-neutral-950 sm:text-3xl">
-        {chapter.title}
-      </h1>
-
-      <article
-        className={cn(
-          "prose prose-neutral mt-8 max-w-none",
-          "prose-headings:scroll-mt-20 prose-headings:font-semibold prose-headings:tracking-tight",
-          "prose-h2:mt-12 prose-h2:border-b prose-h2:border-neutral-200 prose-h2:pb-2 prose-h2:text-xl prose-h2:first:mt-0",
-          "prose-h3:mt-8 prose-h3:text-lg",
-          "prose-p:leading-[1.75] prose-p:text-neutral-700",
-          "prose-li:text-neutral-700 prose-li:leading-relaxed",
-          "prose-strong:text-neutral-900 prose-strong:font-semibold",
-          "prose-code:rounded prose-code:bg-neutral-100 prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[0.85em] prose-code:font-normal prose-code:text-neutral-800 prose-code:before:content-none prose-code:after:content-none",
-          "prose-pre:overflow-x-auto prose-pre:rounded-xl prose-pre:border prose-pre:border-neutral-800 prose-pre:bg-neutral-950 prose-pre:p-4 prose-pre:text-neutral-100",
-          "prose-pre:code:bg-transparent prose-pre:code:p-0 prose-pre:code:text-[0.875em] prose-pre:code:font-normal prose-pre:code:text-neutral-100 prose-pre:code:before:content-none prose-pre:code:after:content-none",
-          "prose-blockquote:rounded-r-lg prose-blockquote:border-l-4 prose-blockquote:border-neutral-300 prose-blockquote:bg-neutral-50 prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:not-italic prose-blockquote:text-neutral-700",
-          "prose-hr:border-neutral-200"
-        )}
-      >
-        <ChapterMdx source={chapter.compiled ?? chapter.source} />
-      </article>
-
-      <ChapterNav
-        courseSlug={course.slug}
-        prev={
-          prev
-            ? {
-                slug: prev.slug,
-                title: prev.title,
-                moduleOrder: prev.moduleOrder,
-                order: prev.order,
-              }
-            : undefined
-        }
-        next={
-          next
-            ? {
-                slug: next.slug,
-                title: next.title,
-                moduleOrder: next.moduleOrder,
-                order: next.order,
-              }
-            : undefined
-        }
-      />
-    </div>
+    <ChapterReaderShell
+      courseSlug={course.slug}
+      courseTitle={course.title}
+      lessonLabel={lessonLabel}
+      chapterTitle={chapter.title}
+      chapterSlug={chapter.slug}
+      chapterId={chapter.id}
+      learningLogAnswers={learningLogAnswers}
+      modules={modules}
+      headings={headings}
+      prev={prev ? { slug: prev.slug, title: prev.title, moduleOrder: prev.moduleOrder, order: prev.order } : undefined}
+      next={next ? { slug: next.slug, title: next.title, moduleOrder: next.moduleOrder, order: next.order } : undefined}
+    >
+      <ChapterMdx source={source} />
+    </ChapterReaderShell>
   );
 }

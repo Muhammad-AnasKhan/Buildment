@@ -140,6 +140,7 @@ model ChapterProgress {
   timeSpentSeconds Int           @default(0)
   startedAt       DateTime?
   completedAt     DateTime?
+  learningLog     Json?                    // chapter gate reflections — { version, answers }
   @@unique([enrollmentId, chapterId])
   @@index([chapterId, status])
 }

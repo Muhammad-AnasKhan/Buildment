@@ -6,11 +6,9 @@ import { Logo } from "@/components/brand/logo";
 import { GlassNavShell } from "@/components/glass-nav-shell";
 
 export function NavBar({
-  roleLabel,
   links,
   user,
 }: {
-  roleLabel: string;
   links: { href: string; label: string }[];
   user: { name?: string | null; email?: string | null; image?: string | null };
 }) {
@@ -22,9 +20,6 @@ export function NavBar({
         <Link href="/" className="shrink-0">
           <Logo size="sm" />
         </Link>
-        <span className="hidden shrink-0 rounded-full border border-indigo-100 bg-indigo-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-indigo-700 sm:inline-flex">
-          {roleLabel}
-        </span>
         <span className="h-4 w-px shrink-0 bg-neutral-200" aria-hidden />
         <nav className="flex min-w-0 items-center gap-1 overflow-x-auto">
           {links.map((link) => (

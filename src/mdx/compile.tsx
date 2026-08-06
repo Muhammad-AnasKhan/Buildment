@@ -1,5 +1,8 @@
 import { MDXRemote } from "next-mdx-remote-client/rsc";
 import remarkGfm from "remark-gfm";
+import { remarkChecklist } from "./remark-checklist";
+import { remarkLearningLog } from "./remark-learning-log";
+import { remarkMermaid } from "./remark-mermaid";
 import { mdxComponents } from "./components";
 import { restoreInteractiveBlockTags } from "./restore-block-tags";
 
@@ -14,7 +17,11 @@ export function ChapterMdx({ source }: { source: string }) {
     <MDXRemote
       source={mdxSource}
       components={mdxComponents}
-      options={{ mdxOptions: { remarkPlugins: [remarkGfm] } }}
+      options={{
+        mdxOptions: {
+          remarkPlugins: [remarkGfm, remarkChecklist, remarkLearningLog, remarkMermaid],
+        },
+      }}
     />
   );
 }

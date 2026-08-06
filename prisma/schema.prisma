@@ -82,6 +82,10 @@ enum BlockType {
   MUST_READ
   OPEN_QUESTION
   CODE
+  STEPS
+  PROJECT_PREVIEW
+  LEARNING_OBJECTIVES
+  CHAPTER_RECAP
 }
 
 enum ResponseStatus {
@@ -224,6 +228,7 @@ model ChapterProgress {
   timeSpentSeconds Int            @default(0)
   startedAt        DateTime?
   completedAt      DateTime?
+  learningLog      Json? // chapter gate reflections — { version, answers: Record<id, { text, updatedAt }> }
 
   @@unique([enrollmentId, chapterId])
   @@index([chapterId, status])

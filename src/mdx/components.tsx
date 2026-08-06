@@ -1,9 +1,18 @@
 import type { MDXComponents } from "next-mdx-remote-client/rsc";
 import { blockRegistry } from "@/blocks/registry";
+import { MermaidDiagram } from "@/components/learn/mermaid-diagram";
+import { Callout } from "@/components/learn/callout";
 import { FaqGroup, FaqItem } from "@/components/learn/faq-group";
 import { CheckpointIntro } from "@/components/learn/checkpoint-intro";
 import { MandatoryReadCard } from "@/components/learn/mandatory-read-card";
+import { StepsComponent } from "@/blocks/steps/Component";
+import { ProjectPreviewComponent } from "@/blocks/project-preview/Component";
+import { LearningObjectivesComponent } from "@/blocks/learning-objectives/Component";
+import { ChapterRecapComponent } from "@/blocks/chapter-recap/Component";
+import { Checklist } from "@/components/learn/checklist";
+import { LearningLog } from "@/components/learn/learning-log";
 import { cn } from "@/lib/utils";
+import { slugify } from "@/lib/mdx-headings";
 
 const cellBorder = "border border-neutral-200";
 
@@ -14,10 +23,44 @@ const cellBorder = "border border-neutral-200";
 export const mdxComponents: MDXComponents = {
   Quiz: blockRegistry.QUIZ.Component,
   OpenQuestion: blockRegistry.OPEN_QUESTION.Component,
+  Steps: blockRegistry.STEPS.Component,
+  ProjectPreview: blockRegistry.PROJECT_PREVIEW.Component,
+  LearningObjectives: blockRegistry.LEARNING_OBJECTIVES.Component,
+  ChapterRecap: blockRegistry.CHAPTER_RECAP.Component,
+  Checklist,
+  LearningLog,
+  MermaidDiagram,
+  Callout,
   FaqGroup,
   FaqItem,
   CheckpointIntro,
   MandatoryReadCard,
+  h2: ({ children, ...props }: React.ComponentProps<"h2">) => {
+    const text = typeof children === "string" ? children : undefined;
+    const id = text ? slugify(text) : undefined;
+    return (
+      <h2
+        id={id}
+        className="mt-12 border-b border-neutral-200 pb-2 text-xl font-semibold tracking-tight text-neutral-950 sm:text-2xl"
+        {...props}
+      >
+        {children}
+      </h2>
+    );
+  },
+  h3: ({ children, ...props }: React.ComponentProps<"h3">) => {
+    const text = typeof children === "string" ? children : undefined;
+    const id = text ? slugify(text) : undefined;
+    return (
+      <h3
+        id={id}
+        className="mt-8 text-lg font-semibold tracking-tight text-neutral-950"
+        {...props}
+      >
+        {children}
+      </h3>
+    );
+  },
   table: (props: React.ComponentProps<"table">) => (
     <div className="not-prose my-8 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
       <div className="overflow-x-auto">
@@ -56,4 +99,57 @@ export const mdxComponents: MDXComponents = {
       {...props}
     />
   ),
+  code: ({ className, children, ...props }: React.ComponentProps<"code">) => {
+    const isFenced = Boolean(className && /language-/.test(className));
+
+    if (isFenced) {
+      return (
+        <code
+          className={cn(
+            "block whitespace-pre font-mono text-[0.875em] font-normal leading-relaxed text-inherit",
+            "bg-transparent p-0 before:content-none after:content-none",
+            className
+          )}
+          {...props}
+        >
+          {children}
+        </code>
+      );
+    }
+
+    return (
+      <code
+        className="rounded bg-neutral-100 px-1.5 py-0.5 text-[0.85em] font-normal text-neutral-800 before:content-none after:content-none"
+        {...props}
+      >
+        {children}
+      </code>
+    );
+  },
+  pre: ({ children, ...props }: React.ComponentProps<"pre">) => {
+    // Extract filename from className if present (e.g., language-js:filename.js)
+    const className = (props.className as string) ?? "";
+    const match = className.match(/filename-([^\s]+)/);
+    const filename = match ? match[1] : undefined;
+
+    return (
+      <div
+        className={cn(
+          "not-prose my-6 overflow-hidden rounded-xl border border-neutral-800 bg-neutral-950 shadow-sm",
+          /* Unlabeled fences have no language-* class — style all nested code */
+          "[&_code]:block [&_code]:whitespace-pre [&_code]:bg-transparent [&_code]:p-0",
+          "[&_code]:font-mono [&_code]:text-[0.875em] [&_code]:font-normal [&_code]:leading-relaxed [&_code]:text-neutral-100"
+        )}
+      >
+        {filename ? (
+          <div className="flex items-center border-b border-neutral-800 bg-neutral-900 px-4 py-2">
+            <span className="text-xs font-medium text-neutral-400">{decodeURIComponent(filename)}</span>
+          </div>
+        ) : null}
+        <pre className="m-0 overflow-x-auto bg-transparent p-4 font-mono text-[0.875em] leading-relaxed text-neutral-100">
+          {children}
+        </pre>
+      </div>
+    );
+  },
 };

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, BookOpen } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -46,7 +46,7 @@ function PrevLink({
         Previous
       </span>
       <span className="mt-1 font-mono text-[11px] text-neutral-400">{lessonLabel(chapter)}</span>
-      <span className="mt-0.5 line-clamp-2 text-[15px] font-medium leading-snug text-neutral-900 group-hover:text-neutral-950">
+      <span className="mt-0.5 line-clamp-2 text-[15px] font-medium leading-snug text-neutral-950 group-hover:text-neutral-950">
         {chapter.title}
       </span>
     </Link>
@@ -87,7 +87,7 @@ function NextLink({
         />
       </span>
       <span className="mt-1 font-mono text-[11px] text-neutral-400">{lessonLabel(chapter)}</span>
-      <span className="mt-0.5 line-clamp-2 text-[15px] font-medium leading-snug text-neutral-900 group-hover:text-neutral-950">
+      <span className="mt-0.5 line-clamp-2 text-[15px] font-medium leading-snug text-neutral-950 group-hover:text-neutral-950">
         {chapter.title}
       </span>
     </Link>
@@ -107,11 +107,11 @@ function NextPrimary({ href, chapter }: { href: string; chapter: NavChapter }) {
         href={href}
         className={cn(
           buttonVariants({ size: "sm" }),
-          "h-10 shrink-0 gap-2 self-start rounded-full bg-neutral-950 px-5 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 sm:self-center"
+          "h-11 shrink-0 gap-2 self-start rounded-full bg-neutral-950 px-6 text-sm font-semibold text-white shadow-md shadow-neutral-900/10 hover:bg-neutral-800 sm:self-center"
         )}
       >
         Continue
-        <ArrowRight className="size-4" aria-hidden />
+        <ArrowRight className="size-4" />
       </Link>
     </div>
   );
@@ -143,6 +143,12 @@ export function ChapterNav({ courseSlug, prev, next }: ChapterNavProps) {
         ) : next ? (
           <NextPrimary href={`/courses/${courseSlug}/${next.slug}`} chapter={next} />
         ) : null}
+      </div>
+
+      {/* Chapter completion indicator */}
+      <div className="mt-6 flex items-center gap-2 text-xs text-neutral-400">
+        <CheckCircle2 className="size-3.5 text-neutral-300" />
+        <span>Mark this chapter as complete in your learning log after finishing all checkpoints.</span>
       </div>
     </nav>
   );

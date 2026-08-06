@@ -53,7 +53,7 @@ ${OPEN_Q}
 
   it("covers every block tag the schema declares", () => {
     expect(Object.values(BLOCK_TAG_NAMES)).toEqual(
-      expect.arrayContaining(["QUIZ", "TEST", "MUST_READ", "OPEN_QUESTION", "CODE"])
+      expect.arrayContaining(["QUIZ", "TEST", "MUST_READ", "OPEN_QUESTION", "CODE", "STEPS"])
     );
   });
 });

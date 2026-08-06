@@ -2,6 +2,8 @@
 
 import { compile } from "@mdx-js/mdx";
 import remarkGfm from "remark-gfm";
+import { remarkChecklist } from "@/mdx/remark-checklist";
+import { remarkLearningLog } from "@/mdx/remark-learning-log";
 import { z } from "zod";
 import { prisma } from "@/server/db";
 import { requireMentorOfCourse } from "@/server/auth/guards";
@@ -71,7 +73,7 @@ export async function publishChapter(input: {
 
   try {
     await compile(renderable, {
-      remarkPlugins: [remarkGfm],
+      remarkPlugins: [remarkGfm, remarkChecklist, remarkLearningLog],
       outputFormat: "function-body",
     });
   } catch (error) {

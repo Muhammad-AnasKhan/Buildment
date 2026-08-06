@@ -5,6 +5,8 @@
 import "dotenv/config";
 import { evaluate } from "next-mdx-remote-client/rsc";
 import remarkGfm from "remark-gfm";
+import { remarkChecklist } from "../src/mdx/remark-checklist.ts";
+import { remarkLearningLog } from "../src/mdx/remark-learning-log.ts";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client.js";
 
@@ -21,6 +23,8 @@ const components = {
   OpenQuestion: stub,
   FaqGroup: stub,
   FaqItem: stub,
+  Checklist: stub,
+  LearningLog: stub,
 };
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
@@ -38,7 +42,7 @@ async function main() {
       await evaluate({
         source: restoreInteractiveBlockTags(chapter.source),
         components,
-        options: { mdxOptions: { remarkPlugins: [remarkGfm] } },
+        options: { mdxOptions: { remarkPlugins: [remarkGfm, remarkChecklist, remarkLearningLog] } },
       });
     } catch (err) {
       failed.push({ slug: chapter.slug, error: err instanceof Error ? err.message.split("\n")[0] : String(err) });
