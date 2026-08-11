@@ -31,15 +31,32 @@ No new server files. UI consumes existing contracts.
 
 **Body rule:** Never send `vendorId` — server sets from JWT.
 
+Note `storeId` values — checkout must produce **one order per distinct storeId**.
+
 ### Pre-build curl gate
 
-```bash
-curl -s http://localhost:5000/api/stores/me -H "Authorization: Bearer <vendor-token>"
-curl -s -X POST http://localhost:5000/api/stores \
-  -H "Authorization: Bearer <vendor-token>" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Test Market","address":"1 High St"}'
-```
+<ApiRequestPanel title="Verify store API before UI">
+
+<ApiRequest
+  label="Fresh vendor — no store yet"
+  method="GET"
+  url="http://localhost:5000/api/stores/me"
+  bearer="<vendor-token>"
+  responseStatus={404}
+  responseBody='{"message":"Store not found"}'
+/>
+
+<ApiRequest
+  label="Create store"
+  method="POST"
+  url="http://localhost:5000/api/stores"
+  bearer="<vendor-token>"
+  body='{"name":"Test Market","address":"1 High St"}'
+  responseStatus={201}
+  responseBody='{"_id":"...","name":"Test Market","vendorId":"..."}'
+/>
+
+</ApiRequestPanel>
 
 - [ ] GET /stores/me → 404 for fresh vendor
 - [ ] POST /stores → 201; second POST → 409
@@ -110,10 +127,12 @@ Add `/vendor/products` stub ("Chapter 12") to test gate blocks access — no pro
 - [ ] Fresh vendor account ready for onboarding
 - [ ] `api/client.js` pattern understood for `stores.js`
 
+<RealWorldEvent title="Stripe Connect seller onboarding" when="2010s–present" summary="Payment platforms built multi-step seller verification flows because compliance and payout details cannot be optional after money moves." lesson="Collect required vendor data before they reach the dashboard — fixing incomplete profiles later is expensive support work." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76Z64NTA3A3V2FJCHZWF" />
+<OpenQuestion id="01KZP7KPVRSXEQHC750ZQVSGJS" />
 
 ## Next
 

@@ -33,6 +33,7 @@ import { ulid } from "ulid";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, type Prisma } from "../src/generated/prisma/client";
 import { SEED_COURSE, SEED_USERS } from "../src/lib/seed-data";
+import { codeExerciseForLesson, codeExerciseToYaml } from "./code-exercise-data";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const COURSE_SOURCE_DIR = path.resolve(__dirname, "../content/import/multi-vendor-marketplace");
@@ -70,10 +71,81 @@ const CHAPTER_NAMES: Record<number, string> = {
 
 type PendingBlock = {
   id: string;
-  type: "QUIZ" | "OPEN_QUESTION";
+  type: "QUIZ" | "OPEN_QUESTION" | "CODE" | "CHAPTER_RECAP" | "PROJECT_PREVIEW" | "PREDICT";
   config: Prisma.InputJsonValue;
   required: boolean;
 };
+
+function blockPlaceholderTag(block: PendingBlock): string {
+  const tag =
+    block.type === "QUIZ"
+      ? "Quiz"
+      : block.type === "CODE"
+        ? "CodeExercise"
+        : block.type === "CHAPTER_RECAP"
+          ? "ChapterRecap"
+          : block.type === "PROJECT_PREVIEW"
+            ? "ProjectPreview"
+            : block.type === "PREDICT"
+              ? "Predict"
+              : "OpenQuestion";
+  return `<${tag} id="${block.id}" />`;
+}
+
+function parseJsxStringAttr(source: string, attr: string): string | undefined {
+  const match = source.match(new RegExp(`${attr}="([^"]*)"`));
+  return match?.[1];
+}
+
+function parseJsxStringArray(source: string, attr: string): string[] | undefined {
+  const match = source.match(new RegExp(`${attr}=\\{\\[([\\s\\S]*?)\\]\\}`));
+  if (!match?.[1]) return undefined;
+  const items: string[] = [];
+  const re = /"((?:\\.|[^"\\])*)"/g;
+  let item: RegExpExecArray | null;
+  while ((item = re.exec(match[1])) !== null) {
+    items.push(item[1]!.replace(/\\"/g, '"'));
+  }
+  return items.length > 0 ? items : undefined;
+}
+
+/** Inline `<ChapterRecap>` / `<ProjectPreview>` JSX -> registered blocks with id placeholders. */
+function transformPresentationBlocks(body: string, pushBlock: (b: PendingBlock) => string): string {
+  return body.replace(/<(ChapterRecap|ProjectPreview)([\s\S]*?)\/>/g, (full, tagName: string, attrs: string) => {
+    if (/\bid=/.test(attrs)) return full;
+
+    const pseudo = `<X${attrs}/>`;
+
+    if (tagName === "ChapterRecap") {
+      const points = parseJsxStringArray(pseudo, "points");
+      if (!points?.length) return full;
+      return pushBlock({
+        id: ulid(),
+        type: "CHAPTER_RECAP",
+        required: false,
+        config: { points },
+      });
+    }
+
+    const title = parseJsxStringAttr(pseudo, "title");
+    const description = parseJsxStringAttr(pseudo, "description");
+    const features = parseJsxStringArray(pseudo, "features");
+    const techStack = parseJsxStringArray(pseudo, "techStack");
+    const imageUrl = parseJsxStringAttr(pseudo, "imageUrl");
+    if (!title || !description || !features?.length) return full;
+
+    const config: Record<string, unknown> = { title, description, features };
+    if (techStack?.length) config.techStack = techStack;
+    if (imageUrl) config.imageUrl = imageUrl;
+
+    return pushBlock({
+      id: ulid(),
+      type: "PROJECT_PREVIEW",
+      required: false,
+      config: config as Prisma.InputJsonValue,
+    });
+  });
+}
 
 type ParsedLesson = {
   moduleNum: number;
@@ -127,6 +199,49 @@ function stripLeadingH1(body: string): string {
   return body.replace(/^# \d+\.\d+ — [^\n]+\n\n?/, "");
 }
 
+function isFocusChapter(fileName: string): boolean {
+  return /-checklist\.md$/.test(fileName) || /-quiz\.md$/.test(fileName);
+}
+
+function isGateChecklistChapter(fileName: string): boolean {
+  return /-checklist\.md$/.test(fileName) || fileName.includes("production-env-checklist");
+}
+
+/** Gate/quiz chapters should stay focused — no glossary cards or optional reads. */
+function stripFocusChapterEnrichment(body: string): string {
+  return body
+    .replace(/<BigWordAlert[\s\S]*?\/>/g, "")
+    .replace(/<RealWorldEvent[\s\S]*?\/>/g, "")
+    .replace(/<MandatoryReadCard[\s\S]*?\/>/g, "")
+    .replace(/<InterestingRead[\s\S]*?<\/InterestingRead>/g, "")
+    .replace(/<ArticleBreak[\s\S]*?<\/ArticleBreak>/g, "")
+    .replace(/<ChapterRecap[\s\S]*?\/>/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/**
+ * Many gate checklists embed `### Learning log — write now` mid-checklist.
+ * Move it to `## Learning log` right before "All boxes ticked?" — matches 3-10 layout.
+ */
+function normalizeGateLearningLog(body: string): string {
+  const match = body.match(
+    /(?:^|\n)###\s+Learning log[^\n]*\n\n([\s\S]*?)(?=\n##\s+)/
+  );
+  if (!match) return body;
+
+  const section = match[1]!.trim();
+  if (!/^\d+\.\s/m.test(section)) return body;
+
+  const without = body.replace(match[0], "\n").replace(/\n{3,}/g, "\n\n");
+  const block = `## Learning log\n\n${section}\n\n`;
+
+  if (/## All boxes ticked/i.test(without)) {
+    return without.replace(/(## All boxes ticked)/i, `${block}$1`);
+  }
+  return `${without.trim()}\n\n${block}`;
+}
+
 /** `use `<Outlet />` here` → `use '<Outlet />' here` — only when the inner span is JSX. */
 function fixJsxInInlineCode(prose: string): string {
   return prose.replace(/`([^`\n]*)`(<[^`\n]+>)`([^`\n]*)/g, (_m, a, b, c) => `\`${a}'${b}'${c}\``);
@@ -155,7 +270,49 @@ function escapeMdxProse(body: string): string {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });
-  withMarkers = withMarkers.replace(/<(Quiz|OpenQuestion)\s+id="[^"]+"\s*\/>/g, (tag) => {
+  withMarkers = withMarkers.replace(/<BigWordAlert[\s\S]*?\/>/g, (tag) => {
+    blockTags.push(tag);
+    return `\x00BLOCK${blockTags.length - 1}\x00`;
+  });
+  withMarkers = withMarkers.replace(/<RealWorldEvent[\s\S]*?\/>/g, (tag) => {
+    blockTags.push(tag);
+    return `\x00BLOCK${blockTags.length - 1}\x00`;
+  });
+  withMarkers = withMarkers.replace(/<InterestingRead[\s\S]*?<\/InterestingRead>/g, (tag) => {
+    blockTags.push(tag);
+    return `\x00BLOCK${blockTags.length - 1}\x00`;
+  });
+  withMarkers = withMarkers.replace(/<ArticleBreak[\s\S]*?<\/ArticleBreak>/g, (tag) => {
+    blockTags.push(tag);
+    return `\x00BLOCK${blockTags.length - 1}\x00`;
+  });
+  withMarkers = withMarkers.replace(/<Callout[\s\S]*?<\/Callout>/g, (tag) => {
+    blockTags.push(tag);
+    return `\x00BLOCK${blockTags.length - 1}\x00`;
+  });
+  withMarkers = withMarkers.replace(/<ApiRequestPanel[\s\S]*?<\/ApiRequestPanel>/g, (tag) => {
+    blockTags.push(tag);
+    return `\x00BLOCK${blockTags.length - 1}\x00`;
+  });
+  const contentBlockPairs = [
+    "ComparePanel",
+    "FileTree",
+    "TerminalBlock",
+    "ArchitectureDiagram",
+    "TraceRequest",
+  ] as const;
+  for (const tag of contentBlockPairs) {
+    const re = new RegExp(`<${tag}[\\s\\S]*?<\\/${tag}>`, "g");
+    withMarkers = withMarkers.replace(re, (tagContent) => {
+      blockTags.push(tagContent);
+      return `\x00BLOCK${blockTags.length - 1}\x00`;
+    });
+  }
+  withMarkers = withMarkers.replace(/<(DiffBlock|StateMachine|EntityDiagram)[\s\S]*?\/>/g, (tag) => {
+    blockTags.push(tag);
+    return `\x00BLOCK${blockTags.length - 1}\x00`;
+  });
+  withMarkers = withMarkers.replace(/<(Quiz|OpenQuestion|CodeExercise|ChapterRecap|ProjectPreview|LearningObjectives|Predict)\s+id="[^"]+"\s*\/>/g, (tag) => {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });
@@ -226,6 +383,110 @@ function splitOutsideFences(text: string, pattern: RegExp, transform: (part: str
   const parts = text.split(pattern);
   const matches = text.match(pattern) ?? [];
   return parts.map((part, i) => (i < parts.length - 1 ? transform(part) + matches[i] : transform(part))).join("");
+}
+
+/** ```code``` fenced YAML -> CodeExercise blocks with server-side tests. */
+function transformCodeExerciseFences(body: string, pushBlock: (b: PendingBlock) => string): string {
+  return body.replace(/```code\n([\s\S]*?)```/g, (_match, yamlText: string) => {
+    const parsed = yaml.load(yamlText) as {
+      mode?: "complete" | "implement";
+      prompt: string;
+      starterCode: string;
+      filename?: string;
+      hints?: string[];
+      explanation?: string;
+      solution?: string;
+      tests: { name: string; code: string }[];
+    };
+
+    const id = ulid();
+    return pushBlock({
+      id,
+      type: "CODE",
+      required: true,
+      config: {
+        mode: parsed.mode ?? "implement",
+        language: "javascript",
+        prompt: parsed.prompt,
+        starterCode: parsed.starterCode,
+        filename: parsed.filename,
+        hints: parsed.hints,
+        explanation: parsed.explanation,
+        solution: parsed.solution,
+        allowRetry: true,
+        tests: parsed.tests,
+      },
+    });
+  });
+}
+
+/** Inject a contextual code exercise before the first build section when defined in code-exercise-data. */
+function injectCodeExerciseFence(body: string, moduleDir: string, fileName: string): string {
+  const exercise = codeExerciseForLesson(moduleDir, fileName);
+  if (!exercise || body.includes("```code\n")) return body;
+
+  const fence = codeExerciseToYaml(exercise);
+  const section = `\n## Try it yourself\n\nPractice the core logic from this lesson in the **code lab** below — write real JavaScript, then click **Check my code**. Same editor style as the course's code blocks.\n\n${fence}\n\n`;
+
+  const anchors = [
+    /^## What you must implement/m,
+    /^## Step 1/m,
+    /^## Step 2 — Create/m,
+    /^## Behaviour contract — you implement/m,
+    /^## Service behaviour \(implement/m,
+    /^## Middleware behaviour \(implement/m,
+    /^## Product schema specification/m,
+    /^## Payload contract/m,
+    /^## Access token storage/m,
+    /^## Core helper contract/m,
+    /^## Filter helper contract/m,
+    /^## Implementation/m,
+  ];
+
+  for (const anchor of anchors) {
+    if (anchor.test(body)) {
+      return body.replace(anchor, (match) => `${section}${match}`);
+    }
+  }
+  return body;
+}
+
+/** ```predict``` fenced YAML -> Predict block + placeholder tag. */
+function transformPredictFences(body: string, pushBlock: (b: PendingBlock) => string): string {
+  return body.replace(/```predict\n([\s\S]*?)```/g, (_match, yamlText: string) => {
+    const parsed = yaml.load(yamlText) as {
+      prompt: string;
+      options: { id: string; label: string }[];
+      correctOptionId: string;
+      explanation?: string;
+      allowRetry?: boolean;
+      context?: {
+        method?: string;
+        url?: string;
+        bearer?: string;
+        responseHint?: string;
+      };
+    };
+
+    if (!parsed.prompt || !parsed.options?.length || !parsed.correctOptionId) {
+      return _match;
+    }
+
+    const id = ulid();
+    return pushBlock({
+      id,
+      type: "PREDICT",
+      required: false,
+      config: {
+        prompt: parsed.prompt,
+        options: parsed.options,
+        correctOptionId: parsed.correctOptionId,
+        explanation: parsed.explanation,
+        allowRetry: parsed.allowRetry ?? true,
+        context: parsed.context,
+      },
+    });
+  });
 }
 
 /** ```quiz``` fenced YAML -> real Quiz/OpenQuestion blocks + placeholder tags. */
@@ -364,13 +625,23 @@ function parseLesson(moduleNum: number, moduleDir: string, fileName: string, les
   const blocks: PendingBlock[] = [];
   const pushBlock = (block: PendingBlock) => {
     blocks.push(block);
-    return `<${block.type === "QUIZ" ? "Quiz" : "OpenQuestion"} id="${block.id}" />`;
+    return blockPlaceholderTag(block);
   };
 
   let source = stripStepTypeBlockquote(body);
   source = stripLeadingH1(source);
+  if (isFocusChapter(fileName)) {
+    source = stripFocusChapterEnrichment(source);
+  }
+  if (isGateChecklistChapter(fileName)) {
+    source = normalizeGateLearningLog(source);
+  }
   source = normalizePlaceholderUrls(source);
+  source = injectCodeExerciseFence(source, moduleDir, fileName);
+  source = transformPresentationBlocks(source, pushBlock);
   source = transformQuizFences(source, pushBlock);
+  source = transformPredictFences(source, pushBlock);
+  source = transformCodeExerciseFences(source, pushBlock);
   source = transformMiniSelfCheck(source, pushBlock);
   source = transformReflectSection(source, pushBlock);
   source = transformFaqSections(source);

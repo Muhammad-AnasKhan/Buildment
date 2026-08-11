@@ -6,6 +6,8 @@ summary: "Blueprint for the **performance layer** on catalogue reads. Read once;
 ---
 Blueprint for the **performance layer** on catalogue reads. Read once; verify against your repo after 21.14.
 
+<BigWordAlert term="Redis cache layer" plainEnglish="In-memory cache for hot catalogue queries plus bust logic on product updates." whyItMatters="FreshMarket shop page under load reads from Redis first — MongoDB on cache miss only." />
+
 You are adding **speed and search** — not new customer-facing features. The shop should look the same; repeat loads should feel faster and `?search=` should use an index.
 
 ## Server additions
@@ -38,6 +40,16 @@ server/src/middleware/cacheCatalogue.js  ← or inline in products route
 | Elasticsearch | MongoDB text index is enough for course |
 | CDN for images | Cloudinary already serves images |
 | BullMQ jobs | Chapter 22 — optional async invalidation in 21.16 |
+
+<MandatoryReadCard
+  title="Redis — Introduction"
+  href="https://redis.io/docs/latest/develop/get-started/"
+  source="Redis"
+  summary="What Redis is and how key-value caching works. Read before connecting Redis to catalogue routes."
+  readMinutes={10}
+/>
+
+<RealWorldEvent title="Facebook Memcached outage lessons" when="2010" summary="Major sites learned that caching layers need fallbacks — when cache fails, databases must survive the thundering herd." lesson="Always code a cache miss path. Redis is an accelerator, not the system of record." />
 
 ## Build sequence
 
@@ -104,8 +116,13 @@ In your README — and it matters more than it sounds. A mentor will grep for yo
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78Q7YQ71DVZ0NVNVM4T1" />
+<OpenQuestion id="01KZP7KQT3KV99Z4ZFDNYYA7RN" />
 
 ## Next
 
 **Sub-chapter 21.4:** TTL vs event invalidation — why you need both.
+<InterestingRead title="The stale cache trap" hook="Fast wrong answers are worse than slow right ones." readMinutes={4}>
+
+Teams enable caching, celebrate response times, then ship outdated stock levels. FreshMarket defines what is cacheable (public catalogue pages) and what never is (cart, checkout, auth).
+
+</InterestingRead>

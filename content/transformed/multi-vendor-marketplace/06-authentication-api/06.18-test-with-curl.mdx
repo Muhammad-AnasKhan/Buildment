@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Browser bugs hide API bugs and vice versa. 
 ---
 **Why this step matters:** Browser bugs hide API bugs and vice versa. A full curl script — register, verify, login, me, refresh — is your Chapter 6 gate evidence and the contract Chapter 7 must not break.
 
+<BigWordAlert term="curl authentication test" plainEnglish="Using curl with `-H 'Authorization: Bearer ...'` to verify register/login/token flow without the UI." whyItMatters="Testing auth with curl isolates server bugs from client token storage issues." />
+
 **Where the project is now:** All auth endpoints implemented individually.
 
 **After this step:** You have run the **complete auth flow** via curl and documented results — proof for gate and Chapter 7 client integration.
@@ -14,48 +16,54 @@ summary: "**Why this step matters:** Browser bugs hide API bugs and vice versa. 
 
 Run in order; replace values from your responses.
 
-```bash
-BASE=http://localhost:5000
+<ApiRequestPanel title="Auth flow — key requests">
 
-# --- 1. Register ---
-curl -s -X POST $BASE/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "curltest@test.local",
-    "password": "Password123!",
-    "role": "customer",
-    "displayName": "Curl Tester"
-  }'
-# Save OTP from response or server log
+<ApiRequest
+  label="Register new customer"
+  method="POST"
+  url="http://localhost:5000/api/auth/register"
+  body='{"email":"curltest@test.local","password":"Password123!","role":"customer","displayName":"Curl Tester"}'
+  responseStatus={201}
+  responseBody='{"message":"OTP sent","email":"curltest@test.local"}'
+/>
 
-# --- 2. Verify OTP ---
-curl -s -X POST $BASE/api/auth/verify-otp \
-  -H "Content-Type: application/json" \
-  -d '{"email":"curltest@test.local","otp":"REPLACE_OTP"}'
+<ApiRequest
+  label="Verify OTP"
+  method="POST"
+  url="http://localhost:5000/api/auth/verify-otp"
+  body='{"email":"curltest@test.local","otp":"REPLACE_OTP"}'
+  responseStatus={200}
+  responseBody='{"message":"Email verified"}'
+/>
 
-# --- 3. Login ---
-LOGIN=$(curl -s -X POST $BASE/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"curltest@test.local","password":"Password123!"}')
-echo $LOGIN
-# Extract accessToken and refreshToken — use jq if available:
-# ACCESS=$(echo $LOGIN | jq -r .accessToken)
-# REFRESH=$(echo $LOGIN | jq -r .refreshToken)
+<ApiRequest
+  label="Login after OTP verify"
+  method="POST"
+  url="http://localhost:5000/api/auth/login"
+  body='{"email":"curltest@test.local","password":"Password123!"}'
+  responseStatus={200}
+  responseBody='{"accessToken":"...","refreshToken":"..."}'
+/>
 
-# --- 4. Protected route ---
-curl -s $BASE/api/auth/me \
-  -H "Authorization: Bearer REPLACE_ACCESS"
+<ApiRequest
+  label="Protected route — current user"
+  method="GET"
+  url="http://localhost:5000/api/auth/me"
+  bearer="REPLACE_ACCESS"
+  responseStatus={200}
+  responseBody='{"_id":"...","email":"curltest@test.local","role":"customer"}'
+/>
 
-# --- 5. Refresh ---
-curl -s -X POST $BASE/api/auth/refresh \
-  -H "Content-Type: application/json" \
-  -d '{"refreshToken":"REPLACE_REFRESH"}'
+<ApiRequest
+  label="Refresh access token"
+  method="POST"
+  url="http://localhost:5000/api/auth/refresh"
+  body='{"refreshToken":"REPLACE_REFRESH"}'
+  responseStatus={200}
+  responseBody='{"accessToken":"..."}'
+/>
 
-# --- 6. Seed vendor login ---
-curl -s -X POST $BASE/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"vendor-a@test.local","password":"Password123!"}'
-```
+</ApiRequestPanel>
 
 ## Negative tests checklist
 
@@ -117,13 +125,15 @@ Paste redacted /me JSON and note token exp from jwt.io — no full tokens in Git
 - [ ] Results noted in learning log prep
 - [ ] No plain passwords in Compass
 
+<RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76AMC3WTRMD6WJHXAABP" />
+<OpenQuestion id="01KZP7KPFN4CRBBAGHWV178PTJ" />
 
 ## Next
 
-**Sub-chapter 6.19:** Recap and what's next — Chapter 7 login UI preview.
+**Sub-chapter 6.19:** Recap and what's next — Chapter 7 login UI.
 
 Auth API proven — wrap chapter next.

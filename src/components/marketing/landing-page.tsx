@@ -86,7 +86,7 @@ export default async function MarketingHomePage() {
       <main className="flex-1">
         {/* Hero */}
         <section className="mx-auto max-w-6xl px-6 py-20 sm:px-8 sm:py-28 md:py-36">
-          <div className="text-center">
+          <div>
             <p className="inline-flex items-center gap-1.5 rounded-full border border-indigo-100 bg-indigo-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-indigo-700">
               <span className="size-1.5 rounded-full bg-indigo-600" aria-hidden />
               Interactive learning platform

@@ -6,13 +6,14 @@ summary: "This table is the **floor** the course stands on — not a gauntlet, n
 ---
 This table is the **floor** the course stands on — not a gauntlet, not a reading list of everything you'll learn anyway. It's the few things you should already be comfortable with so Chapter 2 doesn't stop on hour one to explain what `async/await` means.
 
+<BigWordAlert term="Baseline stack" plainEnglish="The minimum tools and concepts you need before starting — Node, React, basic HTTP, and Git." whyItMatters="FreshMarket assumes you can read JavaScript and run terminal commands; the course does not re-teach fundamentals." />
+
 **Two rules govern this list:**
 
 1. **Pitch it to the level.** This is a **medium** course — it assumes you can already build CRUD. It does not assume you've built a multi-vendor system, deployed with Redis, or enforced row-level ownership.
 2. **Never list what the course teaches.** If an early chapter covers it, it's not a prerequisite — it's the climb.
 
 If a row says **must have**, you're expected to start with it. **Revise if rusty** means skim for an hour if you haven't used it in months — don't take a three-day detour. **Helpful, taught anyway** means don't panic if it's new; the course will touch it when needed.
-
 
 ## If you feel closer to beginner than "medium"
 
@@ -29,7 +30,6 @@ This course is labeled **medium** because it assumes you can already build CRUD.
 - HTTP status codes (200, 404, 401) mean nothing to you yet
 
 The course is written so most chapters include **Bridge from last chapter**, **In plain English** jargon tables, and **Think of it like…** analogies — use them whenever a sub-chapter feels dense. Introduction lessons include **Common beginner questions** where helpful.
-
 
 ## Prerequisites table
 
@@ -48,7 +48,6 @@ Everything you should already be comfortable with — grouped by what you need i
 | **JSON** — read and write nested objects | API bodies and MongoDB documents | Must have |
 | **Terminal / command line** — cd, run scripts, env vars | Dev workflow throughout | Must have |
 
-
 ## Helpful but not required — the course will touch these
 
 | Topic | Note |
@@ -64,7 +63,6 @@ Everything you should already be comfortable with — grouped by what you need i
 
 Don't delay starting because Redis is unfamiliar. You'll meet it in Week 4 with a chapter dedicated to it.
 
-
 ## What this course does NOT require
 
 Clarifying negatives saves impostor syndrome:
@@ -74,7 +72,6 @@ Clarifying negatives saves impostor syndrome:
 - **Not required:** advanced CSS or design systems — clean and functional beats pretty
 - **Not required:** knowing normalization theory upfront — taught when your schema and checkout need it
 - **Not required:** memorizing MERN — you'll know it by building it
-
 
 ## Environment setup — what to install before Chapter 2
 
@@ -135,7 +132,6 @@ Env vars: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` (server); `VITE_STRIPE_PU
 
 **Do not spend day one configuring Redis and Cloudinary.** Chapter 2 only needs Node, Git, and an editor.
 
-
 ## Knowledge self-check — honest questions
 
 Before Chapter 2, you should answer **yes** without googling the syntax:
@@ -151,7 +147,6 @@ If **3** is no, search "HTTP 401 vs 403" — ten minutes — then continue.
 
 If **4** is no, search "gitignore tutorial" — fifteen minutes — then continue. Secrets in Git is a one-way mistake.
 
-
 ## Recommended refresh — if rusty
 
 If it's been months since you touched MongoDB or Express, one afternoon of refresh beats a week of friction:
@@ -163,7 +158,6 @@ If it's been months since you touched MongoDB or Express, one afternoon of refre
 **MongoDB (1 hour)** — MongoDB University free "MongoDB Basics" first module **or** create one collection in Atlas, insert three documents in Compass, run one find query.
 
 Stop when comfortable — not when certified.
-
 
 ## Topics the course will teach — do not pre-study deeply
 
@@ -182,7 +176,6 @@ Studying these for days before starting slows you down without context:
 
 Skim JWT before Chapter 6 if curious. Otherwise trust the chapter order.
 
-
 ## Reading pointers — optional before start
 
 Not prerequisites — optional depth if you want momentum:
@@ -192,7 +185,6 @@ Not prerequisites — optional depth if you want momentum:
 - **Marketplace order flow** — search "marketplace split order multi-vendor checkout" for Week 3 intuition
 
 Never invent URLs. Use official docs or search by topic name.
-
 
 ## Accessibility & workflow notes
 
@@ -204,18 +196,15 @@ Never invent URLs. Use official docs or search by topic name.
 
 **Time:** ~60 hours/week × 4 weeks is the intended pace. Scope is by **chapters finished**, not hours logged. Slow is fine; skipping gates is not.
 
-
 ## If you're under-prepared — two paths
 
 **Path A — Shorter gap (1–3 days):** Build a minimal **single-user todo API + React list** — Express, MongoDB or in-memory, five routes, one page. Then start Chapter 2.
 
 **Path B — Larger gap (1–2 weeks):** Complete one structured Node + React CRUD tutorial end-to-end, then return here. A medium marketplace on weak CRUD foundations frustrates more than it teaches.
 
-
 ## If you're over-prepared — one warning
 
 Senior developers sometimes skip chapters because "they know auth." **Don't skip the gates.** This course's auth chapter isn't only login — it's OTP, refresh token hashing, role in JWT, and the isolation tests that follow. Skim the learn-it sections if bored, but **complete the build steps and tick the checklist.** The viva asks about *this* project's choices, not auth in general.
-
 
 ## Prerequisites summary card
 
@@ -235,6 +224,7 @@ Use the checklist below on this page — tick each item when it is true for you.
 
 When every **✓** item is ticked and MongoDB is ready before Chapter 4, you are standing on the floor this course expects.
 
+<RealWorldEvent title="Instacart scales local grocery delivery" when="2012–present" summary="Instacart connected independent grocery stores to shoppers through a single app, handling inventory sync, delivery logistics, and multi-store baskets at national scale." lesson="Your FreshMarket build starts smaller, but the same pattern applies: one customer experience, many vendor backends, and careful data ownership." />
 
 ## Key ideas from this page
 
@@ -247,4 +237,4 @@ When every **✓** item is ticked and MongoDB is ready before Chapter 4, you are
 Next: the full course outline — every chapter in order with demo targets.
 ## Before you continue
 
-<OpenQuestion id="01KZAX756B5119R4QFKF3V0CMQ" />
+<OpenQuestion id="01KZP7KNQ134WH18ARBT0P6ECC" />

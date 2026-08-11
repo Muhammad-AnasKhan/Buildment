@@ -6,6 +6,8 @@ summary: "Before scaffolding Stripe config and routes, read how Payment Intents 
 ---
 Before scaffolding Stripe config and routes, read how Payment Intents and webhooks work in production. You will not paste Stripe's sample Express app wholesale — but you must understand **why** the flow is two-step (intent → confirm → verify) and **why** webhooks use raw bodies.
 
+<BigWordAlert term="Payment intent" plainEnglish="Stripe object representing an intent to charge — created server-side, confirmed client-side." whyItMatters="FreshMarket server creates intent with order total; React Stripe Elements confirms card entry." />
+
 ## Extra FAQ before the build cluster
 
 **Q: I'm overwhelmed — where do I start?**  
@@ -90,13 +92,20 @@ Chapter 18 documented double-click on bare checkout. Payment adds a **stronger**
 - [ ] I can explain raw body requirement in one sentence
 - [ ] I know test card 4242… succeeds
 
+<InterestingRead title="Test mode vs live mode" hook="Real cards fail in test mode on purpose." readMinutes={4}>
+
+Stripe test keys let you simulate success, decline, and 3D Secure without moving money. FreshMarket stays in test mode until deploy — but your code paths should mirror production exactly.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78DSB715VH3HSSFQXMD8" />
+<OpenQuestion id="01KZP7KQN2ZH0WWT2VRPES0VEG" />
 
 ## Next
 
 **Sub-chapter 19.7:** Quiz — reserved.
 
 Continue to **19.8** to start the build cluster.
+<RealWorldEvent title="Stripe becomes default startup payments" when="2010s–present" summary="Stripe's developer-first APIs and webhooks let small teams accept cards without becoming PCI compliance experts overnight." lesson="Verify webhook signatures on every request — unverified endpoints let attackers mark orders paid for free." />

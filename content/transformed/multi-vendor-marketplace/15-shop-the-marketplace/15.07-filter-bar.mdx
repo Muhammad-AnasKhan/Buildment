@@ -2,91 +2,133 @@
 title: "Filter bar"
 module: 15
 lesson: 7
-summary: "**Why this step matters:** Filters teach the **refetch pattern** — UI state drives query params, API returns a new page of truth. Client-side filtering would break pagination and hide products on other pages."
+summary: "Add category and store filters that refetch GET /products. Never filter paginated results only in React — that hides products on other pages."
 ---
-**Why this step matters:** Filters teach the **refetch pattern** — UI state drives query params, API returns a new page of truth. Client-side filtering would break pagination and hide products on other pages.
+Filters let customers narrow the catalogue — "only fruit" or "only from Green Valley". The important lesson: **changing a filter refetches the API**, it does not hide rows in React.
 
-**Where the project is now:** ProductCard exists; shop shows static or unfiltered list.
+<BigWordAlert term="Client-side filter state" plainEnglish="React state (or URL sync) tracking category, search, sort — drives API query params." whyItMatters="FreshMarket filter bar refetches `/products?…` when shopper changes filters." />
 
-**After this step:** Category and store filters update API query params; shop refetches on change.
+## Why refetch, not client-side filter?
 
-## Component spec
+The API returns **one page** of products (20 items). If you filter those 20 in React, you miss products on page 2, 3, etc. Always send `category` and `storeId` as query params to `GET /products`.
 
-**File:** `client/src/components/CatalogueFilters.jsx` (or inline in Shop.jsx)
+---
 
-| Prop | Type | Purpose |
-|---|---|---|
-| `category` | string | Current value |
-| `storeId` | string | Current value |
-| `onCategoryChange` | fn | Parent updates state |
-| `onStoreChange` | fn | Parent updates state |
+## Step 1 — Create the filter component
 
-## Category control
+**File:** `client/src/components/CatalogueFilters.jsx` (or build inline in Shop.jsx)
 
-| Option | Value |
+**Props:**
+
+| Prop | Purpose |
 |---|---|
-| All categories | `''` — omit param from API |
+| `category` | Current category value |
+| `storeId` | Current store value |
+| `onCategoryChange` | Parent updates state |
+| `onStoreChange` | Parent updates state |
+
+---
+
+## Step 2 — Category dropdown
+
+| Option | Value sent to API |
+|---|---|
+| All categories | `''` — omit param |
 | vegetables | `vegetables` |
 | fruit | `fruit` |
-| … | Match seed categories |
+| … | Match your seed categories exactly |
 
-Use `<select>` or button group — accessibility: label "Category".
+Store options in `client/src/constants/categories.js` — same strings as seed script.
 
-**Source of options:** `client/src/constants/categories.js` array — sync with seed script comments.
+Use a `<select>` with a visible label: "Category".
 
-## Store control
+---
+
+## Step 3 — Store dropdown
+
+For MVP, hardcode store ids from your seed:
+
+```javascript
+// client/src/constants/stores.js
+export const SHOP_STORES = [
+  { id: '...paste from Compass...', name: 'Green Valley Grocer' },
+  { id: '...', name: 'Harbor Fresh Market' },
+]
+```
 
 | Option | Value |
 |---|---|
 | All stores | `''` |
-| Store A | seed store ObjectId string |
-| Store B | seed store ObjectId string |
+| Each store | store `id` string |
 
-**MVP:** Hardcode store id + name pairs from seed in constants file:
+A public `GET /stores` endpoint is optional — hardcoding is fine for this chapter.
 
-```javascript
-// constants/stores.js — spec only
-// export const SHOP_STORES = [
-//   { id: '...', name: 'Green Valley Grocer' },
-//   { id: '...', name: 'Harbor Fresh Market' },
-// ]
-```
+---
 
-**Stretch:** `GET /stores` public endpoint — not in Ch 14 gate; hardcode OK.
-
-## Shop.jsx state spec
+## Step 4 — Wire state in Shop.jsx
 
 ```javascript
-// Pseudocode state
-// const [category, setCategory] = useState('')
-// const [storeId, setStoreId] = useState('')
-// const [page, setPage] = useState(1)
+const [category, setCategory] = useState('')
+const [storeId, setStoreId] = useState('')
+const [page, setPage] = useState(1)
 
-// On filter change:
-// setPage(1)
-// refetch with { page: 1, limit: 20, category, storeId }
+function handleCategoryChange(value) {
+  setCategory(value)
+  setPage(1)  // always reset page when filter changes
+}
+
+function handleStoreChange(value) {
+  setStoreId(value)
+  setPage(1)
+}
 ```
 
-Reset page to 1 when filter changes — avoid empty page 5 on new filter.
+Pass handlers to `CatalogueFilters`.
 
-## API param mapping
+---
 
-| UI value | Query param |
+## Step 5 — Map UI to query params
+
+| UI state | Query param |
 |---|---|
-| category '' | omit `category` |
-| category 'fruit' | `?category=fruit` |
-| storeId '' | omit `storeId` |
+| category `''` | omit `category` |
+| category `'fruit'` | `?category=fruit` |
+| storeId `''` | omit `storeId` |
 | storeId set | `?storeId=...` |
 
-Build params object — strip empty strings before fetch.
+Build params object and strip empty strings before calling `getProducts()`.
 
-## UX
+---
 
-Three small touches separate a filter bar that feels like a product from one that feels like a demo:
+## Step 6 — Add Clear filters button
 
-- "Clear filters" button resets both to '' and page 1  
-- Show active filter count optional  
-- Disable controls during loading fetch  
+One button that sets `category` and `storeId` to `''` and `page` to `1`, then refetches.
+
+Disable filter controls while a fetch is in progress — prevents double-clicks.
+
+---
+
+## Verify in Network tab
+
+| Action | Network request should show |
+|---|---|
+| Select "fruit" | `GET /products?...&category=fruit` |
+| Select a store | `...&storeId=...` |
+| Clear filters | Params removed |
+| Both filters | Both params present |
+
+---
+
+## Common mistakes
+
+| Mistake | Fix |
+|---|---|
+| Filter array in React only | Refetch API |
+| Wrong category casing | Match seed exactly — `fruit` not `Fruit` |
+| Forget page reset | Empty grid on page 5 after filter |
+| Require login for filters | Public browse — no auth needed |
+
+---
 
 ## Commit
 
@@ -95,32 +137,22 @@ git add client/src/components/CatalogueFilters.jsx client/src/constants/ client/
 git commit -m "feat(client): add category and store filters to shop page"
 ```
 
-Fetch wiring completes in 15.8 if split across steps.
-
-## ✅ Do / ❌ Don't
-
-**✅ Do:** Reset page when filters change.
-
-**✅ Do:** Match category strings exactly to API/seed casing.
-
-**❌ Don't:** Filter paginated results only client-side — refetch API.
-
-**❌ Don't:** Require login to use filters.
-
 ## Verify checklist
 
-- [ ] Select category → network shows `category=` param  
-- [ ] Select store → network shows `storeId=` param  
-- [ ] Clear filters restores full catalogue  
-- [ ] Combined filters work
+- [ ] Category change shows `category=` in network tab
+- [ ] Store change shows `storeId=` in network tab
+- [ ] Clear filters restores full catalogue
+- [ ] Combined filters work together
+
+<RealWorldEvent title="Instacart's shop-by-aisle experience" when="2020s" summary="Grocery apps invested heavily in browse UX — filters, dietary tags, and store context — because search alone misses discovery." lesson="Customer-facing catalogue UI is where backend data models become revenue — treat loading and empty states as first-class design." />
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX77TB7C1E0MYFPG14PFC1" />
+<OpenQuestion id="01KZP7KQA57RWW8WX74EWN2H82" />
 
 ## Next
 
-**Sub-chapter 15.8:** Shop page with pagination — full grid fetch loop.
+**Sub-chapter 15.8:** Shop page with pagination — connect filters to the full grid fetch.
 
-Filters wired; paginate the grid.
+Filters ready. Next, the complete shop page.

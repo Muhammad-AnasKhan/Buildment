@@ -6,6 +6,8 @@ summary: "Learn why hardcoding config values will eventually break your app, and
 ---
 # 4.4 — Environment variables vs hardcoded config
 
+<BigWordAlert term="Environment variable" plainEnglish="A configuration value stored outside your code — usually in a `.env` file — so secrets and URLs differ per machine." whyItMatters="Database connection strings and API keys must never be hard-coded or committed to Git." />
+
 ## What you'll learn
 
 By the end of this chapter, you'll understand:
@@ -19,9 +21,9 @@ By the end of this chapter, you'll understand:
 
 Hardcoding feels faster on day one — paste the URI, move on. But day thirty, your mentor clones the repo and nothing runs. Or you deploy, and the app uses port 8080 while your code listens on 5000.
 
-&lt;Callout type="warning" title="Configuration is not code">
+<Callout type="warning" title="Configuration is not code">
 It's *input* to your code. One `config.js` reader keeps env vars discoverable; scattered `process.env` everywhere does not.
-&lt;/Callout>
+</Callout>
 
 ## Think of it like…
 
@@ -73,9 +75,9 @@ MONGODB_URI=mongodb://127.0.0.1:27017/freshmarket-dev
 PORT=5000
 ```
 
-&lt;Callout type="warning">
+<Callout type="warning">
 **No real Atlas password in the example file.** `.env.example` is committed to Git — treat it as public documentation.
-&lt;/Callout>
+</Callout>
 
 ## Loading `.env` in Node
 
@@ -113,9 +115,9 @@ Vite only exposes variables prefixed with `VITE_`: `import.meta.env.VITE_API_URL
 
 **Never** put `MONGODB_URI` in a `VITE_` variable — it would ship to every user's browser.
 
-&lt;Callout type="warning" title="Security mistake">
+<Callout type="warning" title="Security mistake">
 `VITE_MONGODB_URI` exposes your database connection string to every user. Database URIs belong on the server only.
-&lt;/Callout>
+</Callout>
 
 ## ✅ Do / ❌ Don't
 
@@ -127,14 +129,7 @@ Vite only exposes variables prefixed with `VITE_`: `import.meta.env.VITE_API_URL
 
 **❌ Don't:** Use `VITE_MONGODB_URI` — architectural mistake.
 
-&lt;ChapterRecap
-  points=&#123;[
-    "Config lives in environment variables, not source code",
-    ".env is never committed; .env.example is always committed",
-    "Missing config should fail fast with a clear message",
-    "Secrets never go in VITE_ variables"
-  ]&#125;
-/>
+<ChapterRecap id="01KZP7KP354R6E3PNPEPZPQ8MA" />
 
 ## Self-check
 
@@ -143,6 +138,4 @@ Vite only exposes variables prefixed with `VITE_`: `import.meta.env.VITE_API_URL
 - [ ] I can say why secrets never belong in `VITE_*` client variables
 
 **Next:** Local MongoDB vs Atlas — pick your setup and get a working URI.
-## Before you continue
-
-<OpenQuestion id="01KZAX75PM793FFTVJGBJVR0AT" />
+<RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />

@@ -6,11 +6,13 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, ClipboardCheck, ListChecks } from "lucide-react";
+import { CheckCircle2, ListChecks, PartyPopper } from "lucide-react";
+import { fireMiniConfetti } from "@/components/learn/mini-confetti";
 
 export type ChecklistItemData = {
   id: string;
@@ -117,54 +119,34 @@ function ChecklistItemRow({
   );
 }
 
-const VARIANT_STYLES = {
-  gate: {
-    border: "border-indigo-200",
-    headerBg: "bg-gradient-to-r from-indigo-600 to-indigo-700",
-    headerText: "text-white",
-    subText: "text-indigo-100",
-    iconBg: "bg-white/15",
-    bodyBg: "bg-gradient-to-b from-indigo-50/40 to-white",
-    progress: "bg-indigo-100",
-    progressFill: "bg-indigo-600",
-    badge: "bg-white/20 text-white",
-  },
-  section: {
-    border: "border-neutral-200",
-    headerBg: "bg-neutral-50",
-    headerText: "text-neutral-900",
-    subText: "text-neutral-500",
-    iconBg: "bg-indigo-100",
-    bodyBg: "bg-white",
-    progress: "bg-neutral-100",
-    progressFill: "bg-emerald-500",
-    badge: "bg-neutral-200 text-neutral-700",
-  },
-  inline: {
-    border: "border-neutral-200",
-    headerBg: "bg-neutral-50",
-    headerText: "text-neutral-900",
-    subText: "text-neutral-500",
-    iconBg: "bg-neutral-100",
-    bodyBg: "bg-white",
-    progress: "bg-neutral-100",
-    progressFill: "bg-emerald-500",
-    badge: "bg-neutral-200 text-neutral-700",
-  },
+/** Shared card styling — gate and section checklists use the same look (see 2.16 verify). */
+const CARD_STYLES = {
+  border: "border-neutral-200",
+  headerBg: "bg-neutral-50",
+  headerText: "text-neutral-900",
+  subText: "text-neutral-500",
+  iconBg: "bg-indigo-100",
+  bodyBg: "bg-white",
+  progress: "bg-neutral-100",
+  progressFill: "bg-emerald-500",
+  badge: "bg-neutral-200 text-neutral-700",
 } as const;
 
 export function Checklist({
   items,
   section,
   variant = "inline",
+  isGate = false,
 }: {
   items: ChecklistItemData[];
   section?: string;
-  variant?: keyof typeof VARIANT_STYLES;
+  variant?: "gate" | "section" | "inline";
+  isGate?: boolean;
 }) {
   const ctx = useContext(ChecklistContext);
   const chapterSlug = ctx?.chapterSlug ?? "unknown";
-  const styles = VARIANT_STYLES[variant];
+  const cardRef = useRef<HTMLDivElement>(null);
+  const confettiFiredRef = useRef(false);
 
   const [checkedMap, setCheckedMap] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
@@ -215,58 +197,53 @@ export function Checklist({
   const progress = total > 0 ? (checkedCount / total) * 100 : 0;
   const allDone = total > 0 && checkedCount === total;
 
-  const headerTitle =
-    variant === "gate"
-      ? section ?? "Chapter gate checklist"
-      : section ?? "Checklist";
+  useEffect(() => {
+    if (!allDone || confettiFiredRef.current || !cardRef.current) return;
+    confettiFiredRef.current = true;
+    fireMiniConfetti(cardRef.current);
+  }, [allDone]);
 
-  const HeaderIcon = variant === "gate" ? ClipboardCheck : ListChecks;
+  // Legacy `variant="gate"` from older compiles maps to the same card as section/inline.
+  const showSectionTitle = Boolean(section) || variant === "section";
+  const gateMode = isGate || variant === "gate";
+
+  const headerTitle = showSectionTitle
+    ? section ?? (gateMode ? "Chapter gate checklist" : "Checklist")
+    : section ?? "Checklist";
+
+  const label = gateMode ? "Gate checklist" : "Checklist";
 
   return (
     <div
+      ref={cardRef}
       className={cn(
         "not-prose my-8 overflow-hidden rounded-2xl border shadow-sm",
-        styles.border,
-        styles.bodyBg
+        CARD_STYLES.border,
+        CARD_STYLES.bodyBg
       )}
       data-checklist
-      data-checklist-variant={variant}
+      data-checklist-variant={gateMode ? "gate" : variant}
     >
-      <div
-        className={cn(
-          "px-5 py-4",
-          variant === "gate" ? styles.headerBg : cn(styles.headerBg, "border-b border-neutral-200")
-        )}
-      >
+      <div className={cn("border-b border-neutral-200 px-5 py-4", CARD_STYLES.headerBg)}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <div
               className={cn(
                 "flex size-10 shrink-0 items-center justify-center rounded-xl",
-                variant === "gate" ? styles.iconBg : styles.iconBg
+                CARD_STYLES.iconBg
               )}
             >
-              <HeaderIcon
-                className={cn(
-                  "size-5",
-                  variant === "gate" ? "text-white" : "text-indigo-600"
-                )}
-              />
+              <ListChecks className="size-5 text-indigo-600" />
             </div>
             <div>
-              <p
-                className={cn(
-                  "text-[11px] font-bold uppercase tracking-widest",
-                  variant === "gate" ? styles.subText : "text-indigo-600"
-                )}
-              >
-                {variant === "gate" ? "Gate checklist" : "Checklist"}
+              <p className="text-[11px] font-bold uppercase tracking-widest text-indigo-600">
+                {label}
               </p>
-              <p className={cn("mt-0.5 text-base font-semibold leading-snug", styles.headerText)}>
+              <p className={cn("mt-0.5 text-base font-semibold leading-snug", CARD_STYLES.headerText)}>
                 {headerTitle}
               </p>
-              {variant === "gate" ? (
-                <p className={cn("mt-1 text-sm", styles.subText)}>
+              {gateMode ? (
+                <p className={cn("mt-1 text-sm", CARD_STYLES.subText)}>
                   Tick each item when you can demo or explain it — progress saves in your browser.
                 </p>
               ) : null}
@@ -275,16 +252,19 @@ export function Checklist({
           <span
             className={cn(
               "shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold tabular-nums",
-              styles.badge
+              CARD_STYLES.badge
             )}
           >
             {checkedCount}/{total}
           </span>
         </div>
 
-        <div className={cn("mt-4 h-1.5 overflow-hidden rounded-full", styles.progress)}>
+        <div className={cn("mt-4 h-1.5 overflow-hidden rounded-full", CARD_STYLES.progress)}>
           <div
-            className={cn("h-full rounded-full transition-all duration-300 ease-out", styles.progressFill)}
+            className={cn(
+              "h-full rounded-full transition-all duration-300 ease-out",
+              CARD_STYLES.progressFill
+            )}
             style={{ width: `${progress}%` }}
             role="progressbar"
             aria-valuenow={checkedCount}
@@ -308,8 +288,8 @@ export function Checklist({
       {allDone ? (
         <div className="border-t border-emerald-100 bg-emerald-50/80 px-5 py-3.5">
           <p className="flex items-center gap-2 text-sm font-medium text-emerald-800">
-            <CheckCircle2 className="size-4 shrink-0" />
-            All items complete — you&apos;re ready to move on.
+            <PartyPopper className="size-4 shrink-0" aria-hidden />
+            All items complete — nice work!
           </p>
         </div>
       ) : null}

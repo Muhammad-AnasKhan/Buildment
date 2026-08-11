@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Chapter 20 adds checkout **UI** with Stripe
 ---
 **Why this step matters:** Chapter 20 adds checkout **UI** with Stripe.js on top of this API — you need a crisp story for Payment Intents, gated checkout, and one-payment-many-orders before building buttons.
 
+<BigWordAlert term="Paid orders" plainEnglish="Checkout + Stripe confirms money collected — orders ready for vendor fulfillment UI." whyItMatters="Chapter 20 track orders assumes payment status on order documents is reliable." />
+
 You entered Chapter 19 with free checkout. You leave with **real Stripe test-mode payments** — intent from cart, server verification, shared PI on split orders, webhooks with signature verify, idempotent checkout.
 
 ## What you built — narrative recap
@@ -79,10 +81,16 @@ POST /checkout ──► retrieve PI ──► succeeded? ──► Ch 18 pipeli
 | Browser checkout + order UI | Chapter 20 |
 | Week 3 phase demo | Chapter 20 gate |
 
+<InterestingRead title="Test mode vs live mode" hook="Real cards fail in test mode on purpose." readMinutes={4}>
+
+Stripe test keys let you simulate success, decline, and 3D Secure without moving money. FreshMarket stays in test mode until deploy — but your code paths should mirror production exactly.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78GZBW9EAA68A15JGPN0" />
+<OpenQuestion id="01KZP7KQPV7ZJB1MS6JNH0Y6WQ" />
 
 ## Next — Track orders (Chapter 20)
 
@@ -105,3 +113,4 @@ Frontend chapter paired with Chapters 18–19:
 **Do not open `20-track-orders/20.01-set-the-scene.md` until 19.16 is fully ticked.**
 
 Payment is honest on the server. Next both actors see paid orders in the browser.
+<RealWorldEvent title="Stripe becomes default startup payments" when="2010s–present" summary="Stripe's developer-first APIs and webhooks let small teams accept cards without becoming PCI compliance experts overnight." lesson="Verify webhook signatures on every request — unverified endpoints let attackers mark orders paid for free." />

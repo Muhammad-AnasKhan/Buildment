@@ -67,18 +67,8 @@ function isLearningLogHeading(title: string): boolean {
   return /learning log/i.test(title);
 }
 
-function isGateChapter(siblings: Root["children"], headingIndex: number): boolean {
-  for (let i = headingIndex - 1; i >= 0; i--) {
-    const node = siblings[i];
-    if (node.type === "heading") {
-      const heading = node as Heading;
-      const title = headingText(heading);
-      if (heading.depth <= 2) {
-        return /checklist|gate|self-check|verify before|tick every/i.test(title);
-      }
-    }
-  }
-  return false;
+function normalizeLearningLogTitle(title: string): string {
+  return title.replace(/^learning log\s*[—–-]?\s*(write now)?\s*/i, "").trim() || "Learning log";
 }
 
 function mdxLearningLogNode(options: {
@@ -184,12 +174,11 @@ export function remarkLearningLog(): (tree: Root) => void {
       );
       if (questions.length === 0) return;
 
-      const variant = isGateChapter(parent.children, index) ? "gate" : "default";
       const replacement = mdxLearningLogNode({
-        title,
+        title: normalizeLearningLogTitle(title),
         instruction: instruction || undefined,
         questions,
-        variant,
+        variant: "default",
       });
 
       parent.children.splice(

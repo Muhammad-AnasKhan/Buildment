@@ -6,6 +6,8 @@ summary: "A vendor who runs **Green Valley Organics** should not also appear as 
 ---
 A vendor who runs **Green Valley Organics** should not also appear as **Green Valley Organics (2)** because they clicked "create store" twice. Multi-store per vendor is a real product pattern — but **not** for this course. FreshMarket assumes **one local shop per vendor account**.
 
+<BigWordAlert term="Store uniqueness constraint" plainEnglish="Database or application rule ensuring each vendor user has at most one store document." whyItMatters="FreshMarket onboarding checks `GET /stores/me` — if null, redirect to store setup." />
+
 ## Why one store matters for grocery
 
 Local grocery marketplaces sell **trust in a named shop**:
@@ -103,6 +105,8 @@ Defend in viva: *"One store keeps cart split, ownership checks, and onboarding l
 
 *"Why does FreshMarket enforce one store per vendor? What HTTP status do you return on duplicate create, and why not 403?"*
 
+<RealWorldEvent title="Etsy shop URLs and seller identity" when="2005–present" summary="Marketplace sellers receive branded storefront URLs while the platform enforces global uniqueness and policy compliance behind the scenes." lesson="Store creation is more than a form — it is the moment a user becomes a vendor with isolated data and public presence." />
+
 ## Key ideas
 
 - **One store per vendor** simplifies ownership, cart, and onboarding  
@@ -119,7 +123,7 @@ Defend in viva: *"One store keeps cart split, ownership checks, and onboarding l
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76S4MWYB5X6HP5W6MP2S" />
+<OpenQuestion id="01KZP7KPRBKB8866JYEVNAWNSD" />
 
 ## Next
 

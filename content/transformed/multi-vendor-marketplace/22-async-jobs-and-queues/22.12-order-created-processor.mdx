@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Enqueue without a processor is a message no
 ---
 **Why this step matters:** Enqueue without a processor is a message nobody reads. `[NOTIFY]` logs here are the gate proof that multi-vendor checkout triggers one vendor line per store plus one customer summary.
 
+<BigWordAlert term="Job processor" plainEnglish="Worker function that handles one job type — receives payload, performs work, acks or retries." whyItMatters="FreshMarket processor loads order, renders email template, calls mail provider." />
+
 **Where the project is now:** Paid checkout enqueues `order.created` (22.11) — the worker has no processor for it yet.
 
 **After this step:** Worker handles `order.created` jobs — logs mock vendor notifications (per order/store) and one mock customer confirmation.
@@ -103,10 +105,12 @@ With `jobId` dedup on enqueue (22.14), duplicate enqueue suppressed — processo
 - [ ] 201 returned before logs (timing visible)
 - [ ] Processor registered for `order.created` job name
 
+<RealWorldEvent title="Shopify flash sale queue architecture" when="2010s–present" summary="Commerce platforms moved heavy work to background jobs during traffic spikes so checkout stayed available." lesson="Design jobs to be idempotent — retries will happen, and duplicate emails beat lost orders." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78ZH02C22ZWGN61GZ5QN" />
+<OpenQuestion id="01KZP7KQYTV7SY0B8C67SGA2SZ" />
 
 ## Next
 

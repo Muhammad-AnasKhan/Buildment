@@ -6,6 +6,8 @@ summary: "Production caches use **both**. TTL is a safety net; invalidation is c
 ---
 Production caches use **both**. TTL is a safety net; invalidation is correctness on writes.
 
+<BigWordAlert term="TTL vs event invalidation" plainEnglish="TTL expires cache after fixed time; event invalidation clears cache when data changes." whyItMatters="FreshMarket uses both — TTL safety net plus bust on vendor product save." />
+
 Beginners often pick one and wonder why production still breaks. This sub-chapter gives you the **decision frame** before you implement in 21.9 and 21.11.
 
 ## TTL only
@@ -145,10 +147,12 @@ The course order matters: build the cache with TTL in 21.9, then add invalidatio
 - [ ] I know where invalidation hooks live (`products.service.js`)
 - [ ] I documented my cache key pattern
 
+<RealWorldEvent title="Facebook Memcached outage lessons" when="2010" summary="Major sites learned that caching layers need fallbacks — when cache fails, databases must survive the thundering herd." lesson="Always code a cache miss path. Redis is an accelerator, not the system of record." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78QMRK0834HNQG4PXD83" />
+<OpenQuestion id="01KZP7KQT8M54Z9HX1KZHV709M" />
 
 ## Next
 

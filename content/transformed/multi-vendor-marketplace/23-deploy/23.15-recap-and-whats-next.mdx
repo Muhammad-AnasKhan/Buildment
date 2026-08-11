@@ -6,6 +6,8 @@ summary: "Chapter 23 moved FreshMarket from **localhost to HTTPS** — productio
 ---
 Chapter 23 moved FreshMarket from **localhost to HTTPS** — production env, client build, API deploy, **worker deploy**, smoke tests, restart survival.
 
+<BigWordAlert term="Live FreshMarket" plainEnglish="Public URL running full marketplace — portfolio centerpiece and Chapter 99 closure." whyItMatters="You built and deployed a real multi-vendor product — document it for interviews." />
+
 ## What you achieved
 
 **Production URLs** — client and API on HTTPS; paste in your portfolio and Chapter 23 learning log on the platform.
@@ -40,10 +42,16 @@ Browser → HTTPS → Express API → MongoDB
 Cloudinary ← image URLs in MongoDB only
 ```
 
+<InterestingRead title="The deploy checklist nobody skips twice" hook="Forgotten env vars wake you at 2 a.m." readMinutes={4}>
+
+Database URL, Stripe keys, Cloudinary, Redis, JWT secrets, CORS origin — production needs every secret the app reads locally. FreshMarket's deploy checklist exists because missing one variable fails silently until traffic hits.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX796B76RNK717ZWF38EBT" />
+<OpenQuestion id="01KZP7KR2GFNCX5DCY7REG06B6" />
 
 ## Next — Chapter 99: Closing
 
@@ -60,3 +68,4 @@ Not more features — **ship it, document it, bar-raiser**:
 **Sub-chapter 23.16:** Checklist + learning log with **live URL**.
 
 Your app is on the internet. Next make it hireable evidence.
+<RealWorldEvent title="Heroku twelve-factor app methodology" when="2011–present" summary="Twelve-factor principles — config in env, stateless processes, logs as streams — shaped how Node apps deploy to modern platforms." lesson="Build deploy-ready habits early: health routes, env-based config, and separate worker processes pay off on day one in production." />

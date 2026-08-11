@@ -6,6 +6,8 @@ summary: "You add `sendOrderConfirmationEmail(customer)` inside the checkout han
 ---
 You add `sendOrderConfirmationEmail(customer)` inside the checkout handler. Demo day: Mailgun times out after 30 seconds. Checkout returns **500** even though orders were created and stock decremented. Customer sees error; database shows success. Support nightmare.
 
+<BigWordAlert term="The sync trap" plainEnglish="Doing slow work inline in the request handler — timeouts and angry users under load." whyItMatters="FreshMarket sending email synchronously during checkout adds seconds to Pay click." />
+
 This sub-chapter names the trap **before** you wire BullMQ in 22.9–22.12.
 
 ## The bug in one sentence
@@ -85,16 +87,24 @@ Strong answer: decouple user-facing latency from third-party SLA; retries in wor
 
 Weak answer: "Email is fast" — describes demo-day timeout.
 
+<RealWorldEvent title="Shopify flash sale queue architecture" when="2010s–present" summary="Commerce platforms moved heavy work to background jobs during traffic spikes so checkout stayed available." lesson="Design jobs to be idempotent — retries will happen, and duplicate emails beat lost orders." />
+
 ## Self-check
 
 - [ ] I can explain sync trap without notes
 - [ ] I know which checkout steps must stay synchronous
 - [ ] I understand N vendors → N+1 notifications
 
+<InterestingRead title="Why checkout should not send email inline" hook="SMTP is slow and flaky compared to HTTP." readMinutes={4}>
+
+Sending vendor notification emails inside the payment request adds failure modes where money succeeded but the user sees an error. Queue the email; return success when the order is saved and payment confirmed.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78W9060M6PK0K6BYA3RP" />
+<OpenQuestion id="01KZP7KQWT8PDWH9Q2F260V0GE" />
 
 ## Next
 

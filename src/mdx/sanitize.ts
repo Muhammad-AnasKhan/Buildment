@@ -8,10 +8,13 @@ import "server-only";
 // instead of silently leaking until someone remembers to special-case it here.
 const SECRET_KEYS = new Set([
   "correct",
+  "correctOptionId",
   "correctOptionIds",
   "rubric",
   "sampleAnswer",
   "hiddenTests",
+  "tests",
+  "solution",
 ]);
 
 // TSafe defaults to TFull for callers that don't have (or don't need) a

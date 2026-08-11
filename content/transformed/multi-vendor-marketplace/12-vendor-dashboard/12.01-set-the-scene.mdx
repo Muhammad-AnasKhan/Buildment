@@ -6,13 +6,27 @@ summary: "**Where the project is now:** Vendors have a shop (Ch 9–10) and a **
 ---
 **Where the project is now:** Vendors have a shop (Ch 9–10) and a **product API** (Ch 11) — create, list, update, delete, publish flag via PATCH. curl proves it works. The vendor UI still has no **inventory screens** — `/vendor/products` may be a stub from Chapter 10.
 
+<BigWordAlert term="Vendor dashboard" plainEnglish="The authenticated UI where sellers manage products, stock, and publish status — not the public shop." whyItMatters="FreshMarket vendors spend most of their time here — table views, forms, and toggles must be efficient." />
+
 **Where this chapter goes:** Vendors manage products **entirely in the browser** — table of inventory, create form, edit form, publish toggle — wired to Chapter 11 endpoints.
 
 This is a **build chapter**. Sub-chapters 12.5 onward add pages and API helpers. The gate is a full UI flow: create draft → edit → publish.
 
+<ArticleBreak title="Week 2 checkpoint: the vendor can run a shop" subtitle="What you have built before customers enter the marketplace" readMinutes={6}>
+
+By the end of the vendor experience chapters, a seller can register, verify, open a store, add products with photos, and manage them from a dashboard.
+
+That is half of a marketplace. Supply exists. What is missing is demand — public catalogue browsing, cart, checkout, and payments.
+
+Before jumping to customer features, demo the vendor flow end to end. If authorization leaks or product ownership is wrong, fixing it now prevents catastrophic bugs when money is involved.
+
+</ArticleBreak>
+
 ## Bridge from last chapter
 
 Chapter 11 gave vendors a **product API** — create, list mine, update, delete, publish flag — curl-tested with cross-vendor 403 proof. Developers can stock shelves; **Maya the vendor** still has no product table or forms in the browser. Chapter 10 taught the vendor shell and store gate; Chapter 12 completes the **back office**: list inventory, add a product, edit price, flip publish — all wired to Chapter 11 endpoints.
+
+<RealWorldEvent title="Square Dashboard for sellers" when="2010s–present" summary="Square gave small merchants inventory, orders, and payouts in one place — proving simple dashboards drive daily engagement." lesson="Vendor tools should answer: what do I sell, what is low stock, and what changed since yesterday?" />
 
 ## In plain English
 
@@ -92,6 +106,14 @@ Vendors should not need curl to stock shelves.
 
 Same pattern as 9→10. API contract is frozen — UI adapts to your response shapes.
 
+<MandatoryReadCard
+  title="React — Managing state"
+  href="https://react.dev/learn/managing-state"
+  source="React"
+  summary="Official guide to component state, lifting state up, and avoiding redundant fetches — core skills for the vendor product table."
+  readMinutes={15}
+/>
+
 ## User narrative
 
 1. Maya opens **Products** in vendor nav.  
@@ -141,10 +163,16 @@ Estimated time: **1–1.5 days**.
 - [ ] Ch 10 gate — vendor layout + store gate work  
 - [ ] Know JSON shape from GET /vendor/products  
 
+<InterestingRead title="Tables that scale for small vendors" hook="Most FreshMarket shops have dozens of products, not millions." readMinutes={3}>
+
+Enterprise data grids with virtual scrolling are overkill early on. A clear paginated table with search and status badges matches real vendor needs and keeps your first dashboard shippable.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX7777H3J9E9MAYQ1BTF7Z" />
+<OpenQuestion id="01KZP7KQ01K29PF6EPAB8YKXFB" />
 
 ## Next
 

@@ -6,6 +6,8 @@ summary: "Before scaffolding auth routes, read how bcrypt and jsonwebtoken behav
 ---
 Before scaffolding auth routes, read how bcrypt and jsonwebtoken behave in Node — especially async APIs and error types. Thirty minutes prevents "invalid signature" loops.
 
+<BigWordAlert term="Access vs refresh token" plainEnglish="Short-lived access token for API calls; longer refresh token to get new access tokens without re-login." whyItMatters="FreshMarket access tokens expire in minutes; refresh tokens keep shoppers logged in across tab sessions." />
+
 ## Mandatory reads
 
 Read these four in order. The first two are the tools you'll type into `server/src/` this chapter — read their official READMEs so you use the APIs the way the maintainers intend, not the way an old blog post remembers them.
@@ -95,6 +97,8 @@ requireAuth:
 - attach req.user
 ```
 
+<RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
+
 ## Time box
 
 | Activity | Minutes |
@@ -118,10 +122,16 @@ requireAuth:
 - [ ] I can hash and compare a password
 - [ ] I know 401 vs 403 usage — unauthenticated vs verified/authorized
 
+<InterestingRead title="Refresh tokens: why one token is not enough" hook="Short access tokens limit damage; refresh tokens limit annoyance." readMinutes={5}>
+
+If access tokens lived for weeks, a stolen token would stay valid for weeks. If they expired every minute, users would log in constantly. FreshMarket uses brief access tokens plus longer refresh tokens — a pattern you will wire on both server and client.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX765X52QQKDYGBSGSQXJX" />
+<OpenQuestion id="01KZP7KPD1981ZAXFK58S4J12Z" />
 
 ## Next
 

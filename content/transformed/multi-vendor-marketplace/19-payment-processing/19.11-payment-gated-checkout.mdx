@@ -2,122 +2,132 @@
 title: "Payment-gated checkout"
 module: 19
 lesson: 11
-summary: "**Why this step matters:** This is the **gate** between money and merchandise — if verification is wrong, you either give away groceries or charge without creating orders. Everything else in Chapter 19 supports this seam."
+summary: "Refactor POST /checkout to require paymentIntentId and verify payment succeeded with Stripe before creating orders."
 ---
-**Why this step matters:** This is the **gate** between money and merchandise — if verification is wrong, you either give away groceries or charge without creating orders. Everything else in Chapter 19 supports this seam.
+Chapter 18 let checkout run without money — the "fake checkout trap." This lesson adds the **payment gate**: orders only exist after Stripe confirms payment succeeded.
 
-**Where the project is now:** `POST /payments/intent` creates intents; `POST /checkout` still runs Chapter 18 pipeline without payment — the fake-checkout trap.
+<BigWordAlert term="Payment-gated checkout" plainEnglish="Orders stay pending until Stripe confirms payment — no fulfillment on unpaid orders." whyItMatters="FreshMarket vendors should not pack orders that might fail card authorization." />
 
-**After this step:** `POST /checkout` requires `{ paymentIntentId }`, retrieves Payment Intent from Stripe, verifies `succeeded` and amount, then runs existing split/snapshot/stock/clear logic; each order gets `stripePaymentIntentId` and `paymentStatus: 'paid'`.
+---
 
-## Refactor checkout entry — contract
+## What changes
 
-**Input body (required):**
+**Before:** `POST /checkout` with `{}` → orders created  
+**After:** `POST /checkout` with `{ paymentIntentId }` → verify Stripe → then Chapter 18 pipeline
 
-```json
-{
-  "paymentIntentId": "pi_xxxxxxxx"
-}
-```
+<DiffBlock
+  title="Checkout handler signature"
+  language="javascript"
+  before={`async function checkoutHandler(req, res) {
+  const orders = await createOrdersFromCart(req.user.id);
+  return res.status(201).json({ orders });
+}`}
+  after={`async function checkoutHandler(req, res) {
+  const { paymentIntentId } = req.body;
+  if (!paymentIntentId) {
+    return res.status(400).json({ message: 'Payment required' });
+  }
+  await verifyPaymentSucceeded(paymentIntentId, req.user.id);
+  const orders = await createOrdersFromCart(req.user.id, paymentIntentId);
+  return res.status(201).json({ orders });
+}`}
+/>
 
-Missing `paymentIntentId` → **400** — "Payment required" or similar.
+---
 
-## verifyAndCheckout(userId, paymentIntentId) — contract
-
-**Phase A — Payment verification (new):**
-
-1. `getStripe().paymentIntents.retrieve(paymentIntentId)`.
-2. If `status !== 'succeeded'` → **402** or **400** — payment not completed.
-3. Recompute cart total with **same helper** as 19.10.
-4. If `paymentIntent.amount !== computedTotal` → **400** — amount mismatch; log for fraud investigation.
-5. Optional: assert `metadata.userId` matches auth user if you set it at intent creation.
-6. **Idempotency:** if Order(s) already exist with this `stripePaymentIntentId` → return existing orders **200** — do not duplicate (detail in 19.13).
-
-**Phase B — Chapter 18 pipeline (existing):**
-
-7. Load cart; validate lines; group by `storeId`.
-8. Build orders with snapshot fields.
-9. Atomic stock decrement — fail-all unchanged.
-10. Set on **each** order before insert: `stripePaymentIntentId`, `paymentStatus: 'paid'`.
-11. Insert orders; clear cart.
-12. Return `{ orders: [...] }` — 201 on first success.
-
-**Do not rewrite** snapshot or stock logic — call existing functions from 18.10–18.13.
-
-## Response contract
-
-Same shape as Chapter 18 — array of split orders. Each order document includes payment fields:
+## Step 1 — Require paymentIntentId
 
 ```json
-{
-  "orders": [
-    {
-      "_id": "...",
-      "storeId": "...",
-      "total": 305,
-      "stripePaymentIntentId": "pi_...",
-      "paymentStatus": "paid",
-      "orderItems": [ "... snapshots ..." ]
-    }
-  ]
-}
+POST /api/checkout
+{ "paymentIntentId": "pi_xxxxxxxx" }
 ```
 
-## Breaking change — verify explicitly
+Missing field → **400** "Payment required"
 
-```bash
-# Must FAIL after this sub-chapter
-curl -s -X POST http://localhost:5000/api/checkout \\
-  -H "Authorization: Bearer <customer-token>" \\
-  -H "Content-Type: application/json" \\
-  -d '{}'
-```
+Verify bare checkout fails after this change:
 
-**Expected:** 400 — payment intent required.
+<ApiRequestPanel title="Bare checkout must fail">
 
-Paid flow tested in 19.14 after client confirms PI.
+<ApiRequest
+  label="POST /checkout without paymentIntentId — must return 400"
+  method="POST"
+  url="http://localhost:5000/api/checkout"
+  bearer="<customer-token>"
+  body='{}'
+  responseStatus={400}
+  responseBody='{"message":"Payment required"}'
+/>
 
-## Status code guidance
+</ApiRequestPanel>
 
-| Case | Suggested status |
-|---|---|
-| PI not succeeded | 402 Payment Required or 400 |
-| Amount mismatch | 400 |
-| Cart validation fail | 400 |
-| Stock fail | 400/409 — same as Ch 18 |
-| Success first time | 201 |
-| Idempotent replay same PI | 200 with same orders |
+---
 
-Pick one idempotent pattern — document in README.
+## Step 2 — Phase A: verify payment (new)
 
-## ✅ Do / ❌ Don't
+Before any order logic:
 
-**✅ Do:** Retrieve PI from Stripe on **every** checkout — no cached client status.
+1. `stripe.paymentIntents.retrieve(paymentIntentId)`
+2. Status must be **`succeeded`** — else 402/400
+3. Recompute cart total with **same helper** as 19.10
+4. `paymentIntent.amount` must equal computed total — else 400 (log mismatch)
+5. Optional: check `metadata.userId` matches JWT
+6. **Idempotency:** if orders already exist for this PI → return them (200), don't duplicate
 
-**✅ Do:** Attach same `stripePaymentIntentId` to **all** orders from one checkout.
+---
 
-**✅ Do:** Keep fail-all stock semantics from Chapter 18.
+## Step 3 — Phase B: Chapter 18 pipeline (unchanged logic)
 
-**❌ Don't:** Create orders when PI is `requires_payment_method` or `processing`.
+Call your existing functions from 18.10–18.13:
 
-**❌ Don't:** Skip cart re-validation because payment succeeded — prices/stock may change between intent and checkout.
+7. Load cart, validate, group by storeId
+8. Snapshot order lines
+9. Atomic stock decrement (fail-all)
+10. Set on each order: `stripePaymentIntentId`, `paymentStatus: 'paid'`
+11. Insert orders, clear cart
+12. Return `{ orders: [...] }` — 201 first time
+
+**Do not rewrite** snapshot/stock/clear — reuse what you built in Chapter 18.
+
+---
+
+## Step 4 — Verify in Compass
+
+Each order document should have:
+
+- `stripePaymentIntentId` — same value on all orders from one checkout
+- `paymentStatus: 'paid'`
+- Snapshot fields on lines (unchanged from Ch 18)
+
+---
+
+## Common mistakes
+
+| Mistake | Result | Fix |
+|---|---|---|
+| Trust client "paid" flag | Free groceries | Retrieve PI from Stripe |
+| Skip cart re-validation | Wrong stock/price | Re-validate after payment |
+| Different amount formulas | Checkout fails mysteriously | Shared computeCartTotal |
+| Orders on `requires_payment_method` | Unpaid orders | Check status === succeeded |
+
+---
 
 ## Verify checklist
 
-- [ ] Bare `POST /checkout` without PI → 400
-- [ ] PI not confirmed → checkout rejected
-- [ ] After confirm + checkout → split orders with `paymentStatus: 'paid'`
-- [ ] Same PI id on every order from one checkout
-- [ ] Stock decremented; cart cleared — Ch 18 behaviour preserved
-- [ ] Compass shows payment fields on Order documents
+- [ ] Bare POST /checkout → 400
+- [ ] Unpaid PI → rejected
+- [ ] Paid PI + checkout → split orders with paymentStatus paid
+- [ ] Stock + cart clear still work (Ch 18 behaviour)
+- [ ] Same PI id on all orders from one checkout
+
+<RealWorldEvent title="Stripe becomes default startup payments" when="2010s–present" summary="Stripe's developer-first APIs and webhooks let small teams accept cards without becoming PCI compliance experts overnight." lesson="Verify webhook signatures on every request — unverified endpoints let attackers mark orders paid for free." />
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78FGQ3N3E2MCJCEAA8Z9" />
+<OpenQuestion id="01KZP7KQP1PKFM70CJB7E75D7E" />
 
 ## Next
 
-**Sub-chapter 19.12:** Webhook handler — `POST /webhooks/stripe`, raw body, signature verify.
+**Sub-chapter 19.12:** Webhook handler — backup when client and server race.
 
-Backup path when client and server race.
+Payment gate done. Next, webhook safety net.

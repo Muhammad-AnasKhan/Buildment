@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Public Home and auth pages stay open; vendo
 ---
 **Why this step matters:** Public Home and auth pages stay open; vendor stubs must reject strangers. `ProtectedRoute` is the client-side door check — authorization by role deepens in Chapter 8, but unauthenticated users should never see vendor screens.
 
+<BigWordAlert term="Protected route" plainEnglish="A wrapper component that redirects to login if no valid token — guards vendor dashboard and cart." whyItMatters="FreshMarket `/vendor/*` routes render nothing until auth context confirms a logged-in vendor." />
+
 **Where the project is now:** Auth state exists; vendor routes publicly accessible.
 
 **After this step:** `ProtectedRoute` component redirects unauthenticated users to `/login`, preserves intended URL optional, waits for auth boot loading.
@@ -46,9 +48,9 @@ Chapter 8 adds proper 403 UX — here optional role prop preview.
 | `requireAuth` (Ch 6) | Requests without valid JWT | No — server returns 401 |
 | `requireRole` + ownership (Ch 8) | Wrong role or wrong store id | No — server returns 403 |
 
-&lt;Callout type="info" title="Production rule">
+<Callout type="info" title="Production rule">
 Ship both. Client guards for experience; server guards for correctness. Chapter 8 is where marketplace isolation actually lives — do not skip it because ProtectedRoute "feels secure enough."
-&lt;/Callout>
+</Callout>
 
 ## Usage in router
 
@@ -104,10 +106,12 @@ git commit -m "feat(client): add ProtectedRoute for authenticated pages"
 - [ ] Logout clears access and blocks protected route
 - [ ] isLoading handled
 
+<RealWorldEvent title="GitHub's session and token evolution" when="2010s–present" summary="Developer platforms refined PATs, OAuth apps, and session handling as users demanded security without constant re-authentication." lesson="Treat the client auth layer as part of security design, not a UI afterthought — refresh logic belongs in one place, not scattered across pages." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76HESRC2CVQ430MXSKZ3" />
+<OpenQuestion id="01KZP7KPM95471RJZMG1KGKM0V" />
 
 ## Next
 

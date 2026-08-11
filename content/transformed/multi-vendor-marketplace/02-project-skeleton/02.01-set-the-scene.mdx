@@ -6,7 +6,19 @@ summary: "You cleared the introduction checklist. You know what you're building,
 ---
 You cleared the introduction checklist. You know what you're building, how the course gates progress, and what's in scope. **Nothing in your marketplace repo exists yet** — or it shouldn't, if you're starting clean.
 
+<BigWordAlert term="Monorepo layout" plainEnglish="One Git repository that holds both the client app and the server app, usually in separate top-level folders." whyItMatters="FreshMarket keeps `client/` and `server/` side by side so you can run and deploy them together while keeping concerns separate." />
+
 This chapter is where that changes.
+
+<ArticleBreak title="Before you write feature code: how FreshMarket is wired" subtitle="A five-minute map of client, server, and the first request" readMinutes={6}>
+
+FreshMarket runs as two applications: a Vite + React client and an Express + Node server. The client never talks to MongoDB directly — it calls HTTP routes on the server, and the server owns all data access.
+
+Your skeleton chapter exists to prove that wiring works. When the home page shows a health check response, you have confirmed: the server listens on a port, the client knows that URL, CORS allows the browser request, and JSON travels both ways.
+
+Every later chapter plugs into this same pattern. Auth adds protected routes. The catalogue adds public read routes. Checkout adds payment routes. The skeleton is boring on purpose — boring infrastructure is what lets exciting features ship safely.
+
+</ArticleBreak>
 
 ## Bridge from last chapter
 
@@ -15,6 +27,8 @@ Chapter 1 was about **clarity before code**. You named your product (or picked a
 What carries forward: your product name, your learning log habit, and the discipline of not skipping gates. What does **not** carry forward yet: any folder structure in a repo you own. The introduction told you the story; this chapter makes the story **physical on disk**.
 
 The hat you wear now is **builder of the skeleton**. You are not designing the database, wiring login, or styling a shop. You are answering boring questions every professional team answers on day one: where does the API live, where does the React app live, how do we know both halves are alive? When Chapter 4 adds MongoDB, it slots into folders you already understand. When Chapter 7 adds login pages, they land in `client/src/pages/` you created here. This chapter is the floor everything else stands on.
+
+<RealWorldEvent title="Shopify's modular commerce platform" when="2006–present" summary="Shopify grew from a single-product store builder into a platform with separate admin, storefront, and API surfaces — all coordinated through clear project boundaries." lesson="Starting with a deliberate folder skeleton prevents painful renames later when vendor, cart, and payment code all need room to grow." />
 
 ## In plain English
 
@@ -31,6 +45,14 @@ The hat you wear now is **builder of the skeleton**. You are not designing the d
 ## Think of it like…
 
 **Building a market hall before the stalls open.** You pour the foundation, erect the frame, run electricity and plumbing, and hang a sign that says "We're open" — even though no vendor has stock yet. The health check is that sign: it proves power and structure work. Later chapters are individual stallholders (database, auth, products) moving in. If you skip the hall and start with a cheese counter in a field, every next delivery has nowhere to plug in.
+
+<MandatoryReadCard
+  title="Introduction to client-side JavaScript frameworks"
+  href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Frameworks_libraries/Introduction"
+  source="MDN"
+  summary="Short MDN primer on why frameworks like React exist and what problems they solve. Helps you understand why the client is a separate app from Express."
+  readMinutes={12}
+/>
 
 ## Common beginner questions
 
@@ -162,6 +184,12 @@ After 2.13 the client will render in the browser.
 After 2.15 the client will talk to the API.  
 After 2.16 you'll have your **first screenshot** for the portfolio.
 
+<InterestingRead title="Colocate by feature vs organise by type" hook="Folders named `controllers/` age badly when products multiply." readMinutes={5}>
+
+Many teams start with layer-first folders (all routes together, all models together). Feature-first layouts group everything for one capability — auth, cart, checkout — in one place. FreshMarket uses module folders on the server so each capability stays findable as the codebase grows.
+
+</InterestingRead>
+
 ## Before you continue
 
 - [ ] Chapter 1 checklist cleared  
@@ -201,4 +229,4 @@ Before sub-chapter 2.8, confirm: empty directory chosen, Node 18+, Git installed
 Next: why folder structure is a real decision — not aesthetics.
 ## Before you continue
 
-<OpenQuestion id="01KZAX75846BQ39TVB8M3XM3AF" />
+<OpenQuestion id="01KZP7KNSCZ7G236Q8833ADQ5E" />

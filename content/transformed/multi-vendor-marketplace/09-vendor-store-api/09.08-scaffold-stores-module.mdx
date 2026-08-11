@@ -6,6 +6,8 @@ summary: "Scaffolding separates **structure** from **logic** — routes, service
 ---
 **Why this step matters:** Scaffolding separates **structure** from **logic** — routes, service, and validation files exist and mount before you write create/fetch/update behavior. Same pattern as auth (Ch 6) and products (Ch 11). One folder, one responsibility per file.
 
+<BigWordAlert term="Feature module" plainEnglish="A folder grouping routes, controller, and service for one domain — stores in this chapter." whyItMatters="FreshMarket's `stores/` module is the pattern repeated for products, cart, and orders." />
+
 **Where the project is now:** Store **model** exists; routes may be a Chapter 8 stub or empty.
 
 **After this step:** `stores.routes.js`, `stores.service.js`, and `stores.schema.js` exist; router mounted on `app.js`; handlers are stubs or thin wrappers ready for 9.9–9.11.
@@ -121,10 +123,12 @@ git commit -m "feat(stores): scaffold stores module routes service and validatio
 - [ ] Hit POST with valid token → not 404 route missing (may be 400/501 until 9.9)  
 - [ ] `/me` route registered before `/:id`  
 
+<RealWorldEvent title="Etsy shop URLs and seller identity" when="2005–present" summary="Marketplace sellers receive branded storefront URLs while the platform enforces global uniqueness and policy compliance behind the scenes." lesson="Store creation is more than a form — it is the moment a user becomes a vendor with isolated data and public presence." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76V8WP0JTAYN05WMGQ2K" />
+<OpenQuestion id="01KZP7KPSKMYE3FZX10J4MSJJ0" />
 
 ## Next
 

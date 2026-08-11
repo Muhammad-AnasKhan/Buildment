@@ -2,51 +2,82 @@
 title: "Create product route"
 module: 11
 lesson: 9
-summary: "Stocking the shelf starts here. `POST /products` must resolve `storeId` from the JWT — never trust the client body — and reject vendors without a store. This is the highest-risk IDOR surface: a wrong `storeId` assignment puts kale in another vendor's stall."
+summary: "Implement POST /products: vendor-only, storeId from JWT never from body, default draft until published."
 ---
-**Why this step matters:** Stocking the shelf starts here. `POST /products` must resolve `storeId` from the JWT — never trust the client body — and reject vendors without a store. This is the highest-risk IDOR surface: a wrong `storeId` assignment puts kale in another vendor's stall.
+This is where vendors add stock to their stall. The critical rule: **`storeId` comes from the vendor's store** — never from the request body. Accepting storeId from the client would let a vendor put products in someone else's shop.
 
-**Where the project is now:** Products module scaffolded and mounted in 11.8 — `POST /products` is a stub or 404.
+<BigWordAlert term="Product creation" plainEnglish="POST endpoint that attaches a new product to the vendor's store with validated fields." whyItMatters="FreshMarket vendors add mangoes and milk through this route — links product.storeId automatically." />
 
-**After this step:** `POST /api/products` creates product on vendor's store → **201**. No store → error. Customer → **403**. Invalid body → **400**.
+---
 
-## Handler flow
+
+## Try it yourself
+
+Practice the core logic from this lesson in the **code lab** below — write real JavaScript, then click **Check my code**. Same editor style as the course's code blocks.
+
+<CodeExercise id="01KZP7KPYRYB7T7V79HQFPVJ21" />
+
+## Step 1 — Route middleware chain
 
 ```
 POST /api/products
-  1. requireAuth
-  2. requireRole('vendor')
-  3. validateCreateProduct(body)
-  4. createProduct(userId, validBody)
-  5. 201 + product JSON
+  requireAuth
+  requireRole('vendor')
+  validateCreateProduct(body)
+  createProductHandler
 ```
 
-## Service: createProduct
+---
+
+## Step 2 — Service: createProduct(vendorId, body)
 
 | Step | Action |
 |---|---|
-| 1 | `store = getStoreByVendorId(vendorId)` |
-| 2 | If !store → NotFoundError (404) or ForbiddenError — document: **404 "no store"** recommended |
-| 3 | Build product doc: validated fields + `storeId: store._id` |
-| 4 | Default `isPublished: false` if field exists |
-| 5 | Save and return |
+| 1 | Find vendor's store: `getStoreByVendorId(vendorId)` |
+| 2 | No store → **404** (vendor must complete Ch 10 first) |
+| 3 | Build product: validated fields + `storeId: store._id` |
+| 4 | Default `isPublished: false` |
+| 5 | Save → return 201 |
 
-Strip `storeId` from client body if present.
+**Strip** any `storeId` sent in the body — ignore client tampering.
 
-## Request body (example spec)
+---
+
+## Step 3 — Request body fields
 
 | Field | Rule |
 |---|---|
 | name | required |
-| price | required, positive number |
-| unit | required enum per model |
-| weightOrQuantity | per ERD |
-| stockQty | required, >= 0 |
+| price | required, > 0 |
+| unit | required enum (kg, litre, each, …) |
+| stockQty | required, ≥ 0 |
 | isPerishable | boolean |
 | description | optional |
-| isPublished | optional — default false |
+| weightOrQuantity | per your ERD |
 
 Match your Product schema exactly.
+
+---
+
+## Step 4 — Test with curl
+
+<ApiRequestPanel title="Create product as vendor">
+
+<ApiRequest
+  label="POST /products — storeId inferred from vendor, not request body"
+  method="POST"
+  url="http://localhost:5000/api/products"
+  bearer="$VENDOR_A_TOKEN"
+  body='{"name":"Organic Kale","price":2.5,"unit":"bunch","stockQty":20,"isPerishable":true}'
+  responseStatus={201}
+  responseBody='{"_id":"...","name":"Organic Kale","storeId":"...","price":2.5,"unit":"bunch","stockQty":20,"isPerishable":true}'
+/>
+
+</ApiRequestPanel>
+
+Check Compass: `storeId` matches Vendor A's store — not any id from the body.
+
+---
 
 ## Error matrix
 
@@ -58,16 +89,17 @@ Match your Product schema exactly.
 | Invalid body | 400 |
 | Valid | 201 |
 
-## curl verify
+---
 
-```bash
-curl -s -X POST http://localhost:5000/api/products \
-  -H "Authorization: Bearer TOKEN_A" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Organic Kale","price":2.5,"unit":"bunch","stockQty":20,"isPerishable":true}'
-```
+## Common mistakes
 
-Note `PRODUCT_ID` and confirm `storeId` in Compass matches vendor A's store.
+| Mistake | Fix |
+|---|---|
+| storeId from request body | Resolve from JWT + store lookup |
+| Customer can POST | requireRole('vendor') |
+| Auto-publish on create | Default isPublished false |
+
+---
 
 ## Commit
 
@@ -75,25 +107,16 @@ Note `PRODUCT_ID` and confirm `storeId` in Compass matches vendor A's store.
 git commit -m "feat(products): add POST create product on vendor store"
 ```
 
-## ✅ Do / ❌ Don't
+## Verify checklist
 
-**✅ Do:** Set storeId only in service.
+- [ ] 201 + correct storeId in Compass
+- [ ] Customer POST → 403
+- [ ] Bad payload → 400
 
-**✅ Do:** Return 404 when vendor has no store — aligns with Ch 10 gate.
-
-**❌ Don't:** Accept products for another store via body tampering.
-
-## Verify
-
-- [ ] 201 + correct storeId in DB  
-- [ ] Customer POST → 403  
-- [ ] Bad payload → 400  
-
-
-## Before you continue
-
-<OpenQuestion id="01KZAX774RWGT9XTMFZ5R1SQKR" />
+<RealWorldEvent title="DoorDash menu sync failures" when="2020s" summary="Delivery platforms struggled when restaurant menus changed faster than sync pipelines, showing unavailable items to hungry customers." lesson="Product APIs should reflect live stock and publish state — stale catalogue data directly loses sales." />
 
 ## Next
 
-**Sub-chapter 11.10:** List vendor products — create works; the vendor needs to see what they've made.
+**Sub-chapter 11.10:** List vendor products — GET /vendor/products.
+
+Create works. Next, list own inventory.

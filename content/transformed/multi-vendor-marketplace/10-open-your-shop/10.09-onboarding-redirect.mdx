@@ -2,102 +2,92 @@
 title: "Onboarding redirect"
 module: 10
 lesson: 9
-summary: "Without a gate, storeless vendors bookmark `/vendor/products` and hit confusing API errors later. The layout checks `GET /stores/me` on mount — **404 means redirect to open-shop**. This is product-shaped UX: force the lease signing before the stockroom."
+summary: "Add the store gate in VendorLayout: GET /stores/me returns 404 → redirect to open-shop. Prevents storeless vendors from hitting product pages."
 ---
-**Why this step matters:** Without a gate, storeless vendors bookmark `/vendor/products` and hit confusing API errors later. The layout checks `GET /stores/me` on mount — **404 means redirect to open-shop**. This is product-shaped UX: force the lease signing before the stockroom.
+A vendor without a shop should not reach `/vendor/products` and get confusing API errors. The layout checks **does this vendor have a store?** and redirects to open-shop if not.
 
-**Where the project is now:** OpenShop and StoreSettings work in isolation; layout checks role but **does not enforce store existence**.
+<BigWordAlert term="Redirect guard" plainEnglish="Client logic that sends users to the right page based on auth role and setup completion." whyItMatters="FreshMarket login sends vendors to setup or dashboard depending on store existence." />
 
-**After this step:** `VendorLayout` enforces **store gate** — 404 on `GET /stores/me` redirects to `/vendor/open-shop`; open-shop path is exempt.
+Think of it like signing a lease before entering the stockroom.
 
-## Gate logic (spec)
+---
+
+## Step 1 — Gate logic in VendorLayout
+
+On mount (and optionally on route change):
 
 ```
-VendorLayout mount / route change:
-  1. Not authenticated → /login
-  2. role !== vendor → customer home
-  3. path is /vendor/open-shop → render <Outlet /> (skip store check)
-  4. getMyStore()
-     - 200 → cache store; render <Outlet />
-     - 404 → navigate('/vendor/open-shop', { replace: true })
-     - 401 → logout / login
+1. Not authenticated → /login
+2. role !== 'vendor' → customer home (/shop)
+3. Current path is /vendor/open-shop → skip store check, render <Outlet />
+4. getMyStore()
+   - 200 → cache store in context; render <Outlet />
+   - 404 → navigate('/vendor/open-shop', { replace: true })
+   - 401 → logout / login
 ```
 
-Use `replace: true` — avoids back-button loop.
+Use `{ replace: true }` so the back button does not trap the user in a redirect loop.
 
-## UI contract — gated routes
+---
+
+## Step 2 — Which routes need a store?
 
 | Path | Store required? | GET me 404 |
 |---|---|---|
-| `/vendor/open-shop` | No | **Stay** — show form |
+| `/vendor/open-shop` | **No** | Stay — show form |
 | `/vendor`, `/vendor/settings` | Yes | Redirect open-shop |
 | `/vendor/products` | Yes | Redirect open-shop |
 
-While GET me pending: loader or skeleton. Nav disabled until gate resolves.
+While GET me is loading, show a layout spinner — do not flash gated content.
 
-## API contract
+---
 
-```
-GET /api/stores/me
-Authorization: Bearer <vendor-token>
-```
+## Step 3 — Optional: VendorStoreContext
 
-| Status | Gate action |
+Shared state helps OpenShop, Settings, and Layout use the same store object:
+
+| State | Used for |
 |---|---|
-| 200 | Cache store; render child |
-| 404 | Redirect open-shop |
-| 401 | Clear auth; login |
-
-Same `getMyStore()` as OpenShop and settings — one helper, three call sites.
-
-## VendorStoreContext (recommended)
-
-| State | Use |
-|---|---|
-| `store` | Nav name; `_id` for PATCH |
+| `store` | Nav display, PATCH id |
 | `loading` | Gate spinner |
 | `refetch()` | After POST in OpenShop |
 
-OpenShop success: `refetch()` then `navigate('/vendor')`.
+After successful open-shop POST: `refetch()` then `navigate('/vendor')`.
 
-## Login redirect integration
+---
 
-| Role | Post-login |
+## Step 4 — Post-login routing
+
+| Role | After login |
 |---|---|
-| vendor | `navigate('/vendor')` — gate sends storeless to open-shop |
+| vendor | `/vendor` — gate sends storeless users to open-shop automatically |
 | customer | `/` or `/shop` |
 
-Do not hardcode open-shop in login — layout owns the gate.
+Do **not** hardcode open-shop in login handler — the layout owns the gate.
 
-## Products route protection
+---
 
-`/vendor/products` stub behind same layout. Manual test:
+## Step 5 — Manual tests (required)
 
-1. Fresh vendor → type `/vendor/products` → end on open-shop
-
-## Troubleshooting
-
-| Symptom | Likely cause |
+| Test | Expected |
 |---|---|
-| Infinite redirect | open-shop not excluded from gate |
-| Stuck on spinner | GET me never resolves — check API URL/CORS |
-| Gate passes but settings 404 | Stale context — verify 201 before refetch |
-| Seed vendor sent to open-shop | GET me actually 404 for that user |
+| Fresh vendor → visit `/vendor/products` | Ends on open-shop |
+| Fresh vendor on open-shop | Stays on open-shop (no loop) |
+| Create shop → navigate dashboard | Gate passes, no manual URL |
+| Seed vendor with store | Skips open-shop |
+| Customer → `/vendor` | Blocked / redirected |
 
-## ✅ Do / ❌ Don't
+---
 
-**✅ Do:** Test open-shop → create → dashboard without refresh; share one `getMyStore()`.
+## Common mistakes
 
-**❌ Don't:** Redirect open-shop on 404; use registration as store proxy; skip gate on settings.
+| Mistake | Symptom | Fix |
+|---|---|---|
+| Gate runs on open-shop too | Infinite redirect | Exclude open-shop path |
+| No refetch after POST | Stuck on open-shop after 201 | refetch before navigate |
+| Spinner never ends | GET me fails silently | Check API URL + CORS |
 
-## Verify checklist
-
-- [ ] Storeless `/vendor` → open-shop
-- [ ] Storeless `/vendor/products` → open-shop
-- [ ] open-shop not redirected while storeless
-- [ ] After POST → dashboard without manual URL
-- [ ] Seed vendor with store skips open-shop
-- [ ] Customer blocked from `/vendor`
+---
 
 ## Commit
 
@@ -106,11 +96,23 @@ git add client/src/layouts/VendorLayout.jsx
 git commit -m "feat(client): add vendor onboarding gate via GET stores me"
 ```
 
+## Verify checklist
+
+- [ ] Storeless `/vendor` → open-shop
+- [ ] Storeless `/vendor/products` → open-shop
+- [ ] open-shop not redirected while storeless
+- [ ] After POST shop → dashboard without refresh
+- [ ] No redirect loop
+
+<RealWorldEvent title="Stripe Connect seller onboarding" when="2010s–present" summary="Payment platforms built multi-step seller verification flows because compliance and payout details cannot be optional after money moves." lesson="Collect required vendor data before they reach the dashboard — fixing incomplete profiles later is expensive support work." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX770MC1FH3PCFQ0Q01533" />
+<OpenQuestion id="01KZP7KPWMZRPFJGRXW756Y30C" />
 
 ## Next
 
-**Sub-chapter 10.10:** Verify full onboarding flow end-to-end — the redirect works; walk the whole vendor journey from login to open shop.
+**Sub-chapter 10.10:** Verify full onboarding flow end-to-end in the browser.
+
+Gate works. Next, walk the full vendor journey.

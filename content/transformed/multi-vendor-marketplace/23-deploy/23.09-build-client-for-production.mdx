@@ -6,6 +6,8 @@ summary: "**Why this step matters:** A live client that still calls `localhost:5
 ---
 **Why this step matters:** A live client that still calls `localhost:5000` is the most common deploy failure — Vite bakes the API URL at build time, so this step locks the browser to your production API forever (until you rebuild).
 
+<BigWordAlert term="Production build" plainEnglish="Vite `build` output — minified static assets with correct `VITE_API_URL` baked in." whyItMatters="FreshMarket client build must point at production API — not localhost:4000." />
+
 **Where the project is now:** Production env checklist complete (23.8); production API URL decided; client still runs on Vite dev with local `VITE_API_URL`.
 
 **After this step:** `client/dist/` built with **production** `VITE_API_URL` baked in; bundle grep shows no localhost; artifact ready for 23.12.
@@ -96,10 +98,12 @@ Usually no `dist/` commit. Commit SPA config (`vercel.json`, `_redirects`) and R
 - [ ] `dist/` ready for 23.12  
 - [ ] README records build command  
 
+<RealWorldEvent title="Heroku twelve-factor app methodology" when="2011–present" summary="Twelve-factor principles — config in env, stateless processes, logs as streams — shaped how Node apps deploy to modern platforms." lesson="Build deploy-ready habits early: health routes, env-based config, and separate worker processes pay off on day one in production." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX794DJM7680N8G6QNR9HB" />
+<OpenQuestion id="01KZP7KR1DP7W5NCZBC53VPQK4" />
 
 ## Next
 

@@ -6,6 +6,8 @@ summary: "A generic marketplace stores name, price, and image. A grocery marketp
 ---
 # 3.2 — Why grocery data is different
 
+<BigWordAlert term="Grocery catalogue shape" plainEnglish="Product data in food retail varies wildly — weight vs count, perishability, dietary tags — hard to fit one rigid table." whyItMatters="FreshMarket vendors list mangoes by kg and milk by litre; flexible documents match real grocery data." />
+
 ## The core insight
 
 A generic marketplace tutorial uses products like "T-shirt" or "Book" — one price, one item. Real grocery breaks that template:
@@ -18,9 +20,11 @@ A generic marketplace tutorial uses products like "T-shirt" or "Book" — one pr
 
 These aren't cosmetic details. They change your database schema, your validation rules, your checkout copy, and how you explain this project in an interview.
 
-&lt;Callout type="info" title="This is what makes your project real">
+<Callout type="info" title="This is what makes your project real">
 If your Product document is only `{ name, price, imageUrl }`, you built a different app. Checkout in Chapter 18 won't make sense because grocery receipts need units. Domain fields prove this is **FreshMarket**, not a renamed generic shop.
-&lt;/Callout>
+</Callout>
+
+<RealWorldEvent title="Walmart's polyglot data strategy" when="2010s–present" summary="Large retailers run multiple database technologies — relational systems for transactions and accounting, document or search stores for catalogs and recommendations." lesson="Choosing MongoDB for FreshMarket is a domain-driven decision. Document the trade-off so future you can defend it in an interview." />
 
 ## Think of it like…
 
@@ -35,9 +39,9 @@ If your Product document is only `{ name, price, imageUrl }`, you built a differ
 | `isPerishable` | `true` / `false` | Drives UI badges and future features |
 | `category` | `Dairy`, `Grains`, `Produce` | Browse filters in Chapter 14 |
 
-&lt;Callout type="warning" title="Don't add these later">
+<Callout type="warning" title="Don't add these later">
 Put grocery fields on your Product shape **now** in the ERD. Retrofitting `unit` after Chapter 5 means rewriting schemas. Decide now, code once.
-&lt;/Callout>
+</Callout>
 
 ## How grocery affects database choice
 
@@ -74,9 +78,9 @@ When a customer buys **2 kg** of rice at **₹120/kg**, the order line snapshot 
 
 Without `unitAtPurchase`, history shows "₹120" with no idea if that was per kg or per bag. Grocery receipts are **unit-aware** by nature.
 
-&lt;Callout type="tip" title="This is why order lines embed snapshots">
+<Callout type="tip" title="This is why order lines embed snapshots">
 You'll embed these on order lines in Chapter 18. The decision is about **correct receipts**, not NoSQL fashion.
-&lt;/Callout>
+</Callout>
 
 ## When grocery would push you toward SQL
 
@@ -134,14 +138,7 @@ Not yet — but you should still model it now. Perishability is what later enabl
 
 **❌ Don't:** Skip `storeId` on cart items — multi-vendor split depends on it (Chapter 16).
 
-&lt;ChapterRecap
-  points=&#123;[
-    "Grocery needs unit, decimal stock, and perishability — not just name and price",
-    "Ownership chain is unchanged: User → Store → Product",
-    "Order snapshots must capture unit and price per unit",
-    "Documents ease optional attributes; SQL eases some reporting — know both"
-  ]&#125;
-/>
+<ChapterRecap id="01KZP7KP03XTW7E8XZRP7XKESE" />
 
 ## Self-check
 
@@ -150,6 +147,8 @@ Not yet — but you should still model it now. Perishability is what later enabl
 - [ ] I can explain why the ownership chain survives the grocery additions
 
 **Next:** Relational vs document — side by side for the same marketplace data.
-## Before you continue
+<InterestingRead title="When SQL still wins" hook="MongoDB is a choice, not a religion." readMinutes={4}>
 
-<OpenQuestion id="01KZAX75HKEQN6WSJ49M2NE2YY" />
+Financial ledger entries, strict inventory reconciliation across warehouses, and complex reporting joins often favour PostgreSQL. FreshMarket picks MongoDB because product catalogs are document-shaped and read-heavy — but knowing when relational models win makes you a stronger engineer.
+
+</InterestingRead>

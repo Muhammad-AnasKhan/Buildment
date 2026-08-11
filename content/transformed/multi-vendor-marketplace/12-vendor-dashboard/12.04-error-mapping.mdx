@@ -6,6 +6,8 @@ summary: "Forms fail — vendors enter negative stock, lose Wi-Fi mid-save, or s
 ---
 Forms fail — vendors enter negative stock, lose Wi-Fi mid-save, or session expires. Chapter 12 specs how **HTTP status becomes UI feedback** without exposing stack traces.
 
+<BigWordAlert term="API error mapping" plainEnglish="Translating server error codes and messages into user-friendly inline form or toast errors." whyItMatters="FreshMarket shows 'Price must be positive' not raw `{ error: 'VALIDATION_FAILED' }`." />
+
 ## Status → UI matrix
 
 Every status your API can return should have one predictable response on screen. This table is the contract between backend and frontend for Chapter 12:
@@ -89,10 +91,12 @@ Distinguish:
 - [ ] I know my API 400 body shape  
 - [ ] Interceptor handles 401 on product routes  
 
+<RealWorldEvent title="Square Dashboard for sellers" when="2010s–present" summary="Square gave small merchants inventory, orders, and payouts in one place — proving simple dashboards drive daily engagement." lesson="Vendor tools should answer: what do I sell, what is low stock, and what changed since yesterday?" />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX7786RMMG9XN8QM6HPP87" />
+<OpenQuestion id="01KZP7KQ0MASJHAZ33DC8W3HS5" />
 
 ## Next
 

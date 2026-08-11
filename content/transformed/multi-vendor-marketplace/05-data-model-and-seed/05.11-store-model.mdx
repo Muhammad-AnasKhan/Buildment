@@ -6,6 +6,8 @@ summary: "**Why this step matters:** The store is the hub of vendor ownership �
 ---
 **Why this step matters:** The store is the hub of vendor ownership — one shop per vendor, linked by `userId`. Product and order isolation in later chapters walk this link; a weak Store schema breaks the whole chain.
 
+<BigWordAlert term="One store per vendor" plainEnglish="Business rule that each vendor account maps to exactly one storefront in the marketplace." whyItMatters="FreshMarket's store model enforces this — simplifying onboarding and vendor dashboard routing." />
+
 **Where the project is now:** User and Profile models exist. No Store schema yet.
 
 **After this step:** `store.model.js` defines the vendor shop document with `userId` ref to User — foundation for product ownership and Chapter 9 store API.
@@ -109,10 +111,12 @@ git commit -m "feat(server): add Store mongoose model"
 - [ ] Model name `'Store'` for populate from Product
 - [ ] timestamps enabled
 
+<RealWorldEvent title="Amazon's item-level order snapshots" when="Marketplace era" summary="Marketplace order systems persist item details at purchase time so disputes, refunds, and tax reporting reflect the transaction as it happened." lesson="Model for auditability early. Your seed data and ERD should show which fields are live references and which are immutable snapshots." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX760BJ4VA4P7EX3RES6GJ" />
+<OpenQuestion id="01KZP7KP9N9M9MZK86QN9S3TC3" />
 
 ## Next
 

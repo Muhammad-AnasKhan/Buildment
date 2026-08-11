@@ -6,6 +6,8 @@ summary: "Before scaffolding the orders module, read how production commerce sys
 ---
 Before scaffolding the orders module, read how production commerce systems avoid **double charge** and **duplicate orders**. Chapter 18 builds checkout **without** payment; Chapter 19 adds Stripe — but both share the same **at-most-once** instinct.
 
+<BigWordAlert term="Split order" plainEnglish="One shopper checkout creating separate order documents per vendor — each vendor fulfills independently." whyItMatters="FreshMarket is multi-vendor — Green Valley and Baker Bros each get their own order from one cart." />
+
 ## Extra FAQ before the build cluster
 
 **Q: I'm scared of checkout — where do I start?**  
@@ -45,6 +47,8 @@ Transactions bundle "decrement stock + insert orders + clear cart" into all-or-n
 3. Where would you store idempotency keys in MongoDB?
 4. How does a transaction help when inserting two orders and clearing cart?
 
+<RealWorldEvent title="Double-charge incidents during flash sales" when="Various" summary="E-commerce outages and retries caused duplicate charges until teams adopted idempotent payment APIs and clear order states." lesson="Model order status explicitly — pending, paid, failed — and never create a second order for the same checkout attempt." />
+
 ## Connection to atomic stock (18.5)
 
 Idempotency prevents duplicate orders from **retries**. Conditional `$inc` prevents oversell from **concurrency**. Both matter in production; Chapter 18 gate requires **stock atomicity** — idempotency is stretch.
@@ -65,10 +69,16 @@ Idempotency prevents duplicate orders from **retries**. Conditional `$inc` preve
 - [ ] I read Mongoose transaction docs
 - [ ] I can explain double-click risk in one sentence
 
+<InterestingRead title="Stripe idempotency keys" hook="Networks retry; without idempotency, customers pay twice." readMinutes={5}>
+
+If a checkout request times out, clients and webhooks may retry. Idempotency keys tell Stripe to treat duplicates as the same charge. FreshMarket introduces this pattern where money first enters the system.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX7878JZ91C312E0C7AJ9X" />
+<OpenQuestion id="01KZP7KQHDVC99ND9SMNXN4X7G" />
 
 ## Next
 

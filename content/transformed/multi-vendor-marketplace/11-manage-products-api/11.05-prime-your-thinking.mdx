@@ -6,6 +6,8 @@ summary: "Vendor product list may stay unpopulated in Chapter 11 — but **popul
 ---
 Vendor product list may stay unpopulated in Chapter 11 — but **populate** appears in Chapter 14 and cart. Read now so your `storeId` refs stay consistent. This is the last learn step before the product API build cluster — the mental model you set here determines whether Chapter 14's public catalogue leaks drafts or triggers N+1 query storms.
 
+<BigWordAlert term="Input validation" plainEnglish="Rejecting bad product data at the API — negative price, empty name — before touching the database." whyItMatters="FreshMarket uses Zod or similar on product create — garbage in means garbage on shop pages." />
+
 ## Two audiences, one collection
 
 The same `products` collection serves two different HTTP routes with two different rules:
@@ -76,14 +78,22 @@ The **stockroom door** (vendor routes) shows everything on the shelves — inclu
 4. If Vendor C has no store, what should `POST /products` return — 404 or 403?  
 5. Where in the ownership chain does `assertProductOwner` load the Store document?
 
+<RealWorldEvent title="DoorDash menu sync failures" when="2020s" summary="Delivery platforms struggled when restaurant menus changed faster than sync pipelines, showing unavailable items to hungry customers." lesson="Product APIs should reflect live stock and publish state — stale catalogue data directly loses sales." />
+
 ## Time box
 
 **20–30 minutes** — then build from 11.7.
 
+<InterestingRead title="Grocery SKUs vs marketplace listings" hook="The same barcode can mean different things to different shops." readMinutes={4}>
+
+Central warehouses use global SKUs; local vendors may sell loose produce by weight with no barcode at all. FreshMarket models unit, weight, and stock per store so APIs stay honest about what is actually for sale.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX773EBD7J73KHZQ9VXJV9" />
+<OpenQuestion id="01KZP7KPY2KYBKFEQ5CCSWZBE3" />
 
 ## Next
 

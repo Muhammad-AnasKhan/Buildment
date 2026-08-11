@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Auth HTTP code lives in `modules/auth/` whi
 ---
 **Why this step matters:** Auth HTTP code lives in `modules/auth/` while User models stay in `modules/users/` — separation keeps login routes from bloating user schema files. Empty route and service files give Chapter 6 build steps named targets.
 
+<BigWordAlert term="Auth module folder" plainEnglish="Vertical slice containing auth routes, controllers, services, and middleware — feature colocation." whyItMatters="FreshMarket keeps register/login/refresh together so auth logic does not scatter across the server." />
+
 **Where the project is now:** Empty or missing `server/src/modules/auth/` files.
 
 **After this step:** Four auth module files exist with exported stubs — route paths declared, service functions named, middleware placeholder, schema validators sketched. No full handler bodies required yet — contracts defined.
@@ -106,10 +108,12 @@ git commit -m "chore(server): scaffold auth module with route and service contra
 - [ ] config validates JWT_SECRET
 - [ ] bcrypt + jsonwebtoken installed
 
+<RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX767AAMSF0CA4B1P2M33T" />
+<OpenQuestion id="01KZP7KPDTWR5MS6G2CTEVZREZ" />
 
 ## Next
 

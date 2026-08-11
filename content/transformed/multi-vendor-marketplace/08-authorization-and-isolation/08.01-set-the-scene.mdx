@@ -6,6 +6,8 @@ summary: "**Where the project is now:** Users authenticate via JWT — `requireA
 ---
 **Where the project is now:** Users authenticate via JWT — `requireAuth` attaches `req.user.id` and `req.user.role`. Any authenticated vendor could still PATCH any store id if you wrote a naive route. **Logged in ≠ allowed.**
 
+<BigWordAlert term="Authorization" plainEnglish="Deciding what an authenticated user is allowed to do — separate from proving who they are." whyItMatters="A logged-in FreshMarket vendor must not edit another vendor's store — that is authorization, not auth." />
+
 **Where this chapter goes:** **Authorization** — role checks (RBAC), object-level **ownership** checks, IDOR prevention, authorization matrix in `docs/AUTHORIZATION.md`, and proof that Vendor B gets **403** on Vendor A's store.
 
 Concept-heavy with applied middleware — not essay-only.
@@ -21,13 +23,25 @@ Chapter 7 completed the **browser identity layer**. You should be able to demo: 
 | Bearer token proves `req.user.id` after `requireAuth` | `requireAuth` does not check **which store** that user owns |
 | 401 refresh loop | 403 on wrong store id is **not** a token problem — do not refresh |
 
-&lt;Callout type="warning" title="The IDOR gap">
+<Callout type="warning" title="The IDOR gap">
 Two vendors both log in successfully. Without ownership checks, either vendor's token can `PATCH /stores/:id` for **any** MongoDB id they guess. Chapter 8 closes that hole before Chapter 9 adds real store CRUD.
-&lt;/Callout>
+</Callout>
+
+<ArticleBreak title="The FreshMarket trust boundary" subtitle="Who can touch what — and where checks must live" readMinutes={7}>
+
+The UI can hide buttons from unauthorized users, but only the server enforces truth. A curious shopper can always call your API directly.
+
+FreshMarket uses three layers: authentication (valid token), role checks (vendor vs customer vs admin), and ownership checks (does this store belong to this user?).
+
+Put all three on the server. The client mirrors them for UX — routing storeless vendors to onboarding, hiding edit buttons on others' products — but never as the only defense.
+
+</ArticleBreak>
 
 ## Bridge from last chapter
 
 Chapter 7 gave vendors and customers **login screens**, token storage in memory, and protected routes in React. A vendor can reach a stub page in the browser — but the **server** still trusts any authenticated user with any store id if you write a naive route. Chapter 8 moves the guardrails to the **API**: who may call which endpoint, and who owns which store document. Frontend auth proved identity; this chapter proves **permission**.
+
+<RealWorldEvent title="Facebook Graph API permission scandals" when="2010s" summary="Platforms exposed user data when apps could request broader permissions than users understood — driving industry focus on least-privilege access." lesson="Centralize authorization in middleware and guards. Ad-hoc checks in individual routes drift and get missed during code review." />
 
 ## In plain English
 
@@ -113,6 +127,14 @@ Chapter 8 is the **gate** before vendor features ship.
 - **Not** product isolation — same pattern in Chapter 11  
 - **Not** customer cart scoping — Chapter 16 — but matrix documents it  
 
+<MandatoryReadCard
+  title="OWASP — Broken Access Control"
+  href="https://owasp.org/Top10/A01_2021-Broken_Access_Control/"
+  source="OWASP"
+  summary="Top web security risk: users accessing data or actions they should not. Read the examples before implementing role and ownership guards."
+  readMinutes={12}
+/>
+
 ## Reading pace
 
 | Cluster | Sub-chapters |
@@ -130,10 +152,11 @@ Estimated: **1 day**
 - [ ] Understand User → Store → Product chain from Ch 5
 - [ ] You can explain why ProtectedRoute alone does not stop curl IDOR
 
+<InterestingRead title="IDOR: the bug where changing a number steals data" hook="If `/api/products/42` works, will `/api/products/43`?" readMinutes={5}>
 
-## Before you continue
+Insecure Direct Object Reference bugs happen when the server checks login but not ownership. FreshMarket's guards compare the authenticated user to the document owner on every mutating route — not just on the dashboard UI.
 
-<OpenQuestion id="01KZAX76JXAZ9S7X58EE689TDE" />
+</InterestingRead>
 
 ## Next
 
@@ -141,11 +164,4 @@ Estimated: **1 day**
 
 Identity established — permission boundaries next.
 
-&lt;ChapterRecap
-  points=&#123;[
-    "Chapter 7 proved identity in the browser — Chapter 8 proves permission on the API",
-    "requireAuth answers who; requireRole and ownership answer what they may touch",
-    "IDOR is the core marketplace risk — Vendor B must get 403 on Vendor A's store",
-    "docs/AUTHORIZATION.md becomes the contract for every route in Weeks 2–4"
-  ]&#125;
-/>
+<ChapterRecap id="01KZP7KPNBPKM6DNDW14HG7VNV" />

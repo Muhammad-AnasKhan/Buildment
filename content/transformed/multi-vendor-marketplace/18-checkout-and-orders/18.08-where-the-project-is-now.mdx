@@ -48,18 +48,28 @@ Fix schema **before** 18.10 if snapshot fields missing.
 
 Logged-in customer with two-store cart:
 
-```bash
-curl -s http://localhost:5000/api/cart \\
-  -H "Authorization: Bearer <token>"
-```
+<ApiRequestPanel title="Pre-checkout API gate">
 
-Note `storeId` values — checkout must produce **one order per distinct storeId**.
+<ApiRequest
+  label="Inspect cart storeIds"
+  method="GET"
+  url="http://localhost:5000/api/cart"
+  bearer="<token>"
+  responseStatus={200}
+  responseBody='{"items":[{"storeId":"store-a","quantity":1},{"storeId":"store-b","quantity":2}]}'
+/>
 
-```bash
-# Should fail or 404 until 18.10
-curl -s -X POST http://localhost:5000/api/checkout \\
-  -H "Authorization: Bearer <token>"
-```
+<ApiRequest
+  label="Checkout (404 until 18.10 — expect failure today)"
+  method="POST"
+  url="http://localhost:5000/api/checkout"
+  bearer="<token>"
+  body="{}"
+  responseStatus={404}
+  responseBody='{"message":"Not found"}'
+/>
+
+</ApiRequestPanel>
 
 ## Authorization preview
 
@@ -85,10 +95,12 @@ curl -s -X POST http://localhost:5000/api/checkout \\
 - [ ] Multi-vendor cart exists for test customer
 - [ ] Chapter 17 gate cleared
 
+<RealWorldEvent title="Double-charge incidents during flash sales" when="Various" summary="E-commerce outages and retries caused duplicate charges until teams adopted idempotent payment APIs and clear order states." lesson="Model order status explicitly — pending, paid, failed — and never create a second order for the same checkout attempt." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX787ZS4SAQ77B55FV56T9" />
+<OpenQuestion id="01KZP7KQHSBJJ1QSW9T273WH0K" />
 
 ## Next
 

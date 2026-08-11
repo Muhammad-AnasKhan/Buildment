@@ -6,6 +6,8 @@ summary: "Chapter 11 completes **vendor product CRUD on the API** — create on 
 ---
 Chapter 11 completes **vendor product CRUD on the API** — create on own store, scoped list, update, delete, with cross-vendor mutation blocked at 403. The shop has shelves; the browser dashboard comes next.
 
+<BigWordAlert term="Catalogue backend" plainEnglish="Vendors can manage products via API; public browse routes come in Chapter 14." whyItMatters="Chapter 12–13 add dashboard UI and photo uploads on top of these routes." />
+
 ## Narrative recap
 
 Each line below is a *decision* you made, not just a file you created — if you can explain the reasoning behind any of them, the chapter has done its job.
@@ -55,10 +57,16 @@ Four questions, four one-breath answers. If you can answer these without opening
 | Product UI | Chapter 12 |
 | Photos | Chapter 13 |
 
+<InterestingRead title="Grocery SKUs vs marketplace listings" hook="The same barcode can mean different things to different shops." readMinutes={4}>
+
+Central warehouses use global SKUs; local vendors may sell loose produce by weight with no barcode at all. FreshMarket models unit, weight, and stock per store so APIs stay honest about what is actually for sale.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX776JP00XY183YSN2MTGY" />
+<OpenQuestion id="01KZP7KPZPBNWZDYW4FWKMCJBQ" />
 
 ## Next — Vendor dashboard (Chapter 12)
 
@@ -85,3 +93,4 @@ Three things deferred on purpose so Chapter 11 stays a pure-API chapter — each
 **Sub-chapter 11.15:** Checklist + learning log.
 
 **Do not open Chapter 12 until 11.15 ticked.**
+<RealWorldEvent title="DoorDash menu sync failures" when="2020s" summary="Delivery platforms struggled when restaurant menus changed faster than sync pipelines, showing unavailable items to hungry customers." lesson="Product APIs should reflect live stock and publish state — stale catalogue data directly loses sales." />

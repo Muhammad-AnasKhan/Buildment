@@ -2,74 +2,112 @@
 title: "Product detail page"
 module: 15
 lesson: 9
-summary: "**Why this step matters:** Customers decide to buy on the **detail** page — larger photo, full description, store name, and the add-to-cart button stub Chapter 17 will wire. Without detail, the marketplace is a window with no door."
+summary: "Build the product detail page: fetch one product, show full info, add an Add to cart button stub for Chapter 17."
 ---
-**Why this step matters:** Customers decide to buy on the **detail** page — larger photo, full description, store name, and the add-to-cart button stub Chapter 17 will wire. Without detail, the marketplace is a window with no door.
+The shop grid shows a **preview**. The detail page is where the customer reads the full description and decides to buy. You also prepare the **Add to cart** button that Chapter 17 will wire to the API.
 
-**Where the project is now:** Shop grid links to `/shop/:productId` but detail may be placeholder.
+<BigWordAlert term="Product detail page (PDP)" plainEnglish="Full product view — large image, description, stock, add-to-cart — the conversion page." whyItMatters="Shoppers decide here — FreshMarket PDP must load fast and show accurate price/stock." />
 
-**After this step:** Detail fetches `GET /products/:id`, displays full info, **Add to cart** button stub for Chapter 17.
+## Your target
 
-## Fetch spec
+![Product detail — UI preview](/showcase/multi-vendor-marketplace/product-detail.png)
 
-**ProductDetail.jsx:**
+*Production-style UI preview — photo, price, store name, quantity, Add to cart.*
 
-```javascript
-// const { productId } = useParams()
-// useEffect → getProduct(productId)
-// 404 → "Product not found" + link back to shop
-// loading → spinner
-```
+---
 
-Single API call — no second fetch for store.
+## Step 1 — Fetch the product
 
-## Layout spec
-
-| Section | Content |
-|---|---|
-| Hero image | Large imageUrl or placeholder |
-| Title | name |
-| Price | price + unit |
-| Store | "Sold by &#123;store.name&#125;" — link to shop filtered by storeId stretch |
-| Description | description field if API returns |
-| Meta | category, weightOrQuantity if present |
-| Actions | Quantity selector stretch; **Add to cart** button required |
-
-## Add-to-cart stub
-
-Button visible and styled — onClick does **not** call cart API yet.
+In `ProductDetail.jsx`:
 
 ```javascript
-// handleAddToCart — stub until Ch 17
-// Must have access to: product.id, product.store.id, quantity default 1
-// console.log({ productId: product.id, storeId: product.store.id, quantity: 1 })
+const { productId } = useParams()
+
+// On mount:
+// const product = await getProduct(productId)
 ```
 
-Comment in code: `// TODO Ch 17: POST /cart`
+One API call: `GET /products/:id` — do **not** fetch the whole catalogue and search client-side.
 
-**Why stub now:** Layout and navigation complete before cart API (Ch 16) and wiring (Ch 17).
+---
 
-## Quantity control (optional)
+## Step 2 — Handle loading and errors
 
-| MVP | Stretch |
+| API result | UI |
 |---|---|
-| Fixed quantity 1 on stub | +/- input for Ch 17 prep |
+| Loading | Spinner |
+| 404 | "Product not found" + link back to `/shop` |
+| Network error | Message + retry |
+| Success | Full layout below |
 
-If +/- added, local state only — no API until Ch 17.
+Add: `<Link to="/shop">← Back to shop</Link>`
 
-## Error handling
+---
 
-| API | UI |
+## Step 3 — Build the layout
+
+| Section | Source field |
 |---|---|
-| 404 | Not found page |
-| Network error | Retry |
-| Invalid route param | Treat as fetch 404 |
+| Large photo | `imageUrl` or placeholder |
+| Title | `name` |
+| Price line | `price` + `unit` — reuse formatter from ProductCard |
+| Store | "Sold by &#123;store.name&#125;" |
+| Description | `description` if API returns it |
+| Extra meta | `category`, stock if shown |
 
-Back link: `<Link to="/shop">← Back to shop</Link>`
+---
 
-## SEO / title stretch
+## Step 4 — Add the Add to cart button (stub)
 
-`document.title = product.name` — optional.
+The button must **exist and look real** — but does not call the cart API yet (Chapter 16 builds the API, Chapter 17 wires the button).
+
+```javascript
+function handleAddToCart() {
+  // TODO Chapter 17: POST /cart
+  console.log({
+    productId: product.id,
+    storeId: product.store?.id,
+    quantity: 1,
+  })
+  alert('Cart wiring in Chapter 17')
+}
+```
+
+<Callout type="info" title="Why a stub now?">
+You are finishing the **browse** chapter. Cart API comes in Chapter 16. Wiring comes in Chapter 17. Building the button layout now means Chapter 17 is just connecting one onClick handler — not redesigning the page.
+</Callout>
+
+**Important:** Make sure `product.store.id` is available — Chapter 16 cart lines need `storeId`.
+
+---
+
+## Step 5 — Optional quantity picker
+
+You may add +/− for quantity (local React state only). Default quantity: **1**. No API call until Chapter 17.
+
+---
+
+## Step 6 — Test both vendors
+
+Open detail pages for:
+
+- A product from **Store A**
+- A product from **Store B**
+
+Both should show the correct store name and stub log the right `storeId`.
+
+---
+
+## Common mistakes
+
+| Mistake | Fix |
+|---|---|
+| POST /cart in Chapter 15 | Wait for Ch 16 API — stub only |
+| Fetch all products to find one | Use `GET /products/:id` |
+| Missing store.id in stub | Cart needs storeId in Ch 16 |
+| No 404 UI | Invalid URL looks broken |
+
+---
 
 ## Commit
 
@@ -78,30 +116,22 @@ git add client/src/pages/ProductDetail.jsx
 git commit -m "feat(client): product detail page with add-to-cart stub"
 ```
 
-## ✅ Do / ❌ Don't
-
-**✅ Do:** Guard `product.store?.id` before stub log — cart needs storeId Ch 16.
-
-**✅ Do:** Reuse price formatter from ProductCard.
-
-**❌ Don't:** Call POST /cart in this chapter unless Ch 16 done early — order is API then wire.
-
-**❌ Don't:** Fetch product list to find one item — use detail endpoint.
-
 ## Verify checklist
 
-- [ ] Click card → detail loads with image and store name  
-- [ ] Invalid id → not found UI  
-- [ ] Add to cart button renders and stub fires  
-- [ ] product.store.id available in handler
+- [ ] Click card from shop → detail loads with image and store name
+- [ ] Invalid id → not found page
+- [ ] Add to cart button visible; stub logs productId + storeId
+- [ ] Back link returns to shop
+
+<RealWorldEvent title="Instacart's shop-by-aisle experience" when="2020s" summary="Grocery apps invested heavily in browse UX — filters, dietary tags, and store context — because search alone misses discovery." lesson="Customer-facing catalogue UI is where backend data models become revenue — treat loading and empty states as first-class design." />
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX77V2JXSNN220V2HW7AWY" />
+<OpenQuestion id="01KZP7KQAJBT0Z48TZ76YMMCHH" />
 
 ## Next
 
-**Sub-chapter 15.10:** Verify browse UI — two vendors visible.
+**Sub-chapter 15.10:** Verify browse UI — end-to-end proof before the chapter gate.
 
-End-to-end customer browse before gate.
+Detail works. Next, verify the full browse flow.

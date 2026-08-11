@@ -6,6 +6,8 @@ summary: "A JSON Web Token is three Base64 segments separated by dots: **header.
 ---
 A JSON Web Token is three Base64 segments separated by dots: **header.payload.signature**. Understanding each part prevents you from treating JWT as magic or putting secrets in the payload.
 
+<BigWordAlert term="JSON Web Token (JWT)" plainEnglish="A compact signed string encoding user id and expiry — sent in the Authorization header on API calls." whyItMatters="FreshMarket access tokens prove identity for cart and vendor routes without server-side session lookup." />
+
 ## Why this matters for absolute beginners
 
 JWT looks like random gibberish — beginners treat it as an opaque session id. It is not. Anyone can decode the payload; only the signature proves the server issued it. That is why `requireAuth` must **verify**, not decode — and why role comes from verified token, never from client body fields.
@@ -40,6 +42,16 @@ The course accepts either, as long as you hash it in the database and document y
 
 
 ## Anatomy
+
+```mermaid
+flowchart LR
+  H["Header<br/>alg + typ"] --> P["Payload<br/>sub, role, exp"]
+  P --> S["Signature<br/>HMAC + secret"]
+
+  style H fill:#eef2ff,stroke:#6366f1
+  style P fill:#ecfdf5,stroke:#10b981
+  style S fill:#fff7ed,stroke:#f59e0b
+```
 
 ```
 eyJhbGciOiJIUzI1NiIs...   ← header (alg, typ)
@@ -140,9 +152,11 @@ If JWT refresh: include `jti` (unique id) for rotation tracking.
 
 **❌ Don't:** Put email in JWT if avoidable — use /me for profile.
 
+<RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
+
 ## Reflect
 
-<OpenQuestion id="01KZAX765E4HAM9ZYKMWMSQZMX" />
+<OpenQuestion id="01KZP7KPCTE2KXZZEK2CNQNZC2" />
 
 
 

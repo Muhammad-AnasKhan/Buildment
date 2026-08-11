@@ -6,9 +6,17 @@ summary: "**Why this step matters:** Without this screen, `isVerified` stays fal
 ---
 **Why this step matters:** Without this screen, `isVerified` stays false and login always fails — the registration story feels broken. This page closes the loop between register API and usable accounts.
 
+<BigWordAlert term="OTP input UX" plainEnglish="A dedicated screen for entering the email verification code — often with auto-focus and paste support." whyItMatters="FreshMarket blocks vendor onboarding until OTP succeeds — this page is the gate." />
+
 **Where the project is now:** Register navigates here with email; verify not wired.
 
 **After this step:** VerifyOtp submits to `POST /api/auth/verify-otp`, success navigates to `/login` with success message optional.
+
+## Target UI preview
+
+![Verify OTP page — UI preview](/showcase/multi-vendor-marketplace/verify-otp-page.png)
+
+*Production-style UI preview — 6-digit code input, Verify button, resend link.*
 
 ## Form contract
 
@@ -60,10 +68,12 @@ git commit -m "feat(client): wire verify OTP page"
 - [ ] Wrong OTP shows error
 - [ ] Email pre-filled from register
 
+<RealWorldEvent title="GitHub's session and token evolution" when="2010s–present" summary="Developer platforms refined PATs, OAuth apps, and session handling as users demanded security without constant re-authentication." lesson="Treat the client auth layer as part of security design, not a UI afterthought — refresh logic belongs in one place, not scattered across pages." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76G56K63D3CV6T798KRK" />
+<OpenQuestion id="01KZP7KPKFAJTCC11SH7J2D1Q0" />
 
 ## Next
 

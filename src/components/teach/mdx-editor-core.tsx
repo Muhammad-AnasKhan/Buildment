@@ -25,6 +25,23 @@ import {
   UndoRedo,
 } from "@mdxeditor/editor";
 
+import { contentBlockDescriptors } from "@/components/learn/content-blocks/editor-descriptors";
+import { predictEditorDescriptor } from "@/blocks/predict/editorDescriptor";
+import { GenericJsxEditor } from "@mdxeditor/editor";
+import type { JsxComponentDescriptor } from "@mdxeditor/editor";
+
+const blockRegistryDescriptors: JsxComponentDescriptor[] = [
+  { name: "Quiz", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
+  predictEditorDescriptor,
+  { name: "OpenQuestion", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
+  { name: "CodeExercise", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
+  { name: "ChapterRecap", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
+  { name: "ProjectPreview", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
+  { name: "LearningObjectives", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
+];
+
+const jsxComponentDescriptors = [...contentBlockDescriptors, ...blockRegistryDescriptors];
+
 // The actual MDXEditor instance, lazy-loaded with ssr:false by
 // chapter-editor.tsx. Plugin set per docs/phases/m1-content-pipeline.mdx:
 // headings, lists, links, quotes, fenced code (CodeMirror-backed) and the
@@ -70,7 +87,7 @@ export default function MdxEditorCore({
           // Block JSX round-trips through the editor untouched in M1; M2
           // swaps the empty descriptor list for the block registry's
           // editor descriptors.
-          jsxPlugin({ jsxComponentDescriptors: [] }),
+          jsxPlugin({ jsxComponentDescriptors }),
           diffSourcePlugin({
             viewMode: "rich-text",
             ...(diffMarkdown ? { diffMarkdown } : {}),

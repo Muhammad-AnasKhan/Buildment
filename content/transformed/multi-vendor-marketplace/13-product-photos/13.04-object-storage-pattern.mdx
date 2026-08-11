@@ -6,6 +6,8 @@ summary: "Every marketplace that serves images at scale follows the same pattern
 ---
 Every marketplace that serves images at scale follows the same pattern: **bytes in object storage, pointer in the database, CDN in front**. MongoDB, PostgreSQL, and Redis are wrong places for JPEG data — they are right places for URLs.
 
+<BigWordAlert term="Object storage / CDN" plainEnglish="Files live on a specialist image service; your database stores only the URL, not the binary photo." whyItMatters="MongoDB documents should not balloon with image bytes — Cloudinary hosts files and serves them fast worldwide." />
+
 This sub-chapter names the pattern you implement with Cloudinary in Chapter 13.
 
 ## The three-layer model
@@ -120,10 +122,12 @@ If missing, add in 13.8 before upload route — migration is one field, no data 
 - [ ] I can name what MongoDB stores vs what Cloudinary stores  
 - [ ] I know browse pages will use `imageUrl` directly in '&lt;img>'`
 
+<RealWorldEvent title="Instagram commerce and visual trust" when="2010s–present" summary="Social and marketplace sellers learned that image quality and consistency directly correlate with conversion rates for physical goods." lesson="Validate image types and sizes server-side; broken or huge uploads become support tickets fast." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX77CQMFPKBHX5N0G3YP62" />
+<OpenQuestion id="01KZP7KQ349GPEHXBRZRCSRX2K" />
 
 ## Next
 

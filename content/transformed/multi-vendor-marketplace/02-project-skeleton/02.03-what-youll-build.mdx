@@ -6,6 +6,8 @@ summary: "This sub-chapter is the blueprint. No code yet — just the **tree** y
 ---
 This sub-chapter is the blueprint. No code yet — just the **tree** you'll grow over the next twelve build steps. Read it once now; return after 2.16 and confirm your repo matches.
 
+<BigWordAlert term="Full-stack skeleton" plainEnglish="A minimal client plus server that talk over HTTP — no database yet, but the wiring is real." whyItMatters="Chapter 2's deliverable is proof that React and Express can handshake before you add MongoDB or auth." />
+
 ## Why this matters for absolute beginners
 
 Staring at a blank folder is overwhelming. This tree is your **map** — not a dump of every file you create today, but the destination after sub-chapters 2.8–2.16. When a step says "create `client/src/api/client.js`," you already know that file sits under `client/`, not inside `server/`. When Chapter 6 says auth routes live in `modules/auth/`, you see that folder was a placeholder you created on purpose. Blueprint first prevents improvising paths that diverge from the course.
@@ -41,6 +43,12 @@ They're placeholders — labeled empty shelves in a shop that isn't stocked yet.
 <FaqItem question="Why is `.env` git-ignored but `.env.example` committed?">
 
 Because `.env` holds secrets — database URLs, JWT secrets, API keys — and committing them leaks them to anyone who can read your repository. `.env.example`, by contrast, holds only the *names* of the variables with dummy values, like `PORT=5000` or `MONGODB_URI=`. It's the "here's what you need to set" cheat sheet for anyone cloning your project. The rule is: commit the shape, never the secrets. It looks like housekeeping, but it prevents real-world disasters.
+
+&lt;ArchitectureDiagram title="Request path at end of Chapter 2">
+  &lt;ArchNode layer="Client">React / Vite — Home page calls health API&lt;/ArchNode>
+  &lt;ArchNode layer="API">Express — `/api/health` returns JSON&lt;/ArchNode>
+  &lt;ArchNode layer="Data">No database yet — static `&#123; status: 'ok' &#125;`&lt;/ArchNode>
+&lt;/ArchitectureDiagram>
 
 </FaqItem>
 
@@ -153,6 +161,16 @@ sequenceDiagram
 
 Exact script commands appear in sub-chapters 2.10 and 2.12 — you'll copy the **tooling** blocks from the course (allowed); you wire them into your project.
 
+<MandatoryReadCard
+  title="Introduction to client-side JavaScript frameworks"
+  href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Frameworks_libraries/Introduction"
+  source="MDN"
+  summary="Short MDN primer on why frameworks like React exist and what problems they solve. Helps you understand why the client is a separate app from Express."
+  readMinutes={12}
+/>
+
+<RealWorldEvent title="Shopify's modular commerce platform" when="2006–present" summary="Shopify grew from a single-product store builder into a platform with separate admin, storefront, and API surfaces — all coordinated through clear project boundaries." lesson="Starting with a deliberate folder skeleton prevents painful renames later when vendor, cart, and payment code all need room to grow." />
+
 ## Environment variables introduced this chapter
 
 | Variable | Where | Example | Secret? |
@@ -207,6 +225,11 @@ Don't skip ahead. Chapter 4 assumes 2.11's health route exists.
 - **Build steps 2.8–2.16** create this tree incrementally  
 
 Next: formal comparison — layer vs module — and the mandated choice.
+<InterestingRead title="Colocate by feature vs organise by type" hook="Folders named `controllers/` age badly when products multiply." readMinutes={5}>
+
+Many teams start with layer-first folders (all routes together, all models together). Feature-first layouts group everything for one capability — auth, cart, checkout — in one place. FreshMarket uses module folders on the server so each capability stays findable as the codebase grows.
+
+</InterestingRead>
 ## Before you continue
 
-<OpenQuestion id="01KZAX7599MRYQCFB7CPPFQM5G" />
+<OpenQuestion id="01KZP7KNT6A6DC7YKMB0XX7Q9N" />

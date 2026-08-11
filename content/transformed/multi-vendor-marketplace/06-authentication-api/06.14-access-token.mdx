@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Short-lived access JWT is what `requireAuth
 ---
 **Why this step matters:** Short-lived access JWT is what `requireAuth` verifies on every protected call — payload must carry user id and role without leaking password hash or email you should not expose.
 
+<BigWordAlert term="Access token" plainEnglish="Short-lived JWT sent on every authenticated API request — expires quickly for security." whyItMatters="FreshMarket attaches access tokens in the Authorization header for cart, store, and product routes." />
+
 **Where the project is now:** Login returns tokens; access JWT structure may be ad hoc.
 
 **After this step:** Access token is a **short-lived signed JWT** with `sub` (userId) and `role` claims. Issued by shared `signAccessToken(user)` helper used by login and refresh.
@@ -18,6 +20,13 @@ summary: "**Why this step matters:** Short-lived access JWT is what `requireAuth
 | Secret | `config.jwtSecret` |
 | Expiry | `config.jwtAccessExpiry` — default `15m` |
 | Transport | `Authorization: Bearer <token>` |
+
+
+## Try it yourself
+
+Practice the core logic from this lesson in the **code lab** below — write real JavaScript, then click **Check my code**. Same editor style as the course's code blocks.
+
+<CodeExercise id="01KZP7KPEQ0BFHQCK261Y99DEX" />
 
 ## Payload contract
 
@@ -92,10 +101,7 @@ git commit -m "feat(auth): standardize short-lived access JWT with role claim"
 - [ ] login response accessToken present
 - [ ] Tampered token fails verify
 
-
-## Before you continue
-
-<OpenQuestion id="01KZAX76910T142971C6GMHC15" />
+<RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
 
 ## Next
 

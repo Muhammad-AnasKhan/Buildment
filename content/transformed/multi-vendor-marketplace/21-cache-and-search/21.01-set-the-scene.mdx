@@ -6,6 +6,8 @@ summary: "**Where the project is now:** Week 3 commerce works locally — browse
 ---
 **Where the project is now:** Week 3 commerce works locally — browse, cart, checkout, orders. Every `GET /products` hits MongoDB. Search may be slow regex or unindexed. Fine for demo; wrong for scale.
 
+<BigWordAlert term="Performance layer" plainEnglish="Caching and search indexes that keep FreshMarket fast as catalogue and traffic grow." whyItMatters="Without cache, every shop page hits MongoDB — fine for dev, painful at scale." />
+
 **Where this chapter goes:** **Redis cache** on catalogue reads with **invalidation on product writes**, **MongoDB text index** for search, and **graceful fallback** when Redis is down.
 
 Week 4 polish chapter. Gate: cache hit verified, invalidation after product PATCH, search uses index, app survives Redis stop.
@@ -24,6 +26,8 @@ You closed **Week 3** in Chapter 20 — full commerce in the browser: browse →
 Chapter 21 is the **performance layer** — not new features customers notice, but the difference between a demo that works for you and one that stays fast when fifty people browse dairy at once.
 
 **Do not open this chapter until Chapter 20 gate is ticked.** Cache on a broken checkout flow hides nothing useful.
+
+<RealWorldEvent title="Facebook Memcached outage lessons" when="2010" summary="Major sites learned that caching layers need fallbacks — when cache fails, databases must survive the thundering herd." lesson="Always code a cache miss path. Redis is an accelerator, not the system of record." />
 
 ## In plain English
 
@@ -128,10 +132,24 @@ Estimated time: **two days**.
 - [ ] Chapter 20 gate cleared
 - [ ] `GET /products` public route from Ch 14
 
+<MandatoryReadCard
+  title="Redis — Introduction"
+  href="https://redis.io/docs/latest/develop/get-started/"
+  source="Redis"
+  summary="What Redis is and how key-value caching works. Read before connecting Redis to catalogue routes."
+  readMinutes={10}
+/>
+
+<InterestingRead title="The stale cache trap" hook="Fast wrong answers are worse than slow right ones." readMinutes={4}>
+
+Teams enable caching, celebrate response times, then ship outdated stock levels. FreshMarket defines what is cacheable (public catalogue pages) and what never is (cart, checkout, auth).
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78PDCRPCJSKAHWM2THKD" />
+<OpenQuestion id="01KZP7KQSS549C5YPFEJRFR8ZX" />
 
 ## Next
 

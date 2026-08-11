@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Split orders only matter if vendors can **s
 ---
 **Why this step matters:** Split orders only matter if vendors can **see their half** — this route scopes by store ownership from Chapter 8 so Vendor B never receives Vendor A's fulfilment list.
 
+<BigWordAlert term="Vendor order inbox" plainEnglish="GET endpoint listing orders where storeId matches vendor's store — fulfillment queue." whyItMatters="FreshMarket vendors see new orders to pack — Chapter 20 builds the UI." />
+
 **Where the project is now:** Customers get orders on checkout; vendors cannot list them yet.
 
 **After this step:** `GET /vendor/orders` returns orders for **authenticated vendor's store only**, with safe customer info populated.
@@ -70,10 +72,12 @@ Authorization: Bearer <vendor-token>
 - [ ] Cross-vendor isolation verified
 - [ ] Line prices from snapshots in JSON
 
+<RealWorldEvent title="Double-charge incidents during flash sales" when="Various" summary="E-commerce outages and retries caused duplicate charges until teams adopted idempotent payment APIs and clear order states." lesson="Model order status explicitly — pending, paid, failed — and never create a second order for the same checkout attempt." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78A42KKSM1FMSHDYPS31" />
+<OpenQuestion id="01KZP7KQJZMC4HQBQ35BYJM8ZX" />
 
 ## Next
 

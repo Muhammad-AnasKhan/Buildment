@@ -6,6 +6,8 @@ summary: "Guest carts, login merge, and abandoned basket recovery are product de
 ---
 Guest carts, login merge, and abandoned basket recovery are product decisions beyond MVP. This sub-chapter points at **cart merge on login** — you implement **authenticated cart only** for the gate, but mentors may ask what happens in a full marketplace.
 
+<BigWordAlert term="Cart line item" plainEnglish="One row in the cart: a product, quantity, and computed subtotal for that vendor's item." whyItMatters="Checkout later groups line items by vendor to create split orders from one payment." />
+
 ## Why MVP skips guest cart
 
 Guest cart sounds friendly ("browse without account") but adds:
@@ -55,6 +57,8 @@ There are four ways a cart can live on the server. Three of them are real produc
 
 Chapter 5 chose CartItem collection — stick with it.
 
+<RealWorldEvent title="Target cart persistence across channels" when="2010s–present" summary="Retailers invested in unified carts so web, app, and in-store pickup saw the same basket — reducing abandoned purchases." lesson="Treat cart mutations as concurrent — two tabs updating quantity should not corrupt totals." />
+
 ## Stock and concurrency preview
 
 Add to cart checks stock **at write**. Checkout Ch 18 decrements atomically — two customers can both add last item; checkout race handled later.
@@ -75,10 +79,16 @@ Note in learning log: cart quantity can exceed available stock if stock drops af
 - [ ] I can describe merge at high level if asked  
 - [ ] CartItem model fields refreshed from Ch 5
 
+<InterestingRead title="Cart merge on login" hook="Guest cart + user cart = one headache if you plan late." readMinutes={5}>
+
+Shoppers browse before signing in. When they log in, anonymous cart items must merge without duplicating quantities or dropping selections. FreshMarket handles merge in the API so every client behaves consistently.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX77XH4NYWZGVYTCM1GBBX" />
+<OpenQuestion id="01KZP7KQBVQ8ZJT588T2571B8C" />
 
 ## Next
 

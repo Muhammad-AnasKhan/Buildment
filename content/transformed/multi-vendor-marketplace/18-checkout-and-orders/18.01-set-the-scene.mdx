@@ -6,9 +6,21 @@ summary: "**Where the project is now:** Chapter 16–17 gave you a **multi-vendo
 ---
 **Where the project is now:** Chapter 16–17 gave you a **multi-vendor cart** — persisted, user-scoped, visible in the browser grouped by store. No orders exist yet. Checkout is a button stub. Stock decrements only on manual vendor edits.
 
+<BigWordAlert term="Checkout" plainEnglish="The transaction moment — cart becomes orders, stock decrements, payment follows." whyItMatters="FreshMarket checkout is the highest-risk flow — bugs here mean wrong charges or overselling." />
+
 **Where this chapter goes:** One `POST /checkout` turns the cart into **one order per vendor** — with **price snapshots** on every line, **atomic stock decrement**, and cart cleared on success. List routes for customer and vendor follow.
 
 This is a **backend build chapter**. It pairs with Chapter 20 the way Chapter 16 paired with Chapter 17. The gate is **API proof**: split orders, immutable snapshots, stock reduced, cart empty.
+
+<ArticleBreak title="Money enters the building" subtitle="Checkout is a state machine, not a form submit" readMinutes={8}>
+
+Checkout is the most dangerous feature in FreshMarket. Cart totals, inventory, vendor splits, and payment authorization must agree within seconds.
+
+Think in states: cart locked → orders created → payment initiated → payment confirmed → cart cleared. Each transition should be recoverable if the network drops.
+
+Never assume the client saw the Stripe success page. Webhooks in module 19 confirm payment — checkout routes prepare orders; webhooks finalize them.
+
+</ArticleBreak>
 
 ## Bridge from last chapter
 
@@ -27,6 +39,8 @@ What you carry into Chapter 18:
 | Customer auth | `POST /checkout` requires logged-in customer |
 
 If the cart UI shows two store groups but the API never stored `storeId` correctly, **fix Chapter 16 before checkout**. Split orders are impossible without that field.
+
+<RealWorldEvent title="Double-charge incidents during flash sales" when="Various" summary="E-commerce outages and retries caused duplicate charges until teams adopted idempotent payment APIs and clear order states." lesson="Model order status explicitly — pending, paid, failed — and never create a second order for the same checkout attempt." />
 
 ## In plain English
 
@@ -173,13 +187,26 @@ Estimated time: **two full days** — transaction logic deserves care.
 - [ ] `docs/erd-draft.md` or `docs/erd.md` shows Order with embedded snapshot lines
 - [ ] You understand cart lines carry `storeId`
 
+<InterestingRead title="Stripe idempotency keys" hook="Networks retry; without idempotency, customers pay twice." readMinutes={5}>
+
+If a checkout request times out, clients and webhooks may retry. Idempotency keys tell Stripe to treat duplicates as the same charge. FreshMarket introduces this pattern where money first enters the system.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX785D2ADDC1YJ4SCMGD3T" />
+<OpenQuestion id="01KZP7KQGEQ1T30DEMNVJAF4ZC" />
 
 ## Next
 
 **Sub-chapter 18.2:** Price snapshot trap — why `productId` alone on order lines breaks history.
 
 One checkout button is coming. First understand why receipts must freeze prices.
+<MandatoryReadCard
+  title="Stripe — Checkout Session"
+  href="https://docs.stripe.com/payments/checkout"
+  source="Stripe"
+  summary="How Stripe Checkout collects payment securely. Read before wiring checkout routes and payment intents in the next chapter."
+  readMinutes={15}
+/>

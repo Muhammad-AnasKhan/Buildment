@@ -6,6 +6,8 @@ summary: "Before you create your ERD, read MongoDB's official data modelling gui
 ---
 # 3.7 — Prime your thinking
 
+<BigWordAlert term="Read vs write trade-off" plainEnglish="Optimizing for fast reads often means duplicating data; optimizing for easy updates often means more lookups." whyItMatters="Order line snapshots favor read speed (receipts never change); live product prices favor references until checkout." />
+
 ## What you'll do
 
 Before you create `docs/erd-draft.md`, read MongoDB's official data modelling guide. This aligns your design with the vocabulary engineers and interviewers recognize.
@@ -14,9 +16,9 @@ Before you create `docs/erd-draft.md`, read MongoDB's official data modelling gu
 
 Course prose and official docs use slightly different words for the same ideas. Reading MongoDB's modelling introduction **once** means your ERD and interview answers use vocabulary employers recognize — "embedding for contained data," "reference when entity has independent lifecycle."
 
-&lt;Callout type="info">
+<Callout type="info">
 You're not learning MongoDB from zero here. You're aligning your sketch with how the manual describes relationships.
-&lt;/Callout>
+</Callout>
 
 ## Mandatory read
 
@@ -46,6 +48,12 @@ Skim only — Chapter 5 implements:
 
 **Do not** implement schemas yet — just know what a Mongoose schema will look like.
 
+<InterestingRead title="When SQL still wins" hook="MongoDB is a choice, not a religion." readMinutes={4}>
+
+Financial ledger entries, strict inventory reconciliation across warehouses, and complex reporting joins often favour PostgreSQL. FreshMarket picks MongoDB because product catalogs are document-shaped and read-heavy — but knowing when relational models win makes you a stronger engineer.
+
+</InterestingRead>
+
 ## Reflect — embed vs ref per entity
 
 After your reading, fill this in your learning log:
@@ -59,6 +67,8 @@ After your reading, fill this in your learning log:
 
 If any cell is blank, re-read 3.6 before 3.8.
 
+<RealWorldEvent title="Walmart's polyglot data strategy" when="2010s–present" summary="Large retailers run multiple database technologies — relational systems for transactions and accounting, document or search stores for catalogs and recommendations." lesson="Choosing MongoDB for FreshMarket is a domain-driven decision. Document the trade-off so future you can defend it in an interview." />
+
 ## What not to read yet
 
 - Redis caching docs — Chapter 21
@@ -67,15 +77,6 @@ If any cell is blank, re-read 3.6 before 3.8.
 
 Stay on **modelling** this week.
 
-&lt;ChapterRecap
-  points=&#123;[
-    "Official MongoDB modelling docs — mandatory before ERD",
-    "Mongoose skim — bridges ERD to Chapter 5 code",
-    "Reflect table — embed vs ref per entity"
-  ]&#125;
-/>
+<ChapterRecap id="01KZP7KP1H0Q1PPWT6CW7TPGXZ" />
 
 **Next:** Create your ERD — `docs/erd-draft.md` with diagram + collection list.
-## Before you continue
-
-<OpenQuestion id="01KZAX75KT7R4C7PKYZFMB24NW" />

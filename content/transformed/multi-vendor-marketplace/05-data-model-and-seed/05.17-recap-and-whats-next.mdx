@@ -6,6 +6,8 @@ summary: "You entered Chapter 5 with an empty MongoDB and a draft ERD. You leave
 ---
 You entered Chapter 5 with an empty MongoDB and a draft ERD. You leave with **six Mongoose models**, **seed data visible in Compass**, and a **final ERD** that matches your code.
 
+<BigWordAlert term="Populated database" plainEnglish="MongoDB with models registered and seed data loaded — ready for API handlers to query." whyItMatters="Chapter 6 adds auth routes that create and look up User documents — models must exist first." />
+
 ## What you built — narrative recap
 
 **User + Profile:** Identity split — auth fields on User, display on Profile. Unique email, role enum, verification flag ready for Chapter 6.
@@ -78,10 +80,16 @@ your-marketplace/
 
 Health still only route — intentional.
 
+<InterestingRead title="Why orders store prices, not live product lookups" hook="A receipt is a photograph, not a live feed." readMinutes={4}>
+
+If an order stored only a product ID, a vendor price change would rewrite history. FreshMarket copies name, unit price, and weight into order items at checkout so customers and vendors always see what was agreed at purchase time.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX762NYAJTTAFKQKMAKC85" />
+<OpenQuestion id="01KZP7KPB54FR2DK3D23F86XR3" />
 
 ## Next chapter — Authentication API (Chapter 6)
 
@@ -136,3 +144,4 @@ docs: complete chapter 5 learning log
 **Do not open Chapter 6 until 5.18 is fully ticked.**
 
 Your marketplace has data shape and test groceries — next it learns who is knocking on the door.
+<RealWorldEvent title="Amazon's item-level order snapshots" when="Marketplace era" summary="Marketplace order systems persist item details at purchase time so disputes, refunds, and tax reporting reflect the transaction as it happened." lesson="Model for auditability early. Your seed data and ERD should show which fields are live references and which are immutable snapshots." />

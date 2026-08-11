@@ -1,6 +1,6 @@
 # Course content improvement loop — state
 
-Last updated: 2026-08-05 (iteration 4)
+Last updated: 2026-08-10 (iteration 8)
 
 ## Course
 
@@ -8,104 +8,96 @@ Multi-Vendor Food Marketplace — `content/import/multi-vendor-marketplace/`
 
 ## Completed iterations
 
-### Iteration 4 — 2026-08-05
+### Iteration 8 — 2026-08-10
 
-**Focus:** Modules 13–15 — Week 2→3 transition + deliverables table fixes
-
-**Diagnosis:**
-- Week 3 bridge (13.14) existed but lacked forward roadmap — students couldn't see browse→cart→checkout arc
-- 14.15→15.01 handoff missing explicit API-field → UI-component mapping
-- Broken markdown tables in 13.03, 14.03, 15.03, 16.03 (`| Learning log` row truncated)
-- 15.11 browse→buy transition to Ch 16 was list-only, not framed as rhythm shift
+**Focus:** Modules 13, 19, 20, 11, 15 — photos, payment, checkout UI, product API
 
 **Changes:**
-- `13.14-bridge-to-week-3-customer-experience.md` — Week 3 roadmap table (Ch 14–20), Callout
-- `14.15-recap-and-whats-next.md` — API→UI handoff table, gate Callout
-- `15.01-set-the-scene.md` — Week 3 position Callout linking 13.14, ChapterRecap
-- `15.11-recap-and-whats-next.md` — browse→buy handoff table, curl-first rhythm Callout
-- Fixed deliverables tables: `13.03`, `14.03`, `15.03`, `16.03`
+- **Module 13:** Rewrote 13.09 upload route, 13.11 upload UI; visual in 13.03; checklist 13.15 hints
+- **New visual:** `product-upload-flow.svg`
+- **Module 19:** Rewrote 19.10 payment intent, 19.11 payment-gated checkout; checklist 19.16 hints
+- **Module 20:** Enhanced 20.05 with wireframe; rewrote 20.06 confirmation page
+- **New visual:** `checkout-page-wireframe.svg`
+- **Module 11:** Rewrote 11.09 create, 11.10 list vendor products
+- **Module 15:** Rewrote 15.10 verify browse UI with full test script
 
-**Validation:** `npm run content:validate` — 348 chapters OK
+**Validation:** `pnpm content:validate` — 350 chapters OK
 
 **Next iteration should:**
-1. Module 08 build cluster (8.8–8.13) — ownership middleware depth
-2. Module 16–17 cart transition (mirror 14→15 pattern)
-3. Module 03–04 MongoDB decision → connection bridge polish
+1. Module 20 remaining build (20.07, 20.08, 20.10)
+2. Module 19 webhook 19.12 + verify 19.14
+3. Module 13 — 13.08, 13.10, 13.12
+4. Module 11 — 11.11, 11.12, 11.13
+5. Global checklist pass modules 14, 20, 21–23
 
-### Iteration 3 — 2026-08-05
+### Iteration 7 — 2026-08-10
 
-**Focus:** Module 07 build cluster + Module 08 authz bridge
-
-**Diagnosis:**
-- Build lessons 7.10, 7.14, 7.15 were contract-heavy but lacked production framing and common mistakes
-- Critical gap: students may think ProtectedRoute = security — needs explicit client vs server guard table before Ch 8
-- 08.01 bridge existed but did not callback Chapter 7 capabilities/limitations explicitly
+**Focus:** Modules 10, 12, 18, 07 — vendor onboarding, product dashboard, checkout gate, auth UI
 
 **Changes:**
-- `07.10-auth-context-or-hook.md` — why single source of truth, pattern comparison, common mistakes table
-- `07.14-api-interceptor.md` — production rationale, request flow diagram, login-401 Callout, common mistakes
-- `07.15-protected-route-wrapper.md` — client vs server guard table, production Callout
-- `07.17-recap-and-whats-next.md` — explicit Ch 7 → Ch 8 handoff table
-- `08.01-set-the-scene.md` — Ch 7 limitations table, IDOR gap Callout, expanded self-check, ChapterRecap
+- **Module 10:** Rewrote 10.06, 10.08, 10.09 with numbered steps; checklist 10.12 verify hints
+- **Module 12:** Rewrote 12.08 edit, 12.09 publish toggle; checklist 12.12 verify hints
+- **Module 18:** Checklist 18.18 with critical two-order proof + verify hints
+- **Module 07:** Rewrote 07.11 register, 07.13 login with step-by-step
 
-**Validation:** `npm run content:validate` — 348 chapters OK
+**Validation:** `pnpm content:validate` — 350 chapters OK
 
 **Next iteration should:**
-1. Module 14–15 Week 2→3 transition — read 13.14 bridge + 15.01 set-the-scene
-2. Module 08 build cluster (8.8–8.13) — deepen ownership middleware lessons
-3. Module 07 remaining build pages (7.11–7.13) — common mistakes if still thin
+1. Module 13 photo upload build cluster
+2. Module 19–20 payment + checkout UI
+3. Module 11 product API build lessons
+4. Module 15.10 verify lesson
+5. Global checklist pass modules 11, 14, 19–23
 
-### Iteration 2 — 2026-08-05
+### Iteration 6 — 2026-08-10
 
-**Focus:** Modules 06–07 — auth API → login UI bridge + login handler depth
-
-**Diagnosis:**
-- Scanned modules 03–19 for off-by-one sub-chapter drift (like iteration 1) — **none found** beyond modules 20–23 already fixed
-- Module 06→07 transition was structurally OK but lacked explicit contract handoff table
-- 06.13 login handler was implementation-heavy without production context or common mistakes
+**Focus:** Modules 15, 16, 18, 10 — shop UI, cart API, checkout API, vendor onboarding build clusters
 
 **Changes:**
-- `07.01-set-the-scene.md` — added Chapter 6 contract inheritance table, gate Callout, expanded self-check, ChapterRecap
-- `06.13-login-handler.md` — added production critical-path framing, pre-code checkpoint, common mistakes table
-- `06.19-recap-and-whats-next.md` — added explicit curl → Chapter 7 field handoff table
+- **Module 15:** Rewrote build lessons 15.05–15.09 with numbered steps; visuals in 15.03; checklist 15.12 with verify hints
+- **New visuals:** `shop-page-wireframe.svg`, `product-detail-wireframe.svg`
+- **Module 18:** Rewrote checkout build 18.09–18.13 with step-by-step + checkout flow diagram in 18.03
+- **New visual:** `checkout-split-flow.svg`
+- **Module 16:** Rewrote 16.08 POST /cart; checklist 16.15 verify hints
+- **Module 10:** Rewrote 10.07 open shop form; `vendor-open-shop-wireframe.svg`
+- Stopped 30-minute wait loop per user request — continuous improvement mode
 
-**Validation:** `npm run content:validate` — 348 chapters OK
-
-**Next iteration should:**
-1. Module 07 build cluster (7.8–7.16) — audit implementation lessons for same "why before what" gaps
-2. Module 14–15 Week 2→3 transition — read 13.14 bridge + 14.01 + 15.01 for continuity
-3. Module 08 set-the-scene — ensure authz chapter explicitly callbacks Chapter 7 protected routes
-
-### Iteration 1 — 2026-08-05
-
-**Focus:** Modules 21–23 — systematic sub-chapter cross-reference repair
-
-**Problem:** Lessons in chapters 21, 22, and 23 referenced sub-chapter numbers from the previous chapter (20.x, 21.x, 22.x respectively). Students following "see 21.11" inside Chapter 22 would land in the wrong lesson — a major continuity break.
-
-**Changes:**
-- Module 20: corrected all internal `19.N` → `20.N` references; fixed checklist title `19.13` → `20.13`
-- Module 21: corrected all internal `20.N` → `21.N` references; fixed checklist title `20.16` → `21.16`
-- Module 22: corrected internal `21.N` → `22.N`; preserved legitimate backward refs to Chapter 21 (cache, Ch 21.11)
-- Module 23: corrected internal `22.N` → `23.N`; preserved backward refs to Chapter 22 (async jobs, Ch 22.12, Chapter 22.15)
+**Validation:** `pnpm content:validate` — 350 chapters OK
 
 **Next iteration should:**
-1. Module 07 build cluster (7.8–7.16) — audit implementation lessons for "why before what" gaps
-2. Module 14–15 Week 2→3 transition polish
-3. Module 08 — authz bridge from Chapter 7 protected routes
+1. Module 10 remaining build (10.06, 10.08, 10.09) — step-by-step + wireframes
+2. Module 12 vendor dashboard build cluster
+3. Module 18 checklist 18.18 — verify hints
+4. Module 07 remaining (7.11–7.13)
+5. Roll step-by-step pattern to modules 11, 13, 19–20
+
+### Iteration 5 — 2026-08-10
+
+**Focus:** Module 16→17 cart UI transition + Chapter 17 build cluster
+
+*(see git history for full detail)*
 
 ## Backlog
 
-- [x] Global grep: wrong sub-chapter refs in modules 03–19 (clean — drift was 20–23 only)
-- [x] Module 07 build cluster depth (7.8–7.16) — partial: 7.10, 7.14, 7.15, 7.17 (iteration 3)
-- [x] Module 08: authorization narrative continuity from Ch 7 — partial: 8.01 (iteration 3)
-- [x] Module 14–15: customer experience transition (Week 2 → Week 3) — iteration 4
-- [x] Fix truncated Learning log table rows in what-youll-build lessons (13.03, 14.03, 15.03, 16.03)
-- [ ] Module 08 build cluster (8.8–8.13)
-- [ ] Module 16–17: cart API → cart UI transition
-- [ ] Module 03–04: MongoDB decision → connection bridge polish
-- [ ] Module 07 remaining build pages (7.11–7.13) — common mistakes pass
+- [x] Module 16–17 cart transition
+- [x] Module 15 shop UI build cluster — partial (15.05–15.09, 15.12)
+- [x] Module 18 checkout build cluster — partial (18.09–18.13)
+- [ ] Module 15 — 15.10 verify lesson polish
+- [x] Module 10 — 10.06, 10.08, 10.09, 10.12
+- [x] Module 12 vendor dashboard — 12.06–12.09, 12.12
+- [x] Module 18 checklist 18.18
+- [x] Module 07 — 7.11, 7.13
+- [x] Module 13 — partial (13.03, 13.09, 13.11, 13.15)
+- [x] Module 19 — partial (19.10, 19.11, 19.16)
+- [x] Module 20 — partial (20.05, 20.06)
+- [x] Module 11 — partial (11.09, 11.10)
+- [x] Module 15 — 15.10
+- [ ] Module 20 — 20.07, 20.08, 20.10, 20.13
+- [ ] Module 19 — 19.12 webhook, 19.14 verify
+- [ ] Module 13 — 13.08, 13.10, 13.12
+- [ ] Module 11 — 11.11–11.13, 11.15
 
 ## Notes
 
-- User requested loop every 30 minutes — re-invoke `/loop` or schedule a recurring agent; no automatic timer in-repo.
-- Do not change the marketplace project scope — teaching quality only.
+- User requested continuous improvement — no 30-minute wait between passes.
+- **Stitch MCP is live** — use `CallMcpTool` on the `stitch` server for course UI preview PNGs. See `.cursor/rules/stitch-mcp.mdc`. Showcase PNGs live in `public/showcase/multi-vendor-marketplace/` (18 screens). All chapter SVG wireframes removed Aug 2026.

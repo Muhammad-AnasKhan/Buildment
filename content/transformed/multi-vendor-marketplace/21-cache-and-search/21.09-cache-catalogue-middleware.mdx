@@ -6,6 +6,8 @@ summary: "**Why this step matters:** This is the core cache-aside pattern — th
 ---
 **Why this step matters:** This is the core cache-aside pattern — the shop window stops hitting MongoDB on every repeat glance. HIT/MISS logs here are your first proof the performance layer works.
 
+<BigWordAlert term="Cache middleware" plainEnglish="Express middleware checking Redis before running catalogue handler — return cached JSON if hit." whyItMatters="FreshMarket `/products` gets cache-aside middleware — transparent to client." />
+
 **Where the project is now:** `redis.js` connects from `REDIS_URL` (21.8) — but catalogue routes still read MongoDB on every request.
 
 **After this step:** `GET /products` checks Redis before MongoDB; stores JSON response on miss.
@@ -69,10 +71,12 @@ Pick one — document in README.
 - [ ] Second identical GET → HIT log
 - [ ] Response body identical
 
+<RealWorldEvent title="Facebook Memcached outage lessons" when="2010" summary="Major sites learned that caching layers need fallbacks — when cache fails, databases must survive the thundering herd." lesson="Always code a cache miss path. Redis is an accelerator, not the system of record." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78SBSG3FKZCC84XW1YK1" />
+<OpenQuestion id="01KZP7KQV091RF1FF3SFZJH82T" />
 
 ## Next
 

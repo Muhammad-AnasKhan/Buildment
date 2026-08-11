@@ -14,9 +14,17 @@ Continuity checkpoint before wiring BullMQ. Confirm Chapter 21 Redis and Chapter
 
 ## Verify Redis cache baseline (Ch 21)
 
-```bash
-curl -s "http://localhost:5000/api/products?page=1&limit=5"
-```
+<ApiRequestPanel title="Continuity check — catalogue baseline">
+
+<ApiRequest
+  label="Public catalogue — cache HIT/MISS in server logs"
+  method="GET"
+  url="http://localhost:5000/api/products?page=1&limit=5"
+  responseStatus={200}
+  responseBody='{"items":[...],"page":1,"limit":5,"total":47,"totalPages":10}'
+/>
+
+</ApiRequestPanel>
 
 Boot log should show Redis connected (or fallback warning). `REDIS_URL` in `server/.env`.
 
@@ -27,23 +35,37 @@ redis-cli -u "$REDIS_URL" PING
 
 ## Verify checkout baseline (Ch 18)
 
-```bash
-curl -s -X POST http://localhost:5000/api/checkout \
-  -H "Authorization: Bearer <customer-token>" \
-  -H "Content-Type: application/json" \
-  -d '{}'
-```
+<ApiRequestPanel title="Continuity check — checkout baseline">
+
+<ApiRequest
+  label="Checkout — note response time for 22.15 async comparison"
+  method="POST"
+  url="http://localhost:5000/api/checkout"
+  bearer="<customer-token>"
+  body="{}"
+  responseStatus={201}
+  responseBody='{"orders":[{"_id":"...","storeId":"...","total":305,"orderItems":[...]}]}'
+/>
+
+</ApiRequestPanel>
 
 **Expected:** 201 with `orders` array. Note response time — baseline for 22.15 async comparison.
 
 ## Verify status PATCH baseline (Ch 20)
 
-```bash
-curl -s -X PATCH "http://localhost:5000/api/vendor/orders/<orderId>" \
-  -H "Authorization: Bearer <vendor-token>" \
-  -H "Content-Type: application/json" \
-  -d '{"status":"packed"}'
-```
+<ApiRequestPanel title="Continuity check — vendor status PATCH">
+
+<ApiRequest
+  label="Vendor status update — no notification logs yet"
+  method="PATCH"
+  url="http://localhost:5000/api/vendor/orders/<orderId>"
+  bearer="<vendor-token>"
+  body='{"status":"packed"}'
+  responseStatus={200}
+  responseBody='{"_id":"<orderId>","status":"packed","storeId":"...","total":305}'
+/>
+
+</ApiRequestPanel>
 
 **Expected:** 200 with updated order. No notification logs yet — correct.
 
@@ -96,10 +118,12 @@ Add to README **Getting Started** section.
 - [ ] Vendor status PATCH works
 - [ ] No inline email/notify code in checkout handler yet (or you're about to remove it)
 
+<RealWorldEvent title="Shopify flash sale queue architecture" when="2010s–present" summary="Commerce platforms moved heavy work to background jobs during traffic spikes so checkout stayed available." lesson="Design jobs to be idempotent — retries will happen, and duplicate emails beat lost orders." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78YA2H4R35PFRKSB344F" />
+<OpenQuestion id="01KZP7KQY2XG3YAKANEZSNC15H" />
 
 ## Next
 

@@ -4,7 +4,11 @@ module: 13
 lesson: 15
 summary: "Gate for Chapter 13 — Product photos. Tick every box and answer the learning log on this page before continuing."
 ---
-This is the **gate** for Chapter 13. Tick every box honestly and answer the learning log below before opening Chapter 14.
+Test upload in the **browser** on the edit page — curl alone is not enough for this gate.
+
+<Callout type="warning" title="Secret check">
+Search your client bundle for `CLOUDINARY_API_SECRET` — it must not appear anywhere in client code.
+</Callout>
 
 ## Chapter 13 — Product photos checklist (gate)
 
@@ -22,8 +26,10 @@ Do **not** open Chapter 14 until every box is ticked and learning log answers ar
 
 - [ ] `shared/cloudinary.js` (or equivalent) exports upload + delete helpers
 - [ ] Multer middleware limits size (≤5 MB) and image MIME types
-- [ ] `POST /products/:id/image` requires auth + vendor role
-- [ ] Ownership check — vendor cannot upload to another vendor's product (403)
+- [ ] `POST /products/:id/image` requires auth + vendor role  
+  *Verify:* curl without token → 401.
+- [ ] Ownership check — vendor cannot upload to another vendor's product (403)  
+  *Verify:* Vendor B token on Vendor A product id.
 - [ ] Success updates `imageUrl` on product document
 - [ ] `imagePublicId` stored if delete-on-replace implemented
 - [ ] Replace flow removes previous Cloudinary asset when applicable
@@ -61,7 +67,7 @@ Do **not** open Chapter 14 until every box is ticked and learning log answers ar
 - [ ] I can explain what happens on image replace
 - [ ] I know public shop will use `imageUrl` in '&lt;img>' without API proxy`
 
-### Learning log — write now
+## Learning log
 
 Answer **in your own words** in the fields below:
 
@@ -80,7 +86,6 @@ Answer **in your own words** in the fields below:
 7. **Week 2 demo:** Describe your demo script in four steps. What would break the demo if Cloudinary credentials were wrong?
 
 8. **Chapter 14 preview:** Will public `GET /products` return `imageUrl` to customers? Any fields you will exclude from public DTO?
-
 
 ## All boxes ticked?
 

@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Apps that die on reboot are hobbies, not de
 ---
 **Why this step matters:** Apps that die on reboot are hobbies, not deployments. Proving API and worker recover within 60 seconds shows you configured process managers — not just SSH sessions.
 
+<BigWordAlert term="Restart survival" plainEnglish="Reboot server or redeploy — confirm app reconnects MongoDB, Redis, and serves traffic." whyItMatters="FreshMarket production must recover from deploys and crashes without manual intervention." />
+
 **Where the project is now:** Smoke tests passed (23.13) — API, client, worker on HTTPS; worker processed checkout.
 
 **After this step:** App recovers after restart/kill/redeploy — API health within 60s **and** worker resumes jobs.
@@ -29,7 +31,20 @@ API-only restart ≠ gate. Worker restart row mandatory.
 
 ## Verification sequence — spec
 
-1. Baseline: `curl /health` → 200, `db: connected`  
+1. Baseline health check:
+
+<ApiRequestPanel title="Post-restart health">
+
+<ApiRequest
+  label="GET /health after API restart"
+  method="GET"
+  url="https://api.yourdomain.com/health"
+  responseStatus={200}
+  responseBody='{"status":"ok","db":"connected"}'
+/>
+
+</ApiRequestPanel>
+
 2. Restart API — poll every 5s, 200 within 60s  
 3. Quick auth in browser  
 4. Restart worker — startup log with queue name (Ch 22)  
@@ -89,10 +104,12 @@ One paragraph: commands used, seconds to health 200, post-restart checkout log. 
 - [ ] README notes two-process restart behaviour  
 - [ ] Learning log paragraph written  
 
+<RealWorldEvent title="Heroku twelve-factor app methodology" when="2011–present" summary="Twelve-factor principles — config in env, stateless processes, logs as streams — shaped how Node apps deploy to modern platforms." lesson="Build deploy-ready habits early: health routes, env-based config, and separate worker processes pay off on day one in production." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX79636Q5XPEGFSRX1QS9C" />
+<OpenQuestion id="01KZP7KR2AGW8ZPH3MXBWNBQW4" />
 
 ## Next
 

@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Every cache and queue feature in Chapters 2
 ---
 **Why this step matters:** Every cache and queue feature in Chapters 20–21 shares one Redis connection module — wire it once correctly here and both chapters inherit the same `REDIS_URL` discipline.
 
+<BigWordAlert term="Redis" plainEnglish="In-memory data store used here for HTTP response cache — key-value with TTL support." whyItMatters="FreshMarket Redis runs alongside MongoDB — separate connection string in env." />
+
 **Where the project is now:** Every `GET /products` hits MongoDB (Ch 14–15); no Redis dependency or connection module exists.
 
 **After this step:** `server/src/shared/redis.js` connects to Redis from `REDIS_URL`; fails gracefully or logs warning per 21.14 strategy.
@@ -53,10 +55,12 @@ git commit -m "feat(server): add redis connection module"
 - [ ] Redis up → connect log on boot
 - [ ] Wrong URL → warning or error per your design
 
+<RealWorldEvent title="Facebook Memcached outage lessons" when="2010" summary="Major sites learned that caching layers need fallbacks — when cache fails, databases must survive the thundering herd." lesson="Always code a cache miss path. Redis is an accelerator, not the system of record." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78S13BEY7NRJHMYMBW7J" />
+<OpenQuestion id="01KZP7KQTVFXX5B9FG46JPCWZV" />
 
 ## Next
 

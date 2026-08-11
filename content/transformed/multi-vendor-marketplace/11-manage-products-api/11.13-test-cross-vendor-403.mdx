@@ -6,6 +6,8 @@ summary: "Chapter 8 proved store isolation; this step proves **product** isolati
 ---
 **Why this step matters:** Chapter 8 proved store isolation; this step proves **product** isolation — Vendor B cannot PATCH Vendor A's kale. Same curl template, new resource. The Chapter 11 gate depends on this negative test, not just happy-path create.
 
+<BigWordAlert term="Cross-vendor isolation test" plainEnglish="Vendor A's token attempting to PATCH vendor B's product ID — must return 403 Forbidden." whyItMatters="FreshMarket gate proves authorization works — not just happy-path CRUD." />
+
 **Where the project is now:** Product CRUD works for the owning vendor (11.8–11.12); nothing yet proves Vendor B cannot touch Vendor A's products.
 
 **After this step:** Full **vendor product lifecycle** and **isolation suite** recorded for learning log — the Chapter 11 proof.
@@ -16,6 +18,48 @@ summary: "Chapter 8 proved store isolation; this step proves **product** isolati
 - At least one product owned by A (`PRODUCT_ID_A`)  
 
 ## Test matrix (execute all)
+
+<ApiRequestPanel title="Product lifecycle & isolation">
+
+<ApiRequest
+  label="Step 1 — POST product as Vendor A"
+  method="POST"
+  url="http://localhost:5000/api/products"
+  bearer="TOKEN_A"
+  body='{"name":"Organic Kale","price":2.5,"unit":"bunch","stockQty":20}'
+  responseStatus={201}
+  responseBody='{"_id":"PRODUCT_ID_A","name":"Organic Kale","storeId":"STORE_A"}'
+/>
+
+<ApiRequest
+  label="Step 5 — Vendor B PATCH Vendor A product (must 403)"
+  method="PATCH"
+  url="http://localhost:5000/api/products/PRODUCT_ID_A"
+  bearer="TOKEN_B"
+  body='{"name":"Stolen"}'
+  responseStatus={403}
+  responseBody='{"message":"Forbidden"}'
+/>
+
+<ApiRequest
+  label="Step 6 — Vendor B DELETE Vendor A product (must 403)"
+  method="DELETE"
+  url="http://localhost:5000/api/products/PRODUCT_ID_A"
+  bearer="TOKEN_B"
+  responseStatus={403}
+  responseBody='{"message":"Forbidden"}'
+/>
+
+<ApiRequest
+  label="Step 7 — Vendor A DELETE own product"
+  method="DELETE"
+  url="http://localhost:5000/api/products/PRODUCT_ID_A"
+  bearer="TOKEN_A"
+  responseStatus={204}
+  responseBody='...'
+/>
+
+</ApiRequestPanel>
 
 ### Lifecycle — Vendor A
 
@@ -96,10 +140,12 @@ git commit -m "docs: document vendor product API and cross-vendor tests"
 - [ ] Full lifecycle 1–8 passes  
 - [ ] Results in learning log notes  
 
+<RealWorldEvent title="DoorDash menu sync failures" when="2020s" summary="Delivery platforms struggled when restaurant menus changed faster than sync pipelines, showing unavailable items to hungry customers." lesson="Product APIs should reflect live stock and publish state — stale catalogue data directly loses sales." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX7767RF6EDEVS9CP7CCFF" />
+<OpenQuestion id="01KZP7KPZGE17RWBANF5X66R6F" />
 
 ## Next
 

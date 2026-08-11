@@ -8,15 +8,17 @@ summary: "By the end of this chapter you will have made three decisions that Cha
 
 By the end of this chapter, you'll have made **three decisions** that Chapter 4–5 implement without reopening fundamentals:
 
+<BigWordAlert term="Data modelling decision" plainEnglish="Choosing database technology and document shapes before writing models — design before code." whyItMatters="This chapter produces `docs/erd-draft.md` — the blueprint Chapter 5 implements in Mongoose." />
+
 1. **Database family:** MongoDB (document store) for this marketplace
 2. **ODM:** Mongoose for schemas, validation, and references in Node
 3. **Modelling strategy:** References for ownership chain; embedded arrays for order line snapshots
 
 This page states the decisions plainly. Sub-chapters 3.4–3.7 give you the evidence to understand *why*.
 
-&lt;Callout type="info" title="This is the foundation">
+<Callout type="info" title="This is the foundation">
 Beginners often treat database choice as "install whatever the tutorial uses." Here you **document why** — MongoDB for variable product attributes and embedded order lines, Mongoose for schema discipline. Chapter 4 won't re-debate this; it connects. Chapter 5 won't ask "SQL or Mongo?" — it implements.
-&lt;/Callout>
+</Callout>
 
 ## Decision 1 — MongoDB for FreshMarket (mandated)
 
@@ -54,9 +56,9 @@ This is the most important modelling choice. Here's the summary — full depth i
 | Order line items | **Embed** in Order | Snapshot fields frozen at purchase — Chapter 18 |
 | Refresh tokens (later) | **Reference or embed in User** | Chapter 6 specifies |
 
-&lt;Callout type="warning" title="Mismatch = rework">
+<Callout type="warning" title="Mismatch = rework">
 Your ERD must show embed for order lines explicitly. Full depth in **3.6**. If your draft and code disagree later, fix the draft or the model — don't leave both telling different stories.
-&lt;/Callout>
+</Callout>
 
 ## When you would pick SQL instead
 
@@ -112,16 +114,7 @@ Because the decision is cheap on paper and expensive in code — and the checkou
 </FaqGroup>
 
 
-&lt;ChapterRecap
-  points=&#123;[
-    "Three decisions: MongoDB, Mongoose, embed/reference strategy",
-    "SQL trade-offs — you must articulate one honest case for relational",
-    "Deliverable: docs/erd-draft.md before any code",
-    "Chapter 4 connects; Chapter 5 implements — no skipping this chapter"
-  ]&#125;
-/>
+<ChapterRecap id="01KZP7KP0DPHTRTPFJQGGZBMYG" />
 
 **Next:** Relational vs document — side by side for the same marketplace entities.
-## Before you continue
-
-<OpenQuestion id="01KZAX75J15S4V7EC99DFTQMN5" />
+<RealWorldEvent title="Walmart's polyglot data strategy" when="2010s–present" summary="Large retailers run multiple database technologies — relational systems for transactions and accounting, document or search stores for catalogs and recommendations." lesson="Choosing MongoDB for FreshMarket is a domain-driven decision. Document the trade-off so future you can defend it in an interview." />

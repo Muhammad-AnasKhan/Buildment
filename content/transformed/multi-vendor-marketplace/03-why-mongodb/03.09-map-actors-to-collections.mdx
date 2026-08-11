@@ -8,13 +8,15 @@ summary: "Extend your ERD with actor-driven narratives — what each role reads/
 
 **Why this step matters:** Diagrams show structure; actor paragraphs show **behaviour** — who reads which collection, how checkout splits orders, why Vendor B must never see Vendor A's products.
 
+<BigWordAlert term="Collection mapping" plainEnglish="Assigning each business entity (user, store, product, order) to a MongoDB collection name." whyItMatters="FreshMarket ends with users, stores, products, carts, and orders collections — one home per entity type." />
+
 **Where the project is now:** `docs/erd-draft.md` exists with the diagram and collection inventory from 3.8 — the actor × collection behaviour is still unanalysed.
 
 **After this step:** `docs/erd-draft.md` grows an "Actors and collections" section — one read/write paragraph per actor plus the actor × collection table — that becomes your isolation test list for Chapter 8.
 
-&lt;Callout type="info">
+<Callout type="info">
 Chapter 8 isolation tests start as sentences you write here. "Vendor reads orders where storeId matches their store" becomes the isolation test you write later.
-&lt;/Callout>
+</Callout>
 
 ## What to add to your ERD
 
@@ -91,16 +93,7 @@ git add docs/erd-draft.md
 git commit -m "docs: map actors to collections in ERD draft"
 ```
 
-&lt;ChapterRecap
-  points=&#123;[
-    "Vendor paragraph: one store, own products only, own orders only",
-    "Customer paragraph: public catalogue, cart with multi-vendor, checkout splits orders",
-    "Actor × collection table shows who can read/write what",
-    "Isolation test list started — gates Chapter 8"
-  ]&#125;
-/>
+<ChapterRecap id="01KZP7KP22AJYPGBFP15EBE47Z" />
 
 **Next:** Chapter 3 checklist — gate before Chapter 4.
-## Before you continue
-
-<OpenQuestion id="01KZAX75MKGMQ2MWBKMA9J1MBM" />
+<RealWorldEvent title="Walmart's polyglot data strategy" when="2010s–present" summary="Large retailers run multiple database technologies — relational systems for transactions and accounting, document or search stores for catalogs and recommendations." lesson="Choosing MongoDB for FreshMarket is a domain-driven decision. Document the trade-off so future you can defend it in an interview." />

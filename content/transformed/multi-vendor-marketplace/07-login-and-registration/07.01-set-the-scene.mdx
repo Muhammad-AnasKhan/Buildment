@@ -6,6 +6,8 @@ summary: "**Where the project is now:** Chapter 6 complete — auth API works vi
 ---
 **Where the project is now:** Chapter 6 complete — auth API works via curl. React client still shows health check only. Humans cannot register or login in the browser.
 
+<BigWordAlert term="Client-side auth" plainEnglish="The React half of authentication — forms, token storage, and attaching credentials to API calls." whyItMatters="Server auth is useless if the browser loses tokens on refresh or sends them insecurely." />
+
 **Where this chapter goes:** Login, Register, and Verify OTP **pages**, a **useAuth** hook or context storing access token in memory, API client attaching Bearer header, **401 refresh loop**, and **protected routes** redirecting unauthenticated users.
 
 Backend/frontend pair to Chapter 6 — same API contracts, no new server endpoints required unless cookie refresh added.
@@ -17,6 +19,8 @@ Chapter 6 proved authentication **works on the server** — register, verify OTP
 What carries forward: exact API request/response shapes from Chapter 6, CORS already enabled for Vite, and `client/src/pages/` + `api/client.js` from Chapter 2. What you add now is **session continuity in the browser** — forms, error messages, access token in memory (not localStorage), refresh token in httpOnly cookie, automatic retry when access expires, and protected routes that redirect strangers to login.
 
 The hat you wear now is **frontend auth integrator**. You are not redesigning the API; you are making it usable by vendors and customers. Week 2's demo becomes "register in the browser, verify, login, land on the right page" — not just curl output in a terminal.
+
+<RealWorldEvent title="GitHub's session and token evolution" when="2010s–present" summary="Developer platforms refined PATs, OAuth apps, and session handling as users demanded security without constant re-authentication." lesson="Treat the client auth layer as part of security design, not a UI afterthought — refresh logic belongs in one place, not scattered across pages." />
 
 ## Chapter 6 contract you inherit
 
@@ -30,9 +34,9 @@ Chapter 7 adds **zero new business logic** on the server. Every form, hook, and 
 | `POST /api/auth/refresh` | useAuth boot + interceptor | Cookie or body refresh → new `accessToken` |
 | `GET /api/auth/me` | ProtectedRoute smoke test | Bearer header; 401 triggers refresh loop (7.5) |
 
-&lt;Callout type="warning" title="Gate before you build UI">
+<Callout type="warning" title="Gate before you build UI">
 Finish **Chapter 6.20 checklist** first. Chapter 7 on a broken auth API means debugging React and Express at once — the hardest combination for beginners. curl must pass register → verify → login → `/me` before you open `Login.jsx`.
-&lt;/Callout>
+</Callout>
 
 **Phase shift:** Chapter 6 proved identity on the **server**. Chapter 7 proves the **browser** can hold and renew that identity safely — memory for access, httpOnly cookie for refresh, silent retry on 401.
 
@@ -52,6 +56,14 @@ Finish **Chapter 6.20 checklist** first. Chapter 7 on a broken auth API means de
 ## Think of it like…
 
 **Installing the customer entrance and vendor check-in desk.** Chapter 6 built the security system backend — badge printing and verification rules. This chapter builds the doors people actually walk through: registration forms, OTP entry, login screen, and turnstiles on vendor-only hallways (protected routes). curl was the staff entrance; the browser is the public entrance.
+
+<MandatoryReadCard
+  title="React — useContext"
+  href="https://react.dev/reference/react/useContext"
+  source="React"
+  summary="Official React docs for sharing auth state across pages. Matches the auth context or hook pattern you build for login and registration screens."
+  readMinutes={10}
+/>
 
 ## Common beginner questions
 
@@ -140,10 +152,11 @@ Estimated: **1–2 days**
 - [ ] Test credentials documented in README
 - [ ] You can name which Chapter 6 endpoint each page will call (register, verify, login, refresh)
 
+<InterestingRead title="Why login forms fail in weird ways" hook="The API works in curl but not in the browser." readMinutes={4}>
 
-## Before you continue
+CORS, missing Authorization headers, and tokens stored where JavaScript cannot read them cause most beginner auth bugs. FreshMarket's verify step proves the full browser path — form submit, token storage, protected fetch — not just isolated API tests.
 
-<OpenQuestion id="01KZAX76BRNMZBAPRG115FD3V2" />
+</InterestingRead>
 
 ## Next
 
@@ -151,11 +164,4 @@ Estimated: **1–2 days**
 
 API auth works — browser storage strategy next.
 
-&lt;ChapterRecap
-  points=&#123;[
-    "Chapter 6 auth works in curl — Chapter 7 adds browser forms and session continuity",
-    "Same API contracts — no new server endpoints unless you add httpOnly refresh cookies",
-    "Access token in memory, refresh in httpOnly cookie — the course security pattern",
-    "Protected routes and 401 refresh loop complete Week 2 auth from the client side"
-  ]&#125;
-/>
+<ChapterRecap id="01KZP7KPG709R8TY63S5F7KDW0" />

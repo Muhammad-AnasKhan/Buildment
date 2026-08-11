@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Shop cards need **store name**, not a raw O
 ---
 **Why this step matters:** Shop cards need **store name**, not a raw ObjectId. This step fixes the N+1 trap from 14.2 — populate on the **paginated page** keeps query count flat when Chapter 15 hammers this endpoint.
 
+<BigWordAlert term="Joined store metadata" plainEnglish="Including vendor store name on each product in the API response — shopper sees who sells what." whyItMatters="Product cards show 'Sold by Green Valley Farm' — populated from store reference." />
+
 **Where the project is now:** Paginated list returns products with `storeId` ObjectId only — not enough for shop cards.
 
 **After this step:** Each item includes `store: { id, name }`; query count verified **not N+1**.
@@ -58,9 +60,17 @@ mongoose.set('debug', true)
 
 **Run:**
 
-```bash
-curl -s "http://localhost:5000/api/products?limit=20" > /dev/null
-```
+<ApiRequestPanel title="N+1 verification — check server logs">
+
+<ApiRequest
+  label="GET catalogue (limit 20) — count MongoDB ops in server debug log"
+  method="GET"
+  url="http://localhost:5000/api/products?limit=20"
+  responseStatus={200}
+  responseBody='{"items":[{"id":"...","name":"...","store":{"id":"...","name":"Green Valley Grocer"}}],"page":1,"limit":20,"total":20,"totalPages":1}'
+/>
+
+</ApiRequestPanel>
 
 **Count MongoDB operations in log:**
 
@@ -100,10 +110,12 @@ git commit -m "feat(products): populate store name on public catalogue without n
 - [ ] Products from two stores show different store names  
 - [ ] Populate applies to paginated slice only
 
+<RealWorldEvent title="Amazon search index separate from catalog DB" when="2000s–present" summary="Large marketplaces eventually split transactional catalog storage from search-optimized indexes — your module 21 preview." lesson="Build a correct catalogue API first; optimize with cache and search once the happy path works." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX77P8D0NY5NT6F7V9W0P1" />
+<OpenQuestion id="01KZP7KQ7VVNCW58WXG46VVS0T" />
 
 ## Next
 

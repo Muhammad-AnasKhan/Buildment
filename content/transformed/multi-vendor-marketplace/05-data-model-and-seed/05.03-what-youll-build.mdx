@@ -6,6 +6,8 @@ summary: "By the end of Chapter 5, your repo contains **six Mongoose models**, a
 ---
 By the end of Chapter 5, your repo contains **six Mongoose models**, a **runnable seed script**, and a **final ERD** committed to `docs/erd.md`. No API routes yet — only schemas and test data.
 
+<BigWordAlert term="Domain model layer" plainEnglish="The set of Mongoose schemas representing FreshMarket entities — users, stores, products, carts, orders." whyItMatters="Every API chapter from auth to checkout reads and writes through these models." />
+
 ## Why this matters for absolute beginners
 
 Chapter 5 is where FreshMarket becomes **real in the database** — not health checks, not empty folders, but vendors, stores, and products you can click in Compass. The deliverables table is your gate checklist. Weak models here mean every auth, cart, and checkout chapter fights the same schema mistakes. Strong models mean you mostly **wire routes** to shapes that already exist.
@@ -91,6 +93,16 @@ docs/
 └── erd.md                    ← NEW — final
 ```
 
+<MandatoryReadCard
+  title="Mongoose — Schemas"
+  href="https://mongoosejs.com/docs/guide.html"
+  source="Mongoose"
+  summary="How Mongoose schemas define shape, defaults, and validation on MongoDB documents. Directly applies to User, Store, Product, Cart, and Order models."
+  readMinutes={12}
+/>
+
+<RealWorldEvent title="Amazon's item-level order snapshots" when="Marketplace era" summary="Marketplace order systems persist item details at purchase time so disputes, refunds, and tax reporting reflect the transaction as it happened." lesson="Model for auditability early. Your seed data and ERD should show which fields are live references and which are immutable snapshots." />
+
 ## Seed data specification
 
 The seed script must create **deterministic, named test entities** for isolation tests in Chapter 8:
@@ -172,10 +184,15 @@ Diff draft vs final in learning log. Explain any change (e.g. added `isPublished
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX75X2SH5FCN2YQCCPK3JY" />
+<OpenQuestion id="01KZP7KP7J12VN5KREYYXAGHNA" />
 
 ## Next
 
 **Sub-chapter 5.4:** Ownership chain — User → Store → Product → CartItem → Order as a security and data model story.
 
 Blueprint is set — next you learn why the chain order matters.
+<InterestingRead title="Why orders store prices, not live product lookups" hook="A receipt is a photograph, not a live feed." readMinutes={4}>
+
+If an order stored only a product ID, a vendor price change would rewrite history. FreshMarket copies name, unit price, and weight into order items at checkout so customers and vendors always see what was agreed at purchase time.
+
+</InterestingRead>

@@ -6,6 +6,8 @@ summary: "Chapter 8 closes the security gap between **authenticated** and **auth
 ---
 Chapter 8 closes the security gap between **authenticated** and **authorized**. Vendor B cannot mutate Vendor A's store — proven with curl and documented in `docs/AUTHORIZATION.md`.
 
+<BigWordAlert term="Isolated tenant data" plainEnglish="Each vendor's stores and products are accessible only to that vendor — multi-tenant isolation." whyItMatters="Chapter 9 builds store API routes assuming ownership guards are already in place." />
+
 ## What you built
 
 Five pieces, and each one earns its place because the *next* chapter reuses it unchanged. If you can hold one sentence per item in your head, you can answer any viva question about this chapter.
@@ -42,6 +44,12 @@ server/src/modules/stores/stores.service.js   ← minimal
 auth.middleware.js                            ← + requireRole
 ```
 
+<InterestingRead title="IDOR: the bug where changing a number steals data" hook="If `/api/products/42` works, will `/api/products/43`?" readMinutes={5}>
+
+Insecure Direct Object Reference bugs happen when the server checks login but not ownership. FreshMarket's guards compare the authenticated user to the document owner on every mutating route — not just on the dashboard UI.
+
+</InterestingRead>
+
 ## What's next — Chapter 9 Vendor store API
 
 With authorization in place, the store feature can ship without redesigning security later. Chapter 9 builds the full store lifecycle on top of the exact middleware you just wrote.
@@ -76,6 +84,7 @@ Vendor onboarding UI — storeless vendor forced to open shop before dashboard.
 **Do not open Chapter 9 until 8.15 ticked.**
 
 Logged in and allowed are different — store features can ship safely now.
+<RealWorldEvent title="Facebook Graph API permission scandals" when="2010s" summary="Platforms exposed user data when apps could request broader permissions than users understood — driving industry focus on least-privilege access." lesson="Centralize authorization in middleware and guards. Ad-hoc checks in individual routes drift and get missed during code review." />
 ## Before you continue
 
-<OpenQuestion id="01KZAX76R1JW6H0DBNNBMY2ET1" />
+<OpenQuestion id="01KZP7KPQTS8APQH3E2TVEXRRJ" />

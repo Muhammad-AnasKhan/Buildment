@@ -6,6 +6,8 @@ summary: "By the end of Chapter 9, a **vendor-authenticated** client (curl for n
 ---
 By the end of Chapter 9, a **vendor-authenticated** client (curl for now, browser in Chapter 10) can complete the full store lifecycle on the API. Customers and unauthenticated users cannot create stores. Vendor B cannot update Vendor A's store.
 
+<BigWordAlert term="Stores REST API" plainEnglish="CRUD routes for vendor stores — create, read own store, update — with validation and auth." whyItMatters="Chapter 10's onboarding UI calls these routes; Chapter 11 adds products under the store." />
+
 ## Deliverables checklist (preview)
 
 | Deliverable | Proof |
@@ -89,6 +91,16 @@ No client files in Chapter 9 — API-only pair before Chapter 10 UI.
 
 **Response 404:** Store id not found.
 
+<MandatoryReadCard
+  title="Express — Routing guide"
+  href="https://expressjs.com/en/guide/routing.html"
+  source="Express"
+  summary="How Express matches HTTP methods and paths to handlers. Foundation for vendor store CRUD routes this chapter."
+  readMinutes={10}
+/>
+
+<RealWorldEvent title="Etsy shop URLs and seller identity" when="2005–present" summary="Marketplace sellers receive branded storefront URLs while the platform enforces global uniqueness and policy compliance behind the scenes." lesson="Store creation is more than a form — it is the moment a user becomes a vendor with isolated data and public presence." />
+
 ## Middleware stack per route
 
 | Route | Middleware order |
@@ -153,8 +165,13 @@ Save redacted curl transcript or notes in learning log — not necessarily commi
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76SGB3FPRBSJ3T1K2QD8" />
+<OpenQuestion id="01KZP7KPRHEMKHNDZAVPDCK31M" />
 
 ## Next
 
 **Sub-chapter 9.4:** Store fields — name, description, address, logoUrl, and what belongs on the document vs derived later.
+<InterestingRead title="Slug collisions in multi-vendor marketplaces" hook="Two shops cannot both be `/store/fresh-produce`." readMinutes={3}>
+
+Human-readable URLs help SEO and sharing, but slugs must be unique per platform. FreshMarket generates or validates slugs on create so vendors get friendly links without breaking routing.
+
+</InterestingRead>

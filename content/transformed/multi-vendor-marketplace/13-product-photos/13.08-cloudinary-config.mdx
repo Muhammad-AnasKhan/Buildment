@@ -6,6 +6,8 @@ summary: "Upload credentials belong in server env — never the React bundle. Th
 ---
 **Why this step matters:** Upload credentials belong in server env — never the React bundle. This step wires Cloudinary the same way Chapter 4 wired MongoDB: validate at boot, document in `.env.example`, fail fast if missing. The shared helper keeps route handlers thin.
 
+<BigWordAlert term="Cloudinary" plainEnglish="A hosted image service — upload, transform, resize, and CDN-deliver photos via URL." whyItMatters="FreshMarket uses Cloudinary so vendors get optimized thumbnails without you running image servers." />
+
 **Where the project is now:** Product CRUD works; no upload infrastructure; `imageUrl` empty on documents.
 
 **After this step:** Cloudinary credentials load from env via `config.js`; a shared upload helper wraps the SDK — ready for multer in 13.9.
@@ -109,10 +111,12 @@ Do not commit `.env`.
 - [ ] `.env.example` updated in same commit  
 - [ ] `git check-ignore` still passes for `.env`
 
+<RealWorldEvent title="Instagram commerce and visual trust" when="2010s–present" summary="Social and marketplace sellers learned that image quality and consistency directly correlate with conversion rates for physical goods." lesson="Validate image types and sizes server-side; broken or huge uploads become support tickets fast." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX77EJ5SZKYWQ8HJQS7S0W" />
+<OpenQuestion id="01KZP7KQ3YGZN2QKJ2PHE4SZZ4" />
 
 ## Next
 

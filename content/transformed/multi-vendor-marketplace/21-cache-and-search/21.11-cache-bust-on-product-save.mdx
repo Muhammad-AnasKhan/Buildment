@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Without invalidation, your fast cache serve
 ---
 **Why this step matters:** Without invalidation, your fast cache serves wrong prices — the stale trap from 21.2 becomes a real bug. This step is what makes caching **safe** for a marketplace, not just fast.
 
+<BigWordAlert term="Cache invalidation" plainEnglish="Deleting or updating Redis keys when vendor saves product — fresh data on next request." whyItMatters="Wrong prices in cache hurt trust — tie invalidation to product updates and TTLs." />
+
 **Where the project is now:** Catalogue reads are cached (21.9) — product saves never touch the cache, so stale prices serve until expiry.
 
 **After this step:** Product POST/PATCH/DELETE invalidates catalogue cache keys — next GET reflects changes.
@@ -52,10 +54,12 @@ If step 3 shows old price — invalidation not wired or wrong key pattern.
 - [ ] PATCH product → catalogue shows update immediately
 - [ ] Documented in learning log
 
+<RealWorldEvent title="Facebook Memcached outage lessons" when="2010" summary="Major sites learned that caching layers need fallbacks — when cache fails, databases must survive the thundering herd." lesson="Always code a cache miss path. Redis is an accelerator, not the system of record." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78SZRK73K3QMT49XXT8M" />
+<OpenQuestion id="01KZP7KQVAN8YCEDHH388947ZZ" />
 
 ## Next
 

@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
+import { useEffect, useState, type RefObject } from "react";
 
 type ProgressBarProps = {
   progress: number; // 0-100
@@ -9,43 +8,35 @@ type ProgressBarProps = {
 
 export function ChapterProgressBar({ progress }: ProgressBarProps) {
   return (
-    <div className="fixed left-0 top-14 z-40 h-1 w-full bg-neutral-100">
+    <div className="h-px w-full shrink-0 bg-neutral-100" aria-hidden>
       <div
-        className="h-full bg-indigo-600 transition-all duration-700 ease-out"
+        className="h-px bg-indigo-500/50 transition-[width] duration-500 ease-out"
         style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
       />
     </div>
   );
 }
 
-export function useReadingProgress() {
+export function useReadingProgress(scrollRef: RefObject<HTMLElement | null>) {
   const [progress, setProgress] = useState(0);
-  const articleRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    const article = document.querySelector("article.prose") as HTMLElement | null;
-    if (!article) return;
+    const scrollEl = scrollRef.current;
+    const article = scrollEl?.querySelector("article.prose") as HTMLElement | null;
+    if (!scrollEl || !article) return;
 
     const updateProgress = () => {
-      const rect = article.getBoundingClientRect();
-      const windowHeight = window.innerHeight;
-      const articleTop = rect.top;
-      const articleBottom = rect.bottom;
-      const articleHeight = article.offsetHeight;
-
-      if (articleHeight === 0) return;
-
-      const scrolled = -articleTop;
-      const totalScrollable = articleHeight - windowHeight + 200;
-      const percent = totalScrollable > 0 ? Math.min(100, Math.max(0, (scrolled / totalScrollable) * 100)) : 0;
+      const scrollTop = scrollEl.scrollTop;
+      const scrollHeight = scrollEl.scrollHeight - scrollEl.clientHeight;
+      const percent = scrollHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / scrollHeight) * 100)) : 0;
       setProgress(percent);
     };
 
-    window.addEventListener("scroll", updateProgress, { passive: true });
+    scrollEl.addEventListener("scroll", updateProgress, { passive: true });
     updateProgress();
 
-    return () => window.removeEventListener("scroll", updateProgress);
-  }, []);
+    return () => scrollEl.removeEventListener("scroll", updateProgress);
+  }, [scrollRef]);
 
   return { progress };
 }

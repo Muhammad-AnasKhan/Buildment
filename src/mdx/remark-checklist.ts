@@ -89,8 +89,7 @@ function isUnderGateHeading(siblings: Root["children"], index: number): boolean 
 function checklistVariant(
   underGate: boolean,
   section?: string
-): "gate" | "section" | "inline" {
-  if (underGate) return "gate";
+): "section" | "inline" {
   if (section) return "section";
   return "inline";
 }
@@ -98,7 +97,8 @@ function checklistVariant(
 function mdxChecklistNode(options: {
   items: ChecklistItemData[];
   section?: string;
-  variant: "gate" | "section" | "inline";
+  variant: "section" | "inline";
+  isGate: boolean;
 }) {
   const attributes: Record<string, unknown>[] = [
     {
@@ -140,6 +140,14 @@ function mdxChecklistNode(options: {
     });
   }
 
+  if (options.isGate) {
+    attributes.push({
+      type: "mdxJsxAttribute",
+      name: "isGate",
+      value: true,
+    });
+  }
+
   return {
     type: "mdxJsxFlowElement",
     name: "Checklist",
@@ -173,7 +181,7 @@ export function remarkChecklist(): (tree: Root) => void {
       parent.children.splice(
         index,
         1,
-        mdxChecklistNode({ items, section, variant }) as unknown as List
+        mdxChecklistNode({ items, section, variant, isGate: underGate }) as unknown as List
       );
     });
   };

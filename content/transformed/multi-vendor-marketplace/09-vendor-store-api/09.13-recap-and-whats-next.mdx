@@ -6,6 +6,8 @@ summary: "You entered Chapter 9 with authenticated vendors and isolation middlew
 ---
 You entered Chapter 9 with authenticated vendors and isolation middleware but no way to open a shop. You leave with a **complete vendor store API** — create once, fetch mine, update with ownership — tested with curl and ready for the browser in Chapter 10.
 
+<BigWordAlert term="Store persistence" plainEnglish="Vendors can create and update their storefront in MongoDB through authenticated API routes." whyItMatters="Chapter 10 builds the UI; Chapter 11 attaches products to these store documents." />
+
 ## What you built — narrative recap
 
 **Stores module:** `stores.routes.js`, `stores.service.js`, `stores.schema.js` alongside existing model.
@@ -58,10 +60,16 @@ Client **unchanged** — intentional until Chapter 10.
 | Vendor adds product | Chapter 11–12 |
 | Product photo | Chapter 13 |
 
+<InterestingRead title="Slug collisions in multi-vendor marketplaces" hook="Two shops cannot both be `/store/fresh-produce`." readMinutes={3}>
+
+Human-readable URLs help SEO and sharing, but slugs must be unique per platform. FreshMarket generates or validates slugs on create so vendors get friendly links without breaking routing.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76X0XKJDHJDK0ZZ0KAJ6" />
+<OpenQuestion id="01KZP7KPTFE8TBQSPC6R6T80BV" />
 
 ## Next chapter — Open your shop (Chapter 10)
 
@@ -114,3 +122,4 @@ docs: complete chapter 9 learning log
 **Do not open Chapter 10 until 9.14 is fully ticked.**
 
 Your vendors can open a shop via API — Chapter 10 gives them a door.
+<RealWorldEvent title="Etsy shop URLs and seller identity" when="2005–present" summary="Marketplace sellers receive branded storefront URLs while the platform enforces global uniqueness and policy compliance behind the scenes." lesson="Store creation is more than a form — it is the moment a user becomes a vendor with isolated data and public presence." />

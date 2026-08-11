@@ -6,6 +6,8 @@ summary: "Before you run `git init` and create folders, read **one** short piece
 ---
 Before you run `git init` and create folders, read **one** short piece on Node project structure so the module-based choice in 2.4 isn't only this course's opinion — it's a decision you've seen argued elsewhere too.
 
+<BigWordAlert term="CORS" plainEnglish="Cross-Origin Resource Sharing — browser rules that block or allow requests from one origin (localhost:5173) to another (localhost:4000)." whyItMatters="Your first end-to-end win fails silently without CORS configured — the health check is your CORS test." />
+
 ## Why this matters for absolute beginners
 
 Reading fifteen minutes before `git init` feels slow when you want to code. It prevents **false confidence** — copying a layer-based tutorial and discovering at Chapter 11 that "products module" does not exist in your repo. The mandatory reads connect this course's module mandate to how Express routing actually works, so sub-chapter 2.11 is not your first time seeing `app.get` and middleware.
@@ -111,6 +113,8 @@ If any answer feels fuzzy, re-read 2.5 before 2.8.
 
 Teams migrating from layer-based to module-based often publish post-mortems — search *"refactoring to feature folders node"*. Not required; useful if you want war stories.
 
+<RealWorldEvent title="Shopify's modular commerce platform" when="2006–present" summary="Shopify grew from a single-product store builder into a platform with separate admin, storefront, and API surfaces — all coordinated through clear project boundaries." lesson="Starting with a deliberate folder skeleton prevents painful renames later when vendor, cart, and payment code all need room to grow." />
+
 ## Build starts next
 
 Sub-chapter **2.7** is a quiz placeholder — **skip it**.
@@ -120,6 +124,12 @@ Sub-chapter **2.8** is your first hands-on step: **create the Git repository** a
 Have your empty parent directory ready. Have Node and Git verified. Don't scaffold inside the course content folder (`multi-vendor-marketplace/` in the guides repo) — that's the textbook, not your app.
 
 Your app repo might live at `~/projects/greenbasket/` or similar — **your choice**.
+
+<InterestingRead title="Colocate by feature vs organise by type" hook="Folders named `controllers/` age badly when products multiply." readMinutes={5}>
+
+Many teams start with layer-first folders (all routes together, all models together). Feature-first layouts group everything for one capability — auth, cart, checkout — in one place. FreshMarket uses module folders on the server so each capability stays findable as the codebase grows.
+
+</InterestingRead>
 
 ## Key ideas
 
@@ -185,4 +195,4 @@ You are choosing module-based **before** pain forces migration — that's the wi
 When reads are done, continue to **Create the repo** in the sidebar.
 ## Before you continue
 
-<OpenQuestion id="01KZAX75AVX3S1PKFWPXMJPGSH" />
+<OpenQuestion id="01KZP7KNVBBHHD0KTV90SXP167" />

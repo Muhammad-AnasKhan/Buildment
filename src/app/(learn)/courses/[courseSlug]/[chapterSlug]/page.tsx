@@ -1,15 +1,14 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/server/db";
 import { requireEnrolledMentee } from "@/server/auth/guards";
 import { ChapterMdx } from "@/mdx/compile";
-import { ChapterNav } from "@/components/learn/chapter-nav";
-import { cn } from "@/lib/utils";
 import { extractHeadings } from "@/lib/mdx-headings";
 import { learningLogToAnswers, parseLearningLog } from "@/lib/learning-log";
 import { ChapterReaderShell } from "@/components/learn/chapter-reader-shell";
-import type { Heading } from "@/lib/mdx-headings";
+import { signOutAction } from "@/server/auth/actions";
 import type { SyllabusModule } from "@/components/learn/course-syllabus";
+
+export const dynamic = "force-dynamic";
 
 export default async function ChapterReaderPage({
   params,
@@ -29,15 +28,21 @@ export default async function ChapterReaderPage({
   });
   if (!course) notFound();
 
-  const { enrollment } = await requireEnrolledMentee(course.id);
+  const { enrollment, user } = await requireEnrolledMentee(course.id);
 
-  const flatChapters = course.modules.flatMap((mod) =>
-    mod.chapters.map((ch) => ({
-      ...ch,
-      moduleTitle: mod.title,
-      moduleOrder: mod.order,
-    }))
-  );
+  const flatChapters = course.modules
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .flatMap((mod) =>
+      mod.chapters
+        .slice()
+        .sort((a, b) => a.order - b.order)
+        .map((ch) => ({
+          ...ch,
+          moduleTitle: mod.title,
+          moduleOrder: mod.order,
+        }))
+    );
   const index = flatChapters.findIndex((c) => c.slug === chapterSlug);
   if (index === -1) notFound();
 
@@ -77,6 +82,7 @@ export default async function ChapterReaderPage({
 
   return (
     <ChapterReaderShell
+      key={chapter.slug}
       courseSlug={course.slug}
       courseTitle={course.title}
       lessonLabel={lessonLabel}
@@ -84,6 +90,8 @@ export default async function ChapterReaderPage({
       chapterSlug={chapter.slug}
       chapterId={chapter.id}
       learningLogAnswers={learningLogAnswers}
+      user={user}
+      signOutAction={signOutAction}
       modules={modules}
       headings={headings}
       prev={prev ? { slug: prev.slug, title: prev.title, moduleOrder: prev.moduleOrder, order: prev.order } : undefined}

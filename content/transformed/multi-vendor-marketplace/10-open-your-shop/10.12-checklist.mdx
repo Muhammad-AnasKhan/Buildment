@@ -4,7 +4,11 @@ module: 10
 lesson: 12
 summary: "Gate for Chapter 10 — Open your shop. Tick every box and answer the learning log on this page before continuing."
 ---
-This is the **gate** for Chapter 10. Tick every box honestly and answer the learning log below before opening Chapter 11.
+Work through each section in order. Test in the **browser** — curl alone is not enough for this chapter.
+
+<Callout type="info" title="How to use this gate">
+Use a **fresh vendor account** without a store for Scenario A in 10.10. Seed vendors always have stores — they skip open-shop and won't test the gate.
+</Callout>
 
 ## Chapter 10 — Open your shop checklist (gate)
 
@@ -12,7 +16,8 @@ Do **not** open Chapter 11 until every box is ticked and learning log answers ar
 
 ### Vendor layout & routing
 
-- [ ] `VendorLayout.jsx` wraps vendor routes with `Outlet`
+- [ ] `VendorLayout.jsx` wraps vendor routes with `Outlet`  
+  *Verify:* Child page renders inside shared header/nav.
 - [ ] Unauthenticated users redirected to login
 - [ ] Customers cannot access vendor routes
 - [ ] Nav includes Settings and placeholder Products/Dashboard
@@ -20,9 +25,10 @@ Do **not** open Chapter 11 until every box is ticked and learning log answers ar
 ### Open shop page
 
 - [ ] `OpenShop.jsx` at `/vendor/open-shop`
-- [ ] Form fields match store API (name, description, address, logoUrl per ERD)
-- [ ] Submit calls `POST /api/stores` with Bearer auth
-- [ ] Success navigates vendor into dashboard (gate passes)
+- [ ] Form fields match store API (name, description, address, logoUrl)
+- [ ] Submit calls `POST /api/stores` with Bearer auth  
+  *Verify:* Network tab shows 201.
+- [ ] Success navigates vendor into dashboard
 - [ ] 400 shows field errors; 409 handled gracefully
 - [ ] Double-submit mitigated (disabled while loading)
 
@@ -32,32 +38,32 @@ Do **not** open Chapter 11 until every box is ticked and learning log answers ar
 - [ ] Loads store via `GET /api/stores/me` on mount
 - [ ] 404 on load redirects to open-shop
 - [ ] Save calls `PATCH /api/stores/:id` with id from GET me
-- [ ] Changes persist after hard refresh
+- [ ] Changes persist after hard refresh  
+  *Verify:* Change name → refresh → name still updated.
 
 ### Onboarding gate
 
-- [ ] `GET /stores/me` → 404 triggers redirect to open-shop (except when already on open-shop)
-- [ ] Storeless vendor cannot reach `/vendor/products` (or equivalent) — manual URL test
+- [ ] `GET /stores/me` → 404 triggers redirect to open-shop (except on open-shop itself)
+- [ ] Storeless vendor typing `/vendor/products` in URL → ends on open-shop
 - [ ] Vendor with store bypasses open-shop
 - [ ] No redirect loop on open-shop path
 
 ### API helpers & integration
 
-- [ ] `client/src/api/stores.js` (or equivalent) implements getMyStore, createStore, updateStore
+- [ ] `stores.js` implements getMyStore, createStore, updateStore
 - [ ] Auth interceptor attaches token to store requests
-- [ ] Network tab shows correct status codes during Scenario A (10.10)
+- [ ] Network tab shows correct status codes during full onboarding test
 
 ### Prior gates
 
 - [ ] Chapter 9 store API still passes curl tests
 - [ ] Chapter 7 auth + refresh still works in browser
-- [ ] I can explain **onboarding gate** vs server-side auth
-- [ ] I can explain **open-shop vs settings** — POST vs PATCH
-- [ ] I can explain how **404 on GET me** drives client routing
-- [ ] I can explain **redirect loop prevention** for open-shop
-- [ ] I can trace **vendor journey** from register to shop open in browser
+- [ ] I can explain onboarding gate vs server-side auth
+- [ ] I can explain open-shop (POST) vs settings (PATCH)
+- [ ] I can explain how 404 on GET me drives client routing
+- [ ] I can trace vendor journey from register to shop open in browser
 
-### Learning log — write now
+## Learning log
 
 Answer **in your own words** in the fields below:
 
@@ -76,7 +82,6 @@ Answer **in your own words** in the fields below:
 7. **API helpers:** How do store API functions reuse auth from Chapter 7?
 
 8. **Chapter 11 preview:** Why must vendor have store before POST /products? What will storeId link look like?
-
 
 ## All boxes ticked?
 

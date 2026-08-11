@@ -6,9 +6,17 @@ summary: "**Why this step matters:** Vendors cannot fulfil orders they cannot se
 ---
 **Why this step matters:** Vendors cannot fulfil orders they cannot see. This inbox completes the marketplace loop — without it, Week 3 demo stops at the customer side only.
 
+<BigWordAlert term="Vendor fulfillment queue" plainEnglish="Dashboard page listing incoming orders for vendor's store — pack and ship workflow." whyItMatters="FreshMarket vendors live here during rush hours — status updates drive operations." />
+
 **Where the project is now:** Customer has checkout, confirmation, and `/orders` history. Vendors have dashboard and product tools (Ch 10–12) but **no order inbox** — queue exists only in MongoDB and curl.
 
 **After this step:** Vendor sees fulfilment queue at `/vendor/orders` from `GET /vendor/orders` — scoped to their store only.
+
+## Target UI preview
+
+![Vendor orders — UI preview](/showcase/multi-vendor-marketplace/vendor-orders-page.png)
+
+*Production-style UI preview — order inbox table with status updates.*
 
 ## Prerequisites
 
@@ -107,10 +115,18 @@ Document `/vendor/orders` in README — list is store-scoped server-side.
 | Vendor B session | **Only** B's order |
 | Line expand | Snapshots match curl |
 
-```bash
-curl -s http://localhost:5000/api/vendor/orders \
-  -H "Authorization: Bearer <vendor-a-token>"
-```
+<ApiRequestPanel title="Vendor orders API cross-check">
+
+<ApiRequest
+  label="GET /vendor/orders — vendor A sees only own store orders"
+  method="GET"
+  url="http://localhost:5000/api/vendor/orders"
+  bearer="<vendor-a-token>"
+  responseStatus={200}
+  responseBody='{"orders":[{"_id":"...","status":"pending","total":305,"customerId":"...","orderItems":[{"name":"Organic Tomatoes","price":3.5,"quantity":2}]}]}'
+/>
+
+</ApiRequestPanel>
 
 ## Troubleshooting
 
@@ -129,10 +145,12 @@ curl -s http://localhost:5000/api/vendor/orders \
 - [ ] Customer name visible; snapshot lines with units
 - [ ] UI matches curl JSON shape
 
+<RealWorldEvent title="Domino's Pizza Tracker effect" when="2008–present" summary="Transparent order tracking reduced support calls and increased trust — customers tolerate wait when they see progress." lesson="Expose meaningful statuses, not internal jargon. 'Preparing your order' beats 'STATE_PICKING'." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78MBG6P0X33BN2WER7Y1" />
+<OpenQuestion id="01KZP7KQRN0BHCEHK8819F4K5F" />
 
 ## Next
 

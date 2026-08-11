@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Status changes are the second hot path for 
 ---
 **Why this step matters:** Status changes are the second hot path for side effects — vendors PATCH fast, customers learn later. Queuing here keeps fulfilment UI snappy and mirrors how real marketplaces notify on dispatch.
 
+<BigWordAlert term="Status change notification" plainEnglish="Background job notifying customer when vendor updates order to shipped or delivered." whyItMatters="FreshMarket shoppers get email on status change without blocking vendor's PATCH request." />
+
 **Where the project is now:** `order.created` flows queue → worker → processor (22.11–22.12); status changes are not queued at all.
 
 **After this step:** `PATCH /vendor/orders/:orderId` enqueues `order.statusUpdated` after status saves — customer notification runs in worker.
@@ -79,14 +81,19 @@ Same status enqueued twice → BullMQ ignores duplicate `jobId` — see 22.14.
 
 ## curl verification
 
-```bash
-# Terminal 1: worker running
-# Terminal 2:
-curl -s -X PATCH "http://localhost:5000/api/vendor/orders/<orderId>" \
-  -H "Authorization: Bearer <vendor-token>" \
-  -H "Content-Type: application/json" \
-  -d '{"status":"packed"}'
-```
+<ApiRequestPanel title="Status update enqueue — PATCH returns before worker log">
+
+<ApiRequest
+  label="Vendor PATCH pending → packed (worker running in other terminal)"
+  method="PATCH"
+  url="http://localhost:5000/api/vendor/orders/<orderId>"
+  bearer="<vendor-token>"
+  body='{"status":"packed"}'
+  responseStatus={200}
+  responseBody='{"_id":"<orderId>","status":"packed","storeId":"...","total":305}'
+/>
+
+</ApiRequestPanel>
 
 **Expected:** 200 JSON immediately. Worker logs `[NOTIFY][customer][status]` shortly after.
 
@@ -111,10 +118,12 @@ Chapter 20 UI refetches orders — status visible without waiting for notificati
 - [ ] Invalid PATCH does not enqueue
 - [ ] Vendor B cannot trigger jobs for Vendor A's orders
 
+<RealWorldEvent title="Shopify flash sale queue architecture" when="2010s–present" summary="Commerce platforms moved heavy work to background jobs during traffic spikes so checkout stayed available." lesson="Design jobs to be idempotent — retries will happen, and duplicate emails beat lost orders." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78ZV9XTVC1G64FTECEA6" />
+<OpenQuestion id="01KZP7KQZ06R9X9H39AR7RGRER" />
 
 ## Next
 

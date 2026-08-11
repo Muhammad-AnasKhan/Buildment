@@ -6,6 +6,8 @@ summary: "FreshMarket uses **two-layer authorization**: role-based access contro
 ---
 FreshMarket uses **two-layer authorization**: role-based access control (RBAC) at the route, then **ownership chain lookup** at the object.
 
+<BigWordAlert term="Role-based access control" plainEnglish="Permissions tied to user role — vendors manage stores, customers browse and buy, admins oversee all." whyItMatters="FreshMarket's `requireRole('vendor')` middleware blocks customers from product create routes." />
+
 ## Roles (RBAC)
 
 Roles are the coarse-grained layer: they decide *which kind of user* may even reach an endpoint. FreshMarket has exactly two, and no admin role in the MVP — keeping the set small keeps the matrix readable.
@@ -117,9 +119,11 @@ Ownership check adds one DB read per mutating request — acceptable for MVP. Ca
 
 **❌ Don't:** Skip store lookup — trusting :id from URL without DB verify.
 
+<RealWorldEvent title="Facebook Graph API permission scandals" when="2010s" summary="Platforms exposed user data when apps could request broader permissions than users understood — driving industry focus on least-privilege access." lesson="Centralize authorization in middleware and guards. Ad-hoc checks in individual routes drift and get missed during code review." />
+
 ## Reflect
 
-<OpenQuestion id="01KZAX76MJHG1MVQCMS344MJQS" />
+<OpenQuestion id="01KZP7KPP5DR5NMRECH6YC9DW4" />
 
 
 

@@ -6,6 +6,8 @@ summary: "Before sub-chapter 4.9 asks you to paste `MONGODB_URI` into `.env`, yo
 ---
 Before sub-chapter 4.9 asks you to paste `MONGODB_URI` into `.env`, you need a **running MongoDB instance** and a connection string that works from your machine.
 
+<BigWordAlert term="MongoDB connection string" plainEnglish="A URL that tells the driver how to reach your database — host, port, credentials, and database name." whyItMatters="Local `mongodb://127.0.0.1:27017/freshmarket` differs from Atlas in production — same code, different env." />
+
 This course supports **either** local MongoDB **or** MongoDB Atlas (cloud free tier). Pick one for development; stick with it through Week 1 unless you hit a blocker.
 
 ## Why this matters for absolute beginners
@@ -175,10 +177,12 @@ Learning goal: **the app must not pretend DB is fine when it isn't** — exact m
 - [ ] I can open Compass and see the database (empty is fine)  
 - [ ] I chose local **or** Atlas and know how to test "DB down" for 4.15  
 
+<RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX75Q0YJTE39MP40FZW2Y5" />
+<OpenQuestion id="01KZP7KP3DPJP4NBH6K0WYC1N0" />
 
 ## Next
 

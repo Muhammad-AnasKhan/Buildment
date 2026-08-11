@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Payment integrations fail in invisible ways
 ---
 **Why this step matters:** Payment integrations fail in invisible ways — wrong amount unit, unconfirmed PI, signature parse errors. This sub-chapter is your **proof script** before Chapter 19 gate and before Chapter 20 UI.
 
+<BigWordAlert term="Stripe test cards" plainEnglish="Fake card numbers like 4242… that simulate success, decline, and 3DS in test mode." whyItMatters="FreshMarket gate uses test cards to prove happy path and decline handling." />
+
 **Where the project is now:** Intent route, gated checkout, webhook, and idempotency implemented — possibly tested piecemeal.
 
 **After this step:** You have reproduced **intent → confirm → checkout → paid orders** with test card `4242…`, verified in Compass and Stripe Dashboard, and exercised webhook signature at least once.
@@ -27,12 +29,19 @@ Chapter 20 adds Stripe.js in browser — not required for **this** gate if steps
 
 Customer token; cart with items (two stores ideal):
 
-```bash
-curl -s -X POST http://localhost:5000/api/payments/intent \\
-  -H "Authorization: Bearer <customer-token>" \\
-  -H "Content-Type: application/json" \\
-  -d '{}'
-```
+<ApiRequestPanel title="Payment intent — POST /payments/intent">
+
+<ApiRequest
+  label="Create payment intent from cart"
+  method="POST"
+  url="http://localhost:5000/api/payments/intent"
+  bearer="<customer-token>"
+  body="{}"
+  responseStatus={200}
+  responseBody='{"paymentIntentId":"pi_...","clientSecret":"pi_..._secret_...","amount":34500}'
+/>
+
+</ApiRequestPanel>
 
 Save `paymentIntentId`, `clientSecret`, `amount`.
 
@@ -55,12 +64,19 @@ Use test PM from [Stripe testing docs](https://stripe.com/docs/testing) if `pm_c
 
 ## Step 3 — Gated checkout
 
-```bash
-curl -s -X POST http://localhost:5000/api/checkout \\
-  -H "Authorization: Bearer <customer-token>" \\
-  -H "Content-Type: application/json" \\
-  -d '{"paymentIntentId":"pi_..."}'
-```
+<ApiRequestPanel title="Gated checkout — POST /checkout with paymentIntentId">
+
+<ApiRequest
+  label="Checkout with succeeded payment intent"
+  method="POST"
+  url="http://localhost:5000/api/checkout"
+  bearer="<customer-token>"
+  body='{"paymentIntentId":"pi_..."}'
+  responseStatus={201}
+  responseBody='{"orders":[{"_id":"...","storeId":"...","total":305,"paymentStatus":"paid","stripePaymentIntentId":"pi_..."},{"_id":"...","storeId":"...","total":40,"paymentStatus":"paid","stripePaymentIntentId":"pi_..."}]}'
+/>
+
+</ApiRequestPanel>
 
 **Expected:**
 
@@ -71,13 +87,19 @@ curl -s -X POST http://localhost:5000/api/checkout \\
 
 **Negative tests:**
 
-```bash
-# Unpaid or fake PI
-curl -s -X POST http://localhost:5000/api/checkout \\
-  -H "Authorization: Bearer <customer-token>" \\
-  -H "Content-Type: application/json" \\
-  -d '{"paymentIntentId":"pi_invalid"}'
-```
+<ApiRequestPanel title="Gated checkout — reject unpaid PI">
+
+<ApiRequest
+  label="Unpaid or fake payment intent"
+  method="POST"
+  url="http://localhost:5000/api/checkout"
+  bearer="<customer-token>"
+  body='{"paymentIntentId":"pi_invalid"}'
+  responseStatus={400}
+  responseBody='{"message":"Payment not confirmed"}'
+/>
+
+</ApiRequestPanel>
 
 **Expected:** 4xx — no orders.
 
@@ -140,10 +162,12 @@ Add section **"Payment test flow (test mode)"**:
 - [ ] Double checkout POST idempotent
 - [ ] README payment test section written
 
+<RealWorldEvent title="Stripe becomes default startup payments" when="2010s–present" summary="Stripe's developer-first APIs and webhooks let small teams accept cards without becoming PCI compliance experts overnight." lesson="Verify webhook signatures on every request — unverified endpoints let attackers mark orders paid for free." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78GMT5NQW9BDBRS3XJ7D" />
+<OpenQuestion id="01KZP7KQPMBS64J7566DBJ2683" />
 
 ## Next
 

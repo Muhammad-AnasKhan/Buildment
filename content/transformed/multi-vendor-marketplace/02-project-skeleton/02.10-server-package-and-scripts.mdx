@@ -6,6 +6,8 @@ summary: "**Why this step matters:** `npm run dev` is how you (and every reviewe
 ---
 **Why this step matters:** `npm run dev` is how you (and every reviewer) start the API. Installing Express and wiring scripts turns a folder tree into a **runnable server process** — the foundation for the health route in the next step.
 
+<BigWordAlert term="npm scripts" plainEnglish="Named shortcuts in package.json (`dev`, `start`, `seed`) so you do not memorize long terminal commands." whyItMatters="`npm run dev` in both client and server folders is how you run FreshMarket locally every day." />
+
 **Where the project is now:** Server folder tree with stub `app.js` and `server.js`. No dependencies installed; `npm run dev` doesn't exist yet.
 
 **After this step:** `server/package.json` with Express installed; dev script starts the API with file watching.
@@ -128,10 +130,12 @@ git commit -m "feat(server): add express and dev scripts"
 | `node_modules/express` exists | yes |
 | `package-lock.json` committed | yes |
 
+<RealWorldEvent title="Shopify's modular commerce platform" when="2006–present" summary="Shopify grew from a single-product store builder into a platform with separate admin, storefront, and API surfaces — all coordinated through clear project boundaries." lesson="Starting with a deliberate folder skeleton prevents painful renames later when vendor, cart, and payment code all need room to grow." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX75CZZXJE4WZ1ZGMSK4F8" />
+<OpenQuestion id="01KZP7KNWP37NM6J6CGRGJ8FE2" />
 
 ## Next
 

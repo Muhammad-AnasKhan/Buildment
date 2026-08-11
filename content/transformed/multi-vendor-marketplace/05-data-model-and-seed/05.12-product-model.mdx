@@ -6,9 +6,18 @@ summary: "**Why this step matters:** Products carry FreshMarket's grocery identi
 ---
 **Why this step matters:** Products carry FreshMarket's grocery identity — unit, stock, perishability — not generic e-commerce fields. This schema is what customers browse and vendors edit; catalogue and checkout chapters assume these shapes exist.
 
+<BigWordAlert term="Product catalogue record" plainEnglish="The document listing what a vendor sells — name, price, stock, images, and publish status." whyItMatters="Browse, cart, and checkout all read product documents — this is the core inventory entity." />
+
 **Where the project is now:** User, Profile, and Store models exist. No Product schema yet.
 
 **After this step:** `product.model.js` defines grocery catalogue items with `storeId` ref and domain fields from 5.5.
+
+
+## Try it yourself
+
+Practice the core logic from this lesson in the **code lab** below — write real JavaScript, then click **Check my code**. Same editor style as the course's code blocks.
+
+<CodeExercise id="01KZP7KP9X3NB4Q9V56T4ETS7E" />
 
 ## Product schema specification
 
@@ -122,10 +131,7 @@ git commit -m "feat(server): add Product model with grocery domain fields"
 - [ ] stockQty defaults sensibly
 - [ ] timestamps enabled
 
-
-## Before you continue
-
-<OpenQuestion id="01KZAX760PH69FS2JVRQHJR2T6" />
+<RealWorldEvent title="Amazon's item-level order snapshots" when="Marketplace era" summary="Marketplace order systems persist item details at purchase time so disputes, refunds, and tax reporting reflect the transaction as it happened." lesson="Model for auditability early. Your seed data and ERD should show which fields are live references and which are immutable snapshots." />
 
 ## Next
 

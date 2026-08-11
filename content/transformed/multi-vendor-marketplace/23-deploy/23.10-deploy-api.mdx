@@ -6,6 +6,8 @@ summary: "**Why this step matters:** The API is the brain — auth, checkout, ca
 ---
 **Why this step matters:** The API is the brain — auth, checkout, cache, and job enqueue all live here. Until `/health` returns 200 on HTTPS with `db: connected`, nothing else in production can work.
 
+<BigWordAlert term="API deployment" plainEnglish="Running Node server on host with process manager, env vars, and health check exposed." whyItMatters="FreshMarket API must survive restarts — PM2 or platform health checks keep it alive." />
+
 **Where the project is now:** Full marketplace runs on localhost (Ch 2–22); production env checklist and client build are prepped (23.8–23.9) — the API has no public URL.
 
 **After this step:** Express API reachable at **HTTPS** production URL; `/health` returns 200.
@@ -24,9 +26,17 @@ summary: "**Why this step matters:** The API is the brain — auth, checkout, ca
 
 ## Post-deploy curl
 
-```bash
-curl -s https://api.yourdomain.com/health
-```
+<ApiRequestPanel title="Production health check">
+
+<ApiRequest
+  label="GET /health on production API"
+  method="GET"
+  url="https://api.yourdomain.com/health"
+  responseStatus={200}
+  responseBody='{"status":"ok","db":"connected"}'
+/>
+
+</ApiRequestPanel>
 
 **Expected:** `{ "status": "ok", "db": "connected" }`
 
@@ -59,10 +69,12 @@ Document API deploy steps — platform-specific commands.
 - [ ] HTTPS health 200
 - [ ] `db: connected` on production
 
+<RealWorldEvent title="Heroku twelve-factor app methodology" when="2011–present" summary="Twelve-factor principles — config in env, stateless processes, logs as streams — shaped how Node apps deploy to modern platforms." lesson="Build deploy-ready habits early: health routes, env-based config, and separate worker processes pay off on day one in production." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX794SYJWW2QRGS1HH4ZHE" />
+<OpenQuestion id="01KZP7KR1KSBEZMPGQYB3PJ62S" />
 
 ## Next
 

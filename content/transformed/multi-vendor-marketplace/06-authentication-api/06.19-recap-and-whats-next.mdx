@@ -6,6 +6,8 @@ summary: "Chapter 6 turned an anonymous API into an **authenticated** one. Every
 ---
 Chapter 6 turned an anonymous API into an **authenticated** one. Every protected route from here forward builds on `requireAuth` and the token contracts you tested with curl.
 
+<BigWordAlert term="Authenticated API" plainEnglish="Server that can register users, issue tokens, and reject unauthenticated requests on protected routes." whyItMatters="Chapter 7 wires the React client to store tokens; Chapter 8 adds authorization on top of identity." />
+
 ## What you built
 
 **Register:** bcrypt password hash, User + Profile creation, OTP generation, duplicate email rejection.
@@ -66,10 +68,16 @@ Chapter 7 will call these exact shapes from React. Do **not** rename fields afte
 | 401 on bad token | Triggers client refresh loop |
 | 403 on unverified | VerifyOtp page redirect from Register |
 
+<InterestingRead title="Refresh tokens: why one token is not enough" hook="Short access tokens limit damage; refresh tokens limit annoyance." readMinutes={5}>
+
+If access tokens lived for weeks, a stolen token would stay valid for weeks. If they expired every minute, users would log in constantly. FreshMarket uses brief access tokens plus longer refresh tokens — a pattern you will wire on both server and client.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76B12VNV23FNCBYDTCQ8" />
+<OpenQuestion id="01KZP7KPFVE21SS6CP9DPV1HCZ" />
 
 ## Next chapter — Login & registration (Chapter 7)
 
@@ -96,3 +104,4 @@ Humans need screens:
 **Do not open Chapter 7 until 6.20 is fully ticked.**
 
 API knows who is calling — next you teach the browser to prove it.
+<RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />

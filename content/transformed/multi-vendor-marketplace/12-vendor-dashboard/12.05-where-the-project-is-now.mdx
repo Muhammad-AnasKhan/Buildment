@@ -14,6 +14,12 @@ summary: "Chapter 12 wires React to Chapter 11's product API. Confirm curl can c
 
 ## Server — unchanged this chapter
 
+<FileTree title="Where the project is now" root="server/src">
+  <FileTreeItem path="modules/products/" highlight />
+  <FileTreeItem path="modules/products/products.routes.js" />
+  <FileTreeItem path="modules/products/products.service.js" />
+</FileTree>
+
 ```
 server/src/modules/products/
   products.routes.js    ← POST, GET /vendor/products, PATCH, DELETE
@@ -32,13 +38,28 @@ server/src/modules/products/
 
 ### Pre-build curl gate
 
-```bash
-curl -s http://localhost:5000/api/vendor/products -H "Authorization: Bearer <vendor-token>"
-curl -s -X POST http://localhost:5000/api/products \
-  -H "Authorization: Bearer <vendor-token>" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Organic Kale","price":2.99,"unit":"bunch","stockQty":20}'
-```
+<ApiRequestPanel title="Verify vendor product API">
+
+<ApiRequest
+  label="List vendor products"
+  method="GET"
+  url="http://localhost:5000/api/vendor/products"
+  bearer="<vendor-token>"
+  responseStatus={200}
+  responseBody='{"products":[{"_id":"...","name":"Organic Kale","isPublished":false}]}'
+/>
+
+<ApiRequest
+  label="Create draft product"
+  method="POST"
+  url="http://localhost:5000/api/products"
+  bearer="<vendor-token>"
+  body='{"name":"Organic Kale","price":2.99,"unit":"bunch","stockQty":20}'
+  responseStatus={201}
+  responseBody='{"_id":"...","name":"Organic Kale","isPublished":false,"storeId":"..."}'
+/>
+
+</ApiRequestPanel>
 
 - [ ] GET /vendor/products returns array
 - [ ] POST creates draft (`isPublished: false`)
@@ -103,10 +124,12 @@ Fix Ch 10 gate before continuing if storeless vendor sees product stub.
 - [ ] 12.4 error mapping reviewed
 - [ ] `unit` enum noted from Product model
 
+<RealWorldEvent title="Square Dashboard for sellers" when="2010s–present" summary="Square gave small merchants inventory, orders, and payouts in one place — proving simple dashboards drive daily engagement." lesson="Vendor tools should answer: what do I sell, what is low stock, and what changed since yesterday?" />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX778H7R849JXMTA6KZXKA" />
+<OpenQuestion id="01KZP7KQ0V33CEYZGSSG81QM55" />
 
 ## Next
 

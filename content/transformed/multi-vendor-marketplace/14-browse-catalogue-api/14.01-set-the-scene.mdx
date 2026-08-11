@@ -6,6 +6,8 @@ summary: "**Where the project is now:** Week 2 vendor experience is complete —
 ---
 **Where the project is now:** Week 2 vendor experience is complete — stores, products, photos. All product reads so far are **vendor-scoped** (`GET /vendor/products`). Customers have accounts (Chapters 6–7) but no way to browse the market.
 
+<BigWordAlert term="Public catalogue API" plainEnglish="Anonymous or customer-facing endpoints listing published products across all vendors." whyItMatters="FreshMarket shoppers browse without logging in — this API powers the shop experience." />
+
 **Where this chapter goes:** A **public catalogue API** — `GET /products` returns published, in-stock items from all vendors, with filters, pagination, and store name populated **without N+1 queries**.
 
 This is a **build chapter**. Sub-chapters 14.8 onward add routes and query logic. The gate is **runnable proof**: curl returns paginated catalogue; query count stays flat when listing many products.
@@ -26,6 +28,8 @@ What you carry into Chapter 14:
 | Chapter 13 gate — photo URLs on products | Shop cards in Chapter 15 need `imageUrl` in API responses |
 
 If the Week 2 demo is not true in your browser yet — vendor logs in, adds a product with a photo, sees it in the dashboard — **finish that before Chapter 14**. Week 3 builds on inventory vendors already published.
+
+<RealWorldEvent title="Amazon search index separate from catalog DB" when="2000s–present" summary="Large marketplaces eventually split transactional catalog storage from search-optimized indexes — your module 21 preview." lesson="Build a correct catalogue API first; optimize with cache and search once the happy path works." />
 
 ## In plain English
 
@@ -132,6 +136,14 @@ Never expose draft products or internal fields on public DTO.
 
 Phase demo language includes browse → cart → checkout — catalogue API is the first brick.
 
+<MandatoryReadCard
+  title="MongoDB — Query documents"
+  href="https://www.mongodb.com/docs/manual/tutorial/query-documents/"
+  source="MongoDB"
+  summary="Filtering, projection, and sorting documents. Foundation for catalogue search, category filters, and pagination queries."
+  readMinutes={12}
+/>
+
 ## What this chapter is not
 
 - **Not** shop React pages — Chapter 15  
@@ -159,10 +171,16 @@ Estimated time: **one to two days** — query tuning and N+1 verification take t
 - [ ] You understand difference between `/vendor/products` and `/products`  
 - [ ] Mongoose populate docs skimmed (14.4)
 
+<InterestingRead title="Public read routes still need discipline" hook="No login does not mean no limits." readMinutes={4}>
+
+Catalogue APIs are public, but they still need rate limits, input validation on query params, and careful projection so internal fields never leak. FreshMarket exposes only what shoppers need to decide and add to cart.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX77HX0MSYRYAJQEY98N53" />
+<OpenQuestion id="01KZP7KQ5H7BGRGSVKFGM8WG15" />
 
 ## Next
 

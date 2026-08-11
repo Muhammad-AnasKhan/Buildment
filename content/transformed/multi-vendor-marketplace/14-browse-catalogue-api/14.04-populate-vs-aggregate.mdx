@@ -6,6 +6,8 @@ summary: "Mongoose gives two ways to attach store data to product results: **`.p
 ---
 Mongoose gives two ways to attach store data to product results: **`.populate()`** on a find query and **`$lookup`** in an aggregation pipeline. For FreshMarket's public catalogue, populate is the default — aggregate when you need one round trip or complex shaping.
 
+<BigWordAlert term="MongoDB populate" plainEnglish="Mongoose helper that replaces referenced IDs with full documents in query results — convenient but easy to N+1." whyItMatters="FreshMarket catalogue populates store name on product cards — must be done in one query." />
+
 ## In plain English
 
 | Term | Simple meaning |
@@ -113,10 +115,12 @@ Address on store may be public for marketplace — course choice; document in RE
 - [ ] I know when $lookup would be worth the complexity  
 - [ ] I will map populated `storeId` to public `store` key
 
+<RealWorldEvent title="Amazon search index separate from catalog DB" when="2000s–present" summary="Large marketplaces eventually split transactional catalog storage from search-optimized indexes — your module 21 preview." lesson="Build a correct catalogue API first; optimize with cache and search once the happy path works." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX77K7TQEAJGEVCMM51WX7" />
+<OpenQuestion id="01KZP7KQ648ZN0T98M2202F23K" />
 
 ## Next
 

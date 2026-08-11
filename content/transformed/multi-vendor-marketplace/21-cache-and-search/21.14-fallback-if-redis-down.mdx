@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Production Redis restarts, misconfigured UR
 ---
 **Why this step matters:** Production Redis restarts, misconfigured URLs, and free-tier limits happen. An app that crashes when cache is unavailable is not shippable — degraded speed is acceptable; downtime is not.
 
+<BigWordAlert term="Cache degradation" plainEnglish="Serving from MongoDB when Redis unavailable — slower but still functional." whyItMatters="FreshMarket shop must not 500 if Redis restarts — graceful fallback to uncached queries." />
+
 **Where the project is now:** Cache, invalidation, and search index work (21.8–21.13) — kill Redis and the catalogue breaks; nothing falls back to MongoDB.
 
 **After this step:** API serves catalogue from MongoDB when Redis unavailable — **no crash**, degraded performance only.
@@ -29,7 +31,20 @@ catalogue handler:
 
 1. Stop Redis: `sudo systemctl stop redis` or stop Docker container.
 2. Restart API — boot succeeds with warning log.
-3. `curl GET /products` → 200 with products.
+3. Catalogue still loads from MongoDB:
+
+<ApiRequestPanel title="Redis down — graceful fallback">
+
+<ApiRequest
+  label="GET /products with Redis unavailable (slower, must still 200)"
+  method="GET"
+  url="http://localhost:5000/api/products?page=1&limit=20"
+  responseStatus={200}
+  responseBody='{"items":[{"_id":"...","name":"Organic Kale"}],"total":42,"page":1,"limit":20}'
+/>
+
+</ApiRequestPanel>
+
 4. Start Redis — HIT/MISS logging resumes.
 
 ## Boot behaviour
@@ -56,10 +71,12 @@ Do not mark `redis: connected` in `/health` unless you add it — not required f
 - [ ] Redis stopped → products still load
 - [ ] Redis restored → cache works again
 
+<RealWorldEvent title="Facebook Memcached outage lessons" when="2010" summary="Major sites learned that caching layers need fallbacks — when cache fails, databases must survive the thundering herd." lesson="Always code a cache miss path. Redis is an accelerator, not the system of record." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78TZMG2PSNZEFZZZN9AN" />
+<OpenQuestion id="01KZP7KQVZAR1QKEEBTC8JWMVV" />
 
 ## Next
 

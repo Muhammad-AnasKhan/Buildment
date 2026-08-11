@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Jobs enqueued without a running worker sit 
 ---
 **Why this step matters:** Jobs enqueued without a running worker sit in Redis forever — checkout "works" but nothing notifies. A separate worker entry is the architectural lesson of this chapter and a production requirement in Chapter 23.
 
+<BigWordAlert term="Worker process" plainEnglish="A separate Node process that pulls jobs from the queue and runs them reliably with retries." whyItMatters="BullMQ workers can restart without losing jobs if configured with persistent Redis." />
+
 **Where the project is now:** `queue.js` can enqueue (22.9) but nothing consumes the queue — jobs would sit in Redis unprocessed.
 
 **After this step:** `server/src/worker.js` is a standalone entry that registers BullMQ `Worker`(s) and processes jobs. `npm run worker` starts it.
@@ -105,10 +107,12 @@ git commit -m "feat(server): add bullmq worker process"
 - [ ] API runs independently in other terminal
 - [ ] Stopping worker does not stop API
 
+<RealWorldEvent title="Shopify flash sale queue architecture" when="2010s–present" summary="Commerce platforms moved heavy work to background jobs during traffic spikes so checkout stayed available." lesson="Design jobs to be idempotent — retries will happen, and duplicate emails beat lost orders." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78YWZS67AYK2F2ZZ096W" />
+<OpenQuestion id="01KZP7KQYFZGPRHN7NQCMWJ6YQ" />
 
 ## Next
 

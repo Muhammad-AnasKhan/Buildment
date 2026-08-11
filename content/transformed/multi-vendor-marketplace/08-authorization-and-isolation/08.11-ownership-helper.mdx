@@ -6,6 +6,8 @@ summary: "Role checks are not enough — two vendors share the same role. Owners
 ---
 **Why this step matters:** Role checks are not enough — two vendors share the same role. Ownership helpers load the **object** and compare its owner field to `req.user.id`. This is the core IDOR defense. You'll clone the pattern for products in Chapter 11.
 
+<BigWordAlert term="Ownership helper" plainEnglish="A function that loads a resource and confirms `resource.ownerId === req.user.id` — or throws 403." whyItMatters="FreshMarket's `assertStoreOwner(storeId, userId)` prevents cross-vendor store edits." />
+
 **Where the project is now:** requireRole blocks wrong roles; no reusable store ownership check.
 
 **After this step:** `assertStoreOwner(storeId, userId)` in shared module — loads Store, compares userId, throws or returns error for 403. Optional Express wrapper middleware for `:id` param routes.
@@ -31,6 +33,13 @@ Real marketplace incidents often look like:
 3. What HTTP status when store exists but wrong owner — 403 or 404?
 
 If unsure, re-read **8.2** (IDOR) and your Store model in Compass.
+
+
+## Try it yourself
+
+Practice the core logic from this lesson in the **code lab** below — write real JavaScript, then click **Check my code**. Same editor style as the course's code blocks.
+
+<CodeExercise id="01KZP7KPQ963GFDPE8P75CTFZJ" />
 
 ## Core helper contract
 
@@ -112,10 +121,7 @@ git commit -m "feat(server): add assertStoreOwner ownership helper"
 - [ ] Missing store returns 404 (if chosen)
 - [ ] AUTHORIZATION.md references helper
 
-
-## Before you continue
-
-<OpenQuestion id="01KZAX76PXE5FN6XFTGPA6Y8CZ" />
+<RealWorldEvent title="Facebook Graph API permission scandals" when="2010s" summary="Platforms exposed user data when apps could request broader permissions than users understood — driving industry focus on least-privilege access." lesson="Centralize authorization in middleware and guards. Ad-hoc checks in individual routes drift and get missed during code review." />
 
 ## Next
 

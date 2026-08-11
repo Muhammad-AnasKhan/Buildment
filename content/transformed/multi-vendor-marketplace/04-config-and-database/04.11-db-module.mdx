@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Centralizing `connectDB()` means the API, C
 ---
 **Why this step matters:** Centralizing `connectDB()` means the API, Chapter 5 seed script, and future tests share one connection path. Inline `mongoose.connect` in `server.js` would duplicate URI logic and invite inconsistent behaviour.
 
+<BigWordAlert term="Connection pooling" plainEnglish="Reusing open database connections instead of opening a new one for every request." whyItMatters="Your db module connects once at startup so FreshMarket handles many shoppers without exhausting MongoDB connections." />
+
 **Where the project is now:** Config module validates env. Mongoose not installed; no database connection.
 
 **After this step:** `server/src/shared/db.js` exports `connectDB()` (and optionally `disconnectDB()`); Mongoose added to dependencies.
@@ -139,10 +141,12 @@ git commit -m "feat(server): add mongoose db connection module"
 - [ ] No schemas in this file  
 - [ ] Committed to Git  
 
+<RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX75SGGTT6NRFJ1HVNJ7SQ" />
+<OpenQuestion id="01KZP7KP55Z74RSM3874YFPN08" />
 
 ## Next
 

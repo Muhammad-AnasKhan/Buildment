@@ -2,94 +2,139 @@
 title: "Wire add-to-cart"
 module: 17
 lesson: 8
-summary: "**Why this step matters:** This connects **browse → cart** — the Week 3 funnel starts working. Product detail must send `productId` and `storeId` (per Ch 16 contract) so multi-vendor lines land in the right buckets."
+summary: "Connect the product detail page to POST /cart so customers can add items while browsing. This completes the browse → cart funnel for Week 3."
 ---
-**Why this step matters:** This connects **browse → cart** — the Week 3 funnel starts working. Product detail must send `productId` and `storeId` (per Ch 16 contract) so multi-vendor lines land in the right buckets.
+This is the step that connects **browsing** to **buying**. Until now, product detail was read-only. After this lesson, a customer can add items without leaving the shop flow.
 
-**Where the project is now:** Product detail shows product info; add button may be stubbed.
+<BigWordAlert term="Add-to-cart button" plainEnglish="Shop UI action calling POST /cart — with loading state and feedback (toast or badge update)." whyItMatters="Product cards and PDP need working add-to-cart — bridge from browse to cart." />
 
-**After this step:** Customer clicks add on product detail → `POST /cart` → feedback → optional navigate to cart.
+## What you are building
 
-## Target file
+![Add to cart flow](/showcase/multi-vendor-marketplace/product-detail.png)
 
-`client/src/pages/ProductDetail.jsx` — add button and quantity picker (minimum quantity 1).
+The customer stays on product detail, picks a quantity, clicks **Add to cart**, and the server remembers it. They can keep browsing or open `/cart` to review.
 
-## Flow contract
+## Where the project is now → after this step
 
-```
-User on /shop/:productId
-  → if not logged in: redirect login or prompt
-  → select quantity (default 1)
-  → click Add to cart
-  → POST /cart { productId, quantity }
-  → on success: toast or inline "Added" + update header count
-```
+| Now | After 17.8 |
+|---|---|
+| Product detail shows info; add button may be stubbed | Clicking add calls `POST /cart` and shows feedback |
+| Cart only editable on `/cart` | Items enter cart from the shop |
 
-**You implement** — course specifies sequence, not toast library.
+---
 
-## POST contract
+## Step 1 — Open `ProductDetail.jsx`
+
+You built this page in Chapter 15. Find the add-to-cart button (or add one if it was a stub).
+
+Minimum UI on the detail page:
+
+- Product name, price, unit, stock (already there)
+- Quantity picker — default **1**, minimum **1**
+- **Add to cart** button
+
+---
+
+## Step 2 — Check login before POST
+
+The cart API requires a logged-in **customer**.
+
+| User state | What happens on click |
+|---|---|
+| Not logged in | Redirect to login, or show "Log in to add" |
+| Logged in | Continue to POST |
+
+Minimum for the gate: unauthenticated users cannot add items.
+
+---
+
+## Step 3 — Call POST /cart
 
 ```
 POST /api/cart
 Authorization: Bearer <token>
-{ "productId": "<id>", "quantity": <n> }
+Body: { "productId": "<id>", "quantity": <n> }
 ```
 
-**Success:** 201 — item added or quantity merged per Ch 16 rules.
+Use `productId` from the loaded product document (or route param — same id).
 
-**Errors to handle:**
+Add helper:
 
-| Status | UI |
+```
+addToCart(productId, quantity) → POST /cart
+```
+
+**Success (201):** Item added or quantity merged per your Chapter 16 rules.
+
+---
+
+## Step 4 — Show feedback
+
+After success, tell the user something happened:
+
+| Pattern | OK? |
 |---|---|
-| 401 | Redirect login |
-| 400 | Stock or validation — show message |
-| 404 | Product not found |
+| Small toast: "Added to cart" | Yes |
+| Inline message under the button | Yes |
+| Auto-redirect to `/cart` | Discouraged — interrupts browsing |
 
-## Quantity on detail page
+Staying on the product page with a confirmation message is the best default.
 
-Default `1`. Optional stepper before add — do not exceed `stockQty` if shown on detail.
+---
 
-If same product already in cart, Ch 16 may merge quantities — UI should still show success.
+## Step 5 — Handle errors
 
-## Auth gate
+| Status | Meaning | UI |
+|---|---|---|
+| 401 | Not logged in | Redirect to login |
+| 400 | Stock or validation failed | Show the API error message |
+| 404 | Product not found | "Product unavailable" |
 
-| State | Behaviour |
-|---|---|
-| Anonymous | Disable button + "Log in to add" or redirect on click |
-| Customer | Full flow |
+If `stockQty === 0` on the detail page, disable the add button and show "Out of stock".
 
-Vendors browsing as themselves are out of scope — assume customer role for shop pages.
+---
 
-## Navigation after add
+## Step 6 — Test the multi-vendor path
 
-| Pattern | Acceptable |
-|---|---|
-| Stay on detail | Yes — show confirmation |
-| Go to /cart | Yes — optional secondary link |
-| Auto-redirect | Discouraged — interrupts browse |
+This is the Week 3 proof:
 
-## ✅ Do / ❌ Don't
+1. Log in as a customer
+2. Open a product from **Vendor A** → add to cart
+3. Open a product from **Vendor B** → add to cart
+4. Open `/cart` → you should see **two store sections**
 
-**✅ Do:** Use `productId` from route params or loaded product document.
+If you only ever test one vendor, you will miss the whole point of this marketplace.
 
-**✅ Do:** Disable add when `stockQty === 0` if stock shown.
+---
 
-**❌ Don't:** POST without Bearer token.
+## Common mistakes
 
-**❌ Don't:** Client-only cart push — must hit API.
+| Mistake | Symptom | Fix |
+|---|---|---|
+| POST without token | 401 every time | Attach Bearer header |
+| Client-only cart array | Items vanish on refresh | Must hit API |
+| Wrong product id | 404 | Use id from loaded product |
+| No feedback after add | User clicks twice | Show confirmation |
+
+---
 
 ## Verify checklist
 
 - [ ] Add from vendor A product succeeds
 - [ ] Add from vendor B product — cart has two stores
-- [ ] Stock 0 product cannot be added — API error surfaced
+- [ ] Stock 0 product cannot be added — error shown
 - [ ] Unauthenticated user cannot add
+- [ ] Success message visible after add
+
+<RealWorldEvent title="Amazon multi-seller cart checkout" when="Marketplace era" summary="Customers add items from many sellers but expect a single checkout flow with transparent split fulfilment." lesson="Cart UI should preview the split-order model early — it reduces support questions at checkout." />
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX783VM2KFD48N7G57G5QC" />
+<OpenQuestion id="01KZP7KQFK8WKDKCN4DB0C926E" />
 
 ## Next
 
-**Sub-chapter 17.9:** Cart icon and header badge — add-to-cart works, but the customer has no way to know what's in the cart without visiting it.
+**Sub-chapter 17.9:** Cart icon and header badge — the customer needs to see the count without visiting `/cart`.
+
+Add to cart works. Next, show a live count in the header.

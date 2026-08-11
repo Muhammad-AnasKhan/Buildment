@@ -6,6 +6,8 @@ summary: "**Where the project is now:** Week 1 complete — models and seed data
 ---
 **Where the project is now:** Week 1 complete — models and seed data in MongoDB. Every API request is **anonymous**. `GET /health` works; no `/api/auth` routes. User documents exist in Compass with password hashes from seed.
 
+<BigWordAlert term="Authentication" plainEnglish="Proving who a user is — typically via email/password login that returns a token or session." whyItMatters="FreshMarket cannot know which cart or store belongs to whom until auth identifies the caller." />
+
 **Where this chapter goes:** You build the **Authentication API** — register, login, refresh, OTP verification — bcrypt for passwords, JWT for access tokens, hashed refresh tokens in the database, and `requireAuth` middleware that returns 401 when credentials are missing or invalid.
 
 This is a **backend-only chapter**. No React screens until Chapter 7.
@@ -19,6 +21,8 @@ What carries forward: User and Profile models (with `passwordHash`, `role`, `isV
 **Why auth comes after schemas, not before:** Register creates a User document and a Profile document. Login reads `passwordHash` and `isVerified` from fields you defined in Chapter 5. Refresh tokens store a hash on User. Building auth first would mean guessing field names and refactoring when models arrive. Professional order is **data shape → auth API → auth UI** — same climb this course follows. Chapter 8 adds authorization (what you may do); this chapter adds authentication (who you are).
 
 The hat you wear now is **security-minded API builder**. You test every step with curl before any React form exists. Chapter 7 pairs to this chapter — same contracts, browser storage strategy — but the server must be trustworthy on its own first.
+
+<RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
 
 ## In plain English
 
@@ -146,10 +150,24 @@ Estimated time: **2 days** — security-sensitive; test every step with curl.
 - [ ] User model has email, passwordHash, role, isVerified
 - [ ] You understand difference between authentication and authorization
 
+<MandatoryReadCard
+  title="JSON Web Token introduction"
+  href="https://jwt.io/introduction"
+  source="Auth0 / JWT.io"
+  summary="Clear explanation of JWT structure, signing, and why tokens are used in stateless APIs. Read before implementing access and refresh tokens."
+  readMinutes={8}
+/>
+
+<InterestingRead title="Refresh tokens: why one token is not enough" hook="Short access tokens limit damage; refresh tokens limit annoyance." readMinutes={5}>
+
+If access tokens lived for weeks, a stolen token would stay valid for weeks. If they expired every minute, users would log in constantly. FreshMarket uses brief access tokens plus longer refresh tokens — a pattern you will wire on both server and client.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX763AR9FNDQY7P4C3CV79" />
+<OpenQuestion id="01KZP7KPBJ5AWV6SED6V9669DG" />
 
 ## Next
 

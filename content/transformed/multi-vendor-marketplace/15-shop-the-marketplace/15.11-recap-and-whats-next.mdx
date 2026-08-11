@@ -6,6 +6,8 @@ summary: "**Why this step matters:** You are switching from **browse** to **buy*
 ---
 **Why this step matters:** You are switching from **browse** to **buy** next (Chapter 16 cart API). Recap confirms the shop consumes the API without duplicating catalogue rules — cart must not re-implement publish/stock filters.
 
+<BigWordAlert term="Discoverable marketplace" plainEnglish="Shoppers can browse multi-vendor catalogue in the browser — demand side visible." whyItMatters="Chapter 16–17 add cart API and UI — browse without cart is window shopping only." />
+
 You entered Chapter 15 with a catalogue API only curl could see. You leave with a **customer shop** — editorial grid, filters, pagination, product detail, and add-to-cart ready to wire.
 
 ## What you built
@@ -41,10 +43,16 @@ No server changes expected this chapter.
 | Cart | Chapter 16–17 |
 | Checkout | Chapter 18 |
 
+<InterestingRead title="Skeleton screens vs spinners" hook="Empty grids feel broken; skeletons feel fast." readMinutes={3}>
+
+While catalogue fetches run, placeholder cards communicate progress better than a lone spinner. FreshMarket's shop UI should feel responsive even on slow networks.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX77VQFZ1NRS44X7QGM4V0" />
+<OpenQuestion id="01KZP7KQAWFQ8EM0EBYPPF40Q5" />
 
 ## Next — Cart API (Chapter 16)
 
@@ -65,9 +73,9 @@ Backend before cart UI (same pairing):
 
 Chapter 17 wires detail page button to POST /cart and builds cart page UI.
 
-&lt;Callout type="tip" title="The browse → buy shift">
+<Callout type="tip" title="The browse → buy shift">
 Chapter 15 was read-heavy and visual. Chapter 16 returns to **curl-first API** — same rhythm as 6→7 and 14→15. Do not wire cart UI before cart API passes isolation tests.
-&lt;/Callout>
+</Callout>
 
 ## Viva prep
 
@@ -95,3 +103,4 @@ docs: complete chapter 15 learning log
 Open Chapter 16 after gate — cart API first, then Ch 17 UI.
 
 Customers can window-shop. Next, they fill a basket.
+<RealWorldEvent title="Instacart's shop-by-aisle experience" when="2020s" summary="Grocery apps invested heavily in browse UX — filters, dietary tags, and store context — because search alone misses discovery." lesson="Customer-facing catalogue UI is where backend data models become revenue — treat loading and empty states as first-class design." />

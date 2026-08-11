@@ -6,6 +6,8 @@ summary: "**Why this step matters:** One shared badge component keeps status lab
 ---
 **Why this step matters:** One shared badge component keeps status labels consistent across confirmation, customer history, and vendor inbox — without it, the same order shows "Pending" in one place and "pending" in another.
 
+<BigWordAlert term="Order status lifecycle" plainEnglish="States like pending, paid, preparing, shipped, delivered — tracked on order document." whyItMatters="FreshMarket badges color-code status — customers and vendors share same vocabulary." />
+
 **Where the project is now:** Confirmation (20.6), customer history (20.7), and vendor inbox (20.8) render status strings — each page formats them differently.
 
 **After this step:** Orders display **status** consistently — `pending` → `packed` → `dispatched` (or your enum).
@@ -57,10 +59,12 @@ Badge text readable — not color-only. `aria-label` includes status name.
 - [ ] New checkout orders show `pending`
 - [ ] Badge consistent on customer and vendor pages
 
+<RealWorldEvent title="Domino's Pizza Tracker effect" when="2008–present" summary="Transparent order tracking reduced support calls and increased trust — customers tolerate wait when they see progress." lesson="Expose meaningful statuses, not internal jargon. 'Preparing your order' beats 'STATE_PICKING'." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78MQZWC0Z7NWV45YWGG6" />
+<OpenQuestion id="01KZP7KQRXMZ9AVAGR7AER7TRZ" />
 
 ## Next
 

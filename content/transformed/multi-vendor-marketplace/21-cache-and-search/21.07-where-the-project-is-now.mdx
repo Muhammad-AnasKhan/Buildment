@@ -22,23 +22,47 @@ summary: "**Why this step matters:** You cannot prove cache helped if you never 
 
 With server running, no cache yet:
 
-```bash
-# Time three identical requests — note ms in README for 21.10
-curl -s -o /dev/null -w "%{time_total}\n" \
-  "http://localhost:5000/api/products?page=1&limit=20"
+<ApiRequestPanel title="Baseline timing — measure response time in terminal">
 
-curl -s -o /dev/null -w "%{time_total}\n" \
-  "http://localhost:5000/api/products?page=1&limit=20"
+<ApiRequest
+  label="Request 1 — note time_total in terminal (no cache yet)"
+  method="GET"
+  url="http://localhost:5000/api/products?page=1&limit=20"
+  responseStatus={200}
+  responseBody='{"items":[...],"page":1,"limit":20,"total":47,"totalPages":3}'
+/>
 
-curl -s -o /dev/null -w "%{time_total}\n" \
-  "http://localhost:5000/api/products?page=1&limit=20"
-```
+<ApiRequest
+  label="Request 2 — repeat immediately, compare time_total"
+  method="GET"
+  url="http://localhost:5000/api/products?page=1&limit=20"
+  responseStatus={200}
+  responseBody='{"items":[...],"page":1,"limit":20,"total":47,"totalPages":3}'
+/>
+
+<ApiRequest
+  label="Request 3 — third identical request for baseline"
+  method="GET"
+  url="http://localhost:5000/api/products?page=1&limit=20"
+  responseStatus={200}
+  responseBody='{"items":[...],"page":1,"limit":20,"total":47,"totalPages":3}'
+/>
+
+</ApiRequestPanel>
 
 Also test filtered request:
 
-```bash
-curl -s "http://localhost:5000/api/products?page=1&category=Dairy&limit=20"
-```
+<ApiRequestPanel title="Baseline — filtered catalogue request">
+
+<ApiRequest
+  label="Filtered request with category=Dairy"
+  method="GET"
+  url="http://localhost:5000/api/products?page=1&category=Dairy&limit=20"
+  responseStatus={200}
+  responseBody='{"items":[{"id":"...","name":"Whole Milk","category":"Dairy"}],"page":1,"limit":20,"total":8,"totalPages":1}'
+/>
+
+</ApiRequestPanel>
 
 Record baseline times in README or learning log — Chapter 21 gate compares after cache.
 
@@ -109,10 +133,12 @@ Cache does not fix N+1 — it only avoids repeat work.
 - [ ] Public products route works without cache  
 - [ ] Cache key strategy sketched  
 
+<RealWorldEvent title="Facebook Memcached outage lessons" when="2010" summary="Major sites learned that caching layers need fallbacks — when cache fails, databases must survive the thundering herd." lesson="Always code a cache miss path. Redis is an accelerator, not the system of record." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78RP0SW6ETJC4YZV61QE" />
+<OpenQuestion id="01KZP7KQTPXKV0RRX1AG3F3YND" />
 
 ## Next
 

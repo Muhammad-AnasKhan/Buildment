@@ -2,94 +2,216 @@
 title: "Cart page"
 module: 17
 lesson: 5
-summary: "**Why this step matters:** The cart page is the **first place customers see multi-vendor grouping** — store sections mirror checkout split and prevent \"one blob list\" confusion before Chapter 18."
+summary: "Build the cart page step by step: fetch from GET /cart, group items by store, show subtotals. This is the first screen where customers see the multi-vendor split before checkout."
 ---
-**Why this step matters:** The cart page is the **first place customers see multi-vendor grouping** — store sections mirror checkout split and prevent "one blob list" confusion before Chapter 18.
+This lesson walks you through building the cart page **one step at a time**. You are not guessing what the page should look like — the UI preview below is your target.
 
-**Where the project is now:** Cart API works; no `/cart` route in React.
+<BigWordAlert term="Cart summary page" plainEnglish="Full-page view of all line items, quantities, per-vendor subtotals, and checkout button." whyItMatters="FreshMarket shoppers confirm order here before payment — must match server cart exactly." />
 
-**After this step:** Customer navigates to `/cart` and sees items **grouped by store** with per-store subtotals.
+## What you are building
 
-## Target file
+![Cart page — UI preview](/showcase/multi-vendor-marketplace/cart-page.png)
 
-`client/src/pages/Cart.jsx` — register route in `App.jsx` as `/cart`.
+*Production-style UI preview — two store sections, subtotals, estimated total.*
 
-Protected route: unauthenticated → redirect login.
+When a logged-in customer opens `/cart`, they should see:
 
-## Page load contract
+1. Every item they added, **grouped under the store that sells it**
+2. A **subtotal per store** (not one confusing grand blob)
+3. An **estimated grand total** at the bottom
+4. A checkout button that can stay disabled until Chapter 18
 
-1. On mount, call `getCart()`.
-2. While loading, show loading UI — not empty cart message.
-3. On success, if `items.length === 0`, render empty state.
-4. Else, transform items into groups keyed by `storeId`.
+This matters because checkout in Chapter 18 creates **one order per store**. If the cart page already shows that split, the customer is not surprised later.
 
-**Grouping pseudocode shape:**
+## Before you start — quick checks
 
-```javascript
-// items from GET /cart
-// groups = Map storeId → { storeName, lines: [...] }
-// render one StoreCartGroup per entry
+Stop here if any of these fail. Fix the API first (Chapter 16), then come back.
+
+| Check | How to verify |
+|---|---|
+| Cart API works | `curl GET /cart` with customer token returns `items[]` |
+| Items have `storeId` | Each item in the JSON has a `storeId` field |
+| Store name populated | Each item has `store.name` (or similar) from populate |
+| Auth works | Chapter 7 login gives you a Bearer token |
+
+<Callout type="tip" title="Recommended reading (10 min)">
+Skim [React useEffect for data fetching](https://react.dev/reference/react/useEffect#fetching-data-with-effects) — you will load the cart once when the page opens. You do not need a state management library for this chapter.
+</Callout>
+
+## Where the project is now → after this step
+
+| Now | After 17.5 |
+|---|---|
+| Cart API works; no `/cart` route in React | Customer navigates to `/cart` and sees items grouped by store |
+| No cart page component | `Cart.jsx` + `StoreCartGroup.jsx` exist |
+| Quantities are display-only | +/− buttons come in **17.6** — numbers only for now |
+
+---
+
+## Step 1 — Create the route
+
+**File:** `client/src/pages/Cart.jsx`  
+**Register in:** `client/src/App.jsx` as `/cart`
+
+Wrap the route with your **protected route** pattern from Chapter 7:
+
+- Customer logged in → show cart page
+- Not logged in → redirect to login
+
+You already did this for vendor pages. Same idea, different role.
+
+---
+
+## Step 2 — Fetch the cart on page load
+
+When `Cart.jsx` mounts:
+
+1. Set `loading = true`
+2. Call `GET /cart` with the customer's Bearer token
+3. On success → save `items` in state, set `loading = false`
+4. On 401 → redirect to login
+5. On network error → show a message with a retry button
+
+<Callout type="warning" title="Show loading, not empty">
+While `loading` is true, show a spinner or skeleton. Do **not** show "Your cart is empty" until the request finishes — that confuses students during demos.
+</Callout>
+
+Add a helper in `client/src/api/` if you have not yet:
+
+```
+getCart() → GET /api/cart
 ```
 
-**You implement** — course specifies grouping output, not state management library.
+---
 
-## StoreCartGroup component contract
+## Step 3 — Group items by store
 
-| Prop / data | Display |
+The API returns a **flat** `items` array. Your job is to turn it into **sections** for display.
+
+Each item has a `storeId`. Use that as the group key:
+
+```javascript
+// Pseudocode — you write the real version
+// Input: items from GET /cart
+// Output: groups = [{ storeId, storeName, lines: [...] }, ...]
+
+const groups = new Map()
+for (const item of items) {
+  const key = item.storeId
+  if (!groups.has(key)) {
+    groups.set(key, {
+      storeName: item.store?.name ?? 'Store',
+      lines: []
+    })
+  }
+  groups.get(key).lines.push(item)
+}
+```
+
+Pick a sort order for sections (alphabetical by store name is fine) and note it in your README.
+
+---
+
+## Step 4 — Build `StoreCartGroup`
+
+**File:** `client/src/components/StoreCartGroup.jsx`
+
+Each group renders:
+
+| What to show | Where it comes from |
 |---|---|
-| `storeName` | Section heading |
-| `lines` | Array of cart lines for that store |
-| `subtotal` | Number — sum of `price * quantity` per line |
+| Store name | Section heading — `store.name` from API |
+| Product rows | One row per line in that group |
+| Store subtotal | Sum of `(price × quantity)` for lines in **this section only** |
 
-Use **product.price** (or populated field name from your API) × **quantity** for line total. Show **unit** next to price where available.
+Subtotal formula for one line:
 
-## CartItemRow — read-only for this step
+```
+lineTotal = product.price × item.quantity
+```
 
-In 17.5, rows can be **display-only** — quantity controls land in 17.6, remove in 17.7.
+Use the same currency formatting as your shop pages from Chapter 15.
 
-Minimum row content:
+---
+
+## Step 5 — Build `CartItemRow` (display only)
+
+**File:** `client/src/components/CartItemRow.jsx`
+
+For this step, rows are **read-only**. You add +/− buttons in 17.6.
+
+Minimum content per row:
 
 - Product name
-- Unit + unit price
-- Quantity (numeric display)
-- Line total
+- Unit + unit price (e.g. `₹120/kg`)
+- Quantity (just a number for now)
+- Line total (`price × quantity`)
 
-## Empty state contract
+---
 
-Copy tone: editorial, not playful.
+## Step 6 — Empty state
 
-- Heading: e.g. "Your cart is empty"
-- Body: one sentence — browse the marketplace
-- CTA: link to `/shop`
+If `items.length === 0` after a successful fetch:
 
-## Error handling
+- Heading: **"Your cart is empty"**
+- One sentence: invite them to browse the marketplace
+- A link or button to `/shop`
 
-| Error | UI |
+Keep the tone simple and friendly — not jokey.
+
+---
+
+## Step 7 — Grand total and checkout stub
+
+Below all store sections, show:
+
+```
+Estimated total: ₹___
+```
+
+Label it **estimated** — prices can change before checkout (Chapter 18 snapshots the real price).
+
+Add a **Proceed to checkout** button that is disabled or shows "Coming in Chapter 18" — do not wire checkout yet.
+
+---
+
+## What success looks like
+
+Take a screenshot when you pass these checks — you will reuse it in your Week 3 demo folder (`docs/demo/`).
+
+| # | You should see… |
 |---|---|
-| 401 | Redirect login |
-| 5xx / network | Message + retry button |
-| 200 empty | Empty state — not error |
+| 1 | `/cart` loads for a logged-in customer |
+| 2 | Cart with items from **two stores** shows **two section headings** |
+| 3 | Each line shows name, price, quantity, line total |
+| 4 | Store subtotals match your hand calculation |
+| 5 | Empty cart shows the empty state (test after removing all items in a later step) |
+| 6 | Logged-out user hitting `/cart` gets redirected to login |
 
-## README update
+---
 
-Document `/cart` route and that cart requires customer login.
+## Common mistakes
+
+| Mistake | What goes wrong | Fix |
+|---|---|---|
+| Flat list (no grouping) | Customer surprised at checkout split | Group by `storeId` |
+| Hardcoded store names | Breaks with real seed data | Use `store.name` from API |
+| Empty state during loading | Looks broken for 2 seconds | Check `loading` flag first |
+| Skipping protected route | Cart visible without login | Reuse Chapter 7 pattern |
+| Client-side-only cart | Items vanish on refresh | Always `GET /cart` from server |
+
+---
 
 ## Commit
 
 ```bash
-git add client/src/pages/Cart.jsx client/src/components/StoreCartGroup.jsx client/src/App.jsx
+git add client/src/pages/Cart.jsx client/src/components/StoreCartGroup.jsx client/src/components/CartItemRow.jsx client/src/App.jsx
 git commit -m "feat(client): add cart page grouped by store"
 ```
 
-## ✅ Do / ❌ Don't
+Update your README: document the `/cart` route and that it requires customer login.
 
-**✅ Do:** Derive groups from API `storeId` — stable key.
-
-**✅ Do:** Format currency consistently with shop pages.
-
-**❌ Don't:** Hardcode store names for demo — use API populate.
-
-**❌ Don't:** Navigate to checkout yet without Chapter 18 API — stub button is fine.
+---
 
 ## Verify checklist
 
@@ -98,12 +220,17 @@ git commit -m "feat(client): add cart page grouped by store"
 - [ ] Subtotals match manual calculation
 - [ ] Empty cart shows empty state
 - [ ] Logged-out access redirects
+- [ ] Screenshot saved to `docs/demo/` (optional but recommended)
+
+<RealWorldEvent title="Amazon multi-seller cart checkout" when="Marketplace era" summary="Customers add items from many sellers but expect a single checkout flow with transparent split fulfilment." lesson="Cart UI should preview the split-order model early — it reduces support questions at checkout." />
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX782VB1PF19THWK7RKEM4" />
+<OpenQuestion id="01KZP7KQF1C6QAY705A95APVQH" />
 
 ## Next
 
-**Sub-chapter 17.6:** Quantity controls — PATCH on change.
+**Sub-chapter 17.6:** Quantity controls — turn the static numbers into +/− buttons that call `PATCH /cart/:itemId`.
+
+Your cart page shows what's in the basket. Next, let the customer change quantities.

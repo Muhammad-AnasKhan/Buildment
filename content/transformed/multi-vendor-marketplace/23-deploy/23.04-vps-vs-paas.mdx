@@ -6,6 +6,8 @@ summary: "Pick **one deploy path** for this course. Document in README — not e
 ---
 Pick **one deploy path** for this course. Document in README — not every option.
 
+<BigWordAlert term="VPS vs PaaS" plainEnglish="VPS: you manage the server; PaaS: platform handles runtime — trade ops burden vs control." whyItMatters="FreshMarket can deploy to Railway/Render (PaaS) or DigitalOcean droplet (VPS) — choose ops comfort." />
+
 This decision affects how you set env vars, run the worker, and renew TLS. There is no universally "best" choice — only **best for your comfort level**.
 
 ## Options comparison
@@ -133,10 +135,12 @@ Because after `npm run build`, your React app is just a folder of HTML, CSS, and
 - [ ] I know where worker will run on that path
 - [ ] I know where client build env `VITE_API_URL` is set
 
+<RealWorldEvent title="Heroku twelve-factor app methodology" when="2011–present" summary="Twelve-factor principles — config in env, stateless processes, logs as streams — shaped how Node apps deploy to modern platforms." lesson="Build deploy-ready habits early: health routes, env-based config, and separate worker processes pay off on day one in production." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX792S65TEAHWZNS6CRGW5" />
+<OpenQuestion id="01KZP7KR0MVK3BRW8GM47Q8VPQ" />
 
 ## Next
 

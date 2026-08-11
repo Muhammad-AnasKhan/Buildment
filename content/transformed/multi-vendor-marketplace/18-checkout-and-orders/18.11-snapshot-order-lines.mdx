@@ -2,70 +2,107 @@
 title: "Snapshot order lines"
 module: 18
 lesson: 11
-summary: "**Why this step matters:** This implements the fix for the trap in 18.2 — copy name, price, unit at commit time so order history never changes when vendors edit the catalogue. Skipping this is the most common checkout bug."
+summary: "Copy name, price, and unit onto each order line at checkout time. Order history must never change when a vendor edits their catalogue."
 ---
-**Why this step matters:** This implements the fix for the trap in 18.2 — copy name, price, unit at commit time so order history never changes when vendors edit the catalogue. Skipping this is the most common checkout bug.
+Imagine a customer orders rice at ₹120/kg. Next week the vendor raises the price to ₹150. The customer's **order history** must still show ₹120 — that is what they agreed to pay.
 
-**Where the project is now:** Checkout creates orders; lines may still reference live product fields.
+<BigWordAlert term="Immutable order line" plainEnglish="Order line fields frozen at purchase — product document can change later without altering receipt." whyItMatters="Support disputes and vendor payouts rely on accurate historical order line data." />
 
-**After this step:** Every `orderItems[]` entry copies **nameAtPurchase**, **priceAtPurchase**, **unitAtPurchase**, **quantity**, **lineTotal** at commit time.
+This lesson implements that rule by **copying** product fields onto each order line at checkout.
 
-## Copy contract — per cart line
+## The problem in plain English
 
-At checkout, for each line read product document **once**:
+| Without snapshot | With snapshot |
+|---|---|
+| Order stores only `productId` | Order stores `priceAtPurchase`, `nameAtPurchase`, `unitAtPurchase` |
+| Vendor edits price → old orders look wrong | Order history stays correct forever |
+| Refunds and support become impossible | Production-grade order records |
 
-| Snapshot field | Source |
+You read about this trap in **18.2**. This lesson is the fix.
+
+---
+
+## Step 1 — Copy these fields per cart line
+
+When building each `orderItems[]` entry, read the product **once** and copy:
+
+| Snapshot field | Copy from |
 |---|---|
 | `productId` | `line.productId` |
 | `nameAtPurchase` | `product.name` |
 | `priceAtPurchase` | `product.price` |
 | `unitAtPurchase` | `product.unit` |
 | `quantity` | `line.quantity` |
-| `lineTotal` | `priceAtPurchase * quantity` |
+| `lineTotal` | `priceAtPurchase × quantity` |
 
 Order `total` = sum of `lineTotal` in that order.
 
-**You implement** in `orders.service.js` checkout function — no populate on read for pricing later.
+---
 
-## Immutability rule
+## Step 2 — Never read live price for old orders
 
-After `Order.create` / `insertMany`, **no code path** updates snapshot fields on existing orders. Vendor product PATCH does not touch orders.
+After the order is saved:
 
-Status updates (`pending` → `packed`) change `order.status` only — not line prices.
+- Vendor PATCH on product → does **not** update existing orders
+- Order status changes (`pending` → `packed`) → does **not** change line prices
+- Chapter 20 order history UI reads `priceAtPurchase` — never `product.price`
 
-## Display rule for Chapter 20
+---
 
-Order history UI reads `priceAtPurchase` and `unitAtPurchase` from embedded lines — never `product.price`.
+## Step 3 — Verify in Compass
 
-## Edge cases
+After checkout, open an Order document. Each line should look like:
 
-| Case | Handling |
+```json
+{
+  "productId": "...",
+  "nameAtPurchase": "Basmati Rice",
+  "priceAtPurchase": 120,
+  "unitAtPurchase": "kg",
+  "quantity": 2,
+  "lineTotal": 240
+}
+```
+
+---
+
+## Step 4 — Quick immutability test
+
+1. Checkout one product
+2. Note `priceAtPurchase` in Compass
+3. Change product price in vendor dashboard or Compass
+4. Order line **unchanged** — still old price
+
+Document this test in your learning log.
+
+---
+
+## Common mistakes
+
+| Mistake | Fix |
 |---|---|
-| Product name has unicode | Copy as-is |
-| Price is decimal | Store number; avoid float drift in display |
-| Product deleted later | Order still shows snapshot; productId link may 404 |
+| Store only productId + quantity | Copy all snapshot fields |
+| Recompute total from live product on GET | Use stored lineTotal |
+| Update snapshots when status changes | Snapshots are write-once |
 
-## ✅ Do / ❌ Don't
-
-**✅ Do:** Copy all snapshot fields in same transaction as order insert.
-
-**✅ Do:** Unit-test or curl one line's field values against product at checkout time.
-
-**❌ Don't:** Store only `productId` and quantity.
-
-**❌ Don't:** Recompute lineTotal from live product on GET.
+---
 
 ## Verify checklist
 
-- [ ] Compass order document shows snapshot fields on each line
+- [ ] Compass shows snapshot fields on each line
 - [ ] `total` matches sum of line totals
-- [ ] Grocery unit visible in stored line (`kg`, etc.)
+- [ ] Unit visible (`kg`, `litre`, etc.)
+- [ ] Product price change does not alter old order
+
+<RealWorldEvent title="Double-charge incidents during flash sales" when="Various" summary="E-commerce outages and retries caused duplicate charges until teams adopted idempotent payment APIs and clear order states." lesson="Model order status explicitly — pending, paid, failed — and never create a second order for the same checkout attempt." />
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX7893MK7TVMC5VT3NXK7M" />
+<OpenQuestion id="01KZP7KQJD13P67XWTJXQNAYBR" />
 
 ## Next
 
-**Sub-chapter 18.12:** Stock decrement — atomic and fail-all.
+**Sub-chapter 18.12:** Stock decrement — reduce inventory atomically when checkout succeeds.
+
+Prices frozen. Next, stock.

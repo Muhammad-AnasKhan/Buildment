@@ -6,6 +6,8 @@ summary: "Before building auth pages, skim React patterns for context, protected
 ---
 Before building auth pages, skim React patterns for context, protected routes, and fetch credentials.
 
+<BigWordAlert term="XSS" plainEnglish="Cross-site scripting — attacker injects JavaScript that steals tokens from browser storage." whyItMatters="Token storage choice in FreshMarket is partly a bet on how well you sanitize user-generated content later." />
+
 ## Why this matters for absolute beginners
 
 Chapter 7 combines React Router, forms, cookies, and async boot logic — easy to glue wrong. Thirty minutes on Navigate, credentials, and your Chapter 6 curl notes prevents building pages that work in isolation but fail after reload or CORS.
@@ -71,6 +73,8 @@ Before you write a line of UI code, make four small decisions. They are independ
 
 Document choices in learning log.
 
+<RealWorldEvent title="GitHub's session and token evolution" when="2010s–present" summary="Developer platforms refined PATs, OAuth apps, and session handling as users demanded security without constant re-authentication." lesson="Treat the client auth layer as part of security design, not a UI afterthought — refresh logic belongs in one place, not scattered across pages." />
+
 ## Router structure preview
 
 Here is the map of routes this chapter wires. Notice the pattern: public routes live at the top level, and the vendor section is wrapped so it can be guarded later. The exact paths are yours, but this shape is what the build steps assume.
@@ -100,10 +104,16 @@ Update server CORS config in build cluster if not already.
 
 Do not let this sub-chapter expand into a research day. Read the mandatory links, note the four decisions, and move on to the build. The build steps will reference exactly what you skimmed here — nothing more is needed.
 
+<InterestingRead title="Why login forms fail in weird ways" hook="The API works in curl but not in the browser." readMinutes={4}>
+
+CORS, missing Authorization headers, and tokens stored where JavaScript cannot read them cause most beginner auth bugs. FreshMarket's verify step proves the full browser path — form submit, token storage, protected fetch — not just isolated API tests.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76DSSX3MVZD6WPS0YVA1" />
+<OpenQuestion id="01KZP7KPHP4TPCK5512N2HPGTF" />
 
 ## Next
 

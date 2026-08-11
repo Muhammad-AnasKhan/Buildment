@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Empty schemas do not prove your design — 
 ---
 **Why this step matters:** Empty schemas do not prove your design — two vendors, two stores, and sample products in Compass do. The seed script is how you (and Chapter 8 tests) get predictable data without manual Compass clicking every reset.
 
+<BigWordAlert term="Idempotent seeding" plainEnglish="Running the seed script multiple times without duplicating users or blowing away manual test data." whyItMatters="FreshMarket's seed upserts known test accounts so `npm run seed` is safe during development." />
+
 **Where the project is now:** All six models exist but MongoDB collections empty (or absent).
 
 **After this step:** `server/scripts/seed.js` connects via shared `db.js`, inserts deterministic test data, exits cleanly. `npm run seed` documented in README.
@@ -148,10 +150,12 @@ git commit -m "feat(server): add database seed script with test vendors and prod
 - [ ] README documents seed command and test accounts
 - [ ] Idempotency strategy documented
 
+<RealWorldEvent title="Amazon's item-level order snapshots" when="Marketplace era" summary="Marketplace order systems persist item details at purchase time so disputes, refunds, and tax reporting reflect the transaction as it happened." lesson="Model for auditability early. Your seed data and ERD should show which fields are live references and which are immutable snapshots." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX761FHVVCZX1NEPJR71G1" />
+<OpenQuestion id="01KZP7KPAEE4FE8H5Q6B4A8Y46" />
 
 ## Next
 

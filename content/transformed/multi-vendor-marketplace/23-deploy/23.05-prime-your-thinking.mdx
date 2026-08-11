@@ -6,6 +6,8 @@ summary: "**Mandatory read:** Your chosen host's deploy docs + [Let's Encrypt](h
 ---
 **Mandatory read:** Your chosen host's deploy docs + [Let's Encrypt](https://letsencrypt.org/docs/) basics if self-hosting TLS.
 
+<BigWordAlert term="Production environment" plainEnglish="The live server customers use — with real HTTPS, hosted secrets, and monitoring." whyItMatters="Deploy chapter moves FreshMarket from localhost to a URL you can share." />
+
 **Time box:** 60 minutes.
 
 Deploy fails when you skim platform docs. This sub-chapter forces **host-specific literacy** before you paste env vars in 23.8.
@@ -36,6 +38,12 @@ While reading **your** platform's docs, find answers for:
 
 Write answers in learning log draft — you will need them in 23.8–23.12.
 
+<InterestingRead title="The deploy checklist nobody skips twice" hook="Forgotten env vars wake you at 2 a.m." readMinutes={4}>
+
+Database URL, Stripe keys, Cloudinary, Redis, JWT secrets, CORS origin — production needs every secret the app reads locally. FreshMarket's deploy checklist exists because missing one variable fails silently until traffic hits.
+
+</InterestingRead>
+
 ## Reflect questions
 
 1. What is the difference between **development** (`npm run dev`) and **production** (`npm start`) for the API?
@@ -60,6 +68,8 @@ If #3 is not "API, worker, client" — re-read 23.01 bridge.
 4. **CORS unchanged** — API allows localhost only.
 5. **Atlas IP not whitelisted** — health shows `db: disconnected` on production only.
 
+<RealWorldEvent title="Heroku twelve-factor app methodology" when="2011–present" summary="Twelve-factor principles — config in env, stateless processes, logs as streams — shaped how Node apps deploy to modern platforms." lesson="Build deploy-ready habits early: health routes, env-based config, and separate worker processes pay off on day one in production." />
+
 ## ✅ Do / ❌ Don't
 
 **✅ Do:** Read deploy docs for the platform you chose in 23.4 — not all platforms.
@@ -73,7 +83,7 @@ If #3 is not "API, worker, client" — re-read 23.01 bridge.
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX7934SMWHXR8044WGY0E3" />
+<OpenQuestion id="01KZP7KR0TB8338BTFYC45M4NF" />
 
 ## Next
 

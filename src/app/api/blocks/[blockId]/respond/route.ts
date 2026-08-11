@@ -3,14 +3,13 @@ import { prisma } from "@/server/db";
 import { getSessionUser } from "@/server/auth/guards";
 import { blockRegistry, isRegisteredBlockType } from "@/blocks/registry";
 import { QuizPayloadSchema } from "@/blocks/quiz/schema";
+import { PredictPayloadSchema } from "@/blocks/predict/schema";
 import { OpenQuestionPayloadSchema } from "@/blocks/open-question/schema";
+import { CodePayloadSchema } from "@/blocks/code/schema";
+import { gradeCodeDetails } from "@/blocks/code/grade";
 import { recomputeChapterProgress } from "@/server/progress/compute";
 import type { GradeResult } from "@/blocks/types";
 
-// The one deliberate client-fetch route (not a server action) — see
-// .cursor/rules/typescript-nextjs.mdc. Grading is server-side only for
-// QUIZ/OPEN_QUESTION: the request body is just the learner's answer, never
-// the correct one — see docs/08-data-model.mdx "Answer submission flow".
 export async function POST(request: NextRequest, { params }: { params: Promise<{ blockId: string }> }) {
   const { blockId } = await params;
 
@@ -42,16 +41,33 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  // Dispatch on type exactly once, here — the registry pattern's point is
-  // that *this* is the only place that needs to know both block types exist,
-  // not that no branch may ever mention a BlockType (see registry.ts).
   let graded: GradeResult;
   let explanation: string | undefined;
+  let solution: string | undefined;
+  let failedTestName: string | undefined;
+  let errorMessage: string | undefined;
+
   if (block.type === "QUIZ") {
     const config = blockRegistry.QUIZ.schema.parse(block.config);
     const payload = QuizPayloadSchema.parse(body);
     graded = blockRegistry.QUIZ.grade(config, payload);
     explanation = config.explanation;
+  } else if (block.type === "PREDICT") {
+    const config = blockRegistry.PREDICT.schema.parse(block.config);
+    const payload = PredictPayloadSchema.parse(body);
+    graded = blockRegistry.PREDICT.grade(config, payload);
+    explanation = config.explanation;
+  } else if (block.type === "CODE") {
+    const config = blockRegistry.CODE.schema.parse(block.config);
+    const payload = CodePayloadSchema.parse(body);
+    graded = blockRegistry.CODE.grade(config, payload);
+    explanation = config.explanation;
+    const details = gradeCodeDetails(config, payload);
+    failedTestName = details.failedTestName;
+    errorMessage = details.errorMessage;
+    if (graded.isCorrect && config.solution) {
+      solution = config.solution;
+    }
   } else {
     const config = blockRegistry.OPEN_QUESTION.schema.parse(block.config);
     const payload = OpenQuestionPayloadSchema.parse(body);
@@ -86,5 +102,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     isCorrect: response.isCorrect,
     status: response.status,
     explanation,
+    solution,
+    failedTestName,
+    errorMessage,
   });
 }

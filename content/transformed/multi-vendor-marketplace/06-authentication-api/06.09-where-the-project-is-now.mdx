@@ -32,8 +32,19 @@ server/src/
 
 ## Baseline verify
 
+<ApiRequestPanel title="Pre-auth baseline">
+
+<ApiRequest
+  label="GET /health"
+  method="GET"
+  url="http://localhost:5000/health"
+  responseStatus={200}
+  responseBody='{"status":"ok","db":"connected"}'
+/>
+
+</ApiRequestPanel>
+
 ```bash
-curl -s http://localhost:5000/health
 npm run seed   # still works — may need bcrypt hashes updated after 6.12
 ```
 
@@ -92,10 +103,12 @@ React app still shows health only — no auth UI until Chapter 7.
 - [ ] health still 200
 - [ ] auth/ folder exists or will be created in 6.10
 
+<RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX766W9B602G94WZ2ZXWF8" />
+<OpenQuestion id="01KZP7KPDH31J5N030HP7CVGQQ" />
 
 ## Next
 

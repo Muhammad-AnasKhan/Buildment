@@ -53,19 +53,19 @@ npm run dev
 
 # Terminal 2 — client/
 npm run dev
-
-# Terminal 3
-curl -s http://localhost:5000/health
 ```
 
-**Expected JSON:**
+<ApiRequestPanel title="Baseline before models">
 
-```json
-{
-  "status": "ok",
-  "db": "connected"
-}
-```
+<ApiRequest
+  label="GET /health — DB connected"
+  method="GET"
+  url="http://localhost:5000/health"
+  responseStatus={200}
+  responseBody='{"status":"ok","db":"connected"}'
+/>
+
+</ApiRequestPanel>
 
 Client Home should display the same fields. If not, finish Chapter 4 gate first.
 
@@ -138,10 +138,12 @@ Commit after each model group — not one giant commit at end.
 - [ ] `docs/erd-draft.md` exists
 - [ ] Module folders exist under `server/src/modules/`
 
+<RealWorldEvent title="Amazon's item-level order snapshots" when="Marketplace era" summary="Marketplace order systems persist item details at purchase time so disputes, refunds, and tax reporting reflect the transaction as it happened." lesson="Model for auditability early. Your seed data and ERD should show which fields are live references and which are immutable snapshots." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX75Z7VEDK3KNZ6M7VC2YR" />
+<OpenQuestion id="01KZP7KP8WQJNDCX82MA60Q9T3" />
 
 ## Next
 

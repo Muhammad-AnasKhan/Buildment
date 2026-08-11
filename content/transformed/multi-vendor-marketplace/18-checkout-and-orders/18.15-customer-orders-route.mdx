@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Customers need **order history** without re
 ---
 **Why this step matters:** Customers need **order history** without re-running checkout — `GET /orders/my` returns embedded snapshot lines only, training the read path Chapter 20 UI will use.
 
+<BigWordAlert term="Order history" plainEnglish="GET endpoint returning shopper's past orders with status — track and reorder." whyItMatters="FreshMarket customers check delivery status — order history is post-purchase trust." />
+
 **Where the project is now:** Vendor list route works; customer needs history without re-running checkout.
 
 **After this step:** `GET /orders/my` returns all orders for authenticated customer, split orders visible as separate entries.
@@ -49,10 +51,18 @@ Customer A orders → Customer B `GET /orders/my` does not include A's orders.
 
 ## curl verify
 
-```bash
-curl -s http://localhost:5000/api/orders/my \\
-  -H "Authorization: Bearer <customer-token>"
-```
+<ApiRequestPanel title="Customer orders — GET /orders/my">
+
+<ApiRequest
+  label="Customer order history after two-store checkout"
+  method="GET"
+  url="http://localhost:5000/api/orders/my"
+  bearer="<customer-token>"
+  responseStatus={200}
+  responseBody='{"orders":[{"_id":"...","status":"pending","total":305,"createdAt":"...","store":{"id":"...","name":"Green Valley Grocer"},"orderItems":[{"name":"Organic Tomatoes","price":3.5,"quantity":2,"unit":"kg"}]},{"_id":"...","status":"pending","total":40,"createdAt":"...","store":{"id":"...","name":"Spice Corner"},"orderItems":[...]}]}'
+/>
+
+</ApiRequestPanel>
 
 After two-store checkout, expect **two orders** in array.
 
@@ -72,10 +82,12 @@ After two-store checkout, expect **two orders** in array.
 - [ ] Snapshot prices in response
 - [ ] Customer B isolation confirmed
 
+<RealWorldEvent title="Double-charge incidents during flash sales" when="Various" summary="E-commerce outages and retries caused duplicate charges until teams adopted idempotent payment APIs and clear order states." lesson="Model order status explicitly — pending, paid, failed — and never create a second order for the same checkout attempt." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78AETJ0VB9E47PNEH4D5" />
+<OpenQuestion id="01KZP7KQK57SNM273WCKTZP1AS" />
 
 ## Next
 

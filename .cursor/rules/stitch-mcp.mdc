@@ -1,0 +1,38 @@
+---
+description: Use Google Stitch MCP to generate course UI preview images — not HTTP scripts
+globs: content/import/**,public/showcase/**,.cursor/loop/**
+alwaysApply: false
+---
+
+# Google Stitch MCP (course UI previews)
+
+**Stitch MCP is configured and working** in this workspace (`.cursor/mcp.json` → `stitch-mcp-server` stdio server, `STITCH_API_KEY` in `.env`).
+
+When a chapter or the course overview needs a **production-style UI preview PNG**, use **`CallMcpTool`** on the Stitch MCP server. Do **not** run `scripts/generate-showcase-images.mjs`, `scripts/generate-chapter-screens.mjs`, or raw HTTP/curl against `stitch.googleapis.com`.
+
+## Discover the server
+
+Run `GetMcpTools` with a stitch-related pattern if needed. The configured name is **`stitch`**; Cursor may expose it as `project-0-buildment-stitch`. Use whichever appears in the available servers list.
+
+## Workflow
+
+1. **`list_projects`** — reuse project `5086730330133580426` (FreshMarket showcase) when it exists; otherwise **`create_project`** with title `FreshMarket Course Showcase`.
+2. **`generate_screen`** — args: `projectId`, `prompt` (FreshMarket / devWeekend style, neutral editorial UI, specific screen), `deviceType`: `DESKTOP` for dashboards, `MOBILE` for shop/cart/checkout.
+3. **`get_screen_image`** — pass `projectId` + `screenId` from the generate result; download the returned URL.
+4. Save PNG to **`public/showcase/multi-vendor-marketplace/{slug}.png`** (kebab-case, e.g. `login-page.png`, `vendor-dashboard.png`).
+5. Reference in import MDX: `![Alt text](/showcase/multi-vendor-marketplace/{slug}.png)`.
+
+## Prompt style
+
+- Product name: **FreshMarket** (multi-vendor grocery marketplace course).
+- Look: clean, minimal, professional — white cards, neutral palette, readable typography (Inter-like).
+- Be specific: page type, key sections, CTAs, sample data (vendor names, products, order states).
+
+## Output locations
+
+| Asset type | Path |
+|---|---|
+| Chapter / carousel PNGs | `public/showcase/multi-vendor-marketplace/` |
+| Carousel config (TS) | `src/lib/course-showcase.ts` |
+
+After adding images, run `pnpm content:import` only if the user asks to sync transformed MDX to the database.

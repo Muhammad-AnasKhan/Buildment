@@ -6,6 +6,8 @@ summary: "**Why this step matters:** This is the **first endpoint customers will
 ---
 **Why this step matters:** This is the **first endpoint customers will use** — the foundation of the whole shop. Getting the visibility filter right here (`published` + in-stock only) prevents draft products leaking to the public before you add filters and pagination.
 
+<BigWordAlert term="GET /products" plainEnglish="Public list endpoint returning published products with optional filters and pagination params." whyItMatters="FreshMarket shop grid loads from this route — only isPublished true, never vendor drafts." />
+
 **Where the project is now:** Only vendor-scoped product reads exist.
 
 **After this step:** `GET /products` returns published in-stock products — pagination and populate added in 14.11–14.12; filters in 14.10.
@@ -73,9 +75,17 @@ CORS: already open for GET from Vite — verify in 14.14.
 
 ## curl test
 
-```bash
-curl -s "http://localhost:5000/api/products" | jq .
-```
+<ApiRequestPanel title="Public catalogue — GET /products">
+
+<ApiRequest
+  label="List published in-stock products"
+  method="GET"
+  url="http://localhost:5000/api/products"
+  responseStatus={200}
+  responseBody='{"items":[{"id":"...","name":"Organic Tomatoes","price":3.5,"unit":"kg","category":"vegetables","imageUrl":"https://your-domain.com","store":{"id":"...","name":"Green Valley Grocer"}}]}'
+/>
+
+</ApiRequestPanel>
 
 **Expected:** Only published in-stock products; drafts absent.
 
@@ -105,10 +115,12 @@ git commit -m "feat(products): add public GET /products catalogue route"
 - [ ] Zero-stock products excluded  
 - [ ] Vendor routes unchanged
 
+<RealWorldEvent title="Amazon search index separate from catalog DB" when="2000s–present" summary="Large marketplaces eventually split transactional catalog storage from search-optimized indexes — your module 21 preview." lesson="Build a correct catalogue API first; optimize with cache and search once the happy path works." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX77N5MGJTS1MRTHQNVV92" />
+<OpenQuestion id="01KZP7KQ77Q020X81FK0GBYRDX" />
 
 ## Next
 

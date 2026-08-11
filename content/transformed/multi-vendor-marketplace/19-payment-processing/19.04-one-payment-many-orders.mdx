@@ -6,6 +6,8 @@ summary: "FreshMarket is a **market hall**, not a single shop. The customer fill
 ---
 FreshMarket is a **market hall**, not a single shop. The customer fills one basket from Green Valley and Harbor Market, pays **once**, and receives **two fulfilment orders**. This sub-chapter teaches the payment model beginners confuse most.
 
+<BigWordAlert term="Single charge, split orders" plainEnglish="One Payment Intent covering total cart while creating multiple vendor order records." whyItMatters="Shopper pays once for mangoes and bread — FreshMarket splits fulfillment, not card charges." />
+
 ## In plain English
 
 | Term | Simple meaning |
@@ -138,10 +140,12 @@ Yes — same flow, just less splitting. With only Green Valley in the cart, chec
 - [ ] I know why amount is computed server-side
 - [ ] I understand Connect is intentionally skipped
 
+<RealWorldEvent title="Stripe becomes default startup payments" when="2010s–present" summary="Stripe's developer-first APIs and webhooks let small teams accept cards without becoming PCI compliance experts overnight." lesson="Verify webhook signatures on every request — unverified endpoints let attackers mark orders paid for free." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78D1TMDXK1VKH9T7MDPP" />
+<OpenQuestion id="01KZP7KQMMPEGT0M8QCTW09VKF" />
 
 ## Next
 

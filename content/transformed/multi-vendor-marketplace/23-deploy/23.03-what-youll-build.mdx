@@ -6,6 +6,8 @@ summary: "Deploy is not one button — it is a **checklist of deliverables** tha
 ---
 Deploy is not one button — it is a **checklist of deliverables** that prove your localhost app lives on the internet. Read this before choosing a host in 23.4.
 
+<BigWordAlert term="Deploy pipeline" plainEnglish="Build client static assets, run API on host, configure env, smoke test live URL." whyItMatters="FreshMarket deploy chapter produces a link you share in portfolio and interviews." />
+
 ## Deliverables
 
 | Deliverable | Spec |
@@ -111,8 +113,23 @@ Because Vite is a build tool: when you run `npm run build`, it replaces `import.
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX792D8FNTE9X54TN5TT5E" />
+<OpenQuestion id="01KZP7KR0EHWNHKP6KCD0TVSW8" />
 
 ## Next
 
 **Sub-chapter 23.4:** VPS vs PaaS — pick your path.
+<MandatoryReadCard
+  title="MDN — HTTP overview"
+  href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview"
+  source="MDN"
+  summary="HTTPS, headers, and status codes — context for reverse proxies, TLS, and health checks in production."
+  readMinutes={10}
+/>
+
+<RealWorldEvent title="Heroku twelve-factor app methodology" when="2011–present" summary="Twelve-factor principles — config in env, stateless processes, logs as streams — shaped how Node apps deploy to modern platforms." lesson="Build deploy-ready habits early: health routes, env-based config, and separate worker processes pay off on day one in production." />
+
+<InterestingRead title="The deploy checklist nobody skips twice" hook="Forgotten env vars wake you at 2 a.m." readMinutes={4}>
+
+Database URL, Stripe keys, Cloudinary, Redis, JWT secrets, CORS origin — production needs every secret the app reads locally. FreshMarket's deploy checklist exists because missing one variable fails silently until traffic hits.
+
+</InterestingRead>

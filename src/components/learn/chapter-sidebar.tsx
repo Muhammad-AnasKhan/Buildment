@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowLeft, ArrowRight, CheckCircle2, BookOpen, ChevronDown, ChevronRight, Menu, X, LayoutDashboard } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronRight, Menu, X, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SyllabusModule } from "@/components/learn/course-syllabus";
 
@@ -15,26 +15,47 @@ type ChapterSidebarProps = {
   onToggle: () => void;
 };
 
-export function ChapterSidebar({ courseSlug, modules, currentChapterSlug, collapsed, onToggle }: ChapterSidebarProps) {
+function chapterSlugFromPath(pathname: string, courseSlug: string) {
+  const prefix = `/courses/${courseSlug}/`;
+  if (!pathname.startsWith(prefix)) return null;
+  const rest = pathname.slice(prefix.length);
+  if (!rest || rest.includes("/")) return null;
+  return decodeURIComponent(rest);
+}
+
+export function ChapterSidebar({
+  courseSlug,
+  modules,
+  currentChapterSlug,
+  collapsed,
+  onToggle,
+}: ChapterSidebarProps) {
+  const pathname = usePathname();
+  const activeSlug = chapterSlugFromPath(pathname, courseSlug) ?? currentChapterSlug;
+  const activeLinkRef = useRef<HTMLAnchorElement>(null);
+
   const [openModules, setOpenModules] = useState<Set<string>>(() => {
     const open = new Set<string>();
     for (const mod of modules) {
-      if (mod.chapters.some((ch) => ch.slug === currentChapterSlug)) {
+      if (mod.chapters.some((ch) => ch.slug === activeSlug)) {
         open.add(mod.id);
         break;
       }
     }
     return open;
   });
-  const pathname = usePathname();
 
   useEffect(() => {
     for (const mod of modules) {
-      if (mod.chapters.some((ch) => ch.slug === currentChapterSlug)) {
+      if (mod.chapters.some((ch) => ch.slug === activeSlug)) {
         setOpenModules((prev) => new Set([...prev, mod.id]));
       }
     }
-  }, [currentChapterSlug, modules]);
+  }, [activeSlug, modules]);
+
+  useEffect(() => {
+    activeLinkRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [activeSlug, collapsed]);
 
   const toggleModule = (moduleId: string) => {
     setOpenModules((prev) => {
@@ -67,10 +88,10 @@ export function ChapterSidebar({ courseSlug, modules, currentChapterSlug, collap
         </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-2">
+      <nav className="flex-1 overflow-y-auto py-2" aria-label="Course chapters">
         {modules.map((mod) => {
           const isOpen = openModules.has(mod.id);
-          const isActive = mod.chapters.some((ch) => ch.slug === currentChapterSlug);
+          const moduleHasActive = mod.chapters.some((ch) => ch.slug === activeSlug);
 
           return (
             <div key={mod.id} className="mb-1">
@@ -79,13 +100,13 @@ export function ChapterSidebar({ courseSlug, modules, currentChapterSlug, collap
                 onClick={() => toggleModule(mod.id)}
                 className={cn(
                   "flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors",
-                  isActive && "bg-indigo-50/60"
+                  moduleHasActive && "bg-indigo-50/40"
                 )}
               >
                 <span
                   className={cn(
                     "flex size-6 shrink-0 items-center justify-center rounded-md font-mono text-[11px] font-bold tabular-nums",
-                    isActive
+                    moduleHasActive
                       ? "bg-indigo-600 text-white"
                       : "bg-neutral-100 text-neutral-600"
                   )}
@@ -110,19 +131,21 @@ export function ChapterSidebar({ courseSlug, modules, currentChapterSlug, collap
               {isOpen && (
                 <ul className="border-t border-neutral-50">
                   {mod.chapters.map((chapter) => {
-                    const isCurrent = chapter.slug === currentChapterSlug;
+                    const isCurrent = chapter.slug === activeSlug;
                     return (
                       <li key={chapter.id}>
                         <Link
+                          ref={isCurrent ? activeLinkRef : undefined}
                           href={`/courses/${courseSlug}/${chapter.slug}`}
+                          aria-current={isCurrent ? "page" : undefined}
                           className={cn(
-                            "flex items-center gap-2.5 px-4 py-2 pl-12 text-sm transition-colors",
+                            "relative flex items-center gap-2.5 py-2 pl-12 pr-4 text-sm transition-colors",
                             isCurrent
-                              ? "bg-indigo-50 font-medium text-indigo-700"
+                              ? "bg-indigo-50 font-medium text-indigo-700 before:absolute before:inset-y-1 before:left-3 before:w-0.5 before:rounded-full before:bg-indigo-600"
                               : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
                           )}
                         >
-                          <StatusIcon status={chapter.status} />
+                          <StatusIcon status={chapter.status} active={isCurrent} />
                           <span className="min-w-0 truncate">{chapter.title}</span>
                         </Link>
                       </li>
@@ -138,14 +161,38 @@ export function ChapterSidebar({ courseSlug, modules, currentChapterSlug, collap
   );
 }
 
-function StatusIcon({ status }: { status: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED" }) {
+function StatusIcon({
+  status,
+  active,
+}: {
+  status: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
+  active?: boolean;
+}) {
   if (status === "COMPLETED") {
-    return <CheckCircle2 className="size-3.5 shrink-0 text-indigo-600" />;
+    return (
+      <CheckCircle2
+        className={cn("size-3.5 shrink-0", active ? "text-indigo-600" : "text-indigo-500")}
+      />
+    );
   }
   if (status === "IN_PROGRESS") {
-    return <div className="size-3.5 shrink-0 rounded-full border-2 border-indigo-300 bg-indigo-50" />;
+    return (
+      <div
+        className={cn(
+          "size-3.5 shrink-0 rounded-full border-2 bg-indigo-50",
+          active ? "border-indigo-500" : "border-indigo-300"
+        )}
+      />
+    );
   }
-  return <div className="size-3.5 shrink-0 rounded-full border-[1.5px] border-neutral-300" />;
+  return (
+    <div
+      className={cn(
+        "size-3.5 shrink-0 rounded-full border-[1.5px]",
+        active ? "border-indigo-400 bg-indigo-50" : "border-neutral-300"
+      )}
+    />
+  );
 }
 
 export function SidebarToggle({
@@ -159,7 +206,7 @@ export function SidebarToggle({
     <button
       type="button"
       onClick={onClick}
-      className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-500 shadow-sm transition-colors hover:bg-neutral-50 hover:text-neutral-700"
+      className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
       aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
     >
       {collapsed ? <Menu className="size-4" /> : <X className="size-4" />}

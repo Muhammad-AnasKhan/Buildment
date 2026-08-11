@@ -6,6 +6,8 @@ summary: "You need a **mandated decision** before creating folders. This sub-cha
 ---
 You need a **mandated decision** before creating folders. This sub-chapter compares the two mainstream Node/Express layouts honestly, then tells you which one this course requires — and why changing your mind later breaks the guide.
 
+<BigWordAlert term="Layer vs module" plainEnglish="Layers are horizontal slices (routes, services, models); modules are vertical feature folders (auth, cart)." whyItMatters="FreshMarket uses modules inside the server so each feature owns its routes, logic, and models together." />
+
 ## Why this matters for absolute beginners
 
 "Layer vs module" sounds like senior-engineer vocabulary. The practical difference is simple: when you fix a **cart bug**, do you open **one folder** or hunt through `controllers/`, `services/`, and `models/` hoping names match? Marketplaces have many product areas — auth, shops, products, cart, checkout. Grouping by **domain** keeps related files neighbors. The course mandates modules so every sub-chapter can say "open `modules/cart/`" and you know exactly where to go.
@@ -212,6 +214,8 @@ Routes stay thin — parse request, call service, send response. Fat services, t
 
 *"Why did this course mandate module-based folders? Give the 'adding discount codes' argument in your own words."*
 
+<RealWorldEvent title="Shopify's modular commerce platform" when="2006–present" summary="Shopify grew from a single-product store builder into a platform with separate admin, storefront, and API surfaces — all coordinated through clear project boundaries." lesson="Starting with a deliberate folder skeleton prevents painful renames later when vendor, cart, and payment code all need room to grow." />
+
 ## Key ideas
 
 - **Layer** = organize by technical role; **module** = organize by domain  
@@ -222,4 +226,4 @@ Routes stay thin — parse request, call service, send response. Fat services, t
 Next: client vs server — taught pointing at your two folders.
 ## Before you continue
 
-<OpenQuestion id="01KZAX759TP8QPMNSK8P3CDP5A" />
+<OpenQuestion id="01KZP7KNTJV1GB3VGXHTZPW03C" />

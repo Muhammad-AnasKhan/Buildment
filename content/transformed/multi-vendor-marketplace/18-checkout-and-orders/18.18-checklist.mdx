@@ -4,7 +4,11 @@ module: 18
 lesson: 18
 summary: "Gate for Chapter 18 — Checkout and orders. Tick every box and answer the learning log on this page before continuing."
 ---
-This is the **gate** for Chapter 18. Tick every box honestly and answer the learning log below before opening Chapter 19.
+Test checkout with a **two-store cart** in curl before opening Chapter 19. This is the Week 3 API climax.
+
+<Callout type="warning" title="Critical proof">
+Two-store cart → one POST /checkout → **two Order documents** in Compass with different storeId. If you get one mixed order, fix 18.10 before continuing.
+</Callout>
 
 ## Chapter 18 — Checkout and orders checklist (gate)
 
@@ -12,40 +16,43 @@ Do **not** open Chapter 19 until every box is ticked and learning log answers ar
 
 ### Checkout
 
-- [ ] `POST /checkout` requires customer auth
+- [ ] `POST /checkout` requires customer auth  
+  *Verify:* No token → 401.
 - [ ] Empty cart returns 400
-- [ ] Two-store cart creates **two** Order documents
+- [ ] Two-store cart creates **two** Order documents  
+  *Verify:* Count orders in Compass — must match store count in cart.
 - [ ] Each order has single `storeId` — no mixed-store orders
-- [ ] `orderItems` embedded with `nameAtPurchase`, `priceAtPurchase`, `unitAtPurchase`, `quantity`, `lineTotal`
+- [ ] `orderItems` have nameAtPurchase, priceAtPurchase, unitAtPurchase, quantity, lineTotal
 - [ ] Order `total` equals sum of line totals
 - [ ] Stock decremented atomically with `$gte` guard
 - [ ] Insufficient stock fails entire checkout — no partial orders
-- [ ] Cart empty after successful checkout
+- [ ] Cart empty after successful checkout  
+  *Verify:* GET /cart → items: []
 - [ ] Cart unchanged after failed checkout
 
 ### List routes
 
 - [ ] `GET /orders/my` returns customer's orders only
 - [ ] `GET /vendor/orders` returns vendor store's orders only
-- [ ] Cross-vendor `GET /vendor/orders` does not leak other stores' orders
-- [ ] List responses use snapshot prices — not populated live product price
+- [ ] Cross-vendor list does not leak other stores' orders
+- [ ] List uses snapshot prices — not live product.price
 
 ### Immutability (18.16)
 
-- [ ] Product price PATCH after order does not change `priceAtPurchase` on existing order
-- [ ] Test documented in README or learning log
+- [ ] Product price PATCH after order does not change priceAtPurchase  
+  *Verify:* Change product price in Compass → old order line unchanged.
+- [ ] Test documented in learning log
 
 ### Prior gates
 
 - [ ] Chapter 17 cart UI works
 - [ ] Chapter 16 cart API works
-- [ ] Order model snapshot fields from Ch 5
-- [ ] Explain one checkout → many orders
-- [ ] Explain snapshot trap and fix
-- [ ] Explain atomic stock decrement
-- [ ] Explain fail-all checkout semantics
+- [ ] I can explain one checkout → many orders
+- [ ] I can explain snapshot trap and fix
+- [ ] I can explain atomic stock decrement
+- [ ] I can explain fail-all checkout semantics
 
-### Learning log — write now
+## Learning log
 
 Answer **in your own words** in the fields below:
 
@@ -62,7 +69,6 @@ Answer **in your own words** in the fields below:
 6. **Vendor list:** How do you scope `GET /vendor/orders` to one store?
 
 7. **Chapter 19 preview:** What will checkout UI show after POST returns two orders?
-
 
 ## All boxes ticked?
 

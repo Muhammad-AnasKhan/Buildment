@@ -6,6 +6,8 @@ summary: "Not every server action belongs in a worker. Use this table when decid
 ---
 Not every server action belongs in a worker. Use this table when deciding sync vs async for FreshMarket features.
 
+<BigWordAlert term="Queue eligibility" plainEnglish="Rule of thumb: if user does not need result immediately and task can fail/retry, queue it." whyItMatters="FreshMarket queues order confirmation email; does not queue payment authorization." />
+
 ## Decision matrix
 
 The question is never "is this a cool use of a queue?" — it is "who is allowed to wait?" Read each row as: *does the user need this result now, or can it be delivered in the background?*
@@ -93,10 +95,12 @@ For notifications: use **deterministic `jobId`** per event — e.g. `order-creat
 - [ ] I know why stock decrement stays synchronous
 - [ ] I can explain when cache bust could move to a worker
 
+<RealWorldEvent title="Shopify flash sale queue architecture" when="2010s–present" summary="Commerce platforms moved heavy work to background jobs during traffic spikes so checkout stayed available." lesson="Design jobs to be idempotent — retries will happen, and duplicate emails beat lost orders." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78WZ89BT25P84EVY34FM" />
+<OpenQuestion id="01KZP7KQX7CQ91C3AMETT35AWS" />
 
 ## Next
 

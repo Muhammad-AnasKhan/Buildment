@@ -6,6 +6,8 @@ summary: "Chapter 20 completed the **buyer and vendor order experience** — che
 ---
 Chapter 20 completed the **buyer and vendor order experience** — checkout UI, split confirmation, history, vendor inbox, status updates, and the Week 3 demo.
 
+<BigWordAlert term="Complete commerce loop" plainEnglish="Browse through track orders works — performance and scale come in Chapters 21–22." whyItMatters="Caching and async jobs optimize what already functions — do not skip this milestone." />
+
 ## What you built
 
 **Checkout.jsx** — review grouped cart → POST /checkout.
@@ -29,10 +31,16 @@ Chapter 20 completed the **buyer and vendor order experience** — checkout UI, 
 | One checkout → split orders | ✓ |
 | Customer + vendor see orders | ✓ **this chapter** |
 
+<InterestingRead title="Status updates without realtime overkill" hook="Polling is fine before websockets are." readMinutes={3}>
+
+FreshMarket can refresh order status on interval or navigation before adding push notifications. Ship readable timelines first; optimize freshness when users ask for it.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78NTWBKA5K5XWBXZWV9N" />
+<OpenQuestion id="01KZP7KQSGP3CS2S59ZNN325NG" />
 
 ## Next — Chapter 21: Cache & search
 
@@ -57,3 +65,4 @@ Catalogue is the hot path — every browse still hits MongoDB until Chapter 21.
 **Do not open Chapter 21 until 20.13 is ticked.**
 
 Commerce works locally. Next make it fast and searchable, then ship it.
+<RealWorldEvent title="Domino's Pizza Tracker effect" when="2008–present" summary="Transparent order tracking reduced support calls and increased trust — customers tolerate wait when they see progress." lesson="Expose meaningful statuses, not internal jargon. 'Preparing your order' beats 'STATE_PICKING'." />

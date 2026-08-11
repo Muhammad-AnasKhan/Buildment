@@ -6,6 +6,8 @@ summary: "`requireAuth` tells you *who* called the API; `requireRole` tells you 
 ---
 **Why this step matters:** `requireAuth` tells you *who* called the API; `requireRole` tells you *what kind of user* they are. Without it, a customer token could hit vendor-only routes. This middleware is reused on every vendor feature through Week 2 — get the factory pattern right once.
 
+<BigWordAlert term="Role middleware" plainEnglish="Express middleware that returns 403 if the user's role is not in the allowed list." whyItMatters="FreshMarket vendor routes chain `authenticate` then `requireRole('vendor')` before handlers run." />
+
 **Where the project is now:** requireAuth attaches req.user; routes do not check role.
 
 **After this step:** `requireRole(...roles)` returns **403** when authenticated user's role not in allowed list; passes through when match.
@@ -14,29 +16,46 @@ summary: "`requireAuth` tells you *who* called the API; `requireRole` tells you 
 
 Authorization is a **stack of gates**. Each gate answers a different question. Skip or reorder one and the wrong user reaches your handler.
 
-```
-HTTP request
-    │
-    ▼
-┌─────────────────┐
-│  requireAuth    │  "Do I know who this is?"     → 401 if no
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│  requireRole    │  "Is this a vendor?"          → 403 if customer
-└────────┬────────┘
-         ▼
-┌─────────────────┐
-│ assertStoreOwner│  "Does this store belong      → 403 if Vendor B
-│                 │   to this vendor?"               on Vendor A's id
-└────────┬────────┘
-         ▼
-    handler
+```mermaid
+flowchart TD
+  A[HTTP request] --> B[requireAuth]
+  B -->|no valid JWT| C[401 Unauthorized]
+  B -->|req.user attached| D[requireRole vendor]
+  D -->|customer or wrong role| E[403 Forbidden]
+  D -->|vendor role| F[assertStoreOwner]
+  F -->|Vendor B on Store A| G[403 Forbidden]
+  F -->|owner match| H[route handler]
+
+  style C fill:#fef2f2,stroke:#ef4444
+  style E fill:#fff7ed,stroke:#f59e0b
+  style G fill:#fff7ed,stroke:#f59e0b
+  style H fill:#ecfdf5,stroke:#10b981
 ```
 
-&lt;Callout type="warning" title="Customer token must stop at requireRole">
+```mermaid
+sequenceDiagram
+  participant Client
+  participant Auth as requireAuth
+  participant Role as requireRole vendor
+  participant Owner as assertStoreOwner
+  participant Handler as updateStoreHandler
+
+  Note over Client,Handler: Customer token — stops at role gate
+  Client->>Auth: PATCH /stores/:id + Bearer customer
+  Auth->>Role: req.user role customer
+  Role-->>Client: 403 Forbidden
+
+  Note over Client,Handler: Vendor A token on own store — full chain
+  Client->>Auth: PATCH /stores/STORE_A + Bearer vendor A
+  Auth->>Role: req.user role vendor
+  Role->>Owner: check store.vendorId
+  Owner->>Handler: owner match
+  Handler-->>Client: 200 updated store
+```
+
+<Callout type="warning" title="Customer token must stop at requireRole">
 If a customer reaches `assertStoreOwner`, you still blocked them — but you wasted a database read. More importantly, if you **skip** requireRole, a customer token could hit vendor-only logic paths you add later. Always: auth → role → ownership.
-&lt;/Callout>
+</Callout>
 
 ## Function contract
 
@@ -47,6 +66,21 @@ requireRole('vendor', 'customer')  // either
 ```
 
 **Factory pattern** — returns Express middleware function.
+
+## requireRole decision logic
+
+```mermaid
+flowchart TD
+  A[requireRole middleware invoked] --> B{req.user exists?}
+  B -->|no| C[401 Unauthorized<br/>requireAuth must run first]
+  B -->|yes| D{req.user.role in allowed roles?}
+  D -->|no| E[403 Forbidden]
+  D -->|yes| F[next to handler or ownership check]
+
+  style C fill:#fef2f2,stroke:#ef4444
+  style E fill:#fff7ed,stroke:#f59e0b
+  style F fill:#ecfdf5,stroke:#10b981
+```
 
 ## Behaviour specification
 
@@ -71,27 +105,21 @@ router.patch('/:id',
 
 Customer token stops at requireRole — never hits ownership DB read.
 
+<TraceRequest title="Customer token on vendor PATCH">
+  <TraceStep actor="Client" label="PATCH /api/stores/:id" detail="Bearer customer token" />
+  <TraceStep actor="API" label="requireAuth — req.user attached" />
+  <TraceStep actor="API" label="requireRole('vendor')" status={403} detail="role customer not in allowed list" />
+</TraceRequest>
+
+<Predict id="01KZP7KPQ3S3D7H0MXQBAKVEMZ" />
+
 ## Middleware order — non-negotiable
 
-```
-Incoming request
-    │
-    ▼
-requireAuth          ← 401 if no valid JWT
-    │
-    ▼
-requireRole('vendor') ← 403 if customer/anonymous
-    │
-    ▼
-assertStoreOwner     ← 403 if wrong vendor (Ch 8.11)
-    │
-    ▼
-route handler        ← 400 validation / 200 success
-```
+Same stack as above — **auth → role → ownership → handler**. Wrong order causes crashes or IDOR holes.
 
-&lt;Callout type="warning" title="Order matters">
+<Callout type="warning" title="Order matters">
 If you run `requireRole` before `requireAuth`, unauthenticated requests may crash on `req.user.role` or leak wrong status codes. If you skip ownership and only check role, **any vendor** can edit **any store** — the IDOR bug Chapter 8 exists to prevent.
-&lt;/Callout>
+</Callout>
 
 ## Role source of truth
 
@@ -101,15 +129,38 @@ If user role changes in DB, access token stale until refresh — acceptable for 
 
 ## curl tests
 
-```bash
-# Customer token on vendor-only route (after 8.12 mount)
-curl -s -o /dev/null -w "%{http_code}" -X PATCH \
-  http://localhost:5000/api/stores/STORE_ID \
-  -H "Authorization: Bearer $CUSTOMER_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"Hack"}'
-# Expect 403
-```
+<ApiRequestPanel title="Role guard — who stops where">
+
+<ApiRequest
+  label="No token — stops at requireAuth"
+  method="PATCH"
+  url="http://localhost:5000/api/stores/STORE_ID"
+  body='{"name":"Hack"}'
+  responseStatus={401}
+  responseBody='{"message":"Unauthorized"}'
+/>
+
+<ApiRequest
+  label="Customer token on vendor-only PATCH (after 8.12 mount)"
+  method="PATCH"
+  url="http://localhost:5000/api/stores/STORE_ID"
+  bearer="$CUSTOMER_TOKEN"
+  body='{"name":"Hack"}'
+  responseStatus={403}
+  responseBody='{"message":"Forbidden"}'
+/>
+
+<ApiRequest
+  label="Vendor token — passes requireRole (ownership checked in 8.11)"
+  method="PATCH"
+  url="http://localhost:5000/api/stores/STORE_A_ID"
+  bearer="$VENDOR_A_TOKEN"
+  body='{"name":"Vendor A Updated Market"}'
+  responseStatus={200}
+  responseBody='{"_id":"STORE_A_ID","name":"Vendor A Updated Market"}'
+/>
+
+</ApiRequestPanel>
 
 Before 8.12 — unit test middleware in isolation or temporary test route — remove test route before gate.
 
@@ -153,10 +204,7 @@ git commit -m "feat(auth): add requireRole middleware"
 - [ ] Missing req.user returns 401
 - [ ] Documented in AUTHORIZATION.md
 
-
-## Before you continue
-
-<OpenQuestion id="01KZAX76PJFXMNZ3XYX4NRB24P" />
+<RealWorldEvent title="Facebook Graph API permission scandals" when="2010s" summary="Platforms exposed user data when apps could request broader permissions than users understood — driving industry focus on least-privilege access." lesson="Centralize authorization in middleware and guards. Ad-hoc checks in individual routes drift and get missed during code review." />
 
 ## Next
 

@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Register is the front door — it creates U
 ---
 **Why this step matters:** Register is the front door — it creates User + Profile, hashes nothing yet incorrectly, and starts the OTP verification story. Chapter 7's Register page calls exactly what you implement here.
 
+<BigWordAlert term="User registration" plainEnglish="Creating a new account — validate input, hash password, save user, optionally send OTP." whyItMatters="FreshMarket vendors and customers share the same register flow; role selection branches their experience." />
+
 **Where the project is now:** Auth routes mounted; register endpoint returns stub or 501.
 
 **After this step:** `POST /api/auth/register` creates User + Profile, hashes password with bcrypt, generates OTP, returns appropriate JSON. Duplicate email returns 409.
@@ -45,6 +47,13 @@ summary: "**Why this step matters:** Register is the front door — it creates U
 | 409 | email exists | `{ "message": "Email already registered" }` |
 | 500 | server error | `{ "message": "Internal server error" }` |
 
+
+## Try it yourself
+
+Practice the core logic from this lesson in the **code lab** below — write real JavaScript, then click **Check my code**. Same editor style as the course's code blocks.
+
+<CodeExercise id="01KZP7KPEATAM12WAN6KJ7MJBE" />
+
 ## Service behaviour (implement in auth.service)
 
 1. Normalize email to lowercase trim  
@@ -60,16 +69,18 @@ summary: "**Why this step matters:** Register is the front door — it creates U
 
 ## curl verify
 
-```bash
-curl -s -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "newvendor@test.local",
-    "password": "Password123!",
-    "role": "vendor",
-    "displayName": "New Vendor"
-  }'
-```
+<ApiRequestPanel title="Register handler">
+
+<ApiRequest
+  label="POST /api/auth/register — new vendor"
+  method="POST"
+  url="http://localhost:5000/api/auth/register"
+  body='{"email":"newvendor@test.local","password":"Password123!","role":"vendor","displayName":"New Vendor"}'
+  responseStatus={201}
+  responseBody='{"message":"OTP sent","email":"newvendor@test.local"}'
+/>
+
+</ApiRequestPanel>
 
 **Check Compass:** new user + profile documents; passwordHash starts with `$2`; isVerified false.
 
@@ -107,10 +118,7 @@ git commit -m "feat(auth): implement register with bcrypt and OTP generation"
 - [ ] OTP logged or returned in dev
 - [ ] isVerified false after register
 
-
-## Before you continue
-
-<OpenQuestion id="01KZAX7687GTCJSBPHY3G24RKE" />
+<RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
 
 ## Next
 

@@ -135,7 +135,26 @@ loop).
 - Goes into the **mentor review queue** — see [`05-review-queue.mdx`](05-review-queue.mdx).
 - Reports: submitted / pending review / reviewed, mentor score and feedback.
 
-## `<CodeBlock>` — runnable code
+## `<CodeExercise>` — write and check code
+
+Short, module-relevant coding drills — **complete the snippet** or **implement a function** — with
+automated checks run **server-side** when the learner clicks "Check my code".
+
+```mdx
+<CodeExercise id="01J8..." />
+```
+
+Authoring during import uses a ` ```code ` YAML fence (see `scripts/code-exercise-data.ts` for
+injected exercises). Config fields:
+
+- `mode`: `complete` | `implement`
+- `prompt`, `starterCode`, optional `filename`, `hints`, `explanation`
+- `tests[]` — server-only JS assertions (CommonJS `module.exports`)
+- `solution` — server-only, shown after pass
+
+Completion: tests pass (`AUTO_GRADED`). Reports: pass/fail, attempts, source snapshot.
+
+## `<CodeBlock>` — runnable code (full sandbox — deferred)
 
 Interactive editor + runtime + optional automated checks.
 
@@ -167,6 +186,21 @@ export function splitOrder(items) {
 - Config: `runtime`, `mode`, `starterFiles`, `visibleTests`, `hiddenTests`, `timeoutMs`,
   `dependencies`.
 - Reports: attempts, passed/failed, final source snapshot, time spent.
+
+## `<Predict>` — "what happens next?" (non-blocking by default)
+
+Quiz-like single-choice prediction with optional HTTP context strip. Graded server-side;
+`correctOptionId` never reaches the client.
+
+```mdx
+<Predict id="01J8..." />
+```
+
+Config: `prompt`, `options[]`, `correctOptionId`, `explanation`, `allowRetry` (default true),
+optional `context` (`method`, `url`, `bearer`, `responseHint`). Import pipeline supports
+` ```predict ` fenced YAML blocks that become DB rows + placeholders.
+
+Registry folder: `src/blocks/predict/` — same contract as `QUIZ`.
 
 ## `<Callout>` / `<Steps>` / `<Diagram>` — non-interactive presentation
 

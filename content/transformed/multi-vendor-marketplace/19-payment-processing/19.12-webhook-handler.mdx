@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Customers close tabs. Networks drop. Your s
 ---
 **Why this step matters:** Customers close tabs. Networks drop. Your server might crash after Stripe marks a Payment Intent **succeeded** but before `POST /checkout` finishes. Webhooks are Stripe's **retryable phone call** — "this payment really succeeded."
 
+<BigWordAlert term="Webhook" plainEnglish="HTTP callback from Stripe to your server when payment succeeds — authoritative paid signal." whyItMatters="FreshMarket marks orders paid on `payment_intent.succeeded` webhook — not client redirect alone." />
+
 **Where the project is now:** Checkout verifies PI on `POST /checkout`; no webhook route; Stripe cannot notify your app asynchronously.
 
 **After this step:** `POST /webhooks/stripe` accepts raw JSON, verifies `Stripe-Signature` with `STRIPE_WEBHOOK_SECRET`, handles `payment_intent.succeeded` idempotently.
@@ -91,10 +93,12 @@ Production uses HTTPS URL + Dashboard webhook endpoint. Same handler code; **new
 - [ ] Duplicate `payment_intent.succeeded` → no duplicate orders (with 19.13)
 - [ ] README documents mount order for raw body
 
+<RealWorldEvent title="Stripe becomes default startup payments" when="2010s–present" summary="Stripe's developer-first APIs and webhooks let small teams accept cards without becoming PCI compliance experts overnight." lesson="Verify webhook signatures on every request — unverified endpoints let attackers mark orders paid for free." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78FZYRDCPJS6GNA66EDC" />
+<OpenQuestion id="01KZP7KQP77F0S3SBANZ5YD4XA" />
 
 ## Next
 

@@ -6,6 +6,8 @@ summary: "**Why this step matters:** This is where you escape the sync trap — 
 ---
 **Why this step matters:** This is where you escape the sync trap — **paid** checkout commits commerce state, then hands notifications to the queue. The enqueue call site order (after DB writes) is the most common bug in async checkout implementations.
 
+<BigWordAlert term="Order created job" plainEnglish="Job payload enqueued when order is paid — triggers email and vendor notification." whyItMatters="FreshMarket webhook enqueues this — HTTP returns fast, worker sends email." />
+
 **Where the project is now:** Queue module and worker run (22.9–22.10); checkout commits orders synchronously with no job enqueued.
 
 **After this step:** `POST /checkout` enqueues one `order.created` job **after** paid orders persist, stock decrements, and cart clears — **before** returning 201.
@@ -90,12 +92,19 @@ No `notificationSent` flag — async is invisible to client.
 
 With worker **stopped**:
 
-```bash
-curl -s -w "\nTIME:%{time_total}\n" -X POST http://localhost:5000/api/checkout \
-  -H "Authorization: Bearer <customer-token>" \
-  -H "Content-Type: application/json" \
-  -d '{}'
-```
+<ApiRequestPanel title="Checkout enqueue — measure response time in terminal">
+
+<ApiRequest
+  label="Checkout with worker stopped — note TIME in terminal; job pending in Redis"
+  method="POST"
+  url="http://localhost:5000/api/checkout"
+  bearer="<customer-token>"
+  body="{}"
+  responseStatus={201}
+  responseBody='{"orders":[{"_id":"...","storeId":"...","total":305,"orderItems":[...]}]}'
+/>
+
+</ApiRequestPanel>
 
 **Expected:** 201 quickly. Redis has pending job — verify in 22.15 with `redis-cli` or start worker and see backlog process.
 
@@ -116,10 +125,12 @@ curl -s -w "\nTIME:%{time_total}\n" -X POST http://localhost:5000/api/checkout \
 - [ ] Failed checkout does not enqueue
 - [ ] Code path has no inline notification calls
 
+<RealWorldEvent title="Shopify flash sale queue architecture" when="2010s–present" summary="Commerce platforms moved heavy work to background jobs during traffic spikes so checkout stayed available." lesson="Design jobs to be idempotent — retries will happen, and duplicate emails beat lost orders." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78Z57HKB1BEGPW5X3PYV" />
+<OpenQuestion id="01KZP7KQYMFRZF3Z1CH33290ET" />
 
 ## Next
 

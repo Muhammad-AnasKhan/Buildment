@@ -6,6 +6,8 @@ summary: "Chapter 18's `POST /checkout` creates orders, reduces stock, and clear
 ---
 Chapter 18's `POST /checkout` creates orders, reduces stock, and clears the cart — **without checking whether anyone paid**. That was the right teaching order. It is **not** production.
 
+<BigWordAlert term="Fake checkout trap" plainEnglish="UI that marks orders paid without provider confirmation — dangerous for production." whyItMatters="FreshMarket never sets paid=true from client alone — only Stripe webhook or confirmed intent." />
+
 This sub-chapter names the trap **before** you wire Stripe in 19.9–19.14.
 
 ## The bug in one sentence
@@ -35,17 +37,27 @@ MongoDB does not know about money. Stripe does not create your orders. **Your se
 | **Revenue leak** | Stock goes down, fulfilment work happens, platform collects ₹0 |
 | **Double loss** | Free groceries **plus** oversell if retries duplicate orders |
 
+<RealWorldEvent title="Stripe becomes default startup payments" when="2010s–present" summary="Stripe's developer-first APIs and webhooks let small teams accept cards without becoming PCI compliance experts overnight." lesson="Verify webhook signatures on every request — unverified endpoints let attackers mark orders paid for free." />
+
 ## Think of it like a self-service checkout with no scanner
 
 Customers bag items and walk out. The **receipt printer** (Chapter 18) works perfectly — split receipts, frozen prices, inventory down. Nobody watched the **till**.
 
 A mentor runs one curl:
 
-```bash
-curl -X POST http://localhost:5000/api/checkout \\
-  -H "Authorization: Bearer <customer-token>" \\
-  -d '{}'
-```
+<ApiRequestPanel title="The fake-checkout attack (Chapter 18 behaviour)">
+
+<ApiRequest
+  label="Unpaid checkout — must NOT create orders after Chapter 19"
+  method="POST"
+  url="http://localhost:5000/api/checkout"
+  bearer="<customer-token>"
+  body='{}'
+  responseStatus={400}
+  responseBody='{"message":"Payment required"}'
+/>
+
+</ApiRequestPanel>
 
 If that still creates orders after Chapter 19, your payment gate failed.
 
@@ -152,10 +164,16 @@ Your server — and only your server. In Chapter 18, anyone holding a customer J
 - [ ] I know why server must call Stripe API, not trust client
 - [ ] I understand payment wraps Ch 18, not replaces it
 
+<InterestingRead title="Test mode vs live mode" hook="Real cards fail in test mode on purpose." readMinutes={4}>
+
+Stripe test keys let you simulate success, decline, and 3D Secure without moving money. FreshMarket stays in test mode until deploy — but your code paths should mirror production exactly.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78C6FWSFXT72CN98P77G" />
+<OpenQuestion id="01KZP7KQM69HFS1TCN9N5ZPEWM" />
 
 ## Next
 

@@ -6,13 +6,15 @@ summary: "Your marketplace skeleton is running — Express API, React client, he
 ---
 # 3.1 — Set the scene
 
+<BigWordAlert term="Schema flexibility" plainEnglish="Document databases let you evolve field shapes without migrations every time product requirements change." whyItMatters="Grocery products gain fields (organic, allergens, unit) faster than relational ALTER TABLE cycles allow." />
+
 ## Where we are now
 
 Chapter 2 left you with a running skeleton — Express API, React client, `GET /health` working in curl and in the browser. You can start the server and see "ok" in the browser. But here's the problem: **restart the server and every vendor, product, cart, and order disappears.** Your app has no memory yet.
 
-&lt;Callout type="warning" title="What's missing?">
+<Callout type="warning" title="What's missing?">
 Your module folders under `server/src/modules/` exist but they're empty. Data doesn't persist. This chapter is where we decide what goes in those folders — before writing a single line of database code.
-&lt;/Callout>
+</Callout>
 
 ## Where we're going
 
@@ -20,17 +22,7 @@ Before you install Mongoose or paste a connection string (Chapter 4), you'll dec
 
 This is a **design chapter**. There's no new API endpoint to demo yet. The deliverable is understanding + a design file: `docs/erd-draft.md`.
 
-&lt;ProjectPreview
-  title="What you'll decide in this chapter"
-  description="By the end of Chapter 3, you'll have a clear data plan for your marketplace — which database to use, what collections to create, and how data relates."
-  features=&#123;[
-    "Database choice: Why MongoDB fits this grocery marketplace",
-    "Collections list: users, stores, products, carts, orders",
-    "Relationships: embed vs reference decisions",
-    "ERD diagram: a visual blueprint committed to your repo"
-  ]&#125;
-  techStack=&#123;["MongoDB", "Mongoose"]&#125;
-/>
+<ProjectPreview id="01KZP7KNZRVAJZ3SSG3A4MSGRV" />
 
 ## Why this chapter matters
 
@@ -51,9 +43,9 @@ You *could* store that in PostgreSQL, MySQL, MongoDB, or something else. The cho
 
 Picking a database because "MERN starts with M" is how tutorials teach. Picking a database because **this product's needs fit** is how engineers ship.
 
-&lt;Callout type="info" title="The order matters">
+<Callout type="info" title="The order matters">
 decide → connect → implement. Chapter 3 decides. Chapter 4 connects. Chapter 5 implements. Don't skip ahead.
-&lt;/Callout>
+</Callout>
 
 ## Key terms — plain English
 
@@ -70,6 +62,26 @@ decide → connect → implement. Chapter 3 decides. Chapter 4 connects. Chapter
 ## Think of it like…
 
 **Planning shelf labels before the warehouse opens.** Chapter 2 built the building (skeleton). This chapter decides what goes on each shelf — users here, stores there, products with grocery units, carts, orders with frozen receipt lines. You're not moving stock in yet; you're drawing the layout so Chapter 4 can connect the warehouse and Chapter 5 can fill shelves without guessing.
+
+<ArticleBreak title="Embedding vs referencing: the grocery catalog decision" subtitle="How FreshMarket thinks about product data before schemas exist" readMinutes={8}>
+
+In a grocery marketplace, a product belongs to a store, and a store belongs to a vendor. You can embed store details inside each product document for fast reads, or store IDs and fetch related documents when needed.
+
+Embedding makes catalogue pages fast — one query returns product plus store name. Referencing keeps updates clean — change a store name once, not on thousands of products.
+
+FreshMarket uses a hybrid: embed small, stable snapshots (like store display name) where read performance matters, and reference IDs where ownership and updates matter. You will feel this trade-off again in checkout when order snapshots must not change if a vendor renames their shop later.
+
+</ArticleBreak>
+
+<MandatoryReadCard
+  title="MongoDB manual — Introduction"
+  href="https://www.mongodb.com/docs/manual/introduction/"
+  source="MongoDB"
+  summary="Official overview of how MongoDB stores documents, collections, and databases. Read the core concepts section before you wire the driver in the next chapter."
+  readMinutes={15}
+/>
+
+<RealWorldEvent title="Walmart's polyglot data strategy" when="2010s–present" summary="Large retailers run multiple database technologies — relational systems for transactions and accounting, document or search stores for catalogs and recommendations." lesson="Choosing MongoDB for FreshMarket is a domain-driven decision. Document the trade-off so future you can defend it in an interview." />
 
 ## Common questions
 
@@ -118,9 +130,9 @@ This chapter names **what documents** live in each module before code arrives.
 | 3.8–3.9 | **Your ERD** — the design file in your repo |
 | 3.10 | Checklist gate before Chapter 4 |
 
-&lt;Callout type="tip" title="Pace yourself">
+<Callout type="tip" title="Pace yourself">
 This chapter is less typing than Chapter 2, more thinking. Estimated time: half a day to one day. There's no shame in re-reading a section.
-&lt;/Callout>
+</Callout>
 
 ## Self-check before continuing
 
@@ -128,16 +140,11 @@ This chapter is less typing than Chapter 2, more thinking. Estimated time: half 
 - [ ] You can name the two actors (vendor and customer)
 - [ ] `docs/` folder exists in your repo
 
-&lt;ChapterRecap
-  points=&#123;[
-    "Chapter 2 gave us a running skeleton — but no data persists after restart",
-    "This chapter decides what database to use and sketches the data design",
-    "The order is: decide (Ch 3) → connect (Ch 4) → implement (Ch 5)",
-    "Your deliverable is `docs/erd-draft.md` — a blueprint for Chapter 5"
-  ]&#125;
-/>
+<ChapterRecap id="01KZP7KNZRX07NH7H4XF33N24H" />
 
 **Next:** Why grocery data is different from generic products — and why that matters for your database choice.
-## Before you continue
+<InterestingRead title="When SQL still wins" hook="MongoDB is a choice, not a religion." readMinutes={4}>
 
-<OpenQuestion id="01KZAX75H51R05H4K64S44CKBV" />
+Financial ledger entries, strict inventory reconciliation across warehouses, and complex reporting joins often favour PostgreSQL. FreshMarket picks MongoDB because product catalogs are document-shaped and read-heavy — but knowing when relational models win makes you a stronger engineer.
+
+</InterestingRead>

@@ -8,13 +8,15 @@ summary: "Create docs/erd-draft.md — your data blueprint. Sketch the collectio
 
 **Why this step matters:** This file is the blueprint Chapter 5 implements. Committing `erd-draft.md` now prevents schema improvisation later and forces embed-vs-reference decisions before Mongoose code exists.
 
+<BigWordAlert term="Entity-relationship draft" plainEnglish="A diagram or doc listing entities, fields, and how they link — your schema before code." whyItMatters="FreshMarket's ERD catches missing ownership rules early — e.g. who can edit which store." />
+
 **Where the project is now:** The project is an Express + React skeleton with `GET /health` returning 200 (Chapter 2). MongoDB is a choice on paper — no database running, no models, no schema decisions written down yet.
 
 **After this step:** `docs/erd-draft.md` exists in your repo with a diagram, a collection inventory, and an embed-vs-reference audit for every relationship — committed to Git before any code is written.
 
-&lt;Callout type="info" title="Concept chapters must touch your repo">
+<Callout type="info" title="Concept chapters must touch your repo">
 This is **applied work** — the concept chapter touching your real repo (Rule 23, 28). When Chapter 5 asks for `unit` enum on Product, you open **your** ERD instead of guessing.
-&lt;/Callout>
+</Callout>
 
 ## What you must produce
 
@@ -99,16 +101,7 @@ git add docs/erd-draft.md
 git commit -m "docs: add ERD draft before schema implementation"
 ```
 
-&lt;ChapterRecap
-  points=&#123;[
-    "Create docs/erd-draft.md with diagram and collection list",
-    "All six collection types must be addressed",
-    "Embedded order lines must be documented",
-    "Commit to Git before moving to Chapter 4"
-  ]&#125;
-/>
+<ChapterRecap id="01KZP7KP1THJVFDN87XRBZ9361" />
 
 **Next:** Map actors to collections — who reads and writes what.
-## Before you continue
-
-<OpenQuestion id="01KZAX75M5Z1AMW3EWWVJF8ZBJ" />
+<RealWorldEvent title="Walmart's polyglot data strategy" when="2010s–present" summary="Large retailers run multiple database technologies — relational systems for transactions and accounting, document or search stores for catalogs and recommendations." lesson="Choosing MongoDB for FreshMarket is a domain-driven decision. Document the trade-off so future you can defend it in an interview." />

@@ -2,35 +2,104 @@
 title: "Checkout route"
 module: 18
 lesson: 10
-summary: "**Why this step matters:** This is the **spine** of checkout — load cart, group by `storeId`, create order shells. Snapshots and stock come next, but grouping must work first or multi-vendor fulfilment never happens."
+summary: "Implement POST /checkout: load the cart, group lines by storeId, create one Order per vendor. This is the spine of multi-vendor checkout."
 ---
-**Why this step matters:** This is the **spine** of checkout — load cart, group by `storeId`, create order shells. Snapshots and stock come next, but grouping must work first or multi-vendor fulfilment never happens.
+This is the most important handler in Week 3. One customer checkout can create **multiple orders** — one per vendor. Your cart UI already showed this split in Chapter 17; now the server enforces it.
 
-**Where the project is now:** Orders module scaffolded; checkout handler empty.
+<BigWordAlert term="Checkout session" plainEnglish="The short-lived flow where cart items become orders and payment is authorized." whyItMatters="FreshMarket checkout validates stock, creates order documents, and hands off to Stripe without double-charging." />
 
-**After this step:** `POST /checkout` loads cart, groups by `storeId`, creates **one Order document per group** — snapshots and stock in 18.11–18.12.
+## What happens at checkout
 
-## checkout(userId) — phase 1 contract
+![Checkout split flow](/showcase/multi-vendor-marketplace/order-confirmation-page.png)
 
-Implement grouping and order shell first; add snapshots and stock next sub-chapters.
+---
 
-**Steps:**
+## Before you start
 
-1. Fetch all cart items for `userId` with product populated.
-2. If empty → `400` `{ message: 'Cart is empty' }`.
-3. Build `Map<storeId, lines[]>`.
-4. For each store group, construct order payload:
-   - `customerId`, `storeId`, `status: 'pending'`
-   - `orderItems` — placeholder copies from cart lines (refine in 18.11)
-   - `total` — sum of line totals from **current** product price (snapshot in 18.11)
-5. `Order.insertMany(orders)` — or one-by-one inside transaction.
-6. Return `{ orders: createdOrders }`.
+| Check | How |
+|---|---|
+| Cart has multi-vendor items | curl GET /cart — two storeIds |
+| Order model exists | Chapter 5 schema |
+| Orders module scaffolded | 18.9 routes mounted |
+| Customer auth works | Bearer token on POST |
 
-**Defer to 18.12–18.13:** stock decrement, cart clear — or stub with TODO if building incrementally.
+---
 
-## Response contract
 
-**Success 201:**
+## Try it yourself
+
+Practice the core logic from this lesson in the **code lab** below — write real JavaScript, then click **Check my code**. Same editor style as the course's code blocks.
+
+<CodeExercise id="01KZP7KQJ7A6A9CQX2B99ZEZDX" />
+
+## Step 1 — Implement checkout(userId) — phase 1
+
+In `orders.service.js`, build the pipeline in this order (snapshots and stock come in 18.11–18.12):
+
+1. **Load cart** — all items for `userId`, product populated
+2. **Empty check** — if no items → `400 { message: 'Cart is empty' }`
+3. **Group by storeId** — `Map<storeId, lines[]>`
+4. **For each store group**, build one Order:
+   - `customerId` = userId
+   - `storeId` = group key
+   - `status` = `'pending'`
+   - `orderItems` = copy from cart lines (refine in 18.11)
+   - `total` = sum of line totals from current product price
+5. **Insert** — `Order.insertMany(orders)` or loop inside transaction
+6. **Return** — `{ orders: createdOrders }`
+
+---
+
+## Step 2 — Validate before insert
+
+| Check | If fails |
+|---|---|
+| Product missing | 400 |
+| Product unpublished | 400 |
+| quantity &lt; 1 | 400 |
+| line.storeId ≠ product.storeId | 400 — data integrity |
+
+Never trust grouping from the client body — read the cart from the database.
+
+---
+
+## Step 3 — Wire the route
+
+```
+POST /api/checkout
+Middleware: requireAuth → requireRole('customer')
+Body: {} (optional deliveryNote later)
+```
+
+Vendor tokens must get **403** on this route.
+
+---
+
+## Step 4 — Test with curl
+
+Cart with items from two stores:
+
+<ApiRequestPanel title="Checkout — POST /checkout">
+
+<ApiRequest
+  label="Multi-vendor checkout — two stores in cart"
+  method="POST"
+  url="http://localhost:5000/api/checkout"
+  bearer="$CUSTOMER_TOKEN"
+  body="{}"
+  responseStatus={201}
+  responseBody='{"orders":[{"_id":"...","storeId":"STORE_A","total":305,"orderItems":[...]},{"_id":"...","storeId":"STORE_B","total":40,"orderItems":[...]}]}'
+/>
+
+</ApiRequestPanel>
+
+**Expected:** JSON with **2 orders** — different `storeId` on each.
+
+Open Compass — two Order documents, not one mixed order.
+
+---
+
+## Response shape
 
 ```json
 {
@@ -41,50 +110,32 @@ Implement grouping and order shell first; add snapshots and stock next sub-chapt
 }
 ```
 
-Array length equals distinct `storeId` count in cart.
+Array length = number of distinct stores in cart.
 
-## Validation before insert
+---
 
-| Check | Failure |
-|---|---|
-| Product missing | 400 |
-| Product unpublished | 400 |
-| quantity &lt; 1 | 400 |
-| storeId mismatch product.storeId | 400 — data integrity |
+## Common mistakes
 
-## curl verification — two-store cart
+| Mistake | Result | Fix |
+|---|---|---|
+| One order with mixed stores | Vendors can't fulfil | groupBy storeId |
+| Client sends store groups | Tamperable | Server reads cart |
+| Skip empty cart check | Ghost orders | 400 early |
+| Vendor can checkout | Wrong role | requireRole('customer') |
 
-```bash
-curl -s -X POST http://localhost:5000/api/checkout \\
-  -H "Authorization: Bearer <customer-token>" \\
-  -H "Content-Type: application/json" \\
-  -d '{}'
-```
-
-**Expected:** JSON with **2 orders** if cart had two stores. Inspect in Compass — two Order documents, different `storeId`.
-
-## ✅ Do / ❌ Don't
-
-**✅ Do:** Log order ids at info level in dev — not full PII in production.
-
-**✅ Do:** Use same `customerId` on all split orders from one checkout.
-
-**❌ Don't:** Create one order with mixed store lines.
-
-**❌ Don't:** Trust client-sent store grouping.
+---
 
 ## Verify checklist
 
 - [ ] Two-store cart → two orders in response and Compass
 - [ ] Single-store cart → one order
 - [ ] Empty cart → 400
-- [ ] Vendor token on checkout → 403
+- [ ] Vendor token → 403
 
-
-## Before you continue
-
-<OpenQuestion id="01KZAX788MMDSHPCHRQXXM9BAN" />
+<RealWorldEvent title="Double-charge incidents during flash sales" when="Various" summary="E-commerce outages and retries caused duplicate charges until teams adopted idempotent payment APIs and clear order states." lesson="Model order status explicitly — pending, paid, failed — and never create a second order for the same checkout attempt." />
 
 ## Next
 
-**Sub-chapter 18.11:** Snapshot order lines — freeze name, price, unit.
+**Sub-chapter 18.11:** Snapshot order lines — freeze name, price, unit at purchase time.
+
+Orders exist. Next, make prices immutable on order history.

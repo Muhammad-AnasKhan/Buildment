@@ -6,6 +6,8 @@ summary: "**Mandatory read:** Cache invalidation articles — search \"cache inv
 ---
 **Mandatory read:** Cache invalidation articles — search "cache invalidation strategies" and Redis GET/SET docs.
 
+<BigWordAlert term="Cache" plainEnglish="A fast temporary store of expensive query results so repeat reads do not hammer the database." whyItMatters="FreshMarket caches hot catalogue pages in Redis so browsing stays snappy under load." />
+
 **Time box:** 45 minutes.
 
 This sub-chapter exists so you understand **cache-aside** before typing `redis.js`. Chapter 21 is the first time many beginners touch Redis — read first, build second.
@@ -60,6 +62,8 @@ If you cannot answer #2, re-read 21.2 stale cache trap.
 4. **`KEYS catalogue:*` in production** — blocks Redis; use `SCAN` in invalidation helper.
 5. **Caching authenticated responses on public route** — catalogue is public; cart is not.
 
+<RealWorldEvent title="Facebook Memcached outage lessons" when="2010" summary="Major sites learned that caching layers need fallbacks — when cache fails, databases must survive the thundering herd." lesson="Always code a cache miss path. Redis is an accelerator, not the system of record." />
+
 ## How this connects to Chapter 22
 
 Same `REDIS_URL`. Chapter 22 adds BullMQ queue keys beside your `catalogue:*` keys. **`FLUSHALL` during dev** wipes cache *and* queued jobs — use prefix delete only.
@@ -74,10 +78,16 @@ Same `REDIS_URL`. Chapter 22 adds BullMQ queue keys beside your `catalogue:*` ke
 
 **❌ Don't:** Copy a tutorial that caches sessions or JWTs — wrong pattern for this chapter.
 
+<InterestingRead title="The stale cache trap" hook="Fast wrong answers are worse than slow right ones." readMinutes={4}>
+
+Teams enable caching, celebrate response times, then ship outdated stock levels. FreshMarket defines what is cacheable (public catalogue pages) and what never is (cart, checkout, auth).
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78R0ZAKKQTFTTEB0SST6" />
+<OpenQuestion id="01KZP7KQTCE613QTWTNXPQ1ZFZ" />
 
 ## Next
 

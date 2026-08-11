@@ -48,23 +48,32 @@ Existing Ch 18 fields unchanged: `customerId`, `storeId`, `status`, embedded sna
 
 Logged-in customer with items in cart:
 
-```bash
-# Still succeeds today — must FAIL after 19.11
-curl -s -X POST http://localhost:5000/api/checkout \\
-  -H "Authorization: Bearer <customer-token>" \\
-  -H "Content-Type: application/json" \\
-  -d '{}'
-```
+<ApiRequestPanel title="Pre-payment API baseline">
 
-Save this response shape — after 19.11, same call should return **400** with message about missing or unpaid payment.
+<ApiRequest
+  label="Checkout without payment (succeeds today — must fail after 19.11)"
+  method="POST"
+  url="http://localhost:5000/api/checkout"
+  bearer="<customer-token>"
+  body="{}"
+  responseStatus={201}
+  responseBody='{"orders":[{"_id":"...","storeId":"...","total":305}]}'
+/>
 
-```bash
-# Cart total source of truth
-curl -s http://localhost:5000/api/cart \\
-  -H "Authorization: Bearer <customer-token>"
-```
+<ApiRequest
+  label="Cart total — server is source of truth for Payment Intent amount"
+  method="GET"
+  url="http://localhost:5000/api/cart"
+  bearer="<customer-token>"
+  responseStatus={200}
+  responseBody='{"items":[{"priceAtAdd":120,"quantity":2}],"total":305}'
+/>
 
-Note line totals — Payment Intent amount must match **your server's sum**, not a client calculator.
+</ApiRequestPanel>
+
+Save checkout response shape — after 19.11, the same POST should return **400** with message about missing or unpaid payment.
+
+Note line totals from GET /cart — Payment Intent amount must match **your server's sum**, not a client calculator.
 
 ## Stripe account checklist
 
@@ -97,10 +106,12 @@ Note line totals — Payment Intent amount must match **your server's sum**, not
 - [ ] Order schema plan for payment fields written
 - [ ] Stripe test keys in local `.env` only
 
+<RealWorldEvent title="Stripe becomes default startup payments" when="2010s–present" summary="Stripe's developer-first APIs and webhooks let small teams accept cards without becoming PCI compliance experts overnight." lesson="Verify webhook signatures on every request — unverified endpoints let attackers mark orders paid for free." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78EF2KHJS3VZXWH0JWNH" />
+<OpenQuestion id="01KZP7KQNECGBE0ZYCZ5TKAC5E" />
 
 ## Next
 

@@ -5,6 +5,26 @@ import { Callout } from "@/components/learn/callout";
 import { FaqGroup, FaqItem } from "@/components/learn/faq-group";
 import { CheckpointIntro } from "@/components/learn/checkpoint-intro";
 import { MandatoryReadCard } from "@/components/learn/mandatory-read-card";
+import { BigWordAlert } from "@/components/learn/big-word-alert";
+import { InterestingRead } from "@/components/learn/interesting-read";
+import { RealWorldEvent } from "@/components/learn/real-world-event";
+import { ArticleBreak } from "@/components/learn/article-break";
+import { ApiRequest, ApiRequestPanel } from "@/components/learn/api-request-panel";
+import {
+  ArchitectureDiagram,
+  ArchNode,
+  CompareColumn,
+  ComparePanel,
+  DiffBlock,
+  EntityDiagram,
+  FileTree,
+  FileTreeItem,
+  StateMachine,
+  TerminalBlock,
+  TerminalLine,
+  TraceRequest,
+  TraceStep,
+} from "@/components/learn/content-blocks";
 import { StepsComponent } from "@/blocks/steps/Component";
 import { ProjectPreviewComponent } from "@/blocks/project-preview/Component";
 import { LearningObjectivesComponent } from "@/blocks/learning-objectives/Component";
@@ -22,7 +42,9 @@ const cellBorder = "border border-neutral-200";
 // account can add prose, not arbitrary JS.
 export const mdxComponents: MDXComponents = {
   Quiz: blockRegistry.QUIZ.Component,
+  Predict: blockRegistry.PREDICT.Component,
   OpenQuestion: blockRegistry.OPEN_QUESTION.Component,
+  CodeExercise: blockRegistry.CODE.Component,
   Steps: blockRegistry.STEPS.Component,
   ProjectPreview: blockRegistry.PROJECT_PREVIEW.Component,
   LearningObjectives: blockRegistry.LEARNING_OBJECTIVES.Component,
@@ -35,6 +57,25 @@ export const mdxComponents: MDXComponents = {
   FaqItem,
   CheckpointIntro,
   MandatoryReadCard,
+  BigWordAlert,
+  InterestingRead,
+  RealWorldEvent,
+  ArticleBreak,
+  ApiRequestPanel,
+  ApiRequest,
+  ComparePanel,
+  CompareColumn,
+  FileTree,
+  FileTreeItem,
+  TerminalBlock,
+  TerminalLine,
+  DiffBlock,
+  ArchitectureDiagram,
+  ArchNode,
+  StateMachine,
+  EntityDiagram,
+  TraceRequest,
+  TraceStep,
   h2: ({ children, ...props }: React.ComponentProps<"h2">) => {
     const text = typeof children === "string" ? children : undefined;
     const id = text ? slugify(text) : undefined;

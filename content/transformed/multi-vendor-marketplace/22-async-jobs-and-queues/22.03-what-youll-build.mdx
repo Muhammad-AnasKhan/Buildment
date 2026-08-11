@@ -6,6 +6,8 @@ summary: "Blueprint for **BullMQ jobs** on the same Redis from Chapter 22. Read 
 ---
 Blueprint for **BullMQ jobs** on the same Redis from Chapter 22. Read once; verify against repo after 22.15.
 
+<BigWordAlert term="Job queue" plainEnglish="A to-do list for background work — emails, receipts, search index updates — processed outside the HTTP request." whyItMatters="FreshMarket enqueues work after paid checkout so shoppers are not waiting on slow tasks." />
+
 If queues are new to you: you are **not** changing what checkout returns — you are adding a **second process** that picks up notification tasks after the API says 201.
 
 ## In plain English
@@ -16,6 +18,16 @@ If queues are new to you: you are **not** changing what checkout returns — you
 | `worker.js` | Separate program that reads to-dos and runs them |
 | `order.created` job | To-do: "tell vendors and customer about new orders" |
 | `order.statusUpdated` job | To-do: "tell customer their order status changed" |
+
+<MandatoryReadCard
+  title="BullMQ — Introduction"
+  href="https://docs.bullmq.io/guide/introduction"
+  source="BullMQ"
+  summary="Official introduction to queues and workers in BullMQ. Matches post-checkout async jobs in FreshMarket."
+  readMinutes={10}
+/>
+
+<RealWorldEvent title="Shopify flash sale queue architecture" when="2010s–present" summary="Commerce platforms moved heavy work to background jobs during traffic spikes so checkout stayed available." lesson="Design jobs to be idempotent — retries will happen, and duplicate emails beat lost orders." />
 
 ## Common beginner questions
 
@@ -188,8 +200,13 @@ Full checklist in 22.18. Headlines:
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78WK0HJXYZD75PSAT03V" />
+<OpenQuestion id="01KZP7KQX088KWVYAJF597CDX7" />
 
 ## Next
 
 **Sub-chapter 22.4:** When to queue — sync vs async decision table.
+<InterestingRead title="Why checkout should not send email inline" hook="SMTP is slow and flaky compared to HTTP." readMinutes={4}>
+
+Sending vendor notification emails inside the payment request adds failure modes where money succeeded but the user sees an error. Queue the email; return success when the order is saved and payment confirmed.
+
+</InterestingRead>

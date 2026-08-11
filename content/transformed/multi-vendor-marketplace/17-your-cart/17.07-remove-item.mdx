@@ -2,78 +2,106 @@
 title: "Remove item"
 module: 17
 lesson: 7
-summary: "**Why this step matters:** DELETE from the UI completes the edit loop — customers fix mistakes without clearing the whole cart. Badge count and store subtotals must update after remove."
+summary: "Add a Remove button on each cart row. It calls DELETE /cart/:itemId, refetches the cart, and hides empty store sections."
 ---
-**Why this step matters:** DELETE from the UI completes the edit loop — customers fix mistakes without clearing the whole cart. Badge count and store subtotals must update after remove.
+Customers make mistakes — wrong product, wrong quantity. Remove completes the **edit loop**: add (17.8), change quantity (17.6), delete (this lesson).
 
-**Where the project is now:** Quantities update via PATCH; no way to delete a line from the UI.
+<BigWordAlert term="Remove from cart UX" plainEnglish="Button or icon triggering DELETE cart line — with confirm optional for accidental taps." whyItMatters="FreshMarket cart must feel reversible until checkout — easy remove reduces abandonment guilt." />
 
-**After this step:** Remove control per row calls `DELETE /cart/:itemId`; empty store sections disappear; empty cart shows empty state.
+## Where the project is now → after this step
 
-## DELETE contract
+| Now | After 17.7 |
+|---|---|
+| Quantities update via PATCH | Each row has a working Remove control |
+| Empty store headings may linger | Section disappears when last line in that store is gone |
+
+---
+
+## Step 1 — Add a Remove control
+
+On each `CartItemRow`, add:
+
+- A **Remove** text link or trash icon
+- An accessible label (screen readers need "Remove Basmati Rice from cart")
+
+A confirm dialog is optional for MVP — one click remove is fine.
+
+Disable the button while DELETE is in flight.
+
+---
+
+## Step 2 — Call DELETE /cart/:itemId
 
 ```
 DELETE /api/cart/:itemId
 Authorization: Bearer <token>
 ```
 
-**Success:** 204 or 200 — per your Chapter 16 implementation.
+Again: `itemId` = cart line `_id`, not `productId`.
 
-**After success:** Remove row from UI or refetch full cart. Refetch is simpler and avoids drift.
+Helper:
 
-## UI control
+```
+removeCartItem(itemId) → DELETE /cart/:itemId
+```
 
-| Element | Spec |
-|---|---|
-| Trigger | "Remove" text button or trash icon — accessible label required |
-| Confirm | Optional confirm dialog — not required for MVP |
-| Loading | Disable remove while request pending |
+**Success:** 204 or 200 — match your Chapter 16 implementation.
 
-When last item in a store group is removed, **remove entire store section** — do not show empty heading.
+---
 
-## Decrease-to-zero path
+## Step 3 — Update the UI after success
 
-Align with 17.6: when − would go below 1, call **DELETE** instead of PATCH `quantity: 0` if API rejects zero.
+Simplest approach: **refetch `GET /cart`** and re-render — same pattern as 17.6.
 
-Document behaviour in README one line.
+Do not remove the row from React state until the API succeeds (unless you implement optimistic UI with rollback).
+
+---
+
+## Step 4 — Clean up empty store sections
+
+When the last item in a store group is removed:
+
+- Remove the **entire store section** — do not leave an empty "Green Valley Grocers" heading with no rows underneath
+
+When the last item in the whole cart is removed:
+
+- Show the **empty cart state** from 17.5
+
+---
+
+## Step 5 — Align with the − button (17.6)
+
+If you chose "− at quantity 1 calls DELETE" in 17.6, both paths should use the same `removeCartItem` helper. Document this in README.
+
+---
 
 ## Error handling
 
 | Status | UI |
 |---|---|
-| 404 | Refetch cart — item already removed |
+| 404 | Refetch cart — item may already be gone |
 | 401 | Redirect login |
-| Network error | Toast or inline retry |
+| Network error | Show retry message |
 
-## Commit
-
-```bash
-git add client/src/components/CartItemRow.jsx client/src/pages/Cart.jsx
-git commit -m "feat(client): remove cart line via delete api"
-```
-
-## ✅ Do / ❌ Don't
-
-**✅ Do:** Update header cart count after remove (when 17.9 exists).
-
-**✅ Do:** Return to empty state when last item deleted.
-
-**❌ Don't:** Leave orphan store headers with zero lines.
-
-**❌ Don't:** Remove from UI without API success (unless optimistic with rollback).
+---
 
 ## Verify checklist
 
-- [ ] Remove deletes line on server — verify with curl `GET /cart`
-- [ ] UI matches server after reload
-- [ ] Multi-store cart: removing all items from one store leaves other store section
+- [ ] Remove deletes line on server — confirm with curl `GET /cart`
+- [ ] UI matches server after hard reload
+- [ ] Multi-store cart: removing all items from one store leaves the other section intact
 - [ ] Empty cart state appears when last item removed
+- [ ] No orphan store headings with zero lines
+
+<RealWorldEvent title="Amazon multi-seller cart checkout" when="Marketplace era" summary="Customers add items from many sellers but expect a single checkout flow with transparent split fulfilment." lesson="Cart UI should preview the split-order model early — it reduces support questions at checkout." />
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX783G49HWQQBQSK9PV2VH" />
+<OpenQuestion id="01KZP7KQFD5VX1B8Y0423RSWMF" />
 
 ## Next
 
-**Sub-chapter 17.8:** Wire add-to-cart from product detail — you can remove items; now make it possible to add them in the first place.
+**Sub-chapter 17.8:** Wire add-to-cart from product detail — you can remove items; now make it easy to add them while browsing.
+
+Remove works. Next, wire the shop funnel.

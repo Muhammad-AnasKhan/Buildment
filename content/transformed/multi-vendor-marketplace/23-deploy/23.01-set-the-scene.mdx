@@ -6,9 +6,21 @@ summary: "**Where the project is now:** Full marketplace on localhost — auth, 
 ---
 **Where the project is now:** Full marketplace on localhost — auth, vendor dashboard, customer shop, cart, checkout, orders, cache, search, **async worker** (Chapter 22). Mentors cannot click your demo URL because **there is no public URL**.
 
+<BigWordAlert term="Production deployment" plainEnglish="Running FreshMarket on a public URL with real HTTPS, hosted secrets, and monitoring." whyItMatters="Localhost demos do not prove you can ship — deploy is the course finish line." />
+
 **Where this chapter goes:** **Production deploy** — API, **worker**, and client on HTTPS; secrets in host env only; smoke tests pass; processes survive restart.
 
 Week 4 ship chapter. Gate: **live HTTPS URL** you can paste in learning log and portfolio.
+
+<ArticleBreak title="Shipping FreshMarket for real" subtitle="From localhost demo to HTTPS URL you can share" readMinutes={7}>
+
+Deployment is not a single command — it is the first time all your assumptions meet the public internet.
+
+Your API needs a stable URL. Your client needs to know that URL at build time. MongoDB, Redis, and webhooks must accept connections from the host, not only your laptop.
+
+After deploy, run the full demo: vendor adds product, customer checks out with Stripe test mode, webhook fires, order appears. That end-to-end pass on production config is the course finish line.
+
+</ArticleBreak>
 
 ## Bridge from last chapter
 
@@ -24,6 +36,8 @@ Chapters 2–21 built a complete app on **your laptop**:
 Chapter 23 is the **last build chapter** — same app, different **home**. You copy the API to a host, build the client with a production API URL, run the worker as a second process, and prove smoke tests pass on **HTTPS**.
 
 Nothing new to learn about grocery or JWT here. This is **operations** — the skill that turns "I built a course project" into "here is my live demo link."
+
+<RealWorldEvent title="Heroku twelve-factor app methodology" when="2011–present" summary="Twelve-factor principles — config in env, stateless processes, logs as streams — shaped how Node apps deploy to modern platforms." lesson="Build deploy-ready habits early: health routes, env-based config, and separate worker processes pay off on day one in production." />
 
 ## In plain English
 
@@ -65,6 +79,14 @@ Everything you've run locally has to be re-created in production — this table 
 | Redis optional local | Production Redis URL (cache + BullMQ queue) or fallback documented |
 | Worker `npm run worker` in second terminal | Second process on host (PM2, Render worker service, etc.) |
 | `.env` on your laptop | Host environment panel — never Git |
+
+<MandatoryReadCard
+  title="MDN — HTTP overview"
+  href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview"
+  source="MDN"
+  summary="HTTPS, headers, and status codes — context for reverse proxies, TLS, and health checks in production."
+  readMinutes={10}
+/>
 
 ## Common beginner questions
 
@@ -135,10 +157,16 @@ Estimated time: **two to three days** — DNS and TLS wait on propagation.
 - [ ] You have a deploy target chosen (VPS, Render, Railway, etc.)
 - [ ] Domain or platform subdomain available
 
+<InterestingRead title="The deploy checklist nobody skips twice" hook="Forgotten env vars wake you at 2 a.m." readMinutes={4}>
+
+Database URL, Stripe keys, Cloudinary, Redis, JWT secrets, CORS origin — production needs every secret the app reads locally. FreshMarket's deploy checklist exists because missing one variable fails silently until traffic hits.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX791Q9E3EBCZPXGSYTPK5" />
+<OpenQuestion id="01KZP7KR02RXP9CDJE25MWTMTM" />
 
 ## Next
 

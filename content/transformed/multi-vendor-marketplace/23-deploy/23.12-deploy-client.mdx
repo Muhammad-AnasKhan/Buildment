@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Mentors evaluate the **shop URL**, not your
 ---
 **Why this step matters:** Mentors evaluate the **shop URL**, not your git repo. This step puts the React build where browsers can load it — with SPA fallback so `/shop` refresh does not 404.
 
+<BigWordAlert term="Static hosting" plainEnglish="Serving Vite build output from CDN or static host — Netlify, Vercel, or nginx." whyItMatters="FreshMarket React app is static files after build — separate deploy from API server." />
+
 **Where the project is now:** API is live over HTTPS (23.10–23.11); the React client still runs on Vite dev with a local `VITE_API_URL`.
 
 **After this step:** Production client URL loads React app and fetches production API.
@@ -46,10 +48,12 @@ Without this, `/shop` refresh returns 404.
 - [ ] Client HTTPS loads
 - [ ] Product grid or health data from live API
 
+<RealWorldEvent title="Heroku twelve-factor app methodology" when="2011–present" summary="Twelve-factor principles — config in env, stateless processes, logs as streams — shaped how Node apps deploy to modern platforms." lesson="Build deploy-ready habits early: health routes, env-based config, and separate worker processes pay off on day one in production." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX795FAW1KAYYCJ3342SWA" />
+<OpenQuestion id="01KZP7KR1ZVM9JX5FWFMXG3EVW" />
 
 ## Next
 

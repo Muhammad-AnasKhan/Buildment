@@ -112,6 +112,26 @@ Rules:
   They live in `Block.config`, server-side only. The client receives a sanitized projection — see
   [`09-security.mdx`](09-security.mdx) for the sanitizer contract and its required test.
 
+## Learn presentation blocks (MDX components)
+
+Eight teaching visuals live in `src/components/learn/content-blocks/` — no Prisma `BlockType`,
+no `Response` rows. Registered in `src/mdx/components.tsx` and MDXEditor via
+`contentBlockDescriptors`.
+
+| Component | Purpose |
+|---|---|
+| `<FileTree>` / `<FileTreeItem>` | Repo slice with highlight/new markers |
+| `<TerminalBlock>` / `<TerminalLine>` | npm/git commands outside ApiRequestPanel |
+| `<ComparePanel>` / `<CompareColumn>` | Two-column concept comparisons |
+| `<ArchitectureDiagram>` / `<ArchNode>` | Client → API → Data layer stack |
+| `<StateMachine chart={...} />` | Mermaid state diagrams in LearnPanelShell |
+| `<EntityDiagram chart={...} />` | Mermaid ER diagrams + optional legend |
+| `<DiffBlock before={...} after={...} />` | Before/after code diff |
+| `<TraceRequest>` / `<TraceStep>` | Stepped middleware trace (client stepper) |
+
+Import preserves these tags in `scripts/import-course.ts` `escapeMdxProse()`; reader restores
+via `restoreInteractiveBlockTags()`.
+
 ## Where this lives in the repo
 
 ```

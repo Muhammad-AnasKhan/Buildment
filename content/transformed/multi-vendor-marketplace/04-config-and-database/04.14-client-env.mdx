@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Re-verifying `VITE_API_URL` while adding se
 ---
 **Why this step matters:** Re-verifying `VITE_API_URL` while adding server secrets reinforces the client/server boundary — the browser still never sees `MONGODB_URI`, but it must display the new health field from your API.
 
+<BigWordAlert term="VITE_ env prefix" plainEnglish="Vite only exposes env vars starting with `VITE_` to the browser — a safety gate against leaking server secrets." whyItMatters="FreshMarket's client gets `VITE_API_URL` only; MongoDB URI never touches the React bundle." />
+
 **Where the project is now:** Server health returns `db: connected`. Client Home page from Chapter 2 likely shows only `status`.
 
 **After this step:** Client env verified; Home page displays **database status** from live API response; no MongoDB secrets on client.
@@ -166,10 +168,12 @@ Do not commit `client/.env` if gitignored.
 - [ ] No secrets added to client  
 - [ ] Committed  
 
+<RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX75TSK8716C4DDCBJS2Y0" />
+<OpenQuestion id="01KZP7KP5ZQF350E732A86VMAW" />
 
 ## Next
 

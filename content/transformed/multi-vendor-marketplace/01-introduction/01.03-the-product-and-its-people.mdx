@@ -4,9 +4,11 @@ module: 1
 lesson: 3
 summary: "Before you meet the vendors and customers, meet the **product** — the thing you're building, described the way a user would experience it."
 ---
-&lt;Callout type="info" title="What you'll learn">
+<Callout type="info" title="What you'll learn">
 Before you meet the vendors and customers, meet the **product** — the thing you're building, described the way a user would experience it, not the way a system diagram would decompose it.
-&lt;/Callout>
+</Callout>
+
+<BigWordAlert term="Marketplace actors" plainEnglish="The distinct roles in a marketplace — shoppers, vendors, and the platform operator — each with different permissions." whyItMatters="FreshMarket's auth, dashboards, and order flows all map back to who is logged in and what they can touch." />
 
 Imagine a Saturday morning. Someone opens your app on their phone. They're buying from **every local shop in the neighbourhood**, in one session — rice from Ali's Grocer, coriander from Green Valley Farm, oil from The Pantry. One cart. One checkout. Behind that button, your platform splits the purchase into **three separate orders**, notifies each shop, and locks the prices on each receipt.
 
@@ -121,6 +123,8 @@ Not a delivery tracker, review site, chat app, or admin SaaS. Those exclusions k
 
 **Minute two — customer:** Browse → add from two vendors → checkout → two orders → change vendor price → customer history unchanged.
 
+<RealWorldEvent title="Instacart scales local grocery delivery" when="2012–present" summary="Instacart connected independent grocery stores to shoppers through a single app, handling inventory sync, delivery logistics, and multi-store baskets at national scale." lesson="Your FreshMarket build starts smaller, but the same pattern applies: one customer experience, many vendor backends, and careful data ownership." />
+
 ## Key ideas from this page
 
 - **Local grocery marketplace** — one cart, many vendors, split checkout
@@ -131,4 +135,4 @@ Not a delivery tracker, review site, chat app, or admin SaaS. Those exclusions k
 Next: the explicit scope list — what's in, what's out.
 ## Before you continue
 
-<OpenQuestion id="01KZAX75540HE2CQ3TN3GC5PVW" />
+<OpenQuestion id="01KZP7KNP5TPZNANGTMAAWFNQ4" />

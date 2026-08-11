@@ -6,6 +6,8 @@ summary: "MongoDB + Mongoose is mandated for this course. This chapter explains 
 ---
 # 3.5 — The decision for FreshMarket
 
+<BigWordAlert term="MongoDB" plainEnglish="The document database this course uses — collections, BSON documents, and Mongoose as the Node.js ODM." whyItMatters="FreshMarket commits to MongoDB here so every later chapter (models, queries, indexes) stays consistent." />
+
 ## What you'll learn
 
 By the end of this chapter, you should be able to say out loud:
@@ -14,9 +16,9 @@ By the end of this chapter, you should be able to say out loud:
 
 This isn't about blindly following instructions. It's about understanding the trade-offs so you can explain your choices — in interviews, in code reviews, and in your learning log.
 
-&lt;Callout type="info" title="Interview prep">
+<Callout type="info" title="Interview prep">
 When an interviewer asks "why did you pick MongoDB?" you should answer from **this project's specific needs** — not from a marketing brochure. Being able to name both pros and accepted cons shows you understand trade-offs.
-&lt;/Callout>
+</Callout>
 
 ## The decision (non-negotiable for this course)
 
@@ -31,9 +33,9 @@ Here's what this course mandates:
 
 Chapter 4 connects with `MONGODB_URI`. Chapter 5 creates `*.model.js` files. Deviating to Postgres **breaks every subsequent chapter's paths and examples**.
 
-&lt;Callout type="warning" title="Fork in the road">
+<Callout type="warning" title="Fork in the road">
 If you strongly prefer Postgres, you can fork the course and adapt the examples yourself — but for the standard path, this decision is locked in now.
-&lt;/Callout>
+</Callout>
 
 ## Why MongoDB for *this* project — the pros
 
@@ -100,9 +102,9 @@ Here's the weighted comparison that led to this decision:
 
 **Winner for this course:** MongoDB — weighted by teaching path and document aggregates, not by universal superiority.
 
-&lt;Callout type="tip">
+<Callout type="tip">
 **Notice the weights.** "Matches chapter materials" and "Embedded order snapshots" are both *High* weight — those drive the decision. "Ad-hoc BI" is *Low* because it's out of scope. This is how you weigh trade-offs in real projects.
-&lt;/Callout>
+</Callout>
 
 ## Common questions
 
@@ -166,14 +168,7 @@ Stay focused on **collections and relationships** for now.
 
 **❌ Don't:** Argue for Postgres while reading Mongo chapters.
 
-&lt;ChapterRecap
-  points=&#123;[
-    "MongoDB + Mongoose — mandated for this course; weighted pros for our specific needs",
-    "Cons accepted — constraints, reporting, transaction discipline",
-    "Modules map to collections — design before code",
-    "Chapter 4 connects the database; Chapter 5 defines schemas"
-  ]&#125;
-/>
+<ChapterRecap id="01KZP7KP0YQKW1QCPYYWXW26S1" />
 
 ## Self-check
 
@@ -182,6 +177,4 @@ Stay focused on **collections and relationships** for now.
 - [ ] I know the sequence: decide (Ch 3) → connect (Ch 4) → schemas (Ch 5)
 
 **Next:** Embedding vs referencing — the most important modelling choice in the marketplace.
-## Before you continue
-
-<OpenQuestion id="01KZAX75JZE50J6BNJJPV9MXS8" />
+<RealWorldEvent title="Walmart's polyglot data strategy" when="2010s–present" summary="Large retailers run multiple database technologies — relational systems for transactions and accounting, document or search stores for catalogs and recommendations." lesson="Choosing MongoDB for FreshMarket is a domain-driven decision. Document the trade-off so future you can defend it in an interview." />

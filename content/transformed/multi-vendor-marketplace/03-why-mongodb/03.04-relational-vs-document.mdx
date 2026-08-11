@@ -6,6 +6,8 @@ summary: "Walk through the same marketplace entities in SQL tables and MongoDB c
 ---
 # 3.4 — Relational vs document models
 
+<BigWordAlert term="Document database" plainEnglish="A database that stores records as JSON-like documents in collections instead of rows in joined tables." whyItMatters="MongoDB fits FreshMarket's nested cart items and varied product fields without complex JOIN queries." />
+
 ## What you'll learn
 
 By the end of this chapter, you'll be able to:
@@ -16,9 +18,9 @@ By the end of this chapter, you'll be able to:
 
 You don't need to pick a side forever. You just need to understand **why this course uses documents** for FreshMarket — and be able to explain that choice.
 
-&lt;Callout type="info">
+<Callout type="info">
 **You're not choosing a religion.** You're choosing what fits this grocery marketplace and this course's teaching path. If you understand both models, you can explain your choice — and that's what matters in interviews.
-&lt;/Callout>
+</Callout>
 
 ## Think of it like…
 
@@ -90,9 +92,9 @@ The table below lines up the same concerns in both worlds, so you can see exactl
 | **Constraints** | DB-enforced FK, CHECK, UNIQUE | App + Mongoose schema; unique indexes possible |
 | **JSON API fit** | ORM maps rows → objects | Documents map naturally to JSON |
 
-&lt;Callout type="tip">
+<Callout type="tip">
 **Neither column "wins" universally.** In the real world, fit to your team and your access patterns decides. In this course, fit to the teaching path decides — and that path is MongoDB.
-&lt;/Callout>
+</Callout>
 
 ## The denormalization trap (and when to break the rule)
 
@@ -104,9 +106,9 @@ Here's a mistake you'll be tempted to make: copying `vendorName` onto every `pro
 
 **The exception — order snapshots:** Copying `nameAtPurchase`, `priceAtPurchase`, and `unitAtPurchase` onto order lines is **correct on purpose**. History must not update when a product changes.
 
-&lt;Callout type="warning">
+<Callout type="warning">
 **Mark snapshot fields clearly in your ERD.** Show `nameAtPurchase` and `priceAtPurchase` on the embedded order lines — not just `productId`. This tells future-you that these fields are intentional copies, not a denormalization mistake.
-&lt;/Callout>
+</Callout>
 
 ## Transactions — both worlds can checkout
 
@@ -121,9 +123,9 @@ Multi-vendor checkout must do several things atomically:
 
 **MongoDB:** Supports multi-document transactions on replica sets (Atlas qualifies). Chapter 18 covers the checkout spec.
 
-&lt;Callout type="warning">
+<Callout type="warning">
 **Don't choose MongoDB thinking you'll avoid transaction thinking.** Checkout correctness matters in both worlds. The syntax differs; the responsibility doesn't.
-&lt;/Callout>
+</Callout>
 
 ## N+1 queries — a trap in both worlds
 
@@ -160,16 +162,7 @@ Copying store names onto every product feels fast — until the vendor renames t
 </FaqGroup>
 
 
-&lt;ChapterRecap
-  points=&#123;[
-    "Same entities, two modelling styles — FKs/refs, tables/collections",
-    "Snapshots are correct in both — embedded arrays or order_items table",
-    "Don't copy vendor names onto products in either model",
-    "Transactions and N+1 exist in both worlds — your skill matters more than the database logo"
-  ]&#125;
-/>
+<ChapterRecap id="01KZP7KP0N1SYTX61QXKZZTENY" />
 
 **Next:** The FreshMarket decision — why MongoDB + Mongoose, and what trade-offs we accept.
-## Before you continue
-
-<OpenQuestion id="01KZAX75JGAWKKQD08RKK3XZT2" />
+<RealWorldEvent title="Walmart's polyglot data strategy" when="2010s–present" summary="Large retailers run multiple database technologies — relational systems for transactions and accounting, document or search stores for catalogs and recommendations." lesson="Choosing MongoDB for FreshMarket is a domain-driven decision. Document the trade-off so future you can defend it in an interview." />

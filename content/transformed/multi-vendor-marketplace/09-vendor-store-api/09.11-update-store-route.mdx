@@ -6,6 +6,8 @@ summary: "Store settings — name, description, address — change over time. `P
 ---
 **Why this step matters:** Store settings — name, description, address — change over time. `PATCH /stores/:id` reuses Chapter 8's ownership assert so only the leaseholder edits their stall. Chapter 10's settings page calls this route on save.
 
+<BigWordAlert term="PATCH semantics" plainEnglish="Partial update — send only changed fields, not the entire document — standard for edit forms." whyItMatters="FreshMarket store settings form PATCHes name and hours without resending unchanged fields." />
+
 **Where the project is now:** Vendor can create and fetch own store.
 
 **After this step:** `PATCH /api/stores/:id` updates mutable fields when caller owns the store — **200** + updated document. Wrong vendor → **403**. Invalid id or missing store → **404**.
@@ -71,12 +73,19 @@ This reproduces Chapter 8 test with **real** update body — e.g. change `name`.
 
 ## curl verify
 
-```bash
-curl -s -X PATCH http://localhost:5000/api/stores/STORE_ID \
-  -H "Authorization: Bearer TOKEN_A" \
-  -H "Content-Type: application/json" \
-  -d '{"description":"Updated blurb"}'
-```
+<ApiRequestPanel title="Update store — vendor PATCH">
+
+<ApiRequest
+  label="Owner updates store description"
+  method="PATCH"
+  url="http://localhost:5000/api/stores/STORE_ID"
+  bearer="TOKEN_A"
+  body='{"description":"Updated blurb"}'
+  responseStatus={200}
+  responseBody='{"store":{"id":"...","name":"...","description":"Updated blurb","updatedAt":"..."}}'
+/>
+
+</ApiRequestPanel>
 
 Confirm `updatedAt` changes if using timestamps.
 
@@ -115,10 +124,12 @@ git commit -m "feat(stores): add PATCH update store with ownership check"
 - [ ] Invalid body → 400  
 - [ ] Chapter 8 IDOR test still passes with real payload  
 
+<RealWorldEvent title="Etsy shop URLs and seller identity" when="2005–present" summary="Marketplace sellers receive branded storefront URLs while the platform enforces global uniqueness and policy compliance behind the scenes." lesson="Store creation is more than a form — it is the moment a user becomes a vendor with isolated data and public presence." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76W9AVS7BAQJ818C6H8N" />
+<OpenQuestion id="01KZP7KPT3GMPA389P0DVAPFEV" />
 
 ## Next
 

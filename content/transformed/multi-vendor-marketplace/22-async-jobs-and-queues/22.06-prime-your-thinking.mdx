@@ -6,6 +6,8 @@ summary: "Before you write `shared/queue.js` and `worker.js`, read how **BullMQ*
 ---
 Before you write `shared/queue.js` and `worker.js`, read how **BullMQ** expects Queues and Workers to connect to Redis. This sub-chapter is a **mandatory reading assignment**.
 
+<BigWordAlert term="At-least-once delivery" plainEnglish="Jobs may run more than once on failure/retry — handlers must be idempotent." whyItMatters="FreshMarket order email job retry must not send duplicate receipts to shopper." />
+
 Chapter 21 taught cache-aside. This read covers **producer/consumer job flow** — so your checkout enqueue in 22.11 matches official patterns.
 
 ## Mandatory read
@@ -61,6 +63,12 @@ You implement **processor functions** — not LPUSH/BRPOP manually.
 
 Build order in this chapter: queue module → worker boots → checkout enqueue → processor logs.
 
+<InterestingRead title="Why checkout should not send email inline" hook="SMTP is slow and flaky compared to HTTP." readMinutes={4}>
+
+Sending vendor notification emails inside the payment request adds failure modes where money succeeded but the user sees an error. Queue the email; return success when the order is saved and payment confirmed.
+
+</InterestingRead>
+
 ## Reflect — write in notebook or learning log draft
 
 After reading, answer without opening the docs:
@@ -77,6 +85,8 @@ If you can't answer #1, re-read Quick Start "Producers" and "Consumers".
 Production runs **two processes** from one repo: API + worker. PM2 ecosystem file or platform second service — preview only; implement in deploy chapter.
 
 Worker needs same env: `REDIS_URL`, `MONGODB_URI` (if processor loads User/Order), `NODE_ENV`.
+
+<RealWorldEvent title="Shopify flash sale queue architecture" when="2010s–present" summary="Commerce platforms moved heavy work to background jobs during traffic spikes so checkout stayed available." lesson="Design jobs to be idempotent — retries will happen, and duplicate emails beat lost orders." />
 
 ## Time box
 
@@ -96,7 +106,7 @@ Worker needs same env: `REDIS_URL`, `MONGODB_URI` (if processor loads User/Order
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78XKWPTCC8PWW0275VT2" />
+<OpenQuestion id="01KZP7KQXNZ8DJMNE5DEX0QQ9C" />
 
 ## Next
 

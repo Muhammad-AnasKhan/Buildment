@@ -4,7 +4,11 @@ module: 16
 lesson: 15
 summary: "Gate for Chapter 16 — Cart API. Tick every box and answer the learning log on this page before continuing."
 ---
-This is the **gate** for Chapter 16. Tick every box honestly and answer the learning log below before opening Chapter 17.
+Work through each section in order. Test with **curl** before opening Chapter 17 — the cart UI will not work if the API is wrong.
+
+<Callout type="info" title="How to use this gate">
+Chapter 17 is frontend-only. Every box here must pass via curl or API client first. If POST /cart fails in curl, do not start React cart pages.
+</Callout>
 
 ## Chapter 16 — Cart API checklist (gate)
 
@@ -14,20 +18,23 @@ Do **not** open Chapter 17 until every box is ticked and learning log answers ar
 
 - [ ] `cart.routes.js`, `cart.service.js`, `cart.schema.js` exist
 - [ ] Router mounted on app with API prefix consistent with project
-- [ ] **All** cart routes require authentication — 401 without token
+- [ ] **All** cart routes require authentication — 401 without token  
+  *Verify:* curl without Authorization header.
 - [ ] userId taken from JWT only — never from request body
 
 ### POST /cart
 
 - [ ] Accepts `productId`, `storeId`, `quantity`
 - [ ] Validates product exists and is published / in stock
-- [ ] Validates `product.storeId` matches request `storeId` — mismatch → 400
+- [ ] Validates `product.storeId` matches request `storeId` — mismatch → 400  
+  *Verify:* Send wrong storeId on purpose — must fail.
 - [ ] Rejects quantity > stockQty and stockQty === 0
 - [ ] Creates CartItem with userId, productId, storeId, quantity
 
 ### GET /cart
 
-- [ ] Returns only current user's items
+- [ ] Returns only current user's items  
+  *Verify:* User A and User B see different carts.
 - [ ] Populates product (name, price, unit, imageUrl) and store (name)
 - [ ] Empty cart → 200 with `items: []`
 - [ ] No N+1 populate loop
@@ -72,7 +79,7 @@ Do **not** open Chapter 17 until every box is ticked and learning log answers ar
 - [ ] Explain stock check timing vs checkout decrement
 - [ ] Explain IDOR risk on cart itemId
 
-### Learning log — write now
+## Learning log
 
 Answer **in your own words** in the fields below:
 
@@ -91,7 +98,6 @@ Answer **in your own words** in the fields below:
 7. **Multi-vendor JSON:** Paste redacted GET /cart showing two storeIds.
 
 8. **Chapter 17 preview:** How will cart page group items by store for display?
-
 
 ## All boxes ticked?
 

@@ -90,7 +90,7 @@ export function TocToggle({
     <button
       type="button"
       onClick={onClick}
-      className="flex size-8 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-500 shadow-sm transition-colors hover:bg-neutral-50 hover:text-neutral-700"
+      className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
       aria-label={collapsed ? "Expand table of contents" : "Collapse table of contents"}
     >
       {collapsed ? (

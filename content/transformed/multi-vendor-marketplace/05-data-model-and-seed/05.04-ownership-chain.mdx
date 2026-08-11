@@ -6,6 +6,8 @@ summary: "Multi-vendor marketplaces fail in production when **object-level owner
 ---
 Multi-vendor marketplaces fail in production when **object-level ownership** is unclear. Authentication answers *who are you?* Ownership answers *may you touch this document?*
 
+<BigWordAlert term="Resource ownership" plainEnglish="The chain linking data to the user who may edit it — vendor owns store, store owns products." whyItMatters="Authorization in Chapter 8 checks this chain — a vendor must not edit another vendor's products." />
+
 This sub-chapter maps the **ownership chain** — the reference path every isolation check in Chapter 8 will walk.
 
 ## Why this matters for absolute beginners
@@ -194,9 +196,11 @@ Before 5.10, add to `docs/erd-draft.md` or a scratch note:
 
 **❌ Don't:** Use ambiguous field names like `owner` without role context.
 
+<RealWorldEvent title="Amazon's item-level order snapshots" when="Marketplace era" summary="Marketplace order systems persist item details at purchase time so disputes, refunds, and tax reporting reflect the transaction as it happened." lesson="Model for auditability early. Your seed data and ERD should show which fields are live references and which are immutable snapshots." />
+
 ## Reflect
 
-<OpenQuestion id="01KZAX75XH635WHP4AM97D9VKM" />
+<OpenQuestion id="01KZP7KP7V6G3B6Z32TBMX65SY" />
 
 
 

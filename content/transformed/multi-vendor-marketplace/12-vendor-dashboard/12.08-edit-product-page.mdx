@@ -2,88 +2,124 @@
 title: "Edit product page"
 module: 12
 lesson: 8
-summary: "Vendors fix prices and stock daily. Pre-filled edit forms test your PATCH contract and prove the vendor can round-trip data — load, change, save, see update in the list. Chapter 13's image upload attaches to this page."
+summary: "Build edit product: pre-fill form from vendor product list, save with PATCH /products/:id. Chapter 13 adds photo upload here."
 ---
-**Why this step matters:** Vendors fix prices and stock daily. Pre-filled edit forms test your PATCH contract and prove the vendor can round-trip data — load, change, save, see update in the list. Chapter 13's image upload attaches to this page.
+Vendors change prices and stock every day. The edit page loads an existing product, lets them update fields, and saves with PATCH — the same round-trip pattern as store settings in Chapter 10.
 
-**Where the project is now:** Product API is complete (Ch 11); the dashboard has the inventory table and create page (12.6–12.7) — products can be created but not edited.
+<BigWordAlert term="Edit form prefill" plainEnglish="Loading existing product into form fields via GET, then PATCH on save." whyItMatters="FreshMarket edit page must not reset fields to empty — fetch before render." />
 
-**After this step:** `/vendor/products/:id/edit` **pre-fills form** from product data and saves via `PATCH /api/products/:id`.
+## Target UI preview
 
-## Loading product data
+![Edit product — UI preview](/showcase/multi-vendor-marketplace/edit-product-page.png)
 
-| Strategy | Pros |
+*Production-style UI preview — pre-filled form, Published toggle, Save button.*
+
+---
+
+## Step 1 — Create EditProduct.jsx
+
+**Route:** `/vendor/products/:id/edit`  
+**Link from:** Edit button on product list (12.6)
+
+Same form fields as create (12.7) — pre-filled instead of empty.
+
+---
+
+## Step 2 — Load product data
+
+**MVP approach:** On mount, call `listVendorProducts()` and find the product where `_id === params.id`.
+
+| Result | UI |
 |---|---|
-| A — from list via route state | No extra request |
-| B — refetch list and find id | Simple; works on direct URL |
-| C — GET single product (if added) | Best deep links |
+| Found | Pre-fill form |
+| Not found | "Product not found" + link back to list |
+| Loading | Spinner |
 
-**MVP:** Strategy B — on mount call `listVendorProducts()`, find `params.id`, or 404 if missing.
+Alternative: add `GET /vendor/products/:id` if you built one — either works.
 
-## Page: EditProduct.jsx
+---
 
-Same fields as create — all editable except id.
+## Step 3 — Pre-fill the form
 
-### Submit flow
+Copy values into controlled inputs:
+
+- name, description, price, unit, stockQty, isPerishable, weightOrQuantity
+
+Do **not** expose `_id` or `storeId` as editable fields.
+
+---
+
+## Step 4 — Save with PATCH
+
+Add to `api/products.js`:
+
+```javascript
+updateProduct(id, data) → PATCH /api/products/:id
+```
 
 ```
 onSubmit:
-  1. updateProduct(id, dirtyFields) → PATCH
-  2. 200 → success toast/banner + stay or navigate list
+  1. updateProduct(id, formData)
+  2. 200 → navigate to /vendor/products (list refetches)
   3. 400 → field errors
-  4. 403/404 → banner per 12.4
+  4. 403/404 → error banner
 ```
 
-Recommend navigate back to list on success — table shows updates.
+---
 
-## Pre-fill
+## Step 5 — Optional delete button
 
-Populate controlled inputs from loaded product object — handle loading until data ready.
+If you add delete:
 
-## api/products.js
+- Confirm dialog
+- `DELETE /api/products/:id`
+- Navigate to list on 204
 
-Add `updateProduct(id, data)` — PATCH JSON.
+Not required for gate if edit + publish are working.
 
-## Delete button (optional)
+---
 
-If included:
+## Step 6 — Verify round-trip
 
-- Confirm modal  
-- `deleteProduct(id)` → DELETE  
-- Navigate to list on 204  
+1. Change price on edit page → Save
+2. List shows new price
+3. Hard refresh edit URL — still loads correct product
+4. Wrong id in URL → friendly not-found page
 
-Uses Ch 11 delete route — optional for gate if edit + publish sufficient.
+---
 
-## Breadcrumb
+## Common mistakes
 
-Products → Edit [name] — optional navigation aid.
+| Mistake | Fix |
+|---|---|
+| Allow editing storeId | Server-owned — read only |
+| Stale list after save | Refetch on navigate back |
+| Invalid ObjectId in URL | Show 404 UX |
+
+---
 
 ## Commit
 
 ```bash
-git add client/src/pages/vendor/EditProduct.jsx
+git add client/src/pages/vendor/EditProduct.jsx client/src/api/products.js
 git commit -m "feat(client): add edit product form with PATCH products"
 ```
 
-## ✅ Do / ❌ Don't
+## Verify checklist
 
-**✅ Do:** Validate id param — invalid ObjectId shows friendly 404.
+- [ ] Edit price → save → list updated
+- [ ] Hard refresh edit page loads correct data
+- [ ] Bad id → not found UX
 
-**✅ Do:** Keep publish toggle on this page (12.9) — same form OK.
-
-**❌ Don't:** Allow editing `_id` or `storeId` fields.
-
-## Verify
-
-- [ ] Edit price → save → list shows new price  
-- [ ] Hard refresh edit page — still loads correct product  
-- [ ] Wrong id in URL → not found UX  
+<RealWorldEvent title="Square Dashboard for sellers" when="2010s–present" summary="Square gave small merchants inventory, orders, and payouts in one place — proving simple dashboards drive daily engagement." lesson="Vendor tools should answer: what do I sell, what is low stock, and what changed since yesterday?" />
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX779K0TR0SYK3J0PE5DWK" />
+<OpenQuestion id="01KZP7KQ1GJBN9W6KR2N54EBJ4" />
 
 ## Next
 
-**Sub-chapter 12.9:** Publish toggle — editing works; the last piece is letting the vendor control whether a product is live.
+**Sub-chapter 12.9:** Publish toggle — control draft vs live on the edit page.
+
+Edit works. Next, publish control.

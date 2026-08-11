@@ -6,6 +6,8 @@ summary: "**Why this step matters:** `docs/erd.md` is your portfolio artifact an
 ---
 **Why this step matters:** `docs/erd.md` is your portfolio artifact and viva reference — it must match what you actually implemented, not the Chapter 3 draft alone. Diffing draft vs final proves you learned from building schemas.
 
+<BigWordAlert term="Final ERD" plainEnglish="Updated entity diagram reflecting actual implemented models — design doc synced with code." whyItMatters="FreshMarket's committed ERD is interview-ready proof you designed before and after implementation." />
+
 **Where the project is now:** Models implemented; seed data in Compass. `docs/erd-draft.md` from Chapter 3 may differ from reality.
 
 **After this step:** **`docs/erd.md`** committed — final entity-relationship document matching Mongoose schemas field-for-field.
@@ -136,10 +138,12 @@ git commit -m "docs: add final ERD matching mongoose schemas"
 - [ ] Diagram present
 - [ ] Field names match Mongoose schemas exactly
 
+<RealWorldEvent title="Amazon's item-level order snapshots" when="Marketplace era" summary="Marketplace order systems persist item details at purchase time so disputes, refunds, and tax reporting reflect the transaction as it happened." lesson="Model for auditability early. Your seed data and ERD should show which fields are live references and which are immutable snapshots." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX7629SN268P8ZD2ZX82ZX" />
+<OpenQuestion id="01KZP7KPAY4VNH0CQKRZ2Q8G0N" />
 
 ## Next
 

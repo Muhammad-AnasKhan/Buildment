@@ -6,6 +6,8 @@ summary: "**Why this step matters:** One validated config object stops `process.
 ---
 **Why this step matters:** One validated config object stops `process.env` sprawl across dozens of files. Fail-fast on missing `MONGODB_URI` here turns mysterious Mongoose errors into a clear message the first time you forget to copy `.env.example`.
 
+<BigWordAlert term="Validated config object" plainEnglish="A single module that reads env vars, validates types, and exports a typed config — one source of truth." whyItMatters="FreshMarket's config module throws at boot if `JWT_SECRET` is too short — catching misconfig before users hit errors." />
+
 **Where the project is now:** `server/.env` exists locally; no code reads `MONGODB_URI` yet.
 
 **After this step:** `server/src/shared/config.js` validates required environment variables at import/startup and exports a config object for the rest of the server.
@@ -17,6 +19,13 @@ server/src/shared/config.js
 ```
 
 **Why `shared/`:** Config is cross-cutting — used by `server.js`, `db.js`, later auth and seed scripts — not owned by one domain module.
+
+
+## Try it yourself
+
+Practice the core logic from this lesson in the **code lab** below — write real JavaScript, then click **Check my code**. Same editor style as the course's code blocks.
+
+<CodeExercise id="01KZP7KP4W9E7BQ4TZD53RT6R0" />
 
 ## Behaviour contract — you implement
 
@@ -159,10 +168,7 @@ Include `dotenv` in commit if installed.
 - [ ] Valid `.env` allows module to load without throw  
 - [ ] No MongoDB connection attempted in config module  
 
-
-## Before you continue
-
-<OpenQuestion id="01KZAX75S2DQ5P6J2WMRAHCEZ6" />
+<RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />
 
 ## Next
 

@@ -10,9 +10,22 @@ type MermaidDiagramProps = {
 // Initialize mermaid once
 mermaid.initialize({
   startOnLoad: false,
-  theme: "default",
+  theme: "base",
+  look: "handDrawn",
   securityLevel: "loose",
   fontFamily: "inherit",
+  themeVariables: {
+    primaryColor: "#eef2ff",
+    primaryBorderColor: "#6366f1",
+    primaryTextColor: "#1e1b4b",
+    secondaryColor: "#ecfdf5",
+    secondaryBorderColor: "#10b981",
+    secondaryTextColor: "#064e3b",
+    tertiaryColor: "#fff7ed",
+    tertiaryBorderColor: "#f59e0b",
+    lineColor: "#6366f1",
+    fontSize: "15px",
+  },
 });
 
 export function MermaidDiagram({ chart }: MermaidDiagramProps) {
@@ -56,7 +69,7 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
   return (
     <div
       ref={containerRef}
-      className="not-prose my-6 flex justify-center overflow-x-auto rounded-xl border border-neutral-200 bg-neutral-50/50 p-4"
+      className="not-prose my-8 overflow-x-auto rounded-2xl border border-indigo-100/80 bg-gradient-to-b from-indigo-50/40 to-white p-5 shadow-sm"
     >
       {svg ? (
         <div

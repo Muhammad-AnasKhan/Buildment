@@ -6,6 +6,8 @@ summary: "Vendor changes milk price from ₹65 to ₹70. Customer still sees ₹
 ---
 Vendor changes milk price from ₹65 to ₹70. Customer still sees ₹65 for an hour because catalogue response was **cached without invalidation**. Trust erodes faster than slow pages.
 
+<BigWordAlert term="Stale cache trap" plainEnglish="Serving outdated product price or stock from cache after vendor updated the real record." whyItMatters="FreshMarket shoppers seeing wrong price destroys trust — invalidation strategy matters." />
+
 This sub-chapter names the trap **before** you wire Redis in 21.8–21.11. Speed without correctness is worse than no cache at all.
 
 ## The bug
@@ -41,6 +43,8 @@ Chapter 21 implements **both in sequence** (21.4).
 On GET:  try cache → on miss, query DB → set with TTL
 On POST/PATCH/DELETE product:  delete cache keys for catalogue
 ```
+
+<RealWorldEvent title="Facebook Memcached outage lessons" when="2010" summary="Major sites learned that caching layers need fallbacks — when cache fails, databases must survive the thundering herd." lesson="Always code a cache miss path. Redis is an accelerator, not the system of record." />
 
 ## What to invalidate
 
@@ -130,10 +134,16 @@ Because customers forgive slowness but not being misled. If the shop takes an ex
 - [ ] I know invalidation beats TTL alone for writes
 - [ ] I listed which product routes trigger invalidation
 
+<InterestingRead title="The stale cache trap" hook="Fast wrong answers are worse than slow right ones." readMinutes={4}>
+
+Teams enable caching, celebrate response times, then ship outdated stock levels. FreshMarket defines what is cacheable (public catalogue pages) and what never is (cart, checkout, auth).
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78PSTZQMV0132DB8NQ7Z" />
+<OpenQuestion id="01KZP7KQSY6EHFNXKC47HQZ63B" />
 
 ## Next
 

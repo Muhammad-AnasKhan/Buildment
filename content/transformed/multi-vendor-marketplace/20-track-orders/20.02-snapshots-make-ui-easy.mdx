@@ -6,6 +6,8 @@ summary: "Order history UI would be fragile if every row required a live product
 ---
 Order history UI would be fragile if every row required a live product fetch. **Snapshots mean the list endpoint is the only read** — no N+1 populate for price, no surprise when vendor deletes a product.
 
+<BigWordAlert term="Snapshot-driven UI" plainEnglish="Order pages render from frozen line data — no live product fetch needed for receipts." whyItMatters="FreshMarket order confirmation shows historical name/price even if product deleted later." />
+
 Chapter 18 embedded `nameAtPurchase`, `priceAtPurchase`, and `unitAtPurchase` on each order line for exactly this reason. Chapter 20 is where that design pays off in React.
 
 ## Why snapshots matter for beginners
@@ -121,10 +123,12 @@ Yes — that's the one join that's fine. Populating `storeId.name` (or `store.na
 - [ ] I understand populate for store name only
 - [ ] I can explain why receipts must not use live prices
 
+<RealWorldEvent title="Domino's Pizza Tracker effect" when="2008–present" summary="Transparent order tracking reduced support calls and increased trust — customers tolerate wait when they see progress." lesson="Expose meaningful statuses, not internal jargon. 'Preparing your order' beats 'STATE_PICKING'." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78HZVMXG5PWBRRXP9M6T" />
+<OpenQuestion id="01KZP7KQQCJHEKGKMQMQ18QQ8V" />
 
 ## Next
 

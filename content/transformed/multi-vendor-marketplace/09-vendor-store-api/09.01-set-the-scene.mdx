@@ -6,6 +6,8 @@ summary: "**Where the project is now:** Chapters 6–8 gave you identity and iso
 ---
 **Where the project is now:** Chapters 6–8 gave you identity and isolation — vendors register, log in, and your API knows who they are. `requireAuth` returns 401 without a valid token. `requireRole('vendor')` returns 403 for customers. `assertStoreOwner` blocks cross-vendor store edits. But a verified vendor still has **no shop** in the database — only a user record with `role: vendor`.
 
+<BigWordAlert term="Vendor storefront" plainEnglish="The public-facing shop profile a vendor creates — name, description, hours, delivery zone." whyItMatters="FreshMarket shoppers discover vendors through store pages — this API creates and updates that identity." />
+
 **Where this chapter goes:** Vendors create and manage **their store** through the API — one store per vendor, owned by the authenticated user, protected by the isolation middleware from Chapter 8.
 
 This is a **build chapter**. Every sub-chapter from 9.7 onward adds routes and service logic to your repo. The gate is **runnable proof**: a vendor can create a store, fetch it, update it, and a second vendor cannot PATCH the first vendor's store.
@@ -13,6 +15,8 @@ This is a **build chapter**. Every sub-chapter from 9.7 onward adds routes and s
 ## Bridge from last chapter
 
 Chapter 8 installed **server-side permission rules** — `requireRole('vendor')`, `assertStoreOwner`, and a stub `PATCH /stores/:id` that returns **403** when Vendor B attacks Vendor A's store. You proved isolation with curl; you committed `docs/AUTHORIZATION.md`. But a new vendor still has **no store document** — only a user row with `role: vendor`. Chapter 9 is the first **vendor feature** that uses those guards for real: create shop, fetch mine, update mine. Authorization before features — not the other way around.
+
+<RealWorldEvent title="Etsy shop URLs and seller identity" when="2005–present" summary="Marketplace sellers receive branded storefront URLs while the platform enforces global uniqueness and policy compliance behind the scenes." lesson="Store creation is more than a form — it is the moment a user becomes a vendor with isolated data and public presence." />
 
 ## In plain English
 
@@ -153,6 +157,14 @@ Phase demo language: *"Vendor registers, opens a store, adds a product"* — Cha
 - **Not** store logo upload to Cloudinary — optional later; `logoUrl` string field for now  
 - **Not** admin-created stores — vendors self-serve only in this course  
 
+<MandatoryReadCard
+  title="Express — Routing guide"
+  href="https://expressjs.com/en/guide/routing.html"
+  source="Express"
+  summary="How Express matches HTTP methods and paths to handlers. Foundation for vendor store CRUD routes this chapter."
+  readMinutes={10}
+/>
+
 ## Reading pace
 
 | Sub-chapter | Cluster | Focus |
@@ -172,10 +184,16 @@ Estimated time: **one full day** — less conceptual than Chapter 8, more API wi
 - [ ] Two test vendor accounts available (seed or register fresh)  
 - [ ] `curl` or HTTP client ready with Bearer token workflow from Chapter 6  
 
+<InterestingRead title="Slug collisions in multi-vendor marketplaces" hook="Two shops cannot both be `/store/fresh-produce`." readMinutes={3}>
+
+Human-readable URLs help SEO and sharing, but slugs must be unique per platform. FreshMarket generates or validates slugs on create so vendors get friendly links without breaking routing.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76RQAMPX48DATDBBGSGY" />
+<OpenQuestion id="01KZP7KPR46AXB5DA0J67DMARZ" />
 
 ## Next
 

@@ -6,6 +6,8 @@ summary: "**Where the project is now:** Chapter 9 gave vendors a **store API** �
 ---
 **Where the project is now:** Chapter 9 gave vendors a **store API** — create, fetch mine, update — proven with curl. A logged-in vendor can open a shop programmatically. The React app still treats every vendor like any other authenticated user: no shop setup screen, no settings page, no gate blocking dashboard routes.
 
+<BigWordAlert term="Vendor onboarding" plainEnglish="The first-run flow guiding a new vendor from signup to a published store with products." whyItMatters="FreshMarket cannot sell groceries until vendors complete onboarding — this chapter builds that path." />
+
 **Where this chapter goes:** Vendors **open and manage their shop in the browser** — setup form, settings form, and an onboarding redirect that forces storeless vendors through `/vendor/open-shop` before they reach product pages.
 
 This is a **build chapter**. Every sub-chapter from 10.5 onward adds client routes and pages. The gate is **runnable proof**: new vendor registers → forced to open shop → can edit settings → cannot reach product routes until store exists.
@@ -13,6 +15,8 @@ This is a **build chapter**. Every sub-chapter from 10.5 onward adds client rout
 ## Bridge from last chapter
 
 Chapter 9 gave vendors a **store API** — `POST /stores`, `GET /stores/me`, `PATCH /stores/:id` — all proven with curl and protected by Chapter 8 middleware. A developer can open a shop; a **human vendor** still sees the same generic React app as everyone else. Chapter 7 taught the login UI pattern; Chapter 10 applies it to **vendor onboarding**: forms, settings, and a redirect gate that sends storeless vendors to "Open your shop" before they reach inventory routes.
+
+<RealWorldEvent title="Stripe Connect seller onboarding" when="2010s–present" summary="Payment platforms built multi-step seller verification flows because compliance and payout details cannot be optional after money moves." lesson="Collect required vendor data before they reach the dashboard — fixing incomplete profiles later is expensive support work." />
 
 ## In plain English
 
@@ -150,10 +154,24 @@ Estimated time: **one full day** — mostly React routing and forms.
 - [ ] API client attaches Bearer header (Ch 7 interceptor)  
 - [ ] You know your 404 contract for `GET /stores/me`  
 
+<MandatoryReadCard
+  title="React Router — Routing"
+  href="https://reactrouter.com/start/framework/routing"
+  source="React Router"
+  summary="Official guide to nested routes and navigation. Applies directly to vendor onboarding and protected route layouts."
+  readMinutes={20}
+/>
+
+<InterestingRead title="Empty states that convert" hook="A blank dashboard is where vendors quit." readMinutes={4}>
+
+Good onboarding explains the next single step — name your shop, add hours, upload a logo — instead of dropping users into a grid of zeros. FreshMarket's open-your-shop flow is the product moment where supply enters the marketplace.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76XRCV3PWP3YV2PJ12Z1" />
+<OpenQuestion id="01KZP7KPTTC0P2PD1PSQG3EQ57" />
 
 ## Next
 

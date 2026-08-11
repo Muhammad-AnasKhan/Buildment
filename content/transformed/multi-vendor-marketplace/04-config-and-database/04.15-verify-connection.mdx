@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Happy-path demos lie by accident unless you
 ---
 **Why this step matters:** Happy-path demos lie by accident unless you test failure — missing env, stopped MongoDB, wrong URI. This step produces evidence for the learning log that your app **fails honestly**, not silently.
 
+<BigWordAlert term="Integration smoke test" plainEnglish="Running the full stack and confirming the health check shows database connected in the browser." whyItMatters="Chapter 4's gate is runnable proof — screenshot or Network tab showing `{ status: 'ok', db: 'connected' }`." />
+
 **Where the project is now:** Happy path works — server boots with MongoDB, curl and browser show `db: connected`.
 
 **After this step:** You have **evidence** the system fails honestly when configuration or MongoDB is wrong — not only when everything is green.
@@ -28,15 +30,25 @@ Document which strategy you chose for test 3 if DB drops at runtime (503 vs 200 
 
 **Server:**
 
-```bash
-cd server && npm run dev
-```
+<TerminalBlock title="Start API" cwd="server">
+  <TerminalLine type="prompt">npm run dev</TerminalLine>
+  <TerminalLine type="output">MongoDB connected</TerminalLine>
+  <TerminalLine type="output">Server listening on http://localhost:5000</TerminalLine>
+</TerminalBlock>
 
 **curl:**
 
-```bash
-curl -s http://localhost:5000/health
-```
+<ApiRequestPanel title="Happy path — health">
+
+<ApiRequest
+  label="GET /health with MongoDB up"
+  method="GET"
+  url="http://localhost:5000/health"
+  responseStatus={200}
+  responseBody='{"status":"ok","db":"connected"}'
+/>
+
+</ApiRequestPanel>
 
 **Expected:** JSON with `"status":"ok"` and `"db":"connected"`.
 
@@ -181,10 +193,12 @@ Or describe tests in learning log only — sufficient for gate.
 - [ ] Git clean of `.env`  
 - [ ] Recovery confirmed  
 
+<RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX75V6VRZJ1GX1H522A25V" />
+<OpenQuestion id="01KZP7KP674F2HZXFPYTJ67MWN" />
 
 ## Next
 

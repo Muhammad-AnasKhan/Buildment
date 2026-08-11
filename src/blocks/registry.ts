@@ -33,16 +33,31 @@ import {
   ChapterRecapConfigSchema,
   type ChapterRecapConfig,
 } from "./chapter-recap/schema";
+import {
+  CodeConfigSchema,
+  type CodeConfig,
+  type CodePayload,
+} from "./code/schema";
+import { gradeCode, gradeCodeDetails } from "./code/grade";
+import { CodeExerciseComponent } from "./code/Component";
+import { reportCode } from "./code/report";
 import { ChapterRecapComponent } from "./chapter-recap/Component";
+import {
+  PredictConfigSchema,
+  type PredictConfig,
+  type PredictPayload,
+} from "./predict/schema";
+import { gradePredict } from "./predict/grade";
+import { PredictComponent } from "./predict/Component";
+import { reportPredict } from "./predict/report";
 
 // The block registry — the one place a BlockType maps to its implementation.
 // See docs/03-blocks-registry.mdx "The registry pattern": adding a block type
 // means adding one entry here plus its own src/blocks/<type>/ folder, never a
 // switch statement scattered across submission handling, progress, or reports.
 //
-// TEST, MUST_READ, and CODE are declared in the schema (docs/08-data-model.mdx)
-// but not implemented yet — no imported course content uses them yet. Add
-// their entries here when the add-block-type skill is run for each.
+// TEST, MUST_READ are declared in the schema (docs/08-data-model.mdx)
+// but not implemented yet — no imported course content uses them yet.
 export const blockRegistry = {
   QUIZ: {
     type: "QUIZ",
@@ -88,6 +103,20 @@ export const blockRegistry = {
     Component: ChapterRecapComponent,
     report: () => ({ type: "CHAPTER_RECAP", title: "Chapter recap", summary: "", details: [] }),
   } satisfies BlockRegistryEntry<ChapterRecapConfig, never>,
+  CODE: {
+    type: "CODE",
+    schema: CodeConfigSchema,
+    grade: gradeCode,
+    Component: CodeExerciseComponent,
+    report: reportCode,
+  } satisfies BlockRegistryEntry<CodeConfig, CodePayload>,
+  PREDICT: {
+    type: "PREDICT",
+    schema: PredictConfigSchema,
+    grade: gradePredict,
+    Component: PredictComponent,
+    report: reportPredict,
+  } satisfies BlockRegistryEntry<PredictConfig, PredictPayload>,
 } as const;
 
 export type RegisteredBlockType = keyof typeof blockRegistry;

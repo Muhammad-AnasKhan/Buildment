@@ -6,6 +6,8 @@ summary: "The same Product document serves **two audiences** with different rout
 ---
 The same Product document serves **two audiences** with different routes, filters, and trust boundaries. Confusing them causes draft products on the public shop or vendor-only prices leaking — Chapter 11 builds only the **vendor inventory view**.
 
+<BigWordAlert term="Public vs vendor view" plainEnglish="Customers see published products only; vendors see all theirs including drafts and out-of-stock." whyItMatters="FreshMarket uses separate route prefixes — `/products` public vs `/vendor/products` authenticated." />
+
 ## Vendor inventory view
 
 | Property | Value |
@@ -99,10 +101,12 @@ Vendor API returns all — public catalogue may shape response in Ch 14.
 - [ ] I can say why the vendor list derives scope from the JWT, not a query param
 - [ ] I can explain why `isPublished` exists before the public view is built
 
+<RealWorldEvent title="DoorDash menu sync failures" when="2020s" summary="Delivery platforms struggled when restaurant menus changed faster than sync pipelines, showing unavailable items to hungry customers." lesson="Product APIs should reflect live stock and publish state — stale catalogue data directly loses sales." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX772E3W8HTRYCBMG3FVGM" />
+<OpenQuestion id="01KZP7KPXGMG4SJH5GQSG1DG0B" />
 
 ## Next
 

@@ -6,6 +6,8 @@ summary: "**Why this step matters:** HTTP-only demos fail the gate and break sec
 ---
 **Why this step matters:** HTTP-only demos fail the gate and break secure cookies from Chapter 7. HTTPS is what makes your URL pasteable in a portfolio without mentors seeing browser security warnings.
 
+<BigWordAlert term="HTTPS" plainEnglish="Encrypted HTTP — required for secure cookies, Stripe, and browser trust on public sites." whyItMatters="FreshMarket production URL must be https:// — Let's Encrypt or platform TLS handles certs." />
+
 **Where the project is now:** API is deployed at a platform URL (23.10) — served over HTTP with a generated domain.
 
 **After this step:** Custom domain or platform subdomain serves API and client over **TLS** — padlock in browser.
@@ -55,10 +57,12 @@ Trust proxy in Express if needed for secure cookies: `app.set('trust proxy', 1)`
 - [ ] `https://api.yourdomain.com/health` valid cert
 - [ ] `https://app.yourdomain.com` valid cert
 
+<RealWorldEvent title="Heroku twelve-factor app methodology" when="2011–present" summary="Twelve-factor principles — config in env, stateless processes, logs as streams — shaped how Node apps deploy to modern platforms." lesson="Build deploy-ready habits early: health routes, env-based config, and separate worker processes pay off on day one in production." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX795463REB2MF8VEDYK3H" />
+<OpenQuestion id="01KZP7KR1SF5SJW3RQ7WJQ8RBF" />
 
 ## Next
 

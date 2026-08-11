@@ -2,79 +2,90 @@
 title: "Stock decrement"
 module: 18
 lesson: 12
-summary: "**Why this step matters:** Atomic decrement prevents **overselling the last item** — conditional `$inc` is production-grade grocery logic, not a nice-to-have. Fail-all if any product cannot decrement."
+summary: "Atomically reduce stockQty when checkout succeeds. If any product is out of stock, the entire checkout fails — no partial orders."
 ---
-**Why this step matters:** Atomic decrement prevents **overselling the last item** — conditional `$inc` is production-grade grocery logic, not a nice-to-have. Fail-all if any product cannot decrement.
+Two customers must not buy the last kilo of rice at the same time. Stock decrement uses a **conditional database update** — if stock is insufficient, checkout fails completely.
 
-**Where the project is now:** Orders insert with snapshots; stock unchanged; cart still full.
+<BigWordAlert term="Inventory deduction" plainEnglish="Reducing product.stock when order confirms — ties catalogue availability to real fulfillment." whyItMatters="FreshMarket must not sell stock already committed to another pending checkout." />
 
-**After this step:** Checkout atomically decrements `stockQty` per product; **entire checkout fails** if any product insufficient.
+---
 
-## Integration point
+## Step 1 — Where this runs in checkout
 
-Inside `checkout(userId)` **before** order insert (or inside same transaction):
+Inside `checkout(userId)`, **before** inserting orders (ideally in one transaction):
 
-For each distinct `productId` in cart (aggregate quantities if duplicate lines):
+For each distinct `productId` in the cart (sum quantities if duplicate lines):
 
-```
-findOneAndUpdate(
+```javascript
+const updated = await Product.findOneAndUpdate(
   { _id: productId, stockQty: { $gte: qty } },
-  { $inc: { stockQty: -qty } }
+  { $inc: { stockQty: -qty } },
+  { new: true }
 )
+if (!updated) throw new InsufficientStockError(productId)
 ```
 
-If any returns null → throw `InsufficientStockError` → **no orders inserted**.
+---
 
-## Fail-all semantics
+## Step 2 — Fail-all semantics
 
 | Outcome | Cart | Orders | Stock |
 |---|---|---|---|
 | All decrements OK | cleared in 18.13 | created | reduced |
-| Any decrement fails | unchanged | none created | unchanged partial — transaction rollback required |
+| Any decrement fails | **unchanged** | **none created** | unchanged |
 
-Without transactions on standalone MongoDB: decrement in loop; on failure, **manually re-increment** products already decremented in that request — document in learning log.
+If one product fails mid-loop, **roll back** any decrements already done in that request — use a MongoDB transaction when available.
 
-## HTTP response on stock failure
+---
 
-**409 Conflict** or **400** with body:
+## Step 3 — HTTP response on failure
+
+Return **409** or **400**:
 
 ```json
 { "message": "Insufficient stock", "productId": "..." }
 ```
 
-Client can show which product failed (Chapter 20 checkout UI).
+Chapter 20 checkout UI can show which product failed.
 
-## Concurrency test — optional but recommended
+---
 
-1. Set product `stockQty` to 1 in Compass.
-2. Two parallel curl checkout requests with that product qty 1.
-3. **One succeeds, one fails** — total stock 0, one order only.
+## Step 4 — Concurrency test (recommended)
 
-## Unpublish / delete product
+1. Set one product `stockQty = 1` in Compass
+2. Send **two parallel** checkout requests with that product
+3. **One succeeds, one fails** — final stock is 0, only one order exists
 
-Checkout validation (18.10) should reject unpublished products before decrement. Deleted product → 400, no stock change.
+Write the result in your learning log — interviewers ask about this.
 
-## ✅ Do / ❌ Don't
+---
 
-**✅ Do:** Aggregate quantity per productId before single decrement.
+## Common mistakes
 
-**✅ Do:** Wrap decrement + insert + cart clear in transaction when available.
+| Mistake | Fix |
+|---|---|
+| Decrement after cart clear | Hard to retry — decrement first |
+| Partial success | Fail-all + rollback |
+| Negative stock allowed | Conditional `$gte` on update |
+| Decrement twice for duplicate lines | Aggregate qty per productId first |
 
-**❌ Don't:** Decrement after cart clear — harder to retry.
-
-**❌ Don't:** Allow negative stockQty in schema validator.
+---
 
 ## Verify checklist
 
 - [ ] Successful checkout reduces stock in Compass
-- [ ] Failed stock checkout leaves stock and cart unchanged
-- [ ] Concurrent test documented in learning log
+- [ ] Failed stock checkout leaves cart and orders unchanged
+- [ ] Concurrent test documented
+
+<RealWorldEvent title="Double-charge incidents during flash sales" when="Various" summary="E-commerce outages and retries caused duplicate charges until teams adopted idempotent payment APIs and clear order states." lesson="Model order status explicitly — pending, paid, failed — and never create a second order for the same checkout attempt." />
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX789F4SAN5YBR5CDVDJGS" />
+<OpenQuestion id="01KZP7KQJKJW5WJ4WGEX77Y8VW" />
 
 ## Next
 
-**Sub-chapter 18.13:** Clear cart on success — stock is decremented; the next problem is a customer who checks out twice because the cart never empties.
+**Sub-chapter 18.13:** Clear cart on success — empty the cart so customers cannot double-order.
+
+Stock updated. Next, clear the cart.

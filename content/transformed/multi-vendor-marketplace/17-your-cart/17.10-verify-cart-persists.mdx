@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Persistence is the whole point of Chapter 1
 ---
 **Why this step matters:** Persistence is the whole point of Chapter 16 — reload, new tab, or re-login must show the same cart. If this fails, checkout in Chapter 18 has nothing reliable to read.
 
+<BigWordAlert term="Cart persistence test" plainEnglish="Add items, refresh browser, log out/in — cart contents should match server state." whyItMatters="FreshMarket gate proves server-side cart — not lost on refresh." />
+
 **Where the project is now:** Cart UI complete in a single session.
 
 **After this step:** You have **screenshot-worthy proof** that cart survives refresh, re-login, and matches server state.
@@ -27,10 +29,18 @@ summary: "**Why this step matters:** Persistence is the whole point of Chapter 1
 
 After browser tests, curl as same customer:
 
-```bash
-curl -s http://localhost:5000/api/cart \\
-  -H "Authorization: Bearer <customer-token>"
-```
+<ApiRequestPanel title="Server cross-check — GET /cart">
+
+<ApiRequest
+  label="Verify browser cart matches server state"
+  method="GET"
+  url="http://localhost:5000/api/cart"
+  bearer="<customer-token>"
+  responseStatus={200}
+  responseBody='{"items":[{"id":"...","quantity":2,"storeId":"...","product":{"id":"...","name":"..."},"store":{"id":"...","name":"Green Valley Grocer"}}]}'
+/>
+
+</ApiRequestPanel>
 
 Browser display must match JSON — no phantom lines in UI.
 
@@ -88,10 +98,12 @@ git commit -m "docs: verify cart persistence and update demo steps"
 - [ ] Two-customer isolation confirmed
 - [ ] README demo steps updated
 
+<RealWorldEvent title="Amazon multi-seller cart checkout" when="Marketplace era" summary="Customers add items from many sellers but expect a single checkout flow with transparent split fulfilment." lesson="Cart UI should preview the split-order model early — it reduces support questions at checkout." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX784F5RP8X87J4JRYC88Y" />
+<OpenQuestion id="01KZP7KQFY0267B2F0DV5J8917" />
 
 ## Next
 

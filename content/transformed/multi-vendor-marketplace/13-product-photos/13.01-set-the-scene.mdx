@@ -6,6 +6,8 @@ summary: "**Where the project is now:** Chapters 11–12 gave vendors a product 
 ---
 **Where the project is now:** Chapters 11–12 gave vendors a product CRUD API and dashboard. Products have names, prices, units, stock — but no photos. A grocery marketplace without images feels like a spreadsheet. Customers need to see what they're buying; vendors need their shelves to look real.
 
+<BigWordAlert term="Product imagery" plainEnglish="Photos that make grocery items trustworthy and recognizable on shop cards and detail pages." whyItMatters="FreshMarket shoppers choose with their eyes — products without images convert poorly." />
+
 **Where this chapter goes:** Product images live in **Cloudinary** (object storage). MongoDB stores only the **URL string** on the product document — never binary data, never base64 blobs.
 
 This is a **build chapter**. Every sub-chapter from 13.8 onward adds upload infrastructure to your repo. The gate is **runnable proof**: vendor uploads a photo, URL persists in MongoDB, image renders in the dashboard list.
@@ -15,6 +17,8 @@ This is a **build chapter**. Every sub-chapter from 13.8 onward adds upload infr
 ## Bridge from last chapter
 
 Chapter 12 gave vendors a **product dashboard** — table, create form, edit form, publish toggle — all working in the browser. Products have names, prices, and stock, but shelves still look like a spreadsheet without images. Chapter 13 adds the **photo pipeline**: bytes in Cloudinary, URL string in MongoDB, thumbnail in the product list. Week 2's vendor demo finishes here — then 13.14 prepares you for buyer-side chapters.
+
+<RealWorldEvent title="Instagram commerce and visual trust" when="2010s–present" summary="Social and marketplace sellers learned that image quality and consistency directly correlate with conversion rates for physical goods." lesson="Validate image types and sizes server-side; broken or huge uploads become support tickets fast." />
 
 ## In plain English
 
@@ -162,6 +166,14 @@ Phase demo language: *"Vendor registers, opens a store, adds a product with a ph
 
 Estimated time: **one full day** — Cloudinary account setup plus multer wiring.
 
+<MandatoryReadCard
+  title="Cloudinary — Upload images"
+  href="https://cloudinary.com/documentation/upload_images"
+  source="Cloudinary"
+  summary="How uploads, folders, and public IDs work in Cloudinary. Matches the product photo flow you implement this chapter."
+  readMinutes={10}
+/>
+
 ## Self-check before continuing
 
 - [ ] Chapter 12 gate cleared — vendor creates/edits/publishes in UI  
@@ -169,10 +181,16 @@ Estimated time: **one full day** — Cloudinary account setup plus multer wiring
 - [ ] Cloudinary free account ready (or account created in 13.8)  
 - [ ] Chapter 4 secrets discipline still true — no `.env` in Git
 
+<InterestingRead title="Why produce photos matter more than gadget photos" hook="Shoppers buy with their eyes when quality varies." readMinutes={3}>
+
+A phone case is a phone case. A mango might be perfect or overripe. Good vendor photos reduce refunds and build trust — your upload flow is a business feature, not a cosmetic extra.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX77BDKV9MF13KSCD9T5FC" />
+<OpenQuestion id="01KZP7KQ2E116XM9HANZVM9KWC" />
 
 ## Next
 

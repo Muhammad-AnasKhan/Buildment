@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Informal \"it works on my machine\" is not 
 ---
 **Why this step matters:** Informal "it works on my machine" is not a gate. This verification pass documents curl output, browser screenshot, and folder tree — evidence that Week 1's first demo brick is real before you open the database chapters.
 
+<BigWordAlert term="End-to-end smoke test" plainEnglish="Manually confirming the full path works — browser loads, calls API, displays response — before moving on." whyItMatters="Chapter 2's gate is a screenshot or curl proof that `/health` returns `{ status: 'ok' }` in the UI." />
+
 **Where the project is now:** Home fetches `/health`; server and client both run. This sub-chapter is a **formal verification pass** — treat it like a mini QA checklist before you claim Chapter 2 done.
 
 **After this step:** Chapter 2 is proven with evidence — curl output, browser demo, folder tree, and ports all verified consistent — so Chapters 4–5 build MongoDB on a skeleton you trust.
@@ -26,15 +28,17 @@ cd client && npm run dev
 
 ### 2. API alone
 
-```bash
-curl -s http://localhost:5000/health | jq .
-```
+<ApiRequestPanel title="Health check">
 
-If `jq` not installed, use raw curl:
+<ApiRequest
+  label="GET /health"
+  method="GET"
+  url="http://localhost:5000/health"
+  responseStatus={200}
+  responseBody='{"status":"ok"}'
+/>
 
-```bash
-curl -i http://localhost:5000/health
-```
+</ApiRequestPanel>
 
 **Pass criteria:** HTTP 200; body contains `"status":"ok"`.
 
@@ -163,10 +167,12 @@ You're one third of Week 1 foundations on **running code** — half on **data** 
 - [ ] Ports/env consistent  
 - [ ] Optional screenshot captured  
 
+<RealWorldEvent title="Shopify's modular commerce platform" when="2006–present" summary="Shopify grew from a single-product store builder into a platform with separate admin, storefront, and API surfaces — all coordinated through clear project boundaries." lesson="Starting with a deliberate folder skeleton prevents painful renames later when vendor, cart, and payment code all need room to grow." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX75FHA7TZ78Q195VX0QZ8" />
+<OpenQuestion id="01KZP7KNYM6109XQDB64W8DYQ4" />
 
 ## Next
 

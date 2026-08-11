@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Pausing to narrate what you built locks in 
 ---
 **Why this step matters:** Pausing to narrate what you built locks in the public read model before Chapter 15 — if you cannot explain `/products` vs `/vendor/products`, the shop UI will duplicate logic in the wrong place.
 
+<BigWordAlert term="Shop-ready API" plainEnglish="Public product list and detail routes with pagination — backend ready for customer UI." whyItMatters="Chapter 15 builds shop pages; Chapter 16 adds cart API for add-to-cart." />
+
 You entered Chapter 14 with vendor-only product reads. You leave with a **public catalogue API** — filtered, paginated, store name populated, N+1 avoided — ready for the customer shop in Chapter 15.
 
 ## What you built — narrative recap
@@ -46,10 +48,16 @@ No client changes this chapter — intentional backend-first pairing.
 | Customer browse UI | Chapter 15 |
 | Cart | Chapter 16–17 |
 
+<InterestingRead title="Public read routes still need discipline" hook="No login does not mean no limits." readMinutes={4}>
+
+Catalogue APIs are public, but they still need rate limits, input validation on query params, and careful projection so internal fields never leak. FreshMarket exposes only what shoppers need to decide and add to cart.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX77QC58BQC98F8Z9ZVZ0V" />
+<OpenQuestion id="01KZP7KQ8G68Z3PS8SZ9N2SABT" />
 
 ## Next chapter — Shop the marketplace (Chapter 15)
 
@@ -76,9 +84,9 @@ Chapter 15 does not invent catalogue rules. Every pixel maps to a field you test
 | `?category=` / `?storeId=` | Filter bar refetch | Filtering array in memory after one big GET |
 | `GET /products/:id` | ProductDetail page | Duplicating publish/stock checks in UI |
 
-&lt;Callout type="warning" title="Gate before the shop">
+<Callout type="warning" title="Gate before the shop">
 Do not open Chapter 15 until **14.16 checklist** is ticked. An empty shop grid with a broken API feels like a React bug — it is usually a catalogue query or seed problem from Chapter 14.
-&lt;/Callout>
+</Callout>
 
 ## Callback to N+1 (competency map)
 
@@ -103,3 +111,4 @@ docs: complete chapter 14 learning log
 Do not open Chapter 15 until gate cleared.
 
 The catalogue exists on the server. Next, customers see it in the browser.
+<RealWorldEvent title="Amazon search index separate from catalog DB" when="2000s–present" summary="Large marketplaces eventually split transactional catalog storage from search-optimized indexes — your module 21 preview." lesson="Build a correct catalogue API first; optimize with cache and search once the happy path works." />

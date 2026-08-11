@@ -6,6 +6,8 @@ summary: "Two customers checkout the last bag of rice at the same time. Without 
 ---
 Two customers checkout the last bag of rice at the same time. Without atomic decrement, both succeed and you oversell by one. Grocery stock is often fractional and low — races are real even in class demos.
 
+<BigWordAlert term="Atomic stock decrement" plainEnglish="Database operation that reduces stock only if enough remains — prevents overselling under concurrency." whyItMatters="Two shoppers buying last mango simultaneously — only one checkout must succeed." />
+
 ## In plain English
 
 | Term | Simple meaning |
@@ -94,10 +96,12 @@ Stock increment on vendor edit is Chapter 11/12 — not checkout. Checkout only 
 - [ ] I understand fail-all vs partial checkout
 - [ ] I know my MongoDB setup supports transactions or compensating logic
 
+<RealWorldEvent title="Double-charge incidents during flash sales" when="Various" summary="E-commerce outages and retries caused duplicate charges until teams adopted idempotent payment APIs and clear order states." lesson="Model order status explicitly — pending, paid, failed — and never create a second order for the same checkout attempt." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX786YRZ37AZ31GDK46AZ3" />
+<OpenQuestion id="01KZP7KQH77J3NY7CD5SWT0BT0" />
 
 ## Next
 

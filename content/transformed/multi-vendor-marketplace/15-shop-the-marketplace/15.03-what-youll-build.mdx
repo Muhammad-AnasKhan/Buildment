@@ -6,6 +6,8 @@ summary: "By chapter end, customers open **Shop**, filter and paginate the catal
 ---
 By chapter end, customers open **Shop**, filter and paginate the catalogue, open **product detail**, and see items from multiple vendors — all driven by Chapter 14 API.
 
+<BigWordAlert term="Browse UI" plainEnglish="Shop page, product cards, filter bar, and detail page wired to catalogue API." whyItMatters="Shoppers interact here — add-to-cart in Chapter 17 starts from these pages." />
+
 Blueprint for 15.4–15.10. Specs only.
 
 ## The customer journey this chapter completes
@@ -19,6 +21,16 @@ Home / nav  →  /shop (grid + filters)  →  /shop/:id (detail + stub button)
 No new server routes. Every screen **consumes** Chapter 14. If the API returns wrong data, fix the API — do not patch around it in React with hardcoded arrays.
 
 **Multi-vendor proof for gate:** Grid must show products from **at least two different `store.name` values** at once — that is what makes FreshMarket a marketplace, not a single-shop app.
+
+<MandatoryReadCard
+  title="React — Passing props to a component"
+  href="https://react.dev/learn/passing-props-to-a-component"
+  source="React"
+  summary="How props flow from page to card components. Essential for building the marketplace product grid cleanly."
+  readMinutes={8}
+/>
+
+<RealWorldEvent title="Instacart's shop-by-aisle experience" when="2020s" summary="Grocery apps invested heavily in browse UX — filters, dietary tags, and store context — because search alone misses discovery." lesson="Customer-facing catalogue UI is where backend data models become revenue — treat loading and empty states as first-class design." />
 
 ## Deliverables checklist
 
@@ -138,13 +150,36 @@ Button must exist for layout — gate does not require working cart yet.
 | Detail + stub | 15.9 |
 | Verify two vendors | 15.10 |
 
+## Visual targets
+
+| Screen | Preview |
+|---|---|
+| Customer shop | ![Storefront](/showcase/multi-vendor-marketplace/storefront.png) |
+| Product detail | ![Product detail](/showcase/multi-vendor-marketplace/product-detail.png) |
+| Cart | ![Cart](/showcase/multi-vendor-marketplace/cart-page.png) |
+| Checkout | ![Checkout](/showcase/multi-vendor-marketplace/checkout-page.png) |
+
+Save your running app screenshots to `docs/demo/week3-shop.png` as you complete the build steps.
+
+## Recommended reading before you build
+
+| Topic | Link |
+|---|---|
+| React data fetching | [useEffect — fetching data](https://react.dev/reference/react/useEffect#fetching-data-with-effects) |
+| React Router params | [useParams](https://reactrouter.com/en/main/hooks/use-params) |
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX77RVW0YRT8RMA2HGV0AY" />
+<OpenQuestion id="01KZP7KQ9A64E58DVNYV54NVV0" />
 
 ## Next
 
 **Sub-chapter 15.4:** Where the project is now — client tree before shop pages.
 
 Build cluster starts.
+<InterestingRead title="Skeleton screens vs spinners" hook="Empty grids feel broken; skeletons feel fast." readMinutes={3}>
+
+While catalogue fetches run, placeholder cards communicate progress better than a lone spinner. FreshMarket's shop UI should feel responsive even on slow networks.
+
+</InterestingRead>

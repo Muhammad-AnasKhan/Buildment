@@ -58,3 +58,7 @@ Use research to improve sequencing and pedagogy only.
 ## After finishing
 
 Summarize for the user: what module was improved, concrete changes, and what the next iteration should target. Do not commit unless asked.
+
+## Course UI preview images (Stitch MCP)
+
+When a lesson needs a Stitch PNG in `public/showcase/multi-vendor-marketplace/`, call the **Stitch MCP** tools directly (`generate_screen` → `get_screen_image`). Full workflow: `.cursor/rules/stitch-mcp.mdc`. Do not run the legacy generate scripts.

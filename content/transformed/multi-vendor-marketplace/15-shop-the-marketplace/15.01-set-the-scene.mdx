@@ -6,13 +6,25 @@ summary: "**Where the project is now:** Chapter 14 delivered a public catalogue 
 ---
 **Where the project is now:** Chapter 14 delivered a public catalogue API — paginated products with store names and photos. Customers can authenticate (Chapters 6–7) but have **no storefront** in the browser.
 
+<BigWordAlert term="Customer shop experience" plainEnglish="The public-facing browse UI — grid, filters, product detail — where shoppers discover groceries." whyItMatters="FreshMarket's demand side — without this, vendors have products nobody can find." />
+
 **Where this chapter goes:** The **customer shop** — editorial product grid, filters, pagination, and product detail page. Data comes from `GET /products`; no catalogue logic duplicated in React.
 
 This is a **build chapter**. Sub-chapters 15.4 onward add pages and components. Gate: customer browses products from **two vendors** with working filters in the UI.
 
-&lt;Callout type="info" title="Week 3 — you are here">
+<Callout type="info" title="Week 3 — you are here">
 If **13.14 — Bridge to Week 3** felt like a role switch, that was intentional. Chapter 15 is the first **customer-visible** Week 3 milestone — the shop window. Browse (this chapter) → cart (16–17) → checkout (18–19) → track orders (20).
-&lt;/Callout>
+</Callout>
+
+<ArticleBreak title="Entering Week 3: from supply to demand" subtitle="The marketplace finally feels like a place to shop" readMinutes={6}>
+
+Week 2 built the vendor side. Week 3 opens the doors to customers.
+
+The shop-the-marketplace chapter is the emotional pivot: grids of real products from multiple vendors, filters that work, pages that turn. Shoppers can discover goods — but they cannot pay yet.
+
+Resist jumping to Stripe before cart and checkout logic exist. A beautiful shop without a reliable cart loses trust the moment someone clicks Add to basket.
+
+</ArticleBreak>
 
 ## Bridge from last chapter
 
@@ -31,6 +43,16 @@ What you carry into Chapter 15:
 | Stable public DTO | React displays what API returns — no duplicate filter logic |
 
 If Chapter 14 gate is incomplete — especially N+1 verification and two-store seed — **finish that first**. Chapter 15 will hammer `GET /products` on every filter change; a slow or wrong API becomes a slow or wrong shop.
+
+<MandatoryReadCard
+  title="React — Passing props to a component"
+  href="https://react.dev/learn/passing-props-to-a-component"
+  source="React"
+  summary="How props flow from page to card components. Essential for building the marketplace product grid cleanly."
+  readMinutes={8}
+/>
+
+<RealWorldEvent title="Instacart's shop-by-aisle experience" when="2020s" summary="Grocery apps invested heavily in browse UX — filters, dietary tags, and store context — because search alone misses discovery." lesson="Customer-facing catalogue UI is where backend data models become revenue — treat loading and empty states as first-class design." />
 
 ## In plain English
 
@@ -139,10 +161,11 @@ Estimated time: **one full day** — mostly React; API should be stable from Ch 
 - [ ] `VITE_API_URL` correct in client `.env`  
 - [ ] Customer can log in (for later cart — browse may be public)
 
+<InterestingRead title="Skeleton screens vs spinners" hook="Empty grids feel broken; skeletons feel fast." readMinutes={3}>
 
-## Before you continue
+While catalogue fetches run, placeholder cards communicate progress better than a lone spinner. FreshMarket's shop UI should feel responsive even on slow networks.
 
-<OpenQuestion id="01KZAX77R2XBPHQSB4GZPMBCGF" />
+</InterestingRead>
 
 ## Next
 
@@ -150,11 +173,4 @@ Estimated time: **one full day** — mostly React; API should be stable from Ch 
 
 Visual contract before you scaffold files.
 
-&lt;ChapterRecap
-  points=&#123;[
-    "Chapter 14 built the catalogue API — Chapter 15 builds the shop window customers actually see",
-    "Every UI element maps to an API field — no duplicate publish/stock logic in React",
-    "Multi-vendor proof: grid shows products from at least two different store names",
-    "Add-to-cart is a stub this chapter — real cart wiring comes in Chapters 16–17"
-  ]&#125;
-/>
+<ChapterRecap id="01KZP7KQ8XA8STW5892M7FNNAW" />

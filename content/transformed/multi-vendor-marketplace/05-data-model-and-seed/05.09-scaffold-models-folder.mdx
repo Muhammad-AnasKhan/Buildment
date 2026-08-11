@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Model files belong inside feature modules �
 ---
 **Why this step matters:** Model files belong inside feature modules — `users/`, `stores/`, `products/` — not a global `models/` junk drawer. This step creates the exact paths Chapter 5 sub-chapters fill one schema at a time.
 
+<BigWordAlert term="Models directory" plainEnglish="A server folder holding one file per Mongoose model — keeps schemas discoverable and importable." whyItMatters="FreshMarket's `models/` folder is imported by routes, seed script, and auth — one home for schemas." />
+
 **Where the project is now:** Empty module folders from Chapter 2; no `.model.js` files yet.
 
 **After this step:** Each feature module contains a placeholder or first model file path confirmed; folder structure matches course convention for all six collections.
@@ -128,10 +130,12 @@ Or wait until 5.10 first model — your choice; gate requires models not empty f
 - [ ] No route files added
 - [ ] Folder names match COURSE-OUTLINE module list
 
+<RealWorldEvent title="Amazon's item-level order snapshots" when="Marketplace era" summary="Marketplace order systems persist item details at purchase time so disputes, refunds, and tax reporting reflect the transaction as it happened." lesson="Model for auditability early. Your seed data and ERD should show which fields are live references and which are immutable snapshots." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX75ZMYY32CZ0F22HPEGCE" />
+<OpenQuestion id="01KZP7KP94QWTKEWN1HAX1BGVP" />
 
 ## Next
 

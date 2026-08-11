@@ -86,6 +86,7 @@ enum BlockType {
   PROJECT_PREVIEW
   LEARNING_OBJECTIVES
   CHAPTER_RECAP
+  PREDICT
 }
 
 enum ResponseStatus {

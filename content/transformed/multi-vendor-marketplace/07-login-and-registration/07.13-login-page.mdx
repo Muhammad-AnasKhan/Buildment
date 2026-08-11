@@ -2,51 +2,89 @@
 title: "Login page"
 module: 7
 lesson: 13
-summary: "**Why this step matters:** Login stores access in memory and refresh via cookie — the security pattern from 7.2–7.4 becomes real here. Successful login should redirect by role and trigger boot-friendly session restore on return visits."
+summary: "Wire the login form: call the Chapter 6 API, store tokens via useAuth, redirect vendor vs customer by role."
 ---
-**Why this step matters:** Login stores access in memory and refresh via cookie — the security pattern from 7.2–7.4 becomes real here. Successful login should redirect by role and trigger boot-friendly session restore on return visits.
+This connects the login **UI** to the auth **API** you built in Chapter 6. After this lesson, users can sign in and land in the right part of the app.
 
-**Where the project is now:** useAuth.login exists; Login form not fully wired.
+<BigWordAlert term="Login form" plainEnglish="Email and password fields that POST credentials and store returned tokens on success." whyItMatters="Returning FreshMarket users land here — errors must be clear without revealing whether email exists." />
 
-**After this step:** Login form calls API, stores access in memory, refresh in cookie (if server sets), sets user state, redirects by role.
+## Target UI preview
 
-## Form contract
+![Login page — UI preview](/showcase/multi-vendor-marketplace/login-page.png)
 
-| Field | |
+*Production-style UI preview — email, password, Log in button, link to register.*
+
+---
+
+## Before you start
+
+| Check | How |
+|---|---|
+| Chapter 6 login API works | curl POST /auth/login |
+| useAuth hook exists | 7.10 — login method stubbed or ready |
+| Login.jsx scaffolded | 7.9 |
+
+---
+
+## Step 1 — Form fields
+
+| Field | Validation |
 |---|---|
 | email | required |
 | password | required |
 
-## Submit flow
+Disable submit button while request is in flight.
+
+---
+
+## Step 2 — Submit flow
 
 ```
-1. await login(email, password)
-2. useAuth sets access token + user
-3. Redirect:
-   - vendor → /vendor (or /vendor/dashboard stub)
-   - customer → / (Home) or /shop stub
-4. On 401: "Invalid credentials"
-5. On 403: "Please verify your email" + link to verify-otp
+1. await login(email, password)   // calls POST /auth/login
+2. useAuth stores access token in memory + user object
+3. Redirect by role:
+   - vendor → /vendor (layout gate handles open-shop in Ch 10)
+   - customer → / or /shop
+4. On 401 → "Invalid email or password"
+5. On 403 → "Please verify your email" + link to /verify-otp
 ```
 
-## Cookie handling
+---
 
-Login fetch uses `credentials: 'include'` if server sets refresh cookie.
+## Step 3 — Cookie / refresh handling
 
-If server still returns refresh in body temporarily, coordinate with 7.14 to set cookie server-side — preferred.
+Login fetch should use `credentials: 'include'` if the server sets a refresh token cookie.
 
-## Display success from verify
+Access token lives in **memory** (from 7.4) — not localStorage.
 
-Show `location.state.message` banner if present.
+---
 
-## Verify in browser
+## Step 4 — Show banner from verify flow
 
-| Account | Expected redirect |
+If user arrives from OTP verification with `location.state.message`, display it once at the top.
+
+---
+
+## Step 5 — Test both roles
+
+| Account | Expected |
 |---|---|
-| vendor-a@test.local | vendor area |
-| customer-a@test.local | customer home |
+| vendor-a@test.local | Redirect to /vendor area |
+| customer-a@test.local | Redirect to customer home |
 
-Network tab: login 200, Set-Cookie if cookie mode.
+Network tab: login returns 200; Set-Cookie if using cookie refresh.
+
+---
+
+## Common mistakes
+
+| Mistake | Fix |
+|---|---|
+| Redirect unverified user on 403 | Show verify message instead |
+| Store access token in localStorage | Memory only — see 7.4 |
+| Same redirect for all roles | Branch on user.role |
+
+---
 
 ## Commit
 
@@ -55,28 +93,22 @@ git add client/src/pages/Login.jsx client/src/hooks/useAuth.js
 git commit -m "feat(client): wire login with role-based redirect"
 ```
 
-## ✅ Do / ❌ Don't
-
-**✅ Do:** Disable submit while loading.
-
-**✅ Do:** Clear password field on error optional security.
-
-**❌ Don't:** Redirect unverified user to dashboard on 403.
-
 ## Verify checklist
 
-- [ ] Vendor login redirects vendor route
-- [ ] Customer login redirects customer route
+- [ ] Vendor login → vendor route
+- [ ] Customer login → customer route
 - [ ] 403 shows verify message
-- [ ] User object in useAuth after login
+- [ ] useAuth has user after login
+
+<RealWorldEvent title="GitHub's session and token evolution" when="2010s–present" summary="Developer platforms refined PATs, OAuth apps, and session handling as users demanded security without constant re-authentication." lesson="Treat the client auth layer as part of security design, not a UI afterthought — refresh logic belongs in one place, not scattered across pages." />
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76GJ7T8J19EM4QX4QTZJ" />
+<OpenQuestion id="01KZP7KPKQE2W7X1WJ69JSD7AG" />
 
 ## Next
 
-**Sub-chapter 7.14:** API interceptor — Bearer header and 401 refresh loop.
+**Sub-chapter 7.14:** API interceptor — attach Bearer token to every request.
 
-Login works — global fetch behaviour next.
+Login works. Next, global fetch behaviour.

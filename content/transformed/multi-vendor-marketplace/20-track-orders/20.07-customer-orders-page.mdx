@@ -6,11 +6,19 @@ summary: "**Why this step matters:** Confirmation is a one-time screen — order
 ---
 **Why this step matters:** Confirmation is a one-time screen — order history is where customers return days later. This page proves snapshot prices stay correct when vendors change the catalogue.
 
+<BigWordAlert term="Customer order list" plainEnglish="Page listing shopper's orders with status, date, and link to detail." whyItMatters="Returning FreshMarket customers check 'where is my order' here." />
+
 **Where the project is now:** Confirmation page shows orders after checkout (20.6). No persistent **order history** route — refresh or return later has no dedicated home.
 
 **After this step:** `/orders` lists customer history from `GET /orders/my` — split orders as separate cards with snapshot line prices.
 
 History is where the **price snapshot trap** (Ch 18) shows in UI. Every line reads `orderItems` embedded fields — never live catalog prices.
+
+## Target UI preview
+
+![Customer orders — UI preview](/showcase/multi-vendor-marketplace/customer-orders-page.png)
+
+*Production-style UI preview — order history list with snapshot prices and status badges.*
 
 ## Prerequisites
 
@@ -101,10 +109,18 @@ Document `/orders` in README — prices are purchase-time snapshots.
 | Customer B login | Does not see Customer A's orders |
 | Vendor changed catalog price | History prices **unchanged** |
 
-```bash
-curl -s http://localhost:5000/api/orders/my \
-  -H "Authorization: Bearer <customer-token>"
-```
+<ApiRequestPanel title="Customer orders API cross-check">
+
+<ApiRequest
+  label="GET /orders/my — verify snapshot prices match UI"
+  method="GET"
+  url="http://localhost:5000/api/orders/my"
+  bearer="<customer-token>"
+  responseStatus={200}
+  responseBody='{"orders":[{"_id":"...","status":"pending","total":305,"orderItems":[{"name":"Organic Tomatoes","price":3.5,"quantity":2}]}]}'
+/>
+
+</ApiRequestPanel>
 
 ## Troubleshooting
 
@@ -124,10 +140,12 @@ curl -s http://localhost:5000/api/orders/my \
 - [ ] Empty state for customer with no orders
 - [ ] Customer B isolation confirmed
 
+<RealWorldEvent title="Domino's Pizza Tracker effect" when="2008–present" summary="Transparent order tracking reduced support calls and increased trust — customers tolerate wait when they see progress." lesson="Expose meaningful statuses, not internal jargon. 'Preparing your order' beats 'STATE_PICKING'." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78KY0HSWBQ1GESEWRAXD" />
+<OpenQuestion id="01KZP7KQREDGYH561TSRY0WVYA" />
 
 ## Next
 

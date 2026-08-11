@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Everything you build for FreshMarket lives 
 ---
 **Why this step matters:** Everything you build for FreshMarket lives in a repo you own — not in the course guides folder. This step creates that root with Git, ignore rules, and a learning log so every later sub-chapter has a committed home and secrets stay out of history from day one.
 
+<BigWordAlert term="Git repository" plainEnglish="Version-controlled project folder where every change is tracked and reversible." whyItMatters="FreshMarket lives in one repo from day one — commits mark chapter milestones you can demo or roll back." />
+
 **Where the project is now:** You have no application repository — only the course materials you read. After this sub-chapter you'll have a Git root with ignore rules and a place for the learning log.
 
 **After this step:** You own a Git repository with a root `.gitignore` that keeps secrets out, a README stub, and a `learning-log/` folder — the committed home every later sub-chapter builds inside.
@@ -119,8 +121,6 @@ Replace **GreenBasket** with your product name.
 mkdir -p learning-log
 ```
 
-
-
 ## Step 6 — Optional `docs/` placeholder
 
 ```bash
@@ -158,6 +158,8 @@ git commit -m "chore: initialize repository with gitignore and learning log"
 
 If `git status` shows thousands of files, you accidentally initialized Git in your home directory or parent folder. `cd` to the intended project folder only, remove mistaken `.git` if needed, and re-init **inside** `greenbasket/`.
 
+<RealWorldEvent title="Shopify's modular commerce platform" when="2006–present" summary="Shopify grew from a single-product store builder into a platform with separate admin, storefront, and API surfaces — all coordinated through clear project boundaries." lesson="Starting with a deliberate folder skeleton prevents painful renames later when vendor, cart, and payment code all need room to grow." />
+
 ## What's next
 
 **Sub-chapter 2.9:** Create `server/` folder skeleton — `src/app.js`, `src/server.js`, `modules/`, `shared/`.
@@ -165,4 +167,4 @@ If `git status` shows thousands of files, you accidentally initialized Git in yo
 Continue when first commit is done.
 ## Before you continue
 
-<OpenQuestion id="01KZAX75BWGYCD5NYFPDGW36KT" />
+<OpenQuestion id="01KZP7KNW4JP5ESQHC4HRZ07KH" />

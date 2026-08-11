@@ -6,6 +6,8 @@ summary: "MongoDB gives you two ways to relate data: reference another document 
 ---
 # 3.6 — Embedding vs referencing
 
+<BigWordAlert term="Embedding vs referencing" plainEnglish="Embedding copies related data inside a document; referencing stores an ID and looks up the other collection." whyItMatters="Cart line items embed product snapshots; stores reference vendor users — each choice affects read speed and updates." />
+
 ## What you'll learn
 
 By the end of this chapter, you'll be able to:
@@ -15,9 +17,16 @@ By the end of this chapter, you'll be able to:
 - Apply the right choice to every FreshMarket entity
 - Avoid the two most common MongoDB modelling mistakes
 
-&lt;Callout type="info" title="Why this matters">
+<Callout type="info" title="Why this matters">
 Embed vs reference is the **most common MongoDB beginner mistake**. Cart items should **point at** live products; order lines should **copy** prices at purchase. Mixing those up gives customers wrong receipts.
-&lt;/Callout>
+</Callout>
+
+<EntityDiagram title="FreshMarket ownership chain" chart={`
+  USER ||--o{ STORE : owns
+  STORE ||--o{ PRODUCT : lists
+  USER ||--o{ ORDER : places
+  STORE ||--o{ ORDER : fulfills
+`} legend="ref = ObjectId string on the parent document; embed = snapshot copied at write time" />
 
 ## Two ways to relate data
 
@@ -102,12 +111,12 @@ At checkout, for each cart line you **read** current product fields, then **writ
 
 After checkout, vendor changes product price → embedded fields **unchanged**. Customer history reads embedded array only.
 
-&lt;Callout type="warning" title="Anti-pattern">
+<Callout type="warning" title="Anti-pattern">
 ```json
 "orderItems": [{ "productId": "...", "quantity": 2 }]
 ```
 This is wrong. Display history uses live product price — wrong receipt. Always include snapshot fields.
-&lt;/Callout>
+</Callout>
 
 ## Anti-pattern: embed everything
 
@@ -142,14 +151,7 @@ erDiagram
 
 **❌ Don't:** Reference-only order lines without snapshot fields.
 
-&lt;ChapterRecap
-  points=&#123;[
-    "Reference for entities with own lifecycle (product, store, cart line)",
-    "Embed for order line snapshots — frozen at purchase time",
-    "Cart references live product; checkout freezes embed",
-    "16MB limit — not a concern for order lines; is for catalog-in-store"
-  ]&#125;
-/>
+<ChapterRecap id="01KZP7KP181713YRTQH7EXASST" />
 
 ## Self-check
 
@@ -158,6 +160,4 @@ erDiagram
 - [ ] I know the 16MB limit matters for embedded catalogues, not order lines
 
 **Next:** Mandatory reading — MongoDB's data modelling docs before you draft the ERD.
-## Before you continue
-
-<OpenQuestion id="01KZAX75KD1X74NP3QEA5XEG5J" />
+<RealWorldEvent title="Walmart's polyglot data strategy" when="2010s–present" summary="Large retailers run multiple database technologies — relational systems for transactions and accounting, document or search stores for catalogs and recommendations." lesson="Choosing MongoDB for FreshMarket is a domain-driven decision. Document the trade-off so future you can defend it in an interview." />

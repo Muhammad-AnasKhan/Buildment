@@ -6,6 +6,8 @@ summary: "Chapter 7 paired with Chapter 6 — humans can **register, verify, log
 ---
 Chapter 7 paired with Chapter 6 — humans can **register, verify, login, and reach protected pages** in the browser with safe token storage and silent refresh.
 
+<BigWordAlert term="Logged-in client" plainEnglish="React app that persists session, protects routes, and sends tokens on API calls." whyItMatters="Chapter 8 adds authorization — proving identity is done; now you restrict what each role can do." />
+
 ## What you built
 
 Four client-side pieces, each wrapping a Chapter 6 endpoint. If you can name what each one is *for* without opening the file, this chapter's learning has landed.
@@ -65,10 +67,16 @@ Logged in ≠ allowed to edit another vendor's store — Chapter 8.
 **Demo you can run now:** Vendor A logs in, reaches `/vendor` stub.  
 **Demo you cannot run yet:** Prove Vendor B cannot PATCH Vendor A's store — that requires Chapter 8 middleware.
 
+<InterestingRead title="Why login forms fail in weird ways" hook="The API works in curl but not in the browser." readMinutes={4}>
+
+CORS, missing Authorization headers, and tokens stored where JavaScript cannot read them cause most beginner auth bugs. FreshMarket's verify step proves the full browser path — form submit, token storage, protected fetch — not just isolated API tests.
+
+</InterestingRead>
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX76J749VKMCG4ZCJS43K4" />
+<OpenQuestion id="01KZP7KPMZF335GEAXJEGG9BP9" />
 
 ## Next chapter — Authorization & isolation (Chapter 8)
 
@@ -87,3 +95,4 @@ Logged in ≠ allowed to edit another vendor's store — Chapter 8.
 **Do not open Chapter 8 until 7.18 ticked.**
 
 The browser proves identity — next the server enforces boundaries.
+<RealWorldEvent title="GitHub's session and token evolution" when="2010s–present" summary="Developer platforms refined PATs, OAuth apps, and session handling as users demanded security without constant re-authentication." lesson="Treat the client auth layer as part of security design, not a UI afterthought — refresh logic belongs in one place, not scattered across pages." />

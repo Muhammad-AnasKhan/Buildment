@@ -2,69 +2,111 @@
 title: "Order confirmation page"
 module: 20
 lesson: 6
-summary: "**Why this step matters:** Customers need immediate proof that checkout worked — especially when one payment creates **multiple orders**. This page is the receipt moment mentors look for in the Week 3 demo."
+summary: "Build /orders/confirmation: show split orders after checkout using snapshot fields — the Week 3 receipt moment."
 ---
-**Why this step matters:** Customers need immediate proof that checkout worked — especially when one payment creates **multiple orders**. This page is the receipt moment mentors look for in the Week 3 demo.
+One payment can create **two orders** (one per vendor). The confirmation page proves checkout worked and shows the customer what they bought — using **snapshot prices**, not live catalogue prices.
 
-**Where the project is now:** Checkout page collects the card payment (20.5) — after success the customer lands back with no dedicated confirmation screen.
+<BigWordAlert term="Order confirmation" plainEnglish="Post-payment thank-you page showing order IDs and summary — reduces buyer anxiety." whyItMatters="FreshMarket shoppers need immediate proof payment worked — before email receipt arrives." />
 
-**After this step:** Customer sees **split orders** immediately after checkout — receipt-style summary per store.
+## Target UI preview
 
-## Route
+![Order confirmation — UI preview](/showcase/multi-vendor-marketplace/order-confirmation-page.png)
 
-`/orders/confirmation` — protected customer route.
+*Production-style UI preview — thank-you message, separate order cards per vendor, snapshot line prices.*
+
+---
+
+## Step 1 — Create the route
+
+**Path:** `/orders/confirmation`  
+**Auth:** Customer only (protected route)
 
 **Data source:**
 
-| Pattern | Acceptable |
+| Pattern | When |
 |---|---|
-| Location state from checkout navigation | `{ orders: [...] }` |
-| Refetch `GET /orders/my?limit=2` | If state lost on refresh |
+| Navigation state from checkout | Primary — `{ orders: [...] }` |
+| Refetch GET /orders/my | Fallback if user refreshes page |
 
-Prefer state + fallback refetch for refresh survival.
+Prefer state + fallback so refresh does not show a blank screen.
 
-## Display contract
+---
 
-For **each order** in checkout response:
+## Step 2 — Layout per order
 
-- Store name
-- Order id (short display ok)
-- Line items from **snapshots** — name, unit price, quantity, line total
-- Order total
-- Status badge — `pending`
-- Link to `/orders` — full history
+For **each order** in the checkout response, show:
 
-Heading copy: e.g. "Thank you — your orders are placed" (plural when N > 1).
+| Element | Source |
+|---|---|
+| Store name | From order or populated store |
+| Order id | Short display OK |
+| Line items | **Snapshots only** — nameAtPurchase, priceAtPurchase, unitAtPurchase, quantity, lineTotal |
+| Order total | order.total |
+| Status | `pending` badge |
+| Link | "View all orders" → `/orders` |
 
-## Multi-order messaging
+**Heading:** "Thank you — your orders are placed" (use plural when 2+ orders)
 
-Explain briefly: *Each store fulfils separately* — one sentence, editorial tone.
+---
 
-## Empty state
+## Step 3 — Explain the split
 
-If user lands without data and refetch empty → link to shop.
+One friendly sentence:
 
-## ✅ Do / ❌ Don't
+*"Each store will pack and deliver their items separately."*
 
-**✅ Do:** Use snapshot fields only on lines.
+This connects to the cart grouping from Chapter 17 — the customer already saw the split before paying.
 
-**✅ Do:** Show count — "2 orders from 2 stores".
+---
 
-**❌ Don't:** Single combined receipt hiding split.
+## Step 4 — Empty / edge cases
 
-**❌ Don't:** Require product populate for display.
+| Case | UI |
+|---|---|
+| Landed without state, refetch empty | Link back to shop |
+| Single-store checkout | One order block — still use same layout |
+| Two-store checkout | Show count: "2 orders from 2 stores" |
+
+---
+
+## What NOT to do
+
+- Do not populate live `product.price` for display — use snapshots
+- Do not merge all lines into one receipt — hides the multi-vendor split
+
+---
 
 ## Verify
 
-- [ ] Two orders displayed after two-store checkout
-- [ ] Totals match API
-- [ ] Refresh with refetch still shows recent orders
+1. Complete two-store checkout in browser
+2. Confirmation shows **two order sections**
+3. Totals match API response
+4. Hard refresh — fallback refetch still shows recent orders
+
+---
+
+## Commit
+
+```bash
+git add client/src/pages/OrderConfirmation.jsx client/src/App.jsx
+git commit -m "feat(client): order confirmation page with split orders"
+```
+
+## Verify checklist
+
+- [ ] Two orders after two-store checkout
+- [ ] Line prices from snapshots
+- [ ] Refresh survival with refetch fallback
+
+<RealWorldEvent title="Domino's Pizza Tracker effect" when="2008–present" summary="Transparent order tracking reduced support calls and increased trust — customers tolerate wait when they see progress." lesson="Expose meaningful statuses, not internal jargon. 'Preparing your order' beats 'STATE_PICKING'." />
 
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX78KKEEGFN2T1SRTY2K7E" />
+<OpenQuestion id="01KZP7KQR6STYZXVVJ4G49GGHH" />
 
 ## Next
 
-**Sub-chapter 20.7:** Customer orders page — the confirmation proves checkout worked; the history page proves the snapshots pay off for every order.
+**Sub-chapter 20.7:** Customer orders page — full order history.
+
+Confirmation works. Next, order history list.

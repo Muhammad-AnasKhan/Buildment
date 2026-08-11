@@ -6,6 +6,8 @@ summary: "**Why this step matters:** Boot order — config, connect, then listen
 ---
 **Why this step matters:** Boot order — config, connect, then listen — prevents the API from accepting traffic while the database is still disconnected. Production APIs fail startup rather than lie to health checks; you adopt that discipline on localhost first.
 
+<BigWordAlert term="Graceful startup" plainEnglish="Connecting to the database before listening on HTTP, and exiting cleanly if connection fails." whyItMatters="FreshMarket won't accept cart requests until MongoDB is ready — no half-initialized server state." />
+
 **Where the project is now:** `config.js` and `db.js` exist but `server.js` may still call `listen()` immediately without connecting MongoDB.
 
 **After this step:** Server startup sequence loads env → validates config → **awaits database connection** → starts HTTP listener. Failed connection prevents normal boot.
@@ -143,10 +145,12 @@ git commit -m "feat(server): connect mongodb before starting http listener"
 - [ ] Missing MONGODB_URI → config failure before connect  
 - [ ] `app.js` still does not call listen  
 
+<RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />
+
 
 ## Before you continue
 
-<OpenQuestion id="01KZAX75SYNFAFJB6N28W659Q2" />
+<OpenQuestion id="01KZP7KP5ETR2Y6SWPGGTVEK3P" />
 
 ## Next
 

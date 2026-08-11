@@ -1,0 +1,154 @@
+---
+title: "Engineering thinking playbook"
+module: 1
+lesson: 10
+summary: "A practical playbook for making decisions like an engineer while you build this course project: problem framing, trade-offs, verification, and production reasoning."
+---
+This playbook is your anti-tutorial safety net.  
+Use it whenever you're about to copy a pattern without understanding why.
+
+<BigWordAlert term="Trade-off thinking" plainEnglish="Choosing between two valid options by weighing speed, safety, cost, and complexity — not chasing perfection." whyItMatters="FreshMarket decisions (MongoDB vs SQL, JWT vs sessions) are trade-offs you will defend in interviews." />
+
+## The core mental model
+
+For every implementation step, force this sequence:
+
+1. **Problem** — what real pain are we solving?
+2. **Constraints** — what must stay true? (security, ownership, consistency)
+3. **Options** — what are 2–3 viable approaches?
+4. **Decision** — which option fits this product stage and why?
+5. **Verification** — what concrete evidence proves it works?
+6. **Failure mode** — what breaks first if we got this wrong?
+
+If you can answer these quickly, you are building engineering judgment.
+
+## Decision templates you can reuse
+
+### Template A — "Should we add this new tool?"
+
+Use for Redis, queues, Docker, or any package you are excited to add.
+
+| Question | Good answer style |
+|---|---|
+| What problem are we solving right now? | "Catalogue reads are repeated and slow under load." |
+| Can current stack solve it simply? | "Mongo indexes help search, but not repeated identical responses." |
+| What new complexity does this add? | "New service, env vars, failure modes, local setup overhead." |
+| Why now, not later? | "Feature is complete; now bottleneck is read path." |
+
+If you cannot answer "why now," postpone the tool.
+
+### Template B — "Where should this logic live?"
+
+Use for auth checks, order splitting, price snapshots, stock updates.
+
+| Option | Trade-off |
+|---|---|
+| Client-side logic | Fast to prototype, unsafe for trusted decisions |
+| API route/service logic | Trustworthy, testable, single source of truth |
+| Database trigger/magic | Hidden behavior, harder for beginners to reason about |
+
+Default in this course: **critical rules on server**, not browser.
+
+### Template C — "How do we keep history correct?"
+
+Use for receipts, prices, statuses.
+
+Ask:
+- Is this value historical or live?
+- If live data changes tomorrow, should old records change?
+- If answer is "no," snapshot at write time.
+
+That single rule prevents most checkout-history bugs.
+
+## Practical "why" prompts by chapter type
+
+### Foundation chapters (2–5)
+
+- Why this folder structure?
+- Why this schema shape?
+- Why this env key instead of hardcoding?
+
+### Security chapters (6–8)
+
+- What can an attacker do if this check is missing?
+- Where is identity established?
+- Where is ownership enforced?
+
+### Commerce chapters (14–20)
+
+- What is the source of truth for price at purchase?
+- What if two buyers act at once?
+- What must be atomic vs eventually consistent?
+
+### Scale/deploy chapters (21–23)
+
+- What request path is hottest?
+- What can fail without breaking core commerce?
+- Which components must restart automatically?
+
+## Beginner Q&A (expanded)
+
+### "I can build features, but I can't explain architecture."
+
+Use a fixed explanation structure:
+
+1. Entry point (client route/API endpoint)
+2. Main service logic
+3. Data source + writes
+4. Cross-cutting concerns (auth/cache/queue)
+5. Failure behavior and fallback
+
+Practice this weekly using one real flow (e.g., checkout).
+
+### "How do I know if I'm learning deeply or just finishing tasks?"
+
+Depth test:
+- Can you predict what breaks if a guard is removed?
+- Can you explain one trade-off you accepted?
+- Can you reproduce the same feature from memory in a new repo?
+
+If yes, you're learning deeply.
+
+### "When should I optimize performance?"
+
+After correctness and baseline functionality exist.  
+Don't optimize imagined bottlenecks. Use observed pain:
+- repeated catalogue reads,
+- expensive query patterns,
+- blocked request paths.
+
+That's why this course does cache/queues in Week 4.
+
+## Your weekly review ritual (15 minutes)
+
+At week end, write these five bullets:
+
+1. Biggest decision I made and why.
+2. One trade-off I accepted.
+3. One failure I debugged deeply.
+4. One thing I would redesign now.
+5. One production risk still remaining.
+
+This transforms activity into engineering growth.
+
+## Quick anti-pattern checklist
+
+- [ ] I am not adding tools "because companies use it."
+- [ ] I can explain why each module exists in this product.
+- [ ] I am not moving ahead with unresolved gate failures.
+- [ ] I am not trusting client input for critical business rules.
+- [ ] I am not treating deploy as an optional final polish.
+
+<RealWorldEvent title="Instacart scales local grocery delivery" when="2012–present" summary="Instacart connected independent grocery stores to shoppers through a single app, handling inventory sync, delivery logistics, and multi-store baskets at national scale." lesson="Your FreshMarket build starts smaller, but the same pattern applies: one customer experience, many vendor backends, and careful data ownership." />
+
+## Key ideas from this page
+
+- Engineering thinking is a repeatable decision process.
+- Context and constraints should come before implementation.
+- Verified behavior is stronger than completed tasks.
+- Trade-off language is part of production readiness.
+
+You now have the full intro foundation: product context, roadmap, beginner support, and engineering thinking. Start Chapter 2 with this playbook open.
+## Before you continue
+
+<OpenQuestion id="01KZP7KNRZNF612PA7EWZRD6XV" />
