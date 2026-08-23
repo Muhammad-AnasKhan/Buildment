@@ -52,10 +52,15 @@ const STEPS = [
 export default async function MarketingHomePage() {
   const courses = await prisma.course.findMany({
     where: { status: "PUBLISHED" },
-    include: {
-      modules: {
-        include: { chapters: { include: { _count: { select: { blocks: true } } } } },
-      },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      description: true,
+      coverUrl: true,
+      difficulty: true,
+      estimatedHours: true,
+      _count: { select: { modules: true, chapters: true } },
     },
   });
 
@@ -137,7 +142,19 @@ export default async function MarketingHomePage() {
               </div>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {courses.map((course) => (
-                  <CourseCard key={course.id} course={course} />
+                  <CourseCard
+                    key={course.id}
+                    course={{
+                      slug: course.slug,
+                      title: course.title,
+                      description: course.description,
+                      coverUrl: course.coverUrl,
+                      difficulty: course.difficulty,
+                      estimatedHours: course.estimatedHours,
+                      moduleCount: course._count.modules,
+                      chapterCount: course._count.chapters,
+                    }}
+                  />
                 ))}
               </div>
             </div>

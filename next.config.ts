@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Mermaid is loaded as a static script from /vendor/mermaid.min.js — never bundle it.
+  serverExternalPackages: ["mermaid"],
   images: {
     remotePatterns: [
       {

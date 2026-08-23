@@ -1,5 +1,12 @@
 import type { MDXComponents } from "next-mdx-remote-client/rsc";
-import { blockRegistry } from "@/blocks/registry";
+import { QuizComponent } from "@/blocks/quiz/Component";
+import { PredictComponent } from "@/blocks/predict/Component";
+import { OpenQuestionComponent } from "@/blocks/open-question/Component";
+import { CodeExerciseComponent } from "@/blocks/code/Component";
+import { StepsComponent } from "@/blocks/steps/Component";
+import { ProjectPreviewComponent } from "@/blocks/project-preview/Component";
+import { LearningObjectivesComponent } from "@/blocks/learning-objectives/Component";
+import { ChapterRecapComponent } from "@/blocks/chapter-recap/Component";
 import { MermaidDiagram } from "@/components/learn/mermaid-diagram";
 import { Callout } from "@/components/learn/callout";
 import { FaqGroup, FaqItem } from "@/components/learn/faq-group";
@@ -25,10 +32,6 @@ import {
   TraceRequest,
   TraceStep,
 } from "@/components/learn/content-blocks";
-import { StepsComponent } from "@/blocks/steps/Component";
-import { ProjectPreviewComponent } from "@/blocks/project-preview/Component";
-import { LearningObjectivesComponent } from "@/blocks/learning-objectives/Component";
-import { ChapterRecapComponent } from "@/blocks/chapter-recap/Component";
 import { Checklist } from "@/components/learn/checklist";
 import { LearningLog } from "@/components/learn/learning-log";
 import { cn } from "@/lib/utils";
@@ -41,14 +44,14 @@ const cellBorder = "border border-neutral-200";
 // map are reachable from compiled MDX, so a compromised/careless mentor
 // account can add prose, not arbitrary JS.
 export const mdxComponents: MDXComponents = {
-  Quiz: blockRegistry.QUIZ.Component,
-  Predict: blockRegistry.PREDICT.Component,
-  OpenQuestion: blockRegistry.OPEN_QUESTION.Component,
-  CodeExercise: blockRegistry.CODE.Component,
-  Steps: blockRegistry.STEPS.Component,
-  ProjectPreview: blockRegistry.PROJECT_PREVIEW.Component,
-  LearningObjectives: blockRegistry.LEARNING_OBJECTIVES.Component,
-  ChapterRecap: blockRegistry.CHAPTER_RECAP.Component,
+  Quiz: QuizComponent,
+  Predict: PredictComponent,
+  OpenQuestion: OpenQuestionComponent,
+  CodeExercise: CodeExerciseComponent,
+  Steps: StepsComponent,
+  ProjectPreview: ProjectPreviewComponent,
+  LearningObjectives: LearningObjectivesComponent,
+  ChapterRecap: ChapterRecapComponent,
   Checklist,
   LearningLog,
   MermaidDiagram,

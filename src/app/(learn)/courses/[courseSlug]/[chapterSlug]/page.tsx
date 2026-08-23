@@ -6,7 +6,6 @@ import { extractHeadings } from "@/lib/mdx-headings";
 import { learningLogToAnswers, parseLearningLog } from "@/lib/learning-log";
 import { ChapterReaderShell } from "@/components/learn/chapter-reader-shell";
 import { signOutAction } from "@/server/auth/actions";
-import type { SyllabusModule } from "@/components/learn/course-syllabus";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +18,21 @@ export default async function ChapterReaderPage({
 
   const course = await prisma.course.findUnique({
     where: { slug: courseSlug },
-    include: {
+    select: {
+      id: true,
+      slug: true,
+      title: true,
       modules: {
         orderBy: { order: "asc" },
-        include: { chapters: { orderBy: { order: "asc" } } },
+        select: {
+          id: true,
+          order: true,
+          title: true,
+          chapters: {
+            orderBy: { order: "asc" },
+            select: { id: true, slug: true, title: true, order: true },
+          },
+        },
       },
     },
   });
@@ -30,19 +40,13 @@ export default async function ChapterReaderPage({
 
   const { enrollment, user } = await requireEnrolledMentee(course.id);
 
-  const flatChapters = course.modules
-    .slice()
-    .sort((a, b) => a.order - b.order)
-    .flatMap((mod) =>
-      mod.chapters
-        .slice()
-        .sort((a, b) => a.order - b.order)
-        .map((ch) => ({
-          ...ch,
-          moduleTitle: mod.title,
-          moduleOrder: mod.order,
-        }))
-    );
+  const flatChapters = course.modules.flatMap((mod) =>
+    mod.chapters.map((ch) => ({
+      ...ch,
+      moduleTitle: mod.title,
+      moduleOrder: mod.order,
+    }))
+  );
   const index = flatChapters.findIndex((c) => c.slug === chapterSlug);
   if (index === -1) notFound();
 
@@ -51,24 +55,34 @@ export default async function ChapterReaderPage({
   const next = flatChapters[index + 1];
   const lessonLabel = `${String(chapter.moduleOrder).padStart(2, "0")}.${String(chapter.order).padStart(2, "0")}`;
 
-  // Extract headings for TOC
-  const source = chapter.compiled ?? chapter.source;
+  const [progress, content, currentProgress] = await Promise.all([
+    prisma.chapterProgress.findMany({
+      where: { enrollmentId: enrollment.id },
+      select: { chapterId: true, status: true },
+    }),
+    prisma.chapter.findUnique({
+      where: { id: chapter.id },
+      select: { compiled: true, source: true },
+    }),
+    prisma.chapterProgress.findUnique({
+      where: { enrollmentId_chapterId: { enrollmentId: enrollment.id, chapterId: chapter.id } },
+      select: { learningLog: true },
+    }),
+  ]);
+  if (!content) notFound();
+
+  const source = content.compiled ?? content.source;
   const headings = extractHeadings(source);
 
-  // Get progress for sidebar
-  const progress = await prisma.chapterProgress.findMany({
-    where: { enrollmentId: enrollment.id },
-  });
-  const progressByChapter = new Map(progress.map((p) => [p.chapterId, p]));
-  const chapterProgress = progressByChapter.get(chapter.id);
-  const learningLogAnswers = learningLogToAnswers(parseLearningLog(chapterProgress?.learningLog));
+  const progressByChapter = new Map(progress.map((p) => [p.chapterId, p.status]));
+  const learningLogAnswers = learningLogToAnswers(parseLearningLog(currentProgress?.learningLog));
 
   const modules = course.modules.map((mod) => {
     const chapters = mod.chapters.map((ch) => ({
       id: ch.id,
       slug: ch.slug,
       title: ch.title,
-      status: progressByChapter.get(ch.id)?.status ?? ("NOT_STARTED" as const),
+      status: progressByChapter.get(ch.id) ?? ("NOT_STARTED" as const),
       blockCount: 0,
     }));
     return {

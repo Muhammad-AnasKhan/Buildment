@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChapterSidebar, SidebarToggle } from "@/components/learn/chapter-sidebar";
 import { ChapterToc, TocToggle } from "@/components/learn/chapter-toc";
 import { ChapterNav } from "@/components/learn/chapter-nav";
-import { ChapterProgressBar, useReadingProgress } from "@/components/learn/chapter-progress-bar";
+import { ReadingProgressBar } from "@/components/learn/chapter-progress-bar";
 import { ChecklistProvider } from "@/components/learn/checklist";
 import { LearningLogProvider } from "@/components/learn/learning-log";
 import { UserMenuDropdown } from "@/components/user-menu-dropdown";
@@ -47,7 +47,6 @@ export function ChapterReaderShell({
   const [leftCollapsed, setLeftCollapsed] = useState(false);
   const [rightCollapsed, setRightCollapsed] = useState(false);
   const scrollRef = useRef<HTMLElement>(null);
-  const { progress } = useReadingProgress(scrollRef);
 
   useEffect(() => {
     scrollRef.current?.scrollTo(0, 0);
@@ -75,7 +74,7 @@ export function ChapterReaderShell({
             <UserMenuDropdown user={user} compact signOutAction={signOutAction} />
           </div>
         </div>
-        <ChapterProgressBar progress={progress} />
+        <ReadingProgressBar scrollRef={scrollRef} />
       </header>
 
       <div className="flex min-h-0 flex-1">

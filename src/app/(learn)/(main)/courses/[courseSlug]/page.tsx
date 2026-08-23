@@ -40,13 +40,29 @@ export default async function CourseOverviewPage({
 
   const course = await prisma.course.findUnique({
     where: { slug: courseSlug },
-    include: {
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      description: true,
+      projectGoal: true,
+      coverUrl: true,
+      difficulty: true,
+      estimatedHours: true,
       modules: {
         orderBy: { order: "asc" },
-        include: {
+        select: {
+          id: true,
+          order: true,
+          title: true,
           chapters: {
             orderBy: { order: "asc" },
-            include: { _count: { select: { blocks: true } } },
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              _count: { select: { blocks: true } },
+            },
           },
         },
       },
@@ -57,6 +73,7 @@ export default async function CourseOverviewPage({
   const { enrollment } = await requireEnrolledMentee(course.id);
   const progress = await prisma.chapterProgress.findMany({
     where: { enrollmentId: enrollment.id },
+    select: { chapterId: true, status: true },
   });
   const progressByChapter = new Map(progress.map((p) => [p.chapterId, p.status]));
 

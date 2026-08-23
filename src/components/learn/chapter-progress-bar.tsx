@@ -17,6 +17,15 @@ export function ChapterProgressBar({ progress }: ProgressBarProps) {
   );
 }
 
+export function ReadingProgressBar({
+  scrollRef,
+}: {
+  scrollRef: RefObject<HTMLElement | null>;
+}) {
+  const { progress } = useReadingProgress(scrollRef);
+  return <ChapterProgressBar progress={progress} />;
+}
+
 export function useReadingProgress(scrollRef: RefObject<HTMLElement | null>) {
   const [progress, setProgress] = useState(0);
 
@@ -25,17 +34,29 @@ export function useReadingProgress(scrollRef: RefObject<HTMLElement | null>) {
     const article = scrollEl?.querySelector("article.prose") as HTMLElement | null;
     if (!scrollEl || !article) return;
 
+    let frame = 0;
     const updateProgress = () => {
       const scrollTop = scrollEl.scrollTop;
       const scrollHeight = scrollEl.scrollHeight - scrollEl.clientHeight;
       const percent = scrollHeight > 0 ? Math.min(100, Math.max(0, (scrollTop / scrollHeight) * 100)) : 0;
-      setProgress(percent);
+      setProgress((prev) => (Math.abs(prev - percent) < 0.5 ? prev : percent));
     };
 
-    scrollEl.addEventListener("scroll", updateProgress, { passive: true });
+    const onScroll = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        updateProgress();
+      });
+    };
+
+    scrollEl.addEventListener("scroll", onScroll, { passive: true });
     updateProgress();
 
-    return () => scrollEl.removeEventListener("scroll", updateProgress);
+    return () => {
+      scrollEl.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
   }, [scrollRef]);
 
   return { progress };

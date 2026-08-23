@@ -16,10 +16,22 @@ export default async function CourseEditPage({
 
   const course = await prisma.course.findUnique({
     where: { slug: courseSlug },
-    include: {
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      description: true,
+      status: true,
       modules: {
         orderBy: { order: "asc" },
-        include: { chapters: { orderBy: { order: "asc" } } },
+        select: {
+          id: true,
+          title: true,
+          chapters: {
+            orderBy: { order: "asc" },
+            select: { id: true, title: true, order: true, publishedAt: true },
+          },
+        },
       },
     },
   });
@@ -29,6 +41,7 @@ export default async function CourseEditPage({
   const looseChapters = await prisma.chapter.findMany({
     where: { courseId: course.id, moduleId: null },
     orderBy: { order: "asc" },
+    select: { id: true, title: true, order: true, publishedAt: true },
   });
 
   return (

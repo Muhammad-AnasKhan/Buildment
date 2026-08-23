@@ -1,23 +1,20 @@
 import Link from "next/link";
 import { BookOpen, Clock, Layers } from "lucide-react";
-import { cn } from "@/lib/utils";
-import type { Course, Module, Chapter } from "@/generated/prisma/client";
 
 type CourseCardProps = {
-  course: Course & {
-    modules: (Module & {
-      chapters: (Chapter & { _count: { blocks: number } })[];
-    })[];
+  course: {
+    slug: string;
+    title: string;
+    description: string | null;
+    coverUrl: string | null;
+    difficulty: string | null;
+    estimatedHours: number | null;
+    moduleCount: number;
+    chapterCount: number;
   };
 };
 
 export function CourseCard({ course }: CourseCardProps) {
-  const totalChapters = course.modules.reduce((sum, mod) => sum + mod.chapters.length, 0);
-  const totalLessons = course.modules.reduce(
-    (sum, mod) => sum + mod.chapters.reduce((s, ch) => s + ch._count.blocks, 0),
-    0
-  );
-
   return (
     <Link
       href={`/courses/${course.slug}`}
@@ -53,11 +50,11 @@ export function CourseCard({ course }: CourseCardProps) {
         <div className="mt-auto flex flex-wrap gap-2">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-medium text-neutral-600">
             <Layers className="size-3 text-indigo-500" />
-            {course.modules.length} modules
+            {course.moduleCount} modules
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-medium text-neutral-600">
             <BookOpen className="size-3 text-indigo-500" />
-            {totalChapters} lessons
+            {course.chapterCount} lessons
           </span>
           {course.estimatedHours ? (
             <span className="inline-flex items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-2.5 py-1 text-[11px] font-medium text-neutral-600">
