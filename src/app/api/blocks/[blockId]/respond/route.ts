@@ -7,7 +7,11 @@ import { PredictPayloadSchema } from "@/blocks/predict/schema";
 import { OpenQuestionPayloadSchema } from "@/blocks/open-question/schema";
 import { CodePayloadSchema } from "@/blocks/code/schema";
 import { gradeCodeDetails } from "@/blocks/code/grade";
-import { recomputeChapterProgress } from "@/server/progress/compute";
+import {
+  adjustEnrollmentPendingReviews,
+  recomputeChapterProgress,
+  recordBlockStats,
+} from "@/server/progress/compute";
 import type { GradeResult } from "@/blocks/types";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ blockId: string }> }) {
@@ -92,6 +96,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         isCorrect: graded.isCorrect,
       },
     });
+    await recordBlockStats(tx, {
+      blockId,
+      status: graded.status,
+      isCorrect: graded.isCorrect,
+    });
+    if (graded.status === "PENDING_REVIEW") {
+      await adjustEnrollmentPendingReviews(tx, enrollment.id, 1);
+    }
     await recomputeChapterProgress(tx, enrollment.id, block.chapter.id);
     return created;
   });

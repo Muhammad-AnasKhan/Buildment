@@ -13,6 +13,7 @@
     "db:studio": "prisma studio",
     "content:import": "tsx scripts/import-course.ts",
     "content:validate": "tsx scripts/validate-chapters.mjs",
+    "stats:backfill": "tsx scripts/backfill-block-stats.ts",
     "showcase:generate": "node scripts/generate-showcase-images.mjs",
     "test": "vitest run"
   },

@@ -1,12 +1,20 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { CheckCircle2, PenLine, SendHorizontal } from "lucide-react";
+import { CheckCircle2, Clock3, PenLine, RotateCcw, SendHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { OpenQuestionGroupPosition } from "./group-position";
 import type { SanitizedOpenQuestionConfig } from "./schema";
+
+export type OpenQuestionInitialState = {
+  status: string;
+  attempt: number;
+  text: string;
+  feedback: string | null;
+  verdict: "APPROVED" | "NEEDS_REVISION" | null;
+};
 
 export function OpenQuestionClient({
   id,
@@ -14,15 +22,20 @@ export function OpenQuestionClient({
   groupPosition,
   questionIndex,
   questionTotal,
+  initialState,
 }: {
   id: string;
   config: SanitizedOpenQuestionConfig;
   groupPosition: OpenQuestionGroupPosition;
   questionIndex: number;
   questionTotal: number;
+  initialState?: OpenQuestionInitialState | null;
 }) {
-  const [text, setText] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const needsRevision = initialState?.status === "NEEDS_REVISION";
+  const [text, setText] = useState(needsRevision ? initialState.text : "");
+  const [submitted, setSubmitted] = useState(
+    Boolean(initialState) && !needsRevision
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,7 +91,9 @@ export function OpenQuestionClient({
               "flex size-9 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold tabular-nums",
               submitted
                 ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                : "border-indigo-200 bg-indigo-50 text-indigo-700"
+                : needsRevision
+                  ? "border-amber-200 bg-amber-50 text-amber-700"
+                  : "border-indigo-200 bg-indigo-50 text-indigo-700"
             )}
             aria-hidden
           >
@@ -102,15 +117,41 @@ export function OpenQuestionClient({
               {config.prompt}
             </p>
 
+            {needsRevision && !submitted && initialState?.feedback && (
+              <div className="mt-4 overflow-hidden rounded-lg border border-amber-200 bg-amber-50/70">
+                <div className="flex items-center gap-2 border-b border-amber-200/70 px-4 py-2.5">
+                  <RotateCcw className="size-4 shrink-0 text-amber-600" />
+                  <p className="text-sm font-medium text-amber-900">
+                    Your mentor asked for a revision (attempt {initialState.attempt})
+                  </p>
+                </div>
+                <p className="whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-neutral-700">
+                  {initialState.feedback}
+                </p>
+              </div>
+            )}
+
             {submitted ? (
               <div className="mt-4 overflow-hidden rounded-lg border border-emerald-200/80 bg-emerald-50/60">
                 <div className="flex items-center gap-2 border-b border-emerald-200/60 px-4 py-2.5">
                   <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
                   <p className="text-sm font-medium text-emerald-900">Answer submitted</p>
+                  <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+                    <Clock3 className="size-3" aria-hidden />
+                    {initialState?.verdict === "APPROVED"
+                      ? "Approved by your mentor"
+                      : "Awaiting mentor review"}
+                  </span>
                 </div>
                 <p className="whitespace-pre-wrap px-4 py-3 text-[15px] leading-relaxed text-neutral-700">
-                  {text}
+                  {text || initialState?.text}
                 </p>
+                {initialState?.verdict === "APPROVED" && initialState.feedback && (
+                  <p className="border-t border-emerald-200/60 whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-neutral-600">
+                    <span className="font-medium text-emerald-800">Mentor feedback: </span>
+                    {initialState.feedback}
+                  </p>
+                )}
               </div>
             ) : (
               <>
@@ -119,7 +160,11 @@ export function OpenQuestionClient({
                   rows={5}
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder="Write your answer in your own words…"
+                  placeholder={
+                    needsRevision
+                      ? "Rewrite your answer using your mentor's feedback…"
+                      : "Write your answer in your own words…"
+                  }
                   aria-label={`Answer for question ${questionIndex + 1}`}
                 />
 
@@ -157,7 +202,7 @@ export function OpenQuestionClient({
                         "Submitting…"
                       ) : (
                         <>
-                          Submit answer
+                          {needsRevision ? "Resubmit answer" : "Submit answer"}
                           <SendHorizontal className="size-3.5" aria-hidden />
                         </>
                       )}

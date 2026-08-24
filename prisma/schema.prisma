@@ -117,6 +117,7 @@ model User {
   enrollments   Enrollment[]
   responses     Response[]
   reviewsGiven  Review[]     @relation("Reviewer")
+  invitesSent   Invite[]     @relation("InviteSender")
 }
 
 model Course {
@@ -135,6 +136,7 @@ model Course {
   modules        Module[]
   chapters       Chapter[]
   enrollments    Enrollment[]
+  invites        Invite[]
   publishedAt    DateTime?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -189,6 +191,7 @@ model Block {
   tags       String[] // for weak-area reporting
   archivedAt DateTime?
   responses  Response[]
+  stats      BlockStats?
 
   @@index([chapterId, order])
 }
@@ -205,6 +208,7 @@ model Enrollment {
   chaptersCompleted Int               @default(0)
   totalScore        Int               @default(0)
   maxScore          Int               @default(0)
+  pendingReviews    Int               @default(0) // denormalized for reports — maintained at Response write/review time
   lastActiveAt      DateTime?
   startedAt         DateTime?
   completedAt       DateTime?
@@ -268,4 +272,37 @@ model Review {
   feedback   String        @db.Text
   verdict    ReviewVerdict
   createdAt  DateTime      @default(now())
+}
+
+// Mentor -> mentee assignment surface (docs/phases/m7-assignment-and-polish.mdx).
+// email set = email-bound invite (only that account can accept); email null =
+// open invite link anyone signed in can accept. Acceptance creates an Enrollment.
+model Invite {
+  id           String    @id @default(cuid())
+  token        String    @unique
+  courseId     String
+  course       Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  email        String?
+  invitedById  String?
+  invitedBy    User?     @relation("InviteSender", fields: [invitedById], references: [id], onDelete: SetNull)
+  acceptedAt   DateTime?
+  acceptedById String?
+  revokedAt    DateTime?
+  expiresAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([courseId])
+  @@index([email])
+}
+
+// Denormalized per-block aggregates, maintained in the same transaction as each
+// Response write (recomputeChapterProgress) so reports never aggregate over
+// Response on the read path — AGENTS.md invariant 7, docs/06-reports.mdx.
+model BlockStats {
+  blockId         String    @id
+  block           Block     @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  attempts        Int       @default(0)
+  correctCount    Int       @default(0)
+  pendingReviews  Int       @default(0)
+  lastSubmittedAt DateTime?
 }

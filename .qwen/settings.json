@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(rm *)",
+      "Bash(curl *)",
+      "computer_use__launch_app",
+      "Bash(cat *)"
+    ]
+  },
+  "$version": 4
+}

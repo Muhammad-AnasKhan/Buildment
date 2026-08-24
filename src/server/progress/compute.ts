@@ -99,3 +99,66 @@ async function recomputeEnrollmentRollup(tx: Prisma.TransactionClient, enrollmen
     },
   });
 }
+
+/**
+ * Maintains the denormalized per-block rollup in the same transaction as a new
+ * Response write, so chapter reports can read BlockStats instead of
+ * aggregating Response on the read path (AGENTS.md invariant 7).
+ */
+export async function recordBlockStats(
+  tx: Prisma.TransactionClient,
+  response: { blockId: string; status: string; isCorrect: boolean | null }
+) {
+  const delta = {
+    attempts: 1,
+    correctCount: response.isCorrect === true ? 1 : 0,
+    pendingReviews: response.status === "PENDING_REVIEW" ? 1 : 0,
+  };
+  await tx.blockStats.upsert({
+    where: { blockId: response.blockId },
+    create: {
+      blockId: response.blockId,
+      attempts: delta.attempts,
+      correctCount: delta.correctCount,
+      pendingReviews: delta.pendingReviews,
+      lastSubmittedAt: new Date(),
+    },
+    update: {
+      attempts: { increment: delta.attempts },
+      correctCount: { increment: delta.correctCount },
+      pendingReviews: { increment: delta.pendingReviews },
+      lastSubmittedAt: new Date(),
+    },
+  });
+}
+
+/** Called when a PENDING_REVIEW response is reviewed (approved or sent back). */
+export async function resolvePendingBlockReview(
+  tx: Prisma.TransactionClient,
+  blockId: string
+) {
+  await tx.blockStats.updateMany({
+    where: { blockId, pendingReviews: { gt: 0 } },
+    data: { pendingReviews: { decrement: 1 } },
+  });
+}
+
+/**
+ * Maintains Enrollment.pendingReviews (read by reports) — +1 when a submission
+ * enters PENDING_REVIEW, -1 when a mentor resolves it. Clamped at zero so a
+ * double-resolution can never push the rollup negative.
+ */
+export async function adjustEnrollmentPendingReviews(
+  tx: Prisma.TransactionClient,
+  enrollmentId: string,
+  delta: 1 | -1
+) {
+  const enrollment = await tx.enrollment.findUniqueOrThrow({
+    where: { id: enrollmentId },
+    select: { pendingReviews: true },
+  });
+  await tx.enrollment.update({
+    where: { id: enrollmentId },
+    data: { pendingReviews: Math.max(0, enrollment.pendingReviews + delta) },
+  });
+}

@@ -2,6 +2,7 @@ import type { JsxComponentDescriptor } from "@mdxeditor/editor";
 import { createFlowDescriptor, createTextDescriptor } from "./editor-descriptor-utils";
 
 export const contentBlockDescriptors: JsxComponentDescriptor[] = [
+  createTextDescriptor("Video", [{ name: "src", required: true }, { name: "caption" }]),
   createFlowDescriptor("ComparePanel", [{ name: "title" }], true),
   createFlowDescriptor("CompareColumn", [{ name: "label", required: true }], true),
   createFlowDescriptor("FileTree", [{ name: "title" }, { name: "root" }], true),

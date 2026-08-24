@@ -17,9 +17,17 @@ type UserMenuDropdownProps = {
   user: { name?: string | null; email?: string | null; image?: string | null };
   compact?: boolean;
   signOutAction: () => Promise<void>;
+  homeHref?: string;
+  showProgress?: boolean;
 };
 
-export function UserMenuDropdown({ user, compact = false, signOutAction }: UserMenuDropdownProps) {
+export function UserMenuDropdown({
+  user,
+  compact = false,
+  signOutAction,
+  homeHref = "/dashboard",
+  showProgress = true,
+}: UserMenuDropdownProps) {
   const router = useRouter();
   const displayName = user.name ?? user.email ?? "Account";
 
@@ -46,14 +54,16 @@ export function UserMenuDropdown({ user, compact = false, signOutAction }: UserM
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push("/dashboard")}>
+        <DropdownMenuItem onClick={() => router.push(homeHref)}>
           <LayoutDashboard className="size-4" />
           Home
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push("/progress")}>
-          <TrendingUp className="size-4" />
-          My progress
-        </DropdownMenuItem>
+        {showProgress && (
+          <DropdownMenuItem onClick={() => router.push("/progress")}>
+            <TrendingUp className="size-4" />
+            My progress
+          </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"

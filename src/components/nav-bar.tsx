@@ -12,17 +12,16 @@ export function NavBar({
 }) {
   return (
     <GlassNavShell>
-      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+      <div className="flex min-w-0 items-center gap-6">
         <Link href="/" className="shrink-0">
           <Logo size="sm" />
         </Link>
-        <span className="h-4 w-px shrink-0 bg-neutral-200" aria-hidden />
         <nav className="flex min-w-0 items-center gap-1 overflow-x-auto">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="shrink-0 rounded-full px-3 py-1.5 text-sm font-medium text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+              className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
             >
               {link.label}
             </Link>
@@ -30,7 +29,11 @@ export function NavBar({
         </nav>
       </div>
 
-      <NavUserMenu user={user} />
+      <NavUserMenu
+        user={user}
+        homeHref={links[0]?.href ?? "/"}
+        showProgress={links.some((link) => link.href === "/progress")}
+      />
     </GlassNavShell>
   );
 }

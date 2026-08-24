@@ -1,8 +1,9 @@
 import { prisma } from "@/server/db";
+import { getSessionUser } from "@/server/auth/guards";
 import { sanitizeBlockConfig } from "@/mdx/sanitize";
 import { OpenQuestionConfigSchema, type SanitizedOpenQuestionConfig } from "./schema";
 import { getOpenQuestionGroupPosition } from "./group-position";
-import { OpenQuestionClient } from "./OpenQuestionClient";
+import { OpenQuestionClient, type OpenQuestionInitialState } from "./OpenQuestionClient";
 
 // Registered in the MDX component map as <OpenQuestion id="...">. Server
 // component for the same reason as the Quiz block — see quiz/Component.tsx.
@@ -28,6 +29,31 @@ export async function OpenQuestionComponent({ id }: { id: string }) {
   const config = parsed.data;
   const sanitized = sanitizeBlockConfig<typeof config, SanitizedOpenQuestionConfig>(config);
 
+  // Restore the mentee's prior attempt so submissions survive reloads and the
+  // needs-revision loop (docs/05-review-queue.mdx) can show mentor feedback.
+  const user = await getSessionUser();
+  let initialState: OpenQuestionInitialState | null = null;
+  if (user) {
+    const latest = await prisma.response.findFirst({
+      where: { blockId: id, userId: user.id },
+      orderBy: { attempt: "desc" },
+      include: { review: { select: { feedback: true, verdict: true } } },
+    });
+    if (latest && latest.status !== "DRAFT") {
+      const text =
+        typeof (latest.payload as { text?: string } | null)?.text === "string"
+          ? ((latest.payload as { text?: string }).text as string)
+          : "";
+      initialState = {
+        status: latest.status,
+        attempt: latest.attempt,
+        text,
+        feedback: latest.review?.feedback ?? null,
+        verdict: latest.review?.verdict ?? null,
+      };
+    }
+  }
+
   return (
     <OpenQuestionClient
       id={id}
@@ -35,6 +61,7 @@ export async function OpenQuestionComponent({ id }: { id: string }) {
       groupPosition={position}
       questionIndex={index}
       questionTotal={total}
+      initialState={initialState}
     />
   );
 }

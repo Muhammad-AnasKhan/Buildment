@@ -1,15 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
 import { prisma } from "@/server/db";
-import { requireEnrolledMentee } from "@/server/auth/guards";
+import { ForbiddenError, requireEnrolledMentee } from "@/server/auth/guards";
 import { CourseOverviewHero } from "@/components/learn/course-overview-hero";
-import { CourseStatsRow } from "@/components/learn/course-stats-row";
-import { CourseTechStack } from "@/components/learn/course-tech-stack";
-import { CourseShowcase } from "@/components/learn/course-showcase";
-import { CourseSkills } from "@/components/learn/course-skills";
 import { CourseSyllabus, type SyllabusModule } from "@/components/learn/course-syllabus";
-import { COURSE_SHOWCASE } from "@/lib/course-showcase";
 import type { ProgressStatus } from "@/generated/prisma/client";
 
 function pickContinueTarget(
@@ -70,7 +65,39 @@ export default async function CourseOverviewPage({
   });
   if (!course) notFound();
 
-  const { enrollment } = await requireEnrolledMentee(course.id);
+  // The guard stays the single authorization decision point; the page just
+  // renders a clean denial instead of crashing on ForbiddenError (e.g. a
+  // mentor opening a learner link, or an unassigned mentee following a URL).
+  let enrolled;
+  try {
+    enrolled = await requireEnrolledMentee(course.id);
+  } catch (error) {
+    if (error instanceof ForbiddenError) {
+      return (
+        <div className="mx-auto max-w-4xl px-6 py-10">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-900"
+          >
+            <ArrowLeft className="size-4" />
+            Back to dashboard
+          </Link>
+          <div className="mt-16 flex flex-col items-center text-center">
+            <Lock className="size-8 text-neutral-300" aria-hidden />
+            <p className="mt-3 text-sm font-medium text-neutral-700">
+              You don&apos;t have access to this course
+            </p>
+            <p className="mt-1 max-w-sm text-sm text-neutral-400">
+              Ask your mentor to assign it to you, or use the invite link they sent.
+            </p>
+          </div>
+        </div>
+      );
+    }
+    throw error;
+  }
+
+  const { enrollment } = enrolled;
   const progress = await prisma.chapterProgress.findMany({
     where: { enrollmentId: enrollment.id },
     select: { chapterId: true, status: true },
@@ -97,7 +124,6 @@ export default async function CourseOverviewPage({
   const flatChapters = modules.flatMap((mod) => mod.chapters);
   const continueTarget = pickContinueTarget(flatChapters);
   const defaultOpenModuleId = pickDefaultOpenModule(modules);
-  const checkpointCount = flatChapters.reduce((sum, c) => sum + c.blockCount, 0);
 
   const continueLabel =
     enrollment.percentComplete === 0
@@ -106,13 +132,11 @@ export default async function CourseOverviewPage({
         ? "Review course"
         : "Continue learning";
 
-  const showcaseContent = COURSE_SHOWCASE[course.slug];
-
   return (
-    <div className="mx-auto max-w-4xl space-y-6 pb-12">
+    <div className="mx-auto max-w-4xl space-y-6 px-6 py-10">
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-950"
+        className="inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-900"
       >
         <ArrowLeft className="size-4" />
         Back to dashboard
@@ -134,34 +158,11 @@ export default async function CourseOverviewPage({
         estimatedHours={course.estimatedHours}
       />
 
-      <CourseStatsRow
-        moduleCount={modules.length}
-        chapterCount={flatChapters.length}
-        estimatedHours={course.estimatedHours}
-        checkpointCount={checkpointCount}
-      />
-
-      {showcaseContent ? (
-        <CourseTechStack techStack={showcaseContent.techStack} />
-      ) : null}
-
-      {showcaseContent ? <CourseShowcase tabs={showcaseContent.showcase} /> : null}
-
-      {showcaseContent ? <CourseSkills skills={showcaseContent.skills} /> : null}
-
       <CourseSyllabus
         courseSlug={course.slug}
         modules={modules}
         defaultOpenModuleId={defaultOpenModuleId}
       />
-
-      <footer className="flex items-center justify-between border-t border-neutral-200 pt-4 text-xs text-neutral-400">
-        <span>buildment</span>
-        <span className="inline-flex items-center gap-1.5">
-          <span className="size-2 rounded-full bg-emerald-500" aria-hidden />
-          Published
-        </span>
-      </footer>
     </div>
   );
 }

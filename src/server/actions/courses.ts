@@ -55,3 +55,61 @@ async function uniqueCourseSlug(base: string): Promise<string> {
     slug = `${base}-${suffix}`;
   }
 }
+
+export async function publishCourse(input: {
+  courseId: string;
+}): Promise<CourseActionResult> {
+  const user = await requireRole("MENTOR", "ADMIN");
+  const course = await prisma.course.findUnique({
+    where: { id: input.courseId },
+    select: { id: true, slug: true, mentorId: true, status: true },
+  });
+  if (!course) return { ok: false, errors: ["Course not found."] };
+  if (user.role !== "ADMIN" && course.mentorId !== user.id) {
+    return { ok: false, errors: ["You don't own this course."] };
+  }
+  if (course.status === "PUBLISHED") return { ok: true, courseSlug: course.slug };
+
+  await prisma.course.update({
+    where: { id: course.id },
+    data: { status: "PUBLISHED", publishedAt: new Date() },
+  });
+  return { ok: true, courseSlug: course.slug };
+}
+
+export async function unpublishCourse(input: {
+  courseId: string;
+  /** Required when mentees are enrolled — the UI collects this confirmation. */
+  confirmedWithEnrollments?: boolean;
+}): Promise<CourseActionResult> {
+  const user = await requireRole("MENTOR", "ADMIN");
+  const course = await prisma.course.findUnique({
+    where: { id: input.courseId },
+    select: {
+      id: true,
+      slug: true,
+      mentorId: true,
+      status: true,
+      _count: { select: { enrollments: true } },
+    },
+  });
+  if (!course) return { ok: false, errors: ["Course not found."] };
+  if (user.role !== "ADMIN" && course.mentorId !== user.id) {
+    return { ok: false, errors: ["You don't own this course."] };
+  }
+  if (course.status === "DRAFT") return { ok: true, courseSlug: course.slug };
+  if (course._count.enrollments > 0 && !input.confirmedWithEnrollments) {
+    return {
+      ok: false,
+      errors: [
+        `${course._count.enrollments} mentee(s) are enrolled. Confirm you want to unpublish anyway.`,
+      ],
+    };
+  }
+
+  await prisma.course.update({
+    where: { id: course.id },
+    data: { status: "DRAFT", publishedAt: null },
+  });
+  return { ok: true, courseSlug: course.slug };
+}

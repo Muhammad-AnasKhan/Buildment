@@ -2,7 +2,7 @@
 phase: M4
 title: Open questions + review queue
 week: 5
-status: not started
+status: core loop done (keyboard nav, canned snippets, notifications still open)
 ---
 
 # M4 — Open questions + review queue
@@ -25,20 +25,20 @@ itself.
 
 ## Tasks
 
-- [ ] `src/blocks/open-question/` — full registry entry: `schema.ts` (`minWords`, `maxWords?`,
+- [x] `src/blocks/open-question/` — full registry entry: `schema.ts` (`minWords`, `maxWords?`,
       `rubric`, `sampleAnswer?`), `grade.ts` (not auto-graded — sets `status: PENDING_REVIEW`
       instead of computing a score), `Component.tsx` (Markdown-capable textarea, autosave draft,
       explicit submit), `report.ts`, `editorDescriptor.tsx` (nested rich-text editor for the
       question prose + rubric field, per [`../02-content-authoring.mdx`](../02-content-authoring.mdx)).
   - Completion = **submitted**, not reviewed — do not block chapter progress on review outcome (see
     [`../04-progress-and-gating.mdx`](../04-progress-and-gating.mdx) note on this).
-- [ ] `(teach)/review/` — queue view: all pending items across the mentor's courses, filterable by
+- [x] `(teach)/review/` — queue view: all pending items across the mentor's courses, filterable by
       course/mentee/block type/age, oldest-first, aging indicator (>48h highlighted).
-- [ ] Review detail view: left = question + rubric + reference answer, right = mentee's rendered
+- [x] Review detail view: left = question + rubric + reference answer, right = mentee's rendered
       answer; actions = score, Markdown feedback, verdict (`APPROVED`/`NEEDS_REVISION`).
 - [ ] Keyboard nav: `j`/`k` through the queue, `⌘+Enter` submit-and-advance.
 - [ ] Canned feedback snippets, saved per mentor.
-- [ ] Needs-revision loop: reopens the block for the mentee, in-app notification, resubmission goes
+- [x] Needs-revision loop: reopens the block for the mentee, in-app notification, resubmission goes
       to the **front** of the queue with the prior exchange threaded (query across `Response`
       history for that `(blockId, userId)`, not just the latest attempt).
 - [ ] Email notification (Resend) when a review is completed.

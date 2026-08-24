@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CheckCircle2, BookOpen } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -107,7 +107,7 @@ function NextPrimary({ href, chapter }: { href: string; chapter: NavChapter }) {
         href={href}
         className={cn(
           buttonVariants({ size: "sm" }),
-          "h-11 shrink-0 gap-2 self-start rounded-full bg-neutral-950 px-6 text-sm font-semibold text-white shadow-md shadow-neutral-900/10 hover:bg-neutral-800 sm:self-center"
+          "h-11 shrink-0 gap-2 self-start rounded-lg bg-neutral-900 px-6 text-sm font-medium text-white hover:bg-neutral-800 sm:self-center"
         )}
       >
         Continue

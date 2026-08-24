@@ -34,6 +34,7 @@ import {
 } from "@/components/learn/content-blocks";
 import { Checklist } from "@/components/learn/checklist";
 import { LearningLog } from "@/components/learn/learning-log";
+import { Video } from "@/components/learn/video-embed";
 import { cn } from "@/lib/utils";
 import { slugify } from "@/lib/mdx-headings";
 
@@ -54,6 +55,7 @@ export const mdxComponents: MDXComponents = {
   ChapterRecap: ChapterRecapComponent,
   Checklist,
   LearningLog,
+  Video,
   MermaidDiagram,
   Callout,
   FaqGroup,

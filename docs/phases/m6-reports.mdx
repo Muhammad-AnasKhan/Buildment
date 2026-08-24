@@ -2,7 +2,7 @@
 phase: M6
 title: Reports
 week: 7
-status: not started
+status: course + chapter reports done (mentee self-report + PDF still open)
 ---
 
 # M6 — Reports
@@ -27,10 +27,17 @@ mentees actually look at.
       same test twice, OR >3 chapters behind cohort median), one-click nudge action.
 - [ ] `server/reports/mentee.ts` — progress ring, current chapter + next action, per-chapter
       timeline with scores, all mentor feedback in one place, weak-area tags (`Block.tags`).
-- [ ] `(teach)/courses/[courseId]/reports/` — chapter report + course report UI.
+- [x] `(teach)/courses/[courseId]/reports/` — chapter report + course report UI.
+      **Built inline in the page (2026-08-23)** instead of `server/reports/*.ts`: cohort funnel,
+      chapter completion curve, mentee table (progress, score, awaiting review, last active,
+      at-risk), per-block attempts/correct-rate table with confusion flags from the new
+      `BlockStats` rollup, and per-mentee chapter rows. Extracting to `server/reports/` is
+      follow-up cleanup, not missing behavior.
 - [ ] Mentee-facing progress page reusing `server/reports/mentee.ts` (visible to both mentee and
       mentor per [`../06-reports.mdx`](../06-reports.mdx)).
-- [ ] CSV export for any report table.
+- [x] CSV export for any report table.
+      **Done (2026-08-23)** for the course report mentee table at
+      `/courses/[courseSlug]/reports/export`.
 - [ ] Per-mentee PDF summary export.
 
 ## Out of scope for this phase

@@ -2,7 +2,7 @@
 phase: M7
 title: Assignment + polish
 week: 8
-status: not started
+status: assignment + invite + publish flows done (polish items still open)
 ---
 
 # M7 — Assignment + polish
@@ -18,11 +18,11 @@ left behind by M0-M6, which were deliberately scoped to defer UI polish.
 
 ## Tasks
 
-- [ ] Assign by email + bulk assign (CSV or textarea of emails) — creates `Enrollment` rows,
+- [x] Assign by email + bulk assign (CSV or textarea of emails) — creates `Enrollment` rows,
       `assignedById` set to the mentor.
-- [ ] Invite link — mentee self-enrolls via a course-scoped link; creates `Enrollment` the same way
+- [x] Invite link — mentee self-enrolls via a course-scoped link; creates `Enrollment` the same way
       as an assignment but without `assignedById`.
-- [ ] Course publish flow: `DRAFT` → `PUBLISHED` transition, warning shown if mentees are already
+- [x] Course publish flow: `DRAFT` → `PUBLISHED` transition, warning shown if mentees are already
       enrolled and the mentor edits a published course (per the "course editing while students are
       mid-course" open question — v1 answer is a warning, not versioning; see
       [`../11-decisions-and-open-questions.mdx`](../11-decisions-and-open-questions.mdx)).

@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db";
 import { homeRouteForRole } from "@/server/auth/access-rules";
+import { safeRedirectTo } from "@/lib/safe-redirect";
 
 // Dev-only shortcut to sign in as a seeded user without real Google/Resend credentials
 // configured — see README.md "Local dev login". Mints a real database Session row and
@@ -27,7 +28,12 @@ export async function GET(request: NextRequest) {
   const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   await prisma.session.create({ data: { sessionToken, userId: user.id, expires } });
 
-  const response = NextResponse.redirect(new URL(homeRouteForRole(user.role), request.url));
+  // Invites flow through /login?redirectTo=/invite/<token>, so honor the same
+  // local-path-only redirectTo here (dev users need to reach the accept page too).
+  const redirectTo = safeRedirectTo(request.nextUrl.searchParams.get("redirectTo"));
+  const target = redirectTo ?? homeRouteForRole(user.role);
+
+  const response = NextResponse.redirect(new URL(target, request.url));
   response.cookies.set("authjs.session-token", sessionToken, {
     httpOnly: true,
     sameSite: "lax",

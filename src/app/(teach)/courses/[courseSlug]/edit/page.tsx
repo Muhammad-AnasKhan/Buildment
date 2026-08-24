@@ -1,18 +1,21 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { AlertTriangle, Layers } from "lucide-react";
 import { prisma } from "@/server/db";
 import { requireMentorOfCourse } from "@/server/auth/guards";
 import { createChapter, moveChapter } from "@/server/actions/chapters";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { publishCourse, unpublishCourse } from "@/server/actions/courses";
 import { Input } from "@/components/ui/input";
 
 export default async function CourseEditPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ courseSlug: string }>;
+  searchParams: Promise<{ publishError?: string }>;
 }) {
   const { courseSlug } = await params;
+  const query = await searchParams;
 
   const course = await prisma.course.findUnique({
     where: { slug: courseSlug },
@@ -22,6 +25,7 @@ export default async function CourseEditPage({
       title: true,
       description: true,
       status: true,
+      _count: { select: { enrollments: true } },
       modules: {
         orderBy: { order: "asc" },
         select: {
@@ -46,32 +50,116 @@ export default async function CourseEditPage({
 
   return (
     <div className="mx-auto max-w-4xl">
-      <Link href="/courses" className="text-xs text-neutral-500 transition-colors hover:text-neutral-950">
+      <Link
+        href="/courses"
+        className="text-sm text-neutral-500 transition-colors hover:text-neutral-900"
+      >
         ← All courses
       </Link>
 
       <div className="mt-2 flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight text-neutral-950">
+          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
             {course.title}
           </h1>
           {course.description && (
             <p className="mt-1 max-w-xl text-sm text-neutral-500">{course.description}</p>
           )}
         </div>
-        <Badge
-          className={
-            course.status === "PUBLISHED"
-              ? "bg-emerald-100 text-emerald-700"
-              : "bg-neutral-100 text-neutral-600"
-          }
-        >
-          {course.status.toLowerCase()}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/courses/${course.slug}/mentees`}
+            className="inline-flex h-9 items-center rounded-lg border border-neutral-200 px-4 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+          >
+            Mentees
+          </Link>
+          <span
+            className={
+              course.status === "PUBLISHED"
+                ? "rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700"
+                : "rounded-md bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-600"
+            }
+          >
+            {course.status.toLowerCase()}
+          </span>
+        </div>
       </div>
 
+      {course.status === "DRAFT" ? (
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-white p-4">
+          <p className="text-sm text-neutral-600">
+            This course is a draft — publish it to assign mentees and share invite links.
+          </p>
+          <form
+            action={async () => {
+              "use server";
+              await publishCourse({ courseId: course.id });
+            }}
+          >
+            <button
+              type="submit"
+              className="h-9 rounded-lg bg-indigo-600 px-4 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+            >
+              Publish course
+            </button>
+          </form>
+        </div>
+      ) : (
+        <div className="mt-4">
+          {course._count.enrollments > 0 && (
+            <p className="flex items-start gap-1.5 text-sm text-amber-700">
+              <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+              <span>
+                {course._count.enrollments} mentee{course._count.enrollments === 1 ? "" : "s"}{" "}
+                enrolled — re-publishing a chapter makes your edits visible to them immediately.
+              </span>
+            </p>
+          )}
+          <details className={course._count.enrollments > 0 ? "mt-2" : undefined}>
+            <summary className="cursor-pointer text-xs font-medium text-neutral-400 transition-colors hover:text-neutral-600">
+              Unpublish course…
+            </summary>
+            <form
+              className="mt-2 flex flex-col gap-2"
+              action={async (formData) => {
+                "use server";
+                const confirmed = formData.get("confirm") === "on";
+                const result = await unpublishCourse({
+                  courseId: course.id,
+                  confirmedWithEnrollments: confirmed,
+                });
+                if (!result.ok) {
+                  redirect(
+                    `/courses/${course.slug}/edit?publishError=${encodeURIComponent(result.errors.join(" "))}`
+                  );
+                }
+              }}
+            >
+              {course._count.enrollments > 0 && (
+                <label className="flex items-center gap-2 text-xs text-neutral-600">
+                  <input type="checkbox" name="confirm" className="size-3.5" />
+                  I understand enrolled mentees will lose access until it is published again.
+                </label>
+              )}
+              <button
+                type="submit"
+                className="h-9 w-fit rounded-lg border border-neutral-200 px-3 text-xs font-medium text-red-600 transition-colors hover:border-red-200 hover:bg-red-50"
+              >
+                Unpublish
+              </button>
+            </form>
+          </details>
+        </div>
+      )}
+
+      {query.publishError && (
+        <p className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {query.publishError}
+        </p>
+      )}
+
       <form
-        className="mt-6 flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white p-4 shadow-sm"
+        className="mt-6 flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white p-4"
         action={async (formData) => {
           "use server";
           const title = String(formData.get("title") ?? "").trim();
@@ -83,12 +171,12 @@ export default async function CourseEditPage({
           name="title"
           required
           placeholder="New chapter title…"
-          className="w-72 rounded-full bg-white"
+          className="h-9 min-w-[200px] flex-1 rounded-lg border-neutral-200 bg-white"
         />
         <select
           name="moduleId"
           defaultValue={course.modules[0]?.id ?? ""}
-          className="h-9 rounded-full border border-neutral-200 bg-white px-3 text-sm text-neutral-700"
+          className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none focus:border-indigo-300"
         >
           {course.modules.map((mod) => (
             <option key={mod.id} value={mod.id}>
@@ -96,34 +184,32 @@ export default async function CourseEditPage({
             </option>
           ))}
         </select>
-        <Button type="submit" className="rounded-full bg-indigo-600 text-white hover:bg-indigo-500">
+        <button
+          type="submit"
+          className="h-9 rounded-lg bg-neutral-900 px-4 text-sm font-medium text-white transition-colors hover:bg-neutral-800"
+        >
           Add chapter
-        </Button>
+        </button>
       </form>
 
       <div className="mt-8 space-y-8">
         {course.modules.map((mod) => (
           <section key={mod.id}>
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-neutral-400">
-              {mod.title}
-            </h2>
-            <ChapterRows
-              courseSlug={course.slug}
-              chapters={mod.chapters}
-            />
+            <h2 className="text-sm font-semibold text-neutral-900">{mod.title}</h2>
+            <ChapterRows courseSlug={course.slug} chapters={mod.chapters} />
           </section>
         ))}
         {looseChapters.length > 0 && (
           <section>
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-neutral-400">
-              Unsectioned
-            </h2>
+            <h2 className="text-sm font-semibold text-neutral-900">Unsectioned</h2>
             <ChapterRows courseSlug={course.slug} chapters={looseChapters} />
           </section>
         )}
         {course.modules.every((m) => m.chapters.length === 0) && looseChapters.length === 0 && (
-          <div className="rounded-xl border border-dashed border-neutral-300 p-10 text-center text-sm text-neutral-500">
-            No chapters yet — add the first one above.
+          <div className="flex flex-col items-center gap-2 py-10 text-center">
+            <Layers className="size-8 text-neutral-300" />
+            <p className="text-sm font-medium text-neutral-700">No chapters yet</p>
+            <p className="text-sm text-neutral-400">Add the first one above.</p>
           </div>
         )}
       </div>
@@ -147,7 +233,7 @@ function ChapterRows({
     return <p className="mt-2 text-sm text-neutral-400">No chapters in this module.</p>;
   }
   return (
-    <ul className="mt-2 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
+    <ul className="mt-2 overflow-hidden rounded-xl border border-neutral-200 bg-white">
       {chapters.map((chapter, index) => (
         <li
           key={chapter.id}
@@ -160,9 +246,13 @@ function ChapterRows({
             {chapter.title}
           </span>
           {chapter.publishedAt ? (
-            <Badge className="bg-emerald-100 text-emerald-700">published</Badge>
+            <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+              published
+            </span>
           ) : (
-            <Badge className="bg-amber-100 text-amber-700">draft</Badge>
+            <span className="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+              draft
+            </span>
           )}
 
           <div className="flex shrink-0 items-center gap-1">
@@ -176,7 +266,7 @@ function ChapterRows({
                 type="submit"
                 disabled={index === 0}
                 aria-label={`Move ${chapter.title} up`}
-                className="rounded-md px-1.5 py-0.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-30 disabled:hover:bg-transparent"
+                className="rounded-md px-1.5 py-0.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-30 disabled:hover:bg-transparent"
               >
                 ↑
               </button>
@@ -191,14 +281,14 @@ function ChapterRows({
                 type="submit"
                 disabled={index === chapters.length - 1}
                 aria-label={`Move ${chapter.title} down`}
-                className="rounded-md px-1.5 py-0.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-900 disabled:opacity-30 disabled:hover:bg-transparent"
+                className="rounded-md px-1.5 py-0.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 disabled:opacity-30 disabled:hover:bg-transparent"
               >
                 ↓
               </button>
             </form>
             <Link
               href={`/courses/${courseSlug}/chapters/${chapter.id}/edit`}
-              className="ml-2 rounded-full border border-neutral-200 px-3 py-1 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+              className="ml-2 rounded-lg border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
             >
               Edit
             </Link>
