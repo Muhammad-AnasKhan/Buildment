@@ -52,6 +52,7 @@ export async function saveLearningLogAnswers(input: {
   const learningLog = LearningLogDataSchema.parse({
     version: 1,
     answers: mergedAnswers,
+    checklist: current.checklist,
   });
 
   await prisma.chapterProgress.upsert({

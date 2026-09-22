@@ -51,9 +51,15 @@ ${OPEN_Q}
     expect(blocks.map((b) => b.blockType)).toEqual(["QUIZ", "OPEN_QUESTION"]);
   });
 
+  it("extracts Predict blocks", () => {
+    const blocks = extractBlocksFromSource('<Predict id="01J8PRED" />');
+    expect(blocks).toHaveLength(1);
+    expect(blocks[0]!.blockType).toBe("PREDICT");
+  });
+
   it("covers every block tag the schema declares", () => {
     expect(Object.values(BLOCK_TAG_NAMES)).toEqual(
-      expect.arrayContaining(["QUIZ", "TEST", "MUST_READ", "OPEN_QUESTION", "CODE", "STEPS"])
+      expect.arrayContaining(["QUIZ", "TEST", "MUST_READ", "OPEN_QUESTION", "CODE", "STEPS", "PREDICT"])
     );
   });
 });

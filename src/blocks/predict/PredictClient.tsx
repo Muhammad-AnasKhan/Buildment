@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { CheckCircle2, RotateCcw, Route, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -27,9 +28,35 @@ function methodBadgeClass(method: string) {
   return METHOD_STYLES[method.toUpperCase()] ?? "bg-indigo-600 text-white";
 }
 
-export function PredictClient({ id, config }: { id: string; config: SanitizedPredictConfig }) {
-  const [selected, setSelected] = useState<string>("");
-  const [result, setResult] = useState<RespondResult | null>(null);
+export type PredictInitialState = {
+  selected: string;
+  isCorrect: boolean | null;
+  score: number | null;
+  maxScore: number | null;
+  explanation?: string;
+};
+
+export function PredictClient({
+  id,
+  config,
+  initialState,
+}: {
+  id: string;
+  config: SanitizedPredictConfig;
+  initialState?: PredictInitialState | null;
+}) {
+  const router = useRouter();
+  const [selected, setSelected] = useState<string>(initialState?.selected ?? "");
+  const [result, setResult] = useState<RespondResult | null>(
+    initialState
+      ? {
+          isCorrect: initialState.isCorrect,
+          score: initialState.score,
+          maxScore: initialState.maxScore,
+          explanation: initialState.explanation,
+        }
+      : null
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,6 +74,7 @@ export function PredictClient({ id, config }: { id: string; config: SanitizedPre
         throw new Error(body?.error ?? `Request failed (${res.status})`);
       }
       setResult(await res.json());
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

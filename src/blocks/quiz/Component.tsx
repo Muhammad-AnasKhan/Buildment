@@ -1,7 +1,9 @@
 import { prisma } from "@/server/db";
+import { getSessionUser } from "@/server/auth/guards";
 import { sanitizeBlockConfig } from "@/mdx/sanitize";
 import { QuizConfigSchema, type SanitizedQuizConfig } from "./schema";
-import { QuizClient } from "./QuizClient";
+import { QuizClient, type QuizInitialState } from "./QuizClient";
+import { getLatestBlockResponse } from "@/server/progress/latest-response";
 
 // Registered in the MDX component map (src/mdx/components.tsx) as <Quiz id="...">.
 // A server component so it can fetch and sanitize its own config directly —
@@ -20,5 +22,23 @@ export async function QuizComponent({ id }: { id: string }) {
 
   const sanitized = sanitizeBlockConfig<typeof parsed.data, SanitizedQuizConfig>(parsed.data);
 
-  return <QuizClient id={id} config={sanitized} />;
+  const user = await getSessionUser();
+  let initialState: QuizInitialState | null = null;
+  if (user) {
+    const latest = await getLatestBlockResponse(id, user.id);
+    if (latest) {
+      const selected = Array.isArray((latest.payload as { selected?: unknown } | null)?.selected)
+        ? ((latest.payload as { selected: string[] }).selected)
+        : [];
+      initialState = {
+        selected,
+        isCorrect: latest.isCorrect,
+        score: latest.score,
+        maxScore: latest.maxScore,
+        explanation: parsed.data.explanation,
+      };
+    }
+  }
+
+  return <QuizClient id={id} config={sanitized} initialState={initialState} />;
 }

@@ -34,6 +34,9 @@ is undecided.
 | **Review scoring** | **Optional 0..`Block.points` score on review, folded into progress rollups by `recomputeChapterProgress`** | Resolves the "scoring model" open question below per its recommendation: completion tracks submission, points surface in reports. Resolved 2026-08-23. |
 | **Retakes** | **Auto-graded blocks always accept a new attempt; needs-revision resubmissions create a new `Response` attempt** | Matches the append-only-Response invariant; supersedes the "no retakes" recommendation below for human-graded blocks. Resolved 2026-08-23. |
 | **Report rollups** | **`BlockStats` + `Enrollment.pendingReviews` maintained in the write transaction; `scripts/backfill-block-stats.ts` repairs pre-existing rows** | Keeps invariant 7 (reports never aggregate `Response` on the read path) while adding per-block confusion flags. Resolved 2026-08-23. |
+| **LMS database** | **Stay on Postgres + Prisma** | The LMS is relational (enrollments, denormalized progress, reviews, Auth.js sessions). The FreshMarket *course* teaches MongoDB — that is the student's project, not buildment's store. A NoSQL migration would delay the demo and force a reports/gating rewrite. Resolved 2026-09-22. |
+| **Completable vs presentational blocks** | **Only QUIZ / TEST / MUST_READ / OPEN_QUESTION / CODE / PREDICT count toward chapter completion** | Presentational blocks never get a Response; counting them trapped progress at 0%. Prose-only chapters use "Mark chapter complete". Resolved 2026-09-22. |
+| **Demo ship plan** | **10 sequential days in `docs/phases/demo-10-day.mdx`** | Demo-first cut of remaining M3–M7: real progress, locking, ask-mentor, UI consistency, first-three-modules content. Not a stack rewrite. Resolved 2026-09-22. |
 
 ## Open questions to resolve before M4
 

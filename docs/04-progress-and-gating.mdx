@@ -16,9 +16,19 @@ status: draft v1
 
 ## Chapter completion rule
 
-A chapter is complete when **all required blocks are complete**. Every block is required by
-default; a mentor can mark any block `optional`. Chapters with zero blocks complete via an explicit
-"Mark as read" button.
+A chapter is complete when **all required completable blocks are complete**. Completable
+types are `QUIZ`, `TEST`, `MUST_READ`, `OPEN_QUESTION`, `CODE`, and `PREDICT`.
+
+Presentational blocks (`STEPS`, `PROJECT_PREVIEW`, `LEARNING_OBJECTIVES`, `CHAPTER_RECAP`)
+never receive a `Response` and **must not** count toward `blocksTotal`. Counting them made
+chapters impossible to complete.
+
+Every completable block is required by default; a mentor can mark any block `optional`.
+Chapters with zero completable blocks complete via an explicit **"Mark chapter complete"**
+button.
+
+Checklists persist on `ChapterProgress.learningLog.checklist` (account-scoped, not
+`localStorage`). They are an honor-system aid and do **not** gate the next chapter.
 
 ## Blocking / gating
 
@@ -29,8 +39,9 @@ Two independent switches per course:
   blocking block prevents chapter completion, and therefore the next chapter, until satisfied.
 
 **Gating is enforced server-side** on the chapter data route, not just hidden in the UI. A locked
-chapter's loader returns 403, full stop — see [`09-security.mdx`](09-security.mdx). This is a
-load-bearing invariant (see [`/AGENTS.md`](../AGENTS.md)), not a nice-to-have.
+chapter's loader does not compile or send MDX — it renders a locked screen (and `POST /respond`
+returns 403). See [`09-security.mdx`](09-security.mdx). This is a load-bearing invariant
+(see [`/AGENTS.md`](../AGENTS.md)), not a nice-to-have.
 
 ## Storage strategy
 
@@ -59,8 +70,10 @@ per session to reject a tab left open overnight. This is **approximate by design
 
 ```
 src/server/progress/
+  rules.ts     # completable types, status math, sequential lock set (pure)
   compute.ts   # recomputeProgress(enrollmentId) and the per-write incremental update
   gate.ts      # gating checks used by chapter data loaders and the submit endpoint
+  syllabus.ts  # lock + checkpoint counts for the sidebar / syllabus
 ```
 
 ## Related

@@ -2,7 +2,7 @@
 phase: M3
 title: Progress and gating
 week: 4
-status: not started
+status: in progress — completion math + sequential gate landed with the demo ship plan; Test block, heartbeat, and cron still open
 ---
 
 # M3 — Progress and gating
@@ -18,15 +18,16 @@ type (`<Test>`).
 
 ## Tasks
 
-- [ ] `server/progress/compute.ts` — implement `recomputeProgress(enrollmentId)` per
+- [x] `server/progress/compute.ts` — implement `recomputeProgress(enrollmentId)` per
       [`../04-progress-and-gating.mdx`](../04-progress-and-gating.mdx), called inside the same
-      transaction as every `Response` write (not as a separate async step).
-- [ ] `server/progress/gate.ts` — the gating check used by both the chapter data loader and the
+      transaction as every `Response` write (not as a separate async step). Presentational blocks
+      are excluded from `blocksTotal`.
+- [x] `server/progress/gate.ts` — the gating check used by both the chapter data loader and the
       submit endpoint: `sequentialChapters` (course-level) + per-block `blocking` (defaults:
-      `<Test>` blocking, everything else non-blocking).
-- [ ] Enforce gating **server-side** on the chapter route: a locked chapter's loader returns 403.
-      This is a load-bearing invariant (see [`/AGENTS.md`](../../AGENTS.md)) — do not implement
-      this as a client-side redirect only.
+      `<Test>` blocking, everything else non-blocking). Sequential lock is live; `<Test>` blocking
+      waits on the Test block type.
+- [x] Enforce gating **server-side** on the chapter route: a locked chapter's loader does not
+      render MDX (locked screen). Submit on a locked chapter returns 403.
 - [ ] `src/blocks/test/` — full registry entry: `schema.ts` (`questions[]`, `passingScore`,
       `timeLimitMinutes?`, `maxAttempts`, `shuffleQuestions`, `showAnswersAfter`), `grade.ts`
       (server-side scoring, honest scoring of late submissions with a flag), `Component.tsx`

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { CheckCircle2, Clock3, PenLine, RotateCcw, SendHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,7 +33,8 @@ export function OpenQuestionClient({
   initialState?: OpenQuestionInitialState | null;
 }) {
   const needsRevision = initialState?.status === "NEEDS_REVISION";
-  const [text, setText] = useState(needsRevision ? initialState.text : "");
+  const router = useRouter();
+  const [text, setText] = useState(needsRevision ? initialState.text : initialState && !needsRevision ? initialState.text : "");
   const [submitted, setSubmitted] = useState(
     Boolean(initialState) && !needsRevision
   );
@@ -57,6 +59,7 @@ export function OpenQuestionClient({
         throw new Error(body?.error ?? `Request failed (${res.status})`);
       }
       setSubmitted(true);
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

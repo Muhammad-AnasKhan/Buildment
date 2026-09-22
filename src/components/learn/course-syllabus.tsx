@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, ChevronDown, CircleDot } from "lucide-react";
+import { CheckCircle2, ChevronDown, CircleDot, Lock } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -16,6 +16,8 @@ export type SyllabusChapter = {
   title: string;
   status: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
   blockCount: number;
+  blocksCompleted?: number;
+  locked?: boolean;
 };
 
 export type SyllabusModule = {
@@ -32,7 +34,16 @@ type CourseSyllabusProps = {
   defaultOpenModuleId: string | null;
 };
 
-function StatusIcon({ status }: { status: SyllabusChapter["status"] }) {
+function StatusIcon({
+  status,
+  locked,
+}: {
+  status: SyllabusChapter["status"];
+  locked?: boolean;
+}) {
+  if (locked) {
+    return <Lock className="size-4 shrink-0 text-neutral-400" aria-hidden />;
+  }
   if (status === "COMPLETED") {
     return <CheckCircle2 className="size-4 shrink-0 text-emerald-600" aria-hidden />;
   }
@@ -91,24 +102,31 @@ function ModuleCard({
               <li key={chapter.id}>
                 <Link
                   href={`/courses/${courseSlug}/${chapter.slug}`}
-                  className="group flex items-center justify-between gap-3 px-4 py-3.5 text-sm transition-colors hover:bg-neutral-50"
+                  className={cn(
+                    "group flex items-center justify-between gap-3 px-4 py-3.5 text-sm transition-colors hover:bg-neutral-50",
+                    chapter.locked && "opacity-80"
+                  )}
                 >
                   <span className="flex min-w-0 items-center gap-3">
-                    <StatusIcon status={chapter.status} />
+                    <StatusIcon status={chapter.status} locked={chapter.locked} />
                     <span
                       className={cn(
                         "truncate font-medium transition-colors group-hover:text-neutral-900",
-                        chapter.status === "COMPLETED"
+                        chapter.locked
                           ? "text-neutral-500"
-                          : "text-neutral-800"
+                          : chapter.status === "COMPLETED"
+                            ? "text-neutral-500"
+                            : "text-neutral-800"
                       )}
                     >
                       {chapter.title}
                     </span>
                   </span>
-                  {chapter.blockCount > 0 ? (
+                  {chapter.locked ? (
+                    <span className="shrink-0 text-xs text-neutral-400">Locked</span>
+                  ) : chapter.blockCount > 0 ? (
                     <span className="shrink-0 text-xs text-neutral-400">
-                      {chapter.blockCount} exercises
+                      {chapter.blocksCompleted ?? 0}/{chapter.blockCount} checkpoints
                     </span>
                   ) : null}
                 </Link>

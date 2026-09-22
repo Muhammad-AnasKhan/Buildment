@@ -25,6 +25,10 @@ export function ChapterReaderShell({
   chapterSlug,
   chapterId,
   learningLogAnswers = {},
+  checklistState = {},
+  chapterComplete,
+  canMarkComplete,
+  nextLocked,
   user,
   signOutAction,
   children,
@@ -36,6 +40,10 @@ export function ChapterReaderShell({
   chapterSlug: string;
   chapterId: string;
   learningLogAnswers?: Record<string, string>;
+  checklistState?: Record<string, boolean>;
+  chapterComplete: boolean;
+  canMarkComplete: boolean;
+  nextLocked: boolean;
   modules: SyllabusModule[];
   headings: Heading[];
   prev?: { slug: string; title: string; moduleOrder: number; order: number };
@@ -97,7 +105,7 @@ export function ChapterReaderShell({
               </header>
 
               <LearningLogProvider chapterId={chapterId} initialAnswers={learningLogAnswers}>
-                <ChecklistProvider chapterSlug={chapterSlug}>
+                <ChecklistProvider chapterId={chapterId} initialChecks={checklistState}>
                   <article
                     className={cn(
                       "prose prose-neutral max-w-none",
@@ -121,7 +129,15 @@ export function ChapterReaderShell({
                 </ChecklistProvider>
               </LearningLogProvider>
 
-              <ChapterNav courseSlug={courseSlug} prev={prev} next={next} />
+              <ChapterNav
+                courseSlug={courseSlug}
+                prev={prev}
+                next={next}
+                nextLocked={nextLocked}
+                chapterId={chapterId}
+                chapterComplete={chapterComplete}
+                canMarkComplete={canMarkComplete}
+              />
             </div>
           </main>
 

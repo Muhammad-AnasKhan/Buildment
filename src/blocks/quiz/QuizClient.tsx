@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { CheckCircle2, HelpCircle, RotateCcw, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -14,10 +15,36 @@ type RespondResult = {
   explanation?: string;
 };
 
-export function QuizClient({ id, config }: { id: string; config: SanitizedQuizConfig }) {
+export type QuizInitialState = {
+  selected: string[];
+  isCorrect: boolean | null;
+  score: number | null;
+  maxScore: number | null;
+  explanation?: string;
+};
+
+export function QuizClient({
+  id,
+  config,
+  initialState,
+}: {
+  id: string;
+  config: SanitizedQuizConfig;
+  initialState?: QuizInitialState | null;
+}) {
+  const router = useRouter();
   const isMultiple = config.quizType === "multiple";
-  const [selected, setSelected] = useState<string[]>([]);
-  const [result, setResult] = useState<RespondResult | null>(null);
+  const [selected, setSelected] = useState<string[]>(initialState?.selected ?? []);
+  const [result, setResult] = useState<RespondResult | null>(
+    initialState
+      ? {
+          isCorrect: initialState.isCorrect,
+          score: initialState.score,
+          maxScore: initialState.maxScore,
+          explanation: initialState.explanation,
+        }
+      : null
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,6 +72,7 @@ export function QuizClient({ id, config }: { id: string; config: SanitizedQuizCo
         throw new Error(body?.error ?? `Request failed (${res.status})`);
       }
       setResult(await res.json());
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
