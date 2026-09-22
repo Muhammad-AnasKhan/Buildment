@@ -16,12 +16,12 @@ export function StepsClient({
   return (
     <div
       className={cn(
-        "not-prose my-8 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm"
+        "not-prose my-8 overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm"
       )}
     >
       {title ? (
-        <div className="border-b border-neutral-200 bg-neutral-50/60 px-6 py-4">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-neutral-500">
+        <div className="border-b border-border bg-muted/50 px-6 py-4">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
             {title}
           </h2>
         </div>

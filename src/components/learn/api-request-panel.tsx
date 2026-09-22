@@ -133,12 +133,12 @@ export function ApiRequest({
 
   return (
     <article
-      className="overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm"
+      className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm"
       aria-label={label ?? `${normalizedMethod} ${url}`}
       data-api-request
     >
       {label ? (
-        <div className="border-b border-neutral-100 bg-neutral-50/80 px-4 py-2.5 sm:px-5">
+        <div className="border-b border-border bg-muted/50 px-4 py-2.5 sm:px-5">
           <p className="text-sm font-medium text-neutral-700">{label}</p>
         </div>
       ) : null}
@@ -171,7 +171,7 @@ export function ApiRequest({
       <div className="grid min-h-[14rem] grid-cols-1 lg:grid-cols-2 lg:divide-x lg:divide-neutral-200">
         {/* Request column */}
         <div className="flex min-h-[14rem] flex-col border-b border-neutral-200 lg:border-b-0">
-          <div className="flex items-center gap-1 border-b border-neutral-200 bg-neutral-50 px-3 py-2 sm:px-4">
+          <div className="flex items-center gap-1 border-b border-border bg-muted/50 px-3 py-2 sm:px-4">
             <TabButton active={tab === "body"} onClick={() => setTab("body")}>
               Body
             </TabButton>
@@ -191,7 +191,7 @@ export function ApiRequest({
 
         {/* Response column */}
         <div className="flex min-h-[14rem] flex-col">
-          <div className="flex items-center justify-between gap-3 border-b border-neutral-200 bg-neutral-50 px-3 py-2 sm:px-4">
+          <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/50 px-3 py-2 sm:px-4">
             <span className="text-xs font-semibold uppercase tracking-wide text-neutral-600">
               Response
             </span>
@@ -231,8 +231,8 @@ function TabButton({
       className={cn(
         "rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
         active
-          ? "bg-white text-neutral-900 shadow-sm ring-1 ring-neutral-200/80"
-          : "text-neutral-500 hover:bg-white/60 hover:text-neutral-800"
+          ? "bg-card text-foreground shadow-sm ring-1 ring-border"
+          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
       )}
     >
       {children}

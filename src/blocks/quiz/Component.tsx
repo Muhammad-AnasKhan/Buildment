@@ -9,7 +9,13 @@ import { getLatestBlockResponse } from "@/server/progress/latest-response";
 // A server component so it can fetch and sanitize its own config directly —
 // Block.config (with the correct answer) never has to travel through MDX
 // source or client props. See docs/03-blocks-registry.mdx and 09-security.mdx.
-export async function QuizComponent({ id }: { id: string }) {
+export async function QuizComponent({
+  id,
+  presentation = "standalone",
+}: {
+  id: string;
+  presentation?: "standalone" | "wizard";
+}) {
   const block = await prisma.block.findUnique({ where: { id } });
   const parsed = block ? QuizConfigSchema.safeParse(block.config) : null;
   if (!block || block.type !== "QUIZ" || !parsed?.success) {
@@ -40,5 +46,12 @@ export async function QuizComponent({ id }: { id: string }) {
     }
   }
 
-  return <QuizClient id={id} config={sanitized} initialState={initialState} />;
+  return (
+    <QuizClient
+      id={id}
+      config={sanitized}
+      initialState={initialState}
+      presentation={presentation}
+    />
+  );
 }

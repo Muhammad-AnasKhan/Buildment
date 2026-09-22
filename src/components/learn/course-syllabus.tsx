@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { CheckCircle2, ChevronDown, CircleDot, Lock } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -9,6 +8,7 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { SyllabusChapterRow } from "./syllabus-chapter-row";
 
 export type SyllabusChapter = {
   id: string;
@@ -33,30 +33,6 @@ type CourseSyllabusProps = {
   modules: SyllabusModule[];
   defaultOpenModuleId: string | null;
 };
-
-function StatusIcon({
-  status,
-  locked,
-}: {
-  status: SyllabusChapter["status"];
-  locked?: boolean;
-}) {
-  if (locked) {
-    return <Lock className="size-4 shrink-0 text-neutral-400" aria-hidden />;
-  }
-  if (status === "COMPLETED") {
-    return <CheckCircle2 className="size-4 shrink-0 text-emerald-600" aria-hidden />;
-  }
-  if (status === "IN_PROGRESS") {
-    return <CircleDot className="size-4 shrink-0 text-indigo-600" aria-hidden />;
-  }
-  return (
-    <span
-      className="inline-flex size-4 shrink-0 items-center justify-center rounded-full border-[1.5px] border-neutral-300"
-      aria-hidden
-    />
-  );
-}
 
 function ModuleCard({
   courseSlug,
@@ -100,36 +76,11 @@ function ModuleCard({
           <ul className="divide-y divide-neutral-100 border-t border-neutral-100">
             {module.chapters.map((chapter) => (
               <li key={chapter.id}>
-                <Link
-                  href={`/courses/${courseSlug}/${chapter.slug}`}
-                  className={cn(
-                    "group flex items-center justify-between gap-3 px-4 py-3.5 text-sm transition-colors hover:bg-neutral-50",
-                    chapter.locked && "opacity-80"
-                  )}
-                >
-                  <span className="flex min-w-0 items-center gap-3">
-                    <StatusIcon status={chapter.status} locked={chapter.locked} />
-                    <span
-                      className={cn(
-                        "truncate font-medium transition-colors group-hover:text-neutral-900",
-                        chapter.locked
-                          ? "text-neutral-500"
-                          : chapter.status === "COMPLETED"
-                            ? "text-neutral-500"
-                            : "text-neutral-800"
-                      )}
-                    >
-                      {chapter.title}
-                    </span>
-                  </span>
-                  {chapter.locked ? (
-                    <span className="shrink-0 text-xs text-neutral-400">Locked</span>
-                  ) : chapter.blockCount > 0 ? (
-                    <span className="shrink-0 text-xs text-neutral-400">
-                      {chapter.blocksCompleted ?? 0}/{chapter.blockCount} checkpoints
-                    </span>
-                  ) : null}
-                </Link>
+                <SyllabusChapterRow
+                  courseSlug={courseSlug}
+                  chapter={chapter}
+                  variant="syllabus"
+                />
               </li>
             ))}
           </ul>

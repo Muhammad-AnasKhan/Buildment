@@ -1,0 +1,39 @@
+---
+title: "Checklist and learning log"
+module: 24
+lesson: 14
+summary: "Gate for Chapter 24 — inventory reservations. Prove concurrency and TTL behaviour."
+---
+# 24.14 — Checklist and learning log
+
+Tick every box honestly before Chapter 25.
+
+## Chapter 24 checklist
+
+- [ ] `StockReservation` model with `active` / `confirmed` / `released`
+- [ ] Indexes on `(productId, status)` and `(expiresAt, status)`
+- [ ] Checkout **reserves** before PaymentIntent; 409 when ATP insufficient
+- [ ] `payment_intent.succeeded` **confirms** and decrements `stockQty` idempotently
+- [ ] Cancel / clear cart **releases** active holds for `checkoutId`
+- [ ] Worker sweeps expired `active` reservations
+- [ ] Product APIs expose `availableQty` (or equivalent computed field)
+- [ ] Parallel checkout test documented (one success, one failure on last unit)
+- [ ] TTL test documented (hold releases, stockQty unchanged)
+
+## Learning log
+
+1. **Two moments:** Why reserve at checkout start but decrement only on payment success?
+
+2. **Worker safety:** How does conditional `status: 'active'` prevent double-release or confirm races?
+
+3. **Tradeoff:** When would you add `reservedQty` on Product instead of aggregating reservations?
+
+4. **Ops:** What do you log if payment succeeds but `$inc stockQty` fails?
+
+<OpenQuestion id="01M34MRC5TAMXX79MBP39DQZTH" />
+
+## All boxes ticked?
+
+Mark Chapter 24 complete, then open **Promotions & pricing** (Chapter 25).
+
+**Next:** Promotions & pricing — server-side coupon engine.

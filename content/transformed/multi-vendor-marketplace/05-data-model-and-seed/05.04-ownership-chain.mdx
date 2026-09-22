@@ -22,31 +22,31 @@ Roles alone are not enough — "vendor" does not tell you **which** store. The c
 
 <FaqGroup>
 
-<FaqItem question="What's the difference between authentication and ownership?">
+<FaqItem question={"What's the difference between authentication and ownership?"}>
 
 Authentication answers "who are you?" — ownership answers "may you touch this document?" After login you have `req.user.id` and `req.user.role`, and that identity is your authentication (Chapter 6). But the role "vendor" doesn't tell you *which* store. Ownership is walking the chain: load the product, check its `storeId` matches a store, then check that store's `userId` matches your `req.user.id`. Two vendors share the same role, yet only one may edit a given product. That "which one is allowed?" question is ownership, and Chapter 8 enforces it with middleware.
 
 </FaqItem>
 
-<FaqItem question="Why `customerId` on Order but `userId` on Store?">
+<FaqItem question={"Why `customerId` on Order but `userId` on Store?"}>
 
 Because both fields reference the same User collection but describe different roles, and the field name should say which role. On Store, `userId` means "the vendor who owns this store"; on Order, `customerId` means "the buyer who placed this order". It's the same User document either way — a person could even be both — but `customerId` reads clearly as buyer and `userId` as owner. Consistent, semantic ref names make grep, code review, and viva explanations far easier than a vague `owner` or `user` scattered everywhere.
 
 </FaqItem>
 
-<FaqItem question="Why `storeId` on CartItem when the product already has a storeId?">
+<FaqItem question={"Why `storeId` on CartItem when the product already has a storeId?"}>
 
 So checkout can group your cart by store in a single pass, without looking up every product again. At checkout the server splits the cart by store and creates one Order per store. If CartItem didn't carry `storeId`, the server would have to query each product just to learn which store it belongs to — an extra query per line. Carrying the reference on the cart line also keeps the store context even if the product is later deleted or moved. It's a deliberate, justified duplication, and it's still a reference, not a copy of the store name.
 
 </FaqItem>
 
-<FaqItem question="Why not put `vendorId` directly on Product?">
+<FaqItem question={"Why not put `vendorId` directly on Product?"}>
 
 Because going through Store is what enforces "one store per vendor", a rule your security depends on. If Product stored `vendorId` directly, a vendor could edit a product by matching ids and the one-store-per-vendor invariant would live nowhere. With Store as the hub, every check walks the chain: product → `store.userId` → `req.user.id`. Vendor B can't create a product inside Vendor A's store because the API first verifies the store belongs to them. That extra hop through the chain is exactly what makes isolation checkable in Chapter 8.
 
 </FaqItem>
 
-<FaqItem question="What is IDOR?">
+<FaqItem question={"What is IDOR?"}>
 
 Insecure Direct Object Reference — a bug where changing an id in a URL lets you read or edit someone else's resource. Imagine `PATCH /products/:id`: an attacker swaps in another vendor's product id while logged in as a different vendor. If the handler loads the product and mutates it without checking ownership, they've just edited a product that isn't theirs. The fix is to always verify before acting: load the resource, then compare its owner against `req.user.id`. Your schemas make this possible by naming ownership fields consistently — `userId`, `storeId`, `customerId` — so the checks are easy to write in Chapter 8.
 
@@ -200,7 +200,7 @@ Before 5.10, add to `docs/erd-draft.md` or a scratch note:
 
 ## Reflect
 
-<OpenQuestion id="01KZP7KP7V6G3B6Z32TBMX65SY" />
+<OpenQuestion id="01M34MR8TRRPXFM9CV258QXQGB" />
 
 
 

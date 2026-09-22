@@ -20,13 +20,6 @@ server/src/shared/config.js
 
 **Why `shared/`:** Config is cross-cutting — used by `server.js`, `db.js`, later auth and seed scripts — not owned by one domain module.
 
-
-## Try it yourself
-
-Practice the core logic from this lesson in the **code lab** below — write real JavaScript, then click **Check my code**. Same editor style as the course's code blocks.
-
-<CodeExercise id="01KZP7KP4W9E7BQ4TZD53RT6R0" />
-
 ## Behaviour contract — you implement
 
 ### Required exports
@@ -169,6 +162,11 @@ Include `dotenv` in commit if installed.
 - [ ] No MongoDB connection attempted in config module  
 
 <RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />
+
+
+## Before you continue
+
+<OpenQuestion id="01M34MR8PGNVJXPH46B9DV8AXG" />
 
 ## Next
 

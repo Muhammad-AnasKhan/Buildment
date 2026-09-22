@@ -3,7 +3,7 @@
 @import "shadcn/tailwind.css";
 @plugin "@tailwindcss/typography";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   --color-background: var(--background);
@@ -128,20 +128,104 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  /* Fenced code blocks: keep inline-code chip styles off <pre><code> */
-  .prose pre code {
-    background-color: transparent;
-    color: inherit;
-    padding: 0;
-    font-size: 0.875em;
-    font-weight: 400;
+  /* Inline `code` in prose — not Shiki blocks */
+  .prose :not(pre) > code {
+    @apply rounded bg-muted px-1.5 py-0.5 text-[0.85em] font-normal text-foreground;
   }
-  .prose pre code::before,
-  .prose pre code::after {
+  .prose :not(pre) > code::before,
+  .prose :not(pre) > code::after {
     content: none;
+  }
+
+  /*
+   * rehype-pretty-code + Shiki (github-light / github-dark).
+   * Token spans carry --shiki-light / --shiki-dark; surfaces are fixed so blocks
+   * do not disappear on white page backgrounds.
+   */
+  .shiki-figure {
+    --code-surface: #f6f8fa;
+    --code-toolbar: #eef1f4;
+    --code-border: #d0d7de;
+    --code-lang-fg: #57606a;
+    --code-fg: #24292f;
+    border-color: var(--code-border);
+    background-color: var(--code-surface);
+    color: var(--code-fg);
+  }
+  html.dark .shiki-figure {
+    --code-surface: #0d1117;
+    --code-toolbar: #161b22;
+    --code-border: #30363d;
+    --code-lang-fg: #8b949e;
+    --code-fg: #e6edf3;
+  }
+  .shiki-figure .code-block-toolbar {
+    background-color: var(--code-toolbar);
+    border-color: var(--code-border);
+  }
+  .shiki-figure .code-block-lang {
+    color: var(--code-lang-fg);
+  }
+  .shiki-figure .code-block-pre {
+    background-color: var(--code-surface);
+  }
+  .shiki-figure pre {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    background-color: var(--code-surface) !important;
+    border-radius: 0 !important;
+  }
+  .shiki-figure code {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    background-color: transparent !important;
+  }
+  .shiki-figure code[data-theme] {
+    display: grid !important;
+  }
+  code[data-theme] span {
+    color: var(--shiki-light, inherit) !important;
+    background-color: transparent !important;
+  }
+  html.dark code[data-theme] span {
+    color: var(--shiki-dark, inherit) !important;
+    background-color: transparent !important;
+  }
+  .shiki-figure [data-line] {
+    display: block;
+    width: 100%;
+    min-height: 1.7em;
+    padding: 0 0.25rem;
+    border-radius: 0.125rem;
+  }
+  .shiki-figure [data-highlighted-line] {
+    background-color: color-mix(in oklch, var(--primary) 14%, transparent) !important;
+  }
+  .shiki-figure [data-line]::before {
+    color: var(--code-lang-fg);
+    opacity: 0.85;
   }
   html {
     @apply font-sans;
+  }
+
+  /* Chapter reader: prose + MDX defaults track .dark on <html> */
+  .dark .prose {
+    @apply prose-invert;
+    --tw-prose-headings: var(--foreground);
+    --tw-prose-body: color-mix(in oklch, var(--foreground) 88%, transparent);
+    --tw-prose-bold: var(--foreground);
+    --tw-prose-links: var(--primary);
+  }
+}
+
+@keyframes reader-shimmer {
+  100% {
+    transform: translateX(100%);
   }
 }
 

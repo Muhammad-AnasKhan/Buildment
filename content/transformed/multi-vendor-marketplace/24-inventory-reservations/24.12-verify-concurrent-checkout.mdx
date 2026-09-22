@@ -1,0 +1,55 @@
+---
+title: "Verify concurrent checkout"
+module: 24
+lesson: 12
+summary: "Prove two parallel checkout starts cannot both reserve the last unit; document results for the gate."
+---
+# 24.12 — Verify concurrent checkout
+
+Production inventory work is not done until you **demonstrate** the race is closed. This lesson is your test plan — run it before the gate.
+
+## Setup
+
+1. Pick seed product `LastBanana` with `stockQty: 1`.
+2. Two browser profiles or incognito + normal, same customer account or two accounts.
+
+## Test matrix
+
+| # | Action | Expected |
+|---|---|---|
+| A | Tab 1 starts checkout | 201 + PI client secret |
+| B | Tab 2 starts checkout immediately after | 409 `INSUFFICIENT_STOCK` |
+| C | Tab 1 completes payment | Order paid; reservation confirmed; `stockQty: 0` |
+| D | Refresh catalogue | `availableQty: 0` |
+| E | Tab 1 checkout, wait > TTL, no pay | Worker releases; `availableQty: 1` |
+
+## Optional: scripted race
+
+Use `curl` in parallel against checkout start (with auth tokens):
+
+```bash
+# illustrative — adapt URL and body to your API
+for i in 1 2; do
+  curl -s -o "/tmp/co-$i.json" -w "%{http_code}\n" \
+    -X POST "$API/checkout/start" \
+    -H "Authorization: Bearer $TOKEN" \
+    -H "Content-Type: application/json" \
+    -d @checkout-body.json &
+done
+wait
+```
+
+Exactly one `201`/`200` and one `409` — never two successes.
+
+## Catalogue check
+
+`GET /products/:id` returns both `stockQty` and `availableQty`. UI product card should bind to **available** for “Add to cart” enablement.
+
+## What to capture for learning log
+
+Screenshot or short Loom of parallel failure + successful pay path. Mention TTL recovery.
+
+**Next:** Module recap and gate checklist.
+## Before you continue
+
+<OpenQuestion id="01M34MRC5CTFFVHSD6SC9X0922" />

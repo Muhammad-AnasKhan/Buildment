@@ -2,15 +2,20 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/server/db";
 import { requireEnrolledMentee } from "@/server/auth/guards";
 import { ChapterMdx } from "@/mdx/compile";
+import { QuizChapterWizard } from "@/components/learn/quiz-chapter-wizard";
+import { stripInteractiveBlockTags } from "@/lib/strip-interactive-block-tags";
 import { extractHeadings } from "@/lib/mdx-headings";
 import { learningLogToAnswers, learningLogToChecklist, parseLearningLog } from "@/lib/learning-log";
 import { ChapterReaderShell } from "@/components/learn/chapter-reader-shell";
 import { LockedChapterView } from "@/components/learn/locked-chapter";
 import { signOutAction } from "@/server/auth/actions";
+import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
 import { loadCourseGate } from "@/server/progress/gate";
-import { decorateSyllabus } from "@/server/progress/syllabus";
 import { isCompletableBlock, previousChapterId } from "@/server/progress/rules";
 import { ensureChapterStarted } from "@/server/progress/compute";
+import { syllabusForEnrollment } from "@/server/progress/enrollment-syllabus";
+import { serializeHelpThread } from "@/lib/help-serialize";
+import { loadChapterHelpThread } from "@/server/help/load-chapter-thread";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +46,9 @@ export default async function ChapterReaderPage({
               slug: true,
               title: true,
               order: true,
+              isMilestone: true,
+              estimatedMinutes: true,
+              readerMode: true,
               blocks: {
                 where: { archivedAt: null },
                 select: { type: true, required: true, archivedAt: true },
@@ -54,6 +62,7 @@ export default async function ChapterReaderPage({
   if (!course) notFound();
 
   const { enrollment, user } = await requireEnrolledMentee(course.id);
+  const bypassLocking = bypassProgressGatingForEmail(user.email ?? "");
 
   const flatChapters = course.modules.flatMap((mod) =>
     mod.chapters.map((ch) => ({
@@ -71,11 +80,7 @@ export default async function ChapterReaderPage({
   const next = flatChapters[index + 1];
   const lessonLabel = `${String(chapter.moduleOrder).padStart(2, "0")}.${String(chapter.order).padStart(2, "0")}`;
 
-  const [progress, content, currentProgress, gate] = await Promise.all([
-    prisma.chapterProgress.findMany({
-      where: { enrollmentId: enrollment.id },
-      select: { chapterId: true, status: true, blocksCompleted: true, blocksTotal: true },
-    }),
+  const [content, currentProgress, gate, helpThreadRow, syllabus] = await Promise.all([
     prisma.chapter.findUnique({
       where: { id: chapter.id },
       select: { compiled: true, source: true },
@@ -84,38 +89,15 @@ export default async function ChapterReaderPage({
       where: { enrollmentId_chapterId: { enrollmentId: enrollment.id, chapterId: chapter.id } },
       select: { learningLog: true, status: true, blocksCompleted: true, blocksTotal: true },
     }),
-    loadCourseGate(course.id, enrollment.id),
+    loadCourseGate(course.id, enrollment.id, { bypassLocking }),
+    loadChapterHelpThread(user.id, chapter.id),
+    syllabusForEnrollment(course, enrollment.id, bypassLocking),
   ]);
   if (!content) notFound();
 
-  const progressByChapter = new Map(progress.map((p) => [p.chapterId, p.status]));
-  const progressCountByChapter = new Map(
-    progress.map((p) => [p.chapterId, { completed: p.blocksCompleted, total: p.blocksTotal }])
-  );
+  const { modules } = syllabus;
 
-  const modules = decorateSyllabus({
-    sequential: course.sequential,
-    progressByChapter,
-    modules: course.modules.map((mod) => ({
-      id: mod.id,
-      order: mod.order,
-      title: mod.title,
-      chapters: mod.chapters.map((ch) => {
-        const counts = progressCountByChapter.get(ch.id);
-        const blockCount = ch.blocks.filter((block) => isCompletableBlock(block)).length;
-        return {
-          id: ch.id,
-          slug: ch.slug,
-          title: ch.title,
-          order: ch.order,
-          blockCount,
-          blocksCompleted: counts?.completed ?? 0,
-        };
-      }),
-    })),
-  });
-
-  const locked = gate?.lockedIds.has(chapter.id) ?? false;
+  const locked = !bypassLocking && (gate?.lockedIds.has(chapter.id) ?? false);
   if (locked) {
     const prevId = previousChapterId(gate?.orderedIds ?? [], chapter.id);
     const previous = prevId ? flatChapters.find((c) => c.id === prevId) : prev;
@@ -130,6 +112,9 @@ export default async function ChapterReaderPage({
         modules={modules}
         user={user}
         signOutAction={signOutAction}
+        checkpointsCompleted={0}
+        checkpointsTotal={chapter.blockCount}
+        chapterComplete={false}
       />
     );
   }
@@ -146,32 +131,42 @@ export default async function ChapterReaderPage({
     }
   }
 
-  const source = content.compiled ?? content.source;
+  const rawSource = content.compiled ?? content.source;
+  const source =
+    chapter.readerMode === "QUIZ" ? stripInteractiveBlockTags(rawSource) : rawSource;
   const headings = extractHeadings(source);
   const log = parseLearningLog(currentProgress?.learningLog);
   const learningLogAnswers = learningLogToAnswers(log);
   const checklistState = learningLogToChecklist(log);
 
-  const chapterStatus = currentProgress?.status ?? progressByChapter.get(chapter.id) ?? "NOT_STARTED";
+  const chapterStatus = currentProgress?.status ?? "NOT_STARTED";
   const chapterComplete = chapterStatus === "COMPLETED";
-  const remaining =
-    chapter.blockCount - (currentProgress?.blocksCompleted ?? 0);
+  const checkpointsCompleted = currentProgress?.blocksCompleted ?? 0;
+  const checkpointsTotal = chapter.blockCount;
+  const remaining = checkpointsTotal - checkpointsCompleted;
   const canMarkComplete = !chapterComplete && remaining <= 0;
+  const helpThread = serializeHelpThread(helpThreadRow);
 
   return (
     <ChapterReaderShell
-      key={chapter.slug}
+      courseId={course.id}
       courseSlug={course.slug}
       courseTitle={course.title}
       lessonLabel={lessonLabel}
       chapterTitle={chapter.title}
       chapterSlug={chapter.slug}
       chapterId={chapter.id}
+      estimatedMinutes={chapter.estimatedMinutes}
+      readerMode={chapter.readerMode}
       learningLogAnswers={learningLogAnswers}
       checklistState={checklistState}
       chapterComplete={chapterComplete}
       canMarkComplete={canMarkComplete}
-      nextLocked={!chapterComplete && Boolean(next)}
+      checkpointsCompleted={checkpointsCompleted}
+      checkpointsTotal={checkpointsTotal}
+      isGateChapter={chapter.isMilestone}
+      nextLocked={!bypassLocking && !chapterComplete && Boolean(next)}
+      helpThread={helpThread}
       user={user}
       signOutAction={signOutAction}
       modules={modules}
@@ -179,6 +174,7 @@ export default async function ChapterReaderPage({
       prev={prev ? { slug: prev.slug, title: prev.title, moduleOrder: prev.moduleOrder, order: prev.order } : undefined}
       next={next ? { slug: next.slug, title: next.title, moduleOrder: next.moduleOrder, order: next.order } : undefined}
     >
+      {chapter.readerMode === "QUIZ" ? <QuizChapterWizard chapterId={chapter.id} /> : null}
       <ChapterMdx source={source} />
     </ChapterReaderShell>
   );

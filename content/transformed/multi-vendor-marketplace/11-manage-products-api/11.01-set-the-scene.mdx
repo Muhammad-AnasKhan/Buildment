@@ -38,37 +38,37 @@ The vendor signed the lease (Ch 10) and has an empty stall with a nameplate. Cha
 
 <FaqGroup>
 
-<FaqItem question="Why not let customers see products in this chapter?">
+<FaqItem question={"Why not let customers see products in this chapter?"}>
 
 Because vendor inventory and the public catalogue are two different audiences with two different routes. The inventory routes here — `GET /vendor/products`, `POST /products` — are authenticated and scoped to the vendor's own store. The catalogue shoppers browse is an unauthenticated read built in Chapter 14. If you mixed them early, you'd have to solve filtering and privacy (drafts!) before the vendor API even exists. Same Product collection, two doors: the stockroom door for vendors now, the shop window for customers later.
 
 </FaqItem>
 
-<FaqItem question="Can the client send `storeId` in the POST body?">
+<FaqItem question={"Can the client send `storeId` in the POST body?"}>
 
 No — never trust the client to say which store a product belongs to. The server resolves the store from the authenticated JWT (`req.user.id` → the vendor's store) and links the product to that. If you accepted a `storeId` in the body, Vendor B could simply pass Vendor A's store id and stock a product on someone else's shelf — a textbook IDOR vector. This is the same principle as Chapter 9's `GET /stores/me`: the caller's identity, not a client-supplied id, decides ownership. Server-derived truth, always.
 
 </FaqItem>
 
-<FaqItem question="What if a vendor has no store and tries to create a product?">
+<FaqItem question={"What if a vendor has no store and tries to create a product?"}>
 
 Reject the request — there's no shelf to stock. The route resolves the vendor's store from the JWT first; if none exists, it returns an error (404 "no store" or 403, depending on the choice you document in `docs/AUTHORIZATION.md`). This rule is why Chapter 10's onboarding gate matters: a real vendor is forced to open a shop before reaching product pages, so the UI rarely hits this case. But the server still enforces it, because curl doesn't care about your React gate.
 
 </FaqItem>
 
-<FaqItem question="Is delete a hard delete?">
+<FaqItem question={"Is delete a hard delete?"}>
 
 Yes, in this course. `DELETE /products/:id` removes the document from MongoDB for real. Hard delete is simple and matches an MVP, but note the tradeoff: if an order later references a deleted product, that link can break — which is why production systems often use a soft delete (a `deletedAt` flag or status) to keep history. The course picks hard delete to keep Chapter 11 focused on CRUD mechanics; write the tradeoff in your learning log so you remember it was a deliberate choice, not an accidental one.
 
 </FaqItem>
 
-<FaqItem question="How does publish/unpublish work?">
+<FaqItem question={"How does publish/unpublish work?"}>
 
 Through a single boolean: `isPublished`. New products default to `false`, so they're drafts — saved and editable in the vendor's inventory but invisible to shoppers. Publishing is a `PATCH /products/:id` that sets `isPublished: true`; unpublishing flips it back. You'll build the toggle UI in Chapter 12; the API's job here is to let the owner change the flag safely, with the ownership check applied just like any other PATCH. The rule that matters later: Chapter 14's public catalogue must only ever show published products.
 
 </FaqItem>
 
-<FaqItem question="Do I need the dashboard UI to test this chapter?">
+<FaqItem question={"Do I need the dashboard UI to test this chapter?"}>
 
 No — curl is enough, same as Chapter 9. You'll register (or seed) two vendors with stores, log in for Bearer tokens, and prove the full lifecycle: create a product, list mine, update it, delete it, and confirm Vendor B gets 403 when PATCHing Vendor A's product. Testing through the API forces you to understand the contract — routes, JSON shapes, status codes — before the UI hides it behind forms. Chapter 12 then wires React to these exact shapes. If it works in curl, later UI bugs are UI bugs — a clean separation.
 
@@ -171,7 +171,7 @@ Central warehouses use global SKUs; local vendors may sell loose produce by weig
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KPXAWR8D33X9B9JTNVXK" />
+<OpenQuestion id="01M34MR9Z8JWAXFMV9QKVQYJH5" />
 
 ## Next
 

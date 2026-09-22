@@ -38,16 +38,16 @@ export function LearnPanelShell({
             </p>
           </div>
           {title ? (
-            <h3 className="mt-1 text-lg font-semibold tracking-tight text-neutral-950">{title}</h3>
+            <h3 className="mt-1 text-lg font-semibold tracking-tight text-foreground">{title}</h3>
           ) : null}
           {subtitle ? (
-            <p className="mt-1 text-sm leading-relaxed text-neutral-600">{subtitle}</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{subtitle}</p>
           ) : null}
         </header>
       )}
       <div
         className={cn(
-          "overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm",
+          "overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm",
           contentClassName
         )}
       >

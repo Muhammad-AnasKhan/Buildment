@@ -93,19 +93,19 @@ No code in `server/src/modules/*/` yet — **design only**.
 
 <FaqGroup>
 
-<FaqItem question="Can I use PostgreSQL if I know it better?">
+<FaqItem question={"Can I use PostgreSQL if I know it better?"}>
 
 Not in this repo, and not without mentor agreement — and the reason is practical, not a technology loyalty test. Every chapter from here assumes Mongoose paths, document-style queries, and embedded or referenced relationships, so switching databases means mentally translating every example for twenty chapters. If you genuinely prefer SQL, that's a valid real-world choice, but it belongs in your *own* project, not this course. Here the skill being taught is deciding which model fits the data, using MongoDB as the vehicle.
 
 </FaqItem>
 
-<FaqItem question="What's the one deliverable that gates Chapter 4?">
+<FaqItem question={"What's the one deliverable that gates Chapter 4?"}>
 
 `docs/erd-draft.md` — your entity relationship diagram — plus a learning-log entry proving you can explain embed vs reference in your own words. The ERD is your design contract: it says what collections exist, what fields they hold, and how they connect, all before any code is written. The explanation matters because the gate tests understanding, not file creation. No ERD, no Chapter 4 — that's the rule, so treat the draft as the real output of this chapter.
 
 </FaqItem>
 
-<FaqItem question="Why decide embed/reference before writing code?">
+<FaqItem question={"Why decide embed/reference before writing code?"}>
 
 Because the decision is cheap on paper and expensive in code — and the checkout case makes it concrete. If an order only *references* its products, the order history shows the product's current price, so a price rise silently rewrites yesterday's receipts. If the order *embeds* the price at purchase, the receipt stays frozen and honest. That's not a UI bug or a query bug; it's a data-modelling bug, and it's only cheap to fix while it's still a decision in a document rather than a schema you've built a whole feature on.
 
@@ -114,7 +114,7 @@ Because the decision is cheap on paper and expensive in code — and the checkou
 </FaqGroup>
 
 
-<ChapterRecap id="01KZP7KP0DPHTRTPFJQGGZBMYG" />
+<ChapterRecap id="01M34MR8F17AP68E1Y2JJKKTFP" />
 
 **Next:** Relational vs document — side by side for the same marketplace entities.
 <RealWorldEvent title="Walmart's polyglot data strategy" when="2010s–present" summary="Large retailers run multiple database technologies — relational systems for transactions and accounting, document or search stores for catalogs and recommendations." lesson="Choosing MongoDB for FreshMarket is a domain-driven decision. Document the trade-off so future you can defend it in an interview." />

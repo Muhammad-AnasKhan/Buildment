@@ -40,14 +40,14 @@ export async function OpenQuestionComponent({ id }: { id: string }) {
       include: { review: { select: { feedback: true, verdict: true } } },
     });
     if (latest && latest.status !== "DRAFT") {
-      const text =
-        typeof (latest.payload as { text?: string } | null)?.text === "string"
-          ? ((latest.payload as { text?: string }).text as string)
-          : "";
+      const payload = latest.payload as { text?: string; url?: string } | null;
+      const text = typeof payload?.text === "string" ? payload.text : "";
+      const url = typeof payload?.url === "string" ? payload.url : null;
       initialState = {
         status: latest.status,
         attempt: latest.attempt,
         text,
+        url,
         feedback: latest.review?.feedback ?? null,
         verdict: latest.review?.verdict ?? null,
       };

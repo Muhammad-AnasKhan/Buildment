@@ -1,0 +1,54 @@
+---
+title: "Set the scene"
+module: 24
+lesson: 1
+summary: "After deploy, FreshMarket still has a grocery-grade gap: two shoppers can buy the last kilo of tomatoes. This module adds time-bound stock holds and payment-confirmed decrements."
+---
+# 24.01 — Set the scene
+
+> **[Open]** · Chapter 24 — Inventory reservations · *Why deploy is not the finish line*
+
+You shipped FreshMarket on HTTPS in Chapter 23. Customers can browse, pay, and vendors get async notifications. That is a real portfolio milestone — and it is **not** the same as a production grocery marketplace.
+
+Perishable inventory is unforgiving. If two customers checkout the last three units of bananas at the same time, someone arrives to an empty shelf or your vendor eats a refund. Real platforms solve this with **reservations**: stock is held while payment completes, then confirmed or released.
+
+## Objectives
+
+By the end of Chapter 24 you will:
+
+- Explain the difference between **available**, **reserved**, and **sold** stock on a product.
+- Implement a `StockReservation` document with TTL-style expiry and idempotent confirm/release.
+- Hook reservations into **checkout start**, **payment success**, and **payment abandon**.
+- Run a worker job that releases expired holds without racing paid orders.
+- Prove concurrency with a deliberate two-tab checkout test.
+
+## Where this sits in the arc
+
+| Earlier chapter | What it did | Gap Chapter 24 closes |
+|---|---|---|
+| Ch 5 `Product.stockQty` | Single number on the product | No concurrent checkout safety |
+| Ch 16–18 Cart & checkout | Persists cart, creates orders | Decrements stock only implicitly or not at all |
+| Ch 19 Payment | Confirms money | Money can succeed while stock was already sold |
+| Ch 22 Async jobs | Side effects off HTTP path | Perfect place to expire stale holds |
+
+<BigWordAlert term="Overselling" plainEnglish="Selling more units than you physically have — trust killer for grocery." whyItMatters="One bad weekend on FreshMarket is enough for vendors to leave the platform." />
+
+## Production scope (this module)
+
+**In scope:** per-product holds keyed to cart or checkout session; 15-minute default TTL; atomic confirm on `payment_intent.succeeded`; release on expiry or explicit cart abandon; vendor-visible **available** count = `stockQty - sum(active reservations)`.
+
+**Out of scope (name them so interviews go well):** multi-warehouse allocation, negative stock backorders, ERP sync, batch lot tracking (use-by dates). Those belong in a warehouse module — not this course pass.
+
+## What you will touch in the repo
+
+- `server/models/stockReservation.model.js` (new)
+- `server/modules/inventory/` — reserve, confirm, release helpers
+- Checkout route — reserve before creating unpaid orders / PaymentIntent
+- Stripe webhook — confirm reservations when payment succeeds
+- `worker.js` — periodic or delayed job `reservation.expired`
+- Product read APIs — expose `availableQty` for catalogue and vendor dashboard
+
+**Next:** Why overselling happens even when you “already have stockQty on the product.”
+## Before you continue
+
+<OpenQuestion id="01M34MRC2FJ8WZD625NTMXMS08" />

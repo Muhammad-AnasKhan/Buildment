@@ -12,13 +12,9 @@ summary: "**Where the project is now:** Chapter 2 gave you a running skeleton �
 
 This is a **build chapter**. Every sub-chapter from 4.8 onward adds files to your repo. The gate is **runnable proof**: MongoDB connected, secrets not in Git, client still shows health — now including database status.
 
-## Bridge from last chapter
+What carries forward from Chapters 2–3: module folders (still empty of models), your ERD, and the ownership chain you can explain aloud. What you add now is **memory with discipline** — MongoDB connected through environment variables, configuration validated at boot, secrets kept out of Git, and a health check that tells the truth about database status.
 
-Chapter 3 gave you a **blueprint** — collections, embed-vs-reference decisions, grocery fields on products, snapshot lines on orders — committed as `docs/erd-draft.md`. Chapter 2 gave you a **running skeleton** that forgets everything on restart. You can demo "the apps talk" but not "the apps remember."
-
-What carries forward: module folders (still empty of models), your ERD, and the ownership chain you can explain aloud. What you add now is **memory with discipline** — MongoDB connected through environment variables, configuration validated at boot, secrets kept out of Git, and a health check that tells the truth about database status.
-
-The hat you wear now is **platform engineer**. You are wiring infrastructure every production Node API needs before features touch user data: where secrets live, how the process starts, what happens when configuration is missing. Chapter 5 will create Mongoose models; this chapter only connects the wire so those models have somewhere to persist.
+The hat you wear now is **platform engineer**. You are wiring infrastructure every production Node API needs before features touch user data. Chapter 5 creates Mongoose models; this chapter only connects the wire so those models have somewhere to persist.
 
 <MandatoryReadCard
   title="MongoDB Node.js driver — Connect to MongoDB"
@@ -51,31 +47,31 @@ The hat you wear now is **platform engineer**. You are wiring infrastructure eve
 
 <FaqGroup>
 
-<FaqItem question="Why config before schemas — isn't the data model the point?">
+<FaqItem question={"Why config before schemas — isn't the data model the point?"}>
 
 There's a practical reason: Mongoose models need a live connection to do anything, so wiring the connection first means you debug one problem at a time. Think of it as running the power cable before installing the refrigerators — you prove the infrastructure before you stock it with models. There's also a habit reason: teams set up secret-handling discipline before real customer data exists. A leaked connection string in Git is painful; learning `.env` discipline on an empty database is cheap. When Chapter 5 adds schemas, they'll connect to a database that already works, so "why won't this save?" is never also "why won't this connect?"
 
 </FaqItem>
 
-<FaqItem question="Local MongoDB or Atlas — which should I pick?">
+<FaqItem question={"Local MongoDB or Atlas — which should I pick?"}>
 
 Either one satisfies the course gate, so pick based on your machine and workflow. Local MongoDB suits you if you want offline work, no cloud signup, and fast iteration — Compass and your URI both point at `127.0.0.1`. Atlas suits you if local installs are painful on your machine, you develop on multiple computers, or you want setup that mirrors most deployment guides. Sub-chapter 4.5 has the full comparison. The one rule that matters: pick one and stick with it through Week 1, because switching mid-course means re-verifying your connection string and re-running every health check.
 
 </FaqItem>
 
-<FaqItem question="Will the React app talk to MongoDB directly?">
+<FaqItem question={"Will the React app talk to MongoDB directly?"}>
 
 Never. Your browser runs JavaScript that anyone can read, so it can't be trusted with database credentials. Instead, the client sends HTTP requests to Express, and Express — running on your server where secrets live — talks to MongoDB using `MONGODB_URI`. A customer's browser asks Express for products; Express asks the database and sends the JSON back. That one-way chain keeps the connection string out of browser code, which is exactly the rule from Chapter 2: anything that must not appear in browser JavaScript stays on the server.
 
 </FaqItem>
 
-<FaqItem question="What if the server starts but MongoDB is down?">
+<FaqItem question={"What if the server starts but MongoDB is down?"}>
 
 Then your server should not pretend everything is fine — that's the whole point of the health check this chapter builds. If Express comes up while the database is unreachable, you design for honest behavior: either crash at boot (fail-fast) or keep serving but report `db: disconnected` on `/health` so you can see the problem. Picture a market hall with the lights on but the refrigerators dead — shoppers would assume the produce is cold. Your health endpoint is the sign that tells the truth about the database, not just "the Node process is alive."
 
 </FaqItem>
 
-<FaqItem question="Do I need to re-debate SQL vs MongoDB here?">
+<FaqItem question={"Do I need to re-debate SQL vs MongoDB here?"}>
 
 No — Chapter 3 closed that decision, and reopening it now wastes a day. What matters here is that your ERD is committed and your collections are named, because this chapter connects the wire and Chapter 5 writes models against that blueprint. You *can* connect MongoDB without a design, but you'd be building schemas with no map, and rework at checkout time is exactly what the blueprint is meant to prevent. If your Chapter 3 gate isn't finished, finish the draft first — then the build steps in this chapter make sense.
 
@@ -187,7 +183,7 @@ Teams routinely leak production credentials by committing `.env` files or loggin
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KP2EE1NV7F2GA3KMNMRV" />
+<OpenQuestion id="01M34MR8JHZDZWRDNVF2A82N2W" />
 
 ## Next
 

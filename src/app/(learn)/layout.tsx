@@ -4,6 +4,6 @@ export default async function LearnLayout({ children }: { children: React.ReactN
   await requireRole("MENTEE");
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-white">{children}</div>
+    <div className="flex min-h-full flex-1 flex-col bg-background">{children}</div>
   );
 }

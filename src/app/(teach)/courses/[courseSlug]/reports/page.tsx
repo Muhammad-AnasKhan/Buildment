@@ -5,6 +5,7 @@ import { prisma } from "@/server/db";
 import { nowMs } from "@/server/time";
 import { requireMentorOfCourse } from "@/server/auth/guards";
 import { cn } from "@/lib/utils";
+import { formatStudyHours } from "@/lib/format-study-duration";
 
 const AT_RISK_DAYS = 7;
 
@@ -29,7 +30,10 @@ export default async function CourseReportsPage({
         select: {
           id: true,
           title: true,
-          chapters: { orderBy: { order: "asc" }, select: { id: true, title: true } },
+          chapters: {
+            orderBy: { order: "asc" },
+            select: { id: true, title: true, estimatedMinutes: true },
+          },
         },
       },
     },
@@ -53,6 +57,19 @@ export default async function CourseReportsPage({
       enrollment: { select: { user: { select: { name: true, email: true } } } },
     },
   });
+
+  const courseEstimateMinutes = course.modules.reduce(
+    (sum, mod) =>
+      sum + mod.chapters.reduce((s, ch) => s + (ch.estimatedMinutes ?? 0), 0),
+    0
+  );
+  const studySecondsByEnrollment = new Map<string, number>();
+  for (const progress of chapterProgress) {
+    studySecondsByEnrollment.set(
+      progress.enrollmentId,
+      (studySecondsByEnrollment.get(progress.enrollmentId) ?? 0) + progress.timeSpentSeconds
+    );
+  }
 
   // Cohort funnel (Enrollment rollups only — docs/06-reports.mdx)
   const enrolled = enrollments.length;
@@ -112,15 +129,23 @@ export default async function CourseReportsPage({
             Cohort progress, chapter completion, and which blocks are causing confusion.
           </p>
         </div>
-        {enrolled > 0 && (
-          <Link
-            href={`/courses/${course.slug}/reports/export`}
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-neutral-200 px-3 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
-          >
-            <Download className="size-3.5" />
-            Export CSV
-          </Link>
-        )}
+        {enrolled > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={`/courses/${course.slug}/activity`}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-neutral-200 px-3 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+            >
+              Daily activity
+            </Link>
+            <Link
+              href={`/courses/${course.slug}/reports/export`}
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-neutral-200 px-3 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50"
+            >
+              <Download className="size-3.5" />
+              Export CSV
+            </Link>
+          </div>
+        ) : null}
       </div>
 
       {enrolled === 0 ? (
@@ -215,6 +240,7 @@ export default async function CourseReportsPage({
                     <th className="px-4 py-3">Mentee</th>
                     <th className="px-4 py-3">Progress</th>
                     <th className="px-4 py-3">Score</th>
+                    <th className="px-4 py-3">Study time</th>
                     <th className="px-4 py-3">Awaiting review</th>
                     <th className="px-4 py-3">Last active</th>
                     <th className="px-4 py-3">Status</th>
@@ -251,6 +277,16 @@ export default async function CourseReportsPage({
                         </td>
                         <td className="px-4 py-3 text-xs tabular-nums text-neutral-600">
                           {e.maxScore > 0 ? `${e.totalScore}/${e.maxScore}` : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-xs tabular-nums text-neutral-600">
+                          {formatStudyHours(studySecondsByEnrollment.get(e.id) ?? 0)}
+                          {courseEstimateMinutes > 0 && (
+                            <span className="text-neutral-400">
+                              {" "}
+                              / ~
+                              {Math.round(courseEstimateMinutes / 60)}h goal
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           {e.pendingReviews > 0 ? (

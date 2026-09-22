@@ -2,10 +2,12 @@
 
 import { z } from "zod";
 import { prisma } from "@/server/db";
-import { requireEnrolledMentee } from "@/server/auth/guards";
+import { requireEnrolledMentee, requireMentorOfCourse } from "@/server/auth/guards";
+import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
 import { ChapterLockedError, assertChapterUnlocked } from "@/server/progress/gate";
 import {
   ensureChapterStarted,
+  repairEnrollmentProgress,
   recomputeEnrollmentRollup,
 } from "@/server/progress/compute";
 import {
@@ -30,13 +32,15 @@ export async function markChapterComplete(input: {
   });
   if (!chapter) return { ok: false, error: "Chapter not found." };
 
-  const { enrollment } = await requireEnrolledMentee(chapter.courseId);
+  const { enrollment, user } = await requireEnrolledMentee(chapter.courseId);
+  const bypassLocking = bypassProgressGatingForEmail(user.email ?? "");
 
   try {
     await assertChapterUnlocked({
       courseId: chapter.courseId,
       enrollmentId: enrollment.id,
       chapterId: chapter.id,
+      bypassLocking,
     });
   } catch (error) {
     if (error instanceof ChapterLockedError) {
@@ -115,13 +119,15 @@ export async function saveChecklistItem(input: {
   });
   if (!chapter) return { ok: false, error: "Chapter not found." };
 
-  const { enrollment } = await requireEnrolledMentee(chapter.courseId);
+  const { enrollment, user } = await requireEnrolledMentee(chapter.courseId);
+  const bypassLocking = bypassProgressGatingForEmail(user.email ?? "");
 
   try {
     await assertChapterUnlocked({
       courseId: chapter.courseId,
       enrollmentId: enrollment.id,
       chapterId: chapter.id,
+      bypassLocking,
     });
   } catch (error) {
     if (error instanceof ChapterLockedError) {
@@ -167,6 +173,30 @@ export async function saveChecklistItem(input: {
       },
     });
     await ensureChapterStarted(tx, enrollment.id, chapter.id);
+  });
+
+  return { ok: true };
+}
+
+const enrollmentInput = z.object({ enrollmentId: z.string().min(1) });
+
+/** Mentor-only: rebuild chapter + enrollment rollups from Response rows. */
+export async function repairEnrollmentProgressAction(input: {
+  enrollmentId: string;
+}): Promise<ProgressActionResult> {
+  const parsed = enrollmentInput.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid enrollment." };
+
+  const enrollment = await prisma.enrollment.findUnique({
+    where: { id: parsed.data.enrollmentId },
+    select: { id: true, courseId: true },
+  });
+  if (!enrollment) return { ok: false, error: "Enrollment not found." };
+
+  await requireMentorOfCourse(enrollment.courseId);
+
+  await prisma.$transaction(async (tx) => {
+    await repairEnrollmentProgress(tx, enrollment.id, enrollment.courseId);
   });
 
   return { ok: true };

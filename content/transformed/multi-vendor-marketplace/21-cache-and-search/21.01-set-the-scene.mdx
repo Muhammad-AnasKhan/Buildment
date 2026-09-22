@@ -67,37 +67,37 @@ Catalogue is read-heavy. Chapter 21 adds a cache layer — not for cart or order
 
 <FaqGroup>
 
-<FaqItem question="What is Redis? Do I need another database?">
+<FaqItem question={"What is Redis? Do I need another database?"}>
 
 Redis is a fast, in-memory key-value store that sits next to MongoDB like a sticky note beside a filing cabinet. The server checks the sticky note first (a cache hit — instant return), and only walks to the filing cabinet when the note is empty (a cache miss). In this course Redis holds cached catalogue JSON and, from Chapter 22, job queues for background work. MongoDB stays your **source of truth** for products, orders, and users — Redis is a helper that makes repeat reads faster, never a replacement.
 
 </FaqItem>
 
-<FaqItem question="Why not just make MongoDB faster instead of adding a cache?">
+<FaqItem question={"Why not just make MongoDB faster instead of adding a cache?"}>
 
 MongoDB isn't slow here — the problem is *repeating the same work*. If fifty people open `/shop?page=1` in a minute and the product list hasn't changed, that's fifty identical queries with populates. A cache turns fifty warehouse trips into one: the first request fetches from MongoDB and saves the answer, and the next forty-nine read the saved copy. You're not improving the database; you're stopping it from doing work it already did. That's why caching targets read-heavy data like the catalogue, never carts or orders.
 
 </FaqItem>
 
-<FaqItem question="What if a vendor changes a price and the cache still shows the old one?">
+<FaqItem question={"What if a vendor changes a price and the cache still shows the old one?"}>
 
 That's the **stale cache trap**, and Chapter 21.2 covers it in depth. The fix is invalidation: when a product is created, updated, or deleted, the server deletes the matching cache keys so the next request re-reads MongoDB. TTL (time to live) alone eventually fixes it, but "eventually" means customers can see a wrong price for minutes — unacceptable in a marketplace where vendors edit prices daily. Production caches combine both: invalidation for correctness, TTL as the safety net.
 
 </FaqItem>
 
-<FaqItem question="Will my app break if Redis isn't running?">
+<FaqItem question={"Will my app break if Redis isn't running?"}>
 
 Not if you implement fallback, which this chapter requires in 21.14. Your cache layer should treat a Redis connection failure as a "skip caching" signal, not a crash: try Redis, and on failure go straight to MongoDB. The gate literally tests this — stop Redis, and the catalogue must still load, just slower. That fallback is the difference between a cache that speeds things up and a single point of failure that takes your shop down.
 
 </FaqItem>
 
-<FaqItem question="Is this the same Redis used in Chapter 22?">
+<FaqItem question={"Is this the same Redis used in Chapter 22?"}>
 
 Yes — one Redis server does both jobs. Catalogue cache keys use a `catalogue:*` prefix, while Chapter 22's BullMQ job queues use `bull:*` keys. Both share the same `REDIS_URL`; the prefixes keep them separate. That's also why you must never use `FLUSHALL` to clear cache — it would destroy unrelated queue data too. Prefixed keys let you delete exactly what you own and nothing else.
 
 </FaqItem>
 
-<FaqItem question="Do customers ever see the cache in the UI?">
+<FaqItem question={"Do customers ever see the cache in the UI?"}>
 
 No — caching is invisible server-side plumbing. Nothing about the shop page changes; the same products render from the same API. What customers might notice is that repeat visits feel snappier, and that the shop still works when Redis is down. That's the real goal of Chapter 21: not new features, but the difference between a demo that works for you and an app that stays fast when fifty people browse dairy at once.
 
@@ -149,7 +149,7 @@ Teams enable caching, celebrate response times, then ship outdated stock levels.
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KQSS549C5YPFEJRFR8ZX" />
+<OpenQuestion id="01M34MRBJ1KC2XS80FP1J5QD02" />
 
 ## Next
 

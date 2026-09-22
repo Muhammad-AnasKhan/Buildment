@@ -115,31 +115,31 @@ Chapter 20 builds the screens. Chapter 19 makes the API **honest**.
 
 <FaqGroup>
 
-<FaqItem question="Was Chapter 18 wasted?">
+<FaqItem question={"Was Chapter 18 wasted?"}>
 
 No — it was exactly the right order. You built and tested the hardest commerce logic — split orders, snapshots, atomic stock, fail-all — with no payment noise to complicate debugging. Professional teams do the same thing: stub the checkout, prove the core pipeline, then attach the payment gateway at a clean seam. Chapter 19 doesn't rewrite Chapter 18; it wraps it with a verification step. If you'd built both at once, every failure would be ambiguous — is it the commerce bug or the Stripe bug? That's miserable to debug.
 
 </FaqItem>
 
-<FaqItem question="Why can't I just check payment in the browser?">
+<FaqItem question={"Why can't I just check payment in the browser?"}>
 
 Because anything the browser does, the browser can be told to lie. A normal user confirms payment with Stripe.js and everything looks fine — but an attacker skips that step and POSTs `/checkout` directly, so your frontend check simply never runs. That's why the trust boundary is hard: browser checks are UX polish, but the **server** must be the authority, calling Stripe's API itself to retrieve the Payment Intent and confirm it actually succeeded before creating any order. No server-side verification, no guarantee of payment — just a pretty button.
 
 </FaqItem>
 
-<FaqItem question="What about cash on delivery?">
+<FaqItem question={"What about cash on delivery?"}>
 
 That's a completely different product decision. With COD there's no card charge at all, so you'd skip Stripe entirely — but you'd still need a `paymentStatus` enum on your orders (something like `pending`, `paid`, `cancelled`) so fulfilment knows the order hasn't been paid yet. FreshMarket's choice is **card checkout via Stripe test mode**, so this course follows that path: payment happens first, verified by the server, and only then do orders get created. The habit that matters is that payment status lives on the order, whichever method you pick.
 
 </FaqItem>
 
-<FaqItem question="Is the webhook optional?">
+<FaqItem question={"Is the webhook optional?"}>
 
 For the learning gate, no — it's required. The webhook is your backup line: the customer confirms payment, then closes the tab before your frontend can call `/checkout`. Without a webhook, the money exists but no order was ever created — an angry customer and lost revenue. Stripe calls your server's `POST /webhooks/stripe` when the payment status changes, and you confirm the order from there. Building it teaches two things every Stripe integration needs: **signature verification** (proving the POST really came from Stripe) and **idempotency** (handling the same event twice without duplicating orders).
 
 </FaqItem>
 
-<FaqItem question="What actually stops someone from emptying the store for free?">
+<FaqItem question={"What actually stops someone from emptying the store for free?"}>
 
 Your server — and only your server. In Chapter 18, anyone holding a customer JWT could run one `curl` against `POST /checkout` and create orders, decrement stock, and clear carts without paying a rupee. Chapter 19 closes that hole by making the server refuse checkout unless it can independently confirm a Payment Intent succeeded for the right amount. Never accept a `&#123; paid: true &#125;` flag from the client — that's just JSON anyone can type. The moment stock only leaves the shelf after a verified payment, the fake-checkout bug is dead.
 
@@ -173,7 +173,7 @@ Stripe test keys let you simulate success, decline, and 3D Secure without moving
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KQM69HFS1TCN9N5ZPEWM" />
+<OpenQuestion id="01M34MRB84D55744CGFY92EM4H" />
 
 ## Next
 

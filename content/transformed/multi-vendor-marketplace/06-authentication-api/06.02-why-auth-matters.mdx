@@ -22,28 +22,28 @@ Auth is where beginners most often cut corners — plain text passwords in tutor
 
 <FaqGroup>
 
-<FaqItem question="Is bcrypt overkill for a learning project?">
+<FaqItem question={"Is bcrypt overkill for a learning project?"}>
 
 No — it's the exact same code you'd write in production. The "cost" of using real bcrypt is one function call, and the payoff is learning the pattern correctly instead of building a habit you'd have to unlearn later. With a reasonable cost factor (10 is the common default), a leaked database becomes slow guessing instead of instant account takeover. That lesson is worth far more than the tiny bit of extra CPU time.
 
 </FaqItem>
 
-<FaqItem question="Why verify email with OTP if email does not really send?">
+<FaqItem question={"Why verify email with OTP if email does not really send?"}>
 
 Because the state machine is the lesson, not the email. The User document has an `isVerified` flag, and that flag gates login and vendor onboarding in later chapters. Whether the code is delivered by email, by a console log, or by carrier pigeon, the server still has to generate it, store it with an expiry, and check it before flipping the flag. Build the real flow now; simplify only the delivery.
 
 </FaqItem>
 
-<FaqItem question="Does auth replace ownership checks?">
+<FaqItem question={"Does auth replace ownership checks?"}>
 
 No — think of them as two separate doors. Authentication (Chapter 6) checks your ID at the front door: "who are you?" Authorization (Chapter 8) checks your key against the specific room: "what are you allowed to touch?" Auth gives you `req.user.id` and `req.user.role`; the ownership checks in Chapter 8 use that identity to stop Vendor B from editing Vendor A's products. Both doors are required.
-
-&lt;RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
 
 </FaqItem>
 
 </FaqGroup>
 
+
+<RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
 
 ## The LinkedIn lesson (pattern, not year-specific)
 
@@ -122,7 +122,7 @@ If access tokens lived for weeks, a stolen token would stay valid for weeks. If 
 
 ## Reflect
 
-<OpenQuestion id="01KZP7KPBSBK2YFN8XCY5MX85T" />
+<OpenQuestion id="01M34MR914NZF1HFQ44W16J91Z" />
 
 
 

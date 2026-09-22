@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import { CheckCircle2, CloudOff, Loader2, NotebookPen, Save } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
+import { AnswerTextareaWithMic } from "@/components/learn/answer-textarea-with-mic";
 import { cn } from "@/lib/utils";
 import { saveLearningLogAnswers } from "@/server/actions/learning-log";
 import type { LearningLogAnswers } from "@/lib/learning-log";
@@ -49,7 +49,7 @@ function parseInlineMarkdown(text: string) {
   return parts.map((part, index) => {
     if (part.startsWith("**") && part.endsWith("**")) {
       return (
-        <strong key={index} className="font-semibold text-neutral-900">
+        <strong key={index} className="font-semibold text-foreground">
           {part.slice(2, -2)}
         </strong>
       );
@@ -80,7 +80,7 @@ const VARIANT_STYLES = {
     headerText: "text-white",
     subText: "text-violet-100",
     iconBg: "bg-white/15",
-    bodyBg: "bg-gradient-to-b from-violet-50/40 to-white",
+    bodyBg: "bg-gradient-to-b from-violet-50/40 to-card dark:from-violet-950/25 dark:to-card",
     progress: "bg-violet-100",
     progressFill: "bg-violet-600",
     badge: "bg-white/20 text-white",
@@ -88,17 +88,17 @@ const VARIANT_STYLES = {
     questionBorder: "border-violet-100 focus-visible:border-violet-400",
   },
   default: {
-    border: "border-neutral-200",
-    headerBg: "bg-neutral-50 border-b border-neutral-200",
-    headerText: "text-neutral-900",
-    subText: "text-neutral-500",
-    iconBg: "bg-violet-100",
-    bodyBg: "bg-white",
-    progress: "bg-neutral-100",
+    border: "border-border",
+    headerBg: "bg-muted/50 border-b border-border",
+    headerText: "text-foreground",
+    subText: "text-muted-foreground",
+    iconBg: "bg-violet-500/15",
+    bodyBg: "bg-card",
+    progress: "bg-muted",
     progressFill: "bg-violet-500",
-    badge: "bg-neutral-200 text-neutral-700",
+    badge: "bg-muted text-muted-foreground",
     questionRing: "focus-visible:ring-violet-500/30",
-    questionBorder: "border-neutral-200 focus-visible:border-violet-400",
+    questionBorder: "border-border focus-visible:border-violet-400",
   },
 } as const;
 
@@ -118,39 +118,39 @@ function LearningLogQuestion({
   const answered = value.trim().length > 0;
 
   return (
-    <li className="rounded-xl border border-transparent bg-white/60 p-4 shadow-sm ring-1 ring-neutral-100">
+    <li className="rounded-xl border border-border bg-muted/30 p-4 shadow-sm">
       <div className="flex items-start gap-3">
         <span
           className={cn(
             "flex size-8 shrink-0 items-center justify-center rounded-lg text-sm font-semibold tabular-nums",
             answered
               ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-              : "bg-neutral-100 text-neutral-600"
+              : "bg-muted text-muted-foreground"
           )}
         >
           {answered ? <CheckCircle2 className="size-4" aria-hidden /> : index + 1}
         </span>
         <div className="min-w-0 flex-1 space-y-3">
           <div>
-            <p className="text-[15px] font-semibold leading-snug text-neutral-900">
+            <p className="text-[15px] font-semibold leading-snug text-foreground">
               {question.title}
             </p>
             {question.hint ? (
-              <p className="mt-1 text-sm leading-relaxed text-neutral-600">{question.hint}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{question.hint}</p>
             ) : null}
           </div>
-          <Textarea
+          <AnswerTextareaWithMic
             value={value}
-            onChange={(event) => onChange(event.target.value)}
+            onChange={onChange}
+            enableSpeech
             placeholder="Write your answer in your own words…"
             rows={4}
+            ariaLabel={question.title}
             className={cn(
-              "min-h-[6.5rem] resize-y bg-white text-[15px] leading-relaxed text-neutral-800",
               "placeholder:text-neutral-400",
               styles.questionBorder,
               styles.questionRing
             )}
-            aria-label={question.title}
           />
         </div>
       </div>
@@ -302,7 +302,8 @@ export function LearningLog({
                 </p>
               ) : (
                 <p className={cn("mt-1 text-sm", styles.subText)}>
-                  Answer in your own words — your responses are saved in the platform, not in Git.
+                  Answer in your own words — saved to your enrollment. Use the mic button to dictate if
+                  your browser supports it.
                 </p>
               )}
             </div>

@@ -85,31 +85,31 @@ You put a "Milk ₹65" sign in the window (cache). Vendor changes the shelf pric
 
 <FaqGroup>
 
-<FaqItem question="How does the cache end up showing an old price when MongoDB was updated correctly?">
+<FaqItem question={"How does the cache end up showing an old price when MongoDB was updated correctly?"}>
 
 Because the cached copy and the database can disagree, and nothing tells the cache to catch up. It happens in three steps: a customer reads `GET /products` and the server stores the JSON in Redis with a TTL; the vendor PATCHes the milk price, which updates MongoDB; the next customer reads the same key and gets the old JSON straight from Redis — fast, but wrong. Each step looks fine in isolation; only the mismatch on the next read reveals the bug. That's why invalidation must be planned for every write path, not hoped for.
 
 </FaqItem>
 
-<FaqItem question="If TTL is 5 minutes, isn't that good enough?">
+<FaqItem question={"If TTL is 5 minutes, isn't that good enough?"}>
 
 For data nobody edits, maybe. For a marketplace where vendors change prices and stock daily, five wrong minutes is a bug — a customer adds milk at the stale ₹65, and the surprise shows up at checkout. Event invalidation removes the wrong answer the moment the write happens, shrinking the stale window from minutes to milliseconds. TTL stays useful as a safety net for keys you forgot to invalidate, but it should never be your only line of defence. Production caches run both.
 
 </FaqItem>
 
-<FaqItem question="Should I cache search results too?">
+<FaqItem question={"Should I cache search results too?"}>
 
 You can — search queries are also repeated reads, so they benefit. The rule is to build the cache key from the full query (path *plus* sorted parameters, so `?search=milk` and `?search=rice` get different keys) and invalidate on the same product writes as the catalogue. If you'd rather keep version one simple, skipping search caching is acceptable — just document your choice. Whichever way you go, remember the rule from this sub-chapter: every cache needs an invalidation story.
 
 </FaqItem>
 
-<FaqItem question="What about caching carts and orders?">
+<FaqItem question={"What about caching carts and orders?"}>
 
 Never, this chapter. Those routes are user-specific and change on every action — and a cache key that forgets the user's identity could hand one customer's cart to another. They're also writes or near-writes: an order's status must always reflect the latest vendor update. The rule of thumb: cache **shared, slow, read-only** data (the public catalogue) and never cache writes, per-user responses, or cheap routes like `/health` that must report live database status.
 
 </FaqItem>
 
-<FaqItem question="Why is a stale price worse than a slow page?">
+<FaqItem question={"Why is a stale price worse than a slow page?"}>
 
 Because customers forgive slowness but not being misled. If the shop takes an extra second to load, the user shrugs; if the shop shows ₹65 and checkout charges ₹70, the user stops trusting the store — and lost trust is far harder to win back than milliseconds. That's the core lesson of this sub-chapter: speed without correctness is worse than no cache at all. Correctness is the minimum bar, and caching is only allowed on top of it.
 
@@ -143,7 +143,7 @@ Teams enable caching, celebrate response times, then ship outdated stock levels.
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KQSY6EHFNXKC47HQZ63B" />
+<OpenQuestion id="01M34MRBJC85W3T5QZVY12TPBQ" />
 
 ## Next
 

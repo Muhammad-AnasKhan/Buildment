@@ -49,7 +49,7 @@ function parseLabel(label: string) {
   return parts.map((part, index) => {
     if (part.startsWith("**") && part.endsWith("**")) {
       return (
-        <strong key={index} className="font-semibold text-neutral-900">
+        <strong key={index} className="font-semibold text-foreground">
           {part.slice(2, -2)}
         </strong>
       );
@@ -61,7 +61,7 @@ function parseLabel(label: string) {
       return (
         <code
           key={index}
-          className="rounded bg-neutral-100 px-1 py-0.5 font-mono text-[0.9em] text-neutral-800"
+          className="rounded bg-muted px-1 py-0.5 font-mono text-[0.9em] text-foreground"
         >
           {part.slice(1, -1)}
         </code>
@@ -85,8 +85,8 @@ function ChecklistItemRow({
       <label
         className={cn(
           "group flex cursor-pointer items-start gap-3.5 rounded-xl px-3 py-3.5 transition-colors",
-          "hover:bg-white/80",
-          checked && "bg-emerald-50/50 hover:bg-emerald-50/70"
+          "hover:bg-muted/60",
+          checked && "bg-emerald-500/10 hover:bg-emerald-500/15"
         )}
       >
         <Checkbox
@@ -100,8 +100,8 @@ function ChecklistItemRow({
         />
         <span
           className={cn(
-            "min-w-0 flex-1 text-[15px] leading-relaxed text-neutral-800",
-            checked && "text-neutral-500 line-through decoration-neutral-400/80"
+            "min-w-0 flex-1 text-[15px] leading-relaxed text-foreground/90",
+            checked && "text-muted-foreground line-through decoration-muted-foreground/80"
           )}
         >
           {parseLabel(item.label)}
@@ -121,15 +121,15 @@ function ChecklistItemRow({
 
 /** Shared card styling — gate and section checklists use the same look (see 2.16 verify). */
 const CARD_STYLES = {
-  border: "border-neutral-200",
-  headerBg: "bg-neutral-50",
-  headerText: "text-neutral-900",
-  subText: "text-neutral-500",
-  iconBg: "bg-indigo-100",
-  bodyBg: "bg-white",
-  progress: "bg-neutral-100",
+  border: "border-border",
+  headerBg: "bg-muted/50",
+  headerText: "text-foreground",
+  subText: "text-muted-foreground",
+  iconBg: "bg-primary/15",
+  bodyBg: "bg-card",
+  progress: "bg-muted",
   progressFill: "bg-emerald-500",
-  badge: "bg-neutral-200 text-neutral-700",
+  badge: "bg-muted text-muted-foreground",
 } as const;
 
 export function Checklist({

@@ -8,6 +8,10 @@ Before you write `user.model.js`, read how Mongoose expects schemas, refs, and m
 
 <BigWordAlert term="Seed script" plainEnglish="A repeatable script that fills the database with realistic test data so you are never clicking through empty screens." whyItMatters="FreshMarket's seed vendors, stores, and products let you demo the marketplace before any UI exists." />
 
+
+<Predict id="01M34MR8VNMGXZJZF2KKB5SFCB" />
+
+
 ## Why this matters for absolute beginners
 
 Mongoose errors are opaque when fundamentals are shaky — `OverwriteModelError`, populate returning null, validation failing silently on seed. The reads below connect **ERD arrows** to `ref: 'Store'` and embedded `orderItems` arrays. You are not learning a second database; you are learning the **glue** between Chapter 3 diagrams and Chapter 5 files.
@@ -18,31 +22,31 @@ Mongoose errors are opaque when fundamentals are shaky — `OverwriteModelError`
 
 <FaqGroup>
 
-<FaqItem question="Schema vs model — what's the one-line difference?">
+<FaqItem question={"Schema vs model — what's the one-line difference?"}>
 
 A schema is the blueprint; a model is the compiled constructor you actually query. You describe fields, types, and rules in the schema — `email: String`, `required: true` — then call `mongoose.model('User', userSchema)` once to get the model. From then on you use `User.create()`, `User.find()`, `User.findOne()` and never touch the schema again. So: schema defines the shape, model gives you the handle. Define the model once in `user.model.js` and import it elsewhere — if you recompile it in multiple files, Mongoose throws `OverwriteModelError`.
 
 </FaqItem>
 
-<FaqItem question="Why a unique index on email?">
+<FaqItem question={"Why a unique index on email?"}>
 
 Because login does "find the user for this email", and if two users share an email the server can't know whose password to check. The unique index gives you both speed and correctness: email lookups are fast, and duplicate emails are impossible at the database level. You could check with `User.findOne` before registering, but two requests racing at once can both pass the check; a unique index is a hard guarantee the pre-check can't provide. It's the first index to add on User, because Chapter 6 auth depends on email being a reliable key.
 
 </FaqItem>
 
-<FaqItem question="Why does populate return null, and how do I fix it?">
+<FaqItem question={"Why does populate return null, and how do I fix it?"}>
 
 Populate returns null (or just the id) when Mongoose can't find the document your ref points to — usually a mismatched ref name or a missing document. Three things must all be true: the `ref` string matches the registered model name exactly (`'Store'`, not `'store'`), the referenced document actually exists in the database, and you called `.populate('storeId')` on the query. The most common bug is a casing or spelling mismatch, and it fails silently — no error, just a null. If you see null, check the ref string first, then confirm the document exists.
 
 </FaqItem>
 
-<FaqItem question="Pre-save password hash in Chapter 5 or Chapter 6?">
+<FaqItem question={"Pre-save password hash in Chapter 5 or Chapter 6?"}>
 
 Hashing lands in Chapter 6 — in Chapter 5 you only define the `passwordHash` field on the User schema. The model can declare it as a required String now, and the seed may write a placeholder until bcrypt exists, as long as you document it. In Chapter 6 you'll implement hashing in the auth service, used by both register and login, so the hash logic lives in exactly one place. If you put it in a Mongoose pre-save hook now, you'll rewrite it in Chapter 6 anyway — and Chapter 6.5 explains why the service layer is the better home.
 
 </FaqItem>
 
-<FaqItem question="Collection name `users` vs file `user.model.js`?">
+<FaqItem question={"Collection name `users` vs file `user.model.js`?"}>
 
 The file name is just a convention for humans; Mongoose derives the collection name from the model name by lowercasing and pluralizing. `mongoose.model('User', schema)` gives collection `users`, `'Store'` gives `stores`. Be aware Mongoose's pluralizer isn't perfect English — `CartItem` becomes `cartitems`, not `cart_items` or `cartItems`. Knowing the real collection names matters when you inspect seed data in Compass or run raw queries. The file name `user.model.js` is purely organisational; Mongoose never reads it.
 
@@ -207,11 +211,6 @@ Transfer to models in build cluster.
 If an order stored only a product ID, a vendor price change would rewrite history. FreshMarket copies name, unit price, and weight into order items at checkout so customers and vendors always see what was agreed at purchase time.
 
 </InterestingRead>
-
-
-## Before you continue
-
-<OpenQuestion id="01KZP7KP8CJK9RC9QCZ2YAZ1JN" />
 
 ## Next
 

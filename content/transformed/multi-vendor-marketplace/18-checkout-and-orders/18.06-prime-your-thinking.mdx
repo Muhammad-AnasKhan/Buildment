@@ -8,6 +8,10 @@ Before scaffolding the orders module, read how production commerce systems avoid
 
 <BigWordAlert term="Split order" plainEnglish="One shopper checkout creating separate order documents per vendor — each vendor fulfills independently." whyItMatters="FreshMarket is multi-vendor — Green Valley and Baker Bros each get their own order from one cart." />
 
+
+<Predict id="01M34MRB2VK54GZW8G4M83XHK9" />
+
+
 ## Extra FAQ before the build cluster
 
 **Q: I'm scared of checkout — where do I start?**  
@@ -74,11 +78,6 @@ Idempotency prevents duplicate orders from **retries**. Conditional `$inc` preve
 If a checkout request times out, clients and webhooks may retry. Idempotency keys tell Stripe to treat duplicates as the same charge. FreshMarket introduces this pattern where money first enters the system.
 
 </InterestingRead>
-
-
-## Before you continue
-
-<OpenQuestion id="01KZP7KQHDVC99ND9SMNXN4X7G" />
 
 ## Next
 

@@ -12,7 +12,7 @@ type ArticleBreakProps = {
 /** Longer in-course article between major modules — mandatory-style reading break. */
 export function ArticleBreak({ title, subtitle, readMinutes, children }: ArticleBreakProps) {
   return (
-    <div className="not-prose my-10 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+    <div className="not-prose my-10 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
       <div className="border-b border-neutral-200 bg-neutral-950 px-5 py-4 sm:px-8 sm:py-5">
         <div className="flex items-start gap-3">
           <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-white">
@@ -32,7 +32,7 @@ export function ArticleBreak({ title, subtitle, readMinutes, children }: Article
       </div>
       {children ? (
         <div className="px-5 py-6 sm:px-8 sm:py-8">
-          <div className="prose prose-neutral max-w-none text-[15px] leading-relaxed text-neutral-700 prose-headings:font-semibold prose-headings:tracking-tight prose-p:my-3">
+          <div className="prose prose-neutral max-w-none text-[15px] leading-relaxed prose-headings:font-semibold prose-headings:tracking-tight prose-p:my-3">
             {renderProseMarkdown(children)}
           </div>
         </div>

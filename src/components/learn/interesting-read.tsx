@@ -11,8 +11,8 @@ type InterestingReadProps = {
 
 export function InterestingRead({ title, hook, readMinutes, children }: InterestingReadProps) {
   return (
-    <div className="not-prose my-8 overflow-hidden rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50/80 to-white">
-      <div className="flex items-center justify-between gap-3 border-b border-amber-100 bg-amber-50/50 px-5 py-2.5 sm:px-6">
+    <div className="not-prose my-8 overflow-hidden rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-card">
+      <div className="flex items-center justify-between gap-3 border-b border-amber-500/20 bg-amber-500/5 px-5 py-2.5 sm:px-6">
         <div className="flex items-center gap-2">
           <Sparkles className="size-4 text-amber-600" aria-hidden />
           <p className="text-[11px] font-semibold uppercase tracking-widest text-amber-800">
@@ -24,10 +24,10 @@ export function InterestingRead({ title, hook, readMinutes, children }: Interest
         ) : null}
       </div>
       <div className="px-5 py-5 sm:px-6 sm:py-6">
-        <h3 className="text-[15px] font-semibold leading-snug text-neutral-950 sm:text-base">{title}</h3>
-        <p className="mt-2 text-[15px] font-medium leading-relaxed text-amber-950/90">{hook}</p>
+        <h3 className="text-[15px] font-semibold leading-snug text-foreground sm:text-base">{title}</h3>
+        <p className="mt-2 text-[15px] font-medium leading-relaxed text-foreground/90">{hook}</p>
         {children ? (
-          <div className="prose prose-neutral mt-4 max-w-none text-[15px] leading-relaxed text-neutral-700 prose-p:my-2">
+          <div className="prose prose-neutral mt-4 max-w-none text-[15px] leading-relaxed prose-p:my-2">
             {renderProseMarkdown(children)}
           </div>
         ) : null}

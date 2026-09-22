@@ -86,6 +86,8 @@ Concept chapters run shorter on *Build it* but still include applied repo work â
 | 21 | `21-cache-and-search/` | Week 4 | Redis cache with invalidation; text search on index |
 | 22 | `22-async-jobs-and-queues/` | Week 4 | BullMQ jobs on Redis; paid checkout enqueues notify jobs; worker process |
 | 23 | `23-deploy/` | Week 4 | Live HTTPS URL; secrets in env; API + worker survive restart |
+| 24 | `24-inventory-reservations/` | Week 5 | Stock holds at checkout; confirm on payment; ATP; expiry worker |
+| 25 | `25-promotions-and-pricing/` | Week 5 | Coupon rules engine; server-side cart pricing; redemption audit |
 | 99 | `99-closing/` | Ship | Docs, demo video, case study, bar-raiser |
 
 ---
@@ -648,6 +650,52 @@ Concept chapters run shorter on *Build it* but still include applied repo work â
 | `23.16-checklist.md` | Wrap | Definition of Done gate |
 
 **Gate:** Live HTTPS URL; secrets in env only; API and worker survive restart.
+
+---
+
+## 24 â€” Inventory reservations (`24-inventory-reservations/`)
+
+| File | Cluster | What it covers |
+|---|---|---|
+| `24.01-set-the-scene.md` | Open | Post-deploy gap: overselling; ATP vs stockQty |
+| `24.02-why-overselling-hurts-trust.md` | Learn | Race at checkout; grocery trust |
+| `24.03-what-youll-build.md` | Learn | State machine, collection, integrations |
+| `24.04-reserve-vs-decrement.md` | Learn | Two clocks; idempotent confirm |
+| `24.05-prime-your-thinking.md` | Learn | Timeline sketch + predict |
+| `24.06-quiz.md` | Check | Reservation concepts |
+| `24.07-where-the-project-is-now.md` | Build | Baseline before model |
+| `24.08-reservation-schema-and-indexes.md` | Build | StockReservation + ATP helper |
+| `24.09-reserve-stock-at-checkout.md` | Build | 409 before Stripe |
+| `24.10-confirm-and-release-on-payment.md` | Build | Webhook + cancel release |
+| `24.11-expiry-worker-for-holds.md` | Build | BullMQ sweep |
+| `24.12-verify-concurrent-checkout.md` | Build | Parallel test plan |
+| `24.13-recap-and-whats-next.md` | Wrap | Bridge to promotions |
+| `24.14-checklist.md` | Wrap | Gate + evidence URL |
+
+**Gate:** Concurrency + TTL evidence; `availableQty` on reads.
+
+---
+
+## 25 â€” Promotions & pricing (`25-promotions-and-pricing/`)
+
+| File | Cluster | What it covers |
+|---|---|---|
+| `25.01-set-the-scene.md` | Open | Server-owned totals; fraud surface |
+| `25.02-why-never-trust-client-totals.md` | Learn | Trust boundary + Stripe |
+| `25.03-what-youll-build.md` | Learn | Models, routes, pricing service |
+| `25.04-coupon-types-and-rules.md` | Learn | Pipeline; allocation |
+| `25.05-prime-your-thinking.md` | Learn | Multi-vendor discount predict |
+| `25.06-quiz.md` | Check | Pricing trust quiz |
+| `25.07-where-the-project-is-now.md` | Build | Baseline |
+| `25.08-coupon-and-redemption-models.md` | Build | Coupon + CouponRedemption |
+| `25.09-validate-coupon-api.md` | Build | Apply/remove routes |
+| `25.10-recalculate-cart-totals.md` | Build | computeCartPricing |
+| `25.11-snapshot-discounts-on-order.md` | Build | Checkout + webhook redemption |
+| `25.12-rate-limits-and-abuse.md` | Build | Throttle + logging |
+| `25.13-recap-and-whats-next.md` | Wrap | Bridge to Closing |
+| `25.14-checklist.md` | Wrap | Gate + Stripe evidence |
+
+**Gate:** PI amount matches server; redemptions idempotent.
 
 ---
 

@@ -76,37 +76,37 @@ Customer waits for SMTP. One slow vendor notification fails the whole checkout. 
 
 <FaqGroup>
 
-<FaqItem question="What is a queue? I thought Redis was for cache.">
+<FaqItem question={"What is a queue? I thought Redis was for cache."}>
 
 A queue is just a to-do list: jobs line up in order and a worker works through them one at a time. Redis isn't only for caching — it's a fast in-memory store that can hold many kinds of data. Chapter 21 stored cached catalogue strings in it; Chapter 22 stores BullMQ job lists in it. Same Redis server, different key prefixes, so they never collide. Think of the cache as a photograph you look up, and the queue as an inbox where tasks wait their turn.
 
 </FaqItem>
 
-<FaqItem question="Why a separate worker process? Why not just `setTimeout` in the API?">
+<FaqItem question={"Why a separate worker process? Why not just `setTimeout` in the API?"}>
 
 Because `setTimeout` is a timer that lives and dies with your API process. Restart the server and the pending callback is gone; if it throws, nothing retries it; and it shares memory with HTTP traffic, so a burst of notifications could slow checkout for everyone. A worker is a separate process that survives independently, can retry failed jobs, and can scale on its own in production (Chapter 23). That's the whole point of the "sync trap": slow side effects don't belong inside the request handler.
 
 </FaqItem>
 
-<FaqItem question="What if the worker is not running when a checkout happens?">
+<FaqItem question={"What if the worker is not running when a checkout happens?"}>
 
 Nothing breaks. The API enqueues the job and returns 201; the job simply waits in Redis until you start the worker, then it gets processed. That's "eventual" delivery, which is fine for notifications. Compare that with stock decrement — if that waited, customers could over-order, so it stays synchronous. Notifications can wait; order creation and stock can't.
 
 </FaqItem>
 
-<FaqItem question="Do I need real SendGrid/Mailgun for this chapter?">
+<FaqItem question={"Do I need real SendGrid/Mailgun for this chapter?"}>
 
 No. For the gate, a structured `console.log` with a `[NOTIFY]` prefix is enough — you're proving the queue-and-worker pipeline works, not integrating a paid email provider. When you later swap in a real service, the job payload and the processor shape stay the same; only the "send" line inside the processor changes. That's the nice thing about queues: enqueue, retry, and process mechanics are provider-agnostic.
 
 </FaqItem>
 
-<FaqItem question="Should checkout wait until the worker finishes?">
+<FaqItem question={"Should checkout wait until the worker finishes?"}>
 
 No — and the gate actually checks this. When you demo, the 201 response should arrive *before* the worker's notification logs appear in the other terminal. If you `await` the worker's processing inside the checkout handler, the customer is back to staring at a spinner while SMTP takes two seconds: you've rebuilt the very "sync trap" this chapter exists to kill. Enqueue the job, return 201, let the worker do the rest.
 
 </FaqItem>
 
-<FaqItem question="What jobs will I build?">
+<FaqItem question={"What jobs will I build?"}>
 
 Two required and one optional. `order.created`, enqueued after checkout succeeds, notifies each vendor and the customer. `order.statusUpdated`, enqueued after `PATCH /vendor/orders/:id`, tells the customer their order's status changed. Optional: `product.updated`, to bust the catalogue cache asynchronously — a tie-in to Chapter 21. Each job is a small payload describing what happened; the worker runs the matching processor for it.
 
@@ -163,7 +163,7 @@ Sending vendor notification emails inside the payment request adds failure modes
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KQWKXXFA3BV83BSSD9ZW" />
+<OpenQuestion id="01M34MRBQ21WY4WCJ5S5KCJFHW" />
 
 ## Next
 

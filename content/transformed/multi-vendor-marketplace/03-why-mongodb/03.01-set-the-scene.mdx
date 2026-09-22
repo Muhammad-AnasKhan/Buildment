@@ -22,7 +22,7 @@ Before you install Mongoose or paste a connection string (Chapter 4), you'll dec
 
 This is a **design chapter**. There's no new API endpoint to demo yet. The deliverable is understanding + a design file: `docs/erd-draft.md`.
 
-<ProjectPreview id="01KZP7KNZRVAJZ3SSG3A4MSGRV" />
+<ProjectPreview id="01M34MR8E36TQ2ZDF1NED1H0FF" />
 
 ## Why this chapter matters
 
@@ -87,19 +87,19 @@ FreshMarket uses a hybrid: embed small, stable snapshots (like store display nam
 
 <FaqGroup>
 
-<FaqItem question="Why not install MongoDB in Chapter 2?">
+<FaqItem question={"Why not install MongoDB in Chapter 2?"}>
 
 Because you'd be setting up a database before you know what data it has to hold, and that's the fastest way to build a schema you have to throw away. The products in a grocery marketplace don't just have names — they need `unit`, `price`, `stockQty`, and maybe a perishability flag — and orders need price snapshots so a receipt never changes after checkout. Chapters 3–5 make you design the shapes first (the `docs/erd-draft.md`) and only then connect the engine that fits them. Install early and you'll end up fighting a generic schema with copy-paste workarounds exactly when checkout needs it most.
 
 </FaqItem>
 
-<FaqItem question="Is this just reading — does my repo change?">
+<FaqItem question={"Is this just reading — does my repo change?"}>
 
 Your repo changes, just not with code. In sub-chapters 3.8–3.9 you commit `docs/erd-draft.md` — a design document that sketches your collections, their fields, and the relationships between them. That's not busywork: professional teams review a data model on paper before anyone writes a single `mongoose.model()`. So yes, you'll have real git history and a concrete deliverable from this chapter; it's just design-shaped rather than code-shaped.
 
 </FaqItem>
 
-<FaqItem question="I don't know MongoDB deeply. Can I still do this?">
+<FaqItem question={"I don't know MongoDB deeply. Can I still do this?"}>
 
 Yes — this chapter is built for exactly that situation. Sub-chapters 3.4–3.6 introduce SQL and MongoDB side by side using the same FreshMarket entities (users, stores, products, carts, orders), so you compare how each would model the same thing without needing background in either. You don't need to master MongoDB to follow; you need curiosity and a willingness to sketch. The gate is the ERD draft plus being able to explain embed vs reference in your own words — both fully covered here.
 
@@ -140,7 +140,7 @@ This chapter is less typing than Chapter 2, more thinking. Estimated time: half 
 - [ ] You can name the two actors (vendor and customer)
 - [ ] `docs/` folder exists in your repo
 
-<ChapterRecap id="01KZP7KNZRX07NH7H4XF33N24H" />
+<ChapterRecap id="01M34MR8E3GVAPGK0KAXKZRJJR" />
 
 **Next:** Why grocery data is different from generic products — and why that matters for your database choice.
 <InterestingRead title="When SQL still wins" hook="MongoDB is a choice, not a religion." readMinutes={4}>

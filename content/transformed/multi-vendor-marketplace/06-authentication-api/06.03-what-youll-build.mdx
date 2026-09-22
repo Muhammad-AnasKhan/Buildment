@@ -16,25 +16,25 @@ This table is your **contract with Chapter 7**. Every path, status code, and tok
 
 <FaqGroup>
 
-<FaqItem question="Why `/api/auth` prefix?">
+<FaqItem question={"Why `/api/auth` prefix?"}>
 
 To keep your routes organised as the app grows. `/api/auth` groups every authentication endpoint under one path, so `app.js` can mount them all with a single line, and it keeps them clearly separate from future route groups like `/api/products` or `/api/orders`. It also makes the API predictable to anyone reading it: anything under `/api/auth` is about identity.
 
 </FaqItem>
 
-<FaqItem question="Refresh in cookie or JSON body?">
+<FaqItem question={"Refresh in cookie or JSON body?"}>
 
 Either works for the curl tests in this chapter; the difference matters in the browser in Chapter 7. A JSON body is simpler to test with curl, but a browser can't easily move a token from a JSON response into a safe place. An httpOnly cookie is the more secure choice for the browser because JavaScript can't read it, so a script can't steal it. For this course: prove the flow with a body first, then move the refresh token to an httpOnly cookie when you build Chapter 7.
 
 </FaqItem>
 
-<FaqItem question="Is logout required for gate?">
+<FaqItem question={"Is logout required for gate?"}>
 
 No — logging out is about revoking the refresh token, and that's not on the critical path to passing the gate. If you do add it, the meaningful part is revoking the refresh token server-side so it can't be traded for a new access token; clearing tokens on the client alone is cosmetic.
 
 </FaqItem>
 
-<FaqItem question="Where do User models live vs auth routes?">
+<FaqItem question={"Where do User models live vs auth routes?"}>
 
 In separate modules, by design. The Mongoose User and Profile models live in `modules/users/` because they describe the data. The HTTP routes, validation, and token logic live in `modules/auth/` because they describe the identity workflow. That split keeps one module from growing into a pile of unrelated code — the "layer vs module" idea from Chapter 2, applied.
 
@@ -180,7 +180,7 @@ End-to-end:
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KPC1A3YDB3YQWCJ6Y36Z" />
+<OpenQuestion id="01M34MR91KNWDMQTS5X8WF44KG" />
 
 ## Next
 

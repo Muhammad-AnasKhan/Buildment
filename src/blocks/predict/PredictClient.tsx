@@ -88,17 +88,17 @@ export function PredictClient({
 
   return (
     <LearnPanelShell eyebrow="Predict" title={config.prompt} className="my-8">
-      <div className="border-b border-neutral-100 bg-neutral-50/60 px-5 py-4 sm:px-6">
+      <div className="border-b border-border bg-muted/50 px-5 py-4 sm:px-6">
         <div className="flex items-start gap-3">
           <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
             <Route className="size-4" />
           </div>
-          <p className="text-[15px] font-medium leading-snug text-neutral-900 sm:text-base">
+          <p className="text-[15px] font-medium leading-snug text-foreground sm:text-base">
             What happens next?
           </p>
         </div>
         {ctx?.method || ctx?.url ? (
-          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-neutral-200 bg-white px-3 py-2.5 font-mono text-xs">
+          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5 font-mono text-xs">
             {ctx.method ? (
               <span
                 className={cn(
@@ -128,7 +128,7 @@ export function PredictClient({
         multiple={false}
       />
 
-      <div className="border-t border-neutral-100 bg-neutral-50/40 px-5 py-4 sm:px-6">
+      <div className="border-t border-border bg-muted/30 px-5 py-4 sm:px-6">
         {hasAnswered && result ? (
           <div className="space-y-3">
             <div

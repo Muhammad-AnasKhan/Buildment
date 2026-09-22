@@ -7,7 +7,7 @@ export function NavBar({
   links,
   user,
 }: {
-  links: { href: string; label: string }[];
+  links: { href: string; label: string; badge?: number }[];
   user: { name?: string | null; email?: string | null; image?: string | null };
 }) {
   return (
@@ -21,9 +21,14 @@ export function NavBar({
             <Link
               key={link.href}
               href={link.href}
-              className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-neutral-600 transition-colors hover:bg-neutral-100 hover:text-neutral-950"
+              className="relative shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               {link.label}
+              {link.badge != null && link.badge > 0 && (
+                <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-neutral-900 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white">
+                  {link.badge > 99 ? "99+" : link.badge}
+                </span>
+              )}
             </Link>
           ))}
         </nav>

@@ -8,6 +8,10 @@ Before you run `git init` and create folders, read **one** short piece on Node p
 
 <BigWordAlert term="CORS" plainEnglish="Cross-Origin Resource Sharing — browser rules that block or allow requests from one origin (localhost:5173) to another (localhost:4000)." whyItMatters="Your first end-to-end win fails silently without CORS configured — the health check is your CORS test." />
 
+
+<Predict id="01M34MR87Q1V07JT7X8932NFRJ" />
+
+
 ## Why this matters for absolute beginners
 
 Reading fifteen minutes before `git init` feels slow when you want to code. It prevents **false confidence** — copying a layer-based tutorial and discovering at Chapter 11 that "products module" does not exist in your repo. The mandatory reads connect this course's module mandate to how Express routing actually works, so sub-chapter 2.11 is not your first time seeing `app.get` and middleware.
@@ -16,31 +20,31 @@ Reading fifteen minutes before `git init` feels slow when you want to code. It p
 
 <FaqGroup>
 
-<FaqItem question="Do I need to memorize the Express docs?">
+<FaqItem question={"Do I need to memorize the Express docs?"}>
 
 No — you need to know where to look and what matters. Focus on basic routing (`app.get`), `express.json()`, and `Router()` — enough to mount `/health` and understand Chapter 6's POST bodies. Skip template engines and static files until you actually need them. Treat the docs like a dictionary, not a textbook to memorize: read the relevant sections now so sub-chapter 2.11 isn't your first encounter with `app.get`, and look things up whenever you're unsure. The skill is recognizing the tool when you see it, not reciting it from memory.
 
 </FaqItem>
 
-<FaqItem question="Can I skip the feature-vs-layer article if I trust the course?">
+<FaqItem question={"Can I skip the feature-vs-layer article if I trust the course?"}>
 
 Read it anyway — not for the course's sake, but for yours. These mandatory reads exist to replace *false confidence* with real understanding. You chose module-based in 2.4 because the course mandated it; after reading, you can explain in your own words when layer-based works and why growing codebases move toward feature folders. Drop one paragraph in your learning log comparing the two, and the decision stops being "a checklist told me so" and becomes "I chose this with my eyes open." That's the difference between following along and learning.
 
 </FaqItem>
 
-<FaqItem question="Should I read Mongoose or JWT now?">
+<FaqItem question={"Should I read Mongoose or JWT now?"}>
 
 No — scattered reading derails focus, and the course order exists for a reason. Mongoose gets a full chapter in Chapter 5, JWT in Chapter 6, Redis in Chapter 21 — each when your repo is ready for it. Reading ahead feels productive, but you'll hold concepts in your head with nowhere to apply them, and they'll fade by the time you need them. Trust the order: skeleton now, database when there's a folder to connect it to, auth when there are users to protect. Right now, the only useful reads are the two this sub-chapter assigns.
 
 </FaqItem>
 
-<FaqItem question="What if I finish reading and still feel unsure?">
+<FaqItem question={"What if I finish reading and still feel unsure?"}>
 
 That's normal — reading about something is not the same as building it. Re-read 2.4 and 2.5, then complete the sanity-check sentences: business logic for products lives in `server/src/modules/products/`, React gets data via HTTP to the Express API (never a direct database call), and connection strings live in `server/.env`. If any of those three feels fuzzy, that's the exact signal to re-read before you scaffold. Wrong answers now are far cheaper than wrong folders after 2.11.
 
 </FaqItem>
 
-<FaqItem question="Why read about Express before I've written a single route?">
+<FaqItem question={"Why read about Express before I've written a single route?"}>
 
 Because fifteen minutes of reading stops you from building on a guess. If 2.11 is your very first time seeing `app.get` and middleware, you'll copy syntax you don't understand and won't know where to look when it breaks. Reading first means the build steps feel like *applying* knowledge instead of *meeting* it for the first time — like assembling furniture with the manual open rather than discovering a random screw and hoping. It's also how professionals approach new tools: skim the docs, then build with the manual handy.
 
@@ -193,6 +197,3 @@ You are choosing module-based **before** pain forces migration — that's the wi
 - **Next lesson:** Create the repo
 
 When reads are done, continue to **Create the repo** in the sidebar.
-## Before you continue
-
-<OpenQuestion id="01KZP7KNVBBHHD0KTV90SXP167" />

@@ -64,37 +64,37 @@ The customer walks away with one confirmation ("I ordered"). Each vendor sees **
 
 <FaqGroup>
 
-<FaqItem question="Why is checkout harder than cart?">
+<FaqItem question={"Why is checkout harder than cart?"}>
 
 Because a cart is just "maybe I'll buy this" — a wish list you can add to, remove from, and change without real-world consequences. An order is a **committed event**: money is owed, stock leaves the shelf, and the receipt is a legal record. If cart logic breaks, the worst that happens is a confusing UI. If order logic breaks, a vendor packs groceries nobody paid for, a customer's receipt shows the wrong price, and your accounting doesn't add up. That's why checkout gets its own careful server-side pipeline instead of being a button that saves the cart.
 
 </FaqItem>
 
-<FaqItem question="Why one order per store instead of a single combined order?">
+<FaqItem question={"Why one order per store instead of a single combined order?"}>
 
 Because each vendor needs to see only their own lines to pack and deliver. If you created one big order containing Green Valley's and Harbor Market's items together, each vendor's dashboard would be cluttered with another store's products. FreshMarket is a market hall, so fulfilment happens per stall: your server reads the cart, groups the lines by `storeId`, and writes a separate Order document for every store in the basket. The customer clicks one checkout button and gets one confirmation — but behind that, each vendor gets their own receipt.
 
 </FaqItem>
 
-<FaqItem question="Why snapshot the price — can't we just read the product?">
+<FaqItem question={"Why snapshot the price — can't we just read the product?"}>
 
 Because "the product" changes, but the order doesn't. If Green Valley raises basmati rice from ₹120/kg to ₹140/kg next month, and your order history page loads the *current* product price, every old order silently shows ₹140 — the receipt rewrites history. So at checkout you copy the name, price, and unit onto each order line as snapshot fields like `priceAtPurchase`, frozen forever. The order becomes self-contained: what you see on the receipt is exactly what was paid that day, no matter how the catalogue changes later.
 
 </FaqItem>
 
-<FaqItem question="Why reduce stock at checkout and not when I add to cart?">
+<FaqItem question={"Why reduce stock at checkout and not when I add to cart?"}>
 
 Because adding to a cart is intent, not a purchase. If every add reserved stock, vendors would watch stock disappear for orders nobody ever places. Stock should leave the shelf only when the purchase is committed — successful checkout — and it must happen **atomically**, in one safe database operation, so two customers checking out the last bag of rice can't both succeed. One wins, the other gets a clear "not enough stock" error, and the whole checkout fails together rather than half-completing.
 
 </FaqItem>
 
-<FaqItem question="What happens if checkout fails halfway?">
+<FaqItem question={"What happens if checkout fails halfway?"}>
 
 Nothing gets created — that's the fail-all rule. Your server validates every line first: is the product published, is there enough stock? If any line fails, no orders are written and the cart stays intact, so the customer can fix the problem and try again. This prevents the worst case: three orders saved and stock reduced, then the fourth vendor's line fails — leaving a half-created order set, missing stock, and a confused customer. All-or-nothing keeps your orders and stock consistent every time.
 
 </FaqItem>
 
-<FaqItem question="Do I need Stripe or PayPal in this chapter?">
+<FaqItem question={"Do I need Stripe or PayPal in this chapter?"}>
 
 No — payment is Chapter 19's job. In Chapter 18, `POST /checkout` creates your split orders with `paymentStatus: 'pending'`, and you prove the whole pipeline works with curl and Compass. That's deliberate: you learn the hard commerce logic — snapshots, atomic stock, fail-all — without a payment gateway in the way. In Chapter 19 you add Stripe Payment Intents and gate checkout so no order is created until Stripe confirms the payment succeeded. Orders first, money second — each problem solved on its own.
 
@@ -196,7 +196,7 @@ If a checkout request times out, clients and webhooks may retry. Idempotency key
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KQGEQ1T30DEMNVJAF4ZC" />
+<OpenQuestion id="01M34MRB0Z6CP8600GMDMXHKA9" />
 
 ## Next
 

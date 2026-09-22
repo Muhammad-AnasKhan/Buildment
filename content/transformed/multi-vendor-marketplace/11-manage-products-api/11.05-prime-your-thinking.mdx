@@ -8,6 +8,10 @@ Vendor product list may stay unpopulated in Chapter 11 — but **populate** appe
 
 <BigWordAlert term="Input validation" plainEnglish="Rejecting bad product data at the API — negative price, empty name — before touching the database." whyItMatters="FreshMarket uses Zod or similar on product create — garbage in means garbage on shop pages." />
 
+
+<Predict id="01M34MRA0RHFYNV2541X7ABAZK" />
+
+
 ## Two audiences, one collection
 
 The same `products` collection serves two different HTTP routes with two different rules:
@@ -89,11 +93,6 @@ The **stockroom door** (vendor routes) shows everything on the shelves — inclu
 Central warehouses use global SKUs; local vendors may sell loose produce by weight with no barcode at all. FreshMarket models unit, weight, and stock per store so APIs stay honest about what is actually for sale.
 
 </InterestingRead>
-
-
-## Before you continue
-
-<OpenQuestion id="01KZP7KPY2KYBKFEQ5CCSWZBE3" />
 
 ## Next
 

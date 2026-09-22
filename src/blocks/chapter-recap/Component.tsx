@@ -19,7 +19,7 @@ export async function ChapterRecapComponent({ id }: { id: string }) {
       <h4 className="text-sm font-semibold text-emerald-900">Key ideas from this chapter</h4>
       <ul className="mt-3 space-y-2">
         {config.points.map((point, i) => (
-          <li key={i} className="flex items-start gap-2 text-sm text-neutral-700">
+          <li key={i} className="flex items-start gap-2 text-sm text-foreground/85">
             <svg className="mt-0.5 size-4 shrink-0 text-emerald-600" viewBox="0 0 16 16" fill="none">
               <path d="M3 8l3 3 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>

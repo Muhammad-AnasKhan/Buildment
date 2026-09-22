@@ -8,6 +8,10 @@ Before scaffolding auth routes, read how bcrypt and jsonwebtoken behave in Node 
 
 <BigWordAlert term="Access vs refresh token" plainEnglish="Short-lived access token for API calls; longer refresh token to get new access tokens without re-login." whyItMatters="FreshMarket access tokens expire in minutes; refresh tokens keep shoppers logged in across tab sessions." />
 
+
+<Predict id="01M34MR93AAT2WV9GAGTWQ4Z5X" />
+
+
 ## Mandatory reads
 
 Read these four in order. The first two are the tools you'll type into `server/src/` this chapter — read their official READMEs so you use the APIs the way the maintainers intend, not the way an old blog post remembers them.
@@ -127,11 +131,6 @@ requireAuth:
 If access tokens lived for weeks, a stolen token would stay valid for weeks. If they expired every minute, users would log in constantly. FreshMarket uses brief access tokens plus longer refresh tokens — a pattern you will wire on both server and client.
 
 </InterestingRead>
-
-
-## Before you continue
-
-<OpenQuestion id="01KZP7KPD1981ZAXFK58S4J12Z" />
 
 ## Next
 

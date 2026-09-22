@@ -16,31 +16,31 @@ Concrete storage map for FreshMarket client — implement in 7.10 and 7.14.
 
 <FaqGroup>
 
-<FaqItem question="Why useRef instead of useState for the access token?">
+<FaqItem question={"Why useRef instead of useState for the access token?"}>
 
 Both work — the difference is re-renders. `useState` repaints every component that reads that state whenever the value changes, so a silent refresh (which rotates the token) could re-render the whole tree for no visible reason. `useRef` holds the value without triggering any re-render. The catch is that components don't automatically notice ref changes — but that's fine here, because your API client reads the token, not the UI. Either pattern passes the gate; pick one, use it consistently, and note the choice in your learning log.
 
 </FaqItem>
 
-<FaqItem question="Can React read the refresh cookie to debug?">
+<FaqItem question={"Can React read the refresh cookie to debug?"}>
 
 No — and that's by design. `httpOnly` makes the cookie invisible to JavaScript, so `document.cookie` won't show it and neither will `localStorage`. To check it, open the browser's Network tab, click the refresh request, and read the `Set-Cookie` response header — or look under DevTools → Application → Cookies. You'll see the cookie being set and sent without ever needing its value in code. If you can't find it there, the cookie wasn't set, which is a server-side question.
 
 </FaqItem>
 
-<FaqItem question="What is `credentials: 'include'`?">
+<FaqItem question={"What is `credentials: 'include'`?"}>
 
 Browsers don't send cookies on cross-origin requests by default — and your Vite dev server (port 5173) is a different origin from your Express API (port 3000). `credentials: 'include'` is the fetch option that says "yes, send cookies on this request," so the httpOnly refresh cookie actually reaches `/api/auth/refresh`. Forget it and the silent refresh always returns 401, because the cookie never left the browser — the classic "works in curl, fails in browser" bug. One line in the API client fixes it.
 
 </FaqItem>
 
-<FaqItem question="Why protect the refresh token more than the access token?">
+<FaqItem question={"Why protect the refresh token more than the access token?"}>
 
 Because the two tokens aren't equally valuable. The access token expires in ~15 minutes, so even if it's stolen, the damage window is short. The refresh token stays valid for days and can mint new access tokens the whole time — stealing it is like stealing the key to the cash machine instead of one day's cash. That asymmetry drives the whole split: the short-lived token gets the convenient but fragile home (memory), and the long-lived one gets the strongest protection the browser offers (an httpOnly cookie). Match each token's home to how much losing it would cost.
 
 </FaqItem>
 
-<FaqItem question="Why does page reload wipe the access token from memory?">
+<FaqItem question={"Why does page reload wipe the access token from memory?"}>
 
 Memory isn't a storage location — it's temporary working space tied to the running page. On reload the browser tears down the old page and all its variables, then starts fresh, so anything kept only in JavaScript is gone. That's by design, not a bug: the access token never outlives the page session and can't be picked up later. The recovery plan is the boot sequence — the app calls `POST /api/auth/refresh` on mount and rebuilds the token from the cookie before rendering anything. That's exactly what `isLoading` exists to wait for.
 
@@ -165,7 +165,7 @@ Where token placement goes wrong, it usually fails in one of these ways:
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KPH2C3DK2X0QTXJ6NEJS" />
+<OpenQuestion id="01M34MR9A6EJ47R5AYZ25FEPYW" />
 
 ## Next
 

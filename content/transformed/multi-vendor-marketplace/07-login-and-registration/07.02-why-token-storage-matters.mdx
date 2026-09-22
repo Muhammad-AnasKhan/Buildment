@@ -22,31 +22,31 @@ localStorage survives refresh and is one line for any XSS script to read. Memory
 
 <FaqGroup>
 
-<FaqItem question="If XSS can steal the memory token anyway, why bother with memory?">
+<FaqItem question={"If XSS can steal the memory token anyway, why bother with memory?"}>
 
 Because there's a big difference between "stealable if an attack happens" and "sitting in a permanent, easy-to-read location." `localStorage` hands any script your token in one line, and the token stays there for the next visitor too. A memory variable is only reachable while the tab is open — a much smaller window to exploit. The goal isn't to make theft impossible (XSS is bad news regardless) but to make it **not trivial and not persistent**. Memory shrinks the blast radius; httpOnly keeps the long-lived refresh token out of reach entirely.
 
 </FaqItem>
 
-<FaqItem question="What's the difference between XSS and CSRF?">
+<FaqItem question={"What's the difference between XSS and CSRF?"}>
 
 XSS is an attacker getting their script to run on your page — it *steals* things like tokens. CSRF is an attacker tricking your browser into *sending* a request you didn't intend — it *uses* your cookies without ever seeing them. That's why the two tokens need different protections. The Bearer access token travels in a header the browser never auto-sends, so a malicious site can't forge a request carrying it (low CSRF risk). The refresh cookie *is* auto-sent, which is why it needs `SameSite` and the `httpOnly` flag.
 
 </FaqItem>
 
-<FaqItem question="Why can't JavaScript read an httpOnly cookie?">
+<FaqItem question={"Why can't JavaScript read an httpOnly cookie?"}>
 
 `httpOnly` is a flag the server sets on the cookie that tells the browser: store this, send it when the API asks, but never expose it to JavaScript. `document.cookie` won't show it and `localStorage` never touches it, so even if an XSS script runs on your page it cannot grab the refresh token. The browser still attaches the cookie automatically on requests to `/api/auth/refresh` (with `credentials: 'include'`), so your app works without ever reading the value. It's a badge the browser holds for you, not one you carry around.
 
 </FaqItem>
 
-<FaqItem question="What's the difference between localStorage and a variable in memory?">
+<FaqItem question={"What's the difference between localStorage and a variable in memory?"}>
 
 `localStorage` is the browser's long-term filing cabinet — data survives tab closes and restarts, and any script on your site can read it, which is exactly why it's dangerous for tokens. A JavaScript variable lives in memory: fast, private to that tab, and wiped the moment the tab closes or the page reloads. The trade-off is real — a memory token is gone on reload, so the app must silently refresh — but that inconvenience is the point. The access token exists only long enough to be used, not long enough to be harvested at leisure.
 
 </FaqItem>
 
-<FaqItem question="Why do so many tutorials tell beginners to use localStorage?">
+<FaqItem question={"Why do so many tutorials tell beginners to use localStorage?"}>
 
 Because it's the path of least resistance — one line to save, one line to read, and it survives reloads, so demos "just work." What those tutorials skip is the security conversation: any XSS script can read that token in one line, and it sits there permanently. That's why this course treats localStorage for the access token as the anti-pattern to avoid, not the shortcut to copy. Real-world SPAs use the memory + httpOnly split for a reason, and if you can explain this trade-off in your README and viva, you'll understand auth security better than most junior developers.
 
@@ -133,7 +133,7 @@ CORS, missing Authorization headers, and tokens stored where JavaScript cannot r
 
 ## Reflect
 
-<OpenQuestion id="01KZP7KPGF6PMQBEPY3R6HDAXR" />
+<OpenQuestion id="01M34MR997QHSWYHJ7YN95HRFY" />
 
 
 

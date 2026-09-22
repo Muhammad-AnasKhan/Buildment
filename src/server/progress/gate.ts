@@ -13,7 +13,11 @@ export class ChapterLockedError extends Error {
   }
 }
 
-export async function loadCourseGate(courseId: string, enrollmentId: string) {
+export async function loadCourseGate(
+  courseId: string,
+  enrollmentId: string,
+  options?: { bypassLocking?: boolean }
+) {
   const course = await prisma.course.findUnique({
     where: { id: courseId },
     select: {
@@ -40,7 +44,9 @@ export async function loadCourseGate(courseId: string, enrollmentId: string) {
     progressRows.map((row) => [row.chapterId, row.status])
   );
   const orderedIds = flattenChapterIds(course.modules);
-  const lockedIds = lockedChapterIds(orderedIds, progressById, course.sequential);
+  const lockedIds = options?.bypassLocking
+    ? new Set<string>()
+    : lockedChapterIds(orderedIds, progressById, course.sequential);
 
   return {
     sequential: course.sequential,
@@ -55,7 +61,9 @@ export async function assertChapterUnlocked(args: {
   courseId: string;
   enrollmentId: string;
   chapterId: string;
+  bypassLocking?: boolean;
 }) {
+  if (args.bypassLocking) return;
   const gate = await loadCourseGate(args.courseId, args.enrollmentId);
   if (!gate) return;
   if (!gate.lockedIds.has(args.chapterId)) return;

@@ -21,13 +21,6 @@ summary: "**Why this step matters:** Short-lived access JWT is what `requireAuth
 | Expiry | `config.jwtAccessExpiry` — default `15m` |
 | Transport | `Authorization: Bearer <token>` |
 
-
-## Try it yourself
-
-Practice the core logic from this lesson in the **code lab** below — write real JavaScript, then click **Check my code**. Same editor style as the course's code blocks.
-
-<CodeExercise id="01KZP7KPEQ0BFHQCK261Y99DEX" />
-
 ## Payload contract
 
 ```json
@@ -102,6 +95,11 @@ git commit -m "feat(auth): standardize short-lived access JWT with role claim"
 - [ ] Tampered token fails verify
 
 <RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
+
+
+## Before you continue
+
+<OpenQuestion id="01M34MR9621CRS0W33JB8QY3SM" />
 
 ## Next
 

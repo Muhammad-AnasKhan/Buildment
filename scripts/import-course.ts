@@ -33,8 +33,6 @@ import { ulid } from "ulid";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, type Prisma } from "../src/generated/prisma/client";
 import { SEED_COURSE, SEED_USERS } from "../src/lib/seed-data";
-import { codeExerciseForLesson, codeExerciseToYaml } from "./code-exercise-data";
-
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const COURSE_SOURCE_DIR = path.resolve(__dirname, "../content/import/multi-vendor-marketplace");
 const COURSE_OUTPUT_DIR = path.resolve(__dirname, "../content/transformed/multi-vendor-marketplace");
@@ -66,12 +64,14 @@ const CHAPTER_NAMES: Record<number, string> = {
   21: "Cache and search",
   22: "Async jobs and queues",
   23: "Deploy",
+  24: "Inventory reservations",
+  25: "Promotions & pricing",
   99: "Closing",
 };
 
 type PendingBlock = {
   id: string;
-  type: "QUIZ" | "OPEN_QUESTION" | "CODE" | "CHAPTER_RECAP" | "PROJECT_PREVIEW" | "PREDICT";
+  type: "QUIZ" | "OPEN_QUESTION" | "CHAPTER_RECAP" | "PROJECT_PREVIEW" | "PREDICT";
   config: Prisma.InputJsonValue;
   required: boolean;
 };
@@ -80,9 +80,7 @@ function blockPlaceholderTag(block: PendingBlock): string {
   const tag =
     block.type === "QUIZ"
       ? "Quiz"
-      : block.type === "CODE"
-        ? "CodeExercise"
-        : block.type === "CHAPTER_RECAP"
+      : block.type === "CHAPTER_RECAP"
           ? "ChapterRecap"
           : block.type === "PROJECT_PREVIEW"
             ? "ProjectPreview"
@@ -153,12 +151,14 @@ type ParsedLesson = {
   slugPart: string;
   title: string;
   summary: string | null;
+  estimatedMinutes: number | null;
+  readerMode: "DEFAULT" | "QUIZ";
   source: string;
   blocks: PendingBlock[];
   isMilestone: boolean;
 };
 
-function readModuleDirs(): { dirName: string; moduleNum: number }[] {
+export function readModuleDirs(): { dirName: string; moduleNum: number }[] {
   return fs
     .readdirSync(COURSE_SOURCE_DIR, { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && /^\d+-/.test(entry.name))
@@ -166,7 +166,7 @@ function readModuleDirs(): { dirName: string; moduleNum: number }[] {
     .sort((a, b) => a.moduleNum - b.moduleNum);
 }
 
-function readLessonFiles(moduleDir: string): { fileName: string; lessonNum: number; slugPart: string }[] {
+export function readLessonFiles(moduleDir: string): { fileName: string; lessonNum: number; slugPart: string }[] {
   return fs
     .readdirSync(path.join(COURSE_SOURCE_DIR, moduleDir))
     .filter((name) => /^\d+\.\d+-.+\.md$/.test(name))
@@ -357,19 +357,25 @@ function parseFaqPairs(section: string): FaqPair[] {
   return items;
 }
 
-/** Turn prose Q/A lists into structured FaqGroup MDX for readable callouts. */
+/**
+ * Turn prose Q/A lists into structured FaqGroup MDX.
+ * Stop before the next heading or a block-level component so a diagram that
+ * follows the questions is not folded into the last answer and escaped.
+ * Question text is a JS string expression — JSX quoted attributes do not
+ * understand `\"`, so a comma after an escaped quote breaks the tag.
+ */
 function transformFaqSections(body: string): string {
   return body.replace(
-    /(?:^|\n)(## Common (?:beginner )?questions)\n\n([\s\S]*?)(?=\n## |\n<ChapterRecap|\s*$)/g,
+    /(?:^|\n)(## Common (?:beginner )?questions)\n\n([\s\S]*?)(?=\n## |\n<[A-Z]|\s*$)/g,
     (full, heading: string, section: string) => {
       const pairs = parseFaqPairs(section);
       if (pairs.length === 0) return full;
 
       const items = pairs
-        .map(
-          ({ question, answer }) =>
-            `<FaqItem question=${JSON.stringify(question)}>\n\n${escapeMdxInline(answer)}\n\n</FaqItem>`
-        )
+        .map(({ question, answer }) => {
+          const questionAttr = `{${JSON.stringify(question)}}`;
+          return `<FaqItem question=${questionAttr}>\n\n${escapeMdxInline(answer)}\n\n</FaqItem>`;
+        })
         .join("\n\n");
 
       const prefix = full.startsWith("\n") ? "\n" : "";
@@ -385,76 +391,10 @@ function splitOutsideFences(text: string, pattern: RegExp, transform: (part: str
   return parts.map((part, i) => (i < parts.length - 1 ? transform(part) + matches[i] : transform(part))).join("");
 }
 
-/** ```code``` fenced YAML -> CodeExercise blocks with server-side tests. */
-function transformCodeExerciseFences(body: string, pushBlock: (b: PendingBlock) => string): string {
-  return body.replace(/```code\n([\s\S]*?)```/g, (_match, yamlText: string) => {
-    const parsed = yaml.load(yamlText) as {
-      mode?: "complete" | "implement";
-      prompt: string;
-      starterCode: string;
-      filename?: string;
-      hints?: string[];
-      explanation?: string;
-      solution?: string;
-      tests: { name: string; code: string }[];
-    };
-
-    const id = ulid();
-    return pushBlock({
-      id,
-      type: "CODE",
-      required: true,
-      config: {
-        mode: parsed.mode ?? "implement",
-        language: "javascript",
-        prompt: parsed.prompt,
-        starterCode: parsed.starterCode,
-        filename: parsed.filename,
-        hints: parsed.hints,
-        explanation: parsed.explanation,
-        solution: parsed.solution,
-        allowRetry: true,
-        tests: parsed.tests,
-      },
-    });
-  });
-}
-
-/** Inject a contextual code exercise before the first build section when defined in code-exercise-data. */
-function injectCodeExerciseFence(body: string, moduleDir: string, fileName: string): string {
-  const exercise = codeExerciseForLesson(moduleDir, fileName);
-  if (!exercise || body.includes("```code\n")) return body;
-
-  const fence = codeExerciseToYaml(exercise);
-  const section = `\n## Try it yourself\n\nPractice the core logic from this lesson in the **code lab** below — write real JavaScript, then click **Check my code**. Same editor style as the course's code blocks.\n\n${fence}\n\n`;
-
-  const anchors = [
-    /^## What you must implement/m,
-    /^## Step 1/m,
-    /^## Step 2 — Create/m,
-    /^## Behaviour contract — you implement/m,
-    /^## Service behaviour \(implement/m,
-    /^## Middleware behaviour \(implement/m,
-    /^## Product schema specification/m,
-    /^## Payload contract/m,
-    /^## Access token storage/m,
-    /^## Core helper contract/m,
-    /^## Filter helper contract/m,
-    /^## Implementation/m,
-  ];
-
-  for (const anchor of anchors) {
-    if (anchor.test(body)) {
-      return body.replace(anchor, (match) => `${section}${match}`);
-    }
-  }
-  return body;
-}
-
 /** ```predict``` fenced YAML -> Predict block + placeholder tag. */
 function transformPredictFences(body: string, pushBlock: (b: PendingBlock) => string): string {
-  return body.replace(/```predict\n([\s\S]*?)```/g, (_match, yamlText: string) => {
-    const parsed = yaml.load(yamlText) as {
+  return body.replace(/```predict\n([\s\S]*?)```/g, (match, yamlText: string) => {
+    let parsed: {
       prompt: string;
       options: { id: string; label: string }[];
       correctOptionId: string;
@@ -467,10 +407,12 @@ function transformPredictFences(body: string, pushBlock: (b: PendingBlock) => st
         responseHint?: string;
       };
     };
-
-    if (!parsed.prompt || !parsed.options?.length || !parsed.correctOptionId) {
-      return _match;
+    try {
+      parsed = yaml.load(yamlText) as typeof parsed;
+    } catch {
+      return match;
     }
+    if (!parsed?.prompt || !parsed.options?.length || !parsed.correctOptionId) return match;
 
     const id = ulid();
     return pushBlock({
@@ -491,14 +433,26 @@ function transformPredictFences(body: string, pushBlock: (b: PendingBlock) => st
 
 /** ```quiz``` fenced YAML -> real Quiz/OpenQuestion blocks + placeholder tags. */
 function transformQuizFences(body: string, pushBlock: (b: PendingBlock) => string): string {
-  return body.replace(/```quiz\n([\s\S]*?)```/g, (_match, yamlText: string) => {
-    const parsed = yaml.load(yamlText) as {
+  return body.replace(/```quiz\n([\s\S]*?)```/g, (match, yamlText: string) => {
+    let parsed: {
       type: "mcq" | "short";
       question: string;
       options?: string[];
       correct?: number;
       modelAnswer?: string;
+      allowSpeechInput?: boolean;
+      allowUrl?: boolean;
+      urlLabel?: string;
+      urlRequired?: boolean;
+      urlHint?: string;
+      minWords?: number;
     };
+    try {
+      parsed = yaml.load(yamlText) as typeof parsed;
+    } catch {
+      return match;
+    }
+    if (!parsed?.question) return match;
 
     if (parsed.type === "mcq" && parsed.options && typeof parsed.correct === "number") {
       const options = parsed.options.map((label, i) => ({ id: `opt-${i}`, label }));
@@ -523,7 +477,59 @@ function transformQuizFences(body: string, pushBlock: (b: PendingBlock) => strin
       id,
       type: "OPEN_QUESTION",
       required: true,
-      config: { prompt: parsed.question, minWords: 0, sampleAnswer: parsed.modelAnswer },
+      config: {
+        prompt: parsed.question,
+        minWords: parsed.minWords ?? 0,
+        sampleAnswer: parsed.modelAnswer,
+        allowSpeechInput: parsed.allowSpeechInput ?? false,
+        allowUrl: parsed.allowUrl ?? false,
+        urlLabel: parsed.urlLabel,
+        urlRequired: parsed.urlRequired ?? false,
+        urlHint: parsed.urlHint,
+      },
+    });
+  });
+}
+
+/** ```openquestion``` fenced YAML -> OpenQuestion with optional speech / URL fields. */
+function transformOpenQuestionFences(body: string, pushBlock: (b: PendingBlock) => string): string {
+  return body.replace(/```openquestion\n([\s\S]*?)```/g, (match, yamlText: string) => {
+    let parsed: {
+      prompt: string;
+      minWords?: number;
+      required?: boolean;
+      allowSpeechInput?: boolean;
+      speechPrimary?: boolean;
+      submissionMode?: "text" | "url" | "url_required" | "article" | "video_demo";
+      allowUrl?: boolean;
+      urlLabel?: string;
+      urlRequired?: boolean;
+      urlHint?: string;
+      modelAnswer?: string;
+    };
+    try {
+      parsed = yaml.load(yamlText) as typeof parsed;
+    } catch {
+      return match;
+    }
+    if (!parsed?.prompt) return match;
+    const id = ulid();
+    return pushBlock({
+      id,
+      type: "OPEN_QUESTION",
+      required: parsed.required ?? true,
+      config: {
+        prompt: parsed.prompt,
+        minWords: parsed.minWords ?? 0,
+        sampleAnswer: parsed.modelAnswer,
+        allowSpeechInput: parsed.allowSpeechInput ?? false,
+        speechPrimary: parsed.speechPrimary ?? false,
+        submissionMode: parsed.submissionMode ?? "text",
+        allowUrl: parsed.allowUrl ?? false,
+        urlLabel: parsed.urlLabel,
+        urlRequired: parsed.urlRequired ?? false,
+        urlHint: parsed.urlHint,
+      },
     });
   });
 }
@@ -580,14 +586,15 @@ function transformMiniSelfCheck(body: string, pushBlock: (b: PendingBlock) => st
   return out.join("\n");
 }
 
-/** `## Reflect` prose questions become optional OpenQuestion blocks. */
+/** `## Reflect` prose questions become optional OpenQuestion blocks. Only the first paragraph is consumed. */
 function transformReflectSection(body: string, pushBlock: (b: PendingBlock) => string): string {
-  return body.replace(/^## Reflect\n\n([\s\S]*?)(?=\n## |\s*$)/m, (_match, content) => {
+  return body.replace(/^## Reflect\n\n([\s\S]*?)(?=\n\n|\n## |$)/m, (_match, content) => {
     const prompt = content
       .trim()
       .split("\n")
       .map((line: string) => line.trim())
-      .find(Boolean);
+      .filter(Boolean)
+      .join(" ");
     if (!prompt) return "## Reflect\n\n";
     const block = pushBlock({
       id: ulid(),
@@ -618,7 +625,7 @@ function addLessonCheckpoint(body: string, pushBlock: (b: PendingBlock) => strin
   return `${body.trimEnd()}${section}\n`;
 }
 
-function parseLesson(moduleNum: number, moduleDir: string, fileName: string, lessonNum: number, slugPart: string): ParsedLesson {
+export function parseLesson(moduleNum: number, moduleDir: string, fileName: string, lessonNum: number, slugPart: string): ParsedLesson {
   const raw = fs.readFileSync(path.join(COURSE_SOURCE_DIR, moduleDir, fileName), "utf8");
   const { frontmatter, body } = parseFrontmatter(raw);
 
@@ -637,11 +644,10 @@ function parseLesson(moduleNum: number, moduleDir: string, fileName: string, les
     source = normalizeGateLearningLog(source);
   }
   source = normalizePlaceholderUrls(source);
-  source = injectCodeExerciseFence(source, moduleDir, fileName);
   source = transformPresentationBlocks(source, pushBlock);
   source = transformQuizFences(source, pushBlock);
+  source = transformOpenQuestionFences(source, pushBlock);
   source = transformPredictFences(source, pushBlock);
-  source = transformCodeExerciseFences(source, pushBlock);
   source = transformMiniSelfCheck(source, pushBlock);
   source = transformReflectSection(source, pushBlock);
   source = transformFaqSections(source);
@@ -656,12 +662,25 @@ function parseLesson(moduleNum: number, moduleDir: string, fileName: string, les
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 
+  const stepType = String(frontmatter.stepType ?? "").toLowerCase();
+  const estimatedRaw = frontmatter.estimatedMinutes;
+  const estimatedMinutes =
+    typeof estimatedRaw === "number"
+      ? estimatedRaw
+      : typeof estimatedRaw === "string"
+        ? parseInt(estimatedRaw, 10)
+        : null;
+  const readerMode =
+    stepType === "quiz" || /-quiz\.md$/.test(fileName) ? ("QUIZ" as const) : ("DEFAULT" as const);
+
   return {
     moduleNum,
     lessonNum,
     slugPart,
     title: cleanTitle(frontmatter.title as string | undefined, fallbackTitle),
     summary: (frontmatter.summary as string | undefined)?.trim() || null,
+    estimatedMinutes: Number.isFinite(estimatedMinutes) ? estimatedMinutes : null,
+    readerMode,
     source: source.trim() + "\n",
     blocks,
     isMilestone,
@@ -702,6 +721,15 @@ async function upsertCourse() {
 }
 
 async function main() {
+  const { findBrokenChapters } = await import("./validate-course-source");
+  const { total, failed } = findBrokenChapters();
+  if (failed.length > 0) {
+    console.error(`Refusing to import — ${failed.length} of ${total} chapters do not compile:`);
+    for (const failure of failed) console.error(`  ${failure.file}: ${failure.error}`);
+    throw new Error("Course MDX validation failed");
+  }
+  console.log(`MDX ok: ${total} chapters`);
+
   const course = await upsertCourse();
   fs.rmSync(COURSE_OUTPUT_DIR, { recursive: true, force: true });
 
@@ -741,6 +769,8 @@ async function main() {
           title: lesson.title,
           summary: lesson.summary,
           order: lessonNum,
+          estimatedMinutes: lesson.estimatedMinutes,
+          readerMode: lesson.readerMode,
           source: lesson.source,
           compiled: lesson.source,
           isMilestone: lesson.isMilestone,
@@ -753,6 +783,8 @@ async function main() {
           title: lesson.title,
           summary: lesson.summary,
           order: lessonNum,
+          estimatedMinutes: lesson.estimatedMinutes,
+          readerMode: lesson.readerMode,
           source: lesson.source,
           compiled: lesson.source,
           isMilestone: lesson.isMilestone,
@@ -808,11 +840,17 @@ async function main() {
   console.log(`Blocks:   ${blockCount}`);
 }
 
-main()
-  .catch((err) => {
-    console.error(err);
-    process.exitCode = 1;
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+const invokedDirectly =
+  process.argv[1] != null &&
+  path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (invokedDirectly) {
+  main()
+    .catch((err) => {
+      console.error(err);
+      process.exitCode = 1;
+    })
+    .finally(async () => {
+      await prisma.$disconnect();
+    });
+}

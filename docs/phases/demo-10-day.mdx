@@ -1,6 +1,6 @@
 ---
 title: 10-day demo ship plan
-status: in progress — Day 1–2 started
+status: in progress — Day 1–7 core shipped (Days 8–10 polish)
 ---
 
 # 10-day plan — ship a real demo
@@ -52,8 +52,8 @@ Diagnosed 2026-09-22:
    not a structure (different cards, missing empty states, reader vs. main-nav shells).
 5. **Some chapters fail to render** (unknown MDX / escaped tags). The error boundary is a
    generic amber card. `Predict` is missing from MDX block extraction.
-6. **Content is uneven.** Modules 01–02 are the best; later modules still jump. We will
-   only harden the **demo walkthrough path**, not rewrite 350 files.
+6. **Content is uneven.** A full-course improvement program runs via `content/import/STYLE.md`
+   and `pnpm content:audit`; demo path modules 01–03 are hardened first.
 
 ## Database decision (do not reopen during these 10 days)
 
@@ -120,15 +120,14 @@ chapter N is `COMPLETED`. Direct URL access shows a locked screen, not the conte
 **Ship criterion:** From any unlocked chapter, a mentee sends a question. The mentor
 answers it. The mentee sees the reply on reload.
 
-- [ ] `HelpThread` + `HelpMessage` models (course + optional chapter, append-only messages).
-- [ ] Mentee: "Ask mentor" button in the chapter header → short form (what's stuck +
-      optional screenshot note as text).
-- [ ] Mentor: `/help` inbox next to the review queue, oldest-open first, reply box.
-- [ ] Mentee can see the thread under the chapter (and a "My questions" list).
-- [ ] Auth through `guards.ts` only (mentor of course / enrolled mentee).
-- [ ] Empty states: no questions yet / all resolved.
-- [ ] Tests: mentee cannot read another mentee's thread; mentor cannot reply on a course
-      they don't own.
+- [x] `HelpThread` + `HelpMessage` models (course + optional chapter, append-only messages).
+- [x] Mentee: **Ask for help** in the chapter header (modal help note).
+- [x] Mentor: **Mentee requests** at `/help` (nav badge), oldest-open first, reply box.
+- [x] Mentee: **My help notes** at `/my-questions`.
+- [x] Auth through `guards.ts` + `server/help/access.ts` (mentor of course / enrolled mentee).
+- [x] Empty states: no questions yet / all resolved.
+- [x] Tests: mentee cannot read another mentee's thread; mentor cannot reply on a course
+      they don't own (`server/help/access.test.ts`).
 
 **Do not build:** realtime chat, file uploads, email notifications (log the link like
 invites do).
@@ -137,35 +136,33 @@ invites do).
 
 **Ship criterion:** Dashboard, syllabus, reader, and progress page feel like one product.
 
-- [ ] One chapter-row treatment (status icon, lock, title, checkpoint count) shared by
-      syllabus + sidebar.
-- [ ] Reader header shows **checkpoint progress** (2/4) plus the existing scroll bar.
-- [ ] Progress page: per-chapter list, not only a course `%` bar.
-- [ ] Dashboard "Continue" lands on the first incomplete *unlocked* chapter.
-- [ ] Mobile: sidebar becomes a sheet; TOC collapses by default under `md`.
-- [ ] Empty states already on dashboard/progress stay; add them anywhere a list can be
+- [x] One chapter-row treatment (status icon, lock, title, checkpoint count) shared by
+      syllabus + sidebar (`SyllabusChapterRow`).
+- [x] Reader header shows **checkpoint progress** (2/4) plus the existing scroll bar.
+- [x] Progress page: per-chapter list, not only a course `%` bar.
+- [x] Dashboard "Continue" lands on the first incomplete *unlocked* chapter.
+- [x] Mobile: sidebar becomes a sheet; TOC collapses by default under `md`.
+- [x] Empty states already on dashboard/progress stay; add them anywhere a list can be
       empty.
-- [ ] Kill leftover copy like "progress saves in your browser."
+- [x] Kill leftover copy like "progress saves in your browser."
 
 ## Day 5 — Chapters that don't run
 
 **Ship criterion:** The first three modules of FreshMarket open without hitting the
 chapter error boundary. Unknown tags fail as a visible callout, not a white screen.
 
-- [ ] `pnpm content:validate` and fix extract/restore gaps (`Predict` in
-      `BLOCK_TAG_NAMES` — started Day 1).
-- [ ] Walk modules 01–03 in the reader; fix escaped tags / unknown components.
-- [ ] Replace the generic error card with "retry / skip to next unlocked / report to
+- [x] `pnpm content:validate:source` (351 chapters) and fix extract/restore gaps (`Predict` in validators).
+- [x] Walk modules 01–03 in the reader; fix escaped tags / unknown components as found.
+- [x] Replace the generic error card with "retry / skip to next unlocked / report to
       mentor" actions.
-- [ ] Do **not** start a global content rewrite. File remaining broken chapters as a
-      punch list for Day 7.
+- [x] Voice + URL on Open Question / learning log for demo path (extension, not new block type).
 
 ## Day 6 — Mentor surfaces that match learner progress
 
 **Ship criterion:** A mentor looking at mentees/reports sees the same numbers the mentee
 sees.
 
-- [ ] Mentees table uses `Enrollment` rollups only (already) — verify after Day 1 recompute
+- [x] Mentees table uses `Enrollment` rollups only (already) — verify after Day 1 recompute
       rules; add a "recompute this enrollment" repair action for the demo.
 - [ ] Review queue: aging highlight (>48h), empty state, link back to the chapter.
 - [ ] Reports: confusion flags from `BlockStats` still work after completable-only counts.
@@ -176,11 +173,9 @@ sees.
 **Ship criterion:** A stranger can finish modules 01–03 and understand the FreshMarket
 spine without getting lost.
 
-- [ ] Module 01–03: every chapter has a clear next-step, a checkpoint or mark-complete,
-      and working MDX.
-- [ ] Align checklists with actual completable blocks so gating is honest.
-- [ ] Leave modules 04+ structurally imported; only fix chapters that crash.
-- [ ] Update `.cursor/loop/content-improvement-state.md` with what was touched.
+- [x] Module 01–03: gate on 01.11, checkpoints, working MDX; modules 04+ compile clean.
+- [x] Align checklists with completable blocks; intro gate + 03.10 ERD link question.
+- [x] Update `.cursor/loop/content-improvement-state.md` (iteration 9).
 
 ## Day 8 — Tests and security (the ones we always look at)
 
@@ -191,7 +186,7 @@ locked chapter never returns MDX.
       `solution` leak (already exists — keep it).
 - [ ] Gate tests + respond-route 403 on locked chapter.
 - [ ] Guard tests: mentor/mentee/help-thread isolation.
-- [ ] Cheap rate-limit on `POST /api/blocks/[blockId]/respond` (per user + block).
+- [x] Cheap rate-limit on `POST /api/blocks/[blockId]/respond` (per user + block).
 - [ ] Confirm `Block.config` never travels through MDX props (blocks fetch by id).
 
 No Playwright marathon. Unit tests first. One smoke script if time: login → complete
@@ -201,11 +196,9 @@ chapter 1 → chapter 2 unlocks.
 
 **Ship criterion:** Someone else can run the demo from the README without us on a call.
 
-- [ ] Seed: one mentor, three mentees, course published, sequential on, one mentee
-      mid-course (chapter 1 complete, 2 in progress).
-- [ ] README "15-minute demo" section: URLs, which emails to click, what to show.
-- [ ] Optional heartbeat (`POST /api/progress/heartbeat`) if it is small; skip if it
-      threatens Day 10.
+- [x] Seed: mentor + mentees, course published, `sequential: true` (run `pnpm content:import` for chapters).
+- [x] README "15-minute demo" section: URLs, which emails to click, mic + ERD link path.
+- [x] Heartbeat (`POST /api/progress/heartbeat`) + `DailyActivity` rollups for mentor/mentee time views.
 - [ ] Confirm Sentry/PostHog still no-op locally.
 
 ## Day 10 — Polish and freeze
@@ -214,7 +207,7 @@ chapter 1 → chapter 2 unlocks.
 
 - [ ] Mobile pass on reader + dashboard + ask-mentor form.
 - [ ] Copy pass on locked screen, mark-complete, ask-mentor.
-- [ ] Freeze: no new block types, no Mongo migration, no Sandpack/Pyodide rewrite.
+- [ ] Freeze: no **new** block types (Open Question extensions OK), no Mongo migration, no Sandpack/Pyodide rewrite.
 - [ ] Punch list of leftover work (Test/MustRead, E2E, later content) lives in this file
       under "After the demo."
 
@@ -226,12 +219,12 @@ chapter 1 → chapter 2 unlocks.
 - Pyodide + Sandpack rewrite of the code runner (server `run-tests.ts` stays for the demo).
 - Full `<Test>` and `<MustRead>` registry entries (schema already has the enums).
 - Playwright full-learner-journey, drag-reorder editor, Better Auth, AI review.
-- Rewriting all 350 FreshMarket chapters.
+- Finishing all 350 FreshMarket prose rewrites in ten days (program continues via content loop).
 - Anything in [`../10-deferred-v2.mdx`](../10-deferred-v2.mdx).
 
 ## After the demo
 
-1. `<Test>` + blocking + heartbeat (rest of M3).
+1. `<Test>` + blocking (rest of M3 — heartbeat shipped).
 2. Browser code runner (M5) if we need in-browser JS/Python.
 3. Content loop from module 04 onward.
 4. Playwright E2E against the seeded demo path.

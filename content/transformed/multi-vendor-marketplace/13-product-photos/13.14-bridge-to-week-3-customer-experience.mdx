@@ -52,31 +52,31 @@ Week 2 you built **stalls** (stores) and **shelves** (products). Week 3 you buil
 
 <FaqGroup>
 
-<FaqItem question="Do I delete the vendor pages?">
+<FaqItem question={"Do I delete the vendor pages?"}>
 
 No — delete nothing. The vendor dashboard stays exactly as it is: vendors still manage their stall at `/vendor/products`, create products, and upload photos. Week 3 is additive — you build customer-facing pages like `/shop` and `/cart` that sit beside the vendor UI in the same codebase. Both sides read the same MongoDB collection, just through different routes. Throwing away the vendor work would also break your seed data pipeline, and customers need those published products to browse in the first place.
 
 </FaqItem>
 
-<FaqItem question="Why another chapter before the shop UI?">
+<FaqItem question={"Why another chapter before the shop UI?"}>
 
 Same rhythm the course has followed all along: API first, UI second — Chapters 6→7, 11→12, and now 14→15. Chapter 14 builds `GET /products` so the Chapter 15 React grid has real, paginated data from the server instead of hardcoded arrays you throw away. If you built the shop screen first, you'd invent a fake data shape and then rework the whole page once the real API arrived. A stable contract first turns the UI step into mostly wiring.
 
 </FaqItem>
 
-<FaqItem question="Do customers need to log in to browse?">
+<FaqItem question={"Do customers need to log in to browse?"}>
 
 Not necessarily. The course's public catalogue allows browsing without a JWT — anyone can look in the shop window. Login becomes necessary once a customer wants to *do* something persistent: adding to a cart (Chapters 16–17) and checking out (Chapter 18) require a logged-in customer account. So plan for two gates: reading publicly, and acting as a customer. Chapter 14's spec defines the public read; the cart chapters add the auth requirement.
 
 </FaqItem>
 
-<FaqItem question="Why will my one cart split into two orders?">
+<FaqItem question={"Why will my one cart split into two orders?"}>
 
 Because a marketplace has one customer but many vendors. You drop tomatoes from Green Valley and bread from Harbor Market into a single basket and pay once — but behind the scenes each stall is a separate business that needs its own order and its own money. At checkout, the system groups your cart lines by `storeId` and creates one order per vendor (Chapter 18). Your cart page will even show those vendor sections, so the split never surprises the shopper.
 
 </FaqItem>
 
-<FaqItem question="Do customers create products too?">
+<FaqItem question={"Do customers create products too?"}>
 
 No — customers browse and buy; they never create products. Products are written by vendors through their dashboard, and customers see only the published, in-stock ones through the public catalogue. That's the marketplace pattern: one collection of product documents, two very different doors — a write door for vendors, a read door for customers. It's also a neat interview line: two routes, one MongoDB collection.
 
@@ -123,7 +123,7 @@ Vendors still manage inventory at `/vendor/products`. Customers browse at `/prod
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KQ56C24BWB4TADM7CH3N" />
+<OpenQuestion id="01M34MRADX5KW3QBQS3W7Q6KG8" />
 
 ## Next
 

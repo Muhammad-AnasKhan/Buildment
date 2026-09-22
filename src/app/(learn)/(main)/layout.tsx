@@ -4,6 +4,7 @@ import { NavBar } from "@/components/nav-bar";
 const LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/progress", label: "My progress" },
+  { href: "/my-questions", label: "My help notes" },
 ];
 
 export default async function LearnMainLayout({ children }: { children: React.ReactNode }) {

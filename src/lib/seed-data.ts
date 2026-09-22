@@ -6,7 +6,14 @@ export const SEED_USERS = [
   { email: "mentee1@buildment.dev", name: "Ada Mentee", role: "MENTEE" as const },
   { email: "mentee2@buildment.dev", name: "Ben Mentee", role: "MENTEE" as const },
   { email: "mentee3@buildment.dev", name: "Cy Mentee", role: "MENTEE" as const },
-];
+] as const;
+
+const SEED_TEST_EMAILS: Set<string> = new Set(SEED_USERS.map((user) => user.email));
+
+/** Dev-login seed accounts (`pnpm db:seed`). */
+export function isSeedTestEmail(email: string): boolean {
+  return SEED_TEST_EMAILS.has(email);
+}
 
 // Mirrors content/import/multi-vendor-marketplace/COURSE-OUTLINE.md — the
 // actual chapters/lessons/quizzes are populated by scripts/import-course.ts;

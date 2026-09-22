@@ -4,30 +4,13 @@ import { ArrowLeft, Lock } from "lucide-react";
 import { prisma } from "@/server/db";
 import { ForbiddenError, requireEnrolledMentee } from "@/server/auth/guards";
 import { CourseOverviewHero } from "@/components/learn/course-overview-hero";
-import { CourseSyllabus, type SyllabusModule } from "@/components/learn/course-syllabus";
-import { decorateSyllabus } from "@/server/progress/syllabus";
-import { isCompletableBlock } from "@/server/progress/rules";
-import type { ProgressStatus } from "@/generated/prisma/client";
-
-function pickContinueTarget(
-  flatChapters: { slug: string; title: string; status: ProgressStatus; locked?: boolean }[]
-) {
-  const inProgress = flatChapters.find((c) => !c.locked && c.status === "IN_PROGRESS");
-  if (inProgress) return inProgress;
-
-  const notStarted = flatChapters.find((c) => !c.locked && c.status === "NOT_STARTED");
-  if (notStarted) return notStarted;
-
-  const unlocked = flatChapters.find((c) => !c.locked);
-  return unlocked ?? flatChapters[0] ?? null;
-}
-
-function pickDefaultOpenModule(modules: SyllabusModule[]) {
-  const withProgress = modules.find((mod) =>
-    mod.chapters.some((c) => c.status === "IN_PROGRESS" || c.status === "NOT_STARTED")
-  );
-  return withProgress?.id ?? modules[0]?.id ?? null;
-}
+import { CourseSyllabus } from "@/components/learn/course-syllabus";
+import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
+import {
+  pickDefaultOpenModule,
+  resolveContinueChapterPath,
+  syllabusForEnrollment,
+} from "@/server/progress/enrollment-syllabus";
 
 export default async function CourseOverviewPage({
   params,
@@ -73,9 +56,6 @@ export default async function CourseOverviewPage({
   });
   if (!course) notFound();
 
-  // The guard stays the single authorization decision point; the page just
-  // renders a clean denial instead of crashing on ForbiddenError (e.g. a
-  // mentor opening a learner link, or an unassigned mentee following a URL).
   let enrolled;
   try {
     enrolled = await requireEnrolledMentee(course.id);
@@ -105,40 +85,13 @@ export default async function CourseOverviewPage({
     throw error;
   }
 
-  const { enrollment } = enrolled;
-  const progress = await prisma.chapterProgress.findMany({
-    where: { enrollmentId: enrollment.id },
-    select: { chapterId: true, status: true, blocksCompleted: true, blocksTotal: true },
-  });
-  const progressByChapter = new Map(progress.map((p) => [p.chapterId, p.status]));
-  const progressCountByChapter = new Map(
-    progress.map((p) => [p.chapterId, { completed: p.blocksCompleted, total: p.blocksTotal }])
+  const { enrollment, user } = enrolled;
+  const bypassLocking = bypassProgressGatingForEmail(user.email ?? "");
+  const { modules, flatChapters } = await syllabusForEnrollment(
+    course,
+    enrollment.id,
+    bypassLocking
   );
-
-  const modules: SyllabusModule[] = decorateSyllabus({
-    sequential: course.sequential,
-    progressByChapter,
-    modules: course.modules.map((mod) => ({
-      id: mod.id,
-      order: mod.order,
-      title: mod.title,
-      chapters: mod.chapters.map((chapter) => {
-        const counts = progressCountByChapter.get(chapter.id);
-        const blockCount = chapter.blocks.filter((block) => isCompletableBlock(block)).length;
-        return {
-          id: chapter.id,
-          slug: chapter.slug,
-          title: chapter.title,
-          order: chapter.order,
-          blockCount,
-          blocksCompleted: counts?.completed ?? 0,
-        };
-      }),
-    })),
-  });
-
-  const flatChapters = modules.flatMap((mod) => mod.chapters);
-  const continueTarget = pickContinueTarget(flatChapters);
   const defaultOpenModuleId = pickDefaultOpenModule(modules);
 
   const continueLabel =
@@ -165,9 +118,7 @@ export default async function CourseOverviewPage({
         projectGoal={course.projectGoal}
         coverUrl={course.coverUrl}
         percentComplete={enrollment.percentComplete}
-        continueHref={
-          continueTarget ? `/courses/${course.slug}/${continueTarget.slug}` : null
-        }
+        continueHref={resolveContinueChapterPath(course.slug, flatChapters)}
         continueLabel={continueLabel}
         moduleCount={modules.length}
         chapterCount={flatChapters.length}

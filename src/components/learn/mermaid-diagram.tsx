@@ -140,7 +140,7 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
   }
 
   return (
-    <div className="not-prose my-8 overflow-x-auto rounded-2xl border border-indigo-100/80 bg-gradient-to-b from-indigo-50/40 to-white p-5 shadow-sm">
+    <div className="not-prose my-8 overflow-x-auto rounded-2xl border border-indigo-500/25 bg-gradient-to-b from-indigo-500/10 to-card p-5 shadow-sm">
       {svg ? (
         <div
           className="mermaid-svg flex items-center justify-center"

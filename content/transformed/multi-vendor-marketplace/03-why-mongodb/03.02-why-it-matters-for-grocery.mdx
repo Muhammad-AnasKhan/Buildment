@@ -113,13 +113,13 @@ Exact naming (`cartitems` vs `cart_items`) is up to you — just stay consistent
 
 <FaqGroup>
 
-<FaqItem question="Can I add grocery fields later in Chapter 5?">
+<FaqItem question={"Can I add grocery fields later in Chapter 5?"}>
 
 You can, but you'd be designing backwards. If you skip units, categories, and perishability now, you'll build a generic product shape and then try to bolt grocery specifics onto it in Chapter 5 — retrofits always end up messier than deciding once up front. The whole point of this chapter is that grocery changes real schema decisions: is price stored per `unit` (per kg) or as a whole-item price (per bag)? Put those fields on your draft Product shape today, and Chapter 5 becomes "implement what you designed" instead of "rethink what you coded".
 
 </FaqItem>
 
-<FaqItem question="Does perishability change API logic in Week 1?">
+<FaqItem question={"Does perishability change API logic in Week 1?"}>
 
 Not yet — but you should still model it now. Perishability is what later enables "Fresh" badges on product cards and a nicer portfolio story, and the seed data should mix perishable and non-perishable items so those features have data to work with. The design lesson is the point: a flag like `isPerishable` costs nothing to add to the draft, but retrofitting it after twenty chapters of code is expensive. Decide it once, early.
 
@@ -138,7 +138,7 @@ Not yet — but you should still model it now. Perishability is what later enabl
 
 **❌ Don't:** Skip `storeId` on cart items — multi-vendor split depends on it (Chapter 16).
 
-<ChapterRecap id="01KZP7KP03XTW7E8XZRP7XKESE" />
+<ChapterRecap id="01M34MR8EH8V6JN57F88E9EFZ7" />
 
 ## Self-check
 

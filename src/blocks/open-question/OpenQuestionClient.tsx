@@ -2,17 +2,21 @@
 
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Clock3, PenLine, RotateCcw, SendHorizontal } from "lucide-react";
+import { CheckCircle2, Clock3, Link2, PenLine, RotateCcw, SendHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { AnswerTextareaWithMic } from "@/components/learn/answer-textarea-with-mic";
+import { readerBlockGrouped, readerBlockInner } from "@/components/learn/reader-block-styles";
 import type { OpenQuestionGroupPosition } from "./group-position";
 import type { SanitizedOpenQuestionConfig } from "./schema";
+import { openQuestionUrlPresentation, validateOpenQuestionPayload } from "./schema";
 
 export type OpenQuestionInitialState = {
   status: string;
   attempt: number;
   text: string;
+  url?: string | null;
   feedback: string | null;
   verdict: "APPROVED" | "NEEDS_REVISION" | null;
 };
@@ -34,25 +38,44 @@ export function OpenQuestionClient({
 }) {
   const needsRevision = initialState?.status === "NEEDS_REVISION";
   const router = useRouter();
-  const [text, setText] = useState(needsRevision ? initialState.text : initialState && !needsRevision ? initialState.text : "");
-  const [submitted, setSubmitted] = useState(
-    Boolean(initialState) && !needsRevision
+  const [text, setText] = useState(
+    needsRevision ? initialState.text : initialState && !needsRevision ? initialState.text : ""
   );
+  const [url, setUrl] = useState(initialState?.url ?? "");
+  const [submitted, setSubmitted] = useState(Boolean(initialState) && !needsRevision);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const wordCount = useMemo(() => text.trim().split(/\s+/).filter(Boolean).length, [text]);
-  const tooShort = config.minWords > 0 && wordCount < config.minWords;
+  const tooShort =
+    config.minWords > 0 &&
+    wordCount < config.minWords &&
+    !(config.speechPrimary && config.allowSpeechInput);
   const isGrouped = groupPosition !== "single";
+  const speechEnabled = config.allowSpeechInput ?? false;
+  const urlMeta = openQuestionUrlPresentation(config);
+
+  const clientValidation = useMemo(
+    () => validateOpenQuestionPayload(config, { text, url: url.trim() || undefined }),
+    [config, text, url]
+  );
 
   async function submit() {
+    if (clientValidation) {
+      setError(clientValidation);
+      return;
+    }
     setSubmitting(true);
     setError(null);
     try {
       const res = await fetch(`/api/blocks/${id}/respond`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "OPEN_QUESTION", text }),
+        body: JSON.stringify({
+          type: "OPEN_QUESTION",
+          text,
+          url: url.trim() || undefined,
+        }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => null);
@@ -68,24 +91,18 @@ export function OpenQuestionClient({
   }
 
   const wordProgress = config.minWords > 0 ? Math.min((wordCount / config.minWords) * 100, 100) : 100;
+  const canSubmit =
+    !clientValidation &&
+    !tooShort &&
+    !submitting &&
+    (text.trim().length > 0 || (urlMeta.showUrl && url.trim().length > 0));
 
   return (
-    <div
-      className={cn(
-        "not-prose bg-white",
-        groupPosition === "single" &&
-          "my-8 overflow-hidden rounded-xl border border-neutral-200 shadow-sm",
-        groupPosition === "first" &&
-          "mt-8 overflow-hidden rounded-t-xl border border-b-0 border-neutral-200",
-        groupPosition === "middle" && "-mt-px border-x border-neutral-200 bg-white",
-        groupPosition === "last" &&
-          "-mt-px mb-8 overflow-hidden rounded-b-xl border border-t-0 border-neutral-200 shadow-sm"
-      )}
-    >
+    <div className={readerBlockGrouped(groupPosition)}>
       <div
         className={cn(
-          "px-5 py-5 sm:px-6 sm:py-6",
-          isGrouped && groupPosition !== "last" && "border-b border-neutral-200"
+          readerBlockInner,
+          isGrouped && groupPosition !== "last" && "border-b border-border"
         )}
       >
         <div className="flex items-start gap-4">
@@ -105,18 +122,18 @@ export function OpenQuestionClient({
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-neutral-500">
+              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
                 {isGrouped ? `Question ${questionIndex + 1} of ${questionTotal}` : "Your turn"}
               </p>
               {!submitted ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-600">
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                   <PenLine className="size-3" aria-hidden />
-                  Short answer
+                  {urlMeta.showUrl ? "Answer or link" : "Short answer"}
                 </span>
               ) : null}
             </div>
 
-            <p className="mt-2 text-[15px] font-medium leading-snug text-neutral-950 sm:text-base">
+            <p className="mt-2 text-[15px] font-medium leading-snug text-foreground sm:text-base">
               {config.prompt}
             </p>
 
@@ -146,9 +163,24 @@ export function OpenQuestionClient({
                       : "Awaiting mentor review"}
                   </span>
                 </div>
-                <p className="whitespace-pre-wrap px-4 py-3 text-[15px] leading-relaxed text-neutral-700">
-                  {text || initialState?.text}
-                </p>
+                {(text || initialState?.text) && (
+                  <p className="whitespace-pre-wrap px-4 py-3 text-[15px] leading-relaxed text-neutral-700">
+                    {text || initialState?.text}
+                  </p>
+                )}
+                {(url || initialState?.url) && (
+                  <p className="border-t border-emerald-200/60 px-4 py-3 text-sm">
+                    <span className="font-medium text-emerald-800">Link: </span>
+                    <a
+                      href={(url || initialState?.url) ?? "#"}
+                      className="break-all text-indigo-700 underline"
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      {url || initialState?.url}
+                    </a>
+                  </p>
+                )}
                 {initialState?.verdict === "APPROVED" && initialState.feedback && (
                   <p className="border-t border-emerald-200/60 whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-neutral-600">
                     <span className="font-medium text-emerald-800">Mentor feedback: </span>
@@ -158,18 +190,43 @@ export function OpenQuestionClient({
               </div>
             ) : (
               <>
-                <Textarea
-                  className="mt-4 min-h-[7.5rem] resize-y rounded-lg border-neutral-200 bg-neutral-50/80 px-4 py-3 text-[15px] leading-relaxed text-neutral-900 placeholder:text-neutral-400 focus-visible:border-indigo-300 focus-visible:bg-white focus-visible:ring-indigo-100"
-                  rows={5}
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  placeholder={
-                    needsRevision
-                      ? "Rewrite your answer using your mentor's feedback…"
-                      : "Write your answer in your own words…"
-                  }
-                  aria-label={`Answer for question ${questionIndex + 1}`}
-                />
+                <div className="mt-4">
+                  <AnswerTextareaWithMic
+                    value={text}
+                    onChange={setText}
+                    enableSpeech={speechEnabled}
+                    placeholder={
+                      needsRevision
+                        ? "Rewrite your answer using your mentor's feedback…"
+                        : "Write your answer in your own words…"
+                    }
+                    ariaLabel={`Answer for question ${questionIndex + 1}`}
+                    rows={5}
+                    className="min-h-[7.5rem] rounded-lg border-border bg-muted/40 focus-visible:border-indigo-400 focus-visible:bg-background focus-visible:ring-indigo-500/20"
+                  />
+                </div>
+
+                {urlMeta.showUrl ? (
+                  <div className="mt-4 space-y-1.5">
+                    <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-800">
+                      <Link2 className="size-4 text-neutral-500" aria-hidden />
+                      {urlMeta.urlLabel}
+                      {urlMeta.urlRequired ? (
+                        <span className="text-xs font-normal text-rose-600">Required</span>
+                      ) : null}
+                    </label>
+                    {urlMeta.urlHint ? (
+                      <p className="text-xs text-neutral-500">{urlMeta.urlHint}</p>
+                    ) : null}
+                    <Input
+                      type="url"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      placeholder="https://…"
+                      className="bg-neutral-50/80"
+                    />
+                  </div>
+                ) : null}
 
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-3 text-xs text-neutral-500">
@@ -199,7 +256,7 @@ export function OpenQuestionClient({
                       size="sm"
                       className="gap-1.5 bg-neutral-950 text-white hover:bg-neutral-800"
                       onClick={submit}
-                      disabled={tooShort || submitting || text.trim().length === 0}
+                      disabled={!canSubmit}
                     >
                       {submitting ? (
                         "Submitting…"

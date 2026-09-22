@@ -29,7 +29,7 @@ export function Logo({
         priority
       />
       {withWordmark ? (
-        <span className={cn("font-semibold tracking-tight text-neutral-950", text)}>
+        <span className={cn("font-semibold tracking-tight text-foreground", text)}>
           buildment
         </span>
       ) : null}

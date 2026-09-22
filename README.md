@@ -29,9 +29,10 @@ Next.js 16 (App Router) · TypeScript · Tailwind CSS + shadcn/ui (Base UI) · P
 pnpm install
 cp .env.example .env        # then fill in AUTH_SECRET at minimum — see below
 docker compose up -d        # starts local Postgres on :5432
-pnpm db:migrate             # applies prisma/migrations
+pnpm db:ready               # migrate deploy + prisma generate (use after git pull)
 pnpm db:seed                # creates 1 mentor, 3 mentees, 1 course, 3 enrollments
-pnpm dev                    # http://localhost:3000
+pnpm content:import         # sync FreshMarket chapters/blocks from content/import
+pnpm dev                    # http://localhost:3000 (predev runs prisma generate)
 ```
 
 Generate `AUTH_SECRET`:
@@ -66,7 +67,25 @@ database session for that user — no Google/Resend credentials required. This r
 | `pnpm db:seed` | Re-run the seed script (idempotent — upserts) |
 | `pnpm db:studio` | Prisma Studio, a GUI for the local database |
 | `pnpm content:import` | Import course content from `content/import/` into the database |
-| `pnpm content:validate` | Compile-check every chapter's MDX |
+| `pnpm content:validate` | Compile-check every chapter's MDX (needs DB) |
+| `pnpm content:validate:source` | Compile-check from `content/import/` (no DB) |
+| `pnpm content:audit` | Structural audit (gates, learning logs, STYLE heuristics) |
+
+## 15-minute demo (local)
+
+After setup, import course content and start the app:
+
+```bash
+pnpm content:import    # FreshMarket course → Postgres (351 chapters)
+pnpm dev               # http://localhost:3000
+```
+
+1. **Mentee path** — dev-login as a mentee (e.g. `mentee1@example.com` from seed). Open **Dashboard → Continue** into module 1. Complete the **1.11 gate** (checklist + learning log — try the **mic** on a question). Submit the **2.7 quiz** (short answer supports dictation). On **3.10 gate**, submit the **ERD link** open question.
+2. **Locking** — with `sequential` enabled (seed sets this), confirm module 2 stays locked until module 1 is complete.
+3. **Ask mentor** — from any unlocked lesson, **Ask for help** in the reader header; reply as mentor at `/help`.
+4. **Mentor path** — dev-login as mentor. **Mentees** tab → **Recalculate progress** if rollups look stale. **Review queue** shows open answers including submitted links.
+
+Full day-by-day checklist: [`docs/phases/demo-10-day.mdx`](docs/phases/demo-10-day.mdx).
 
 ## Observability (optional)
 

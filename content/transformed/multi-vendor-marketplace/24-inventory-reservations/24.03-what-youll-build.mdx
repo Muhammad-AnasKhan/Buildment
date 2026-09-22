@@ -1,0 +1,77 @@
+---
+title: "What you'll build"
+module: 24
+lesson: 3
+summary: "A reservation state machine, checkout integration, webhook confirm, and expiry worker — with ATP exposed on product reads."
+---
+# 24.03 — What you'll build
+
+This module adds a small but complete **inventory reservation subsystem**. It is intentionally sized: one collection, three service functions, two integration points (checkout + webhook), one worker handler.
+
+## Reservation state machine
+
+```
+                    reserve()
+         ┌──────────────────────────────┐
+         │                              │
+         ▼                              │
+      [active] ──confirm(paid)──► [confirmed]
+         │                              │
+         │ expire / abandon             │ (terminal)
+         ▼                              │
+     [released] ◄───────────────────────┘
+         (terminal)
+```
+
+| Status | Meaning | Stock impact |
+|---|---|---|
+| `active` | Hold for a checkout session | Reduces ATP, not `stockQty` yet |
+| `confirmed` | Payment succeeded | Decrement `stockQty`, reservation terminal |
+| `released` | TTL or user abandoned | ATP restored |
+
+Only **one** transition out of `active` wins — enforced with a conditional update on `{ _id, status: 'active' }`.
+
+## New collection: `StockReservation`
+
+Fields you will implement (names are canonical for this course):
+
+| Field | Type | Purpose |
+|---|---|---|
+| `productId` | ObjectId | Which SKU |
+| `storeId` | ObjectId | Vendor scope for audits |
+| `quantity` | number | Units held |
+| `status` | enum | `active` \| `confirmed` \| `released` |
+| `checkoutId` | string | Correlates cart/checkout attempt |
+| `paymentIntentId` | string | Set when PI created; used on confirm |
+| `expiresAt` | Date | Worker releases after this instant |
+| `confirmedAt` / `releasedAt` | Date | Audit |
+
+**Index:** `{ productId: 1, status: 1 }` for ATP aggregation; `{ expiresAt: 1, status: 1 }` for expiry sweeps.
+
+## API behaviour changes
+
+| Endpoint | Before Ch 24 | After Ch 24 |
+|---|---|---|
+| `POST /checkout` (or start-payment) | Creates PI + orders | **Reserve** each line first; 409 if ATP insufficient |
+| Stripe webhook `payment_intent.succeeded` | Marks orders paid | **Confirm** reservations + decrement `stockQty` atomically per line |
+| `DELETE /cart` or checkout cancel | Clears cart | **Release** active reservations for that `checkoutId` |
+| `GET /products` | `stockQty` | Also `availableQty` (computed) |
+
+## Worker: `reservation.releaseExpired`
+
+- Query `status: active` and `expiresAt <= now` in batches.
+- For each: conditional update to `released`; no change to `stockQty` (never decremented for active holds).
+- Log counts; safe to retry.
+
+## Verification you owe yourself
+
+1. Product with `stockQty: 1` — two parallel checkout starts; exactly one gets 201, one gets 409.
+2. Pay the winner — `stockQty` becomes 0; reservation `confirmed`.
+3. Start checkout, wait past TTL without paying — ATP returns to 1 without manual DB edit.
+
+<BigWordAlert term="Available to promise (ATP)" plainEnglish="Units you are willing to sell right now — on-hand minus active holds." whyItMatters="Catalogue must show ATP, not raw stock, or customers build carts that checkout rejects." />
+
+**Next:** Reserve vs decrement — when each number moves.
+## Before you continue
+
+<OpenQuestion id="01M34MRC30E400WPDHJ2CHCMEK" />
