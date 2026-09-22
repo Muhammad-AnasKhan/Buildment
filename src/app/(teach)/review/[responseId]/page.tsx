@@ -41,8 +41,14 @@ export default async function ReviewDetailPage({
 
   const config = OpenQuestionConfigSchema.safeParse(response.block.config);
   const prompt = config.success ? config.data.prompt : null;
-  const payload = response.payload as { text?: string } | null;
-  const answerText = typeof payload?.text === "string" ? payload.text : JSON.stringify(response.payload, null, 2);
+  const payload = response.payload as { text?: string; url?: string } | null;
+  const answerText =
+    typeof payload?.text === "string" && payload.text.trim()
+      ? payload.text
+      : payload?.url
+        ? `(Link submission)\n${payload.url}`
+        : JSON.stringify(response.payload, null, 2);
+  const answerUrl = typeof payload?.url === "string" ? payload.url : null;
 
   const alreadyReviewed = response.status !== "PENDING_REVIEW";
   const course = response.block.chapter.course;
@@ -136,6 +142,14 @@ export default async function ReviewDetailPage({
             <p className="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed text-neutral-800">
               {answerText}
             </p>
+            {answerUrl ? (
+              <p className="mt-3 text-sm">
+                <span className="font-medium text-neutral-700">Submitted link: </span>
+                <a href={answerUrl} className="break-all text-indigo-700 underline" target="_blank" rel="noreferrer">
+                  {answerUrl}
+                </a>
+              </p>
+            ) : null}
           </div>
 
           {alreadyReviewed ? (

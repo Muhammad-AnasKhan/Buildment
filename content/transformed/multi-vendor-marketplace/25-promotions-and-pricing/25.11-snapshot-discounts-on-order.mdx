@@ -1,0 +1,59 @@
+---
+title: "Snapshot discounts on order"
+module: 25
+lesson: 11
+summary: "Checkout start uses computeCartPricing for PaymentIntent; orders store discount fields and redemption rows."
+---
+# 25.11 — Snapshot discounts on order
+
+Chapter 18 split checkout into **one order per vendor**. Discount allocation from 25.10 must map cleanly onto each order document.
+
+## Checkout start changes
+
+1. Load cart + `appliedCouponCode`.
+2. `const pricing = await computeCartPricing(cart, user)`.
+3. If coupon on cart but `pricing.errors.length`, abort 400 — do not charge stale promo.
+4. `reserveForCheckout` (Ch 24) using unchanged quantities.
+5. Group lines by `storeId`; for each group compute `orderSubtotal`, `orderDiscount`, `orderTotal`.
+6. Create PaymentIntent for **sum(orderTotal)** in cents.
+7. Persist orders in `pending_payment` with:
+
+```javascript
+{
+  couponCode: pricing.coupon?.code ?? null,
+  discountCents: orderDiscount,
+  subtotalCents: orderSubtotal,
+  totalCents: orderTotal,
+  pricingVersion: 1,
+}
+```
+
+Embed line snapshots including `discountCents` per line if your schema supports it.
+
+## Redemption on payment success
+
+In webhook handler after orders marked paid:
+
+```javascript
+if (couponCode) {
+  await CouponRedemption.create({ couponId, userId, orderId, discountCents });
+  await Coupon.updateOne({ _id: couponId }, { $inc: { redemptionCount: 1 } });
+}
+```
+
+Use idempotency: if redemption for `(orderId)` exists, skip increment.
+
+## Stripe
+
+`paymentIntents.create({ amount: pricing.totalCents, ... })` — no client override.
+
+## Verify
+
+- Apply `FRESH10`, checkout, pay — Stripe dashboard amount matches cart UI.
+- Order documents show `couponCode` and `discountCents`.
+- Second checkout with `ONCE24` works once; second attempt invalid.
+
+**Next:** Rate limits and abuse.
+## Before you continue
+
+<OpenQuestion id="01M34MRC8P6M4A33ZY7P8RM9AP" />

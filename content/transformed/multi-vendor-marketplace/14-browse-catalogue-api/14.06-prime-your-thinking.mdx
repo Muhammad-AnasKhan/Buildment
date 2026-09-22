@@ -8,6 +8,10 @@ Before implementing pagination in 14.11, read how **offset** and **cursor** pagi
 
 <BigWordAlert term="Query performance" plainEnglish="Designing database queries so catalogue pages load in one or two round-trips, not hundreds." whyItMatters="Slow shop page loses shoppers — index and populate strategy decided here." />
 
+
+<Predict id="01M34MRAGBVVYKE62GE7SR6EE1" />
+
+
 ## Why read before you build
 
 You are about to write **four related features** in sequence: filters → pagination → populate → detail route. Ten minutes of reading now prevents:
@@ -84,11 +88,6 @@ Plan to count lines for one `GET /products?limit=20` in 14.14.
 Catalogue APIs are public, but they still need rate limits, input validation on query params, and careful projection so internal fields never leak. FreshMarket exposes only what shoppers need to decide and add to cart.
 
 </InterestingRead>
-
-
-## Before you continue
-
-<OpenQuestion id="01KZP7KQ6K0NS841D0RW30DTE2" />
 
 ## Next
 

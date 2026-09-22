@@ -1,6 +1,6 @@
 ---
 title: "Document it"
-module: 24
+module: 26
 lesson: 2
 summary: "Hiring managers and mentors cannot read 22 chapters. They read **three docs and watch one video**. This sub-chapter specifies what to commit under `docs/`."
 ---
@@ -151,31 +151,31 @@ MongoDB · Express · React · Node · Redis · BullMQ · Cloudinary · Stripe
 
 <FaqGroup>
 
-<FaqItem question="Can I use AI to write architecture.md?">
+<FaqItem question={"Can I use AI to write architecture.md?"}>
 
 You may use AI to draft it, but you must verify every box and arrow matches your actual repo. Viva questions dig into the architecture, and an evaluator will notice a diagram that doesn't match your code — that's worse than no diagram. Open your own files, confirm each connection, and fix anything that's wrong. The doc is evidence of your understanding, so it has to be true, not just pretty.
 
 </FaqItem>
 
-<FaqItem question="My ERD changed since Chapter 5. Is that bad?">
+<FaqItem question={"My ERD changed since Chapter 5. Is that bad?"}>
 
 It's normal, and it usually means you were learning. Projects drift as you add fields and constraints, and the final ERD should reflect the real Mongoose models you shipped, not the draft from the early weeks. Update `docs/erd.md` to match reality, highlight the snapshot fields on orders, and if a change was significant, note it in CHALLENGES. An accurate current ERD beats a pretty stale one.
 
 </FaqItem>
 
-<FaqItem question="How long should CHALLENGES entries be?">
+<FaqItem question={"How long should CHALLENGES entries be?"}>
 
 About half a page per entry is plenty. Use the four-part format — Problem, Cause, Fix, Lesson — and keep it specific to your repo. A two-sentence "CORS was broken, I fixed it" teaches nobody; a concrete entry naming the symptom, the file you changed, and what you'd do earlier is gold. Mentors read this file first for signal, so five short honest entries beat one polished novel.
 
 </FaqItem>
 
-<FaqItem question="Why do I need docs if my code works?">
+<FaqItem question={"Why do I need docs if my code works?"}>
 
 Because a mentor can't read your mind — or your whole codebase — to see why you made the decisions you did. Docs translate your work into evidence of understanding. The comparison in this sub-chapter says it plainly: without docs, "I built a MERN app"; with `architecture.md`, "here's how the API, worker, and Redis interact." Documentation is how you prove the architecture is deliberate, not accidental.
 
 </FaqItem>
 
-<FaqItem question="I didn't hit any serious bugs. What do I put in CHALLENGES.md?">
+<FaqItem question={"I didn't hit any serious bugs. What do I put in CHALLENGES.md?"}>
 
 You almost certainly hit something worth writing about — a CORS error, a stale cache after a PATCH, the worker running but no notifications, a Stripe webhook signature failing. Small debugging sessions count, and they're the most relatable entries anyway. The bar is honesty and specificity, not drama. If genuinely nothing failed, document a design decision you had to think hard about and the alternatives you rejected.
 
@@ -208,7 +208,7 @@ You almost certainly hit something worth writing about — a CORS error, a stale
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KR2ZCRKYXJCHCR5VWZ22" />
+<OpenQuestion id="01M34MRC9Y8FXAQ5AY4MGVJQPZ" />
 
 ## Next
 

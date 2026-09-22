@@ -1,0 +1,47 @@
+---
+title: "Rate limits and abuse"
+module: 25
+lesson: 12
+summary: "Throttle coupon attempts; generic errors; logging for mentor dashboards."
+---
+# 25.12 — Rate limits and abuse
+
+Coupon endpoints are brute-force friendly — attackers guess `SAVE10`, `SAVE20`, …
+
+## Rate limit middleware
+
+If the project has no global limiter, add a minimal in-memory or Redis counter for `POST /cart/coupon`:
+
+- Key: `coupon-attempt:${userId || ip}`
+- Limit: 20 requests / 60 seconds
+- Response: 429 `{ error: 'TOO_MANY_ATTEMPTS' }`
+
+Document that production should use Redis store (same instance as Ch 21) for multi-instance API.
+
+## Logging
+
+Structured log on validation failure:
+
+```javascript
+console.warn('coupon_rejected', { reason, code: normalized, userId });
+```
+
+Never log full cart PII in same line if avoidable.
+
+## Admin kill switch
+
+Set `isActive: false` on a coupon in mongosh during demo — next checkout reprices without redeploy.
+
+## Optional stretch
+
+- Honeypot field `company` on apply form — bots fill it, silent 400.
+- Block applying a new code until previous removed (already one-code policy).
+
+## Verify
+
+Script 25 failed attempts → 429 on 21st within a minute.
+
+**Next:** Recap and gate.
+## Before you continue
+
+<OpenQuestion id="01M34MRC8ZE005J6QW07JAZ7PN" />

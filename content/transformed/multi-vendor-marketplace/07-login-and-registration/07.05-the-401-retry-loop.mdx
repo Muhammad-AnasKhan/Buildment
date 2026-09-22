@@ -20,31 +20,31 @@ Without retry logic, users get kicked to login every 15 minutes while grocery sh
 
 <FaqGroup>
 
-<FaqItem question="Should a 401 from the login form trigger a refresh?">
+<FaqItem question={"Should a 401 from the login form trigger a refresh?"}>
 
 No — and mixing these up wastes hours. A 401 from `POST /api/auth/login` almost always means a wrong password, not an expired token; refreshing can't fix bad credentials and just fires a pointless call. That's why the interceptor only wraps authenticated requests and must skip public routes like login, register, verify-otp, and health. The rule: refresh only when a request *should* have carried a valid access token but the token was stale. Wrong password and expired session are different problems — keep them separate.
 
 </FaqItem>
 
-<FaqItem question="What if two requests 401 at the same time?">
+<FaqItem question={"What if two requests 401 at the same time?"}>
 
 Several requests can expire together — the boot refresh, a product list, and a cart call might all come back 401 in the same moment. If each one fires its own refresh, you get a burst of redundant calls. The clean fix is a mutex: the first 401 starts a single refresh promise, and every other request awaits that same promise before retrying. This is optional in this course — sequential refreshes still pass the gate — but if your Network tab shows duplicate refresh calls, note it in your learning log and consider adding the mutex.
 
 </FaqItem>
 
-<FaqItem question="After a retry I get 403 — should I log out?">
+<FaqItem question={"After a retry I get 403 — should I log out?"}>
 
 No — 403 and 401 are different messages. 401 means "I don't know who you are," so a refresh is worth trying. 403 means "I know who you are, and you're not allowed to do this" — no token will fix it, and retrying would loop forever. The right move is to show a clear "you don't have permission" message and keep the session alive. In FreshMarket terms: a logged-in customer who clicks a vendor-only action gets 403. That's an authorization question, which arrives with Chapter 8 — not a login bug.
 
 </FaqItem>
 
-<FaqItem question="Why retry only once — what is the `_retried` flag for?">
+<FaqItem question={"Why retry only once — what is the `_retried` flag for?"}>
 
 Without a "have I already tried?" marker, one stubborn 401 becomes an infinite loop: refresh, retry, 401 again, refresh, retry — hammering your API forever. The `_retried` flag is that marker. The retry passes with `_retried: true`, so if it still returns 401, the code knows refreshing didn't help and gives up: clear auth state, redirect to login. One retry is enough, because if the second attempt still fails, the problem isn't an expired token — it's something refreshing can never fix.
 
 </FaqItem>
 
-<FaqItem question="What happens when the refresh token itself expires?">
+<FaqItem question={"What happens when the refresh token itself expires?"}>
 
 Eventually every refresh token dies — that's its 7-day lifetime doing its job. When `POST /api/auth/refresh` itself returns 401, the session is genuinely over, so the code must not loop: clear the auth state, redirect to `/login` (optionally with a `session=expired` query for a friendly message), and let the user sign in again. This is the graceful end of the chain: access expired → refresh → refresh expired → logout. Anyone returning after a week away will land on exactly this path.
 
@@ -149,7 +149,7 @@ Document in learning log.
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KPHCB2R3HRD25JJVWDCV" />
+<OpenQuestion id="01M34MR9AMPQWKVKHABN4G1KJV" />
 
 ## Next
 

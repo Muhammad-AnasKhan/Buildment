@@ -69,31 +69,31 @@ Finish **Chapter 6.20 checklist** first. Chapter 7 on a broken auth API means de
 
 <FaqGroup>
 
-<FaqItem question="Why not store the JWT in localStorage — it's easier?">
+<FaqItem question={"Why not store the JWT in localStorage — it's easier?"}>
 
 It is easier, and that's exactly the trap. Any script that runs on your page — a bad npm package, an unsanitized HTML string — can read `localStorage` in one line and steal your token, and the token stays there for later visitors too. That's why this course keeps the access token in **memory** and the refresh token in an **httpOnly cookie**: scripts can't read the cookie at all, and the in-memory token disappears when the tab closes. Less convenient on reload, much harder to steal — and it's the pattern real SPAs use.
 
 </FaqItem>
 
-<FaqItem question="Do I need new server endpoints?">
+<FaqItem question={"Do I need new server endpoints?"}>
 
 Usually no — Chapter 7 calls the same routes you tested in Chapter 6. The one small exception: if your login response returns the refresh token in the JSON body, you may add a `Set-Cookie` header so it moves into an httpOnly cookie, and enable `credentials: 'include'` on the client so that cookie actually gets sent. If you catch yourself inventing a brand-new endpoint, stop — you're probably breaking a contract that already worked in curl.
 
 </FaqItem>
 
-<FaqItem question="What happens on page reload if the access token is in memory?">
+<FaqItem question={"What happens on page reload if the access token is in memory?"}>
 
 The token vanishes — memory doesn't survive a reload; only long-term browser storage does. So on boot the app calls `POST /api/auth/refresh` with the httpOnly cookie, the server mints a fresh access token, and the user stays logged in without ever seeing a form. That silent refresh is the heart of sub-chapters 7.4–7.5. If the refresh token is gone too, the app redirects to login. Either way, session continuity is the server's job, not the client remembering things.
 
 </FaqItem>
 
-<FaqItem question="Why separate chapters for API auth and UI auth?">
+<FaqItem question={"Why separate chapters for API auth and UI auth?"}>
 
 So you can debug each half on its own. Chapter 6 proved the server works with curl, where there's no browser, no React state, and no CORS to confuse you — a failure there is your server code. Chapter 7 layers the browser on top. The rule of thumb: if curl passes but the form fails, the bug is client-side; if curl fails too, it's server-side. Building both at once means debugging React and Express simultaneously — the hardest combination for a beginner.
 
 </FaqItem>
 
-<FaqItem question="Role-based UI (vendor vs customer) — this chapter?">
+<FaqItem question={"Role-based UI (vendor vs customer) — this chapter?"}>
 
 Not yet — this chapter only guards "are you logged in at all?" A `ProtectedRoute` wrapper redirects strangers to `/login`, and after login a vendor lands on a stub path while a customer lands on the shop stub. Deciding which screens a logged-in vendor may open — and stopping a customer from poking into vendor routes — is authorization, which needs server-side checks too. That's Chapter 8. For now, any authenticated user passes the door.
 
@@ -164,4 +164,4 @@ CORS, missing Authorization headers, and tokens stored where JavaScript cannot r
 
 API auth works — browser storage strategy next.
 
-<ChapterRecap id="01KZP7KPG709R8TY63S5F7KDW0" />
+<ChapterRecap id="01M34MR98RHGXXHZJC438C66AZ" />

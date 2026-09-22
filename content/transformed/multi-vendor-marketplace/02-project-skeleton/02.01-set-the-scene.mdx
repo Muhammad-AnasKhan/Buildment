@@ -58,37 +58,37 @@ The hat you wear now is **builder of the skeleton**. You are not designing the d
 
 <FaqGroup>
 
-<FaqItem question="Why not start with MongoDB or login — the interesting parts?">
+<FaqItem question={"Why not start with MongoDB or login — the interesting parts?"}>
 
 Because those features need *somewhere to live*. Without `server/src/modules/` and a running Express app, every later chapter would say "add this somewhere" and you'd paste into random files you don't understand. Think of it as building the market hall before the stalls open: you pour the foundation, run the wiring, and hang a "we're open" sign before any vendor stocks shelves. Get the skeleton right once, and every later feature — database, auth, products — slots into a folder you already know.
 
 </FaqItem>
 
-<FaqItem question="Do I build inside the course folder (`multi-vendor-marketplace/`)?">
+<FaqItem question={"Do I build inside the course folder (`multi-vendor-marketplace/`)?"}>
 
 No. That folder is the textbook — the course content lives there. Your app is a **separate Git repository** you create in sub-chapter 2.8, somewhere like `~/projects/greenbasket/`. If you build inside the course folder, your app and the course materials get tangled, commits mix together, and instructions that say "create a file in your project root" become ambiguous. Keep the book on the shelf and your workspace separate — that's what real teams do too.
 
 </FaqItem>
 
-<FaqItem question="I have never used Express or Vite. Is this chapter too early?">
+<FaqItem question={"I have never used Express or Vite. Is this chapter too early?"}>
 
 Not too early — this chapter introduces them **one small step at a time**. You'll install packages, create entry files, and verify with curl and the browser, so each concept appears the moment you need it. Unfamiliar errors will happen, and that's fine; use the working rhythm from Chapter 1: read the message, search the docs, fix the smallest failing piece. By the end you won't be an Express expert — you'll just know enough to run a server and a client, which is precisely what's needed next.
 
 </FaqItem>
 
-<FaqItem question="Why two terminals — can't one command run everything?">
+<FaqItem question={"Why two terminals — can't one command run everything?"}>
 
 Because the client and server are **two separate programs** during development, and two terminals make it obvious which half broke. You run `npm run dev` in `server/` to start the API on port 5000, and `npm run dev` in `client/` to start the React app on port 5173. When something fails, the terminal that shows the error tells you exactly where to look — "client works, API down" is a sentence you'll say often. Running both from one command is possible later, but it hides the architecture you're here to learn.
 
 </FaqItem>
 
-<FaqItem question="What if I already have a MERN starter template?">
+<FaqItem question={"What if I already have a MERN starter template?"}>
 
 Unless it matches this course's **module-based** layout — `server/src/modules/…` — it will fight you. Every chapter names an exact path like `modules/products/products.routes.js`, and if your repo has no `modules/` folder, you'll translate every instruction for twenty chapters or diverge from the guide. Scaffolding fresh here takes an afternoon; un-teaching a random boilerplate takes weeks. If you love your template, adapt it to the target tree in 2.3 — otherwise, start clean and stay aligned.
 
 </FaqItem>
 
-<FaqItem question="What does the health check actually prove?">
+<FaqItem question={"What does the health check actually prove?"}>
 
 The health check — `GET /health` returning `&#123; "status": "ok" &#125;` — proves the wiring between Express and the browser works before you add anything complicated. When your React Home page fetches that endpoint and displays the result, you've confirmed the server boots and listens, the client renders, HTTP works across the two, and your folder conventions hold real files. It's the smallest possible proof that the full-stack loop is alive. Skip it and you'd debug connection problems later with database and auth code mixed in, which is much harder.
 
@@ -229,4 +229,4 @@ Before sub-chapter 2.8, confirm: empty directory chosen, Node 18+, Git installed
 Next: why folder structure is a real decision — not aesthetics.
 ## Before you continue
 
-<OpenQuestion id="01KZP7KNSCZ7G236Q8833ADQ5E" />
+<OpenQuestion id="01M34MR84QWD23369A9NBNSMZN" />

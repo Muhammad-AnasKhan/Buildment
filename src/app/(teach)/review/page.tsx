@@ -3,6 +3,7 @@ import { ChevronRight, Inbox } from "lucide-react";
 import { prisma } from "@/server/db";
 import { nowMs } from "@/server/time";
 import { requireRole } from "@/server/auth/guards";
+import { AutoSubmitSelect } from "@/components/teach/auto-submit-select";
 
 const AGING_HOURS = 48;
 
@@ -75,10 +76,9 @@ export default async function ReviewQueuePage({
 
         {courses.length > 1 && (
           <form className="flex items-center gap-2" action="/review" method="GET">
-            <select
+            <AutoSubmitSelect
               name="courseId"
               defaultValue={courseFilter ?? ""}
-              onChange={(event) => event.target.form?.requestSubmit()}
               className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none focus:border-indigo-300"
             >
               <option value="">All courses</option>
@@ -87,7 +87,7 @@ export default async function ReviewQueuePage({
                   {course.title}
                 </option>
               ))}
-            </select>
+            </AutoSubmitSelect>
           </form>
         )}
       </div>
@@ -111,7 +111,11 @@ export default async function ReviewQueuePage({
               <li key={response.id}>
                 <Link
                   href={`/review/${response.id}`}
-                  className="flex items-center gap-4 rounded-xl border border-neutral-200 bg-white p-4 transition-colors hover:border-neutral-300"
+                  className={`flex items-center gap-4 rounded-xl border bg-white p-4 transition-colors ${
+                    isAging
+                      ? "border-amber-300 bg-amber-50/30 hover:border-amber-400"
+                      : "border-neutral-200 hover:border-neutral-300"
+                  }`}
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-neutral-900">

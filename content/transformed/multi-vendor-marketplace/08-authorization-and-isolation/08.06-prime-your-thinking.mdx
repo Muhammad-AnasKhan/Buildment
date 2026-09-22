@@ -8,6 +8,10 @@ Before writing middleware, read OWASP guidance on object-level authorization —
 
 <BigWordAlert term="Defense in depth" plainEnglish="Multiple layers of checks — middleware, service logic, database query filters — not one gate only." whyItMatters="FreshMarket filters products by owner in the query even if middleware is bypassed by a bug." />
 
+
+<Predict id="01M34MR9J3SG2B1TY1QJAA1G5F" />
+
+
 ## Why read before you code
 
 Marketplace bugs from missing authorization are not theoretical. A single `PATCH /stores/:id` without an ownership check lets Vendor B rename Vendor A's shop. OWASP calls this **BOLA** (Broken Object Level Authorization) — the API security industry's name for IDOR. Reading their cheat sheet now saves you from shipping a pattern you'll have to rip out in Chapter 11 when products get the same treatment.
@@ -88,11 +92,6 @@ Read OWASP BOLA (10 min) → skim IDOR cheat sheet (10 min) → confirm two vend
 Insecure Direct Object Reference bugs happen when the server checks login but not ownership. FreshMarket's guards compare the authenticated user to the document owner on every mutating route — not just on the dashboard UI.
 
 </InterestingRead>
-
-
-## Before you continue
-
-<OpenQuestion id="01KZP7KPPBN0P5Q5APT2N0D8SJ" />
 
 ## Next
 

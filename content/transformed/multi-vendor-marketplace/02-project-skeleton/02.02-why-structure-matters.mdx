@@ -20,31 +20,31 @@ When every tutorial puts code in one file, it is easy to believe structure is so
 
 <FaqGroup>
 
-<FaqItem question="Can't I reorganize later when the app grows?">
+<FaqItem question={"Can't I reorganize later when the app grows?"}>
 
 You can — teams do — but the cost is real: moving dozens of files, fixing every import path, re-testing every route, and losing days that could have shipped features. This chapter spends one afternoon on the choice so the next eighteen chapters stay aligned. Structure is like plumbing: cheap to install right the first time, expensive to relocate after the building is finished. Pick the layout now, commit to it, and let the course's exact paths do their job — telling you where everything lives.
 
 </FaqItem>
 
-<FaqItem question="Is module-based the only valid architecture?">
+<FaqItem question={"Is module-based the only valid architecture?"}>
 
 No. Layer-based folders — all controllers together, all services together — work fine for tiny APIs. But a marketplace has many domains — auth, stores, products, cart, orders — and layer folders grow without bound as each one accumulates unrelated code. This course mandates modules not because layers are "wrong" but because every sub-chapter names an exact path like `modules/auth/auth.service.js`. Shared path language is what lets a guided build stay guided; your repo matching the guide is a feature, not a coincidence.
 
 </FaqItem>
 
-<FaqItem question="Does folder structure affect users?">
+<FaqItem question={"Does folder structure affect users?"}>
 
 Not directly — no customer ever sees your folder tree. It affects *you*, the developer: how fast you find a bug, whether two people editing the same `controllers/` file collide in a merge conflict every day, and whether you can explain your own repo in a viva. Imagine a demo breaks at 11 p.m. — structure is what lets you open the right folder and fix it in minutes. Users feel the *results* of structure — fewer bugs, faster fixes — even though they never see the paths.
 
 </FaqItem>
 
-<FaqItem question="What actually counts as a \"module\"?">
+<FaqItem question={"What actually counts as a \"module\"?"}>
 
 A module is a folder that groups everything about one product area — routes, service logic, model, middleware — so the whole feature lives in one place. In this course the modules mirror the marketplace's real domains: `auth`, `stores`, `products`, `cart`, `orders`. The test is simple: if you were adding discount codes, you'd create one `modules/discounts/` folder and everything about discounts goes inside it. Code every module needs — config, database connection — belongs to no single feature, so it lives in `shared/` instead.
 
 </FaqItem>
 
-<FaqItem question="Why not just put everything in one file?">
+<FaqItem question={"Why not just put everything in one file?"}>
 
 Because one file is fast on day one and painful on day ten. It starts as `index.js` with a few routes; then vendor routes, product routes, cart logic, auth middleware, and upload code pile up until you're scrolling an 800-line file hunting for one handler. Chapter 11 will say "add an ownership check in the products module service" — and with everything in one file, there *is* no products module. A little structure up front turns "where did I put cart logic?" into a question you never have to ask.
 
@@ -195,4 +195,4 @@ Early PHP marketplaces often started as single `index.php` files. Node ecosystem
 Next: exact tree preview — what you'll have when this chapter gates clear.
 ## Before you continue
 
-<OpenQuestion id="01KZP7KNST8FNSK1JCV8TG4SSY" />
+<OpenQuestion id="01M34MR85AP07QAJE5GT1QHA3N" />

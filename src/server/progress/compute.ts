@@ -90,6 +90,22 @@ export async function recomputeChapterProgress(
   await recomputeEnrollmentRollup(tx, enrollmentId);
 }
 
+/** Recompute every chapter for one enrollment (mentor repair / demo tooling). */
+export async function repairEnrollmentProgress(
+  tx: Prisma.TransactionClient,
+  enrollmentId: string,
+  courseId: string
+) {
+  const chapters = await tx.chapter.findMany({
+    where: { courseId },
+    select: { id: true },
+    orderBy: { order: "asc" },
+  });
+  for (const chapter of chapters) {
+    await recomputeChapterProgress(tx, enrollmentId, chapter.id);
+  }
+}
+
 export async function recomputeEnrollmentRollup(
   tx: Prisma.TransactionClient,
   enrollmentId: string

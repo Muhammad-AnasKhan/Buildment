@@ -60,37 +60,37 @@ At checkout (Chapter 18), the system splits into **two orders** — one per stal
 
 <FaqGroup>
 
-<FaqItem question="Why not store the cart in React state or localStorage?">
+<FaqItem question={"Why not store the cart in React state or localStorage?"}>
 
 Because browser storage is flaky and unshareable. A cart in React state dies the moment the page refreshes; localStorage survives a reload but only on that one device and browser, so it won't follow you to another machine, and the server can't trust it anyway. A *persisted* cart lives in MongoDB, scoped to the logged-in customer's `userId`, so it survives refresh, another tab, tomorrow, and any device. That server-side cart is also the only thing checkout (Chapter 18) can securely trust and turn into an order. Guest carts are out of scope for MVP — log in first.
 
 </FaqItem>
 
-<FaqItem question="Do I need two carts for two vendors?">
+<FaqItem question={"Do I need two carts for two vendors?"}>
 
 No — that's the classic beginner mistake, and it would wreck the marketplace experience. One customer, one cart, many vendors. Your single basket holds tomatoes from Green Valley *and* salmon from Harbor Market as separate cart lines, and each line records its own `storeId` so the server knows which stall supplies it. At checkout the system groups lines by `storeId` and creates one order per vendor — but you, the customer, only ever see and pay for one basket.
 
 </FaqItem>
 
-<FaqItem question="Why save `storeId` on each line if the product already has `storeId`?">
+<FaqItem question={"Why save `storeId` on each line if the product already has `storeId`?"}>
 
 Because the product could change, and checkout shouldn't have to guess. If checkout had to look up every product to rediscover its vendor, that's extra queries and fragile grouping — and a product could move to a different store later, silently rerouting an order. So the cart copies `storeId` onto the line at add time and validates it matches the product's real `storeId`. The line knows its vendor the moment it enters the basket, which is exactly what makes the Chapter 18 split possible.
 
 </FaqItem>
 
-<FaqItem question="When does stock actually decrease?">
+<FaqItem question={"When does stock actually decrease?"}>
 
 Not when you add to cart — that's the common misunderstanding. Adding only *checks* the current `stockQty` and rejects the add if there isn't enough. Real stock decrement happens at checkout in Chapter 18, when the order is actually created and the vendor commits to fulfilling it. Think of the cart as a wish list with a sanity check: adding doesn't reserve anything, so two customers can both have the last avocado in their carts — whoever checks out first gets it.
 
 </FaqItem>
 
-<FaqItem question="Can vendors use the cart?">
+<FaqItem question={"Can vendors use the cart?"}>
 
 Yes — vendors are also customers when they're shopping. The cart routes are scoped to any logged-in user, so a vendor browsing the marketplace with their account uses exactly the same `POST /cart` and `GET /cart` endpoints as a customer. The route doesn't care about your role, only that you're authenticated and only ever reading or writing *your own* cart. The `storeId` on each line still does its job, because the checkout split depends on which vendor *supplies* an item, not who is buying it.
 
 </FaqItem>
 
-<FaqItem question="Why API-only this chapter — no cart page yet?">
+<FaqItem question={"Why API-only this chapter — no cart page yet?"}>
 
 Same pattern as every backend half of a pair (6→7, 11→12, 14→15): prove the contract before the screen. This chapter you test with curl — add items from two stores, check that User A cannot read User B's cart — and get the API rock-solid without React in the way. If a multi-vendor add or user-isolation test fails in curl, it's unambiguously a server bug. Chapter 17 is the UI pair: it renders what these routes return and wires the add-to-cart button.
 
@@ -170,7 +170,7 @@ Shoppers browse before signing in. When they log in, anonymous cart items must m
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KQB6QD2DBW92Y4G7VBCV" />
+<OpenQuestion id="01M34MRAR53388M5163PP7D74D" />
 
 ## Next
 

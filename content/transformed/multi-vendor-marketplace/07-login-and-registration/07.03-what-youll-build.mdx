@@ -24,31 +24,31 @@ This checklist is the **browser-side gate** — three pages, shared auth state, 
 
 <FaqGroup>
 
-<FaqItem question="Do I need Redux for auth?">
+<FaqItem question={"Do I need Redux for auth?"}>
 
 No — auth state is small and read by many pages, which is exactly what React Context is for. Redux brings a store, actions, and reducers to manage a state that barely changes: a `user` object and a few flags. A `useAuth` hook backed by an `AuthProvider` gives every page `user`, `isAuthenticated`, `isLoading`, and `login`/`logout` with a fraction of the code. What actually matters is that all pages read from one shared source of truth so three forms don't drift apart — and Context satisfies that. Reach for Redux only if the state genuinely grows beyond Context's scope.
 
 </FaqItem>
 
-<FaqItem question="Can I change the API shapes from Chapter 6?">
+<FaqItem question={"Can I change the API shapes from Chapter 6?"}>
 
 No — and that's a constraint, not a rule to bend. You proved those exact JSON shapes work with curl, and later chapters build on the same `user` object. If a response field doesn't match what your page expects, adapt the client to the contract: check your curl output, then fix the form code. If you change the server instead, you're debugging React and Express at once — the hardest combination — and you'll silently break the tests you're meant to reuse. The server is the contract; the client is the adapter.
 
 </FaqItem>
 
-<FaqItem question="Where do vendors land after login?">
+<FaqItem question={"Where do vendors land after login?"}>
 
 Somewhere useful — a vendor heads to their workspace, a customer goes shopping. Both are placeholder stubs this chapter: `/vendor` for vendors and `/` for customers, though the exact paths are your choice. Use `useNavigate` after login, reading the role from the `user` object, or keep it simple and send everyone through a small redirect. Document the paths in your router, because the real vendor dashboard lands in Chapter 10 and the shop in Chapter 15, and those chapters need to know where to plug in.
 
 </FaqItem>
 
-<FaqItem question="Why centralize auth in one `useAuth` hook instead of each page?">
+<FaqItem question={"Why centralize auth in one `useAuth` hook instead of each page?"}>
 
 Because the alternative is three login flows that slowly drift apart. If `Login.jsx` stores the user one way and `Register.jsx` another, fixing a bug means hunting through every copy. Putting the state and methods in one `AuthProvider` gives you a single place for `user`, login, logout, and the boot-time refresh — the client-side mirror of the single `auth` module you built on the server. One source of truth means one place to fix bugs, and every page automatically stays consistent.
 
 </FaqItem>
 
-<FaqItem question="Why does boot-time refresh matter so much?">
+<FaqItem question={"Why does boot-time refresh matter so much?"}>
 
 Because the access token lives in memory, and memory dies on page reload. Without a refresh attempt on mount, a user who logs in, reloads, and goes to shop is bounced straight back to the login screen — even though their server session is perfectly valid. The one line on mount — call `POST /api/auth/refresh` with the httpOnly cookie, receive a new access token — is what makes reloads feel seamless. It's the single most common "why am I logged out?" bug in this chapter, so build it in from day one.
 
@@ -155,7 +155,7 @@ The three bugs that waste the most mentee time on this chapter, in order of freq
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KPGSMGNFXQ9NNNT5KW5A" />
+<OpenQuestion id="01M34MR99Q9P0RE90PW834J5TN" />
 
 ## Next
 

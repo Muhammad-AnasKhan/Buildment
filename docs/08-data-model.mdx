@@ -21,6 +21,7 @@ enum ProgressStatus  { NOT_STARTED IN_PROGRESS COMPLETED }
 enum BlockType       { QUIZ TEST MUST_READ OPEN_QUESTION CODE }
 enum ResponseStatus  { DRAFT SUBMITTED AUTO_GRADED PENDING_REVIEW REVIEWED NEEDS_REVISION }
 enum ReviewVerdict   { APPROVED NEEDS_REVISION }
+enum StudySessionStatus { RUNNING PAUSED ENDED }
 
 model User {
   id            String   @id @default(cuid())
@@ -78,11 +79,13 @@ model Chapter {
   slug        String
   title       String
   summary     String?
-  order       Int
-  source      String   @db.Text        // raw MDX (draft)
-  compiled    String?  @db.Text        // compiled MDX at publish
-  publishedAt DateTime?
-  isMilestone Boolean  @default(false)
+  order             Int
+  estimatedMinutes  Int?
+  readerMode        ChapterReaderMode @default(DEFAULT)
+  source            String   @db.Text        // raw MDX (draft)
+  compiled          String?  @db.Text        // compiled MDX at publish
+  publishedAt       DateTime?
+  isMilestone       Boolean  @default(false)
   blocks      Block[]
   progress    ChapterProgress[]
   @@unique([courseId, slug])
@@ -122,12 +125,42 @@ model Enrollment {
   maxScore          Int          @default(0)
   pendingReviews    Int          @default(0) // denormalized for reports — maintained at Response write/review time
   lastActiveAt      DateTime?
+  lastNudgeSentAt   DateTime?
   startedAt         DateTime?
   completedAt       DateTime?
   createdAt         DateTime     @default(now())
   chapterProgress   ChapterProgress[]
+  dailyActivity     DailyActivity[]
+  studySessions     StudySession[]
   @@unique([courseId, userId])
   @@index([userId, status])
+}
+
+model DailyActivity {
+  id            String     @id @default(cuid())
+  enrollmentId  String
+  enrollment    Enrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  date          DateTime   @db.Date
+  activeSeconds Int        @default(0)
+  @@unique([enrollmentId, date])
+  @@index([enrollmentId, date])
+}
+
+/// Explicit study sitting. Heartbeats credit ChapterProgress and DailyActivity only while RUNNING.
+model StudySession {
+  id            String             @id @default(cuid())
+  enrollmentId  String
+  enrollment    Enrollment         @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  chapterId     String
+  chapter       Chapter            @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  status        StudySessionStatus @default(RUNNING)
+  startedAt     DateTime           @default(now())
+  endedAt       DateTime?
+  activeSeconds Int                @default(0)
+  updatedAt     DateTime           @updatedAt
+  @@index([enrollmentId, startedAt])
+  @@index([enrollmentId, status])
+  @@index([chapterId])
 }
 
 model ChapterProgress {
@@ -181,6 +214,42 @@ model Review {
   feedback   String        @db.Text
   verdict    ReviewVerdict
   createdAt  DateTime      @default(now())
+}
+
+enum HelpThreadStatus {
+  OPEN
+  RESOLVED
+}
+
+model HelpThread {
+  id         String           @id @default(cuid())
+  courseId   String
+  course     Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  chapterId  String?
+  chapter    Chapter?         @relation(fields: [chapterId], references: [id], onDelete: SetNull)
+  menteeId   String
+  mentee     User             @relation("HelpThreadsAsked", fields: [menteeId], references: [id], onDelete: Cascade)
+  status     HelpThreadStatus @default(OPEN)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  resolvedAt DateTime?
+  messages   HelpMessage[]
+
+  @@index([courseId, status, updatedAt])
+  @@index([menteeId, updatedAt])
+  @@index([chapterId, menteeId])
+}
+
+model HelpMessage {
+  id        String     @id @default(cuid())
+  threadId  String
+  thread    HelpThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User       @relation("HelpMessagesAuthored", fields: [authorId], references: [id], onDelete: Cascade)
+  body      String     @db.Text
+  createdAt DateTime   @default(now())
+
+  @@index([threadId, createdAt])
 }
 
 // Mentor -> mentee assignment surface (phases/m7-assignment-and-polish.mdx).

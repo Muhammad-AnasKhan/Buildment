@@ -53,31 +53,31 @@ The hat you wear now is **domain modeller**. You translate paper design into sch
 
 <FaqGroup>
 
-<FaqItem question="Why models before auth — shouldn't login come first?">
+<FaqItem question={"Why models before auth — shouldn't login come first?"}>
 
 Because login and register code need real User and Profile documents to exist before they can do anything. Register creates a User with fields like `email`, `passwordHash`, `role`, and `isVerified`; login reads `passwordHash`. If you build the auth routes first, you'll be guessing field names against imaginary users, and you'll refactor both the model and the route when the shape finally lands. Data shape first, HTTP layer second. Think of it as writing the tenant roster before the security desk stamps anyone in — Chapter 6's register flow depends on the documents Chapter 5 defines.
 
 </FaqItem>
 
-<FaqItem question="Why separate User and Profile?">
+<FaqItem question={"Why separate User and Profile?"}>
 
 Because login identity and display information change at different rates and serve different jobs. The User holds auth-critical, rarely-changing fields — email, password hash, role, verification status — while Profile holds display data like name and avatar that updates often. Splitting them keeps auth queries lean (you don't drag an avatar along when verifying a login) and matches how Chapter 6's register flow creates both records at once. It also keeps credentials clearly separated from public-facing profile data, which is a nice story for a viva.
 
 </FaqItem>
 
-<FaqItem question="Can I skip seed and add data manually in Compass?">
+<FaqItem question={"Can I skip seed and add data manually in Compass?"}>
 
 You could, but it breaks the gate and, worse, it breaks Chapter 8. The seed script is required proof: two vendors, two stores, and products with grocery fields, all with deterministic identities like `vendor-a@test.local`. Manual clicking isn't reproducible — a fresh clone or a teammate can't redo it, and the isolation tests in Chapter 8 assume predictable test emails they can look up. The seed script is a repeatable source of truth for test data; your hands are not. Make the script the one way data gets in.
 
 </FaqItem>
 
-<FaqItem question="What's wrong with putting `vendorName` on every product?">
+<FaqItem question={"What's wrong with putting `vendorName` on every product?"}>
 
 Every copy goes stale the moment the vendor renames their shop. If Green Valley Grocer rebrands, you'd have to update every product document that carries the name, and one missed product leaves two spellings of the same store in the catalogue. Instead, store a `storeId` reference on the product and look the name up with populate when you display it — one source of truth in the stores collection. The exception is orders, where copied names are intentional receipts of what you paid at purchase time. That trap is the whole point of sub-chapter 5.2.
 
 </FaqItem>
 
-<FaqItem question="Do I build API routes this chapter?">
+<FaqItem question={"Do I build API routes this chapter?"}>
 
 No — this chapter is schemas and seed only; the routes arrive from Chapter 6 onward. Every route you'll write later depends on the shapes you define now: register needs User and Profile, vendor CRUD needs Store and Product, cart and checkout need CartItem and Order. If you add routes now you'd be building against models that don't exist yet, and you'd blur the course's step-by-step arc. The gate here is runnable proof: the seed runs and Compass shows documents — not a single HTTP endpoint.
 
@@ -195,7 +195,7 @@ If an order stored only a product ID, a vendor price change would rewrite histor
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KP6ZEEG27DF2N7S3Y2B3" />
+<OpenQuestion id="01M34MR8SEEDEPBS9W8FBTY3FF" />
 
 ## Next
 

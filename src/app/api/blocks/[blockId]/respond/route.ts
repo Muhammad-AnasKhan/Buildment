@@ -12,8 +12,10 @@ import {
   recomputeChapterProgress,
   recordBlockStats,
 } from "@/server/progress/compute";
+import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
 import { ChapterLockedError, assertChapterUnlocked } from "@/server/progress/gate";
 import type { GradeResult } from "@/blocks/types";
+import { checkRateLimit } from "@/server/rate-limit";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ blockId: string }> }) {
   const { blockId } = await params;
@@ -21,6 +23,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const user = await getSessionUser();
   if (!user) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
+  }
+
+  if (!checkRateLimit(`respond:${user.id}:${blockId}`, { max: 40, windowMs: 60_000 })) {
+    return NextResponse.json({ error: "Too many submissions — wait a minute and try again." }, { status: 429 });
   }
 
   const block = await prisma.block.findUnique({
@@ -46,6 +52,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       courseId: block.chapter.courseId,
       enrollmentId: enrollment.id,
       chapterId: block.chapter.id,
+      bypassLocking: bypassProgressGatingForEmail(user.email ?? ""),
     });
   } catch (error) {
     if (error instanceof ChapterLockedError) {

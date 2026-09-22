@@ -20,9 +20,11 @@ export function decorateSyllabus(args: {
   modules: ModuleInput[];
   progressByChapter: Map<string, ProgressStatus>;
   sequential: boolean;
+  bypassLocking?: boolean;
 }): SyllabusModule[] {
   const orderedIds = flattenChapterIds(args.modules);
-  const lockedIds = lockedChapterIds(orderedIds, args.progressByChapter, args.sequential);
+  const sequential = args.bypassLocking ? false : args.sequential;
+  const lockedIds = lockedChapterIds(orderedIds, args.progressByChapter, sequential);
 
   return args.modules.map((mod) => {
     const chapters: SyllabusChapter[] = mod.chapters.map((chapter) => ({

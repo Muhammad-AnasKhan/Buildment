@@ -24,7 +24,7 @@ export async function LearningObjectivesComponent({ id }: { id: string }) {
       </div>
       <ul className="divide-y divide-amber-100/60">
         {config.objectives.map((objective, i) => (
-          <li key={i} className="flex items-start gap-3 px-5 py-3 text-sm text-neutral-700">
+          <li key={i} className="flex items-start gap-3 px-5 py-3 text-sm text-foreground/85">
             <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-200 text-[11px] font-bold text-amber-800">
               {i + 1}
             </span>

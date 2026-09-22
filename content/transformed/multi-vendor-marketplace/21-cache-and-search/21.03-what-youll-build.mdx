@@ -74,37 +74,37 @@ server/src/middleware/cacheCatalogue.js  ← or inline in products route
 
 <FaqGroup>
 
-<FaqItem question="Do I need a new npm package for this chapter?">
+<FaqItem question={"Do I need a new npm package for this chapter?"}>
 
 Yes, one Redis client — `node-redis` or `ioredis` — to talk to your Redis server from the Node API. You'll create `server/src/shared/redis.js` to connect the client (unless an earlier stub already did), optional get/set/del helpers in `cache.js`, and a `cacheCatalogue` middleware or inline logic in the products route. Chapter 22 may add `bullmq` on the same Redis for background jobs, but that's separate — for now it's one client, one connection, one `REDIS_URL`.
 
 </FaqItem>
 
-<FaqItem question="What is \"cache-aside\"?">
+<FaqItem question={"What is \"cache-aside\"?"}>
 
 The pattern you'll implement in 21.9. On every `GET /products`, the server first asks Redis: if the key exists, return it (a cache hit) and skip MongoDB entirely; if it doesn't (a cache miss), query MongoDB, store the result in Redis with a TTL, then return it. The cache "sits aside" — it's checked first, with the database as the fallback, not the other way around. This one pattern, plus invalidation on writes, is the whole caching story for this chapter.
 
 </FaqItem>
 
-<FaqItem question="How will I know the cache is actually working?">
+<FaqItem question={"How will I know the cache is actually working?"}>
 
 The gate gives you three visible proofs. First, log cache HIT or MISS in development — hits should start appearing on repeat loads. Second, log response time before and after the cache (21.10) so you can record the speedup in your README. Third, the stale-price test: PATCH a product and confirm the very next GET shows the new data, proving invalidation works. Then stop Redis and the API should still return products through fallback. Each proof catches a different failure mode.
 
 </FaqItem>
 
-<FaqItem question="Will caching break my Week 3 demo?">
+<FaqItem question={"Will caching break my Week 3 demo?"}>
 
 Only if invalidation is wrong. The classic failure: you cache `GET /products`, update a product, and the next page load serves the stale list — which looks exactly like a broken shop. That's why the stale-price test in 21.11 is part of the gate, and why you should re-run it after every cache change. Cache the public catalogue only, never cart, orders, or auth responses, and the Week 3 demo behaves identically — just snappier on repeat visits.
 
 </FaqItem>
 
-<FaqItem question="What does `explain()` show, and why does the gate require it?">
+<FaqItem question={"What does `explain()` show, and why does the gate require it?"}>
 
 `explain()` asks MongoDB to describe how it actually ran a query. For `?search=milk`, a good explain shows the query was answered using the text index on name + category rather than scanning every product document (a collection scan). The gate requires that proof because "search feels fast" is a feeling, but `explain()` output is evidence. You create the index in 21.12 and capture the explain proof in 21.13 — both are ticked items in this chapter's gate.
 
 </FaqItem>
 
-<FaqItem question="Where do I document the cache key pattern?">
+<FaqItem question={"Where do I document the cache key pattern?"}>
 
 In your README — and it matters more than it sounds. A mentor will grep for your key scheme during the viva, and you'll need the same documentation to debug your own cache later. State the pattern (something like `catalogue:&#123;hash(sortedQueryParams)&#125;`), the TTL you chose from 300–900 seconds, and every write path that triggers invalidation. A cache with undocumented keys is a mystery waiting for whoever maintains it next — likely you.
 
@@ -116,7 +116,7 @@ In your README — and it matters more than it sounds. A mentor will grep for yo
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KQT3KV99Z4ZFDNYYA7RN" />
+<OpenQuestion id="01M34MRBJQ71G5MHAGVMVH68MK" />
 
 ## Next
 

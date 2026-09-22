@@ -7,6 +7,8 @@ export type FileTreeItemProps = {
   path: string;
   highlight?: boolean;
   new?: boolean;
+  /** Optional shell command shown under the tree when set on any item */
+  command?: string;
 };
 
 export function FileTreeItem(_props: FileTreeItemProps) {
@@ -89,6 +91,20 @@ export function FileTree({ title, root, children }: FileTreeProps) {
           );
         })}
       </ul>
+      {items.some((i) => i.command) ? (
+        <div className="space-y-2 border-t border-neutral-100 bg-neutral-950 px-4 py-3 sm:px-5">
+          {items
+            .filter((i) => i.command)
+            .map((item) => (
+              <div key={`cmd-${item.path}`}>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                  {item.path.replace(/\/$/, "")}
+                </p>
+                <code className="mt-1 block font-mono text-xs text-emerald-400">{item.command}</code>
+              </div>
+            ))}
+        </div>
+      ) : null}
     </LearnPanelShell>
   );
 }

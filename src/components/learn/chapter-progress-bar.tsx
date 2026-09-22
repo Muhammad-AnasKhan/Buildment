@@ -10,7 +10,7 @@ export function ChapterProgressBar({ progress }: ProgressBarProps) {
   return (
     <div className="h-px w-full shrink-0 bg-neutral-100" aria-hidden>
       <div
-        className="h-px bg-indigo-500/50 transition-[width] duration-500 ease-out"
+        className="h-px bg-neutral-900/40 transition-[width] duration-500 ease-out"
         style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
       />
     </div>

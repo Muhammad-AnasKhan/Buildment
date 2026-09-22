@@ -75,37 +75,37 @@ Same products. Same prices. Same store names. Now with photos, whitespace, and a
 
 <FaqGroup>
 
-<FaqItem question="Why not build the shop UI in the same chapter as the API?">
+<FaqItem question={"Why not build the shop UI in the same chapter as the API?"}>
 
 Because splitting keeps each gate testable on its own. Chapter 14 proved `GET /products` with curl — right JSON, right filters, no N+1. Had the UI lived in the same chapter, a bug could hide in either place and you'd debug both at once. With the split, when the grid looks wrong you know the API isn't the culprit: it already returned clean data. API proven with curl, UI proven in the browser — when things break, you know which half to blame.
 
 </FaqItem>
 
-<FaqItem question="Do I need to be logged in to browse?">
+<FaqItem question={"Do I need to be logged in to browse?"}>
 
 Not for the Chapter 15 gate — the shop is a public storefront, so anyone can browse without an account. Login only matters once a customer wants to do something persistent, like add to cart. The add-to-cart button on the detail page is a visual stub this chapter; the real wiring comes in Chapter 17, and that's when the customer token becomes necessary. So don't bolt auth onto the shop grid yet — keep browsing public for now.
 
 </FaqItem>
 
-<FaqItem question="Should I filter products in React after one big fetch?">
+<FaqItem question={"Should I filter products in React after one big fetch?"}>
 
 No. The API already supports filtering with query parameters and it paginates — it returns one page at a time, not the whole catalogue. If you fetched everything once and filtered in browser memory, you'd break pagination, download hundreds of products into the tab, and duplicate logic the server already has. Instead, send `category` and `storeId` (and `page`) as query parameters and refetch on every filter change. The server stays the single source of truth for what gets shown.
 
 </FaqItem>
 
-<FaqItem question="Why is the add-to-cart button not doing anything?">
+<FaqItem question={"Why is the add-to-cart button not doing anything?"}>
 
 That's intentional — this chapter builds the shop window, not the cart. The spec says the button on the product detail page is a stub: it exists visually and maybe shows a toast or a console log, but it does not POST anything yet. The real wiring comes in Chapter 17, after the cart API exists in Chapter 16. So don't chase a bug; the "bug" is the planned roadmap. A visible-but-inert button marks exactly where the next chapter plugs in.
 
 </FaqItem>
 
-<FaqItem question="Where does each product card get its data?">
+<FaqItem question={"Where does each product card get its data?"}>
 
 Directly from the API response — one card field maps to one API field. `imageUrl` becomes the photo, `name` the title, `price` with `unit` the price line, and `store.name` the "Sold by Green Valley" label. Because Chapter 14 already handled publish/stock filtering and pagination on the server, your React component just renders what `GET /products` returns — it should not re-check whether a product is published or in stock. Duplicate that logic in React and you get two sources of truth that drift apart.
 
 </FaqItem>
 
-<FaqItem question="My images don't show — where do I look first?">
+<FaqItem question={"My images don't show — where do I look first?"}>
 
 Work backwards through the chain. First check the API response: does the product actually have an `imageUrl`? If the seed or Chapter 13 upload never ran, it's empty. Then check your card component — is `&lt;img src=&#123;product.imageUrl&#125;>` actually using the field? Finally, open the browser network tab and look at the failed request: a 404 means the URL points at a file that doesn't exist on Cloudinary. One of those three steps is where the answer hides.
 
@@ -173,4 +173,4 @@ While catalogue fetches run, placeholder cards communicate progress better than 
 
 Visual contract before you scaffold files.
 
-<ChapterRecap id="01KZP7KQ8XA8STW5892M7FNNAW" />
+<ChapterRecap id="01M34MRAMCFX2ET3T158364BGM" />

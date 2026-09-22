@@ -4,32 +4,32 @@ import { Info, Lightbulb, TriangleAlert, CircleCheck } from "lucide-react";
 
 const CALLOUT_STYLES = {
   info: {
-    border: "border-blue-200/90",
-    bg: "bg-gradient-to-br from-blue-50 to-white",
+    border: "border-blue-200/90 dark:border-blue-500/30",
+    bg: "bg-gradient-to-br from-blue-50 to-card dark:from-blue-500/10 dark:to-card",
     iconBg: "bg-blue-100",
     iconColor: "text-blue-600",
     label: "Note",
     Icon: Info,
   },
   tip: {
-    border: "border-emerald-200/90",
-    bg: "bg-gradient-to-br from-emerald-50 to-white",
+    border: "border-emerald-200/90 dark:border-emerald-500/30",
+    bg: "bg-gradient-to-br from-emerald-50 to-card dark:from-emerald-500/10 dark:to-card",
     iconBg: "bg-emerald-100",
     iconColor: "text-emerald-600",
     label: "Tip",
     Icon: Lightbulb,
   },
   warning: {
-    border: "border-amber-200/90",
-    bg: "bg-gradient-to-br from-amber-50 to-white",
+    border: "border-amber-200/90 dark:border-amber-500/30",
+    bg: "bg-gradient-to-br from-amber-50 to-card dark:from-amber-500/10 dark:to-card",
     iconBg: "bg-amber-100",
     iconColor: "text-amber-600",
     label: "Warning",
     Icon: TriangleAlert,
   },
   success: {
-    border: "border-emerald-200/90",
-    bg: "bg-gradient-to-br from-emerald-50 to-white",
+    border: "border-emerald-200/90 dark:border-emerald-500/30",
+    bg: "bg-gradient-to-br from-emerald-50 to-card dark:from-emerald-500/10 dark:to-card",
     iconBg: "bg-emerald-100",
     iconColor: "text-emerald-600",
     label: "Success",
@@ -68,8 +68,8 @@ export function Callout({ type = "info", title, children }: CalloutProps) {
           <Icon className={cn("size-5", style.iconColor)} aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold tracking-tight text-neutral-950">{heading}</p>
-          <div className="mt-2 text-sm leading-relaxed text-neutral-700 [&_p]:mt-0 [&_p+p]:mt-3 [&_strong]:font-semibold [&_strong]:text-neutral-900">
+          <p className="text-sm font-semibold tracking-tight text-foreground">{heading}</p>
+          <div className="mt-2 text-sm leading-relaxed text-foreground/85 [&_p]:mt-0 [&_p+p]:mt-3 [&_strong]:font-semibold [&_strong]:text-foreground">
             {children}
           </div>
         </div>

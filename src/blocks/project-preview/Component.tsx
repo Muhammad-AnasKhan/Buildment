@@ -15,7 +15,7 @@ export async function ProjectPreviewComponent({ id }: { id: string }) {
   }
 
   return (
-    <div className="not-prose my-8 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm">
+    <div className="not-prose my-8 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
       <div className="relative overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-800 px-6 py-8 sm:px-8">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.1),transparent_70%)]" />
         <div className="relative">

@@ -92,37 +92,37 @@ Everything you've run locally has to be re-created in production — this table 
 
 <FaqGroup>
 
-<FaqItem question="What is \"deploy\" in one sentence?">
+<FaqItem question={"What is \"deploy\" in one sentence?"}>
 
 Deploy means copying your server and your built client to machines that stay online 24/7, wiring in the production secrets on the host, and getting HTTPS URLs that work for anyone — even when your laptop is closed. Everything you built on `localhost` moves into a new home with a public address. Your laptop is a demo; a deployed app is a product anyone can open.
 
 </FaqItem>
 
-<FaqItem question="Where do secrets go in production?">
+<FaqItem question={"Where do secrets go in production?"}>
 
 In the host's environment variable panel — Render's "Environment", Railway's "Variables", or a VPS's `/etc/environment` or PM2 ecosystem file. The variable *names* match `server/.env.example`; only the *values* change to production credentials. That's the production version of your local `.env`: the host injects them at runtime. Never commit a production `.env` to Git — and leave your local `.env` untouched so your dev setup keeps working too.
 
 </FaqItem>
 
-<FaqItem question="What is `VITE_API_URL` and why does it matter at build time?">
+<FaqItem question={"What is `VITE_API_URL` and why does it matter at build time?"}>
 
 `VITE_API_URL` is the base URL your React app calls — the API host. Vite bakes `import.meta.env.VITE_API_URL` straight into the JavaScript bundle when you run `npm run build`, so the URL is frozen into the static files in `client/dist/`. It is not read from a runtime file. Change the API later and you must rebuild and redeploy the client, or the old bundle keeps calling the old URL.
 
 </FaqItem>
 
-<FaqItem question="Do I deploy only the API?">
+<FaqItem question={"Do I deploy only the API?"}>
 
 No — the gate needs three pieces: an HTTPS API, an HTTPS client, and the worker process. Chapter 22's whole point was that the worker is a separate process, and production is no different. Deploy only the API and checkout still enqueues jobs, but nothing processes them, so no `[NOTIFY]` notifications ever appear. It's the classic "worked in dev, silently broken in production" trap.
 
 </FaqItem>
 
-<FaqItem question="Which host should I pick?">
+<FaqItem question={"Which host should I pick?"}>
 
 If you're new to deployment, put the API on Render or Railway and the client on Vercel — HTTPS comes automatically and you set env vars in a web panel. If you're comfortable with Linux, a single VPS with PM2 and Caddy is more setup but a stronger "I understand the full stack" story in a viva. There's no wrong answer; pick one path in 23.4, document it, and don't half-deploy across three platforms.
 
 </FaqItem>
 
-<FaqItem question="What if a smoke test passes locally but fails on production?">
+<FaqItem question={"What if a smoke test passes locally but fails on production?"}>
 
 It almost always means the environment differs, not the code. Common culprits: the client build points at the wrong `VITE_API_URL`, CORS still only allows `localhost:5173`, the worker is missing an env var like `REDIS_URL`, or MongoDB Atlas isn't allowing the host's IP. Chapter 23.13 walks a fix matrix for exactly these. The skill is reading error messages and checking your config — not rewriting working code.
 
@@ -166,7 +166,7 @@ Database URL, Stripe keys, Cloudinary, Redis, JWT secrets, CORS origin — produ
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KR02RXP9CDJE25MWTMTM" />
+<OpenQuestion id="01M34MRBXDK8DMG26AQ0ZZ6AGR" />
 
 ## Next
 

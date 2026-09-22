@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/server/db";
 import { auth } from "./auth";
 import { canAccessRole, homeRouteForRole, isMentorOfCourse } from "./access-rules";
+import { canAccessHelpThread } from "@/server/help/access";
 
 export { canAccessRole, homeRouteForRole, isMentorOfCourse } from "./access-rules";
 
@@ -57,4 +58,22 @@ export async function requireEnrolledMentee(courseId: string) {
     throw new ForbiddenError(`User ${user.id} is not enrolled in course ${courseId}`);
   }
   return { user, enrollment };
+}
+
+/** Throws ForbiddenError if the user cannot read this help thread (mentee owner or course mentor). */
+export async function requireHelpThreadAccess(threadId: string) {
+  const user = await requireUser();
+  const thread = await prisma.helpThread.findUnique({
+    where: { id: threadId },
+    include: {
+      course: { select: { id: true, slug: true, title: true, mentorId: true } },
+      chapter: { select: { id: true, slug: true, title: true } },
+      mentee: { select: { id: true, name: true, email: true } },
+    },
+  });
+  if (!thread) notFound();
+  if (!canAccessHelpThread(user, thread, thread.course)) {
+    throw new ForbiddenError(`User ${user.id} cannot access help thread ${threadId}`);
+  }
+  return { user, thread };
 }

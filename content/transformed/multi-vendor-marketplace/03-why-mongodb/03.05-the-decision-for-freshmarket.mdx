@@ -110,19 +110,19 @@ Here's the weighted comparison that led to this decision:
 
 <FaqGroup>
 
-<FaqItem question="Is MongoDB \"mandated\" just because MERN starts with M?">
+<FaqItem question={"Is MongoDB \"mandated\" just because MERN starts with M?"}>
 
 No — the "M" is a hint, not the reason. FreshMarket picks MongoDB because the data actually fits a document model: an order embeds its line items and price snapshot naturally in one document, the JSON your API sends maps almost one-to-one onto Mongo documents (less shape-shifting between database and response), and Mongoose's schema layer is forgiving for learners. The MERN coherence is a convenience — one language everywhere — but it's the document-shaped data that makes the choice honest.
 
 </FaqItem>
 
-<FaqItem question="What cons must I honestly accept?">
+<FaqItem question={"What cons must I honestly accept?"}>
 
 Three real trade-offs. First, referential integrity is enforced by your application code, not the database — nothing stops you storing a `storeId` that points nowhere unless your code checks. Second, reporting and analytics across collections take more work than SQL. Third, multi-document operations like checkout need explicit design (transactions or careful ordering) because a single document can't span everything. Knowing the cons matters: a bar-raiser asks "what did MongoDB cost you?", and "I know these three" is the right answer.
 
 </FaqItem>
 
-<FaqItem question="Can I switch to Postgres at Chapter 10?">
+<FaqItem question={"Can I switch to Postgres at Chapter 10?"}>
 
 Practically, no — and that's by design, not an accident. Twenty chapters of examples, routes, and schemas assume Mongoose and document semantics; switching at Chapter 10 means rewriting every query, every model, and every decision you've made so far. The course commits to MongoDB so you can spend your energy learning the *patterns* — ownership, snapshots, caching, auth — instead of re-learning a database. If you want a different stack, that's a Chapter 0 decision for your own project, not a mid-course change.
 
@@ -168,7 +168,7 @@ Stay focused on **collections and relationships** for now.
 
 **❌ Don't:** Argue for Postgres while reading Mongo chapters.
 
-<ChapterRecap id="01KZP7KP0YQKW1QCPYYWXW26S1" />
+<ChapterRecap id="01M34MR8G0F5VY00RA444634NR" />
 
 ## Self-check
 

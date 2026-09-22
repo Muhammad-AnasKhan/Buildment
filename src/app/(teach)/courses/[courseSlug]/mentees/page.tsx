@@ -6,6 +6,8 @@ import { requireMentorOfCourse } from "@/server/auth/guards";
 import { assignByEmails, revokeInvite } from "@/server/actions/invites";
 import { inviteAcceptUrl } from "@/server/email/send";
 import { InviteLinkManager } from "@/components/teach/invite-link-manager";
+import { RepairEnrollmentProgressButton } from "@/components/teach/repair-enrollment-progress-button";
+import { NudgeMenteeButton } from "@/components/teach/nudge-mentee-button";
 
 type SearchParams = {
   enrolled?: string;
@@ -213,15 +215,19 @@ export default async function CourseMenteesPage({
                     <th className="px-4 py-3">Progress</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Last active</th>
+                    <th className="px-4 py-3">Tools</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-neutral-100">
                   {course.enrollments.map((enrollment) => (
                     <tr key={enrollment.id}>
                       <td className="px-4 py-3">
-                        <p className="font-medium text-neutral-900">
+                        <Link
+                          href={`/courses/${course.slug}/mentees/${enrollment.id}`}
+                          className="font-medium text-neutral-900 underline-offset-2 hover:underline"
+                        >
                           {enrollment.user.name ?? "Unnamed"}
-                        </p>
+                        </Link>
                         <p className="text-xs text-neutral-400">{enrollment.user.email}</p>
                       </td>
                       <td className="px-4 py-3">
@@ -256,6 +262,12 @@ export default async function CourseMenteesPage({
                         {enrollment.lastActiveAt
                           ? enrollment.lastActiveAt.toLocaleDateString()
                           : "Not started"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex flex-wrap gap-2">
+                          <NudgeMenteeButton enrollmentId={enrollment.id} />
+                          <RepairEnrollmentProgressButton enrollmentId={enrollment.id} />
+                        </div>
                       </td>
                     </tr>
                   ))}

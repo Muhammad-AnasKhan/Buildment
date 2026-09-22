@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, HelpCircle, RotateCcw, XCircle } from "lucide-react";
+import { CheckCircle2, RotateCcw, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { QuizOptions } from "@/components/learn/quiz-options";
+import { readerCard, readerCardFooter, readerCardHeader, readerTitle } from "@/components/learn/reader-theme";
 import type { SanitizedQuizConfig } from "./schema";
 
 type RespondResult = {
@@ -23,14 +24,54 @@ export type QuizInitialState = {
   explanation?: string;
 };
 
+function ResultBanner({ result, canRetry, onRetry }: {
+  result: RespondResult;
+  canRetry: boolean;
+  onRetry: () => void;
+}) {
+  const correct = result.isCorrect === true;
+  return (
+    <div className="space-y-3">
+      <div
+        className={cn(
+          "flex items-start gap-2.5 rounded-xl border p-4 text-sm",
+          correct
+            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:text-emerald-100"
+            : "border-amber-500/30 bg-amber-500/10 text-amber-950 dark:text-amber-50"
+        )}
+      >
+        {correct ? (
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        ) : (
+          <XCircle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+        )}
+        <div className="min-w-0">
+          <p className="font-semibold">{correct ? "Correct!" : "Not quite right"}</p>
+          {result.explanation ? (
+            <p className="mt-1.5 leading-relaxed opacity-90">{result.explanation}</p>
+          ) : null}
+        </div>
+      </div>
+      {canRetry ? (
+        <Button type="button" size="sm" variant="ghost" className="gap-1.5" onClick={onRetry}>
+          <RotateCcw className="size-3.5" />
+          Try again
+        </Button>
+      ) : null}
+    </div>
+  );
+}
+
 export function QuizClient({
   id,
   config,
   initialState,
+  presentation = "standalone",
 }: {
   id: string;
   config: SanitizedQuizConfig;
   initialState?: QuizInitialState | null;
+  presentation?: "standalone" | "wizard";
 }) {
   const router = useRouter();
   const isMultiple = config.quizType === "multiple";
@@ -80,27 +121,11 @@ export function QuizClient({
     }
   }
 
-  const canRetry = result && !result.isCorrect && config.allowRetry;
+  const canRetry = Boolean(result && !result.isCorrect && config.allowRetry);
   const hasAnswered = result !== null;
 
-  return (
-    <div className="not-prose my-8 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
-      {/* Header */}
-      <div className="flex items-start gap-3 border-b border-neutral-100 bg-neutral-50/60 px-5 py-4 sm:px-6">
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
-          <HelpCircle className="size-4" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-indigo-600">
-            Knowledge check
-          </p>
-          <p className="mt-0.5 text-[15px] font-medium leading-snug text-neutral-900 sm:text-base">
-            {config.prompt}
-          </p>
-        </div>
-      </div>
-
-      {/* Options */}
+  const optionsBlock = (
+    <div className={cn(presentation === "wizard" ? "overflow-hidden rounded-xl border border-border" : "")}>
       <QuizOptions
         options={config.options}
         selected={selected}
@@ -108,73 +133,69 @@ export function QuizClient({
         disabled={hasAnswered}
         multiple={isMultiple}
       />
+    </div>
+  );
 
-      {/* Result / Actions */}
-      <div className="border-t border-neutral-100 bg-neutral-50/40 px-5 py-4 sm:px-6">
-        {hasAnswered && result ? (
-          <div className="space-y-3">
-            <div
-              className={cn(
-                "flex items-start gap-2.5 rounded-lg p-3 text-sm",
-                result.isCorrect
-                  ? "bg-emerald-50 text-emerald-900"
-                  : "bg-amber-50 text-amber-900"
-              )}
-            >
-              {result.isCorrect ? (
-                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
-              ) : (
-                <XCircle className="mt-0.5 size-4 shrink-0 text-amber-600" />
-              )}
-              <div>
-                <p className="font-semibold">
-                  {result.isCorrect ? "Correct!" : "Not quite right"}
-                </p>
-                {result.explanation ? (
-                  <p className="mt-1 leading-relaxed text-neutral-700">
-                    {result.explanation}
-                  </p>
-                ) : null}
-              </div>
-            </div>
+  const actionsBlock = hasAnswered && result ? (
+    <ResultBanner
+      result={result}
+      canRetry={canRetry}
+      onRetry={() => {
+        setResult(null);
+        setSelected([]);
+      }}
+    />
+  ) : (
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+      <Button
+        type="button"
+        size="sm"
+        onClick={submit}
+        disabled={selected.length === 0 || submitting}
+        className="h-9 rounded-full px-6"
+      >
+        {submitting ? "Checking…" : "Check answer"}
+      </Button>
+      {error ? (
+        <p className="text-sm text-destructive">{error}</p>
+      ) : (
+        <p className="text-xs text-muted-foreground">
+          {selected.length === 0
+            ? "Select an option, then check your answer"
+            : `${selected.length} selected`}
+        </p>
+      )}
+    </div>
+  );
 
-            {canRetry ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="gap-1.5 text-neutral-600 hover:text-neutral-900"
-                onClick={() => {
-                  setResult(null);
-                  setSelected([]);
-                }}
-              >
-                <RotateCcw className="size-3.5" />
-                Try again
-              </Button>
-            ) : null}
-          </div>
-        ) : (
-          <div className="flex items-center gap-3">
-            <Button
-              size="sm"
-              onClick={submit}
-              disabled={selected.length === 0 || submitting}
-              className="h-9 gap-1.5 rounded-full bg-neutral-950 px-5 text-sm font-medium text-white shadow-sm hover:bg-neutral-800"
-            >
-              {submitting ? "Checking…" : "Check answer"}
-            </Button>
-            {error ? (
-              <p className="text-sm text-red-600">{error}</p>
-            ) : (
-              <p className="text-xs text-neutral-400">
-                {selected.length === 0
-                  ? "Select an option to continue"
-                  : `${selected.length} option${selected.length > 1 ? "s" : ""} selected`}
-              </p>
-            )}
-          </div>
-        )}
+  if (presentation === "wizard") {
+    return (
+      <div className="not-prose space-y-6">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">Knowledge check</p>
+          <p className="mt-2 text-lg font-medium leading-snug tracking-tight text-foreground sm:text-xl">
+            {config.prompt}
+          </p>
+        </div>
+        {optionsBlock}
+        {actionsBlock}
       </div>
+    );
+  }
+
+  return (
+    <div className={cn("not-prose my-8", readerCard)}>
+      <div className={cn(readerCardHeader, "flex items-start gap-3")}>
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
+          <span className="text-sm font-bold">?</span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">Knowledge check</p>
+          <p className={cn("mt-0.5", readerTitle)}>{config.prompt}</p>
+        </div>
+      </div>
+      {optionsBlock}
+      <div className={readerCardFooter}>{actionsBlock}</div>
     </div>
   );
 }

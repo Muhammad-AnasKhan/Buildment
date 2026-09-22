@@ -29,7 +29,7 @@ async function main() {
 
   const course = await prisma.course.upsert({
     where: { slug: SEED_COURSE.slug },
-    update: {},
+    update: { sequential: true, status: "PUBLISHED", publishedAt: new Date() },
     create: {
       slug: SEED_COURSE.slug,
       title: SEED_COURSE.title,
@@ -38,17 +38,19 @@ async function main() {
       difficulty: SEED_COURSE.difficulty,
       estimatedHours: SEED_COURSE.estimatedHours,
       status: "PUBLISHED",
+      sequential: true,
       mentorId: mentor.id,
       publishedAt: new Date(),
     },
   });
 
+  const enrollments = [mentor, ...mentees];
   await Promise.all(
-    mentees.map((mentee) =>
+    enrollments.map((user) =>
       prisma.enrollment.upsert({
-        where: { courseId_userId: { courseId: course.id, userId: mentee.id } },
+        where: { courseId_userId: { courseId: course.id, userId: user.id } },
         update: {},
-        create: { courseId: course.id, userId: mentee.id, status: "ASSIGNED" },
+        create: { courseId: course.id, userId: user.id, status: "ASSIGNED" },
       })
     )
   );
@@ -56,7 +58,7 @@ async function main() {
   console.log("Seeded:");
   console.log(`  mentor:  ${mentor.email}`);
   mentees.forEach((m) => console.log(`  mentee:  ${m.email}`));
-  console.log(`  course:  ${course.slug} (${mentees.length} enrollments)`);
+  console.log(`  course:  ${course.slug} (${enrollments.length} enrollments, mentor included for dev preview)`);
 }
 
 main()

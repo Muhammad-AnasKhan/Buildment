@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 export function FaqGroup({ children }: { children: React.ReactNode }) {
   return (
-    <div className="not-prose my-8 overflow-hidden rounded-xl border border-neutral-200 bg-white">
+    <div className="not-prose my-8 overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
       <div className="divide-y divide-neutral-200">{children}</div>
     </div>
   );
@@ -31,14 +31,14 @@ function FaqItemInner({
       <div
         className={cn(
           "transition-colors",
-          open && "bg-neutral-50/80"
+          open && "bg-muted/40"
         )}
       >
         <CollapsibleTrigger className="group flex w-full items-start justify-between gap-4 px-5 py-4 text-left sm:px-6 sm:py-4">
           <span
             className={cn(
               "min-w-0 flex-1 text-[15px] font-medium leading-snug transition-colors",
-              open ? "text-neutral-950" : "text-neutral-800 group-hover:text-neutral-950"
+              open ? "text-foreground" : "text-foreground/90 group-hover:text-foreground"
             )}
           >
             {question}
@@ -48,7 +48,7 @@ function FaqItemInner({
               "mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md border transition-colors",
               open
                 ? "border-indigo-200 bg-indigo-50 text-indigo-600"
-                : "border-neutral-200 bg-white text-neutral-400 group-hover:border-neutral-300 group-hover:text-neutral-600"
+                : "border-border bg-card text-muted-foreground group-hover:border-foreground/20 group-hover:text-foreground"
             )}
           >
             <ChevronDown

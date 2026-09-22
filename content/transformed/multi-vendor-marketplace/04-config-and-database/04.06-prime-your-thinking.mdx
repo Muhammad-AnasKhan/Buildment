@@ -10,6 +10,10 @@ Before you write `shared/db.js`, read how **Mongoose** expects connections to wo
 
 You already decided *why* MongoDB (Chapter 3). This read covers *how* the driver connects — so your boot sequence in 4.11–4.12 matches official patterns.
 
+
+<Predict id="01M34MR8MSJHGMRPXRP5EPJQKV" />
+
+
 ## Why this matters for absolute beginners
 
 Connection bugs feel mystical — "Mongoose buffering timed out" with no context. Twenty minutes on the Connections page tells you **await connect before listen**, what `readyState` means, and why `db.js` should be shared with the Chapter 5 seed script. You are not memorizing API surface — you are preventing the most common Week 1 backend stall.
@@ -18,25 +22,25 @@ Connection bugs feel mystical — "Mongoose buffering timed out" with no context
 
 <FaqGroup>
 
-<FaqItem question="Can I copy the Mongoose docs sample server verbatim?">
+<FaqItem question={"Can I copy the Mongoose docs sample server verbatim?"}>
 
 Don't copy it wholesale — adapt the pattern to your project's structure. The docs show a complete server with the connection inline, but your course layout already decided that config lives in `shared/config.js` and the connection helper is `connectDB()` in `shared/db.js`. What you *should* take from the docs is the concept: `await mongoose.connect(uri)` before you start listening, and how the connection events behave. Think of the docs as the recipe and your modules as your kitchen — same ingredients, arranged the way your project already does things.
 
 </FaqItem>
 
-<FaqItem question="Should health use `readyState` or a boolean I set?">
+<FaqItem question={"Should health use `readyState` or a boolean I set?"}>
 
 Either is correct, as long as the health JSON always reflects the real connection state. `connection.readyState` is Mongoose's own answer — `0` disconnected, `1` connected, `2` connecting, `3` disconnecting — so reading it costs nothing and can't go stale. A boolean you set right after `connectDB()` succeeds is simpler, but it only captures the moment you connected; if the database dies later, that boolean still says "true." For a health check whose whole job is telling the truth, `readyState` is the more honest signal.
 
 </FaqItem>
 
-<FaqItem question="Why read disconnect if MVP never shuts down gracefully?">
+<FaqItem question={"Why read disconnect if MVP never shuts down gracefully?"}>
 
 Because "my dev machine never restarts" is a lie you'll meet in production, and disconnect is the flip side of connect — understanding it makes the whole connection model click. When a deploy platform restarts your server, it sends a shutdown signal; handling it with `mongoose.disconnect()` lets pending writes finish and closes the connection pool cleanly instead of dropping the database mid-request. It's optional for the gate, so don't stress, but skimming that section now means later you'll recognize what `SIGTERM` handlers and graceful shutdown are for.
 
 </FaqItem>
 
-<FaqItem question="What is \"Mongoose buffering timed out\" and why does it happen?">
+<FaqItem question={"What is \"Mongoose buffering timed out\" and why does it happen?"}>
 
 It's Mongoose's way of saying "your code asked me to touch the database before I ever connected." While a connection is being established, Mongoose *buffers* operations — it queues them up, waiting for the connection to complete. If the connection never succeeds, those queued operations time out with that error, and it usually means your app tried to run a query (or started `listen`) before `mongoose.connect()` finished. The fix is the ordering this chapter keeps repeating: load env → validate config → connect → listen. If `MONGODB_URI` is wrong or the database is down, fail at boot with a clear error instead of mystery timeouts later.
 
@@ -145,11 +149,6 @@ If `db.js` is wrong, every schema chapter fails for the same reason — fix conn
 **❌ Don't:** Use deprecated callback-only patterns from old Stack Overflow answers.
 
 **❌ Don't:** Skip reading because "I'll figure it out when it breaks" — boot bugs waste evenings.
-
-
-## Before you continue
-
-<OpenQuestion id="01KZP7KP3Q4A764SNAY7CA34GB" />
 
 ## Next
 

@@ -1,0 +1,57 @@
+---
+title: "Validate coupon API"
+module: 25
+lesson: 9
+summary: "Central validateCoupon function and POST /cart/coupon route returning pricing preview or generic error."
+---
+# 25.09 — Validate coupon API
+
+Implement `server/modules/pricing/validateCoupon.js` exporting `validateCoupon({ code, cart, userId })` → `{ ok: true, coupon } | { ok: false, reason }`.
+
+## Core checks (implement in order)
+
+```javascript
+export async function validateCoupon({ code, cart, userId }) {
+  const normalized = code.trim().toUpperCase();
+  const coupon = await Coupon.findOne({ code: normalized, isActive: true });
+  if (!coupon) return fail('NOT_FOUND');
+
+  const now = new Date();
+  if (now < coupon.startsAt || now > coupon.endsAt) return fail('EXPIRED');
+
+  const eligibleLines = filterEligibleLines(cart, coupon);
+  if (eligibleLines.length === 0) return fail('SCOPE');
+
+  const eligibleSubtotalCents = sumLines(eligibleLines);
+  if (eligibleSubtotalCents < coupon.minSubtotalCents) return fail('MIN_SUBTOTAL');
+
+  if (coupon.maxRedemptions != null && coupon.redemptionCount >= coupon.maxRedemptions) {
+    return fail('GLOBAL_CAP');
+  }
+
+  const userUses = await CouponRedemption.countDocuments({ couponId: coupon._id, userId });
+  if (userUses >= coupon.maxRedemptionsPerUser) return fail('USER_CAP');
+
+  return { ok: true, coupon, eligibleLines, eligibleSubtotalCents };
+}
+```
+
+## Route: POST `/cart/coupon`
+
+Auth required. Body `{ code }`.
+
+1. Load user cart with live product prices (same as checkout).
+2. Run validator.
+3. On success: persist `appliedCouponCode` on cart; call `computeCartPricing` (next lesson); return preview JSON.
+4. On failure: 400 with `{ error: 'INVALID_COUPON', message: "This code isn't valid for your cart." }`.
+
+## DELETE `/cart/coupon`
+
+Clear `appliedCouponCode`; return repriced cart.
+
+Wire routes in cart router module.
+
+**Next:** Recalculate cart totals service.
+## Before you continue
+
+<OpenQuestion id="01M34MRC84QHP8SABK1ZSG8285" />

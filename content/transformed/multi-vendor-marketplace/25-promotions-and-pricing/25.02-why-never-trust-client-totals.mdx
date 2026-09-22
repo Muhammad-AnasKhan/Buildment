@@ -1,0 +1,51 @@
+---
+title: "Why never trust client totals"
+module: 25
+lesson: 2
+summary: "Any total computed only in React can be forged. Production checkout re-prices on the server and passes that amount to Stripe."
+---
+# 25.02 — Why never trust client totals
+
+The client may **display** `$42.50`. Only the server may **charge** `$42.50`.
+
+## Attack you are preventing
+
+A user submits checkout with DevTools:
+
+```json
+{ "couponCode": "SAVE50", "clientTotalCents": 100 }
+```
+
+If the API forwards `clientTotalCents` to Stripe, they pay $1 for a $200 cart. If the API ignores coupons server-side, they pay $200 while marketing thinks SAVE50 fired.
+
+## Correct flow
+
+```
+Client → POST /cart/apply-coupon { code }
+Server → validate rules → persist appliedCoupon on cart session
+Server → recompute line totals + discount allocation
+Client → displays server-returned pricingPreview
+Client → POST /checkout/start (no total in body)
+Server → recompute again → create PI for server amount
+Webhook → persist snapshot on orders
+```
+
+Recompute **again** at checkout start so price or coupon state cannot drift between apply and pay.
+
+## Multi-vendor twist
+
+One checkout may split into **one order per vendor** (Chapter 18). A platform coupon might fund $10 across all stores; a store coupon applies only to lines from `storeId`. Your engine must **allocate** discount cents per line before snapshotting.
+
+| Coupon scope | Applies to |
+|---|---|
+| `platform` | Eligible lines marketplace-wide |
+| `store` | Lines where `line.storeId === coupon.storeId` |
+
+## Stripe alignment
+
+PaymentIntent `amount` must equal sum of server-computed payable totals (including discount). Mismatch causes webhook reconciliation pain.
+
+**Next:** Blueprint for models and routes.
+## Before you continue
+
+<OpenQuestion id="01M34MRC6AVGZ2C5M09JPT5M9E" />

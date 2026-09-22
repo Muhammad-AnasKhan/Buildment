@@ -45,31 +45,31 @@ The hat you wear now is **security-minded API builder**. You test every step wit
 
 <FaqGroup>
 
-<FaqItem question="Why curl before React login pages?">
+<FaqItem question={"Why curl before React login pages?"}>
 
 Testing with curl takes the browser out of the picture. When you hit your API directly, any failure is *your server code* — there's no React form, state, or network layer to hide behind. So if `register` works in curl but fails in the browser, you know the bug is on the client; if it fails in curl too, you know it's the server. Later, you'll reuse the exact JSON shapes you prove here when you build the React forms in Chapter 7, so this "boring" step saves you from guessing at field names later.
 
 </FaqItem>
 
-<FaqItem question="Why JWT instead of sessions?">
+<FaqItem question={"Why JWT instead of sessions?"}>
 
 Because this is a single-page app talking to an API, and JWTs fit that model naturally: the server signs a token, the client sends it on every request, and the server verifies it without looking anything up in the database. Server-side sessions work too — you store a session ID and look it up on each request — but that's extra storage and an extra lookup every time. Sub-chapter 6.4 compares both honestly. The course picks JWT plus a hashed refresh token because it's the pattern you'll see in most MERN projects, and it teaches you exactly what's inside a signed token.
 
 </FaqItem>
 
-<FaqItem question="Will OTP emails really send?">
+<FaqItem question={"Will OTP emails really send?"}>
 
 Not in this course — production email is out of scope. In development you'll log the OTP to the server console (or return it in the dev response) so you can copy it into the verify step. What matters is the *flow*: the server generates a code, stores it with an expiry, and only marks the user verified when the right code arrives. Swap the `console.log` for a real email service later and nothing else in the flow changes.
 
 </FaqItem>
 
-<FaqItem question="Can I skip OTP because it's annoying in dev?">
+<FaqItem question={"Can I skip OTP because it's annoying in dev?"}>
 
 Don't skip the step — simplify the delivery. Chapter 7's Verify OTP page and the vendor onboarding in Chapter 10 both depend on `isVerified` being set correctly. If you rip the gate out now, every later chapter that checks `isVerified` will behave differently than the spec says. Keep the full state machine — generate, store, verify — and just make the code easy to grab in development.
 
 </FaqItem>
 
-<FaqItem question="Does auth alone stop Vendor B editing Vendor A's products?">
+<FaqItem question={"Does auth alone stop Vendor B editing Vendor A's products?"}>
 
 Not fully. Authentication answers "who are you?" — after login you have `req.user.id` and `req.user.role`. Whether Vendor B is *allowed* to touch a specific product is authorization, and that's Chapter 8. What auth gives you now is the identity you'll need; Chapter 8 adds the ownership checks that compare that identity against the store that owns the product.
 
@@ -167,7 +167,7 @@ If access tokens lived for weeks, a stolen token would stay valid for weeks. If 
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KPBJ5AWV6SED6V9669DG" />
+<OpenQuestion id="01M34MR90N5KK0GDTYANMWT9N8" />
 
 ## Next
 

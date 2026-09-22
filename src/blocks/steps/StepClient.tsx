@@ -19,23 +19,34 @@ export function StepClient({
       {/* Connecting vertical line from this step's circle to the next */}
       {!isLast && (
         <div
-          className="absolute left-[15px] top-8 w-px bg-neutral-200"
+          className="absolute left-[15px] top-8 w-px bg-border"
           style={{ height: "calc(100% - 16px)" }}
           aria-hidden="true"
         />
       )}
 
       {/* Numbered circle */}
-      <div className="relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-indigo-200 bg-indigo-50 text-sm font-bold text-indigo-700">
+      <div className="relative z-10 flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-primary/30 bg-primary/10 text-sm font-bold text-primary">
         {stepNumber}
       </div>
 
       {/* Step body */}
       <div className="min-w-0 flex-1 pt-0.5">
-        <h3 className="text-[15px] font-semibold leading-snug text-neutral-950">
+        <h3 className="text-[15px] font-semibold leading-snug text-foreground">
           {title}
         </h3>
-        <div className="mt-2 text-[15px] leading-relaxed text-neutral-700 [&_p]:my-2 [&_ul]:my-2 [&_ol]:my-2 [&_pre]:my-3 [&_pre]:rounded-xl [&_pre]:border [&_pre]:border-neutral-800 [&_pre]:bg-neutral-950 [&_pre]:p-4 [&_code]:rounded [&_code]:bg-neutral-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[13px] [&_code]:text-neutral-800 [&_code:before]:content-none [&_code:after]:content-none [&_a]:text-indigo-600 [&_a]:underline [&_a]:underline-offset-2 [&_strong]:text-neutral-950 [&_li]:my-0.5">
+        <div
+          className={cn(
+            "mt-2 text-[15px] leading-relaxed text-foreground/90",
+            "[&_p]:my-2 [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-0.5",
+            "[&_.shiki-figure]:my-4",
+            "[&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2",
+            "[&_strong]:font-semibold [&_strong]:text-foreground",
+            "[&_:not(pre)>code]:rounded [&_:not(pre)>code]:bg-muted [&_:not(pre)>code]:px-1.5 [&_:not(pre)>code]:py-0.5",
+            "[&_:not(pre)>code]:text-[13px] [&_:not(pre)>code]:text-foreground",
+            "[&_:not(pre)>code:before]:content-none [&_:not(pre)>code:after]:content-none"
+          )}
+        >
           {children}
         </div>
       </div>

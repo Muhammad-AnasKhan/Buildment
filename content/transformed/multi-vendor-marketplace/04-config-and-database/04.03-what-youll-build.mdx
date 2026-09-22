@@ -17,7 +17,7 @@ By the end of Chapter 4, your marketplace API will:
 3. **Report database status** on the `/health` endpoint
 4. **Show database status** on your React Home page
 
-<ProjectPreview id="01KZP7KP2YBV3N49SJNE55VNKB" />
+<ProjectPreview id="01M34MR8KF8RX7NADC0GBDG8KK" />
 
 ## Why this matters
 
@@ -100,19 +100,19 @@ When MongoDB is down, health must **never** claim `"db": "connected"`.
 
 <FaqGroup>
 
-<FaqItem question="Do I create Mongoose models in this chapter?">
+<FaqItem question={"Do I create Mongoose models in this chapter?"}>
 
 No — this chapter is connection and configuration only. You set up the Mongo driver, wire `db.js` into your app on boot, and prove the connection with the health check. The models (User, Store, Product, Cart, Order) come in Chapter 5, after Chapter 3's design work has settled the shapes. Keep this chapter narrow on purpose: a connection that's proven first is far easier to debug than one tangled up with schemas. If you're tempted to add a model now, remember Chapter 5 will hand you the exact fields to use.
 
 </FaqItem>
 
-<FaqItem question="Why connect before calling `listen()`?">
+<FaqItem question={"Why connect before calling `listen()`?"}>
 
 So your API never claims to be healthy while its database is down. If you start serving traffic first and connect to MongoDB afterwards, there's a window where requests arrive and fail because the database isn't ready — your health endpoint would report "up" while the app can't do anything real. Connecting first means `app.listen()` only runs once the database is reachable, so `/health` can report the true state of the world instead of a lie. Boot order is a small detail that saves you a whole class of confusing bugs.
 
 </FaqItem>
 
-<FaqItem question="Does the client need new env vars for MongoDB?">
+<FaqItem question={"Does the client need new env vars for MongoDB?"}>
 
 No — and this is an important separation to internalise. The React app never talks to MongoDB directly; it only talks to your Express API via `VITE_API_URL`. The `MONGODB_URI` lives in the server's `.env` and never leaves the server. If you ever see a database URI in browser code, that's a security problem — it means the client could bypass your API and hit the database with full access. The browser gets `VITE_API_URL`; the server keeps the keys.
 
@@ -133,7 +133,7 @@ No — and this is an important separation to internalise. The React app never t
 | client env/UI | 4.14 |
 | failure tests | 4.15 |
 
-<ChapterRecap id="01KZP7KP2Y1KQG98CZXM8QJY78" />
+<ChapterRecap id="01M34MR8KF5JFYWD86GQZZE1FP" />
 
 **Next:** Environment variables vs hardcoded values — why `.env.example` is documentation.
 <InterestingRead title="The `.env` leak that took down a startup demo" hook="One committed secret becomes everyone's secret." readMinutes={3}>

@@ -77,31 +77,31 @@ Paste **live client HTTPS URL** in learning log 23.16.
 
 <FaqGroup>
 
-<FaqItem question="Is deploy a coding chapter?">
+<FaqItem question={"Is deploy a coding chapter?"}>
 
 Mostly not — it's a configuration and verification chapter. The code is done; operations begin. You'll copy the API to a host, build the client with a production `VITE_API_URL`, run the worker as a second process, and prove the pieces work over HTTPS with smoke tests. Expect the "coding" here to be small config fixes, not new features. That's normal — a big part of real engineering is shipping what already works.
 
 </FaqItem>
 
-<FaqItem question="Is the free tier enough?">
+<FaqItem question={"Is the free tier enough?"}>
 
 Usually yes for the course gate. Render, Railway, and Vercel free tiers can run a small API, worker, and static client — just be ready for cold starts: after being idle, the first request can take 30–60 seconds to wake the service. If your health check is slow after idle, that's expected; note it in your learning log and retry the smoke test once.
 
 </FaqItem>
 
-<FaqItem question="One service or three?">
+<FaqItem question={"One service or three?"}>
 
 Minimum is three pieces: the API service, the worker service, and the static client host. On a VPS you can compress that to two homes — PM2 runs both the API and worker on one machine, and nginx serves the built client. On PaaS, the worker is a second service from the same repo with the start command `npm run worker`. The worker is non-negotiable: deploy API and client alone and notifications silently stop.
 
 </FaqItem>
 
-<FaqItem question="What is a smoke test, and why run it on the live URL?">
+<FaqItem question={"What is a smoke test, and why run it on the live URL?"}>
 
 A smoke test is a quick sanity check that the critical paths work — health returns `db: connected`, a customer can log in, browse, and check out, and the worker logs notifications afterward. You run it on the production URLs, not localhost, because that's what a mentor will do. Passing locally proves nothing about DNS, CORS, env vars, or the worker on the host; the live URL is the only place all of those can fail.
 
 </FaqItem>
 
-<FaqItem question="Why is `VITE_API_URL` frozen at build time?">
+<FaqItem question={"Why is `VITE_API_URL` frozen at build time?"}>
 
 Because Vite is a build tool: when you run `npm run build`, it replaces `import.meta.env.VITE_API_URL` with whatever value you provided and bakes it into the static files in `client/dist/`. Those files don't load any runtime config — the API URL is literally in the bundle. So the value must be correct *at build time*, and changing it later means rebuilding and redeploying the client.
 
@@ -113,7 +113,7 @@ Because Vite is a build tool: when you run `npm run build`, it replaces `import.
 
 ## Before you continue
 
-<OpenQuestion id="01KZP7KR0EHWNHKP6KCD0TVSW8" />
+<OpenQuestion id="01M34MRBY3S3Z76CMZHMTZGAT0" />
 
 ## Next
 

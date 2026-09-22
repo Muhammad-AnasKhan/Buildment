@@ -121,7 +121,18 @@ Catalogue (see products)
 | 21 | **Cache & search** | Redis cache; bust on save; text index; fallback if Redis down |
 | 22 | **Async jobs & queues** | BullMQ on Redis; checkout enqueues notify jobs; worker process |
 | 23 | **Deploy** | Public HTTPS; client + API + worker; secrets in env; survives restart |
+| 24 | **Inventory reservations** | Checkout holds; confirm on payment; ATP; no overselling |
+| 25 | **Promotions & pricing** | Server-side coupons; Stripe amount = server total |
 | 99 | **Closing** | Docs, demo video, case study, bar-raiser |
+
+## Week 5 — Production hardening
+
+**Week demo target:** Last unit cannot double-sell under parallel checkout; coupon discount matches Stripe charge.
+
+| # | Chapter | Done when… |
+|---|---|---|
+| 24 | **Inventory reservations** | Reservations + webhook confirm + expiry worker; concurrency test logged |
+| 25 | **Promotions & pricing** | Apply coupon on cart; order snapshots; rate-limited validation |
 
 ## Full chapter list — quick reference
 
@@ -150,6 +161,8 @@ Catalogue (see products)
 | 21 | `21-cache-and-search/` | 4 |
 | 22 | `22-async-jobs-and-queues/` | 4 |
 | 23 | `23-deploy/` | 4 |
+| 24 | `24-inventory-reservations/` | 5 |
+| 25 | `25-promotions-and-pricing/` | 5 |
 | 99 | `99-closing/` | Ship |
 
 ## Complexity ladder — what gets harder when
@@ -166,6 +179,7 @@ The course climbs deliberately (Rule 20). You don't meet Redis in Week 1 or depl
 | **Catalogue performance** | Pagination, populate, N+1 | 14–15 |
 | **Commerce** | Cart, split checkout, snapshots, Stripe payment | 16–20 |
 | **Scale & ship** | Cache, search, async jobs, HTTPS | 21–23 |
+| **Production commerce** | Inventory holds, server-side promotions | 24–25 |
 
 Skipping a rung to jump ahead produces chapters that reference files that don't exist. **Work in order.**
 
@@ -208,6 +222,8 @@ multi-vendor-marketplace/
   21-cache-and-search/
   22-async-jobs-and-queues/
   23-deploy/
+  24-inventory-reservations/
+  25-promotions-and-pricing/
   99-closing/
 ```
 
@@ -263,4 +279,4 @@ Scope is by **chapters finished with gates cleared**, not hours. Some chapters t
 Next: working rhythm — habits that carry you through all 22 chapters.
 ## Before you continue
 
-<OpenQuestion id="01KZP7KNQEM3X5F2W30W6BCWPG" />
+<OpenQuestion id="01M34MR80SVC34BWSHCXXW6Q8M" />
