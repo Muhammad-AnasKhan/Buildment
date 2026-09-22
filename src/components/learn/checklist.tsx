@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, ListChecks, PartyPopper } from "lucide-react";
 import { fireMiniConfetti } from "@/components/learn/mini-confetti";
+import { saveChecklistItem } from "@/server/actions/progress";
 
 export type ChecklistItemData = {
   id: string;
@@ -21,27 +22,26 @@ export type ChecklistItemData = {
 };
 
 type ChecklistContextValue = {
-  chapterSlug: string;
+  chapterId: string;
+  initialChecks: Record<string, boolean>;
 };
 
 const ChecklistContext = createContext<ChecklistContextValue | null>(null);
 
 export function ChecklistProvider({
-  chapterSlug,
+  chapterId,
+  initialChecks,
   children,
 }: {
-  chapterSlug: string;
+  chapterId: string;
+  initialChecks: Record<string, boolean>;
   children: React.ReactNode;
 }) {
   return (
-    <ChecklistContext.Provider value={{ chapterSlug }}>
+    <ChecklistContext.Provider value={{ chapterId, initialChecks }}>
       {children}
     </ChecklistContext.Provider>
   );
-}
-
-function storageKey(chapterSlug: string, itemId: string) {
-  return `buildment:checklist:${chapterSlug}:${itemId}`;
 }
 
 function parseLabel(label: string) {
@@ -144,49 +144,26 @@ export function Checklist({
   isGate?: boolean;
 }) {
   const ctx = useContext(ChecklistContext);
-  const chapterSlug = ctx?.chapterSlug ?? "unknown";
+  const chapterId = ctx?.chapterId;
+  const initialChecks = ctx?.initialChecks ?? {};
   const cardRef = useRef<HTMLDivElement>(null);
   const confettiFiredRef = useRef(false);
 
   const [checkedMap, setCheckedMap] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
     for (const item of items) {
-      initial[item.id] = item.defaultChecked ?? false;
+      initial[item.id] = initialChecks[item.id] ?? item.defaultChecked ?? false;
     }
     return initial;
   });
 
-  useEffect(() => {
-    const fromStorage: Record<string, boolean> = {};
-    let hasStored = false;
-    for (const item of items) {
-      try {
-        const raw = localStorage.getItem(storageKey(chapterSlug, item.id));
-        if (raw !== null) {
-          fromStorage[item.id] = raw === "true";
-          hasStored = true;
-        } else {
-          fromStorage[item.id] = item.defaultChecked ?? false;
-        }
-      } catch {
-        fromStorage[item.id] = item.defaultChecked ?? false;
-      }
-    }
-    if (hasStored) {
-      setCheckedMap(fromStorage);
-    }
-  }, [chapterSlug, items]);
-
   const toggle = useCallback(
     (id: string, next: boolean) => {
       setCheckedMap((prev) => ({ ...prev, [id]: next }));
-      try {
-        localStorage.setItem(storageKey(chapterSlug, id), String(next));
-      } catch {
-        /* private browsing */
-      }
+      if (!chapterId) return;
+      void saveChecklistItem({ chapterId, itemId: id, checked: next });
     },
-    [chapterSlug]
+    [chapterId]
   );
 
   const checkedCount = useMemo(
@@ -244,7 +221,7 @@ export function Checklist({
               </p>
               {gateMode ? (
                 <p className={cn("mt-1 text-sm", CARD_STYLES.subText)}>
-                  Tick each item when you can demo or explain it — progress saves in your browser.
+                  Tick each item when you can demo or explain it — progress saves to your account.
                 </p>
               ) : null}
             </div>

@@ -1,6 +1,8 @@
 import { prisma } from "@/server/db";
+import { getSessionUser } from "@/server/auth/guards";
 import { CodeConfigSchema, type SanitizedCodeConfig } from "./schema";
-import { CodeExerciseClient } from "./CodeExerciseClient";
+import { CodeExerciseClient, type CodeInitialState } from "./CodeExerciseClient";
+import { getLatestBlockResponse } from "@/server/progress/latest-response";
 
 export async function CodeExerciseComponent({ id }: { id: string }) {
   const block = await prisma.block.findUnique({ where: { id } });
@@ -19,5 +21,23 @@ export async function CodeExerciseComponent({ id }: { id: string }) {
     testCount: tests.length,
   };
 
-  return <CodeExerciseClient id={id} config={clientConfig} />;
+  const user = await getSessionUser();
+  let initialState: CodeInitialState | null = null;
+  if (user) {
+    const latest = await getLatestBlockResponse(id, user.id);
+    if (latest) {
+      const source =
+        typeof (latest.payload as { source?: unknown } | null)?.source === "string"
+          ? (latest.payload as { source: string }).source
+          : parsed.data.starterCode;
+      initialState = {
+        source,
+        isCorrect: latest.isCorrect,
+        explanation: parsed.data.explanation,
+        solution: latest.isCorrect ? parsed.data.solution : undefined,
+      };
+    }
+  }
+
+  return <CodeExerciseClient id={id} config={clientConfig} initialState={initialState} />;
 }

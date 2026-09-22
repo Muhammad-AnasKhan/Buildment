@@ -5,18 +5,21 @@ import { prisma } from "@/server/db";
 import { ForbiddenError, requireEnrolledMentee } from "@/server/auth/guards";
 import { CourseOverviewHero } from "@/components/learn/course-overview-hero";
 import { CourseSyllabus, type SyllabusModule } from "@/components/learn/course-syllabus";
+import { decorateSyllabus } from "@/server/progress/syllabus";
+import { isCompletableBlock } from "@/server/progress/rules";
 import type { ProgressStatus } from "@/generated/prisma/client";
 
 function pickContinueTarget(
-  flatChapters: { slug: string; title: string; status: ProgressStatus }[]
+  flatChapters: { slug: string; title: string; status: ProgressStatus; locked?: boolean }[]
 ) {
-  const inProgress = flatChapters.find((c) => c.status === "IN_PROGRESS");
+  const inProgress = flatChapters.find((c) => !c.locked && c.status === "IN_PROGRESS");
   if (inProgress) return inProgress;
 
-  const notStarted = flatChapters.find((c) => c.status === "NOT_STARTED");
+  const notStarted = flatChapters.find((c) => !c.locked && c.status === "NOT_STARTED");
   if (notStarted) return notStarted;
 
-  return flatChapters[0] ?? null;
+  const unlocked = flatChapters.find((c) => !c.locked);
+  return unlocked ?? flatChapters[0] ?? null;
 }
 
 function pickDefaultOpenModule(modules: SyllabusModule[]) {
@@ -44,6 +47,7 @@ export default async function CourseOverviewPage({
       coverUrl: true,
       difficulty: true,
       estimatedHours: true,
+      sequential: true,
       modules: {
         orderBy: { order: "asc" },
         select: {
@@ -56,7 +60,11 @@ export default async function CourseOverviewPage({
               id: true,
               slug: true,
               title: true,
-              _count: { select: { blocks: true } },
+              order: true,
+              blocks: {
+                where: { archivedAt: null },
+                select: { type: true, required: true, archivedAt: true },
+              },
             },
           },
         },
@@ -100,25 +108,33 @@ export default async function CourseOverviewPage({
   const { enrollment } = enrolled;
   const progress = await prisma.chapterProgress.findMany({
     where: { enrollmentId: enrollment.id },
-    select: { chapterId: true, status: true },
+    select: { chapterId: true, status: true, blocksCompleted: true, blocksTotal: true },
   });
   const progressByChapter = new Map(progress.map((p) => [p.chapterId, p.status]));
+  const progressCountByChapter = new Map(
+    progress.map((p) => [p.chapterId, { completed: p.blocksCompleted, total: p.blocksTotal }])
+  );
 
-  const modules: SyllabusModule[] = course.modules.map((mod) => {
-    const chapters = mod.chapters.map((chapter) => ({
-      id: chapter.id,
-      slug: chapter.slug,
-      title: chapter.title,
-      status: progressByChapter.get(chapter.id) ?? ("NOT_STARTED" as const),
-      blockCount: chapter._count.blocks,
-    }));
-    return {
+  const modules: SyllabusModule[] = decorateSyllabus({
+    sequential: course.sequential,
+    progressByChapter,
+    modules: course.modules.map((mod) => ({
       id: mod.id,
       order: mod.order,
       title: mod.title,
-      chapters,
-      completedCount: chapters.filter((c) => c.status === "COMPLETED").length,
-    };
+      chapters: mod.chapters.map((chapter) => {
+        const counts = progressCountByChapter.get(chapter.id);
+        const blockCount = chapter.blocks.filter((block) => isCompletableBlock(block)).length;
+        return {
+          id: chapter.id,
+          slug: chapter.slug,
+          title: chapter.title,
+          order: chapter.order,
+          blockCount,
+          blocksCompleted: counts?.completed ?? 0,
+        };
+      }),
+    })),
   });
 
   const flatChapters = modules.flatMap((mod) => mod.chapters);

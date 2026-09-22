@@ -3,9 +3,14 @@ import { prisma } from "@/server/db";
 import { requireEnrolledMentee } from "@/server/auth/guards";
 import { ChapterMdx } from "@/mdx/compile";
 import { extractHeadings } from "@/lib/mdx-headings";
-import { learningLogToAnswers, parseLearningLog } from "@/lib/learning-log";
+import { learningLogToAnswers, learningLogToChecklist, parseLearningLog } from "@/lib/learning-log";
 import { ChapterReaderShell } from "@/components/learn/chapter-reader-shell";
+import { LockedChapterView } from "@/components/learn/locked-chapter";
 import { signOutAction } from "@/server/auth/actions";
+import { loadCourseGate } from "@/server/progress/gate";
+import { decorateSyllabus } from "@/server/progress/syllabus";
+import { isCompletableBlock, previousChapterId } from "@/server/progress/rules";
+import { ensureChapterStarted } from "@/server/progress/compute";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +27,7 @@ export default async function ChapterReaderPage({
       id: true,
       slug: true,
       title: true,
+      sequential: true,
       modules: {
         orderBy: { order: "asc" },
         select: {
@@ -30,7 +36,16 @@ export default async function ChapterReaderPage({
           title: true,
           chapters: {
             orderBy: { order: "asc" },
-            select: { id: true, slug: true, title: true, order: true },
+            select: {
+              id: true,
+              slug: true,
+              title: true,
+              order: true,
+              blocks: {
+                where: { archivedAt: null },
+                select: { type: true, required: true, archivedAt: true },
+              },
+            },
           },
         },
       },
@@ -45,6 +60,7 @@ export default async function ChapterReaderPage({
       ...ch,
       moduleTitle: mod.title,
       moduleOrder: mod.order,
+      blockCount: ch.blocks.filter((block) => isCompletableBlock(block)).length,
     }))
   );
   const index = flatChapters.findIndex((c) => c.slug === chapterSlug);
@@ -55,10 +71,10 @@ export default async function ChapterReaderPage({
   const next = flatChapters[index + 1];
   const lessonLabel = `${String(chapter.moduleOrder).padStart(2, "0")}.${String(chapter.order).padStart(2, "0")}`;
 
-  const [progress, content, currentProgress] = await Promise.all([
+  const [progress, content, currentProgress, gate] = await Promise.all([
     prisma.chapterProgress.findMany({
       where: { enrollmentId: enrollment.id },
-      select: { chapterId: true, status: true },
+      select: { chapterId: true, status: true, blocksCompleted: true, blocksTotal: true },
     }),
     prisma.chapter.findUnique({
       where: { id: chapter.id },
@@ -66,33 +82,81 @@ export default async function ChapterReaderPage({
     }),
     prisma.chapterProgress.findUnique({
       where: { enrollmentId_chapterId: { enrollmentId: enrollment.id, chapterId: chapter.id } },
-      select: { learningLog: true },
+      select: { learningLog: true, status: true, blocksCompleted: true, blocksTotal: true },
     }),
+    loadCourseGate(course.id, enrollment.id),
   ]);
   if (!content) notFound();
 
-  const source = content.compiled ?? content.source;
-  const headings = extractHeadings(source);
-
   const progressByChapter = new Map(progress.map((p) => [p.chapterId, p.status]));
-  const learningLogAnswers = learningLogToAnswers(parseLearningLog(currentProgress?.learningLog));
+  const progressCountByChapter = new Map(
+    progress.map((p) => [p.chapterId, { completed: p.blocksCompleted, total: p.blocksTotal }])
+  );
 
-  const modules = course.modules.map((mod) => {
-    const chapters = mod.chapters.map((ch) => ({
-      id: ch.id,
-      slug: ch.slug,
-      title: ch.title,
-      status: progressByChapter.get(ch.id) ?? ("NOT_STARTED" as const),
-      blockCount: 0,
-    }));
-    return {
+  const modules = decorateSyllabus({
+    sequential: course.sequential,
+    progressByChapter,
+    modules: course.modules.map((mod) => ({
       id: mod.id,
       order: mod.order,
       title: mod.title,
-      chapters,
-      completedCount: chapters.filter((c) => c.status === "COMPLETED").length,
-    };
+      chapters: mod.chapters.map((ch) => {
+        const counts = progressCountByChapter.get(ch.id);
+        const blockCount = ch.blocks.filter((block) => isCompletableBlock(block)).length;
+        return {
+          id: ch.id,
+          slug: ch.slug,
+          title: ch.title,
+          order: ch.order,
+          blockCount,
+          blocksCompleted: counts?.completed ?? 0,
+        };
+      }),
+    })),
   });
+
+  const locked = gate?.lockedIds.has(chapter.id) ?? false;
+  if (locked) {
+    const prevId = previousChapterId(gate?.orderedIds ?? [], chapter.id);
+    const previous = prevId ? flatChapters.find((c) => c.id === prevId) : prev;
+    return (
+      <LockedChapterView
+        courseSlug={course.slug}
+        courseTitle={course.title}
+        lessonLabel={lessonLabel}
+        chapterTitle={chapter.title}
+        currentChapterSlug={chapter.slug}
+        previous={previous ? { slug: previous.slug, title: previous.title } : null}
+        modules={modules}
+        user={user}
+        signOutAction={signOutAction}
+      />
+    );
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await ensureChapterStarted(tx, enrollment.id, chapter.id);
+  });
+
+  for (const mod of modules) {
+    for (const ch of mod.chapters) {
+      if (ch.id === chapter.id && ch.status === "NOT_STARTED") {
+        ch.status = "IN_PROGRESS";
+      }
+    }
+  }
+
+  const source = content.compiled ?? content.source;
+  const headings = extractHeadings(source);
+  const log = parseLearningLog(currentProgress?.learningLog);
+  const learningLogAnswers = learningLogToAnswers(log);
+  const checklistState = learningLogToChecklist(log);
+
+  const chapterStatus = currentProgress?.status ?? progressByChapter.get(chapter.id) ?? "NOT_STARTED";
+  const chapterComplete = chapterStatus === "COMPLETED";
+  const remaining =
+    chapter.blockCount - (currentProgress?.blocksCompleted ?? 0);
+  const canMarkComplete = !chapterComplete && remaining <= 0;
 
   return (
     <ChapterReaderShell
@@ -104,6 +168,10 @@ export default async function ChapterReaderPage({
       chapterSlug={chapter.slug}
       chapterId={chapter.id}
       learningLogAnswers={learningLogAnswers}
+      checklistState={checklistState}
+      chapterComplete={chapterComplete}
+      canMarkComplete={canMarkComplete}
+      nextLocked={!chapterComplete && Boolean(next)}
       user={user}
       signOutAction={signOutAction}
       modules={modules}

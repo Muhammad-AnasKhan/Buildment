@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CheckCircle2, ChevronDown, ChevronRight, Menu, X, LayoutDashboard } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronRight, Lock, Menu, X, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SyllabusModule } from "@/components/learn/course-syllabus";
 
@@ -138,14 +138,21 @@ export function ChapterSidebar({
                           ref={isCurrent ? activeLinkRef : undefined}
                           href={`/courses/${courseSlug}/${chapter.slug}`}
                           aria-current={isCurrent ? "page" : undefined}
+                          aria-disabled={chapter.locked ? true : undefined}
                           className={cn(
                             "relative flex items-center gap-2.5 py-2 pl-12 pr-4 text-sm transition-colors",
                             isCurrent
                               ? "bg-indigo-50 font-medium text-indigo-700 before:absolute before:inset-y-1 before:left-3 before:w-0.5 before:rounded-full before:bg-indigo-600"
-                              : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
+                              : chapter.locked
+                                ? "text-neutral-400 hover:bg-neutral-50 hover:text-neutral-500"
+                                : "text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900"
                           )}
                         >
-                          <StatusIcon status={chapter.status} active={isCurrent} />
+                          <StatusIcon
+                            status={chapter.status}
+                            active={isCurrent}
+                            locked={chapter.locked}
+                          />
                           <span className="min-w-0 truncate">{chapter.title}</span>
                         </Link>
                       </li>
@@ -164,10 +171,15 @@ export function ChapterSidebar({
 function StatusIcon({
   status,
   active,
+  locked,
 }: {
   status: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
   active?: boolean;
+  locked?: boolean;
 }) {
+  if (locked) {
+    return <Lock className="size-3.5 shrink-0 text-neutral-400" aria-hidden />;
+  }
   if (status === "COMPLETED") {
     return (
       <CheckCircle2

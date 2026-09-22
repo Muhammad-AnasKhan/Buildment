@@ -12,6 +12,7 @@ import {
   recomputeChapterProgress,
   recordBlockStats,
 } from "@/server/progress/compute";
+import { ChapterLockedError, assertChapterUnlocked } from "@/server/progress/gate";
 import type { GradeResult } from "@/blocks/types";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ blockId: string }> }) {
@@ -38,6 +39,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   });
   if (!enrollment) {
     return NextResponse.json({ error: "Not enrolled in this course" }, { status: 403 });
+  }
+
+  try {
+    await assertChapterUnlocked({
+      courseId: block.chapter.courseId,
+      enrollmentId: enrollment.id,
+      chapterId: block.chapter.id,
+    });
+  } catch (error) {
+    if (error instanceof ChapterLockedError) {
+      return NextResponse.json(
+        { error: "This chapter is locked. Finish the previous chapter first." },
+        { status: 403 }
+      );
+    }
+    throw error;
   }
 
   const body = await request.json().catch(() => null);

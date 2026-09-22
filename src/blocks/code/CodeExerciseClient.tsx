@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
   CirclePlay,
@@ -137,9 +138,37 @@ function ReadOnlyCodeBlock({ source, label }: { source: string; label: string })
   );
 }
 
-export function CodeExerciseClient({ id, config }: { id: string; config: SanitizedCodeConfig }) {
-  const [source, setSource] = useState(config.starterCode);
-  const [result, setResult] = useState<CheckResult | null>(null);
+export type CodeInitialState = {
+  source: string;
+  isCorrect: boolean | null;
+  failedTestName?: string;
+  errorMessage?: string;
+  explanation?: string;
+  solution?: string;
+};
+
+export function CodeExerciseClient({
+  id,
+  config,
+  initialState,
+}: {
+  id: string;
+  config: SanitizedCodeConfig;
+  initialState?: CodeInitialState | null;
+}) {
+  const router = useRouter();
+  const [source, setSource] = useState(initialState?.source ?? config.starterCode);
+  const [result, setResult] = useState<CheckResult | null>(
+    initialState
+      ? {
+          isCorrect: initialState.isCorrect,
+          failedTestName: initialState.failedTestName,
+          errorMessage: initialState.errorMessage,
+          explanation: initialState.explanation,
+          solution: initialState.solution,
+        }
+      : null
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hintIndex, setHintIndex] = useState(-1);
@@ -180,6 +209,7 @@ export function CodeExerciseClient({ id, config }: { id: string; config: Sanitiz
         throw new Error(body?.error ?? `Request failed (${res.status})`);
       }
       setResult(body);
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

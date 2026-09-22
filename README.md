@@ -8,6 +8,10 @@ Full product/technical spec lives in [`docs/`](docs/README.mdx) — start there,
 [`AGENTS.md`](AGENTS.md) for the load-bearing invariants if you're working on this with an AI
 coding agent.
 
+**Shipping the shareable demo:** follow [`docs/phases/demo-10-day.mdx`](docs/phases/demo-10-day.mdx)
+(ten days: real progress, chapter locking, ask-mentor, UI consistency). We are **not** replacing
+Postgres with Mongo — the LMS stays relational; Mongo is what the FreshMarket course teaches.
+
 ## Stack
 
 Next.js 16 (App Router) · TypeScript · Tailwind CSS + shadcn/ui (Base UI) · Prisma 7 + PostgreSQL

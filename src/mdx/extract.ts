@@ -24,6 +24,7 @@ export const BLOCK_TAG_NAMES = {
   OpenQuestion: "OPEN_QUESTION",
   CodeExercise: "CODE",
   CodeBlock: "CODE",
+  Predict: "PREDICT",
   Steps: "STEPS",
   ProjectPreview: "PROJECT_PREVIEW",
   LearningObjectives: "LEARNING_OBJECTIVES",
