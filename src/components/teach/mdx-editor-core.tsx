@@ -21,6 +21,7 @@ import {
   MDXEditor,
   quotePlugin,
   Separator,
+  tablePlugin,
   toolbarPlugin,
   UndoRedo,
 } from "@mdxeditor/editor";
@@ -29,6 +30,8 @@ import { contentBlockDescriptors } from "@/components/learn/content-blocks/edito
 import { predictEditorDescriptor } from "@/blocks/predict/editorDescriptor";
 import { GenericJsxEditor } from "@mdxeditor/editor";
 import type { JsxComponentDescriptor } from "@mdxeditor/editor";
+import { authoringComponentDescriptors } from "@/components/teach/editor/authoring-descriptors";
+import { InsertContentMenu } from "@/components/teach/editor/insert-content-menu";
 
 const blockRegistryDescriptors: JsxComponentDescriptor[] = [
   { name: "Quiz", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
@@ -40,7 +43,11 @@ const blockRegistryDescriptors: JsxComponentDescriptor[] = [
   { name: "LearningObjectives", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
 ];
 
-const jsxComponentDescriptors = [...contentBlockDescriptors, ...blockRegistryDescriptors];
+const jsxComponentDescriptors = [
+  ...contentBlockDescriptors,
+  ...authoringComponentDescriptors,
+  ...blockRegistryDescriptors,
+];
 
 // The actual MDXEditor instance, lazy-loaded with ssr:false by
 // chapter-editor.tsx. Plugin set per docs/phases/m1-content-pipeline.mdx:
@@ -70,6 +77,7 @@ export default function MdxEditorCore({
           linkPlugin(),
           linkDialogPlugin(),
           quotePlugin(),
+          tablePlugin(),
           codeBlockPlugin({ defaultCodeBlockLanguage: "js" }),
           codeMirrorPlugin({
             codeBlockLanguages: {
@@ -96,6 +104,8 @@ export default function MdxEditorCore({
             toolbarContents: () => (
               <DiffSourceToggleWrapper>
                 <UndoRedo />
+                <Separator />
+                <InsertContentMenu />
                 <Separator />
                 <BoldItalicUnderlineToggles />
                 <Separator />

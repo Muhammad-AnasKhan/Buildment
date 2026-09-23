@@ -6,6 +6,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { load as loadYaml } from "js-yaml";
 import { readLessonFiles, readModuleDirs } from "./import-course";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -31,11 +32,137 @@ function lessonCount(moduleDir: string): number {
   return readLessonFiles(moduleDir).length;
 }
 
+function auditInteractiveFences(moduleNum: number, fileName: string, body: string): Issue[] {
+  const issues: Issue[] = [];
+  const predictFences = [...body.matchAll(/```predict\n([\s\S]*?)```/g)];
+  const quizFences = [...body.matchAll(/```quiz\n([\s\S]*?)```/g)];
+
+  if (/quiz (?:is )?reserved|quiz placeholder|reserved\s+—\s+excluded/i.test(body)) {
+    issues.push({
+      level: "error",
+      module: moduleNum,
+      file: fileName,
+      message: "Lesson still describes a quiz as reserved, excluded, or a placeholder",
+    });
+  }
+
+  for (const [, rawConfig] of predictFences) {
+    try {
+      const config = loadYaml(rawConfig) as {
+        prompt?: unknown;
+        options?: Array<{ id?: unknown; label?: unknown }>;
+        correctOptionId?: unknown;
+      } | null;
+      const prompt = typeof config?.prompt === "string" ? config.prompt.trim() : "";
+      const options = Array.isArray(config?.options) ? config.options : [];
+      const correctOptionId =
+        typeof config?.correctOptionId === "string" ? config.correctOptionId : "";
+      const optionIds = options
+        .map((option) => (typeof option?.id === "string" ? option.id : ""))
+        .filter(Boolean);
+
+      if (!prompt || options.length !== 2 || !correctOptionId || !optionIds.includes(correctOptionId)) {
+        issues.push({
+          level: "error",
+          module: moduleNum,
+          file: fileName,
+          message:
+            "Predict must have a prompt, exactly two options, and a correctOptionId matching an option",
+        });
+      }
+      if (/single riskiest assumption in this module/i.test(prompt)) {
+        issues.push({
+          level: "error",
+          module: moduleNum,
+          file: fileName,
+          message: "Predict uses the duplicated generic risk prompt — write a module-specific decision",
+        });
+      }
+    } catch {
+      issues.push({
+        level: "error",
+        module: moduleNum,
+        file: fileName,
+        message: "Predict fence contains invalid YAML",
+      });
+    }
+  }
+
+  for (const [, rawConfig] of quizFences) {
+    try {
+      const config = loadYaml(rawConfig) as {
+        type?: unknown;
+        question?: unknown;
+        options?: unknown[];
+        correct?: unknown;
+        modelAnswer?: unknown;
+      } | null;
+      const validQuestion = typeof config?.question === "string" && config.question.trim().length > 0;
+      const validMcq =
+        config?.type === "mcq" &&
+        Array.isArray(config.options) &&
+        config.options.length >= 2 &&
+        typeof config.correct === "number" &&
+        Number.isInteger(config.correct) &&
+        config.correct >= 0 &&
+        config.correct < config.options.length;
+      const validShort =
+        config?.type === "short" &&
+        typeof config.modelAnswer === "string" &&
+        config.modelAnswer.trim().length > 0;
+      if (!validQuestion || (!validMcq && !validShort)) {
+        issues.push({
+          level: "error",
+          module: moduleNum,
+          file: fileName,
+          message: "Quiz fence must be a valid mcq or short question supported by the importer",
+        });
+      }
+    } catch {
+      issues.push({
+        level: "error",
+        module: moduleNum,
+        file: fileName,
+        message: "Quiz fence contains invalid YAML",
+      });
+    }
+  }
+
+  if (fileName.endsWith("-quiz.md")) {
+    const quizFenceCount = quizFences.length;
+    if (quizFenceCount === 0) {
+      issues.push({
+        level: "error",
+        module: moduleNum,
+        file: fileName,
+        message: "Quiz chapter has no authored quiz blocks",
+      });
+    }
+    if (/skip (?:it|to)/i.test(body)) {
+      issues.push({
+        level: "error",
+        module: moduleNum,
+        file: fileName,
+        message: "Quiz chapter still contains reserved, placeholder, or skip copy",
+      });
+    }
+    if (predictFences.length > 0) {
+      issues.push({
+        level: "error",
+        module: moduleNum,
+        file: fileName,
+        message: "Predict blocks belong inline in lessons, not inside quiz chapters",
+      });
+    }
+  }
+
+  return issues;
+}
+
 function auditModule(moduleNum: number, dirName: string): Issue[] {
   const issues: Issue[] = [];
   const modulePath = path.join(COURSE_DIR, dirName);
   const files = readLessonFiles(dirName).map((f) => f.fileName);
-  const fileSet = new Set(files);
 
   const setScene = files.find(
     (f) =>
@@ -122,6 +249,7 @@ function auditModule(moduleNum: number, dirName: string): Issue[] {
 
   for (const fileName of files) {
     const body = readBody(path.join(modulePath, fileName));
+    issues.push(...auditInteractiveFences(moduleNum, fileName, body));
     const stepType = frontmatterStepType(body);
     if (fileName.endsWith("-checklist.md") && stepType !== "Gate") {
       issues.push({

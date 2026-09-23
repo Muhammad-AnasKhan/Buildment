@@ -26,6 +26,52 @@ export type ActionResult = { ok: true } | { ok: false; errors: string[] };
 
 const chapterIdInput = z.object({ chapterId: z.string().min(1) });
 
+const chapterSettingsInput = z.object({
+  chapterId: z.string().min(1),
+  title: z.string().trim().min(1, "Title is required.").max(120),
+  summary: z.string().trim().max(280).nullable(),
+  estimatedMinutes: z.number().int().min(1).max(600).nullable(),
+  readerMode: z.enum(["DEFAULT", "QUIZ"]),
+  isMilestone: z.boolean(),
+});
+
+export async function updateChapterSettings(input: {
+  chapterId: string;
+  title: string;
+  summary: string | null;
+  estimatedMinutes: number | null;
+  readerMode: "DEFAULT" | "QUIZ";
+  isMilestone: boolean;
+}): Promise<ActionResult | { ok: true; savedAt: string }> {
+  const parsed = chapterSettingsInput.safeParse(input);
+  if (!parsed.success) {
+    return {
+      ok: false,
+      errors: parsed.error.issues.map((issue) => issue.message),
+    };
+  }
+
+  const chapter = await prisma.chapter.findUnique({
+    where: { id: parsed.data.chapterId },
+    select: { id: true, courseId: true },
+  });
+  if (!chapter) return { ok: false, errors: ["Chapter not found."] };
+  await requireMentorOfCourse(chapter.courseId);
+
+  await prisma.chapter.update({
+    where: { id: chapter.id },
+    data: {
+      title: parsed.data.title,
+      summary: parsed.data.summary || null,
+      estimatedMinutes: parsed.data.estimatedMinutes,
+      readerMode: parsed.data.readerMode,
+      isMilestone: parsed.data.isMilestone,
+    },
+  });
+
+  return { ok: true, savedAt: new Date().toISOString() };
+}
+
 export async function saveChapterDraft(input: {
   chapterId: string;
   source: string;

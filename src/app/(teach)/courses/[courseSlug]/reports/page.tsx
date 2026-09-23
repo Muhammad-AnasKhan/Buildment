@@ -6,6 +6,7 @@ import { nowMs } from "@/server/time";
 import { requireMentorOfCourse } from "@/server/auth/guards";
 import { cn } from "@/lib/utils";
 import { formatStudyHours } from "@/lib/format-study-duration";
+import { AutoSubmitSelect } from "@/components/teach/auto-submit-select";
 
 const AT_RISK_DAYS = 7;
 
@@ -332,10 +333,9 @@ export default async function CourseReportsPage({
                 </p>
               </div>
               <form action={`/courses/${course.slug}/reports`} method="GET">
-                <select
+                <AutoSubmitSelect
                   name="chapterId"
                   defaultValue={chapterId ?? ""}
-                  onChange={(event) => event.target.form?.requestSubmit()}
                   className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none focus:border-indigo-300"
                 >
                   <option value="" disabled>
@@ -346,7 +346,7 @@ export default async function CourseReportsPage({
                       {chapter.title}
                     </option>
                   ))}
-                </select>
+                </AutoSubmitSelect>
               </form>
             </div>
 

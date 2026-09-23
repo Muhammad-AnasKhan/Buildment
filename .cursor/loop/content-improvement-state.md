@@ -1,10 +1,40 @@
 # Course content improvement loop — state
 
-Last updated: 2026-09-22 (iteration 9 — demo + full-course program kickoff)
+Last updated: 2026-09-23 (iteration 10 — interaction consistency + commerce reliability)
 
 ## Course
 
 Multi-Vendor Food Marketplace — `content/import/multi-vendor-marketplace/`
+
+## Iteration 10 — 2026-09-23
+
+**Course-wide interaction consistency:**
+
+- Replaced generic Predict prompts with lesson-specific, exactly-two-option decisions and immediate-feedback explanations.
+- Replaced 17 reserved quiz chapters with importer-valid knowledge checks; Predict blocks remain in teaching chapters, not quizzes.
+- Removed stale instructions telling learners to skip quiz placeholders.
+- Documented the interaction taxonomy in `content/import/STYLE.md`.
+
+**Content depth and technical correctness:**
+
+- Reworked modules 19–23 around payment integrity, order-state ownership, cache correctness, durable queues, and deploy/recovery evidence.
+- Reworked module 24 to use atomic inventory counters and transactions so concurrent checkout cannot oversell stock.
+- Reworked module 25 around deterministic minor-unit discounts, one redemption per checkout, immutable snapshots, and abuse controls.
+- Improved progression, accessibility expectations, failure states, concurrency tests, and mentor-verifiable evidence throughout these modules.
+
+**Importer and audit guardrails:**
+
+- Import no longer invents Open Questions from prose headings or appends synthetic lesson checkpoints.
+- Added regression tests proving ordinary lessons and Reflect sections remain prose unless an author explicitly adds a block.
+- Structural audit now validates Predict and Quiz fences and rejects placeholder quizzes and generic Predict prompts.
+
+**Validation:** source validation 379/379; structural audit 0 errors; importer regression tests, TypeScript, scoped ESLint, and whitespace checks passed.
+
+**Next iteration should:**
+
+1. Deep content pass on modules 09–13, then 14–18.
+2. Resolve remaining long-table audit warnings by moving prose out of cells.
+3. Redesign the learner-facing chapter navigation, answer controls, quiz presentation, and Predict instant-feedback UI as a separate application-UI pass.
 
 ## Iteration 9 — 2026-09-22 (Waves 0–5 program)
 

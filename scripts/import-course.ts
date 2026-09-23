@@ -6,15 +6,13 @@
  * script implements): the mentor's prose is kept close to verbatim. The two
  * things it actively transforms are:
  *
- *   1. ```quiz``` fenced blocks (js-yaml-parsed) -> real <Quiz>/<OpenQuestion>
- *      blocks, with the correct answer moved into Block.config (server-only)
- *      and only a placeholder tag left in the MDX body.
- *   2. The 16 chapters whose quiz slot was left as "Reserved — excluded from
- *      this course pass" (see e.g. 04-config-and-database/04.07-quiz.md) had
- *      a ready "Mini self-check" question list sitting in plain prose. Those
- *      get turned into real (optional, ungraded) OpenQuestion blocks instead
- *      of staying inert text — the concrete "add missing things" this pass
- *      does, without inventing new content.
+ *   1. Explicit interactive fences (`quiz`, `openquestion`, `predict`) become
+ *      registered blocks, with grading-only config kept server-side.
+ *   2. Explicit presentation components such as ChapterRecap and ProjectPreview
+ *      become registered presentation blocks.
+ *
+ * The importer never invents learner interactions. A reflection, quiz, or
+ * mentor-reviewed answer must be authored intentionally in the source lesson.
  *
  * Idempotent: re-running upserts Modules/Chapters by (courseId, order) /
  * (courseId, slug) and replaces each chapter's Block rows from scratch. Safe
@@ -28,7 +26,7 @@ import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import yaml from "js-yaml";
+import { load as loadYaml } from "js-yaml";
 import { ulid } from "ulid";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, type Prisma } from "../src/generated/prisma/client";
@@ -180,7 +178,7 @@ export function readLessonFiles(moduleDir: string): { fileName: string; lessonNu
 function parseFrontmatter(raw: string): { frontmatter: Record<string, unknown>; body: string } {
   const match = raw.match(/^---\n([\s\S]*?)\n---\n([\s\S]*)$/);
   if (!match) return { frontmatter: {}, body: raw };
-  const frontmatter = (yaml.load(match[1]) as Record<string, unknown>) ?? {};
+  const frontmatter = (loadYaml(match[1]) as Record<string, unknown>) ?? {};
   return { frontmatter, body: match[2] };
 }
 
@@ -408,7 +406,7 @@ function transformPredictFences(body: string, pushBlock: (b: PendingBlock) => st
       };
     };
     try {
-      parsed = yaml.load(yamlText) as typeof parsed;
+      parsed = loadYaml(yamlText) as typeof parsed;
     } catch {
       return match;
     }
@@ -448,7 +446,7 @@ function transformQuizFences(body: string, pushBlock: (b: PendingBlock) => strin
       minWords?: number;
     };
     try {
-      parsed = yaml.load(yamlText) as typeof parsed;
+      parsed = loadYaml(yamlText) as typeof parsed;
     } catch {
       return match;
     }
@@ -508,7 +506,7 @@ function transformOpenQuestionFences(body: string, pushBlock: (b: PendingBlock) 
       modelAnswer?: string;
     };
     try {
-      parsed = yaml.load(yamlText) as typeof parsed;
+      parsed = loadYaml(yamlText) as typeof parsed;
     } catch {
       return match;
     }
@@ -534,97 +532,6 @@ function transformOpenQuestionFences(body: string, pushBlock: (b: PendingBlock) 
   });
 }
 
-/**
- * The 16 "Reserved — excluded from this course pass" quiz stubs each still
- * have a "## Mini self-check (optional...)" numbered question list sitting
- * as inert prose. Turn those into real, optional OpenQuestion blocks instead
- * of leaving genuinely useful review questions unused.
- */
-function transformMiniSelfCheck(body: string, pushBlock: (b: PendingBlock) => string): string {
-  const lines = body.split("\n");
-  const out: string[] = [];
-  let inSection = false;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmed = line.trim();
-
-    if (/^##\s+Mini self-check/i.test(trimmed)) {
-      inSection = true;
-      out.push(line);
-      continue;
-    }
-    if (inSection && /^##\s+/.test(trimmed)) {
-      inSection = false;
-    }
-
-    if (inSection && /^\d+\.\s+.+/.test(trimmed)) {
-      const questions: string[] = [];
-      while (i < lines.length && /^\d+\.\s+.+/.test(lines[i].trim())) {
-        questions.push(lines[i].trim().replace(/^\d+\.\s+/, "").replace(/\s{2,}$/, ""));
-        i++;
-      }
-      i--;
-      for (const question of questions) {
-        const id = ulid();
-        out.push(
-          pushBlock({
-            id,
-            type: "OPEN_QUESTION",
-            required: false,
-            config: { prompt: question, minWords: 0 },
-          })
-        );
-        out.push("");
-      }
-      continue;
-    }
-
-    out.push(line);
-  }
-
-  return out.join("\n");
-}
-
-/** `## Reflect` prose questions become optional OpenQuestion blocks. Only the first paragraph is consumed. */
-function transformReflectSection(body: string, pushBlock: (b: PendingBlock) => string): string {
-  return body.replace(/^## Reflect\n\n([\s\S]*?)(?=\n\n|\n## |$)/m, (_match, content) => {
-    const prompt = content
-      .trim()
-      .split("\n")
-      .map((line: string) => line.trim())
-      .filter(Boolean)
-      .join(" ");
-    if (!prompt) return "## Reflect\n\n";
-    const block = pushBlock({
-      id: ulid(),
-      type: "OPEN_QUESTION",
-      required: false,
-      config: { prompt, minWords: 10 },
-    });
-    return `## Reflect\n\n${block}\n\n`;
-  });
-}
-
-/** Lessons with no quiz/self-check get a lightweight "before you continue" checkpoint. */
-function addLessonCheckpoint(body: string, pushBlock: (b: PendingBlock) => string): string {
-  const block = pushBlock({
-    id: ulid(),
-    type: "OPEN_QUESTION",
-    required: false,
-    config: {
-      prompt:
-        "Before moving on: in 2–3 sentences, what was the main takeaway from this lesson?",
-      minWords: 15,
-    },
-  });
-  const section = `\n## Before you continue\n\n${block}\n`;
-  if (/^## Next/m.test(body)) {
-    return body.replace(/^## Next/m, `${section}\n## Next`);
-  }
-  return `${body.trimEnd()}${section}\n`;
-}
-
 export function parseLesson(moduleNum: number, moduleDir: string, fileName: string, lessonNum: number, slugPart: string): ParsedLesson {
   const raw = fs.readFileSync(path.join(COURSE_SOURCE_DIR, moduleDir, fileName), "utf8");
   const { frontmatter, body } = parseFrontmatter(raw);
@@ -648,13 +555,8 @@ export function parseLesson(moduleNum: number, moduleDir: string, fileName: stri
   source = transformQuizFences(source, pushBlock);
   source = transformOpenQuestionFences(source, pushBlock);
   source = transformPredictFences(source, pushBlock);
-  source = transformMiniSelfCheck(source, pushBlock);
-  source = transformReflectSection(source, pushBlock);
   source = transformFaqSections(source);
   const isMilestone = /-checklist\.md$/.test(fileName);
-  if (blocks.length === 0 && !isMilestone) {
-    source = addLessonCheckpoint(source, pushBlock);
-  }
   source = escapeMdxProse(source);
 
   const fallbackTitle = slugPart

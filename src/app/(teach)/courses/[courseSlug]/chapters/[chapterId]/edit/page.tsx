@@ -31,6 +31,14 @@ export default async function ChapterEditorPage({
       chapterId={chapter.id}
       courseSlug={course.slug}
       chapterTitle={chapter.title}
+      chapterSummary={chapter.summary}
+      estimatedMinutes={chapter.estimatedMinutes}
+      readerMode={chapter.readerMode}
+      isMilestone={chapter.isMilestone}
+      initialPublishedAt={chapter.publishedAt?.toISOString() ?? null}
+      initialHasUnpublishedChanges={
+        chapter.publishedAt !== null && chapter.compiled !== chapter.source
+      }
       initialSource={restoreInteractiveBlockTags(chapter.source)}
       lastPublishedSource={chapter.compiled}
     />

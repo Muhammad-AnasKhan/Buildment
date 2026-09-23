@@ -47,7 +47,7 @@ Chapters are numbered folders at the course root — **no phase subfolders**. We
 |---|---|---|
 | Open & motivate | 3 | Set the scene · why it matters · what you'll build |
 | Learn it | 4–6 | Approaches · decision · deep-dive · mandatory reads |
-| Check | 0–1 | Quiz placeholder (excluded for now) |
+| Check | 0–1 | Short, module-specific knowledge check |
 | Build it | 10–14 | Continuity recap · scaffold · one step per file/action · verify |
 | Wrap | 2–3 | Practice (optional) · recap · checklist gate |
 
@@ -126,7 +126,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `02.04-layer-vs-module.md` | Learn | Pros/cons table; **mandate module-based** for this course |
 | `02.05-client-vs-server.md` | Learn | Browser vs API; HTTP; where secrets live — point at *their* folders |
 | `02.06-prime-your-thinking.md` | Learn | Mandatory read: Node project layout basics |
-| `02.07-quiz.md` | Check | Reserved — excluded |
+| `02.07-quiz.md` | Check | Project-structure knowledge check |
 | `02.08-create-the-repo.md` | Build | Init git; root `.gitignore`; `README.md` stub |
 | `02.09-scaffold-server-folders.md` | Build | Create `server/src/modules/`, `server/src/shared/`, `server/src/app.js`, `server/src/server.js` |
 | `02.10-server-package-and-scripts.md` | Build | `server/package.json`; express; dev script; verify `node` starts |
@@ -175,7 +175,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `04.04-env-vs-hardcoded.md` | Learn | 12-factor config; `.env.example` vs `.env` |
 | `04.05-local-mongodb.md` | Learn | Atlas vs local; pick one for course |
 | `04.06-prime-your-thinking.md` | Learn | Mandatory read: Mongoose connection docs |
-| `04.07-quiz.md` | Check | Reserved |
+| `04.07-quiz.md` | Check | Configuration and database knowledge check |
 | `04.08-where-the-project-is-now.md` | Build | Recap Ch 02 tree |
 | `04.09-create-env-files.md` | Build | `server/.env`, `.env.example`, `.gitignore` check |
 | `04.10-config-module.md` | Build | `server/src/shared/config.js` — validate required vars at startup |
@@ -201,7 +201,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `05.04-ownership-chain.md` | Learn | User → Store → Product → CartItem → Order |
 | `05.05-grocery-domain-fields.md` | Learn | `unit`, `weightOrQuantity`, `isPerishable`, `stockQty` |
 | `05.06-prime-your-thinking.md` | Learn | Mandatory read: Mongoose schemas & refs |
-| `05.07-quiz.md` | Check | Reserved |
+| `05.07-quiz.md` | Check | Data-model knowledge check |
 | `05.08-where-the-project-is-now.md` | Build | Recap: apps run, DB connected |
 | `05.09-scaffold-models-folder.md` | Build | `server/src/modules/users/`, `stores/`, `products/`, `cart/`, `orders/` |
 | `05.10-user-and-profile-models.md` | Build | Identity vs profile split — two schemas, linked |
@@ -229,7 +229,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `06.05-password-hashing.md` | Learn | Hash + salt + bcrypt; never plain text |
 | `06.06-what-a-jwt-is.md` | Learn | Header.payload.signature; role in payload |
 | `06.07-prime-your-thinking.md` | Learn | Mandatory reads: bcrypt, JWT intro |
-| `06.08-quiz.md` | Check | Reserved |
+| `06.08-quiz.md` | Check | Authentication knowledge check |
 | `06.09-where-the-project-is-now.md` | Build | Models exist; no auth routes yet |
 | `06.10-scaffold-auth-module.md` | Build | `auth.routes.js`, `auth.service.js`, `auth.middleware.js`, `auth.schema.js` |
 | `06.11-wire-auth-routes.md` | Build | Mount `/api/auth` on app |
@@ -257,7 +257,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `07.04-where-tokens-live.md` | Learn | Access in memory; refresh in httpOnly cookie |
 | `07.05-the-401-retry-loop.md` | Learn | Refresh and retry once; else logout |
 | `07.06-prime-your-thinking.md` | Learn | Mandatory read: JWT refresh on client |
-| `07.07-quiz.md` | Check | Reserved |
+| `07.07-quiz.md` | Check | Client authentication knowledge check |
 | `07.08-where-the-project-is-now.md` | Build | Auth API tested via curl |
 | `07.09-scaffold-auth-pages.md` | Build | `pages/Login.jsx`, `Register.jsx`, `VerifyOtp.jsx` |
 | `07.10-auth-context-or-hook.md` | Build | `hooks/useAuth.js` or Context — access token in memory |
@@ -284,7 +284,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `08.04-authn-vs-authz.md` | Learn | Function-level vs object-level |
 | `08.05-rbac-and-ownership.md` | Learn | Role check + store chain lookup |
 | `08.06-prime-your-thinking.md` | Learn | Mandatory read: OWASP BOLA / IDOR |
-| `08.07-quiz.md` | Check | Reserved |
+| `08.07-quiz.md` | Check | Authorization and isolation knowledge check |
 | `08.08-authorization-matrix.md` | Build | Write `docs/AUTHORIZATION.md` — action × role × check type |
 | `08.09-where-the-project-is-now.md` | Build | Auth works; no role guards yet |
 | `08.10-require-role-middleware.md` | Build | `requireRole('vendor')` — 403 for wrong role |
@@ -307,7 +307,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `09.03-what-youll-build.md` | Open | Create + update store API |
 | `09.04-store-fields.md` | Learn | Name, description, address, logoUrl |
 | `09.05-prime-your-thinking.md` | Learn | Topics to read: slug vs id in URLs |
-| `09.06-quiz.md` | Check | Reserved |
+| `09.06-quiz.md` | Check | Vendor-store API knowledge check |
 | `09.07-where-the-project-is-now.md` | Build | Auth + isolation middleware ready |
 | `09.08-scaffold-stores-module.md` | Build | `stores.routes.js`, `stores.service.js`, `stores.schema.js` |
 | `09.09-create-store-route.md` | Build | `POST /stores` — vendor only; one store enforced |
@@ -351,7 +351,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `11.03-what-youll-build.md` | Open | Vendor product CRUD API |
 | `11.04-public-vs-vendor-routes.md` | Learn | `/vendor/products` vs `/products` |
 | `11.05-prime-your-thinking.md` | Learn | Mandatory read: Mongoose populate |
-| `11.06-quiz.md` | Check | Reserved |
+| `11.06-quiz.md` | Check | Product API knowledge check |
 | `11.07-where-the-project-is-now.md` | Build | Store exists for test vendor |
 | `11.08-scaffold-products-module.md` | Build | routes, service, schema files |
 | `11.09-create-product-route.md` | Build | `POST /products` — vendor + store ownership |
@@ -396,7 +396,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `13.03-what-youll-build.md` | Open | Cloudinary upload; URL on product |
 | `13.04-object-storage-pattern.md` | Learn | File → storage → URL in DB |
 | `13.05-prime-your-thinking.md` | Learn | Cloudinary upload docs |
-| `13.06-quiz.md` | Check | Reserved |
+| `13.06-quiz.md` | Check | Object-storage knowledge check |
 | `13.07-where-the-project-is-now.md` | Build | Products without images |
 | `13.08-cloudinary-config.md` | Build | Env vars; server-side upload helper |
 | `13.09-upload-route.md` | Build | `POST /products/:id/image` — multer → Cloudinary |
@@ -421,7 +421,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `14.04-populate-vs-aggregate.md` | Learn | Mongoose `.populate('storeId')` |
 | `14.05-pagination.md` | Learn | page + limit; default 20 |
 | `14.06-prime-your-thinking.md` | Learn | Mandatory read: cursor vs offset pagination |
-| `14.07-quiz.md` | Check | Reserved |
+| `14.07-quiz.md` | Check | Catalogue-query knowledge check |
 | `14.08-where-the-project-is-now.md` | Build | Vendor products exist; no public route |
 | `14.09-public-products-route.md` | Build | `GET /products` — published, in-stock only |
 | `14.10-filter-query-params.md` | Build | `?category=`, `?storeId=` |
@@ -465,7 +465,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `16.02-why-store-id-on-cart-item.md` | Open | Checkout must group by vendor |
 | `16.03-what-youll-build.md` | Open | Persisted cart API |
 | `16.04-prime-your-thinking.md` | Learn | Interesting to read: cart merge on login |
-| `16.05-quiz.md` | Check | Reserved |
+| `16.05-quiz.md` | Check | Cart API knowledge check |
 | `16.06-where-the-project-is-now.md` | Build | Customer logged in; products browsable |
 | `16.07-scaffold-cart-module.md` | Build | cart routes, service, schema |
 | `16.08-add-to-cart-route.md` | Build | `POST /cart` — productId, storeId, quantity |
@@ -512,7 +512,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `18.04-normalization-payoff.md` | Learn | Why OrderItem embeds priceAtPurchase — *after* they feel the trap |
 | `18.05-atomic-stock-decrement.md` | Learn | Race condition; `$inc` with filter |
 | `18.06-prime-your-thinking.md` | Learn | Interesting: Stripe idempotency keys |
-| `18.07-quiz.md` | Check | Reserved |
+| `18.07-quiz.md` | Check | Checkout consistency knowledge check |
 | `18.08-where-the-project-is-now.md` | Build | Cart with multi-vendor items |
 | `18.09-scaffold-orders-module.md` | Build | orders routes, service |
 | `18.10-checkout-route.md` | Build | `POST /checkout` — group by storeId |
@@ -539,7 +539,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `19.04-one-payment-many-orders.md` | Learn | One charge, split orders; shared `stripePaymentIntentId` |
 | `19.05-stripe-test-mode.md` | Learn | Test cards; `pk_test_` / `sk_test_` keys |
 | `19.06-prime-your-thinking.md` | Learn | Mandatory read: Stripe Payment Intents |
-| `19.07-quiz.md` | Check | Reserved |
+| `19.07-quiz.md` | Check | Payment-processing knowledge check |
 | `19.08-where-the-project-is-now.md` | Build | Recap Ch 18 checkout API |
 | `19.09-stripe-config.md` | Build | Env vars; Stripe SDK module |
 | `19.10-payment-intent-route.md` | Build | POST `/payments/intent` from cart total |
@@ -585,7 +585,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `21.03-what-youll-build.md` | Open | Redis cache + text index + invalidation |
 | `21.04-ttl-vs-event-invalidation.md` | Learn | Both; implement both in sequence |
 | `21.05-prime-your-thinking.md` | Learn | Mandatory read: cache invalidation |
-| `21.06-quiz.md` | Check | Reserved |
+| `21.06-quiz.md` | Check | Cache and search knowledge check |
 | `21.07-where-the-project-is-now.md` | Build | Full app works; every browse hits MongoDB |
 | `21.08-redis-connection.md` | Build | `server/src/shared/redis.js` |
 | `21.09-cache-catalogue-middleware.md` | Build | Cache `GET /products` responses |
@@ -611,7 +611,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `22.04-when-to-queue.md` | Learn | Sync vs async decision table for marketplace |
 | `22.05-bullmq-and-redis.md` | Learn | Same Redis as Ch 21 — cache keys vs queue keys |
 | `22.06-prime-your-thinking.md` | Learn | Mandatory read: BullMQ docs |
-| `22.07-quiz.md` | Check | Reserved |
+| `22.07-quiz.md` | Check | Queue reliability knowledge check |
 | `22.08-where-the-project-is-now.md` | Build | Recap: cache + commerce complete |
 | `22.09-queue-module.md` | Build | `server/src/shared/queue.js` — BullMQ connection |
 | `22.10-worker-process.md` | Build | `server/src/worker.js`; `npm run worker` |
@@ -637,7 +637,7 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | `23.03-what-youll-build.md` | Open | HTTPS API + client + worker in production |
 | `23.04-vps-vs-paas.md` | Learn | Options; pick one path for course |
 | `23.05-prime-your-thinking.md` | Learn | Mandatory read: Let's Encrypt / host docs |
-| `23.06-quiz.md` | Check | Reserved |
+| `23.06-quiz.md` | Check | Production deployment knowledge check |
 | `23.07-where-the-project-is-now.md` | Build | Full app + worker works locally |
 | `23.08-production-env-checklist.md` | Build | All env vars documented in `.env.example` |
 | `23.09-build-client-for-production.md` | Build | `npm run build`; set `VITE_API_URL` |

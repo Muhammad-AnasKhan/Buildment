@@ -56,6 +56,16 @@ Import normalizes embedded `### Learning log` sections via `normalizeGateLearnin
 - Every checklist item must be verifiable by the learner.
 - Learning log questions should match what the platform persists (ticks + saved answers).
 - Open questions and quizzes must not reference “browser-only” storage.
+- Author every interaction intentionally. The importer does not add a fallback question to lessons
+  that have no interactive block.
+- Use `Predict` for a quick, optional two-choice decision immediately before the explanation it
+  prepares. It is not a quiz substitute and does not belong in quiz chapters.
+- Use a quiz for auto-graded concept checks with plausible distractors and useful explanations.
+- Use the learning log for private, autosaved reflection. A prose `## Reflect` section stays prose
+  unless the author explicitly chooses a learning-log component.
+- Use `OpenQuestion` only when the answer is worth submitting or reviewing, such as an architecture
+  defense, project evidence, or a substantial written explanation. Never use it as generic
+  “what was your takeaway?” filler.
 
 ## MDX components
 
@@ -67,4 +77,7 @@ Teach with **syntax-highlighted fenced code**, `FileTree` / `TerminalBlock`, and
 
 ## Inline predict
 
-Add a ` ```predict``` ` block in each `*-prime-your-thinking.md` and before major build sections when a concept check helps (instant feedback, not a graded quiz chapter).
+Add a ` ```predict``` ` block in a `*-prime-your-thinking.md` lesson or before a major build
+decision only when a concrete prediction improves the lesson. Every Predict has exactly two
+options, one valid `correctOptionId`, and a concise explanation. The options must be specific to
+the current FreshMarket decision; do not reuse a generic prompt across modules.
