@@ -20,7 +20,7 @@ export function isMentorOfCourse(
 export function homeRouteForRole(role: Role): string {
   switch (role) {
     case "MENTOR":
-      return "/courses";
+      return "/workspace";
     case "ADMIN":
       return "/admin";
     case "MENTEE":

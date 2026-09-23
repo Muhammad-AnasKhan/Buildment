@@ -37,6 +37,7 @@ is undecided.
 | **LMS database** | **Stay on Postgres + Prisma** | The LMS is relational (enrollments, denormalized progress, reviews, Auth.js sessions). The FreshMarket *course* teaches MongoDB — that is the student's project, not buildment's store. A NoSQL migration would delay the demo and force a reports/gating rewrite. Resolved 2026-09-22. |
 | **Completable vs presentational blocks** | **Only QUIZ / TEST / MUST_READ / OPEN_QUESTION / CODE / PREDICT count toward chapter completion** | Presentational blocks never get a Response; counting them trapped progress at 0%. Prose-only chapters use "Mark chapter complete". Resolved 2026-09-22. |
 | **Demo ship plan** | **10 sequential days in `docs/phases/demo-10-day.mdx`** | Demo-first cut of remaining M3–M7: real progress, locking, ask-mentor, UI consistency, first-three-modules content. Not a stack rewrite. Resolved 2026-09-22. |
+| **AI-assisted review** | **Explicit mentor-triggered OpenRouter draft with strict structured output; mentor edits and submits separately** | Reduces time-to-feedback without delegating the grading decision. The server authorizes and loads context; no rubric/reference answer becomes a client prop, and no AI result writes progress. Resolved 2026-09-23 — see [`05-review-queue.mdx`](05-review-queue.mdx). |
 
 ## Open questions to resolve before M4
 
@@ -44,11 +45,9 @@ is undecided.
    *Recommendation: track points, display completion; surface score only in reports.*
 2. **Retakes** — should a passed test be retakeable to improve a score?
    *Recommendation: no in v1; keep first pass.*
-3. **Mentor capacity** — what happens when a mentor has 200 pending reviews?
-   *v1 answer: aging highlights + bulk approve; v2: AI-drafted feedback (see [`10-deferred-v2.mdx`](10-deferred-v2.mdx)).*
-4. **Course editing while students are mid-course** — v1 warns the mentor; v2 needs versioned
+3. **Course editing while students are mid-course** — v1 warns the mentor; v2 needs versioned
    releases (see [`10-deferred-v2.mdx`](10-deferred-v2.mdx)).
-5. **Multi-mentor courses / TAs** — not in v1. `Review.reviewerId` is already independent of
+4. **Multi-mentor courses / TAs** — not in v1. `Review.reviewerId` is already independent of
    `Course.mentorId`, so adding co-teachers later is an access-control change only.
 
 These are carried over from the original spec unresolved — pick these up explicitly before starting

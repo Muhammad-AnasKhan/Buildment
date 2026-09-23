@@ -28,6 +28,9 @@ status: draft v1 — updated 2026-08-03 with editor/runner/auth research
 - **Email:** Resend (invites, review notifications, nudges).
 - **File storage:** S3-compatible (Supabase Storage / R2) for course covers and attachments.
 - **Analytics/errors:** PostHog + Sentry.
+- **AI review drafts:** OpenRouter Chat Completions API, called server-side with strict structured
+  output after an explicit mentor action. The model is configurable with `OPENROUTER_REVIEW_MODEL`;
+  generated feedback remains an editable suggestion and never performs grading writes.
 - **Testing:** Vitest (unit — graders, progress math), Playwright (E2E — the learner flow end to end).
 - **Hosting:** Vercel.
 

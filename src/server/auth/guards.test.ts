@@ -31,7 +31,7 @@ describe("homeRouteForRole", () => {
   });
 
   it("routes mentors to their course list", () => {
-    expect(homeRouteForRole("MENTOR")).toBe("/courses");
+    expect(homeRouteForRole("MENTOR")).toBe("/workspace");
   });
 
   it("routes admins to the admin home", () => {

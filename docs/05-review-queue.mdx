@@ -27,6 +27,24 @@ One submission at a time, keyboard-driven.
 - `j` / `k` to move through the queue, `⌘+Enter` to submit and advance.
 - Canned feedback snippets, saved per mentor, for repeated comments.
 
+### AI-assisted draft
+
+For pending `OpenQuestion` responses, the mentor may click **Draft with AI** to ask OpenRouter for
+an evidence-based summary, feedback, suggested score, and suggested verdict. The draft pre-fills
+the ordinary review form; it never submits a review, changes progress, or selects the final verdict
+for the mentor. The mentor remains responsible for checking evidence, editing feedback, and choosing
+**Approved** or **Needs revision**.
+
+The UI discloses the data transfer before the mentor clicks: the learner answer, question, mentor-only
+rubric/reference answer, and up to three recent feedback messages are sent to OpenRouter. Generation
+is never automatic or run in the background. Buildment does not fetch learner-submitted URLs for the
+model. The server sends only the text stored with the response and labels any URL as uninspected.
+
+The browser sends only `responseId` to the server action. The server reloads the response, calls the
+centralized course-mentor authorization guard, validates the block config and payload, and only then
+constructs the provider request. Rubric and reference-answer text are not returned to the browser as
+part of the AI payload; the browser receives only the generated draft.
+
 ## Needs-revision loop
 
 **Needs revision** reopens the block for the mentee, notifies them in-app, and puts the
@@ -65,8 +83,8 @@ video frames.
 
 Full `Review` model: see [`08-data-model.mdx`](08-data-model.mdx).
 
-## Open question
+## Mentor capacity
 
-**Mentor capacity** — what happens when a mentor has 200 pending reviews? v1 answer: aging
-highlights + bulk-approve. AI-drafted feedback is a v2 idea. See
-[`11-decisions-and-open-questions.mdx`](11-decisions-and-open-questions.mdx).
+Aging highlights help prioritize a large queue, while AI-assisted drafting reduces the time spent
+starting each written review. Bulk approval remains a separate future workflow because batching
+human-evaluated work has a different risk profile from drafting one editable review at a time.

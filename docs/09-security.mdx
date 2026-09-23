@@ -29,6 +29,14 @@ status: draft v1
 - **PII:** mentee answers are course-scoped; only the owning mentor and admins can read them.
   Deleting a user cascades responses (`onDelete: Cascade` throughout — see
   [`08-data-model.mdx`](08-data-model.mdx)).
+- **AI review is an explicit external transfer.** OpenRouter receives review context only after an
+  authorized mentor clicks **Draft with AI**. `OPENROUTER_API_KEY` is server-only. The client sends
+  a response ID, never a rubric, reference answer, or learner answer supplied as action input; the
+  server reloads and validates those values after `requireMentorOfCourse`. Learner/course text is
+  delimited and treated as untrusted prompt content. Submitted URLs are labeled but never fetched.
+  Structured output is schema-validated, returned as an editable draft, and cannot update a
+  `Response`, create a `Review`, or recompute progress. Only the mentor's separate review submit
+  action can do that.
 
 ## The sanitizer contract (required test)
 

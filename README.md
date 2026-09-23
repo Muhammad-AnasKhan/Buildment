@@ -30,8 +30,9 @@ pnpm install
 cp .env.example .env        # then fill in AUTH_SECRET at minimum — see below
 docker compose up -d        # starts local Postgres on :5432
 pnpm db:ready               # migrate deploy + prisma generate (use after git pull)
-pnpm db:seed                # creates 1 mentor, 3 mentees, 1 course, 3 enrollments
+pnpm db:seed                # creates 1 mentor, 3 mentees, 1 course, 4 preview enrollments
 pnpm content:import         # sync FreshMarket chapters/blocks from content/import
+pnpm db:seed:showcase       # add idempotent activity, progress, reviews, and help conversations
 pnpm dev                    # http://localhost:3000 (predev runs prisma generate)
 ```
 
@@ -55,6 +56,20 @@ seeded user (mentor + 3 mentees). Clicking one hits `/api/dev-login?email=...`, 
 database session for that user — no Google/Resend credentials required. This route 404s when
 `NODE_ENV=production`, so it can never ship as a production auth bypass.
 
+### AI review drafts (optional)
+
+Mentors can ask OpenRouter to draft feedback for a pending open-question response. Configure the
+credential on the server only; never use a `NEXT_PUBLIC_` prefix:
+
+```bash
+OPENROUTER_API_KEY=your-rotated-key
+OPENROUTER_REVIEW_MODEL=google/gemini-2.5-flash # optional
+```
+
+The request is made only after the mentor clicks **Draft with AI**. The mentor sees and edits the
+draft, then independently chooses the final verdict. See [`docs/05-review-queue.mdx`](docs/05-review-queue.mdx)
+for the data-sharing boundary.
+
 ## Common commands
 
 | Command | What it does |
@@ -65,6 +80,7 @@ database session for that user — no Google/Resend credentials required. This r
 | `pnpm test` | Vitest unit tests |
 | `pnpm db:migrate` | `prisma migrate dev` |
 | `pnpm db:seed` | Re-run the seed script (idempotent — upserts) |
+| `pnpm db:seed:showcase` | Add realistic, repeatable demo history after the course import |
 | `pnpm db:studio` | Prisma Studio, a GUI for the local database |
 | `pnpm content:import` | Import course content from `content/import/` into the database |
 | `pnpm content:validate` | Compile-check every chapter's MDX (needs DB) |

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/logo";
 import { GlassNavShell } from "@/components/glass-nav-shell";
+import { MobileNavMenu } from "@/components/mobile-nav-menu";
 import { NavUserMenu } from "@/components/nav-user-menu";
 
 export function NavBar({
@@ -16,7 +17,8 @@ export function NavBar({
         <Link href="/" className="flex shrink-0 items-center">
           <Logo size="sm" />
         </Link>
-        <nav className="flex min-w-0 items-center gap-1 overflow-x-auto">
+        <MobileNavMenu links={links} />
+        <nav className="hidden min-w-0 items-center gap-1 md:flex">
           {links.map((link) => (
             <Link
               key={link.href}
