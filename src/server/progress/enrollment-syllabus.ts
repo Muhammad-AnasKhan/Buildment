@@ -30,9 +30,9 @@ const courseModulesSelect = {
   },
 };
 
-export function pickContinueTarget(
-  flatChapters: Pick<SyllabusChapter, "slug" | "title" | "status" | "locked">[]
-) {
+export function pickContinueTarget<
+  TChapter extends Pick<SyllabusChapter, "slug" | "title" | "status" | "locked">,
+>(flatChapters: TChapter[]): TChapter | null {
   const inProgress = flatChapters.find((c) => !c.locked && c.status === "IN_PROGRESS");
   if (inProgress) return inProgress;
 
@@ -40,7 +40,7 @@ export function pickContinueTarget(
   if (notStarted) return notStarted;
 
   const unlocked = flatChapters.find((c) => !c.locked);
-  return unlocked ?? flatChapters[0] ?? null;
+  return unlocked ?? null;
 }
 
 export function pickDefaultOpenModule(modules: SyllabusModule[]) {

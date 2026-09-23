@@ -37,6 +37,21 @@ Note: a needs-revision verdict does **not** revert chapter completion — see th
 [`04-progress-and-gating.mdx`](04-progress-and-gating.mdx). Completion tracks submission, review
 tracks quality; these are intentionally decoupled so mentees are never blocked waiting on a mentor.
 
+## Mentee evaluation workspace
+
+The course mentee route (`/courses/[courseSlug]/mentees/[enrollmentId]`) is the mentor's unified
+workspace for one learner. It places pending reviews and help requests before historical material,
+then shows the full course map, latest attempt per checkpoint, the immutable response/review
+timeline, and recent study activity. A mentor enters the existing single-submission review flow
+from this workspace; it does not introduce a second grading or feedback system.
+
+URL-based `OpenQuestion` responses are also projected into **Project evidence**. The server uses
+the prompt and safe presentation fields (`submissionMode`, `urlLabel`, and `urlHint`) to label
+repositories, demo videos, deployments, diagrams, and documents. The browser receives this
+projection, never the full `Block.config`. Evidence URLs are stored as submitted links only:
+Buildment does not connect to GitHub, clone repositories, fetch learner URLs, or embed arbitrary
+video frames.
+
 ## Data model touch points
 
 - `Response.status` drives what's in the queue: `PENDING_REVIEW` items are queued;

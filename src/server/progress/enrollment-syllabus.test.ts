@@ -34,6 +34,11 @@ describe("pickContinueTarget", () => {
     const flat = [chapter("a", "COMPLETED"), chapter("b", "COMPLETED")];
     expect(pickContinueTarget(flat)?.slug).toBe("a");
   });
+
+  it("returns no target when every chapter is locked", () => {
+    const flat = [chapter("a", "IN_PROGRESS", true), chapter("b", "NOT_STARTED", true)];
+    expect(pickContinueTarget(flat)).toBeNull();
+  });
 });
 
 describe("resolveContinueChapterPath", () => {

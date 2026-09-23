@@ -13,7 +13,7 @@ export function NavBar({
   return (
     <GlassNavShell>
       <div className="flex min-w-0 items-center gap-6">
-        <Link href="/" className="shrink-0">
+        <Link href="/" className="flex shrink-0 items-center">
           <Logo size="sm" />
         </Link>
         <nav className="flex min-w-0 items-center gap-1 overflow-x-auto">

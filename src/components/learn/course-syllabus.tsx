@@ -49,31 +49,31 @@ function ModuleCard({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <article className="overflow-hidden rounded-xl border border-neutral-200 bg-white">
+      <article className="overflow-hidden rounded-xl border border-border bg-background">
         <CollapsibleTrigger className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50 font-mono text-xs font-bold tabular-nums text-neutral-600">
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/40 font-mono text-xs font-bold tabular-nums text-muted-foreground">
               {String(module.order).padStart(2, "0")}
             </span>
             <div className="min-w-0">
-              <h3 className="truncate text-sm font-semibold tracking-tight text-neutral-900">
+              <h3 className="truncate text-sm font-semibold tracking-tight text-foreground">
                 {module.title}
               </h3>
-              <p className="mt-0.5 text-xs text-neutral-500">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 {done}/{total} lessons complete
               </p>
             </div>
           </div>
           <ChevronDown
             className={cn(
-              "size-4 shrink-0 text-neutral-400 transition-transform duration-200",
+              "size-4 shrink-0 text-muted-foreground transition-transform duration-200",
               open && "rotate-180"
             )}
           />
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <ul className="divide-y divide-neutral-100 border-t border-neutral-100">
+          <ul className="divide-y divide-border border-t border-border">
             {module.chapters.map((chapter) => (
               <li key={chapter.id}>
                 <SyllabusChapterRow
@@ -94,12 +94,12 @@ export function CourseSyllabus({ courseSlug, modules, defaultOpenModuleId }: Cou
   const totalLessons = modules.reduce((sum, mod) => sum + mod.chapters.length, 0);
 
   return (
-    <section className="rounded-xl border border-neutral-200 bg-white p-6">
+    <section className="rounded-2xl border border-border bg-card p-5 text-card-foreground sm:p-8">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-lg font-semibold tracking-tight text-neutral-900">
+        <h2 className="text-lg font-semibold tracking-tight text-foreground">
           Course content
         </h2>
-        <span className="text-sm text-neutral-400">{totalLessons} lessons</span>
+        <span className="text-sm text-muted-foreground">{totalLessons} lessons</span>
       </div>
 
       <div className="space-y-3">

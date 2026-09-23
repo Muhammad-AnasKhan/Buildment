@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isSafeSubmissionUrl } from "@/lib/safe-submission-url";
 
 export const OpenQuestionConfigSchema = z.object({
   prompt: z.string(),
@@ -31,11 +32,12 @@ export const OpenQuestionPayloadSchema = z
   })
   .superRefine((data, ctx) => {
     if (data.url && data.url.trim()) {
-      try {
-        // eslint-disable-next-line no-new
-        new URL(data.url.trim());
-      } catch {
-        ctx.addIssue({ code: "custom", message: "Invalid URL", path: ["url"] });
+      if (!isSafeSubmissionUrl(data.url)) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Use a secure HTTPS URL (HTTP is only allowed for localhost).",
+          path: ["url"],
+        });
       }
     }
   });

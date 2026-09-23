@@ -6,6 +6,7 @@ import { CheckCircle2, Clock3, Link2, PenLine, RotateCcw, SendHorizontal } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { parseSafeSubmissionUrl } from "@/lib/safe-submission-url";
 import { AnswerTextareaWithMic } from "@/components/learn/answer-textarea-with-mic";
 import { readerBlockGrouped, readerBlockInner } from "@/components/learn/reader-block-styles";
 import type { OpenQuestionGroupPosition } from "./group-position";
@@ -54,6 +55,7 @@ export function OpenQuestionClient({
   const isGrouped = groupPosition !== "single";
   const speechEnabled = config.allowSpeechInput ?? false;
   const urlMeta = openQuestionUrlPresentation(config);
+  const submittedUrl = parseSafeSubmissionUrl(url || initialState?.url || "")?.toString() ?? null;
 
   const clientValidation = useMemo(
     () => validateOpenQuestionPayload(config, { text, url: url.trim() || undefined }),
@@ -168,16 +170,16 @@ export function OpenQuestionClient({
                     {text || initialState?.text}
                   </p>
                 )}
-                {(url || initialState?.url) && (
+                {submittedUrl && (
                   <p className="border-t border-emerald-200/60 px-4 py-3 text-sm">
                     <span className="font-medium text-emerald-800">Link: </span>
                     <a
-                      href={(url || initialState?.url) ?? "#"}
+                      href={submittedUrl}
                       className="break-all text-indigo-700 underline"
                       target="_blank"
-                      rel="noreferrer"
+                      rel="noreferrer noopener"
                     >
-                      {url || initialState?.url}
+                      {submittedUrl}
                     </a>
                   </p>
                 )}

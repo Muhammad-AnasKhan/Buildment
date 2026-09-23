@@ -17,9 +17,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "buildment",
-  description: "Interactive courses and guided chapters — learn by building.",
-  icons: { icon: "/logo.png" },
+  title: {
+    default: "buildment — learn by building",
+    template: "%s · buildment",
+  },
+  description:
+    "Project-based courses with interactive checkpoints, real mentor feedback, and progress you can trust.",
+  icons: { icon: "/logo.svg" },
 };
 
 export default function RootLayout({

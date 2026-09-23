@@ -5,6 +5,7 @@ import { prisma } from "@/server/db";
 import { requireMentorOfCourse } from "@/server/auth/guards";
 import { submitReview } from "@/server/actions/reviews";
 import { OpenQuestionConfigSchema } from "@/blocks/open-question/schema";
+import { parseSafeSubmissionUrl } from "@/lib/safe-submission-url";
 
 export default async function ReviewDetailPage({
   params,
@@ -48,7 +49,8 @@ export default async function ReviewDetailPage({
       : payload?.url
         ? `(Link submission)\n${payload.url}`
         : JSON.stringify(response.payload, null, 2);
-  const answerUrl = typeof payload?.url === "string" ? payload.url : null;
+  const rawAnswerUrl = typeof payload?.url === "string" ? payload.url : null;
+  const answerUrl = rawAnswerUrl ? parseSafeSubmissionUrl(rawAnswerUrl)?.toString() ?? null : null;
 
   const alreadyReviewed = response.status !== "PENDING_REVIEW";
   const course = response.block.chapter.course;
@@ -145,7 +147,7 @@ export default async function ReviewDetailPage({
             {answerUrl ? (
               <p className="mt-3 text-sm">
                 <span className="font-medium text-neutral-700">Submitted link: </span>
-                <a href={answerUrl} className="break-all text-indigo-700 underline" target="_blank" rel="noreferrer">
+                <a href={answerUrl} className="break-all text-indigo-700 underline" target="_blank" rel="noreferrer noopener">
                   {answerUrl}
                 </a>
               </p>

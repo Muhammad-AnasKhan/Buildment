@@ -1,17 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
+  OpenQuestionConfigSchema,
   OpenQuestionPayloadSchema,
   validateOpenQuestionPayload,
-  type OpenQuestionConfig,
 } from "./schema";
 
-const baseConfig: OpenQuestionConfig = {
+const baseConfig = OpenQuestionConfigSchema.parse({
   prompt: "Explain your design",
   minWords: 0,
   allowSpeechInput: false,
   allowUrl: true,
   urlRequired: false,
-};
+});
 
 describe("OpenQuestionPayloadSchema", () => {
   it("accepts text only", () => {
@@ -31,6 +31,26 @@ describe("OpenQuestionPayloadSchema", () => {
       OpenQuestionPayloadSchema.parse({ text: "x", url: "not-a-url" })
     ).toThrow();
   });
+
+  it.each(["javascript:alert(1)", "data:text/html,hello", "file:///etc/passwd", "ftp://example.com/file"]) (
+    "rejects unsafe protocol %s",
+    (url) => {
+      expect(() => OpenQuestionPayloadSchema.parse({ text: "x", url })).toThrow();
+    }
+  );
+
+  it("rejects non-local HTTP URLs", () => {
+    expect(() =>
+      OpenQuestionPayloadSchema.parse({ text: "x", url: "http://example.com/demo" })
+    ).toThrow();
+  });
+
+  it.each(["http://localhost:3000/demo", "http://127.0.0.1:5173/demo"]) (
+    "allows local development URL %s",
+    (url) => {
+      expect(OpenQuestionPayloadSchema.parse({ text: "x", url }).url).toBe(url);
+    }
+  );
 });
 
 describe("validateOpenQuestionPayload", () => {

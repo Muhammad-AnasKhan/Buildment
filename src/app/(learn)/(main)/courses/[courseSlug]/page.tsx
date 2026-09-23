@@ -5,6 +5,7 @@ import { prisma } from "@/server/db";
 import { ForbiddenError, requireEnrolledMentee } from "@/server/auth/guards";
 import { CourseOverviewHero } from "@/components/learn/course-overview-hero";
 import { CourseSyllabus } from "@/components/learn/course-syllabus";
+import { CourseProjectShowcase } from "@/components/learn/course-project-showcase";
 import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
 import {
   pickDefaultOpenModule,
@@ -65,7 +66,7 @@ export default async function CourseOverviewPage({
         <div className="mx-auto max-w-4xl px-6 py-10">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-900"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="size-4" />
             Back to dashboard
@@ -102,10 +103,10 @@ export default async function CourseOverviewPage({
         : "Continue learning";
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 px-6 py-10">
+    <div className="mx-auto max-w-6xl space-y-8 px-5 py-8 sm:px-6 sm:py-10">
       <Link
         href="/dashboard"
-        className="inline-flex items-center gap-2 text-sm text-neutral-500 transition-colors hover:text-neutral-900"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="size-4" />
         Back to dashboard
@@ -116,7 +117,6 @@ export default async function CourseOverviewPage({
         title={course.title}
         description={course.description}
         projectGoal={course.projectGoal}
-        coverUrl={course.coverUrl}
         percentComplete={enrollment.percentComplete}
         continueHref={resolveContinueChapterPath(course.slug, flatChapters)}
         continueLabel={continueLabel}
@@ -124,6 +124,8 @@ export default async function CourseOverviewPage({
         chapterCount={flatChapters.length}
         estimatedHours={course.estimatedHours}
       />
+
+      <CourseProjectShowcase courseSlug={course.slug} />
 
       <CourseSyllabus
         courseSlug={course.slug}

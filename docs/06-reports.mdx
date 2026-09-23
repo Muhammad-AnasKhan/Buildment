@@ -32,7 +32,7 @@ Answers: *how is the cohort doing overall?*
 - **At-risk rule (v1):** no activity in 7 days, OR failed the same test twice, OR >3 chapters
   behind the cohort median. Surfaced as a list the mentor can act on, with a one-click nudge.
 
-## Mentee report (visible to both mentee and mentor)
+## Mentee report and mentor evaluation workspace
 
 Answers: *how am I doing?*
 
@@ -40,6 +40,16 @@ Answers: *how am I doing?*
 - Per-chapter timeline with scores.
 - All mentor feedback in one place — this is what a learner actually wants to re-read.
 - Weak areas: block topics/tags (`Block.tags`) with lowest scores.
+
+The mentor's detailed evaluation workspace expands this view with a bounded evidence read of the
+latest response attempts, project URLs, review history, help requests, and study sessions. Summary
+statistics still come from `Enrollment` and `ChapterProgress`; response rows are not aggregated on
+the read path to reconstruct course-level progress. The full course structure is displayed so
+not-started and locked chapters remain visible alongside completed work.
+
+Project evidence is submitted through existing `OpenQuestion` URL modes. The MVP validates safe
+web protocols and displays external links, but provides no GitHub API integration, repository
+scanning, video upload, or automatic project grading.
 
 ## Export
 
