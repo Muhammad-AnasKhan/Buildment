@@ -18,7 +18,7 @@ import { blockRegistry, isRegisteredBlockType } from "@/blocks/registry";
 import { slugify } from "@/lib/utils";
 
 // Mentor-facing chapter mutations. Authorization goes through the guards in
-// server/auth — never an ad-hoc check here (AGENTS.md invariant 6).
+// server/auth — never an ad-hoc check here (docs/09-security.mdx).
 // Draft autosave writes Chapter.source only; learners never see a draft
 // because the reader renders Chapter.compiled, which publish snapshots.
 

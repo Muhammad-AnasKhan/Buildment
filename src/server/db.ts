@@ -2,7 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
 // Singleton across hot-reloads in dev, per the standard Next.js + Prisma pattern —
-// see .cursor/rules/prisma-database.mdc.
+// see docs/08-data-model.mdx.
 // Bump this when the generated client gains models, so a long-lived `next dev`
 // process drops the previous client instead of calling methods that are missing.
 const PRISMA_CLIENT_VERSION = "study-sessions";

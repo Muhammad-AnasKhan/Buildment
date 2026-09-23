@@ -32,7 +32,7 @@ interactive yet — this phase proves the shells for both roles exist and are di
       redirect logic based on `User.role`. `ADMIN` can view both for v1 (superset of mentor per
       [`../00-product-overview.mdx`](../00-product-overview.mdx)).
 - [ ] `server/auth/guards.ts` — the single place route handlers/actions check "is this user allowed
-      to touch this course/enrollment," per the invariant in [`/AGENTS.md`](../../AGENTS.md). Even
+      to touch this course/enrollment," per the invariant in [`09-security.mdx`](../../09-security.mdx). Even
       though there's nothing to guard yet, establish the pattern now so M1+ don't invent ad-hoc
       checks.
 - [ ] Seed script (`prisma/seed.ts`): one mentor, three mentees, one course (no chapters yet, or

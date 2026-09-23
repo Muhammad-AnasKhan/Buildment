@@ -7,7 +7,7 @@ import { canAccessHelpThread } from "@/server/help/access";
 
 export { canAccessRole, homeRouteForRole, isMentorOfCourse } from "./access-rules";
 
-// The single place authorization is decided — see .cursor/rules/project-invariants.mdc.
+// The single place authorization is decided — see docs/09-security.mdx.
 // Route handlers, server actions, and layouts call these instead of checking
 // session/role/ownership themselves.
 

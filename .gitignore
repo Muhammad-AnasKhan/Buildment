@@ -43,5 +43,13 @@ next-env.d.ts
 # prisma generated client
 /src/generated
 
+# AI coding agent tooling (local only)
+.cursor/
+.opencode/
+.codex/
+.claude/
+.agents/
+.qwen/
+
 # prebundled mermaid copied from node_modules (see scripts/copy-mermaid.mjs)
 /public/vendor/mermaid.min.js

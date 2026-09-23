@@ -2,7 +2,7 @@ import type { Role } from "@/generated/prisma/client";
 
 // Pure authorization decisions, deliberately free of any Next.js/Auth.js/Prisma
 // runtime imports so they're trivial to unit test — see guards.test.ts and
-// .cursor/rules/testing.mdc. `guards.ts` wraps these with the actual
+// guards.test.ts. `guards.ts` wraps these with the actual
 // auth()/redirect()/database calls.
 
 export function canAccessRole(userRole: Role, allowed: readonly Role[]): boolean {

@@ -8,7 +8,7 @@ import {
 
 // Recomputes denormalized rollups after a new Response is written — see
 // docs/04-progress-and-gating.mdx and the append-only-Response invariant in
-// .cursor/rules/project-invariants.mdc: never mutate a Response to "fix"
+// docs/04-progress-and-gating.mdx: never mutate a Response to "fix"
 // progress, always write a new attempt and recompute from scratch here, in
 // the same transaction as the write.
 //
@@ -173,7 +173,7 @@ export async function ensureChapterStarted(
 /**
  * Maintains the denormalized per-block rollup in the same transaction as a new
  * Response write, so chapter reports can read BlockStats instead of
- * aggregating Response on the read path (AGENTS.md invariant 7).
+ * aggregating Response on the read path (docs/06-reports.mdx).
  */
 export async function recordBlockStats(
   tx: Prisma.TransactionClient,

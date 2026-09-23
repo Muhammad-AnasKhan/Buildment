@@ -41,7 +41,7 @@ Two independent switches per course:
 **Gating is enforced server-side** on the chapter data route, not just hidden in the UI. A locked
 chapter's loader does not compile or send MDX — it renders a locked screen (and `POST /respond`
 returns 403). See [`09-security.mdx`](09-security.mdx). This is a load-bearing invariant
-(see [`/AGENTS.md`](../AGENTS.md)), not a nice-to-have.
+(see [`09-security.mdx`](09-security.mdx) and [`03-blocks-registry.mdx`](03-blocks-registry.mdx)), not a nice-to-have.
 
 ## Storage strategy
 
@@ -53,7 +53,7 @@ returns 403). See [`09-security.mdx`](09-security.mdx). This is a load-bearing i
 
 Denormalized rows are **recomputed inside the same transaction** that writes a `Response`. Reports
 read only denormalized tables — never `Response` directly (see
-[`06-reports.mdx`](06-reports.mdx) and the invariants in [`/AGENTS.md`](../AGENTS.md)).
+[`06-reports.mdx`](06-reports.mdx) and [`09-security.mdx`](09-security.mdx)).
 
 A `recomputeProgress(enrollmentId)` job exists as the repair path — run it:
 - after content edits that change block counts or point values,

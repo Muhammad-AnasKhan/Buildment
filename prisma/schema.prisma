@@ -1,5 +1,5 @@
 // Source of truth for the schema. Keep docs/08-data-model.mdx in sync with this file
-// whenever they diverge — see .cursor/rules/prisma-database.mdc.
+// whenever they diverge — see docs/08-data-model.mdx.
 
 // Prisma 7: the connection URL lives in prisma.config.ts, not here. PrismaClient
 // requires a driver adapter (@prisma/adapter-pg) at runtime — see src/server/db.ts.
@@ -385,7 +385,7 @@ model Invite {
 
 // Denormalized per-block aggregates, maintained in the same transaction as each
 // Response write (recomputeChapterProgress) so reports never aggregate over
-// Response on the read path — AGENTS.md invariant 7, docs/06-reports.mdx.
+// Response on the read path — docs/06-reports.mdx.
 model BlockStats {
   blockId         String    @id
   block           Block     @relation(fields: [blockId], references: [id], onDelete: Cascade)

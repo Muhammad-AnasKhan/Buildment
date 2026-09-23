@@ -9,7 +9,7 @@ status: draft v1 — source of truth until prisma/schema.prisma exists
 
 > **This file is the source of truth for the schema until `prisma/schema.prisma` exists (M0).**
 > Once the real schema file exists, treat it as canonical — update this doc to match the schema
-> when they diverge, not the other way around. See [`/AGENTS.md`](../AGENTS.md).
+> when they diverge, not the other way around. See [`06-reports.mdx`](06-reports.mdx).
 
 ## Prisma schema
 
@@ -274,7 +274,7 @@ model Invite {
 
 // Denormalized per-block aggregates, maintained in the same transaction as each
 // Response write (src/server/progress/compute.ts) so reports never aggregate
-// over Response on the read path — see /AGENTS.md invariant 7.
+// over Response on the read path — see docs/06-reports.mdx.
 model BlockStats {
   blockId         String    @id
   block           Block     @relation(fields: [blockId], references: [id], onDelete: Cascade)

@@ -4,9 +4,8 @@ An interactive, project-based learning platform. Mentors write MDX chapters with
 checkpoints (quizzes, tests, must-reads, open questions, runnable code); mentees work through
 them; progress and reports are computed server-side.
 
-Full product/technical spec lives in [`docs/`](docs/README.mdx) — start there, or read
-[`AGENTS.md`](AGENTS.md) for the load-bearing invariants if you're working on this with an AI
-coding agent.
+Full product/technical spec lives in [`docs/`](docs/README.mdx) — start there. Load-bearing
+invariants (security, gating, grading) are spelled out in the topic docs linked from that map.
 
 **Shipping the shareable demo:** follow [`docs/phases/demo-10-day.mdx`](docs/phases/demo-10-day.mdx)
 (ten days: real progress, chapter locking, ask-mentor, UI consistency). We are **not** replacing
