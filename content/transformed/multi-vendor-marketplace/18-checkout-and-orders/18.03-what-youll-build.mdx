@@ -20,7 +20,7 @@ Checkout is the **big bang** — everything else is read-only lists. Do not buil
 
 **Success picture:** Cart with items from Store A and Store B → one POST → response with **two orders**, each with embedded snapshot lines, cart empty, stock reduced.
 
-<StateMachine title="Order lifecycle (Chapter 18)" chart={`
+<MermaidDiagram title="Order lifecycle (Chapter 18)" chart={`
 stateDiagram-v2
   [*] --> pending: checkout creates order
   pending --> packed: vendor updates status
@@ -139,11 +139,6 @@ Full checklist in 18.18. Headlines:
 | 18.14 | Vendor orders route |
 | 18.15 | Customer orders route |
 | 18.16 | Snapshot immutability test |
-
-
-## Before you continue
-
-<OpenQuestion id="01M34MRB1QHJVGGQKN7KSWS3C2" />
 
 ## Next
 

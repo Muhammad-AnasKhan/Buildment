@@ -14,8 +14,10 @@ Do **not** open Chapter 21 until every box is ticked and learning log answers ar
 
 - [ ] `/checkout` shows grouped cart review
 - [ ] Place order calls `POST /checkout`
-- [ ] Loading/disabled state on submit
-- [ ] Stock and empty cart errors displayed
+- [ ] Payment Intent amount comes from the server-owned cart
+- [ ] Submit remains disabled through payment confirmation and order creation
+- [ ] Decline, stock, empty-cart, and API errors are announced and recoverable
+- [ ] Payment-success/API-timeout retry reuses the same Payment Intent
 - [ ] Success navigates to confirmation
 
 ### Confirmation
@@ -23,6 +25,8 @@ Do **not** open Chapter 21 until every box is ticked and learning log answers ar
 - [ ] Shows **all orders** from checkout response
 - [ ] Line items use snapshot fields
 - [ ] Multi-store checkout shows plural messaging
+- [ ] Refresh never guesses that arbitrary recent orders belong to this checkout
+- [ ] Full order identifiers are available for support
 - [ ] Link to order history works
 
 ### Customer orders
@@ -31,6 +35,8 @@ Do **not** open Chapter 21 until every box is ticked and learning log answers ar
 - [ ] Split orders appear as separate entries
 - [ ] Status badge on each order
 - [ ] Empty state handled
+- [ ] Loading, empty, error, retry, and refresh states are distinct
+- [ ] Customer B cannot see Customer A's orders
 
 ### Vendor orders
 
@@ -38,11 +44,14 @@ Do **not** open Chapter 21 until every box is ticked and learning log answers ar
 - [ ] Lists only vendor's store orders
 - [ ] Customer name shown
 - [ ] Snapshot lines visible
+- [ ] Responsive list/table and expansion controls work by keyboard
 
 ### Status updates
 
 - [ ] Vendor can advance status (PATCH)
 - [ ] Cross-vendor PATCH blocked
+- [ ] Backward, skipped, and stale two-tab transitions are rejected
+- [ ] UI applies the returned order or rolls back after failure
 - [ ] Customer sees updated status on refresh
 
 ### Week 3 demo
@@ -55,6 +64,7 @@ Do **not** open Chapter 21 until every box is ticked and learning log answers ar
 
 - [ ] Chapter 18 checkout API
 - [ ] Chapter 17 cart UI
+- [ ] Chapter 19 paid checkout and idempotent replay
 
 ## Learning log
 
@@ -62,20 +72,20 @@ Answer **in your own words** in the fields below:
 
 1. **Demo walkthrough:** Describe your Week 3 demo step by step with your store names.
 
-2. **Split confirmation:** How does UI show two orders? Paste component approach in prose.
+2. **Split confirmation:** How does the UI preserve the exact checkout batch across navigation or recover safely after refresh?
 
 3. **Snapshots in UI:** Which fields do you render on `OrderLineRow`? Why not `product.price`?
 
 4. **Vendor isolation:** How did you verify Vendor B does not see Vendor A's order in UI?
 
-5. **Status flow:** What transitions did you implement? Show customer vs vendor view after update.
+5. **Status flow:** What transitions did you implement, and how does a stale second tab reconcile with the server?
 
-6. **Chapter 20 preview:** Why will catalogue benefit from cache after this chapter?
+6. **Failure recovery:** What does the customer do if Stripe succeeds but checkout confirmation times out?
+
+7. **Chapter 21 preview:** Why will the public catalogue benefit from cache after this chapter?
 
 ## All boxes ticked?
 
 Mark this chapter complete in the platform, then continue to **Cache and search** (Chapter 21).
 
-## Final gate statement
-
-*"I confirm full commerce flow works in browser: browse, multi-vendor cart, checkout, split confirmation, customer history, vendor orders with status updates. Week 3 demo recorded. Ready for Chapter 20."*
+**Next:** Chapter 21 adds cache and indexed search to the public catalogue without weakening the commerce contracts you just proved.

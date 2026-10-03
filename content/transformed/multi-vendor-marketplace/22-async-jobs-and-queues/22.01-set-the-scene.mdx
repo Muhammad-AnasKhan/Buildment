@@ -27,9 +27,9 @@ That is correct. The trap is step 5 that teams add later: *"Oh, let's also send 
 
 | Chapter 21 solved | Chapter 22 solves |
 |---|---|
-| Repeated catalogue reads are slow | Checkout blocked by slow/unreliable notifications |
-| Stale prices from cache | 500 errors when email provider times out **after** order already created |
-| Search without index | Customer waits 2 seconds for SMTP while staring at a spinner |
+| Repeated catalogue reads are slow | Notifications make checkout latency depend on an email provider |
+| Cached data can become stale | An email timeout can follow an already-committed order |
+| Search needs an index | A shopper should not wait for SMTP after payment succeeds |
 
 **Why after checkout works, not during:** Order creation and stock must be **immediate and consistent** — the customer needs a 201 with order IDs **now**. Email can arrive three seconds later. If email fails, you **retry in the worker** without undoing a valid order.
 
@@ -45,7 +45,7 @@ That is correct. The trap is step 5 that teams add later: *"Oh, let's also send 
 | **Worker** | A separate Node process that reads the to-do list and does the slow work |
 | **BullMQ** | A library that manages the to-do list — retries, scheduling, job metadata |
 | **Processor** | The function the worker runs for each job — e.g. "send mock vendor email" |
-| **Side effect** | Something that happens because of an action but is not the main result — email after order is a side effect; the order itself is the main result |
+| **Side effect** | Follow-up work caused by the main operation, such as email after an order |
 | **Sync trap** | Putting slow side effects **inside** the checkout handler so the customer waits or the whole request fails |
 
 ## Think of it like a restaurant kitchen
@@ -102,7 +102,7 @@ No. For the gate, a structured `console.log` with a `[NOTIFY]` prefix is enough 
 
 <FaqItem question={"Should checkout wait until the worker finishes?"}>
 
-No — and the gate actually checks this. When you demo, the 201 response should arrive *before* the worker's notification logs appear in the other terminal. If you `await` the worker's processing inside the checkout handler, the customer is back to staring at a spinner while SMTP takes two seconds: you've rebuilt the very "sync trap" this chapter exists to kill. Enqueue the job, return 201, let the worker do the rest.
+No. Checkout waits only long enough to persist commerce state and place the job in Redis. A fast worker may log before the API flushes its response, so log order alone is not proof of decoupling. The real proof is that adding delay inside the processor does not add the same delay to the HTTP response.
 
 </FaqItem>
 
@@ -137,7 +137,7 @@ Two required and one optional. `order.created`, enqueued after checkout succeeds
 |---|---|---|
 | 22.1–22.3 | Open | Sync trap, blueprint |
 | 22.4–22.6 | Learn | Sync vs async, BullMQ, docs read |
-| 22.7 | Check | Quiz reserved |
+| 22.7 | Check | Queue reliability quiz |
 | 22.8–22.16 | Build | queue → worker → jobs → verify |
 | 22.17–22.18 | Wrap | Recap + gate |
 
@@ -145,7 +145,7 @@ Estimated time: **two days** — worker process wiring deserves care.
 
 ## Week 4 demo note
 
-When you demo checkout live: **201 returns before notification logs appear** in the worker terminal. That proves async — mention it in the demo script.
+When you demo checkout live, add a development-only delay inside the processor and show that checkout latency stays roughly unchanged. Then remove the delay. This demonstrates that the request does not await notification completion without depending on terminal log ordering.
 
 ## Self-check before continuing
 
@@ -159,11 +159,6 @@ When you demo checkout live: **201 returns before notification logs appear** in 
 Sending vendor notification emails inside the payment request adds failure modes where money succeeded but the user sees an error. Queue the email; return success when the order is saved and payment confirmed.
 
 </InterestingRead>
-
-
-## Before you continue
-
-<OpenQuestion id="01M34MRBQ21WY4WCJ5S5KCJFHW" />
 
 ## Next
 

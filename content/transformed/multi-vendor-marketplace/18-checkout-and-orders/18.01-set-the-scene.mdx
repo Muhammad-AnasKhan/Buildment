@@ -175,7 +175,7 @@ Chapter 18 assumes:
 |---|---|---|
 | 18.1–18.3 | Open | Split orders, snapshot trap, deliverables |
 | 18.4–18.6 | Learn | Snapshots, atomic stock, idempotency read |
-| 18.7 | Check | Quiz reserved |
+| 18.7 | Check | Checkout consistency quiz |
 | 18.8–18.16 | Build | orders module → checkout → tests |
 | 18.17–18.18 | Wrap | Recap + gate |
 
@@ -192,11 +192,6 @@ Estimated time: **two full days** — transaction logic deserves care.
 If a checkout request times out, clients and webhooks may retry. Idempotency keys tell Stripe to treat duplicates as the same charge. FreshMarket introduces this pattern where money first enters the system.
 
 </InterestingRead>
-
-
-## Before you continue
-
-<OpenQuestion id="01M34MRB0Z6CP8600GMDMXHKA9" />
 
 ## Next
 

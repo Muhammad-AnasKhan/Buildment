@@ -2,7 +2,7 @@
 title: "Set the scene"
 module: 19
 lesson: 1
-summary: "**Where the project is now:** Chapter 18 gave you a **working checkout pipeline** — one `POST /checkout` turns a multi-vendor cart into split orders with price snapshots, atomic stock decrement, and cart cleared on success. Proof so far is curl and Compass. **No money moves.** An"
+summary: "Chapter 18 can create split orders, but it cannot prove a customer paid. Add a server-owned Stripe flow without trusting browser totals or creating duplicate orders."
 ---
 **Where the project is now:** Chapter 18 gave you a **working checkout pipeline** — one `POST /checkout` turns a multi-vendor cart into split orders with price snapshots, atomic stock decrement, and cart cleared on success. Proof so far is curl and Compass. **No money moves.** Anyone with a customer token can create orders for free.
 
@@ -43,10 +43,10 @@ If checkout without payment still creates orders, **fix Chapter 18 first**. Paym
 
 | Term | Simple meaning |
 |---|---|
-| **Payment Intent** | Stripe's object for "collect this amount from this customer" — tracks status from `requires_payment_method` to `succeeded` |
+| **Payment Intent** | Stripe's state machine for collecting one specific amount |
 | **Stripe.js** | Stripe's browser library — collects card details safely; card numbers never touch your server |
 | **Payment-gated checkout** | Server refuses to create orders until Stripe confirms the Payment Intent **succeeded** |
-| **Platform collects** | FreshMarket (your platform) charges the customer once — vendors are paid out separately in real life; **not** Stripe Connect in this course |
+| **Platform collects** | FreshMarket receives one charge; vendor payouts are outside this course |
 | **Webhook** | Stripe calls your server when status changes — backup if the client disconnects after paying |
 | **Test mode** | Fake money, test keys (`pk_test_…`, `sk_test_…`) — no real charges |
 
@@ -129,12 +129,16 @@ No — test mode only, the whole way through. You'll use test keys (`pk_test_…
 
 <FaqItem question={"What if payment succeeds but checkout crashes?"}>
 
-That's the nasty edge case, and the honest answer is: it needs a backup plan. The customer paid, but your server crashed before creating orders — now you retry the checkout, and if you're not careful, you create duplicate orders. Sub-chapters 19.12–19.13 cover the two tools that handle this: the **webhook**, which lets Stripe tell your server "this payment succeeded" as a backup when the client disappears, and **idempotency**, which makes retries safe by recognizing a payment already handled. Document your edge cases in the learning log.
+The customer has paid, but your order transaction may not exist. A webhook proves the payment event arrived; it cannot safely reconstruct a mutable cart by itself. This course records the event, detects whether the Payment Intent has an order set, and exposes the case for retry or support reconciliation. Chapter 24 later reduces the stock race with reservations. Idempotency prevents a recovery attempt from creating a second order set.
 
 </FaqItem>
 
 </FaqGroup>
 
+
+<Callout type="warning" title="A payment gate is not an atomic checkout">
+Stripe and MongoDB cannot share one transaction. Payment can succeed just before stock changes or the API crashes. Module 19 makes retries safe and failures visible; it does not claim that a direct Payment Intent flow eliminates every paid-without-order case.
+</Callout>
 
 ## What this chapter is not
 
@@ -149,7 +153,7 @@ That's the nasty edge case, and the honest answer is: it needs a backup plan. Th
 |---|---|---|
 | 19.1–19.3 | Open | Bridge, fake-checkout trap, blueprint |
 | 19.4–19.6 | Learn | One payment / many orders, test mode, Stripe docs |
-| 19.7 | Check | Quiz reserved |
+| 19.7 | Check | Payment-processing quiz |
 | 19.8–19.14 | Build | Config → intent → gated checkout → webhooks → verify |
 | 19.15–19.16 | Wrap | Recap + gate |
 
@@ -166,11 +170,6 @@ Estimated time: **two full days** — payment bugs are expensive; go carefully.
 Stripe test keys let you simulate success, decline, and 3D Secure without moving money. FreshMarket stays in test mode until deploy — but your code paths should mirror production exactly.
 
 </InterestingRead>
-
-
-## Before you continue
-
-<OpenQuestion id="01M34MRB7QHVMY5BB55TF8X5J0" />
 
 ## Next
 

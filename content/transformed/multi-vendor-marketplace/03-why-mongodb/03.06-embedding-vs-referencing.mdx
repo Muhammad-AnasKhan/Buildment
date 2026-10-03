@@ -21,7 +21,7 @@ By the end of this chapter, you'll be able to:
 Embed vs reference is the **most common MongoDB beginner mistake**. Cart items should **point at** live products; order lines should **copy** prices at purchase. Mixing those up gives customers wrong receipts.
 </Callout>
 
-<EntityDiagram title="FreshMarket ownership chain" chart={`
+<MermaidDiagram title="FreshMarket ownership chain" chart={`
   USER ||--o{ STORE : owns
   STORE ||--o{ PRODUCT : lists
   USER ||--o{ ORDER : places
@@ -151,7 +151,7 @@ erDiagram
 
 **❌ Don't:** Reference-only order lines without snapshot fields.
 
-<ChapterRecap id="01M34MR8GE1ZPGWAK3W9EW48Q4" />
+<ChapterRecap id="01M3P088QC3GZ1E6B1V3ZSQ98E" />
 
 ## Self-check
 

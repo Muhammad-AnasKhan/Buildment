@@ -16,11 +16,7 @@ A customer has **2 kg tomatoes** (`stockQty: 2`) in cart. Another customer tries
 
 List every HTTP call, webhook, and worker tick until both customers have a final outcome.
 
-```predict
-prompt: When should FreshMarket decrement stockQty — at checkout start, at PaymentIntent creation, or on payment_intent.succeeded? Pick one and defend it in one sentence.
-answer: On payment_intent.succeeded (confirm step). Checkout start only creates active reservations that reduce ATP; decrementing stockQty before money settles strands inventory on failed cards.
-explanation: Reservations protect concurrency during payment; decrements reflect economic commitment. Failed payments should release holds, not require manual stock fixes.
-```
+<Predict id="01M3P08A8E53N5HYYQNZ16A8YQ" />
 
 ## Questions to answer in your notes
 
@@ -39,6 +35,3 @@ explanation: Reservations protect concurrency during payment; decrements reflect
 | Product GET | Shows `availableQty` |
 
 **Next:** Optional quiz chapter, then the build cluster.
-## Before you continue
-
-<OpenQuestion id="01M34MRC3K726EW68BK42A8EY6" />
