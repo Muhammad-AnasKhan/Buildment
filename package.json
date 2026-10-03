@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "prisma generate",
+    "predev": "prisma generate && node scripts/copy-mermaid.mjs",
     "dev": "next dev",
     "db:ready": "prisma migrate deploy && prisma generate",
     "build": "next build",

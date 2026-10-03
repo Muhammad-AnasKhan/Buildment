@@ -46,15 +46,15 @@ export function ArchitectureDiagram({ title, children }: ArchitectureDiagramProp
                 ARCH_LAYER_STYLES[node.layer] ?? ARCH_LAYER_STYLES.External
               )}
             >
-              <p className="text-[11px] font-bold uppercase tracking-widest text-neutral-500">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
                 {node.layer}
               </p>
-              <div className="mt-2 text-sm font-medium leading-relaxed text-neutral-800">
+              <div className="mt-2 text-sm font-medium leading-relaxed text-foreground">
                 {node.children}
               </div>
             </div>
             {index < nodes.length - 1 ? (
-              <ArrowDown className="my-2 size-5 shrink-0 text-indigo-400" aria-hidden />
+              <ArrowDown className="my-2 size-5 shrink-0 text-muted-foreground/60" aria-hidden />
             ) : null}
           </div>
         ))}

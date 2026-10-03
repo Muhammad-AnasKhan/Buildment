@@ -10,7 +10,7 @@ type CompareColumnProps = {
 export function CompareColumn({ label, children }: CompareColumnProps) {
   return (
     <div className="min-w-0 flex-1 px-5 py-5 sm:px-6">
-      <p className="mb-3 text-xs font-bold uppercase tracking-widest text-neutral-500">{label}</p>
+      <p className="mb-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
       <div className="text-sm leading-relaxed text-foreground/85 [&_p]:mt-0 [&_p+p]:mt-3 [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:my-2 [&_li]:my-0.5">
         {children}
       </div>

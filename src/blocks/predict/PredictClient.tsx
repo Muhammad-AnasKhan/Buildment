@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { QuizOptions } from "@/components/learn/quiz-options";
 import { LearnPanelShell } from "@/components/learn/content-blocks/learn-panel-shell";
+import { playFeedbackSound } from "@/lib/sound-feedback";
 import type { SanitizedPredictConfig } from "./schema";
 
 type RespondResult = {
@@ -20,12 +21,12 @@ const METHOD_STYLES: Record<string, string> = {
   GET: "bg-emerald-500 text-white",
   POST: "bg-blue-600 text-white",
   PATCH: "bg-amber-500 text-white",
-  PUT: "bg-violet-600 text-white",
+  PUT: "bg-slate-700 text-white dark:bg-slate-500",
   DELETE: "bg-red-600 text-white",
 };
 
 function methodBadgeClass(method: string) {
-  return METHOD_STYLES[method.toUpperCase()] ?? "bg-indigo-600 text-white";
+  return METHOD_STYLES[method.toUpperCase()] ?? "bg-slate-700 text-white dark:bg-slate-500";
 }
 
 export type PredictInitialState = {
@@ -73,7 +74,9 @@ export function PredictClient({
         const body = await res.json().catch(() => null);
         throw new Error(body?.error ?? `Request failed (${res.status})`);
       }
-      setResult(await res.json());
+      const outcome = await res.json() as RespondResult;
+      setResult(outcome);
+      playFeedbackSound(outcome.isCorrect ? "success" : "failure");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -90,7 +93,7 @@ export function PredictClient({
     <LearnPanelShell eyebrow="Predict" title={config.prompt} className="my-8">
       <div className="border-b border-border bg-muted/50 px-5 py-4 sm:px-6">
         <div className="flex items-start gap-3">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-700">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">
             <Route className="size-4" />
           </div>
           <p className="text-[15px] font-medium leading-snug text-foreground sm:text-base">
@@ -109,12 +112,12 @@ export function PredictClient({
                 {ctx.method}
               </span>
             ) : null}
-            {ctx.url ? <span className="text-neutral-700">{ctx.url}</span> : null}
+            {ctx.url ? <span className="text-foreground">{ctx.url}</span> : null}
             {ctx.bearer ? (
-              <span className="text-neutral-400">Bearer {ctx.bearer}</span>
+              <span className="text-muted-foreground">Bearer {ctx.bearer}</span>
             ) : null}
             {ctx.responseHint ? (
-              <span className="w-full text-neutral-500">{ctx.responseHint}</span>
+              <span className="w-full text-muted-foreground">{ctx.responseHint}</span>
             ) : null}
           </div>
         ) : null}
@@ -134,18 +137,20 @@ export function PredictClient({
             <div
               className={cn(
                 "flex items-start gap-2.5 rounded-lg p-3 text-sm",
-                result.isCorrect ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-900"
+                result.isCorrect
+                  ? "border border-emerald-200 bg-emerald-50/60 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-100"
+                  : "border border-amber-200 bg-amber-50/60 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-50"
               )}
             >
               {result.isCorrect ? (
-                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600" />
+                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
               ) : (
-                <XCircle className="mt-0.5 size-4 shrink-0 text-amber-600" />
+                <XCircle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
               )}
               <div>
-                <p className="font-semibold">{result.isCorrect ? "Correct!" : "Not quite"}</p>
+                <p className="font-semibold">{result.isCorrect ? "Correct" : "Review your prediction"}</p>
                 {result.explanation ? (
-                  <p className="mt-1 leading-relaxed text-neutral-700">{result.explanation}</p>
+                  <p className="mt-1 leading-relaxed opacity-90">{result.explanation}</p>
                 ) : null}
               </div>
             </div>
@@ -153,7 +158,7 @@ export function PredictClient({
               <Button
                 size="sm"
                 variant="ghost"
-                className="gap-1.5 text-neutral-600 hover:text-neutral-900"
+                className="gap-1.5 text-muted-foreground hover:text-foreground"
                 onClick={() => {
                   setResult(null);
                   setSelected("");
@@ -170,15 +175,15 @@ export function PredictClient({
               size="sm"
               onClick={submit}
               disabled={!selected || submitting}
-              className="h-9 gap-1.5 rounded-full bg-neutral-950 px-5 text-sm font-medium text-white shadow-sm hover:bg-neutral-800"
+              className="h-9 gap-1.5 rounded-md bg-foreground px-5 text-sm font-medium text-background shadow-none hover:bg-foreground/90"
             >
-              {submitting ? "Checking…" : "Predict"}
+              {submitting ? "Checking…" : "Check my prediction"}
             </Button>
             {error ? (
               <p className="text-sm text-red-600">{error}</p>
             ) : (
-              <p className="text-xs text-neutral-400">
-                {selected ? "Ready to check" : "Pick an outcome"}
+              <p className="text-xs text-muted-foreground">
+                {selected ? "Your choice is ready — check it when you are." : "Choose the outcome you expect."}
               </p>
             )}
           </div>

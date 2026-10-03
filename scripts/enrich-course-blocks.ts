@@ -1,5 +1,5 @@
 /**
- * Inject BigWordAlert, MandatoryReadCard, InterestingRead, RealWorldEvent, ArticleBreak
+ * Inject BigWordAlert, MandatoryReadCard, InterestingRead, and RealWorldEvent
  * into course import markdown at contextual anchors (not stacked at the top).
  *
  * Run: npx tsx scripts/enrich-course-blocks.ts
@@ -15,7 +15,6 @@ import {
   type Interesting,
   type MandatoryRead,
   type RealWorld,
-  type Article,
 } from "./course-enrichment-data";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -70,16 +69,6 @@ function realWorldMdx(r: RealWorld): string {
   return `<RealWorldEvent title="${escapeAttr(r.title)}" when="${escapeAttr(r.when)}" summary="${escapeAttr(r.summary)}" lesson="${escapeAttr(r.lesson)}" />`;
 }
 
-function articleMdx(a: Article): string {
-  const body = a.body.replace(/\n/g, "\n\n");
-  const subtitle = a.subtitle ? ` subtitle="${escapeAttr(a.subtitle)}"` : "";
-  return `<ArticleBreak title="${escapeAttr(a.title)}"${subtitle} readMinutes={${a.readMinutes}}>
-
-${body}
-
-</ArticleBreak>`;
-}
-
 type LessonKind =
   | "set-the-scene"
   | "what-youll-build"
@@ -122,7 +111,7 @@ export function stripEnrichmentBlocks(body: string): string {
   result = result.replace(/<MandatoryReadCard[\s\S]*?\/>/g, "");
   result = result.replace(/<RealWorldEvent[\s\S]*?\/>/g, "");
   result = result.replace(/<InterestingRead[\s\S]*?<\/InterestingRead>/g, "");
-  result = result.replace(/<ArticleBreak[\s\S]*?<\/ArticleBreak>/g, "");
+  result = result.replace(/<ArticleBreak\b[^>]*>\s*([\s\S]*?)\s*<\/ArticleBreak>/g, "$1");
   result = result.replace(/\n{3,}/g, "\n\n");
   return result.trimEnd() + (result.endsWith("\n") ? "" : "\n");
 }
@@ -269,9 +258,6 @@ function buildPlacements(
   }
 
   if (kind === "set-the-scene") {
-    if (data.articleBreak) {
-      placements.push({ mdx: articleMdx(data.articleBreak), anchor: "beforeBridge" });
-    }
     placements.push({ mdx: mandatoryMdx(data.mandatoryRead), anchor: "beforeBuild" });
     placements.push({ mdx: interestingMdx(data.interesting), anchor: "beforeNext" });
     placements.push({ mdx: realWorldMdx(data.realWorld), anchor: "afterBridge" });

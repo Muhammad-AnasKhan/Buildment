@@ -36,7 +36,6 @@ const componentNames = [
   "BigWordAlert",
   "InterestingRead",
   "RealWorldEvent",
-  "ArticleBreak",
   "ApiRequestPanel",
   "ApiRequest",
   "ComparePanel",

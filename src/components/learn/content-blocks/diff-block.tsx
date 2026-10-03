@@ -53,8 +53,8 @@ function UnifiedDiff({ before, after }: { before: string; after: string }) {
 export function DiffBlock({ title, language = "text", before = "", after = "" }: DiffBlockProps) {
   return (
     <LearnPanelShell eyebrow="Diff" title={title}>
-      <div className="border-b border-neutral-200 bg-neutral-50/80 px-4 py-2 sm:px-5">
-        <span className="font-mono text-xs text-neutral-500">{language}</span>
+      <div className="border-b border-border bg-muted/50 px-4 py-2 sm:px-5">
+        <span className="font-mono text-xs text-muted-foreground">{language}</span>
       </div>
       <div className="hidden overflow-hidden lg:grid lg:grid-cols-2 lg:divide-x lg:divide-neutral-800">
         <div className="min-w-0">

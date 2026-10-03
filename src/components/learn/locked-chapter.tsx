@@ -55,7 +55,7 @@ export function LockedChapterView({
   }, [visible]);
 
   return (
-    <div className="relative h-[100dvh] bg-neutral-50">
+    <div className="relative h-[100dvh] bg-background text-foreground">
       {showSkeleton && (
         <div
           className={cn(
@@ -69,19 +69,19 @@ export function LockedChapterView({
       )}
 
       <ReaderShellFade visible={visible}>
-        <header className="flex shrink-0 items-center gap-2 border-b border-neutral-200/80 px-3 py-2 sm:px-4">
+        <header className="flex shrink-0 items-center gap-2 border-b border-border bg-background px-3 py-2 sm:px-4">
           <SidebarToggle collapsed={collapsed} onClick={() => setCollapsed(!collapsed)} />
-          <div className="flex min-w-0 flex-1 items-center gap-1.5 text-xs text-neutral-400">
+          <div className="flex min-w-0 flex-1 items-center gap-1.5 text-xs text-muted-foreground">
             <Link
               href={`/courses/${courseSlug}`}
-              className="truncate transition-colors hover:text-neutral-600"
+              className="truncate transition-colors hover:text-foreground"
             >
               {courseTitle}
             </Link>
-            <span aria-hidden className="shrink-0 text-neutral-300">
+            <span aria-hidden className="shrink-0 text-border">
               /
             </span>
-            <span className="shrink-0 font-mono tabular-nums text-neutral-400">{lessonLabel}</span>
+            <span className="shrink-0 font-mono tabular-nums text-muted-foreground">{lessonLabel}</span>
           </div>
           <CheckpointHeaderLabel
             completed={checkpointsCompleted}
@@ -102,14 +102,14 @@ export function LockedChapterView({
           />
           <main className="flex-1 overflow-y-auto px-4 py-16 sm:px-6 lg:px-10">
             <div className="mx-auto max-w-lg text-center">
-              <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-neutral-100 text-neutral-500">
+              <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                 <Lock className="size-5" aria-hidden />
               </div>
-              <p className="mt-4 font-mono text-xs tabular-nums text-neutral-400">{lessonLabel}</p>
-              <h1 className="mt-1 text-2xl font-bold tracking-tight text-neutral-950">
+              <p className="mt-4 font-mono text-xs tabular-nums text-muted-foreground">{lessonLabel}</p>
+              <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground">
                 {chapterTitle} is locked
               </h1>
-              <p className="mt-3 text-sm leading-relaxed text-neutral-600">
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                 Finish the previous chapter so this one unlocks. Sequential chapters keep the project
                 spine in order — you are not missing content, you are just not there yet.
               </p>

@@ -34,10 +34,10 @@ function ResultBanner({ result, canRetry, onRetry }: {
     <div className="space-y-3">
       <div
         className={cn(
-          "flex items-start gap-2.5 rounded-xl border p-4 text-sm",
+          "flex items-start gap-2.5 rounded-lg border px-4 py-3.5 text-sm",
           correct
-            ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-950 dark:text-emerald-100"
-            : "border-amber-500/30 bg-amber-500/10 text-amber-950 dark:text-amber-50"
+            ? "border-emerald-200 bg-emerald-50/60 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-100"
+            : "border-amber-200 bg-amber-50/60 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-50"
         )}
       >
         {correct ? (
@@ -46,14 +46,14 @@ function ResultBanner({ result, canRetry, onRetry }: {
           <XCircle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
         )}
         <div className="min-w-0">
-          <p className="font-semibold">{correct ? "Correct!" : "Not quite right"}</p>
+          <p className="font-semibold">{correct ? "Correct" : "Review your answer"}</p>
           {result.explanation ? (
             <p className="mt-1.5 leading-relaxed opacity-90">{result.explanation}</p>
           ) : null}
         </div>
       </div>
       {canRetry ? (
-        <Button type="button" size="sm" variant="ghost" className="gap-1.5" onClick={onRetry}>
+        <Button type="button" size="sm" variant="ghost" className="gap-1.5 text-muted-foreground" onClick={onRetry}>
           <RotateCcw className="size-3.5" />
           Try again
         </Button>
@@ -152,7 +152,7 @@ export function QuizClient({
         size="sm"
         onClick={submit}
         disabled={selected.length === 0 || submitting}
-        className="h-9 rounded-full px-6"
+        className="h-9 rounded-md px-5 shadow-none"
       >
         {submitting ? "Checking…" : "Check answer"}
       </Button>
@@ -172,7 +172,7 @@ export function QuizClient({
     return (
       <div className="not-prose space-y-6">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">Knowledge check</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Knowledge check</p>
           <p className="mt-2 text-lg font-medium leading-snug tracking-tight text-foreground sm:text-xl">
             {config.prompt}
           </p>
@@ -186,11 +186,11 @@ export function QuizClient({
   return (
     <div className={cn("not-prose my-8", readerCard)}>
       <div className={cn(readerCardHeader, "flex items-start gap-3")}>
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/15 text-primary">
-          <span className="text-sm font-bold">?</span>
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">
+          <span className="text-xs font-semibold">Q</span>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-primary">Knowledge check</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Knowledge check</p>
           <p className={cn("mt-0.5", readerTitle)}>{config.prompt}</p>
         </div>
       </div>

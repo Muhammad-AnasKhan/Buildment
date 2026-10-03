@@ -21,7 +21,7 @@ export async function StepsComponent({
   const config = parsed?.success ? parsed.data : null;
 
   return (
-    <StepsClient id={id} title={config?.title}>
+    <StepsClient title={config?.title}>
       {children}
     </StepsClient>
   );

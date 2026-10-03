@@ -15,13 +15,16 @@ import {
   GitCompareArrows,
   GitFork,
   Heading2,
+  Image,
   ListChecks,
+  Map,
   MessageSquareText,
   NotebookPen,
   Plus,
   Sparkles,
   SquareCode,
   TerminalSquare,
+  Video,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -61,26 +64,56 @@ const STRUCTURE_ITEMS: InsertableItem[] = [
     icon: MessageSquareText,
   },
   {
+    id: "glossary",
+    label: "Explain a term",
+    description: "Add a hover, keyboard, and tap-friendly definition",
+    icon: CircleHelp,
+  },
+  {
     id: "checklist",
     label: "Task checklist",
     description: "A saved, interactive to-do list",
     icon: ListChecks,
   },
   {
-    id: "gate-checklist",
-    label: "Milestone checklist",
-    description: "Evidence to verify at a chapter gate",
+    id: "evidence-checklist",
+    label: "Show your work",
+    description: "Evidence you can demonstrate or explain",
     icon: BookOpenCheck,
   },
   {
     id: "learning-log",
-    label: "Learning log",
-    description: "Private reflection that saves automatically",
+    label: "What you learned",
+    description: "Private notes on your decisions and discoveries",
     icon: NotebookPen,
   },
 ];
 
 const VISUAL_ITEMS: InsertableItem[] = [
+  {
+    id: "video",
+    label: "Video",
+    description: "Embed YouTube, Vimeo, Loom, or a direct video link",
+    icon: Video,
+  },
+  {
+    id: "walkthrough",
+    label: "Image walkthrough",
+    description: "Explain a process with linked images and steps",
+    icon: Image,
+  },
+  {
+    id: "diagram",
+    label: "Diagram image",
+    description: "Embed a system, concept, or Excalidraw export",
+    icon: Image,
+  },
+  {
+    id: "roadmap",
+    label: "Roadmap",
+    description: "Show milestones, the current step, and the goal",
+    icon: Map,
+  },
   {
     id: "compare",
     label: "Comparison",

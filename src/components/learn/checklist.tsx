@@ -185,10 +185,10 @@ export function Checklist({
   const gateMode = isGate || variant === "gate";
 
   const headerTitle = showSectionTitle
-    ? section ?? (gateMode ? "Chapter gate checklist" : "Checklist")
+    ? section ?? (gateMode ? "Show what you can do" : "Checklist")
     : section ?? "Checklist";
 
-  const label = gateMode ? "Gate checklist" : "Checklist";
+  const label = gateMode ? "Ready to show" : "Checklist";
 
   return (
     <div
@@ -201,7 +201,7 @@ export function Checklist({
       data-checklist
       data-checklist-variant={gateMode ? "gate" : variant}
     >
-      <div className={cn("border-b border-neutral-200 px-5 py-4", CARD_STYLES.headerBg)}>
+      <div className={cn("border-b border-border px-5 py-4", CARD_STYLES.headerBg)}>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <div
@@ -210,10 +210,10 @@ export function Checklist({
                 CARD_STYLES.iconBg
               )}
             >
-              <ListChecks className="size-5 text-indigo-600" />
+              <ListChecks className="size-5 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-widest text-indigo-600">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
                 {label}
               </p>
               <p className={cn("mt-0.5 text-base font-semibold leading-snug", CARD_STYLES.headerText)}>
@@ -221,7 +221,7 @@ export function Checklist({
               </p>
               {gateMode ? (
                 <p className={cn("mt-1 text-sm", CARD_STYLES.subText)}>
-                  Tick each item when you can demo or explain it — progress saves to your account.
+                  Tick an item only when you can show it working or explain it in your own words.
                 </p>
               ) : null}
             </div>
@@ -263,9 +263,9 @@ export function Checklist({
       </ul>
 
       {allDone ? (
-        <div className="border-t border-emerald-100 bg-emerald-50/80 px-5 py-3.5">
-          <p className="flex items-center gap-2 text-sm font-medium text-emerald-800">
-            <PartyPopper className="size-4 shrink-0" aria-hidden />
+        <div className="border-t border-emerald-200/80 bg-emerald-50/80 px-5 py-3.5 dark:border-emerald-400/25 dark:bg-emerald-500/10">
+          <p className="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-100">
+            <PartyPopper className="size-4 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden />
             All items complete — nice work!
           </p>
         </div>

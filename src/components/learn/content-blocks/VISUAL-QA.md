@@ -13,14 +13,13 @@ All presentation blocks use `LearnPanelShell` with a fixed eyebrow set.
 
 | Block | Pass criteria |
 |---|---|
-| **LearnPanelShell** | `not-prose my-10`, `rounded-2xl`, indigo eyebrow only as accent, `aria-label` on section |
+| **LearnPanelShell** | `not-prose my-10`, `rounded-2xl`, neutral eyebrow, `aria-label` on section |
 | **ComparePanel** | Two columns on `lg+`, divided headers, no nested cards |
-| **FileTree** | Monospace paths, `highlight` → indigo row, `new` pill, folder/file icons |
+| **FileTree** | Monospace paths, muted selected row, `new` pill, folder/file icons |
 | **TerminalBlock** | `#0d1117` body, `$` prompt prefix, cwd chip in header |
 | **DiffBlock** | Side-by-side on `lg+`, unified diff on mobile, muted red/green |
 | **ArchitectureDiagram** | Vertical stack, layer-colored nodes, downward arrows |
-| **StateMachine** | Mermaid `stateDiagram` inside shell, handDrawn theme inherited |
-| **EntityDiagram** | Mermaid `erDiagram` + optional legend footer |
+| **MermaidDiagram** | Canonical renderer for flowcharts, state diagrams, and entity diagrams; optional title and legend |
 | **TraceRequest** | Step timeline, Prev/Next + arrow keys, `aria-live="polite"` |
 | **PredictBlock** | Predict eyebrow, optional context strip, Quiz-like options |
 

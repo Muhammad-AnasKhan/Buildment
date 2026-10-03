@@ -229,7 +229,7 @@ export function SidebarToggle({
     <button
       type="button"
       onClick={onClick}
-      className="rounded-md p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-600"
+      className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
       aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
     >
       {collapsed ? <Menu className="size-4" /> : <X className="size-4" />}

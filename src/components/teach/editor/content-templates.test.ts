@@ -9,6 +9,7 @@ import {
 const TEMPLATE_IDS: ContentTemplateId[] = [
   "section",
   "callout",
+  "glossary",
   "checklist",
   "gate-checklist",
   "learning-log",
@@ -17,6 +18,10 @@ const TEMPLATE_IDS: ContentTemplateId[] = [
   "terminal",
   "architecture",
   "state-machine",
+  "video",
+  "walkthrough",
+  "diagram",
+  "roadmap",
 ];
 
 describe("mentor content templates", () => {

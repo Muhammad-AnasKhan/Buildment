@@ -2,21 +2,18 @@
 
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { StepClient } from "./StepClient";
 
 export function StepsClient({
-  id,
   title,
   children,
 }: {
-  id: string;
   title?: string;
   children?: ReactNode;
 }) {
   return (
     <div
       className={cn(
-        "not-prose my-8 overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm"
+        "not-prose my-8 overflow-hidden rounded-xl border border-border/90 bg-card text-card-foreground shadow-[0_1px_2px_rgb(0_0_0/0.04)]"
       )}
     >
       {title ? (

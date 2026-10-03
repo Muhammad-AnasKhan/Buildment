@@ -37,9 +37,17 @@ const EMBED_HOSTS: Array<{
       return `https://www.loom.com/embed/${id}`;
     },
   },
+  {
+    match: /(^|\.)wistia\.com$/,
+    toEmbed: (url) => {
+      const id = url.pathname.split("/").filter(Boolean).pop();
+      if (!id || !/^[\w-]{6,}$/.test(id)) return null;
+      return `https://fast.wistia.net/embed/iframe/${id}`;
+    },
+  },
 ];
 
-function resolveEmbed(src: string): { kind: "video"; src: string } | { kind: "iframe"; src: string } | null {
+export function resolveVideoEmbed(src: string): { kind: "video"; src: string } | { kind: "iframe"; src: string } | null {
   let url: URL;
   try {
     url = new URL(src);
@@ -61,23 +69,24 @@ function resolveEmbed(src: string): { kind: "video"; src: string } | { kind: "if
   return null;
 }
 
-export function Video({ src, caption }: { src: string; caption?: string }) {
-  const resolved = src ? resolveEmbed(src) : null;
+export function Video({ src, title, caption, transcriptUrl }: { src: string; title?: string; caption?: string; transcriptUrl?: string }) {
+  const resolved = src ? resolveVideoEmbed(src) : null;
 
   if (!resolved) {
     return (
-      <div className="not-prose my-6 rounded-xl border border-dashed border-neutral-300 p-4 text-sm text-neutral-500">
-        Unsupported video source. Use a direct .mp4/.webm/.ogg file, or a YouTube, Vimeo, or
-        Loom link.
+      <div className="not-prose my-6 rounded-xl border border-dashed border-border p-4 text-sm text-muted-foreground">
+        Unsupported video source. Use a direct .mp4/.webm/.ogg file, or a YouTube, Vimeo, Loom,
+        or Wistia link.
       </div>
     );
   }
 
   return (
     <figure className="not-prose my-8">
+      {title ? <h3 className="mb-3 text-lg font-semibold tracking-tight text-foreground">{title}</h3> : null}
       <div
         className={cn(
-          "overflow-hidden rounded-xl border border-neutral-200 bg-neutral-950 shadow-sm",
+          "overflow-hidden rounded-xl border border-border bg-neutral-950 shadow-sm",
           resolved.kind === "iframe" && "aspect-video"
         )}
       >
@@ -95,8 +104,9 @@ export function Video({ src, caption }: { src: string; caption?: string }) {
         )}
       </div>
       {caption && (
-        <figcaption className="mt-2 text-center text-xs text-neutral-400">{caption}</figcaption>
+        <figcaption className="mt-2 text-center text-xs text-muted-foreground">{caption}</figcaption>
       )}
+      {transcriptUrl ? <a href={transcriptUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex text-sm font-medium text-foreground underline underline-offset-4">Open transcript</a> : null}
     </figure>
   );
 }

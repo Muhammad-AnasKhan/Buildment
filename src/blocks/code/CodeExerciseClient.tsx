@@ -184,15 +184,15 @@ export function CodeExerciseClient({
     config.mode === "complete"
       ? {
           label: "Complete the code",
-          badge: "bg-amber-100 text-amber-800 ring-amber-200/80",
-          accent: "text-amber-700",
-          iconBg: "bg-amber-100 text-amber-700",
+          badge: "bg-amber-100 text-amber-800 ring-amber-200/80 dark:bg-amber-500/15 dark:text-amber-100 dark:ring-amber-400/25",
+          accent: "text-amber-700 dark:text-amber-300",
+          iconBg: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
         }
       : {
           label: "Implement this",
-          badge: "bg-violet-100 text-violet-800 ring-violet-200/80",
-          accent: "text-violet-700",
-          iconBg: "bg-violet-100 text-violet-700",
+          badge: "bg-violet-100 text-violet-800 ring-violet-200/80 dark:bg-violet-500/15 dark:text-violet-200 dark:ring-violet-400/25",
+          accent: "text-violet-700 dark:text-violet-300",
+          iconBg: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
         };
 
   async function submit() {
@@ -226,11 +226,11 @@ export function CodeExerciseClient({
 
   return (
     <div
-      className="not-prose my-10 overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm"
+      className="not-prose my-10 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm"
       data-code-exercise
     >
       {/* Prompt header — matches quiz / checklist cards */}
-      <div className="border-b border-neutral-100 bg-gradient-to-b from-neutral-50 to-white px-5 py-5 sm:px-6">
+      <div className="border-b border-border bg-muted/35 px-5 py-5 sm:px-6">
         <div className="flex items-start gap-3.5">
           <div
             className={cn(
@@ -242,7 +242,7 @@ export function CodeExerciseClient({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-indigo-600">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
                 Code lab
               </p>
               <span
@@ -254,12 +254,12 @@ export function CodeExerciseClient({
                 {modeMeta.label}
               </span>
             </div>
-            <p className="mt-1.5 text-base font-semibold leading-snug text-neutral-950 sm:text-[17px]">
+            <p className="mt-1.5 text-base font-semibold leading-snug text-foreground sm:text-[17px]">
               {config.prompt}
             </p>
-            <p className="mt-2 text-sm leading-relaxed text-neutral-600">
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               Type in the editor below — same dark theme as code blocks in this course. Use{" "}
-              <code className="rounded bg-neutral-100 px-1 py-0.5 font-mono text-xs text-neutral-800">
+              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground">
                 module.exports
               </code>{" "}
               so automated checks can run your functions.
@@ -269,7 +269,7 @@ export function CodeExerciseClient({
       </div>
 
       {/* Editor */}
-      <div className="space-y-4 bg-neutral-50/80 px-4 py-5 sm:px-6">
+      <div className="space-y-4 bg-muted/25 px-4 py-5 sm:px-6">
         <CodeEditor
           value={source}
           onChange={setSource}
@@ -279,8 +279,8 @@ export function CodeExerciseClient({
         />
 
         {hintIndex >= 0 && hints[hintIndex] ? (
-          <div className="flex gap-2.5 rounded-xl border border-amber-200/80 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-            <Lightbulb className="mt-0.5 size-4 shrink-0 text-amber-600" />
+          <div className="flex gap-2.5 rounded-xl border border-amber-200/80 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-400/25 dark:bg-amber-500/10 dark:text-amber-100">
+            <Lightbulb className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
             <p>
               <span className="font-semibold">Hint {hintIndex + 1}:</span> {hints[hintIndex]}
             </p>
@@ -293,8 +293,8 @@ export function CodeExerciseClient({
               className={cn(
                 "flex items-start gap-3 rounded-xl border px-4 py-3.5",
                 passed
-                  ? "border-emerald-200 bg-emerald-50/90"
-                  : "border-amber-200 bg-amber-50/90"
+                  ? "border-emerald-200 bg-emerald-50/90 dark:border-emerald-400/25 dark:bg-emerald-500/10"
+                  : "border-amber-200 bg-amber-50/90 dark:border-amber-400/25 dark:bg-amber-500/10"
               )}
             >
               {passed ? (
@@ -303,11 +303,11 @@ export function CodeExerciseClient({
                 <XCircle className="mt-0.5 size-5 shrink-0 text-amber-600" />
               )}
               <div className="min-w-0 text-sm">
-                <p className={cn("font-semibold", passed ? "text-emerald-900" : "text-amber-900")}>
+                <p className={cn("font-semibold", passed ? "text-emerald-900 dark:text-emerald-100" : "text-amber-900 dark:text-amber-100")}>
                   {passed ? "All checks passed — well done!" : "Not quite yet — adjust and retry"}
                 </p>
                 {!passed && result.failedTestName ? (
-                  <p className="mt-1.5 text-amber-900/90">
+                  <p className="mt-1.5 text-amber-900/90 dark:text-amber-100/90">
                     Failed: <span className="font-medium">{result.failedTestName}</span>
                     {result.errorMessage ? (
                       <code className="mt-2 block overflow-x-auto rounded-lg bg-amber-100/80 px-2.5 py-2 font-mono text-xs text-amber-950">
@@ -317,14 +317,14 @@ export function CodeExerciseClient({
                   </p>
                 ) : null}
                 {result.explanation ? (
-                  <p className="mt-2 leading-relaxed text-neutral-700">{result.explanation}</p>
+                  <p className="mt-2 leading-relaxed text-foreground/90">{result.explanation}</p>
                 ) : null}
               </div>
             </div>
 
             {passed && result.solution ? (
               <div className="space-y-2">
-                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   <Sparkles className="size-3.5 text-emerald-600" />
                   Reference solution
                 </p>
@@ -336,7 +336,7 @@ export function CodeExerciseClient({
       </div>
 
       {/* Actions footer */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-200 bg-white px-4 py-4 sm:px-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-card px-4 py-4 sm:px-6">
         <div className="flex flex-wrap items-center gap-2">
           {!passed ? (
             <>
@@ -344,7 +344,7 @@ export function CodeExerciseClient({
                 size="sm"
                 onClick={submit}
                 disabled={!source.trim() || submitting}
-                className="h-9 gap-2 rounded-full bg-neutral-950 px-5 text-sm font-medium text-white shadow-sm hover:bg-neutral-800"
+                className="h-9 gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background shadow-sm hover:bg-foreground/90"
               >
                 <CirclePlay className="size-4" />
                 {submitting ? "Running checks…" : "Check my code"}
@@ -379,7 +379,7 @@ export function CodeExerciseClient({
             </Button>
           )}
         </div>
-        <p className="text-xs text-neutral-400">
+        <p className="text-xs text-muted-foreground">
           {error ? (
             <span className="text-red-600">{error}</span>
           ) : (

@@ -6,6 +6,7 @@ import { QuizPayloadSchema } from "@/blocks/quiz/schema";
 import { PredictPayloadSchema } from "@/blocks/predict/schema";
 import { OpenQuestionPayloadSchema } from "@/blocks/open-question/schema";
 import { CodePayloadSchema } from "@/blocks/code/schema";
+import { MustReadPayloadSchema } from "@/blocks/must-read/schema";
 import { gradeCodeDetails } from "@/blocks/code/grade";
 import {
   adjustEnrollmentPendingReviews,
@@ -96,6 +97,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (graded.isCorrect && config.solution) {
       solution = config.solution;
     }
+  } else if (block.type === "MUST_READ") {
+    const config = blockRegistry.MUST_READ.schema.parse(block.config);
+    const payload = MustReadPayloadSchema.parse(body);
+    graded = blockRegistry.MUST_READ.grade(config, payload);
   } else {
     const config = blockRegistry.OPEN_QUESTION.schema.parse(block.config);
     const payload = OpenQuestionPayloadSchema.parse(body);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useSyncExternalStore } from "react";
+import { useId, useState } from "react";
 import { BookOpen, ExternalLink } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -13,27 +13,9 @@ type MandatoryReadCardProps = {
   source?: string;
   summary: string;
   readMinutes?: number;
+  blockId?: string;
+  initialRead?: boolean;
 };
-
-function storageKey(href: string) {
-  return `buildment:read:${href}`;
-}
-
-// localStorage is an external store here: the checkbox reflects it via
-// useSyncExternalStore (SSR-safe through the server snapshot) instead of a
-// mount-time setState.
-const storageListeners = new Set<() => void>();
-
-function subscribeToStorage(listener: () => void) {
-  storageListeners.add(listener);
-  return () => {
-    storageListeners.delete(listener);
-  };
-}
-
-function notifyStorageListeners() {
-  for (const listener of storageListeners) listener();
-}
 
 export function MandatoryReadCard({
   title,
@@ -41,28 +23,17 @@ export function MandatoryReadCard({
   source,
   summary,
   readMinutes,
+  blockId,
+  initialRead = false,
 }: MandatoryReadCardProps) {
   const checkboxId = useId();
-  const read = useSyncExternalStore(
-    subscribeToStorage,
-    () => {
-      try {
-        return localStorage.getItem(storageKey(href)) === "1";
-      } catch {
-        return false; // private browsing / storage blocks
-      }
-    },
-    () => false
-  );
+  const [read, setRead] = useState(initialRead);
 
   function toggle(checked: boolean) {
-    try {
-      if (checked) localStorage.setItem(storageKey(href), "1");
-      else localStorage.removeItem(storageKey(href));
-    } catch {
-      // ignore
+    setRead(checked);
+    if (blockId) {
+      void fetch(`/api/blocks/${blockId}/respond`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ complete: checked }) });
     }
-    notifyStorageListeners();
   }
 
   return (
@@ -97,10 +68,10 @@ export function MandatoryReadCard({
                 <ExternalLink className="size-3.5" aria-hidden />
               </a>
               {source ? (
-                <span className="text-xs text-neutral-500">{source}</span>
+                <span className="text-xs text-muted-foreground">{source}</span>
               ) : null}
               {readMinutes ? (
-                <span className="text-xs text-neutral-400">~{readMinutes} min read</span>
+                <span className="text-xs text-muted-foreground/75">~{readMinutes} min read</span>
               ) : null}
             </div>
           </div>

@@ -3,6 +3,7 @@ import { createFlowDescriptor, createTextDescriptor } from "./editor-descriptor-
 
 export const contentBlockDescriptors: JsxComponentDescriptor[] = [
   createTextDescriptor("Video", [{ name: "src", required: true }, { name: "caption" }]),
+  createTextDescriptor("MermaidDiagram", [{ name: "title" }, { name: "chart", required: true }, { name: "legend" }]),
   createFlowDescriptor("ComparePanel", [{ name: "title" }], true),
   createFlowDescriptor("CompareColumn", [{ name: "label", required: true }], true),
   createFlowDescriptor("FileTree", [{ name: "title" }, { name: "root" }], true),
@@ -21,8 +22,6 @@ export const contentBlockDescriptors: JsxComponentDescriptor[] = [
   ]),
   createFlowDescriptor("ArchitectureDiagram", [{ name: "title" }], true),
   createFlowDescriptor("ArchNode", [{ name: "layer", required: true }], true),
-  createTextDescriptor("StateMachine", [{ name: "title" }, { name: "chart" }]),
-  createTextDescriptor("EntityDiagram", [{ name: "title" }, { name: "chart" }, { name: "legend" }]),
   createFlowDescriptor("TraceRequest", [{ name: "title" }], true),
   createFlowDescriptor(
     "TraceStep",

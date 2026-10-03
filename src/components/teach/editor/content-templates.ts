@@ -3,14 +3,21 @@ import { ulid } from "ulid";
 export type ContentTemplateId =
   | "section"
   | "callout"
+  | "glossary"
   | "checklist"
+  /** Legacy template identifier retained for existing editor links. */
   | "gate-checklist"
+  | "evidence-checklist"
   | "learning-log"
   | "compare"
   | "file-tree"
   | "terminal"
   | "architecture"
-  | "state-machine";
+  | "state-machine"
+  | "video"
+  | "walkthrough"
+  | "diagram"
+  | "roadmap";
 
 const withSpacing = (markdown: string) => `\n\n${markdown.trim()}\n\n`;
 
@@ -28,6 +35,10 @@ Introduce the idea, explain why it matters, and connect it to the learner's proj
 Explain the important detail the learner should remember.
 </Callout>
 `);
+    case "glossary":
+      return withSpacing(`
+Use <GlossaryTerm term="tenant isolation" definition="Keeping one vendor's data inaccessible to every other vendor." /> whenever a technical term needs a quick explanation.
+`);
     case "checklist":
       return withSpacing(`
 <Checklist
@@ -40,6 +51,7 @@ Explain the important detail the learner should remember.
 />
 `);
     case "gate-checklist":
+    case "evidence-checklist":
       return withSpacing(`
 <Checklist
   section="Milestone evidence"
@@ -54,8 +66,8 @@ Explain the important detail the learner should remember.
     case "learning-log":
       return withSpacing(`
 <LearningLog
-  title="Reflect on your work"
-  instruction="Answer in your own words. Your notes save automatically."
+  title="Share what you learned"
+  instruction="Capture the decisions you made and how you know they work. Your notes save automatically."
   questions={${JSON.stringify([
     {
       id: ulid(),
@@ -105,10 +117,64 @@ Explain the important detail the learner should remember.
 `);
     case "state-machine":
       return withSpacing(`
-<StateMachine
+<MermaidDiagram
   title="State changes"
   chart={"stateDiagram-v2\\n  [*] --> Draft\\n  Draft --> Published\\n  Published --> [*]"}
 />
+`);
+    case "video":
+      return withSpacing(`
+\`\`\`video
+title: Short concept walkthrough
+sourceUrl: https://www.youtube.com/watch?v=VIDEO_ID
+caption: Explain what the learner should notice.
+\`\`\`
+`);
+    case "walkthrough":
+      return withSpacing(`
+\`\`\`walkthrough
+title: Follow the request step by step
+steps:
+  - id: request
+    title: Send the request
+    description: The browser sends the selected items to the API.
+    imageUrl: https://images.example.com/request.png
+    alt: Browser request arrow pointing to the API route
+  - id: response
+    title: Read the response
+    description: The API returns the saved order and its current status.
+    imageUrl: https://images.example.com/response.png
+    alt: API response showing an order confirmation
+\`\`\`
+`);
+    case "diagram":
+      return withSpacing(`
+\`\`\`diagram
+title: Request boundary
+kind: system
+imageUrl: https://images.example.com/request-boundary.png
+alt: Browser, API and database connected by a request flow
+caption: Every request establishes the vendor boundary before querying data.
+\`\`\`
+`);
+    case "roadmap":
+      return withSpacing(`
+\`\`\`roadmap
+title: Your path through this project
+milestones:
+  - id: foundation
+    title: Build the foundation
+    description: Set up the project and verify the first request.
+    state: current
+  - id: feature
+    title: Add the core feature
+    description: Build the workflow learners can demonstrate.
+    state: upcoming
+  - id: launch
+    title: Launch the project
+    description: Polish, deploy, and explain your decisions.
+    state: goal
+\`\`\`
 `);
   }
 }

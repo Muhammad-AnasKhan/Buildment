@@ -11,7 +11,7 @@ export function ReaderFocusDock({ onExitFocus }: { onExitFocus: () => void }) {
         onClick={onExitFocus}
         title="Exit focus mode"
         aria-label="Exit focus mode"
-        className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full bg-neutral-900 text-white shadow-lg shadow-neutral-900/20 transition-colors hover:bg-neutral-800"
+        className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full bg-foreground text-background shadow-lg shadow-foreground/15 transition-colors hover:bg-foreground/90"
       >
         <Minimize2 className="size-4 shrink-0" aria-hidden />
       </button>
@@ -36,8 +36,8 @@ export function FocusModeToggle({
       className={cn(
         "rounded-md p-1.5 transition-colors",
         active
-          ? "bg-neutral-900 text-white hover:bg-neutral-800"
-          : "text-neutral-400 hover:bg-neutral-100 hover:text-neutral-600"
+          ? "bg-foreground text-background hover:bg-foreground/90"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground"
       )}
     >
       <Maximize2 className="size-4" />

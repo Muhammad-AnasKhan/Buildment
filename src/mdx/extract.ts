@@ -29,6 +29,10 @@ export const BLOCK_TAG_NAMES = {
   ProjectPreview: "PROJECT_PREVIEW",
   LearningObjectives: "LEARNING_OBJECTIVES",
   ChapterRecap: "CHAPTER_RECAP",
+  VideoBlock: "VIDEO",
+  VisualWalkthrough: "VISUAL_WALKTHROUGH",
+  VisualDiagram: "VISUAL_DIAGRAM",
+  Roadmap: "ROADMAP",
 } as const;
 
 export interface ExtractedBlock {

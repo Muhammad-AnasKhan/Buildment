@@ -9,6 +9,8 @@ type MermaidApi = {
 
 type MermaidDiagramProps = {
   chart: string;
+  title?: string;
+  legend?: string;
 };
 
 declare global {
@@ -27,7 +29,7 @@ function loadMermaid() {
     return Promise.reject(new Error("Mermaid only runs in the browser"));
   }
   if (window.mermaid) {
-    mermaidPromise ??= Promise.resolve(initMermaid(window.mermaid));
+    mermaidPromise ??= Promise.resolve(window.mermaid);
     return mermaidPromise;
   }
   if (!mermaidPromise) {
@@ -39,7 +41,7 @@ function loadMermaid() {
           reject(new Error("Mermaid failed to load"));
           return;
         }
-        resolve(initMermaid(window.mermaid));
+        resolve(window.mermaid);
       };
       script.addEventListener("load", onLoad, { once: true });
       script.addEventListener(
@@ -59,7 +61,7 @@ function loadMermaid() {
   return mermaidPromise;
 }
 
-function initMermaid(api: MermaidApi) {
+function initMermaid(api: MermaidApi, isDark: boolean) {
   api.initialize({
     startOnLoad: false,
     theme: "base",
@@ -67,24 +69,26 @@ function initMermaid(api: MermaidApi) {
     securityLevel: "strict",
     fontFamily: "inherit",
     themeVariables: {
-      primaryColor: "#eef2ff",
-      primaryBorderColor: "#6366f1",
-      primaryTextColor: "#1e1b4b",
-      secondaryColor: "#ecfdf5",
-      secondaryBorderColor: "#10b981",
-      secondaryTextColor: "#064e3b",
-      tertiaryColor: "#fff7ed",
-      tertiaryBorderColor: "#f59e0b",
-      lineColor: "#6366f1",
+      primaryColor: isDark ? "#30363d" : "#f5f6f7",
+      primaryBorderColor: isDark ? "#8b949e" : "#6b7280",
+      primaryTextColor: isDark ? "#e6edf3" : "#1f2937",
+      secondaryColor: isDark ? "#26352d" : "#f3f7f4",
+      secondaryBorderColor: isDark ? "#6c927a" : "#6b8a75",
+      secondaryTextColor: isDark ? "#d4e7da" : "#23402d",
+      tertiaryColor: isDark ? "#39332a" : "#faf7f1",
+      tertiaryBorderColor: isDark ? "#a89170" : "#89785d",
+      tertiaryTextColor: isDark ? "#f0e4d0" : "#423727",
+      lineColor: isDark ? "#9da7b3" : "#697386",
       fontSize: "15px",
     },
   });
   return api;
 }
 
-function enqueueRender(id: string, chart: string) {
+function enqueueRender(id: string, chart: string, isDark: boolean) {
   const run = renderQueue.then(async () => {
     const api = await loadMermaid();
+    initMermaid(api, isDark);
     return api.render(id, chart);
   });
   renderQueue = run.then(
@@ -94,16 +98,26 @@ function enqueueRender(id: string, chart: string) {
   return run;
 }
 
-export function MermaidDiagram({ chart }: MermaidDiagramProps) {
+export function MermaidDiagram({ chart, title, legend }: MermaidDiagramProps) {
   const reactId = useId().replace(/:/g, "");
   const [svg, setSvg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const syncTheme = () => setIsDark(root.classList.contains("dark"));
+    syncTheme();
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
 
     const startRender = () => {
-      enqueueRender(`mermaid-${reactId}`, chart)
+      enqueueRender(`mermaid-${reactId}`, chart, isDark)
         .then(({ svg: svgCode }) => {
           if (!cancelled) {
             setSvg(svgCode);
@@ -129,29 +143,31 @@ export function MermaidDiagram({ chart }: MermaidDiagramProps) {
       }
       clearTimeout(idleId);
     };
-  }, [chart, reactId]);
+  }, [chart, isDark, reactId]);
 
   if (error) {
     return (
-      <pre className="not-prose my-6 overflow-x-auto rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+      <pre className="not-prose my-6 overflow-x-auto rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-400/25 dark:bg-red-500/10 dark:text-red-200">
         {error}
       </pre>
     );
   }
 
   return (
-    <div className="not-prose my-8 overflow-x-auto rounded-2xl border border-indigo-500/25 bg-gradient-to-b from-indigo-500/10 to-card p-5 shadow-sm">
+    <div className="not-prose my-8 overflow-x-auto rounded-2xl border border-border/90 bg-card p-5 shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
+      {title ? <p className="mb-4 text-sm font-semibold text-foreground">{title}</p> : null}
       {svg ? (
         <div
           className="mermaid-svg flex items-center justify-center"
           dangerouslySetInnerHTML={{ __html: svg }}
         />
       ) : (
-        <div className="flex items-center gap-2 text-sm text-neutral-400">
-          <div className="size-4 animate-spin rounded-full border-2 border-neutral-300 border-t-indigo-600" />
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="size-4 animate-spin rounded-full border-2 border-border border-t-foreground" />
           Rendering diagram…
         </div>
       )}
+      {legend ? <p className="mt-4 border-t border-border pt-3 text-sm leading-relaxed text-muted-foreground">{legend}</p> : null}
     </div>
   );
 }

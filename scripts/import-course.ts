@@ -6,7 +6,7 @@
  * script implements): the mentor's prose is kept close to verbatim. The two
  * things it actively transforms are:
  *
- *   1. Explicit interactive fences (`quiz`, `openquestion`, `predict`) become
+ *   1. Explicit interactive fences (`quiz`, `openquestion`, `predict`, `codeexercise`) become
  *      registered blocks, with grading-only config kept server-side.
  *   2. Explicit presentation components such as ChapterRecap and ProjectPreview
  *      become registered presentation blocks.
@@ -31,6 +31,10 @@ import { ulid } from "ulid";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, type Prisma } from "../src/generated/prisma/client";
 import { SEED_COURSE, SEED_USERS } from "../src/lib/seed-data";
+import { VideoConfigSchema } from "../src/blocks/video/schema";
+import { VisualWalkthroughConfigSchema } from "../src/blocks/visual-walkthrough/schema";
+import { VisualDiagramConfigSchema } from "../src/blocks/visual-diagram/schema";
+import { RoadmapConfigSchema } from "../src/blocks/roadmap/schema";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const COURSE_SOURCE_DIR = path.resolve(__dirname, "../content/import/multi-vendor-marketplace");
 const COURSE_OUTPUT_DIR = path.resolve(__dirname, "../content/transformed/multi-vendor-marketplace");
@@ -69,7 +73,7 @@ const CHAPTER_NAMES: Record<number, string> = {
 
 type PendingBlock = {
   id: string;
-  type: "QUIZ" | "OPEN_QUESTION" | "CHAPTER_RECAP" | "PROJECT_PREVIEW" | "PREDICT";
+  type: "QUIZ" | "OPEN_QUESTION" | "CHAPTER_RECAP" | "PROJECT_PREVIEW" | "LEARNING_OBJECTIVES" | "CODE" | "PREDICT" | "MUST_READ" | "VIDEO" | "VISUAL_WALKTHROUGH" | "VISUAL_DIAGRAM" | "ROADMAP";
   config: Prisma.InputJsonValue;
   required: boolean;
 };
@@ -84,8 +88,53 @@ function blockPlaceholderTag(block: PendingBlock): string {
             ? "ProjectPreview"
             : block.type === "PREDICT"
               ? "Predict"
-              : "OpenQuestion";
+              : block.type === "CODE"
+                ? "CodeExercise"
+              : block.type === "LEARNING_OBJECTIVES"
+                  ? "LearningObjectives"
+                  : block.type === "MUST_READ"
+                    ? "MustRead"
+                    : block.type === "VIDEO"
+                      ? "VideoBlock"
+                      : block.type === "VISUAL_WALKTHROUGH"
+                        ? "VisualWalkthrough"
+                        : block.type === "VISUAL_DIAGRAM"
+                          ? "VisualDiagram"
+                          : block.type === "ROADMAP"
+                            ? "Roadmap"
+                            : "OpenQuestion";
   return `<${tag} id="${block.id}" />`;
+}
+
+/**
+ * Link-only visual blocks use YAML fences so imports stay deterministic and
+ * images never require an upload subsystem. The schema is also the publish
+ * gate: malformed/unsafe links remain source text instead of becoming blocks.
+ */
+function transformVisualContentFences(body: string, pushBlock: (b: PendingBlock) => string): string {
+  const fenceTypes = {
+    video: { type: "VIDEO", schema: VideoConfigSchema },
+    walkthrough: { type: "VISUAL_WALKTHROUGH", schema: VisualWalkthroughConfigSchema },
+    diagram: { type: "VISUAL_DIAGRAM", schema: VisualDiagramConfigSchema },
+    roadmap: { type: "ROADMAP", schema: RoadmapConfigSchema },
+  } as const;
+  return body.replace(/```(video|walkthrough|diagram|roadmap)\n([\s\S]*?)```/g, (match, name: keyof typeof fenceTypes, yamlText: string) => {
+    let parsed: unknown;
+    try {
+      parsed = loadYaml(yamlText);
+    } catch {
+      return match;
+    }
+    const definition = fenceTypes[name];
+    const result = definition.schema.safeParse(parsed);
+    if (!result.success) return match;
+    return pushBlock({
+      id: ulid(),
+      type: definition.type,
+      required: false,
+      config: result.data as Prisma.InputJsonValue,
+    });
+  });
 }
 
 function parseJsxStringAttr(source: string, attr: string): string | undefined {
@@ -105,12 +154,31 @@ function parseJsxStringArray(source: string, attr: string): string[] | undefined
   return items.length > 0 ? items : undefined;
 }
 
-/** Inline `<ChapterRecap>` / `<ProjectPreview>` JSX -> registered blocks with id placeholders. */
+/** Inline presentation JSX -> registered blocks with stable id placeholders. */
 function transformPresentationBlocks(body: string, pushBlock: (b: PendingBlock) => string): string {
-  return body.replace(/<(ChapterRecap|ProjectPreview)([\s\S]*?)\/>/g, (full, tagName: string, attrs: string) => {
+  return body.replace(/<(ChapterRecap|ProjectPreview|LearningObjectives|MandatoryReadCard)([\s\S]*?)\/>/g, (full, tagName: string, attrs: string) => {
     if (/\bid=/.test(attrs)) return full;
 
     const pseudo = `<X${attrs}/>`;
+
+    if (tagName === "MandatoryReadCard") {
+      const title = parseJsxStringAttr(pseudo, "title");
+      const url = parseJsxStringAttr(pseudo, "href") ?? parseJsxStringAttr(pseudo, "url");
+      const description = parseJsxStringAttr(pseudo, "summary") ?? parseJsxStringAttr(pseudo, "description");
+      if (!title || !url || !description) return full;
+      return pushBlock({ id: ulid(), type: "MUST_READ", required: true, config: { title, url, description, completionRule: "confirm_read" } });
+    }
+
+    if (tagName === "LearningObjectives") {
+      const objectives = parseJsxStringArray(pseudo, "items") ?? parseJsxStringArray(pseudo, "objectives");
+      if (!objectives?.length) return full;
+      return pushBlock({
+        id: ulid(),
+        type: "LEARNING_OBJECTIVES",
+        required: false,
+        config: { objectives },
+      });
+    }
 
     if (tagName === "ChapterRecap") {
       const points = parseJsxStringArray(pseudo, "points");
@@ -139,6 +207,56 @@ function transformPresentationBlocks(body: string, pushBlock: (b: PendingBlock) 
       type: "PROJECT_PREVIEW",
       required: false,
       config: config as Prisma.InputJsonValue,
+    });
+  });
+}
+
+/**
+ * ```codeexercise YAML becomes a CODE block. Tests and solution are stored in
+ * Block.config only; the resulting MDX contains just the stable reference.
+ */
+function transformCodeExerciseFences(body: string, pushBlock: (b: PendingBlock) => string): string {
+  return body.replace(/```(?:codeexercise|code-exercise)\n([\s\S]*?)```/g, (match, yamlText: string) => {
+    let parsed: {
+      prompt: string;
+      starterCode: string;
+      tests: Array<{ name: string; code: string }>;
+      mode?: "complete" | "implement";
+      language?: "javascript";
+      filename?: string;
+      hints?: string[];
+      explanation?: string;
+      solution?: string;
+      allowRetry?: boolean;
+      required?: boolean;
+    };
+    try {
+      parsed = loadYaml(yamlText) as typeof parsed;
+    } catch {
+      return match;
+    }
+    if (!parsed?.prompt || !parsed.starterCode || !Array.isArray(parsed.tests) || parsed.tests.length === 0) {
+      return match;
+    }
+    if (!parsed.tests.every((test) => typeof test?.name === "string" && typeof test?.code === "string")) {
+      return match;
+    }
+    return pushBlock({
+      id: ulid(),
+      type: "CODE",
+      required: parsed.required ?? true,
+      config: {
+        mode: parsed.mode ?? "implement",
+        language: parsed.language ?? "javascript",
+        prompt: parsed.prompt,
+        starterCode: parsed.starterCode,
+        tests: parsed.tests,
+        filename: parsed.filename,
+        hints: parsed.hints,
+        explanation: parsed.explanation,
+        solution: parsed.solution,
+        allowRetry: parsed.allowRetry ?? true,
+      },
     });
   });
 }
@@ -197,6 +315,11 @@ function stripLeadingH1(body: string): string {
   return body.replace(/^# \d+\.\d+ — [^\n]+\n\n?/, "");
 }
 
+/** ArticleBreak was decorative only. Keep its prose while removing its wrapper. */
+function unwrapArticleBreak(body: string): string {
+  return body.replace(/<ArticleBreak\b[^>]*>\s*([\s\S]*?)\s*<\/ArticleBreak>/g, "$1");
+}
+
 function isFocusChapter(fileName: string): boolean {
   return /-checklist\.md$/.test(fileName) || /-quiz\.md$/.test(fileName);
 }
@@ -212,7 +335,6 @@ function stripFocusChapterEnrichment(body: string): string {
     .replace(/<RealWorldEvent[\s\S]*?\/>/g, "")
     .replace(/<MandatoryReadCard[\s\S]*?\/>/g, "")
     .replace(/<InterestingRead[\s\S]*?<\/InterestingRead>/g, "")
-    .replace(/<ArticleBreak[\s\S]*?<\/ArticleBreak>/g, "")
     .replace(/<ChapterRecap[\s\S]*?\/>/g, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
@@ -280,10 +402,6 @@ function escapeMdxProse(body: string): string {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });
-  withMarkers = withMarkers.replace(/<ArticleBreak[\s\S]*?<\/ArticleBreak>/g, (tag) => {
-    blockTags.push(tag);
-    return `\x00BLOCK${blockTags.length - 1}\x00`;
-  });
   withMarkers = withMarkers.replace(/<Callout[\s\S]*?<\/Callout>/g, (tag) => {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
@@ -306,7 +424,7 @@ function escapeMdxProse(body: string): string {
       return `\x00BLOCK${blockTags.length - 1}\x00`;
     });
   }
-  withMarkers = withMarkers.replace(/<(DiffBlock|StateMachine|EntityDiagram)[\s\S]*?\/>/g, (tag) => {
+  withMarkers = withMarkers.replace(/<(DiffBlock|MermaidDiagram)[\s\S]*?\/>/g, (tag) => {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });
@@ -544,6 +662,7 @@ export function parseLesson(moduleNum: number, moduleDir: string, fileName: stri
 
   let source = stripStepTypeBlockquote(body);
   source = stripLeadingH1(source);
+  source = unwrapArticleBreak(source);
   if (isFocusChapter(fileName)) {
     source = stripFocusChapterEnrichment(source);
   }
@@ -552,9 +671,11 @@ export function parseLesson(moduleNum: number, moduleDir: string, fileName: stri
   }
   source = normalizePlaceholderUrls(source);
   source = transformPresentationBlocks(source, pushBlock);
+  source = transformVisualContentFences(source, pushBlock);
   source = transformQuizFences(source, pushBlock);
   source = transformOpenQuestionFences(source, pushBlock);
   source = transformPredictFences(source, pushBlock);
+  source = transformCodeExerciseFences(source, pushBlock);
   source = transformFaqSections(source);
   const isMilestone = /-checklist\.md$/.test(fileName);
   source = escapeMdxProse(source);

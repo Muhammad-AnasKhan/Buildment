@@ -51,11 +51,11 @@ export function FileTree({ title, root, children }: FileTreeProps) {
   return (
     <LearnPanelShell eyebrow="Repo" title={title}>
       {root ? (
-        <div className="border-b border-neutral-100 bg-neutral-50/80 px-4 py-2.5 sm:px-5">
-          <code className="font-mono text-xs text-neutral-600">{root}</code>
+        <div className="border-b border-border bg-muted/50 px-4 py-2.5 sm:px-5">
+          <code className="font-mono text-xs text-muted-foreground">{root}</code>
         </div>
       ) : null}
-      <ul className="divide-y divide-neutral-100">
+      <ul className="divide-y divide-border">
         {items.map((item) => {
           const folder = isFolder(item.path);
           const Icon = folder ? Folder : File;
@@ -67,23 +67,23 @@ export function FileTree({ title, root, children }: FileTreeProps) {
               key={item.path}
               className={cn(
                 "flex items-center gap-2 px-4 py-2.5 sm:px-5",
-                item.highlight && "bg-indigo-50/80"
+                item.highlight && "bg-muted"
               )}
               style={{ paddingLeft: `${16 + depth * 16}px` }}
             >
               <Icon
                 className={cn(
                   "size-4 shrink-0",
-                  folder ? "text-amber-600" : "text-neutral-400"
+                  folder ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
                 )}
                 aria-hidden
               />
-              <code className="min-w-0 flex-1 truncate font-mono text-[13px] text-neutral-800">
+              <code className="min-w-0 flex-1 truncate font-mono text-[13px] text-foreground">
                 {name}
                 {folder ? "/" : ""}
               </code>
               {item.new ? (
-                <span className="shrink-0 rounded-md bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-indigo-700">
+                <span className="shrink-0 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-foreground">
                   new
                 </span>
               ) : null}
@@ -92,12 +92,12 @@ export function FileTree({ title, root, children }: FileTreeProps) {
         })}
       </ul>
       {items.some((i) => i.command) ? (
-        <div className="space-y-2 border-t border-neutral-100 bg-neutral-950 px-4 py-3 sm:px-5">
+        <div className="space-y-2 border-t border-border bg-neutral-950 px-4 py-3 sm:px-5">
           {items
             .filter((i) => i.command)
             .map((item) => (
               <div key={`cmd-${item.path}`}>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
                   {item.path.replace(/\/$/, "")}
                 </p>
                 <code className="mt-1 block font-mono text-xs text-emerald-400">{item.command}</code>

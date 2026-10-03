@@ -136,7 +136,7 @@ export async function publishChapter(input: {
   const extracted = extractBlocksFromSource(renderable);
   const existing = await prisma.block.findMany({
     where: { chapterId: chapter.id, archivedAt: null },
-    select: { id: true, sourceHash: true },
+    select: { id: true, type: true, config: true, sourceHash: true },
   });
   const diff = diffBlocks(extracted, existing);
 
@@ -150,6 +150,20 @@ export async function publishChapter(input: {
       errors.push(
         `Block "${block.id}" (<${block.tagName}>) has no config yet — interactive block authoring arrives in M2.`
       );
+    }
+  }
+
+  // A block reference in MDX is only publishable when its persisted config is
+  // valid for the registry's active schema. This makes broken imported or
+  // builder-created blocks fail before learners can reach a chapter.
+  for (const block of extracted) {
+    if (!block.blockType || !isRegisteredBlockType(block.blockType)) continue;
+    const persisted = existing.find((candidate) => candidate.id === block.id);
+    if (!persisted) continue; // handled by the create/config check above
+    const result = blockRegistry[block.blockType].schema.safeParse(persisted.config);
+    if (!result.success) {
+      const details = result.error.issues.map((issue) => issue.path.join(".") || "configuration").join(", ");
+      errors.push(`${block.tagName} block "${block.id}" has invalid configuration: ${details}. Publish blocked.`);
     }
   }
 

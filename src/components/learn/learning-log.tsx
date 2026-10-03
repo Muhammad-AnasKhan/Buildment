@@ -13,7 +13,10 @@ import { CheckCircle2, CloudOff, Loader2, NotebookPen, Save } from "lucide-react
 import { AnswerTextareaWithMic } from "@/components/learn/answer-textarea-with-mic";
 import { cn } from "@/lib/utils";
 import { saveLearningLogAnswers } from "@/server/actions/learning-log";
-import type { LearningLogAnswers } from "@/lib/learning-log";
+import {
+  parseLearningLogQuestions,
+  type LearningLogAnswers,
+} from "@/lib/learning-log";
 
 export type LearningLogQuestionData = {
   id: string;
@@ -61,7 +64,7 @@ function parseInlineMarkdown(text: string) {
       return (
         <code
           key={index}
-          className="rounded bg-neutral-100 px-1 py-0.5 font-mono text-[0.9em] text-neutral-800"
+          className="rounded bg-muted px-1 py-0.5 font-mono text-[0.9em] text-foreground"
         >
           {part.slice(1, -1)}
         </code>
@@ -75,30 +78,30 @@ type SaveStatus = "idle" | "saving" | "saved" | "error";
 
 const VARIANT_STYLES = {
   gate: {
-    border: "border-violet-200",
-    headerBg: "bg-gradient-to-r from-violet-600 to-violet-700",
-    headerText: "text-white",
-    subText: "text-violet-100",
-    iconBg: "bg-white/15",
-    bodyBg: "bg-gradient-to-b from-violet-50/40 to-card dark:from-violet-950/25 dark:to-card",
-    progress: "bg-violet-100",
-    progressFill: "bg-violet-600",
-    badge: "bg-white/20 text-white",
-    questionRing: "focus-visible:ring-violet-500/30",
-    questionBorder: "border-violet-100 focus-visible:border-violet-400",
+    border: "border-border",
+    headerBg: "border-b border-border bg-muted/35",
+    headerText: "text-foreground",
+    subText: "text-muted-foreground",
+    iconBg: "border border-border bg-background",
+    bodyBg: "bg-card",
+    progress: "bg-muted",
+    progressFill: "bg-foreground",
+    badge: "bg-muted text-muted-foreground",
+    questionRing: "focus-visible:ring-foreground/15",
+    questionBorder: "border-border focus-visible:border-foreground/40",
   },
   default: {
     border: "border-border",
     headerBg: "bg-muted/50 border-b border-border",
     headerText: "text-foreground",
     subText: "text-muted-foreground",
-    iconBg: "bg-violet-500/15",
+    iconBg: "border border-border bg-background",
     bodyBg: "bg-card",
     progress: "bg-muted",
-    progressFill: "bg-violet-500",
+    progressFill: "bg-foreground",
     badge: "bg-muted text-muted-foreground",
-    questionRing: "focus-visible:ring-violet-500/30",
-    questionBorder: "border-border focus-visible:border-violet-400",
+    questionRing: "focus-visible:ring-foreground/15",
+    questionBorder: "border-border focus-visible:border-foreground/40",
   },
 } as const;
 
@@ -118,13 +121,13 @@ function LearningLogQuestion({
   const answered = value.trim().length > 0;
 
   return (
-    <li className="rounded-xl border border-border bg-muted/30 p-4 shadow-sm">
+    <li className="rounded-lg border border-border bg-background p-4">
       <div className="flex items-start gap-3">
         <span
           className={cn(
-            "flex size-8 shrink-0 items-center justify-center rounded-lg text-sm font-semibold tabular-nums",
+            "flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-semibold tabular-nums",
             answered
-              ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+              ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900"
               : "bg-muted text-muted-foreground"
           )}
         >
@@ -143,11 +146,11 @@ function LearningLogQuestion({
             value={value}
             onChange={onChange}
             enableSpeech
-            placeholder="Write your answer in your own words…"
+            placeholder="Write what you learned…"
             rows={4}
             ariaLabel={question.title}
             className={cn(
-              "placeholder:text-neutral-400",
+              "placeholder:text-muted-foreground/70",
               styles.questionBorder,
               styles.questionRing
             )}
@@ -166,16 +169,19 @@ export function LearningLog({
 }: {
   title: string;
   instruction?: string;
-  questions: LearningLogQuestionData[];
+  questions: LearningLogQuestionData[] | string;
   variant?: keyof typeof VARIANT_STYLES;
 }) {
   const ctx = useContext(LearningLogContext);
+  // Old snapshots may contain the editor's quoted JSON form. Normalizing at
+  // the boundary prevents a malformed prop from crashing `.filter()`/`.map()`.
+  const normalizedQuestions = useMemo(() => parseLearningLogQuestions(questions), [questions]);
   const chapterId = ctx?.chapterId;
   const styles = VARIANT_STYLES[variant];
 
   const [answers, setAnswers] = useState<LearningLogAnswers>(() => {
     const initial: LearningLogAnswers = {};
-    for (const q of questions) {
+    for (const q of normalizedQuestions) {
       initial[q.id] = ctx?.initialAnswers[q.id] ?? "";
     }
     return initial;
@@ -190,14 +196,14 @@ export function LearningLog({
     if (!ctx?.initialAnswers) return;
     setAnswers((prev) => {
       const next = { ...prev };
-      for (const q of questions) {
+      for (const q of normalizedQuestions) {
         if (ctx.initialAnswers[q.id] !== undefined) {
           next[q.id] = ctx.initialAnswers[q.id]!;
         }
       }
       return next;
     });
-  }, [ctx?.initialAnswers, questions]);
+  }, [ctx?.initialAnswers, normalizedQuestions]);
 
   const flushSave = useCallback(async () => {
     if (!chapterId) return;
@@ -243,10 +249,10 @@ export function LearningLog({
   );
 
   const answeredCount = useMemo(
-    () => questions.filter((q) => answers[q.id]?.trim()).length,
-    [questions, answers]
+    () => normalizedQuestions.filter((q) => answers[q.id]?.trim()).length,
+    [normalizedQuestions, answers]
   );
-  const total = questions.length;
+  const total = normalizedQuestions.length;
   const progress = total > 0 ? (answeredCount / total) * 100 : 0;
   const allAnswered = total > 0 && answeredCount === total;
 
@@ -264,7 +270,7 @@ export function LearningLog({
   return (
     <div
       className={cn(
-        "not-prose my-8 overflow-hidden rounded-2xl border shadow-sm",
+        "not-prose my-8 overflow-hidden rounded-xl border shadow-[0_1px_2px_rgb(0_0_0/0.04)]",
         styles.border,
         styles.bodyBg
       )}
@@ -281,20 +287,20 @@ export function LearningLog({
               )}
             >
               <NotebookPen
-                className={cn("size-5", variant === "gate" ? "text-white" : "text-violet-600")}
+                className="size-5 text-muted-foreground"
               />
             </div>
             <div>
               <p
                 className={cn(
                   "text-[11px] font-bold uppercase tracking-widest",
-                  variant === "gate" ? styles.subText : "text-violet-600"
+                  styles.subText
                 )}
               >
-                {variant === "gate" ? "Gate learning log" : "Learning log"}
+                What you learned
               </p>
               <p className={cn("mt-0.5 text-base font-semibold leading-snug", styles.headerText)}>
-                {title.replace(/^learning log\s*[—–-]?\s*/i, "") || title}
+                {title.replace(/^(learning log|reflect on your work)\s*[—–-]?\s*/i, "") || "Share what you learned"}
               </p>
               {instruction ? (
                 <p className={cn("mt-1.5 text-sm leading-relaxed", styles.subText)}>
@@ -302,8 +308,7 @@ export function LearningLog({
                 </p>
               ) : (
                 <p className={cn("mt-1 text-sm", styles.subText)}>
-                  Answer in your own words — saved to your enrollment. Use the mic button to dictate if
-                  your browser supports it.
+                  Capture the decisions, discoveries, and proof from this lesson. Your notes are saved privately.
                 </p>
               )}
             </div>
@@ -332,7 +337,7 @@ export function LearningLog({
         <div
           className={cn(
             "mt-3 flex items-center gap-1.5 text-xs",
-            variant === "gate" ? styles.subText : "text-neutral-500"
+            "text-muted-foreground"
           )}
         >
           {saveStatus === "saving" ? (
@@ -352,7 +357,7 @@ export function LearningLog({
       </div>
 
       <ol className="space-y-3 p-4 sm:p-5">
-        {questions.map((question, index) => (
+        {normalizedQuestions.map((question, index) => (
           <LearningLogQuestion
             key={question.id}
             index={index}
@@ -365,10 +370,10 @@ export function LearningLog({
       </ol>
 
       {allAnswered ? (
-        <div className="border-t border-emerald-100 bg-emerald-50/80 px-5 py-3.5">
-          <p className="flex items-center gap-2 text-sm font-medium text-emerald-800">
-            <CheckCircle2 className="size-4 shrink-0" />
-            All questions answered — your learning log is complete for this chapter.
+        <div className="border-t border-emerald-200/80 bg-emerald-50/80 px-5 py-3.5 dark:border-emerald-400/25 dark:bg-emerald-500/10">
+          <p className="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-100">
+            <CheckCircle2 className="size-4 shrink-0 text-emerald-700 dark:text-emerald-400" />
+            Reflection saved — you have captured what you learned in this chapter.
           </p>
         </div>
       ) : null}

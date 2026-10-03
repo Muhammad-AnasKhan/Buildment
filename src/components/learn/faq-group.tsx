@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export function FaqGroup({ children }: { children: React.ReactNode }) {
   return (
     <div className="not-prose my-8 overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
-      <div className="divide-y divide-neutral-200">{children}</div>
+      <div className="divide-y divide-border">{children}</div>
     </div>
   );
 }
@@ -47,7 +47,7 @@ function FaqItemInner({
             className={cn(
               "mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md border transition-colors",
               open
-                ? "border-indigo-200 bg-indigo-50 text-indigo-600"
+                ? "border-border bg-muted text-foreground"
                 : "border-border bg-card text-muted-foreground group-hover:border-foreground/20 group-hover:text-foreground"
             )}
           >
@@ -61,8 +61,8 @@ function FaqItemInner({
           </span>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <div className="border-t border-neutral-200/80 px-5 pb-5 pt-4 sm:px-6">
-            <div className="border-l-2 border-indigo-200 pl-4 text-[15px] leading-relaxed text-neutral-600 [&>p]:m-0">
+          <div className="border-t border-border px-5 pb-5 pt-4 sm:px-6">
+            <div className="border-l-2 border-border pl-4 text-[15px] leading-relaxed text-muted-foreground [&>p]:m-0">
               {children}
             </div>
           </div>

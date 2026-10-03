@@ -112,10 +112,10 @@ export function OpenQuestionClient({
             className={cn(
               "flex size-9 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold tabular-nums",
               submitted
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-500/15 dark:text-emerald-200"
                 : needsRevision
-                  ? "border-amber-200 bg-amber-50 text-amber-700"
-                  : "border-indigo-200 bg-indigo-50 text-indigo-700"
+                  ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/25 dark:bg-amber-500/15 dark:text-amber-100"
+                  : "border-border bg-muted text-foreground"
             )}
             aria-hidden
           >
@@ -140,25 +140,25 @@ export function OpenQuestionClient({
             </p>
 
             {needsRevision && !submitted && initialState?.feedback && (
-              <div className="mt-4 overflow-hidden rounded-lg border border-amber-200 bg-amber-50/70">
-                <div className="flex items-center gap-2 border-b border-amber-200/70 px-4 py-2.5">
-                  <RotateCcw className="size-4 shrink-0 text-amber-600" />
-                  <p className="text-sm font-medium text-amber-900">
+              <div className="mt-4 overflow-hidden rounded-lg border border-amber-200 bg-amber-50/70 dark:border-amber-400/25 dark:bg-amber-500/10">
+                <div className="flex items-center gap-2 border-b border-amber-200/70 px-4 py-2.5 dark:border-amber-400/20">
+                  <RotateCcw className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
                     Your mentor asked for a revision (attempt {initialState.attempt})
                   </p>
                 </div>
-                <p className="whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-neutral-700">
+                <p className="whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-foreground/90">
                   {initialState.feedback}
                 </p>
               </div>
             )}
 
             {submitted ? (
-              <div className="mt-4 overflow-hidden rounded-lg border border-emerald-200/80 bg-emerald-50/60">
-                <div className="flex items-center gap-2 border-b border-emerald-200/60 px-4 py-2.5">
-                  <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
-                  <p className="text-sm font-medium text-emerald-900">Answer submitted</p>
-                  <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-medium text-emerald-700">
+              <div className="mt-4 overflow-hidden rounded-lg border border-emerald-200/80 bg-emerald-50/60 dark:border-emerald-400/25 dark:bg-emerald-500/10">
+                <div className="flex items-center gap-2 border-b border-emerald-200/60 px-4 py-2.5 dark:border-emerald-400/20">
+                  <CheckCircle2 className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                  <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100">Answer submitted</p>
+                  <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-card/80 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-200">
                     <Clock3 className="size-3" aria-hidden />
                     {initialState?.verdict === "APPROVED"
                       ? "Approved by your mentor"
@@ -166,16 +166,16 @@ export function OpenQuestionClient({
                   </span>
                 </div>
                 {(text || initialState?.text) && (
-                  <p className="whitespace-pre-wrap px-4 py-3 text-[15px] leading-relaxed text-neutral-700">
+                  <p className="whitespace-pre-wrap px-4 py-3 text-[15px] leading-relaxed text-foreground/90">
                     {text || initialState?.text}
                   </p>
                 )}
                 {submittedUrl && (
                   <p className="border-t border-emerald-200/60 px-4 py-3 text-sm">
-                    <span className="font-medium text-emerald-800">Link: </span>
+                    <span className="font-medium text-emerald-800 dark:text-emerald-100">Link: </span>
                     <a
                       href={submittedUrl}
-                      className="break-all text-indigo-700 underline"
+                      className="break-all text-indigo-700 underline dark:text-indigo-300"
                       target="_blank"
                       rel="noreferrer noopener"
                     >
@@ -184,8 +184,8 @@ export function OpenQuestionClient({
                   </p>
                 )}
                 {initialState?.verdict === "APPROVED" && initialState.feedback && (
-                  <p className="border-t border-emerald-200/60 whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-neutral-600">
-                    <span className="font-medium text-emerald-800">Mentor feedback: </span>
+                  <p className="border-t border-emerald-200/60 whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-muted-foreground dark:border-emerald-400/20">
+                    <span className="font-medium text-emerald-800 dark:text-emerald-100">Mentor feedback: </span>
                     {initialState.feedback}
                   </p>
                 )}
@@ -210,34 +210,34 @@ export function OpenQuestionClient({
 
                 {urlMeta.showUrl ? (
                   <div className="mt-4 space-y-1.5">
-                    <label className="flex items-center gap-1.5 text-sm font-medium text-neutral-800">
-                      <Link2 className="size-4 text-neutral-500" aria-hidden />
+                    <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                      <Link2 className="size-4 text-muted-foreground" aria-hidden />
                       {urlMeta.urlLabel}
                       {urlMeta.urlRequired ? (
                         <span className="text-xs font-normal text-rose-600">Required</span>
                       ) : null}
                     </label>
                     {urlMeta.urlHint ? (
-                      <p className="text-xs text-neutral-500">{urlMeta.urlHint}</p>
+                      <p className="text-xs text-muted-foreground">{urlMeta.urlHint}</p>
                     ) : null}
                     <Input
                       type="url"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
                       placeholder="https://…"
-                      className="bg-neutral-50/80"
+                      className="bg-background"
                     />
                   </div>
                 ) : null}
 
                 <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3 text-xs text-neutral-500">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     {config.minWords > 0 ? (
                       <div className="flex items-center gap-2">
                         <span className={cn(tooShort && wordCount > 0 && "text-amber-700")}>
                           {wordCount} / {config.minWords} words minimum
                         </span>
-                        <div className="h-1.5 w-20 overflow-hidden rounded-full bg-neutral-200">
+                        <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
                           <div
                             className={cn(
                               "h-full rounded-full transition-all duration-500",
@@ -256,7 +256,7 @@ export function OpenQuestionClient({
                     {error ? <p className="text-sm text-destructive">{error}</p> : null}
                     <Button
                       size="sm"
-                      className="gap-1.5 bg-neutral-950 text-white hover:bg-neutral-800"
+                      className="gap-1.5"
                       onClick={submit}
                       disabled={!canSubmit}
                     >

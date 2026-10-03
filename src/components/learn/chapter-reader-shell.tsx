@@ -337,6 +337,8 @@ export function ChapterReaderShell({
                   canMarkComplete={canMarkComplete}
                   checkpointsCompleted={checkpointsCompleted}
                   checkpointsTotal={checkpointsTotal}
+                  courseCompleted={modules.reduce((total, module) => total + module.completedCount, 0)}
+                  courseTotal={modules.reduce((total, module) => total + module.chapters.length, 0)}
                 />
               </div>
             </main>

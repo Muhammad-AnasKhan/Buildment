@@ -15,6 +15,12 @@ export type GradeResult = {
 
 export type BlockRegistryEntry<Config = unknown, Payload = unknown> = {
   type: BlockType;
+  /** Schema revision for persisted config. Increment only with a migration. */
+  version: number;
+  /** Presentation blocks never contribute a response; assessments do. */
+  behavior: "presentation" | "assessment";
+  /** Whether a required instance can prevent chapter completion. */
+  progress: "none" | "completion" | "review";
   schema: z.ZodType<Config>;
   /** Pure function: never touches the database or the network. */
   grade: (config: Config, payload: Payload) => GradeResult;

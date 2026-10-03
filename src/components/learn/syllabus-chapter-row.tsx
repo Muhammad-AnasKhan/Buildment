@@ -43,6 +43,28 @@ function ChapterMeta({ chapter }: { chapter: SyllabusChapter }) {
   return null;
 }
 
+function SidebarChapterMeta({ chapter }: { chapter: SyllabusChapter }) {
+  if (chapter.locked) {
+    return <span className="text-[11px] text-muted-foreground">Locked until the previous lesson is complete</span>;
+  }
+  if (chapter.blockCount > 0) {
+    const completed = chapter.blocksCompleted ?? 0;
+    const complete = completed === chapter.blockCount;
+    return (
+      <span className="flex items-center gap-2 text-[11px] text-muted-foreground">
+        <span className="h-1 w-10 overflow-hidden rounded-full bg-muted" aria-hidden>
+          <span
+            className={cn("block h-full rounded-full", complete ? "bg-emerald-500" : "bg-foreground/45")}
+            style={{ width: `${Math.round((completed / chapter.blockCount) * 100)}%` }}
+          />
+        </span>
+        {completed}/{chapter.blockCount} checkpoints
+      </span>
+    );
+  }
+  return null;
+}
+
 export function SyllabusChapterRow({
   courseSlug,
   chapter,
@@ -96,7 +118,7 @@ export function SyllabusChapterRow({
       href={href}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "relative flex items-center justify-between gap-2 py-2 pl-12 pr-4 text-sm transition-colors",
+        "relative flex items-start gap-2.5 py-2.5 pl-12 pr-4 text-sm transition-colors",
         isActive
           ? "bg-muted font-medium text-foreground before:absolute before:inset-y-1 before:left-3 before:w-0.5 before:rounded-full before:bg-foreground"
           : chapter.locked
@@ -104,12 +126,12 @@ export function SyllabusChapterRow({
             : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
       )}
     >
-      <span className="flex min-w-0 flex-1 items-center gap-2.5">
-        <ChapterStatusIcon status={chapter.status} locked={chapter.locked} />
-        <span className="min-w-0 truncate">{chapter.title}</span>
-      </span>
-      <span className="hidden shrink-0 sm:inline">
-        <ChapterMeta chapter={chapter} />
+      <ChapterStatusIcon status={chapter.status} locked={chapter.locked} />
+      <span className="min-w-0 flex-1">
+        <span className="block line-clamp-2 leading-5">{chapter.title}</span>
+        <span className="mt-1 block">
+          <SidebarChapterMeta chapter={chapter} />
+        </span>
       </span>
     </Link>
   );

@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { Sparkles } from "lucide-react";
 import { renderProseMarkdown } from "@/lib/parse-prose-markdown";
+import { cn } from "@/lib/utils";
+import { readerCard, readerCardHeader, readerEyebrow } from "@/components/learn/reader-theme";
 
 type InterestingReadProps = {
   title: string;
@@ -11,16 +13,16 @@ type InterestingReadProps = {
 
 export function InterestingRead({ title, hook, readMinutes, children }: InterestingReadProps) {
   return (
-    <div className="not-prose my-8 overflow-hidden rounded-xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 to-card">
-      <div className="flex items-center justify-between gap-3 border-b border-amber-500/20 bg-amber-500/5 px-5 py-2.5 sm:px-6">
+    <div className={cn("not-prose my-8", readerCard)}>
+      <div className={cn(readerCardHeader, "flex items-center justify-between gap-3 py-3")}>
         <div className="flex items-center gap-2">
-          <Sparkles className="size-4 text-amber-600" aria-hidden />
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-amber-800">
+          <Sparkles className="size-4 text-muted-foreground" aria-hidden />
+          <p className={readerEyebrow}>
             Something interesting to read
           </p>
         </div>
         {readMinutes ? (
-          <span className="text-xs text-amber-700/80">~{readMinutes} min</span>
+          <span className="text-xs text-muted-foreground">~{readMinutes} min</span>
         ) : null}
       </div>
       <div className="px-5 py-5 sm:px-6 sm:py-6">

@@ -1,8 +1,12 @@
 /** Undo HTML escaping on interactive block placeholders stored in chapter MDX. */
 export function restoreInteractiveBlockTags(source: string): string {
   let out = source
+    // ArticleBreak was a purely decorative wrapper. Old published snapshots
+    // retain their prose, but no longer render a separate block surface.
+    .replace(/<ArticleBreak\b[^>]*>/g, "")
+    .replace(/<\/ArticleBreak>/g, "")
     .replace(
-      /&lt;(Quiz|OpenQuestion|CodeExercise|ChapterRecap|ProjectPreview|LearningObjectives|Predict)\s+id="([^"]+)"\s*\/>/g,
+      /&lt;(Quiz|OpenQuestion|CodeExercise|ChapterRecap|ProjectPreview|LearningObjectives|Predict|MustRead|VideoBlock|VisualWalkthrough|VisualDiagram|Roadmap)\s+id="([^"]+)"\s*\/>/g,
       '<$1 id="$2" />'
     )
     .replace(
@@ -10,18 +14,17 @@ export function restoreInteractiveBlockTags(source: string): string {
       '<$1 chart="$2" />'
     )
     .replace(
-      /&lt;(MandatoryReadCard|BigWordAlert|RealWorldEvent)\s+([^/]+)\s*\/>/g,
+      /&lt;(MandatoryReadCard|BigWordAlert|RealWorldEvent|GlossaryTerm)\s+([^/]+)\s*\/>/g,
       '<$1 $2 />'
     )
     .replace(
-      /&lt;(DiffBlock|StateMachine|EntityDiagram)\s+([\s\S]*?)\s*\/>/g,
+      /&lt;(DiffBlock)\s+([\s\S]*?)\s*\/>/g,
       '<$1 $2 />'
     );
 
   const pairedTags = [
     "Callout",
     "InterestingRead",
-    "ArticleBreak",
     "ApiRequestPanel",
     "ComparePanel",
     "FileTree",

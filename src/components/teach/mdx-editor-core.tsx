@@ -32,6 +32,7 @@ import { GenericJsxEditor } from "@mdxeditor/editor";
 import type { JsxComponentDescriptor } from "@mdxeditor/editor";
 import { authoringComponentDescriptors } from "@/components/teach/editor/authoring-descriptors";
 import { InsertContentMenu } from "@/components/teach/editor/insert-content-menu";
+import { normalizeLearningLogQuestionProps } from "@/lib/learning-log";
 
 const blockRegistryDescriptors: JsxComponentDescriptor[] = [
   { name: "Quiz", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
@@ -41,6 +42,10 @@ const blockRegistryDescriptors: JsxComponentDescriptor[] = [
   { name: "ChapterRecap", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
   { name: "ProjectPreview", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
   { name: "LearningObjectives", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
+  { name: "VideoBlock", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
+  { name: "VisualWalkthrough", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
+  { name: "VisualDiagram", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
+  { name: "Roadmap", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
 ];
 
 const jsxComponentDescriptors = [
@@ -69,7 +74,7 @@ export default function MdxEditorCore({
     <div className="chapter-mdx-editor overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
       <MDXEditor
         markdown={initialMarkdown}
-        onChange={onChange}
+        onChange={(markdown) => onChange(normalizeLearningLogQuestionProps(markdown))}
         placeholder="Write the chapter in Markdown…"
         plugins={[
           headingsPlugin(),

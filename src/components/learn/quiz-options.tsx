@@ -21,7 +21,7 @@ export function QuizOptions({
   multiple = false,
 }: QuizOptionsProps) {
   return (
-    <ul className="divide-y divide-border" role="listbox" aria-multiselectable={multiple}>
+    <ul className="divide-y divide-border/80" role="listbox" aria-multiselectable={multiple}>
       {options.map((option) => {
         const isSelected = selected.includes(option.id);
 
@@ -34,12 +34,12 @@ export function QuizOptions({
               onClick={() => !disabled && onToggle(option.id)}
               disabled={disabled}
               className={cn(
-                "flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left text-sm transition-all sm:px-5",
-                !disabled && "hover:bg-muted/40",
+                "flex w-full cursor-pointer items-center gap-3 px-5 py-4 text-left text-sm transition-colors",
+                !disabled && "hover:bg-muted/55",
                 disabled && "cursor-default",
                 isSelected &&
                   !disabled &&
-                  "bg-primary/5 ring-1 ring-inset ring-primary/20",
+                  "bg-muted/70 ring-1 ring-inset ring-foreground/10",
                 isSelected && disabled && "bg-muted/30"
               )}
             >
@@ -49,7 +49,7 @@ export function QuizOptions({
                     className={cn(
                       "flex size-5 items-center justify-center rounded-md border-2 transition-colors",
                       isSelected
-                        ? "border-primary bg-primary text-primary-foreground"
+                        ? "border-foreground bg-foreground text-background"
                         : "border-border bg-background"
                     )}
                   >
@@ -69,10 +69,10 @@ export function QuizOptions({
                   <span
                     className={cn(
                       "flex size-5 items-center justify-center rounded-full border-2 transition-colors",
-                      isSelected ? "border-primary" : "border-muted-foreground/40"
+                      isSelected ? "border-foreground" : "border-muted-foreground/40"
                     )}
                   >
-                    {isSelected ? <span className="size-2.5 rounded-full bg-primary" /> : null}
+                  {isSelected ? <span className="size-2.5 rounded-full bg-foreground" /> : null}
                   </span>
                 )}
               </span>
@@ -87,7 +87,7 @@ export function QuizOptions({
                 {option.label}
               </span>
               {disabled && isSelected ? (
-                <CheckCircle2 className="size-4 shrink-0 text-primary" aria-hidden />
+                <CheckCircle2 className="size-4 shrink-0 text-foreground" aria-hidden />
               ) : null}
             </button>
           </li>

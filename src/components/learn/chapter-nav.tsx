@@ -21,6 +21,8 @@ type ChapterNavProps = {
   canMarkComplete: boolean;
   checkpointsCompleted: number;
   checkpointsTotal: number;
+  courseCompleted: number;
+  courseTotal: number;
 };
 
 function lessonLabel(chapter: NavChapter) {
@@ -181,6 +183,8 @@ export function ChapterNav({
   canMarkComplete,
   checkpointsCompleted,
   checkpointsTotal,
+  courseCompleted,
+  courseTotal,
 }: ChapterNavProps) {
   const hasBoth = Boolean(prev && next);
   const hasLessonNav = Boolean(prev || next);
@@ -195,6 +199,8 @@ export function ChapterNav({
             canMarkComplete={canMarkComplete}
             checkpointsCompleted={checkpointsCompleted}
             checkpointsTotal={checkpointsTotal}
+            courseCompleted={courseCompleted}
+            courseTotal={courseTotal}
           />
         </div>
 

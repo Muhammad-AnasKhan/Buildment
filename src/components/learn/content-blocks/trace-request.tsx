@@ -33,10 +33,10 @@ function collectSteps(children: ReactNode): TraceStepProps[] {
 }
 
 function statusTone(status: number) {
-  if (status >= 200 && status < 300) return "text-emerald-700 bg-emerald-50 ring-emerald-200/80";
-  if (status >= 400 && status < 500) return "text-amber-800 bg-amber-50 ring-amber-200/80";
-  if (status >= 500) return "text-red-700 bg-red-50 ring-red-200/80";
-  return "text-neutral-700 bg-neutral-100 ring-neutral-200/80";
+  if (status >= 200 && status < 300) return "text-emerald-700 bg-emerald-50 ring-emerald-200/80 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-emerald-400/25";
+  if (status >= 400 && status < 500) return "text-amber-800 bg-amber-50 ring-amber-200/80 dark:bg-amber-500/15 dark:text-amber-100 dark:ring-amber-400/25";
+  if (status >= 500) return "text-red-700 bg-red-50 ring-red-200/80 dark:bg-red-500/15 dark:text-red-200 dark:ring-red-400/25";
+  return "bg-muted text-muted-foreground ring-border";
 }
 
 type TraceRequestClientProps = {
@@ -74,7 +74,7 @@ export function TraceRequestClient({ title, steps }: TraceRequestClientProps) {
     <LearnPanelShell eyebrow="Trace" title={title}>
       <div className="p-5 sm:p-6" aria-live="polite">
         <div className="mb-6 flex items-center justify-between gap-3">
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-muted-foreground">
             Step {active + 1} of {total}
           </p>
           <div className="flex gap-1">
@@ -111,13 +111,13 @@ export function TraceRequestClient({ title, steps }: TraceRequestClientProps) {
               <li key={i} className="relative flex gap-4 pb-8 last:pb-0">
                 {i < steps.length - 1 ? (
                   <div
-                    className="absolute left-[11px] top-6 h-[calc(100%-8px)] w-px bg-neutral-200"
+                    className="absolute left-[11px] top-6 h-[calc(100%-8px)] w-px bg-border"
                     aria-hidden
                   />
                 ) : null}
                 <div
                   className={cn(
-                    "relative z-10 mt-1 size-[22px] shrink-0 rounded-full ring-2 ring-white",
+                    "relative z-10 mt-1 size-[22px] shrink-0 rounded-full ring-2 ring-card",
                     styles.dot,
                     !isActive && "opacity-40"
                   )}
@@ -129,8 +129,8 @@ export function TraceRequestClient({ title, steps }: TraceRequestClientProps) {
                   className={cn(
                     "min-w-0 flex-1 rounded-xl border px-4 py-3 text-left transition-colors",
                     isActive
-                      ? "border-indigo-200 bg-indigo-50/50 shadow-sm"
-                      : "border-transparent hover:bg-neutral-50"
+                      ? "border-border bg-muted shadow-sm"
+                      : "border-transparent hover:bg-muted/70"
                   )}
                 >
                   <div className="flex flex-wrap items-center gap-2">
@@ -153,9 +153,9 @@ export function TraceRequestClient({ title, steps }: TraceRequestClientProps) {
                       </span>
                     ) : null}
                   </div>
-                  <p className="mt-2 font-mono text-sm text-neutral-900">{step.label}</p>
+                  <p className="mt-2 font-mono text-sm text-foreground">{step.label}</p>
                   {step.detail && isActive ? (
-                    <p className="mt-1 text-sm text-neutral-600">{step.detail}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{step.detail}</p>
                   ) : null}
                 </button>
               </li>
