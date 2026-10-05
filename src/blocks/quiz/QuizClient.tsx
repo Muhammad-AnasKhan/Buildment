@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, RotateCcw, Sparkles, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -95,11 +95,13 @@ export function QuizClient({
   config,
   initialState,
   presentation = "standalone",
+  draftStorageKey,
 }: {
   id: string;
   config: SanitizedQuizConfig;
   initialState?: QuizInitialState | null;
   presentation?: "standalone" | "wizard";
+  draftStorageKey?: string;
 }) {
   const router = useRouter();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -119,6 +121,7 @@ export function QuizClient({
   const [error, setError] = useState<string | null>(null);
   const [isShaking, setIsShaking] = useState(false);
   const [isSuccessGlow, setIsSuccessGlow] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(presentation !== "wizard");
 
   useEffect(() => {
     if (isShaking) {
@@ -134,13 +137,59 @@ export function QuizClient({
     }
   }, [isSuccessGlow]);
 
+  useEffect(() => {
+    if (!initialState) return;
+    setSelected(initialState.selected);
+    setResult({
+      isCorrect: initialState.isCorrect,
+      score: initialState.score,
+      maxScore: initialState.maxScore,
+      explanation: initialState.explanation,
+    });
+  }, [initialState]);
+
+  useEffect(() => {
+    if (presentation !== "wizard" || !draftStorageKey) {
+      setDraftLoaded(true);
+      return;
+    }
+    try {
+      const saved = window.localStorage.getItem(draftStorageKey);
+      if (saved !== null) {
+        const parsed: unknown = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.every((value) => typeof value === "string")) {
+          setSelected(parsed);
+          setResult(null);
+          window.dispatchEvent(new CustomEvent("buildment:quiz-answer-change", { detail: { blockId: id, selected: parsed } }));
+        }
+      }
+    } catch {
+      // Draft persistence is best-effort; selections still work in memory.
+    }
+    setDraftLoaded(true);
+  }, [presentation, draftStorageKey, initialState, id]);
+
+  useEffect(() => {
+    if (presentation !== "wizard" || !draftStorageKey || !draftLoaded || result) return;
+    try {
+      window.localStorage.setItem(draftStorageKey, JSON.stringify(selected));
+    } catch {
+      // The quiz remains usable when browser storage is unavailable.
+    }
+  }, [presentation, draftStorageKey, draftLoaded, result, selected]);
+
   function toggle(optionId: string) {
+    let next: string[];
     if (isMultiple) {
-      setSelected((prev) =>
-        prev.includes(optionId) ? prev.filter((o) => o !== optionId) : [...prev, optionId]
-      );
+      next = selected.includes(optionId)
+        ? selected.filter((option) => option !== optionId)
+        : [...selected, optionId];
     } else {
-      setSelected([optionId]);
+      next = [optionId];
+    }
+    setSelected(next);
+    if (presentation === "wizard") {
+      window.dispatchEvent(new CustomEvent("buildment:quiz-answer-change", { detail: { blockId: id, selected: next } }));
     }
   }
 
@@ -205,8 +254,16 @@ export function QuizClient({
         setResult(null);
         setSelected([]);
         setIsShaking(false);
+        if (presentation === "wizard") {
+          window.dispatchEvent(new CustomEvent("buildment:quiz-answer-change", { detail: { blockId: id, selected: [] } }));
+          window.dispatchEvent(new Event("buildment:quiz-retry"));
+        }
       }}
     />
+  ) : presentation === "wizard" ? (
+    <p className="text-xs text-muted-foreground" aria-live="polite">
+      {selected.length === 0 ? "Choose an answer. You can review it before submitting the quiz." : `${selected.length} selected · saved as a draft on this device`}
+    </p>
   ) : (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
       <Button

@@ -105,8 +105,7 @@ export function LockedChapterView({
               <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                 <Lock className="size-5" aria-hidden />
               </div>
-              <p className="mt-4 font-mono text-xs tabular-nums text-muted-foreground">{lessonLabel}</p>
-              <h1 className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+              <h1 className="mt-4 text-2xl font-bold tracking-tight text-foreground">
                 {chapterTitle} is locked
               </h1>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">

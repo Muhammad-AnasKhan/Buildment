@@ -45,8 +45,9 @@ treat any code that special-cases a `BlockType` outside `src/blocks/<type>/` as 
 
 ## `<Quiz>` — inline knowledge check
 
-A single question dropped between paragraphs. Lightweight, low-stakes, immediate feedback. This is
-the "did that paragraph land?" block.
+A single question dropped between paragraphs. Lightweight, low-stakes feedback. In a regular
+chapter it can be answered inline; in quiz-chapter mode its answer is held until the learner submits
+the quiz at the end.
 
 ```mdx
 <Quiz id="01J8..." type="single">
@@ -62,7 +63,8 @@ the "did that paragraph land?" block.
 ```
 
 - Types: `single`, `multiple`, `true-false`.
-- Auto-graded. Instant feedback with explanation revealed after submit.
+- Auto-graded on submission. Regular chapters reveal feedback immediately after the block is
+  submitted; quiz-chapter mode reveals feedback after the final quiz submission.
 - Config: `options[]`, `correctOptionIds[]`, `explanation`, `allowRetry` (default `true`), `shuffle`
   (default `false`).
 - Completion: answered (correctness recorded but does not block by default).

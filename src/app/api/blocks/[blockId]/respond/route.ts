@@ -32,13 +32,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const block = await prisma.block.findUnique({
     where: { id: blockId },
-    include: { chapter: { select: { id: true, courseId: true } } },
+    include: { chapter: { select: { id: true, courseId: true, readerMode: true } } },
   });
   if (!block || block.archivedAt) {
     return NextResponse.json({ error: "Block not found" }, { status: 404 });
   }
   if (!isRegisteredBlockType(block.type)) {
     return NextResponse.json({ error: `Block type ${block.type} has no grader yet` }, { status: 501 });
+  }
+  if (block.type === "QUIZ" && block.chapter.readerMode === "QUIZ") {
+    return NextResponse.json({ error: "Submit this quiz from the final quiz step." }, { status: 400 });
   }
 
   const enrollment = await prisma.enrollment.findUnique({

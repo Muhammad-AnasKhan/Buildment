@@ -18,6 +18,7 @@ export async function QuizComponent({
   explanation,
   allowRetry = true,
   presentation = "standalone",
+  draftStoragePrefix,
 }: {
   id?: string;
   prompt?: string;
@@ -28,6 +29,7 @@ export async function QuizComponent({
   explanation?: string;
   allowRetry?: boolean;
   presentation?: "standalone" | "wizard";
+  draftStoragePrefix?: string;
 }) {
   const resolvedPrompt = prompt || question;
 
@@ -53,6 +55,7 @@ export async function QuizComponent({
         config={clientConfig}
         initialState={null}
         presentation={presentation}
+        draftStorageKey={draftStoragePrefix && id ? `${draftStoragePrefix}:${id}` : undefined}
       />
     );
   }
@@ -87,6 +90,7 @@ export async function QuizComponent({
             config={sanitized}
             initialState={initialState}
             presentation={presentation}
+            draftStorageKey={draftStoragePrefix ? `${draftStoragePrefix}:${id}` : undefined}
           />
         );
       }

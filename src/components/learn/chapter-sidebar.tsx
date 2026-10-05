@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, ChevronRight, Menu, X, LayoutDashboard } from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronRight, Menu, X, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SyllabusModule } from "@/components/learn/course-syllabus";
 import { SyllabusChapterRow } from "@/components/learn/syllabus-chapter-row";
@@ -67,12 +67,14 @@ function SidebarPanel({
         {modules.map((mod) => {
           const isOpen = openModules.has(mod.id);
           const moduleHasActive = mod.chapters.some((ch) => ch.slug === activeSlug);
+          const moduleComplete = mod.chapters.length > 0 && mod.completedCount === mod.chapters.length;
 
           return (
             <div key={mod.id} className="mb-1">
               <button
                 type="button"
                 onClick={() => toggleModule(mod.id)}
+                aria-label={`${mod.title}: ${mod.completedCount} of ${mod.chapters.length} lessons complete${moduleComplete ? ", module complete" : ""}`}
                 className={cn(
                   "flex w-full items-center gap-2 px-4 py-2 text-left text-sm transition-colors",
                   moduleHasActive && "bg-muted/60"
@@ -81,9 +83,11 @@ function SidebarPanel({
                 <span
                   className={cn(
                     "flex size-6 shrink-0 items-center justify-center rounded-md font-mono text-[11px] font-bold tabular-nums",
-                    moduleHasActive
-                      ? "bg-foreground text-background"
-                      : "bg-muted text-muted-foreground"
+                    moduleComplete
+                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                      : moduleHasActive
+                        ? "bg-foreground text-background"
+                        : "bg-muted text-muted-foreground"
                   )}
                 >
                   {String(mod.order).padStart(2, "0")}
@@ -95,6 +99,12 @@ function SidebarPanel({
                   <span className="text-[10px] text-muted-foreground">
                     {mod.completedCount}/{mod.chapters.length}
                   </span>
+                  {moduleComplete ? (
+                    <CheckCircle2
+                      className="size-4 text-emerald-600 dark:text-emerald-400"
+                      aria-hidden
+                    />
+                  ) : null}
                   {isOpen ? (
                     <ChevronDown className="size-3.5 text-muted-foreground" />
                   ) : (

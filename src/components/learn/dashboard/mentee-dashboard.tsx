@@ -106,7 +106,7 @@ function WeeklySnapshot({ model }: { model: MenteeDashboardViewModel }) {
     ? Math.round((model.primaryCourse.totalScore / model.primaryCourse.maxScore) * 100)
     : null;
   const metrics = [
-    { label: "Study this week", value: formatStudyAmount(model.overview.weekSeconds) },
+    { label: "Estimated study this week", value: formatStudyAmount(model.overview.weekSeconds) },
     { label: "Active days", value: `${model.activity.activeDays} of 7` },
     { label: "Scored accuracy", value: accuracy === null ? "Not scored" : `${accuracy}%` },
     { label: "Awaiting review", value: String(model.overview.pendingReviews) },

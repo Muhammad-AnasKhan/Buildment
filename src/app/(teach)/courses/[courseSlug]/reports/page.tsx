@@ -195,7 +195,7 @@ export default async function CourseReportsPage({
                     <th className="w-[24%] px-3 py-3">Learner</th>
                     <th className="w-[17%] px-3 py-3">Progress</th>
                     <th className="w-[9%] px-3 py-3">Score</th>
-                    <th className="w-[13%] px-3 py-3">Study time</th>
+                    <th className="w-[13%] px-3 py-3">Est. study time</th>
                     <th className="w-[10%] px-3 py-3">Reviews</th>
                     <th className="w-[13%] px-3 py-3">Last active</th>
                     <th className="w-[14%] px-3 py-3">Status</th>

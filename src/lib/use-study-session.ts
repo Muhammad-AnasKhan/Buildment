@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export type StudyClockStatus = "idle" | "running" | "paused";
+export type StudyPauseReason = "manual" | "inactive" | "hidden" | null;
+
+const HEARTBEAT_MS = 15_000;
+const INACTIVITY_MS = 2 * 60_000;
 
 type SessionPayload = {
   status?: StudyClockStatus;
@@ -50,11 +54,14 @@ export function useStudySession(chapterId: string) {
   const [syncedChapter, setSyncedChapter] = useState(0);
   const [pendingSeconds, setPendingSeconds] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [pauseReason, setPauseReason] = useState<StudyPauseReason>(null);
 
   const statusRef = useRef<StudyClockStatus>("idle");
+  const busyRef = useRef(false);
   const pendingRef = useRef(0);
   const chapterRef = useRef(chapterId);
   const requestEpoch = useRef(0);
+  const lastActivityAt = useRef(Date.now());
 
   useEffect(() => {
     statusRef.current = status;
@@ -157,43 +164,75 @@ export function useStudySession(chapterId: string) {
   useEffect(() => {
     const onHide = () => {
       if (statusRef.current !== "running") return;
+      setPauseReason("hidden");
       const sent = pendingRef.current;
-      if (sent <= 0) return;
       pendingRef.current = 0;
       setPendingSeconds(0);
-      void fetch("/api/progress/heartbeat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chapterId: chapterRef.current,
-          deltaSeconds: Math.min(sent, 20),
-        }),
-        keepalive: true,
-      });
+      setStatus("paused");
+      statusRef.current = "paused";
+      void postSession(chapterRef.current, "pause", sent, true);
     };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") onHide();
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
     window.addEventListener("pagehide", onHide);
-    return () => window.removeEventListener("pagehide", onHide);
-  }, []);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pagehide", onHide);
+    };
+  }, [apply]);
 
   const run = useCallback(
-    async (action: "start" | "pause" | "resume" | "end") => {
+    async (action: "start" | "pause" | "resume" | "end", reason?: StudyPauseReason) => {
+      if (busyRef.current) return;
+      busyRef.current = true;
       setBusy(true);
       requestEpoch.current += 1;
       const delta = action === "pause" || action === "end" ? flushDelta() : 0;
       const data = await postSession(chapterRef.current, action, delta);
       apply(data);
+      if (action === "start" || action === "resume") {
+        lastActivityAt.current = Date.now();
+        setPauseReason(null);
+      } else if (action === "pause") {
+        setPauseReason(reason ?? "manual");
+      } else if (action === "end") {
+        setPauseReason(null);
+      }
+      busyRef.current = false;
       setBusy(false);
     },
     [apply, flushDelta]
   );
 
+  useEffect(() => {
+    if (status !== "running") return;
+    lastActivityAt.current = Date.now();
+    const onActivity = () => {
+      if (document.visibilityState === "visible") lastActivityAt.current = Date.now();
+    };
+    const events: (keyof DocumentEventMap)[] = ["pointerdown", "keydown", "scroll", "input", "touchstart"];
+    for (const event of events) document.addEventListener(event, onActivity, { capture: true, passive: true });
+    const inactivityCheck = window.setInterval(() => {
+      if (Date.now() - lastActivityAt.current >= INACTIVITY_MS) {
+        void run("pause", "inactive");
+      }
+    }, HEARTBEAT_MS);
+    return () => {
+      window.clearInterval(inactivityCheck);
+      for (const event of events) document.removeEventListener(event, onActivity, true);
+    };
+  }, [status, run]);
+
   return {
     status,
     busy,
+    pauseReason,
     sessionSeconds: syncedSession + pendingSeconds,
     chapterTotalSeconds: syncedChapter + pendingSeconds,
     start: () => void run("start"),
-    pause: () => void run("pause"),
+    pause: () => void run("pause", "manual"),
     resume: () => void run("resume"),
     stop: () => void run("end"),
   };

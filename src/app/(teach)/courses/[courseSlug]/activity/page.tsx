@@ -71,7 +71,7 @@ export default async function CourseActivityPage({
         </p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">Daily activity</h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          A 14-day view of learner study time. Use it to spot momentum changes before progress stalls.
+          A 14-day estimate of learner study time. Treat it as an activity signal; course progress is based on completed work.
         </p>
       </header>
 
@@ -97,9 +97,9 @@ export default async function CourseActivityPage({
         <>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <ActivityMetric icon={Users} label="Active learners" value={`${activeLearners}/${enrollments.length}`} detail="Active in the last 7 days" />
-            <ActivityMetric icon={Clock3} label="Study time" value={formatStudyHours(totalSeconds)} detail="Across the last 14 days" />
-            <ActivityMetric icon={Activity} label="Average per learner" value={formatStudyHours(averageSeconds)} detail="Across this period" />
-            <ActivityMetric icon={CalendarDays} label="Today" value={formatStudyHours(todaySeconds)} detail="Recorded in UTC" />
+            <ActivityMetric icon={Clock3} label="Estimated study time" value={formatStudyHours(totalSeconds)} detail="Across the last 14 days" />
+            <ActivityMetric icon={Activity} label="Estimated average per learner" value={formatStudyHours(averageSeconds)} detail="Across this period" />
+            <ActivityMetric icon={CalendarDays} label="Estimated today" value={formatStudyHours(todaySeconds)} detail="Recorded in UTC" />
           </div>
 
           <section className="overflow-hidden rounded-2xl border bg-card shadow-sm">

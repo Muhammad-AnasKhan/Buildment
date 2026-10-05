@@ -210,6 +210,7 @@ export function ChapterReaderShell({
               />
               <StudyClock
                 status={study.status}
+                pauseReason={study.pauseReason}
                 busy={study.busy}
                 sessionSeconds={study.sessionSeconds}
                 chapterTotalSeconds={study.chapterTotalSeconds}
@@ -245,6 +246,7 @@ export function ChapterReaderShell({
           <StudyClock
             className="fixed right-4 top-3 z-40"
             status={study.status}
+            pauseReason={study.pauseReason}
             busy={study.busy}
             sessionSeconds={study.sessionSeconds}
             chapterTotalSeconds={study.chapterTotalSeconds}
@@ -278,7 +280,6 @@ export function ChapterReaderShell({
             >
               <div className={cn("mx-auto max-w-3xl", focusMode && "max-w-2xl lg:max-w-3xl")}>
                 <header className="mb-8">
-                  <p className="font-mono text-xs tabular-nums text-muted-foreground">{lessonLabel}</p>
                   <h1 className="mt-1.5 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                     {chapterTitle}
                   </h1>

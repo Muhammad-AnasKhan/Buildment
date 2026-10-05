@@ -136,7 +136,7 @@ export default async function MenteeProgressPage() {
             <SummaryMetric label="Courses" value={String(courseProgress.length)} detail="Active assignments" />
             <SummaryMetric label="Chapters complete" value={`${overall.chaptersCompleted}/${overall.totalChapters}`} detail={`${percentage(overall.chaptersCompleted, overall.totalChapters) ?? 0}% of the curriculum`} />
             <SummaryMetric label="Scored accuracy" value={overallAccuracy === null ? "—" : `${overallAccuracy}%`} detail={overall.maxScore > 0 ? `${overall.score} of ${overall.maxScore} points` : "No scored checks yet"} />
-            <SummaryMetric label="Study this week" value={formatStudyHours(overall.weekSeconds)} detail={overall.pendingReviews > 0 ? `${overall.pendingReviews} awaiting review` : "No reviews pending"} />
+            <SummaryMetric label="Estimated study this week" value={formatStudyHours(overall.weekSeconds)} detail={overall.pendingReviews > 0 ? `${overall.pendingReviews} awaiting review` : "Time is an estimate; course completion is based on your work."} />
           </section>
 
           <div className="mt-8 space-y-6">
@@ -173,7 +173,7 @@ export default async function MenteeProgressPage() {
                     <div className="mt-6 grid gap-5 border-y py-5 sm:grid-cols-2 lg:grid-cols-4">
                       <CourseMetric label="Completion" value={`${enrollment.percentComplete}%`} detail={`${enrollment.chaptersCompleted} of ${totalChapters} chapters`} />
                       <CourseMetric label="Scored accuracy" value={accuracy === null ? "—" : `${accuracy}%`} detail={enrollment.maxScore > 0 ? `${enrollment.totalScore}/${enrollment.maxScore} points` : "Not scored yet"} />
-                      <CourseMetric label="Study time" value={formatStudyHours(totalStudySeconds)} detail={`${formatStudyHours(weekSeconds)} this week`} />
+                      <CourseMetric label="Estimated study time" value={formatStudyHours(totalStudySeconds)} detail={`${formatStudyHours(weekSeconds)} this week`} />
                       <CourseMetric label="Consistency" value={`${activeDays}/7 days`} detail={enrollment.lastActiveAt ? `Last active ${enrollment.lastActiveAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "Not started"} />
                     </div>
 
