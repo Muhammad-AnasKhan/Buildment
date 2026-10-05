@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { QuizOptions } from "@/components/learn/quiz-options";
 import { LearnPanelShell } from "@/components/learn/content-blocks/learn-panel-shell";
-import { playFeedbackSound } from "@/lib/sound-feedback";
+import { playFeedback } from "@/lib/sound-feedback";
 import type { SanitizedPredictConfig } from "./schema";
 
 type RespondResult = {
@@ -76,9 +76,10 @@ export function PredictClient({
       }
       const outcome = await res.json() as RespondResult;
       setResult(outcome);
-      playFeedbackSound(outcome.isCorrect ? "success" : "failure");
+      playFeedback(outcome.isCorrect ? "success" : "error");
       router.refresh();
     } catch (err) {
+      playFeedback("error");
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setSubmitting(false);
@@ -87,10 +88,11 @@ export function PredictClient({
 
   const canRetry = result && !result.isCorrect && config.allowRetry;
   const hasAnswered = result !== null;
+  const settled = hasAnswered && (result.isCorrect === true || config.allowRetry === false);
   const ctx = config.context;
 
   return (
-    <LearnPanelShell eyebrow="Predict" title={config.prompt} className="my-8">
+    <LearnPanelShell eyebrow="Predict" title={config.prompt} className="my-8 scroll-mt-24" checkpointId={id} checkpointDone={settled}>
       <div className="border-b border-border bg-muted/50 px-5 py-4 sm:px-6">
         <div className="flex items-start gap-3">
           <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">

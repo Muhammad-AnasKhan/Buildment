@@ -4,6 +4,7 @@ import { OpenQuestionComponent } from "@/blocks/open-question/Component";
 import { PredictComponent } from "@/blocks/predict/Component";
 import { QuizChapterSessionClient } from "./quiz-chapter-session-client";
 import { getSessionUser } from "@/server/auth/guards";
+import { allowRetryFromConfig } from "@/server/progress/rules";
 
 const WIZARD_TYPES = new Set(["QUIZ", "OPEN_QUESTION", "PREDICT"]);
 
@@ -13,7 +14,7 @@ export async function QuizChapterWizard({ chapterId }: { chapterId: string }) {
   const blocks = await prisma.block.findMany({
     where: { chapterId, archivedAt: null },
     orderBy: { order: "asc" },
-    select: { id: true, type: true },
+    select: { id: true, type: true, config: true },
   });
 
   const steps = blocks.filter((b) => WIZARD_TYPES.has(b.type));
@@ -35,8 +36,14 @@ export async function QuizChapterWizard({ chapterId }: { chapterId: string }) {
     const payload = latestByBlock.get(blockId)?.payload as { selected?: unknown } | undefined;
     return [blockId, Array.isArray(payload?.selected) ? payload.selected.filter((item): item is string => typeof item === "string") : []] as const;
   }));
-  const allSubmitted = quizBlockIds.length > 0 && quizBlockIds.every((id) => latestByBlock.has(id));
-  const initialQuizResult = allSubmitted
+  const quizBlocks = steps.filter((block) => block.type === "QUIZ");
+  const allSettled = quizBlocks.length > 0 && quizBlocks.every((block) => {
+    const response = latestByBlock.get(block.id);
+    if (!response) return false;
+    if (response.isCorrect === true) return true;
+    return !allowRetryFromConfig(block.config);
+  });
+  const initialQuizResult = allSettled
     ? {
         score: quizBlockIds.reduce((total, id) => total + (latestByBlock.get(id)?.score ?? 0), 0),
         maxScore: quizBlockIds.reduce((total, id) => total + (latestByBlock.get(id)?.maxScore ?? 0), 0),

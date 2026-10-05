@@ -27,18 +27,47 @@ export function isCompleteResponseStatus(status: ResponseStatus | string): boole
   return status !== "DRAFT";
 }
 
+const SCORED_CHECKPOINT_TYPES = new Set<BlockType>(["QUIZ", "PREDICT", "CODE"]);
+
+/** Missing or unreadable config keeps retries open, so a wrong answer does not finish the checkpoint. */
+export function allowRetryFromConfig(config: unknown): boolean {
+  if (!config || typeof config !== "object") return true;
+  return (config as { allowRetry?: unknown }).allowRetry !== false;
+}
+
+/**
+ * Open questions and required reads count once submitted.
+ * Quiz, predict, and code count when the answer is correct, or when retry is off and the attempt is in.
+ */
+export function checkpointSatisfied(args: {
+  type: BlockType;
+  config: unknown;
+  status: ResponseStatus | string | null;
+  isCorrect: boolean | null;
+}): boolean {
+  if (!args.status || !isCompleteResponseStatus(args.status)) return false;
+  if (!SCORED_CHECKPOINT_TYPES.has(args.type)) return true;
+  if (args.isCorrect === true) return true;
+  return !allowRetryFromConfig(args.config);
+}
+
 export function chapterProgressStatus(args: {
   completableTotal: number;
   completableCompleted: number;
   markedComplete: boolean;
   visited: boolean;
+  /** Module-gate chapter whose checklist or learning log is still unfinished. */
+  reflectionBlocked?: boolean;
 }): ProgressStatus {
   if (args.completableTotal === 0) {
-    if (args.markedComplete) return "COMPLETED";
-    if (args.visited) return "IN_PROGRESS";
+    if (args.markedComplete && !args.reflectionBlocked) return "COMPLETED";
+    if (args.visited || args.markedComplete) return "IN_PROGRESS";
     return "NOT_STARTED";
   }
-  if (args.completableCompleted >= args.completableTotal) return "COMPLETED";
+  if (args.completableCompleted >= args.completableTotal) {
+    if (args.reflectionBlocked) return "IN_PROGRESS";
+    return "COMPLETED";
+  }
   if (args.completableCompleted > 0 || args.visited) return "IN_PROGRESS";
   return "NOT_STARTED";
 }

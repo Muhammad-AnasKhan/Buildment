@@ -7,12 +7,14 @@ import {
   Target,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Progress, ProgressLabel } from "@/components/ui/progress";
 import { prisma } from "@/server/db";
 import { requireRole } from "@/server/auth/guards";
 import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
-import { loadEnrollmentSyllabus } from "@/server/progress/enrollment-syllabus";
+import { loadEnrollmentSyllabus, resolveContinueChapterPath } from "@/server/progress/enrollment-syllabus";
 import { formatStudyHours } from "@/lib/format-study-duration";
+import { closedWrongCheckpoints } from "@/server/progress/attention";
 import { cn } from "@/lib/utils";
 
 function percentage(score: number, maxScore: number) {
@@ -60,6 +62,32 @@ export default async function MenteeProgressPage() {
   since.setUTCDate(since.getUTCDate() - 6);
   since.setUTCHours(0, 0, 0, 0);
 
+  const missedResponses = enrollmentIds.length === 0
+    ? []
+    : await prisma.response.findMany({
+        where: {
+          userId: user.id,
+          enrollmentId: { in: enrollmentIds },
+          isCorrect: false,
+          status: { not: "DRAFT" },
+          block: { archivedAt: null, type: { in: ["QUIZ", "PREDICT", "CODE"] } },
+        },
+        orderBy: { attempt: "desc" },
+        select: {
+          blockId: true,
+          attempt: true,
+          isCorrect: true,
+          block: {
+            select: {
+              type: true,
+              config: true,
+              chapter: { select: { slug: true, title: true, course: { select: { slug: true, title: true } } } },
+            },
+          },
+        },
+      });
+  const closedWrong = closedWrongCheckpoints(missedResponses).slice(0, 12);
+
   const dailyRows = enrollmentIds.length > 0
     ? await prisma.dailyActivity.findMany({
         where: { enrollmentId: { in: enrollmentIds }, date: { gte: since } },
@@ -73,6 +101,9 @@ export default async function MenteeProgressPage() {
       enrollmentId: enrollment.id,
       bypassLocking,
     });
+    const continueHref = syllabus
+      ? resolveContinueChapterPath(enrollment.course.slug, syllabus.flatChapters)
+      : null;
     const progressByChapter = new Map(
       enrollment.chapterProgress.map((row) => [row.chapterId, row])
     );
@@ -98,7 +129,7 @@ export default async function MenteeProgressPage() {
     const totalStudySeconds = enrollment.chapterProgress.reduce((sum, row) => sum + row.timeSpentSeconds, 0);
     const totalChapters = modules.reduce((sum, module) => sum + module.total, 0);
 
-    return { enrollment, modules, activeDays, weekSeconds, totalStudySeconds, totalChapters };
+    return { enrollment, modules, activeDays, weekSeconds, totalStudySeconds, totalChapters, continueHref };
   }));
 
   const overall = courseProgress.reduce(
@@ -129,18 +160,41 @@ export default async function MenteeProgressPage() {
           <BookOpen className="size-8 text-muted-foreground" aria-hidden />
           <h2 className="mt-4 text-lg font-semibold">No progress to show yet</h2>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">Assigned courses will appear here with completion and correctness signals.</p>
+          <Link href="/dashboard" className={cn(buttonVariants({ variant: "outline" }), "mt-6")}>Back to dashboard</Link>
         </div>
       ) : (
         <>
           <section aria-label="Overall progress" className="mt-8 grid overflow-hidden rounded-2xl border bg-card sm:grid-cols-2 xl:grid-cols-4">
             <SummaryMetric label="Courses" value={String(courseProgress.length)} detail="Active assignments" />
             <SummaryMetric label="Chapters complete" value={`${overall.chaptersCompleted}/${overall.totalChapters}`} detail={`${percentage(overall.chaptersCompleted, overall.totalChapters) ?? 0}% of the curriculum`} />
-            <SummaryMetric label="Scored accuracy" value={overallAccuracy === null ? "—" : `${overallAccuracy}%`} detail={overall.maxScore > 0 ? `${overall.score} of ${overall.maxScore} points` : "No scored checks yet"} />
+            <SummaryMetric label="All courses accuracy" value={overallAccuracy === null ? "—" : `${overallAccuracy}%`} detail={overall.maxScore > 0 ? `${overall.score} of ${overall.maxScore} points across assigned courses` : "No scored checks yet"} />
             <SummaryMetric label="Estimated study this week" value={formatStudyHours(overall.weekSeconds)} detail={overall.pendingReviews > 0 ? `${overall.pendingReviews} awaiting review` : "Time is an estimate; course completion is based on your work."} />
           </section>
 
+          {closedWrong.length > 0 ? (
+            <section aria-labelledby="closed-wrong-heading" className="mt-8">
+              <h2 id="closed-wrong-heading" className="text-lg font-semibold tracking-tight">Saved without a retry</h2>
+              <p className="mt-1 text-sm text-muted-foreground">These checks counted on a wrong answer because retry was off.</p>
+              <ul className="mt-4 divide-y divide-border overflow-hidden rounded-xl border bg-card">
+                {closedWrong.map((row) => (
+                  <li key={row.blockId}>
+                    <Link href={`/courses/${row.block.chapter.course.slug}/${row.block.chapter.slug}`} className="flex items-center justify-between gap-4 p-4 transition-colors hover:bg-muted/50">
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium">{row.block.chapter.title}</span>
+                        <span className="mt-0.5 block truncate text-xs text-muted-foreground">{row.block.chapter.course.title}</span>
+                      </span>
+                      <span className="shrink-0 text-xs text-muted-foreground">
+                        {row.block.type === "PREDICT" ? "Prediction" : row.block.type === "CODE" ? "Code" : "Quiz"}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
           <div className="mt-8 space-y-6">
-            {courseProgress.map(({ enrollment, modules, activeDays, weekSeconds, totalStudySeconds, totalChapters }) => {
+            {courseProgress.map(({ enrollment, modules, activeDays, weekSeconds, totalStudySeconds, totalChapters, continueHref }) => {
               const accuracy = percentage(enrollment.totalScore, enrollment.maxScore);
               const understanding = accuracyState(accuracy);
               const UnderstandingIcon = understanding.icon;
@@ -165,9 +219,16 @@ export default async function MenteeProgressPage() {
                           </div>
                         </div>
                       </div>
-                      <Link href={`/courses/${enrollment.course.slug}`} className="inline-flex shrink-0 items-center gap-1 text-sm font-medium hover:underline">
-                        Open course <ArrowRight className="size-3.5" aria-hidden />
-                      </Link>
+                      <div className="flex shrink-0 flex-wrap items-center gap-3">
+                        {continueHref ? (
+                          <Link href={continueHref} className={buttonVariants()}>
+                            Continue <ArrowRight data-icon="inline-end" />
+                          </Link>
+                        ) : null}
+                        <Link href={`/courses/${enrollment.course.slug}`} className="inline-flex items-center gap-1 text-sm font-medium hover:underline">
+                          Course overview
+                        </Link>
+                      </div>
                     </div>
 
                     <div className="mt-6 grid gap-5 border-y py-5 sm:grid-cols-2 lg:grid-cols-4">

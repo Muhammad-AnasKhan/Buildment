@@ -8,7 +8,8 @@ import { cn } from "@/lib/utils";
 import { QuizOptions } from "@/components/learn/quiz-options";
 import { readerCard, readerCardFooter, readerCardHeader, readerTitle } from "@/components/learn/reader-theme";
 import { firePartyPops } from "@/components/learn/party-pops";
-import { playFeedbackSound } from "@/lib/sound-feedback";
+import { playFeedback } from "@/lib/sound-feedback";
+import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
 import type { SanitizedQuizConfig } from "./schema";
 
 type RespondResult = {
@@ -212,15 +213,17 @@ export function QuizClient({
       if (data.isCorrect === true) {
         setIsSuccessGlow(true);
         setIsShaking(false);
-        firePartyPops({ withSound: true });
+        firePartyPops({ withSound: false });
+        playFeedback("success");
       } else if (data.isCorrect === false) {
         setIsSuccessGlow(false);
         setIsShaking(true);
-        playFeedbackSound("failure");
+        playFeedback("error");
       }
 
       router.refresh();
     } catch (err) {
+      playFeedback("error");
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setSubmitting(false);
@@ -229,6 +232,7 @@ export function QuizClient({
 
   const canRetry = Boolean(result && !result.isCorrect && config.allowRetry);
   const hasAnswered = result !== null;
+  const settled = hasAnswered && (result.isCorrect === true || config.allowRetry === false);
 
   const optionsBlock = (
     <div
@@ -291,8 +295,9 @@ export function QuizClient({
     return (
       <div
         ref={cardRef}
+        {...checkpointAttrs(id, settled)}
         className={cn(
-          "not-prose space-y-6 transition-all duration-300",
+          "not-prose scroll-mt-24 space-y-6 transition-all duration-300",
           isShaking && "animate-feedback-shake",
           isSuccessGlow && "animate-feedback-success"
         )}
@@ -314,8 +319,9 @@ export function QuizClient({
   return (
     <div
       ref={cardRef}
+      {...checkpointAttrs(id, settled)}
       className={cn(
-        "not-prose my-8 transition-all duration-300",
+        "not-prose my-8 scroll-mt-24 transition-all duration-300",
         readerCard,
         isShaking && "animate-feedback-shake",
         isSuccessGlow && "animate-feedback-success"

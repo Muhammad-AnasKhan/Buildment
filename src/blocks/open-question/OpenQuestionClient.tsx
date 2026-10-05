@@ -10,7 +10,8 @@ import { parseSafeSubmissionUrl } from "@/lib/safe-submission-url";
 import { AnswerTextareaWithMic } from "@/components/learn/answer-textarea-with-mic";
 import { readerBlockGrouped, readerBlockInner } from "@/components/learn/reader-block-styles";
 import { firePartyPops } from "@/components/learn/party-pops";
-import { playFeedbackSound } from "@/lib/sound-feedback";
+import { playFeedback } from "@/lib/sound-feedback";
+import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
 import type { OpenQuestionGroupPosition } from "./group-position";
 import type { SanitizedOpenQuestionConfig } from "./schema";
 import { openQuestionUrlPresentation, validateOpenQuestionPayload } from "./schema";
@@ -76,7 +77,7 @@ export function OpenQuestionClient({
   async function submit() {
     if (clientValidation) {
       setError(clientValidation);
-      playFeedbackSound("failure");
+      playFeedback("error");
       return;
     }
     setSubmitting(true);
@@ -97,11 +98,12 @@ export function OpenQuestionClient({
       }
       setSubmitted(true);
       setIsSuccessGlow(true);
-      firePartyPops({ withSound: true });
+      firePartyPops({ withSound: false });
+      playFeedback("notification");
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-      playFeedbackSound("failure");
+      playFeedback("error");
     } finally {
       setSubmitting(false);
     }
@@ -117,9 +119,10 @@ export function OpenQuestionClient({
   return (
     <div
       ref={containerRef}
+      {...checkpointAttrs(id, submitted)}
       className={cn(
         readerBlockGrouped(groupPosition),
-        "transition-all duration-300",
+        "scroll-mt-24 transition-all duration-300",
         isSuccessGlow && "animate-feedback-success"
       )}
     >
@@ -184,7 +187,7 @@ export function OpenQuestionClient({
                     <Clock3 className="size-3" aria-hidden />
                     {initialState?.verdict === "APPROVED"
                       ? "Approved by your mentor"
-                      : "Awaiting mentor review"}
+                      : "Your mentor will reply"}
                   </span>
                 </div>
                 {(text || initialState?.text) && (
@@ -205,6 +208,11 @@ export function OpenQuestionClient({
                     </a>
                   </p>
                 )}
+                {initialState?.verdict !== "APPROVED" ? (
+                  <p className="border-t border-emerald-200/60 px-4 py-3 text-sm leading-relaxed text-muted-foreground dark:border-emerald-400/20">
+                    Submitted. You can continue to the next lesson. Your mentor will still reply.
+                  </p>
+                ) : null}
                 {initialState?.verdict === "APPROVED" && initialState.feedback && (
                   <p className="border-t border-emerald-200/60 whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-muted-foreground dark:border-emerald-400/20">
                     <span className="font-medium text-emerald-800 dark:text-emerald-100">Mentor feedback: </span>

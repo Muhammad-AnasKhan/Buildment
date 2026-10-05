@@ -5,6 +5,7 @@ import { remarkChecklist } from "./remark-checklist";
 import { remarkLearningLog } from "./remark-learning-log";
 import { remarkMermaid } from "./remark-mermaid";
 import { mdxComponents } from "./components";
+import { collectUnknownComponents } from "./extract";
 import { restoreInteractiveBlockTags } from "./restore-block-tags";
 import { transformVisualFences } from "./transform-visual-fences";
 import { rehypePrettyCodePlugins } from "./rehype-pretty-code-config";
@@ -24,20 +25,26 @@ function UnsupportedBlock({
   );
 }
 
-/** Unknown uppercase tags render as a callout instead of blanking the chapter. */
-function withUnknownComponentFallback(components: MDXComponents): MDXComponents {
-  return new Proxy(components, {
-    get(target, prop, receiver) {
-      if (typeof prop !== "string") return Reflect.get(target, prop, receiver);
-      if (prop in target) return Reflect.get(target, prop, receiver);
-      if (/^[A-Z]/.test(prop)) {
-        return function UnknownBlock({ children }: { children?: React.ReactNode }) {
-          return <UnsupportedBlock name={prop}>{children}</UnsupportedBlock>;
-        };
-      }
-      return undefined;
-    },
-  }) as MDXComponents;
+/**
+ * Unknown uppercase tags render as a callout instead of blanking the chapter.
+ * MDX copies `components` with an object spread, so a Proxy get-trap is not
+ * enough — missing names have to be real properties on the object.
+ */
+function withUnknownComponentFallback(components: MDXComponents, source: string): MDXComponents {
+  let unknown: string[] = [];
+  try {
+    unknown = collectUnknownComponents(source, new Set(Object.keys(components)));
+  } catch {
+    return components;
+  }
+  if (unknown.length === 0) return components;
+  const extras: MDXComponents = {};
+  for (const name of unknown) {
+    extras[name] = function UnknownBlock({ children }: { children?: React.ReactNode }) {
+      return <UnsupportedBlock name={name}>{children}</UnsupportedBlock>;
+    };
+  }
+  return { ...components, ...extras };
 }
 
 // Server-side MDX rendering for the reader route — see
@@ -51,7 +58,7 @@ export function ChapterMdx({ source }: { source: string }) {
   return (
     <MDXRemote
       source={mdxSource}
-      components={withUnknownComponentFallback(mdxComponents)}
+      components={withUnknownComponentFallback(mdxComponents, mdxSource)}
       options={{
         mdxOptions: {
           remarkPlugins: [remarkGfm, remarkChecklist, remarkLearningLog, remarkMermaid],

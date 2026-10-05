@@ -7,6 +7,8 @@ import { isCompletableBlock, flattenChapterIds, lockedChapterIds } from "@/serve
 import { loadStudyWeek } from "@/server/progress/study-summary";
 import { classifyProjectEvidence, evidenceUrlParts } from "./evidence";
 import { isEnrollmentScopedToCourse, latestByBlock } from "./helpers";
+import { parseLearningLog } from "@/lib/learning-log";
+import type { EvaluationReflection } from "@/components/teach/evaluation/types";
 import type {
   EvaluationAttention,
   EvaluationModule,
@@ -70,6 +72,7 @@ export async function loadMenteeEvaluation(args: {
           timeSpentSeconds: true,
           startedAt: true,
           completedAt: true,
+          learningLog: true,
         },
       }),
       prisma.response.findMany({
@@ -309,7 +312,40 @@ export async function loadMenteeEvaluation(args: {
       activeSeconds: session.activeSeconds,
       startedAt: session.startedAt.toISOString(),
     })),
+    reflections: buildReflections(progressRows, courseStructure),
   };
+}
+
+function buildReflections(
+  progressRows: Array<{ chapterId: string; learningLog: unknown }>,
+  courseStructure: {
+    modules: Array<{ title: string; chapters: Array<{ id: string; title: string }> }>;
+  } | null
+): EvaluationReflection[] {
+  const chapterMeta = new Map(
+    (courseStructure?.modules ?? []).flatMap((module) =>
+      module.chapters.map((chapter) => [chapter.id, { title: chapter.title, moduleTitle: module.title }] as const)
+    )
+  );
+  return progressRows.flatMap((row) => {
+    const log = parseLearningLog(row.learningLog);
+    const checklist = Object.entries(log.checklist ?? {}).map(([id, entry]) => ({
+      id,
+      checked: entry.checked,
+    }));
+    const answers = Object.entries(log.answers)
+      .map(([id, entry]) => ({ id, text: entry.text.trim() }))
+      .filter((item) => item.text.length > 0);
+    if (checklist.length === 0 && answers.length === 0) return [];
+    const meta = chapterMeta.get(row.chapterId);
+    return [{
+      chapterId: row.chapterId,
+      chapterTitle: meta?.title ?? "Chapter",
+      moduleTitle: meta?.moduleTitle ?? "Course",
+      checklist,
+      answers,
+    }];
+  });
 }
 
 function readOpenQuestionPayload(payload: unknown): { text: string; url: string } {

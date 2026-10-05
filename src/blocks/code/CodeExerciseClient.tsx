@@ -14,6 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { SanitizedCodeConfig } from "./schema";
+import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
+import { playFeedback } from "@/lib/sound-feedback";
 
 type CheckResult = {
   isCorrect: boolean | null;
@@ -174,8 +176,9 @@ export function CodeExerciseClient({
   const [hintIndex, setHintIndex] = useState(-1);
 
   const hints = config.hints ?? [];
-  const hasAnswered = result !== null;
   const canRetry = result && !result.isCorrect && config.allowRetry;
+  const hasAnswered = result !== null;
+  const settled = hasAnswered && (result.isCorrect === true || config.allowRetry === false);
   const passed = result?.isCorrect === true;
   const filename = config.filename ?? "exercise.js";
   const language = config.language === "javascript" ? "JavaScript" : config.language;
@@ -209,8 +212,11 @@ export function CodeExerciseClient({
         throw new Error(body?.error ?? `Request failed (${res.status})`);
       }
       setResult(body);
+      if (body.isCorrect === true) playFeedback("success");
+      else if (body.isCorrect === false) playFeedback("error");
       router.refresh();
     } catch (err) {
+      playFeedback("error");
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setSubmitting(false);
@@ -226,7 +232,8 @@ export function CodeExerciseClient({
 
   return (
     <div
-      className="not-prose my-10 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm"
+      {...checkpointAttrs(id, settled)}
+      className="not-prose my-10 scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm"
       data-code-exercise
     >
       {/* Prompt header — matches quiz / checklist cards */}

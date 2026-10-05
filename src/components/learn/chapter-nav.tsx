@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChapterCompletionStrip } from "@/components/learn/mark-chapter-complete";
+import type { StreakMilestone } from "@/server/progress/streak";
 
 type NavChapter = {
   slug: string;
@@ -21,8 +22,13 @@ type ChapterNavProps = {
   canMarkComplete: boolean;
   checkpointsCompleted: number;
   checkpointsTotal: number;
+  nextHref?: string;
+  nextTitle?: string;
+  reflectionPending?: boolean;
   courseCompleted: number;
   courseTotal: number;
+  recap?: { checks: string; open: string; next: string };
+  streakMilestone?: StreakMilestone | null;
 };
 
 function lessonLabel(chapter: NavChapter) {
@@ -183,8 +189,13 @@ export function ChapterNav({
   canMarkComplete,
   checkpointsCompleted,
   checkpointsTotal,
+  nextHref,
+  nextTitle,
+  reflectionPending,
   courseCompleted,
   courseTotal,
+  recap,
+  streakMilestone,
 }: ChapterNavProps) {
   const hasBoth = Boolean(prev && next);
   const hasLessonNav = Boolean(prev || next);
@@ -199,8 +210,13 @@ export function ChapterNav({
             canMarkComplete={canMarkComplete}
             checkpointsCompleted={checkpointsCompleted}
             checkpointsTotal={checkpointsTotal}
+            nextHref={nextHref}
+            nextTitle={nextTitle}
+            reflectionPending={reflectionPending}
             courseCompleted={courseCompleted}
             courseTotal={courseTotal}
+            recap={recap}
+            streakMilestone={streakMilestone}
           />
         </div>
 

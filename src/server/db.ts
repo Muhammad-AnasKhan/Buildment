@@ -5,7 +5,7 @@ import { PrismaClient } from "@/generated/prisma/client";
 // see docs/08-data-model.mdx.
 // Bump this when the generated client gains models, so a long-lived `next dev`
 // process drops the previous client instead of calling methods that are missing.
-const PRISMA_CLIENT_VERSION = "study-sessions";
+const PRISMA_CLIENT_VERSION = "learner-notes";
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;

@@ -9,6 +9,8 @@ type LearnPanelShellProps = {
   children: ReactNode;
   className?: string;
   contentClassName?: string;
+  checkpointId?: string;
+  checkpointDone?: boolean;
   "aria-label"?: string;
 };
 
@@ -19,13 +21,17 @@ export function LearnPanelShell({
   children,
   className,
   contentClassName,
+  checkpointId,
+  checkpointDone = false,
   "aria-label": ariaLabel,
 }: LearnPanelShellProps) {
   const Icon = EYEBROW_ICONS[eyebrow];
 
   return (
     <section
-      className={cn("not-prose my-10", className)}
+      id={checkpointId ? `checkpoint-${checkpointId}` : undefined}
+      data-checkpoint={checkpointId ? (checkpointDone ? "done" : "open") : undefined}
+      className={cn("not-prose my-10", checkpointId && "scroll-mt-24", className)}
       aria-label={ariaLabel ?? title ?? eyebrow}
       data-learn-panel={eyebrow.toLowerCase().replace(/\s+/g, "-")}
     >

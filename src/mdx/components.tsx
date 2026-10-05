@@ -10,6 +10,7 @@ import { ProjectPreviewComponent } from "@/blocks/project-preview/Component";
 import { LearningObjectivesComponent } from "@/blocks/learning-objectives/Component";
 import { ChapterRecapComponent } from "@/blocks/chapter-recap/Component";
 import { MustReadComponent } from "@/blocks/must-read/Component";
+import { MandatoryReadCard } from "@/components/learn/mandatory-read-card";
 import { VideoComponent } from "@/blocks/video/Component";
 import { VisualWalkthroughComponent } from "@/blocks/visual-walkthrough/Component";
 import { VisualDiagramComponent } from "@/blocks/visual-diagram/Component";
@@ -41,6 +42,7 @@ import { GlossaryTerm } from "@/components/learn/glossary-term";
 import { cn } from "@/lib/utils";
 import { slugify } from "@/lib/mdx-headings";
 import { MdxCodeElement, MdxCodeFigure, MdxCodePre } from "@/mdx/code-block";
+import { HeadingNoteButton } from "@/components/learn/heading-note";
 
 const cellBorder = "border border-border";
 
@@ -61,6 +63,7 @@ export const mdxComponents: MDXComponents = {
   LearningObjectives: LearningObjectivesComponent,
   ChapterRecap: ChapterRecapComponent,
   MustRead: MustReadComponent,
+  MandatoryReadCard,
   Checklist,
   LearningLog,
   GlossaryTerm,
@@ -95,6 +98,7 @@ export const mdxComponents: MDXComponents = {
     const text = typeof children === "string" ? children : undefined;
     const id = text ? slugify(text) : undefined;
     return (
+      <>
       <h2
         id={id}
         className="mt-12 border-b border-border pb-2 text-xl font-semibold tracking-tight text-foreground sm:text-2xl"
@@ -102,12 +106,15 @@ export const mdxComponents: MDXComponents = {
       >
         {children}
       </h2>
+      {id ? <HeadingNoteButton headingId={id} /> : null}
+    </>
     );
   },
   h3: ({ children, ...props }: React.ComponentProps<"h3">) => {
     const text = typeof children === "string" ? children : undefined;
     const id = text ? slugify(text) : undefined;
     return (
+      <>
       <h3
         id={id}
         className="mt-8 text-lg font-semibold tracking-tight text-foreground"
@@ -115,6 +122,8 @@ export const mdxComponents: MDXComponents = {
       >
         {children}
       </h3>
+      {id ? <HeadingNoteButton headingId={id} /> : null}
+    </>
     );
   },
   table: (props: React.ComponentProps<"table">) => (

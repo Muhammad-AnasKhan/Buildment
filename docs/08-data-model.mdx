@@ -22,6 +22,7 @@ enum BlockType       { QUIZ TEST MUST_READ OPEN_QUESTION CODE }
 enum ResponseStatus  { DRAFT SUBMITTED AUTO_GRADED PENDING_REVIEW REVIEWED NEEDS_REVISION }
 enum ReviewVerdict   { APPROVED NEEDS_REVISION }
 enum StudySessionStatus { RUNNING PAUSED ENDED }
+enum WeeklyGoalKind { SESSIONS CHAPTERS }
 
 model User {
   id            String   @id @default(cuid())
@@ -29,6 +30,9 @@ model User {
   name          String?
   image         String?
   role          Role     @default(MENTEE)
+  weeklyGoalKind WeeklyGoalKind?
+  weeklyGoalTarget Int?
+  celebratedStreakMilestones Int[] @default([])
   createdAt     DateTime @default(now())
   coursesOwned  Course[]     @relation("CourseMentor")
   enrollments   Enrollment[]
@@ -213,6 +217,7 @@ model Review {
   score      Int?
   feedback   String        @db.Text
   verdict    ReviewVerdict
+  seenAt     DateTime?
   createdAt  DateTime      @default(now())
 }
 
@@ -230,6 +235,7 @@ model HelpThread {
   menteeId   String
   mentee     User             @relation("HelpThreadsAsked", fields: [menteeId], references: [id], onDelete: Cascade)
   status     HelpThreadStatus @default(OPEN)
+  menteeLastReadAt DateTime?
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
   resolvedAt DateTime?
@@ -250,6 +256,17 @@ model HelpMessage {
   createdAt DateTime   @default(now())
 
   @@index([threadId, createdAt])
+}
+
+model HeadingNote {
+  id        String   @id @default(cuid())
+  userId    String
+  chapterId String
+  headingId String
+  body      String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, chapterId, headingId])
 }
 
 // Mentor -> mentee assignment surface (phases/m7-assignment-and-polish.mdx).

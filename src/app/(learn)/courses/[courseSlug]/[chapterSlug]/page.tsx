@@ -6,6 +6,9 @@ import { QuizChapterWizard } from "@/components/learn/quiz-chapter-wizard";
 import { stripInteractiveBlockTags } from "@/lib/strip-interactive-block-tags";
 import { extractHeadings } from "@/lib/mdx-headings";
 import { learningLogToAnswers, learningLogToChecklist, parseLearningLog } from "@/lib/learning-log";
+import { milestoneReflectionBlocked } from "@/server/progress/reflection";
+import { chapterChecksLine, chapterNextLine, chapterOpenLine, latestChapterResponses } from "@/server/progress/chapter-recap";
+import { loadLearnerHabit } from "@/server/progress/learner-habit";
 import { ChapterReaderShell } from "@/components/learn/chapter-reader-shell";
 import { LockedChapterView } from "@/components/learn/locked-chapter";
 import { signOutAction } from "@/server/auth/actions";
@@ -32,6 +35,7 @@ export default async function ChapterReaderPage({
       id: true,
       slug: true,
       title: true,
+      projectGoal: true,
       sequential: true,
       modules: {
         orderBy: { order: "asc" },
@@ -80,7 +84,7 @@ export default async function ChapterReaderPage({
   const next = flatChapters[index + 1];
   const lessonLabel = `${String(chapter.moduleOrder).padStart(2, "0")}.${String(chapter.order).padStart(2, "0")}`;
 
-  const [content, currentProgress, gate, helpThreadRow, syllabus] = await Promise.all([
+  const [content, currentProgress, gate, helpThreadRow, syllabus, habit, chapterResponses, predictBlocks, headingNotes] = await Promise.all([
     prisma.chapter.findUnique({
       where: { id: chapter.id },
       select: { compiled: true, source: true },
@@ -92,6 +96,25 @@ export default async function ChapterReaderPage({
     loadCourseGate(course.id, enrollment.id, { bypassLocking }),
     loadChapterHelpThread(user.id, chapter.id),
     syllabusForEnrollment(course, enrollment.id, bypassLocking),
+    loadLearnerHabit(user.id),
+    prisma.response.findMany({
+      where: {
+        userId: user.id,
+        enrollmentId: enrollment.id,
+        status: { not: "DRAFT" },
+        block: { chapterId: chapter.id },
+      },
+      orderBy: { attempt: "desc" },
+      select: { blockId: true, status: true, isCorrect: true },
+    }),
+    prisma.block.findMany({
+      where: { chapterId: chapter.id, archivedAt: null, type: "PREDICT", required: true },
+      select: { id: true },
+    }),
+    prisma.headingNote.findMany({
+      where: { userId: user.id, chapterId: chapter.id },
+      select: { headingId: true, body: true },
+    }),
   ]);
   if (!content) notFound();
 
@@ -144,14 +167,33 @@ export default async function ChapterReaderPage({
   const checkpointsCompleted = currentProgress?.blocksCompleted ?? 0;
   const checkpointsTotal = chapter.blockCount;
   const remaining = checkpointsTotal - checkpointsCompleted;
-  const canMarkComplete = !chapterComplete && remaining <= 0;
+  const reflectionPending =
+    chapter.isMilestone &&
+    !chapterComplete &&
+    remaining <= 0 &&
+    milestoneReflectionBlocked(content.compiled ?? content.source, currentProgress?.learningLog);
+  const canMarkComplete = !chapterComplete && remaining <= 0 && !reflectionPending;
   const helpThread = serializeHelpThread(helpThreadRow);
+  const answeredIds = new Set(latestChapterResponses(chapterResponses).map((response) => response.blockId));
+  const predictGate = predictBlocks.length > 0;
+  const predictRevealed = !predictGate || predictBlocks.every((block) => answeredIds.has(block.id));
+  const notesByHeading = Object.fromEntries(headingNotes.map((note) => [note.headingId, note.body]));
+  await prisma.review.updateMany({
+    where: { seenAt: null, response: { userId: user.id, block: { chapterId: chapter.id } } },
+    data: { seenAt: new Date() },
+  });
+  const recap = {
+    checks: chapterChecksLine(checkpointsCompleted, checkpointsTotal),
+    open: chapterOpenLine(latestChapterResponses(chapterResponses)),
+    next: chapterNextLine(next?.title),
+  };
 
   return (
     <ChapterReaderShell
       courseId={course.id}
       courseSlug={course.slug}
       courseTitle={course.title}
+      projectGoal={course.projectGoal}
       lessonLabel={lessonLabel}
       chapterTitle={chapter.title}
       chapterSlug={chapter.slug}
@@ -166,6 +208,12 @@ export default async function ChapterReaderPage({
       checkpointsTotal={checkpointsTotal}
       isGateChapter={chapter.isMilestone}
       nextLocked={!bypassLocking && !chapterComplete && Boolean(next)}
+      reflectionPending={reflectionPending}
+      recap={recap}
+      streakMilestone={habit.streakMilestone}
+      headingNotes={notesByHeading}
+      predictGate={predictGate}
+      predictRevealed={predictRevealed}
       helpThread={helpThread}
       user={user}
       signOutAction={signOutAction}

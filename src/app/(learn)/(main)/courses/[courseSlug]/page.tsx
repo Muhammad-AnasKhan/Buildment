@@ -6,6 +6,7 @@ import { ForbiddenError, requireEnrolledMentee } from "@/server/auth/guards";
 import { CourseOverviewHero } from "@/components/learn/course-overview-hero";
 import { CourseSyllabus } from "@/components/learn/course-syllabus";
 import { CourseProjectShowcase } from "@/components/learn/course-project-showcase";
+import { LearnerBreadcrumb } from "@/components/learn/learner-breadcrumb";
 import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
 import {
   pickDefaultOpenModule,
@@ -104,13 +105,7 @@ export default async function CourseOverviewPage({
 
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-5 py-8 sm:px-6 sm:py-10">
-      <Link
-        href="/dashboard"
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" />
-        Back to dashboard
-      </Link>
+      <LearnerBreadcrumb courseSlug={course.slug} courseTitle={course.title} />
 
       <CourseOverviewHero
         difficulty={course.difficulty}

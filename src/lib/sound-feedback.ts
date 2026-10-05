@@ -1,15 +1,51 @@
 "use client";
 
+/** Semantic feedback events — blocks choose the event, not the asset path. */
+export type FeedbackKind =
+  | "tick"
+  | "check"
+  | "submit"
+  | "notification"
+  | "success"
+  | "celebration"
+  | "completion"
+  | "error";
+
+/** @deprecated Use FeedbackKind via playFeedbackSound mapping. */
 export type FeedbackSound = "success" | "failure" | "completion" | "partypop";
 
 /**
- * A synthesized acknowledgement triggered from a learner gesture.
- * Synthesizes crisp party-pop snaps, cheerful celebration chimes, and gentle
- * downward failure cues using the native Web Audio API — zero external audio files.
- * Learners can toggle or opt out via localStorage `buildment:sound=off`.
+ * One-line swap per sound: point any kind at a file under public/sounds/.
+ * Missing files or blocked playback fall back to Web Audio synthesis.
+ */
+export const FEEDBACK_AUDIO: Record<FeedbackKind, string | null> = {
+  tick: "/sounds/tick.wav",
+  check: "/sounds/check.wav",
+  submit: "/sounds/submit.wav",
+  notification: "/sounds/notification.wav",
+  success: "/sounds/success.wav",
+  celebration: "/sounds/celebration.wav",
+  completion: "/sounds/completion.wav",
+  error: "/sounds/error.wav",
+};
+
+const LEGACY_SOUND_MAP: Record<FeedbackSound, FeedbackKind> = {
+  success: "success",
+  partypop: "success",
+  failure: "error",
+  completion: "completion",
+};
+
+let lastPlay: { kind: FeedbackKind; at: number } | null = null;
+const DEDUPE_MS = 160;
+
+/**
+ * Learner gesture feedback. Synthesized by default; optional local files in
+ * FEEDBACK_AUDIO. Opt out with localStorage `buildment:sound=off`.
  */
 export function isSoundEnabled(): boolean {
   if (typeof window === "undefined") return false;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
   return localStorage.getItem("buildment:sound") !== "off";
 }
 
@@ -18,39 +54,59 @@ export function setSoundEnabled(enabled: boolean) {
   localStorage.setItem("buildment:sound", enabled ? "on" : "off");
 }
 
-const STORED_AUDIO_FILES: Record<FeedbackSound, string> = {
-  success: "/sounds/correct.mp3",
-  partypop: "/sounds/correct.mp3",
-  failure: "/sounds/wrong.mp3",
-  completion: "/sounds/correct.mp3",
-};
-
-export function playFeedbackSound(effect: FeedbackSound) {
+export function playFeedback(kind: FeedbackKind) {
   if (typeof window === "undefined" || !isSoundEnabled()) return;
 
-  // 1. Play stored audio file from public/sounds/
-  const fileUrl = STORED_AUDIO_FILES[effect];
+  const now = Date.now();
+  if (lastPlay?.kind === kind && now - lastPlay.at < DEDUPE_MS) return;
+  lastPlay = { kind, at: now };
+
+  const fileUrl = FEEDBACK_AUDIO[kind];
   if (fileUrl) {
     try {
       const audio = new Audio(fileUrl);
-      audio.volume = effect === "failure" ? 0.7 : 0.85;
+      audio.volume = volumeFor(kind);
       const playPromise = audio.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          // If browser restricts HTML5 Audio, fall back to synthesized AudioContext
-          playSynthesizedSound(effect);
-        });
+        playPromise.catch(() => playSynthesizedFeedback(kind));
         return;
       }
     } catch {
-      // Fallback
+      // fall through
     }
   }
 
-  playSynthesizedSound(effect);
+  playSynthesizedFeedback(kind);
 }
 
-function playSynthesizedSound(effect: FeedbackSound) {
+/** Backward-compatible entry for existing call sites. */
+export function playFeedbackSound(effect: FeedbackSound) {
+  playFeedback(LEGACY_SOUND_MAP[effect]);
+}
+
+function volumeFor(kind: FeedbackKind): number {
+  switch (kind) {
+    case "tick":
+      return 0.11;
+    case "check":
+      return 0.13;
+    case "submit":
+    case "notification":
+      return 0.14;
+    case "error":
+      return 0.16;
+    case "success":
+      return 0.15;
+    case "celebration":
+      return 0.17;
+    case "completion":
+      return 0.19;
+    default:
+      return 0.14;
+  }
+}
+
+function playSynthesizedFeedback(kind: FeedbackKind) {
   try {
     const AudioContextClass = window.AudioContext ?? window.webkitAudioContext;
     if (!AudioContextClass) return;
@@ -58,100 +114,89 @@ function playSynthesizedSound(effect: FeedbackSound) {
     void context.resume();
     const now = context.currentTime;
     const master = context.createGain();
-    master.gain.value = 0.75;
+    master.gain.value = volumeFor(kind);
     master.connect(context.destination);
 
-    // Party-pop physical snap: realistic acoustic "pop" transient
-    if (effect === "success" || effect === "partypop") {
-      // 1. Fast transient pitch-drop pop
-      const popOsc = context.createOscillator();
-      const popGain = context.createGain();
-      popOsc.type = "triangle";
-      popOsc.frequency.setValueAtTime(360, now);
-      popOsc.frequency.exponentialRampToValueAtTime(55, now + 0.055);
-      popGain.gain.setValueAtTime(0.35, now);
-      popGain.gain.exponentialRampToValueAtTime(0.001, now + 0.055);
-      popOsc.connect(popGain).connect(master);
-      popOsc.start(now);
-      popOsc.stop(now + 0.06);
-
-      // 2. High snap click
-      const snapOsc = context.createOscillator();
-      const snapGain = context.createGain();
-      snapOsc.type = "sine";
-      snapOsc.frequency.setValueAtTime(1400, now);
-      snapOsc.frequency.exponentialRampToValueAtTime(200, now + 0.025);
-      snapGain.gain.setValueAtTime(0.2, now);
-      snapGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.025);
-      snapOsc.connect(snapGain).connect(master);
-      snapOsc.start(now);
-      snapOsc.stop(now + 0.03);
+    if (kind === "tick") {
+      tactileClick(context, master, now, { peak: 0.04, length: 0.022 });
+    } else if (kind === "check") {
+      tactileClick(context, master, now, { peak: 0.045, length: 0.028 });
+    } else if (kind === "submit" || kind === "notification") {
+      tactileClick(context, master, now, { peak: 0.042, length: 0.032, hz: 520 });
+    } else if (kind === "error") {
+      tone(context, master, now, { hz: 220, at: 0, length: 0.08, type: "sine", peak: 0.03 });
+    } else if (kind === "success") {
+      tactileClick(context, master, now, { peak: 0.048, length: 0.035, hz: 640 });
+    } else if (kind === "celebration") {
+      tactileClick(context, master, now, { peak: 0.05, length: 0.04, hz: 580 });
+      tone(context, master, now, { hz: 720, at: 0.025, length: 0.05, type: "sine", peak: 0.028 });
+    } else if (kind === "completion") {
+      tactileClick(context, master, now, { peak: 0.052, length: 0.045, hz: 600 });
+      tone(context, master, now, { hz: 760, at: 0.03, length: 0.06, type: "sine", peak: 0.03 });
     }
-
-    const melody =
-      effect === "success" || effect === "partypop"
-        // Upbeat bright celebration arpeggio with high celebratory chime
-        ? [
-            { hz: 523.25, at: 0.04, length: 0.14 }, // C5
-            { hz: 659.25, at: 0.11, length: 0.16 }, // E5
-            { hz: 783.99, at: 0.18, length: 0.22 }, // G5
-            { hz: 1046.5, at: 0.26, length: 0.38 }, // C6 (high triumphant note)
-          ]
-        : effect === "completion"
-          ? [
-              { hz: 392.0, at: 0, length: 0.18 },
-              { hz: 523.25, at: 0.08, length: 0.2 },
-              { hz: 659.25, at: 0.16, length: 0.25 },
-              { hz: 783.99, at: 0.25, length: 0.48 },
-              { hz: 1046.5, at: 0.36, length: 0.6 },
-            ]
-          // Friendly gentle downward cue: soft boop, encouraging another try
-          : [
-              { hz: 349.23, at: 0, length: 0.14 }, // F4
-              { hz: 261.63, at: 0.11, length: 0.22 }, // C4
-            ];
-
-    melody.forEach(({ hz, at, length }, index) => {
-      const oscillator = context.createOscillator();
-      const gain = context.createGain();
-      const start = now + at;
-
-      oscillator.type = effect === "failure" ? "sine" : "triangle";
-      oscillator.frequency.setValueAtTime(hz, start);
-
-      if (effect === "failure") {
-        // Gentle downward pitch glide for the failure boop
-        oscillator.frequency.exponentialRampToValueAtTime(hz * 0.92, start + length);
-      }
-
-      gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(
-        effect === "failure" ? 0.045 : effect === "completion" ? 0.055 : 0.045,
-        start + 0.015
-      );
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + length);
-      oscillator.connect(gain).connect(master);
-      oscillator.start(start);
-      oscillator.stop(start + length + 0.02);
-
-      // Warm octave shimmer on high triumphant notes
-      if (effect !== "failure" && index >= melody.length - 2) {
-        const shimmer = context.createOscillator();
-        const shimmerGain = context.createGain();
-        shimmer.type = "sine";
-        shimmer.frequency.setValueAtTime(hz * 2, start + 0.02);
-        shimmerGain.gain.setValueAtTime(0.0001, start + 0.02);
-        shimmerGain.gain.exponentialRampToValueAtTime(0.015, start + 0.05);
-        shimmerGain.gain.exponentialRampToValueAtTime(0.0001, start + length);
-        shimmer.connect(shimmerGain).connect(master);
-        shimmer.start(start + 0.02);
-        shimmer.stop(start + length + 0.02);
-      }
-    });
 
     window.setTimeout(() => void context.close(), 1_500);
   } catch {
     // Sound is enhancement only.
+  }
+}
+
+function tactileClick(
+  context: AudioContext,
+  master: GainNode,
+  now: number,
+  opts: { peak: number; length: number; hz?: number },
+) {
+  const hz = opts.hz ?? 740;
+  const noise = context.createBufferSource();
+  const buffer = context.createBuffer(1, Math.ceil(context.sampleRate * opts.length), context.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) {
+    const t = i / data.length;
+    data[i] = (Math.random() * 2 - 1) * (1 - t) * (1 - t);
+  }
+  noise.buffer = buffer;
+  const filter = context.createBiquadFilter();
+  filter.type = "bandpass";
+  filter.frequency.value = hz;
+  filter.Q.value = 1.2;
+  const gain = context.createGain();
+  gain.gain.setValueAtTime(opts.peak, now);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + opts.length);
+  noise.connect(filter).connect(gain).connect(master);
+  noise.start(now);
+  noise.stop(now + opts.length + 0.01);
+}
+
+function tone(
+  context: AudioContext,
+  master: GainNode,
+  now: number,
+  opts: { hz: number; at: number; length: number; type: OscillatorType; peak: number; shimmer?: boolean },
+) {
+  const start = now + opts.at;
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  oscillator.type = opts.type;
+  oscillator.frequency.setValueAtTime(opts.hz, start);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(opts.peak, start + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + opts.length);
+  oscillator.connect(gain).connect(master);
+  oscillator.start(start);
+  oscillator.stop(start + opts.length + 0.02);
+
+  if (opts.shimmer) {
+    const shimmer = context.createOscillator();
+    const shimmerGain = context.createGain();
+    shimmer.type = "sine";
+    shimmer.frequency.setValueAtTime(opts.hz * 2, start + 0.02);
+    shimmerGain.gain.setValueAtTime(0.0001, start + 0.02);
+    shimmerGain.gain.exponentialRampToValueAtTime(opts.peak * 0.35, start + 0.05);
+    shimmerGain.gain.exponentialRampToValueAtTime(0.0001, start + opts.length);
+    shimmer.connect(shimmerGain).connect(master);
+    shimmer.start(start + 0.02);
+    shimmer.stop(start + opts.length + 0.02);
   }
 }
 

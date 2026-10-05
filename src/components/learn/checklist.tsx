@@ -13,6 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, ListChecks, PartyPopper } from "lucide-react";
 import { fireMiniConfetti } from "@/components/learn/mini-confetti";
+import { playFeedback } from "@/lib/sound-feedback";
 import { saveChecklistItem } from "@/server/actions/progress";
 
 export type ChecklistItemData = {
@@ -173,11 +174,17 @@ export function Checklist({
 
   const toggle = useCallback(
     (id: string, next: boolean) => {
+      if (next) {
+        const othersChecked = normalizedItems.filter(
+          (item) => item.id !== id && checkedMap[item.id]
+        ).length;
+        playFeedback(othersChecked === normalizedItems.length - 1 ? "celebration" : "tick");
+      }
       setCheckedMap((prev) => ({ ...prev, [id]: next }));
       if (!chapterId) return;
       void saveChecklistItem({ chapterId, itemId: id, checked: next });
     },
-    [chapterId]
+    [chapterId, checkedMap, normalizedItems]
   );
 
   const checkedCount = useMemo(

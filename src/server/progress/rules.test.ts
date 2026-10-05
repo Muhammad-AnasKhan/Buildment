@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   chapterProgressStatus,
+  checkpointSatisfied,
   flattenChapterIds,
   isCompletableBlock,
   isCompleteResponseStatus,
@@ -40,6 +41,25 @@ describe("isCompleteResponseStatus", () => {
     expect(isCompleteResponseStatus("PENDING_REVIEW")).toBe(true);
     expect(isCompleteResponseStatus("NEEDS_REVISION")).toBe(true);
     expect(isCompleteResponseStatus("DRAFT")).toBe(false);
+  });
+});
+
+describe("checkpointSatisfied", () => {
+  it("counts an open question once it is submitted", () => {
+    expect(checkpointSatisfied({ type: "OPEN_QUESTION", config: {}, status: "PENDING_REVIEW", isCorrect: null })).toBe(true);
+  });
+
+  it("keeps a wrong quiz open while retry is allowed", () => {
+    expect(checkpointSatisfied({ type: "QUIZ", config: { allowRetry: true }, status: "AUTO_GRADED", isCorrect: false })).toBe(false);
+    expect(checkpointSatisfied({ type: "PREDICT", config: {}, status: "AUTO_GRADED", isCorrect: false })).toBe(false);
+  });
+
+  it("counts a wrong code check when retry is off", () => {
+    expect(checkpointSatisfied({ type: "CODE", config: { allowRetry: false }, status: "AUTO_GRADED", isCorrect: false })).toBe(true);
+  });
+
+  it("counts a correct quiz", () => {
+    expect(checkpointSatisfied({ type: "QUIZ", config: { allowRetry: true }, status: "AUTO_GRADED", isCorrect: true })).toBe(true);
   });
 });
 
@@ -83,6 +103,18 @@ describe("chapterProgressStatus", () => {
         visited: true,
       })
     ).toBe("COMPLETED");
+  });
+
+  it("holds a finished checkpoint chapter while the module-gate reflection is open", () => {
+    expect(
+      chapterProgressStatus({
+        completableTotal: 1,
+        completableCompleted: 1,
+        markedComplete: false,
+        visited: true,
+        reflectionBlocked: true,
+      })
+    ).toBe("IN_PROGRESS");
   });
 
   it("does not treat a 0-block chapter as complete just because it was opened", () => {

@@ -31,7 +31,11 @@ export function ChapterStatusIcon({
 
 function ChapterMeta({ chapter }: { chapter: SyllabusChapter }) {
   if (chapter.locked) {
-    return <span className="shrink-0 text-xs text-neutral-400">Locked</span>;
+    return (
+      <span className="shrink-0 text-xs text-neutral-400">
+        {chapter.unlocksAfter ? `Unlocks after ${chapter.unlocksAfter}` : "Locked"}
+      </span>
+    );
   }
   if (chapter.blockCount > 0) {
     return (
@@ -45,7 +49,11 @@ function ChapterMeta({ chapter }: { chapter: SyllabusChapter }) {
 
 function SidebarChapterMeta({ chapter }: { chapter: SyllabusChapter }) {
   if (chapter.locked) {
-    return <span className="text-[11px] text-muted-foreground">Locked until the previous lesson is complete</span>;
+    return (
+      <span className="text-[11px] text-muted-foreground">
+        {chapter.unlocksAfter ? `Unlocks after ${chapter.unlocksAfter}` : "Locked until the previous lesson is complete"}
+      </span>
+    );
   }
   if (chapter.blockCount > 0) {
     const completed = chapter.blocksCompleted ?? 0;

@@ -6,6 +6,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { readerCard, readerCardHeader, readerEyebrow, readerTitle } from "@/components/learn/reader-theme";
+import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
+import { playFeedback } from "@/lib/sound-feedback";
 
 type MandatoryReadCardProps = {
   title: string;
@@ -30,6 +32,7 @@ export function MandatoryReadCard({
   const [read, setRead] = useState(initialRead);
 
   function toggle(checked: boolean) {
+    if (checked) playFeedback("check");
     setRead(checked);
     if (blockId) {
       void fetch(`/api/blocks/${blockId}/respond`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ complete: checked }) });
@@ -37,7 +40,10 @@ export function MandatoryReadCard({
   }
 
   return (
-    <div className={cn("not-prose my-8", readerCard)}>
+    <div
+      {...(blockId ? checkpointAttrs(blockId, read) : {})}
+      className={cn("not-prose my-8 scroll-mt-24", readerCard)}
+    >
       <div className={cn(readerCardHeader, "py-3")}>
         <p className={readerEyebrow}>
           Mandatory read

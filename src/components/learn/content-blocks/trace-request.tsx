@@ -5,6 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { LearnPanelShell } from "./learn-panel-shell";
+import { PredictRevealHold, usePredictReveal } from "@/components/learn/predict-reveal";
 import { TRACE_ACTOR_STYLES, type TraceActor } from "./types";
 
 export type TraceStepProps = {
@@ -51,8 +52,11 @@ type TraceRequestClientProps = {
 };
 
 export function TraceRequestClient({ title, steps }: TraceRequestClientProps) {
+  const { gate, revealed } = usePredictReveal();
+  const hidden = gate && !revealed;
+  const visibleSteps = hidden ? steps.slice(0, 1) : steps;
   const [active, setActive] = useState(0);
-  const total = steps.length;
+  const total = visibleSteps.length;
 
   const go = useCallback(
     (next: number) => {
@@ -72,7 +76,7 @@ export function TraceRequestClient({ title, steps }: TraceRequestClientProps) {
 
   if (total === 0) return null;
 
-  const current = steps[active]!;
+  const current = visibleSteps[active]!;
   const actor = current.actor ?? "API";
   const actorStyle = TRACE_ACTOR_STYLES[actor] ?? TRACE_ACTOR_STYLES.API;
 
@@ -108,14 +112,14 @@ export function TraceRequestClient({ title, steps }: TraceRequestClientProps) {
         </div>
 
         <ol className="space-y-0">
-          {steps.map((step, i) => {
+          {visibleSteps.map((step, i) => {
             const stepActor = step.actor ?? "API";
             const styles = TRACE_ACTOR_STYLES[stepActor] ?? TRACE_ACTOR_STYLES.API;
             const isActive = i === active;
 
             return (
               <li key={i} className="relative flex gap-4 pb-8 last:pb-0">
-                {i < steps.length - 1 ? (
+                {i < visibleSteps.length - 1 ? (
                   <div
                     className="absolute left-[11px] top-6 h-[calc(100%-8px)] w-px bg-border"
                     aria-hidden
@@ -168,6 +172,7 @@ export function TraceRequestClient({ title, steps }: TraceRequestClientProps) {
             );
           })}
         </ol>
+        {hidden ? <PredictRevealHold /> : null}
 
         <div className="sr-only">
           {current.label}. {current.detail ?? ""}

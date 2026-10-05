@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/server/db";
 import { utcDateOnly } from "@/server/progress/heartbeat";
+import { loadLearnerHabit } from "@/server/progress/learner-habit";
 import { buildMenteeDashboardViewModel } from "./dashboard-model";
 
 export async function loadMenteeDashboard(args: {
@@ -14,7 +15,7 @@ export async function loadMenteeDashboard(args: {
   since.setUTCDate(since.getUTCDate() - 6);
 
   const enrollments = await prisma.enrollment.findMany({
-    where: { userId: args.learnerId },
+    where: { userId: args.learnerId, status: { not: "DROPPED" } },
     orderBy: [{ lastActiveAt: "desc" }, { createdAt: "asc" }],
     select: {
       id: true,
@@ -74,7 +75,7 @@ export async function loadMenteeDashboard(args: {
   });
 
   const enrollmentIds = enrollments.map((enrollment) => enrollment.id);
-  const [dailyRows, sessions, helpThreads, openHelpCount, responses] = await Promise.all([
+  const [dailyRows, sessions, helpThreads, openHelpCount, responses, habit] = await Promise.all([
     enrollmentIds.length === 0
       ? Promise.resolve([])
       : prisma.dailyActivity.findMany({
@@ -106,6 +107,7 @@ export async function loadMenteeDashboard(args: {
       select: {
         id: true,
         status: true,
+        menteeLastReadAt: true,
         createdAt: true,
         updatedAt: true,
         course: { select: { slug: true, title: true } },
@@ -131,7 +133,7 @@ export async function loadMenteeDashboard(args: {
             attempt: true,
             status: true,
             submittedAt: true,
-            review: { select: { feedback: true, verdict: true, createdAt: true } },
+            review: { select: { feedback: true, verdict: true, createdAt: true, seenAt: true } },
             block: {
               select: {
                 chapter: {
@@ -146,6 +148,7 @@ export async function loadMenteeDashboard(args: {
             },
           },
         }),
+    loadLearnerHabit(args.learnerId),
   ]);
 
   const byDay = new Map<string, number>();
@@ -161,6 +164,7 @@ export async function loadMenteeDashboard(args: {
   });
 
   return buildMenteeDashboardViewModel({
+    learnerId: args.learnerId,
     learnerName: args.learnerName,
     enrollments,
     responses,
@@ -170,5 +174,6 @@ export async function loadMenteeDashboard(args: {
     todayKey: today.toISOString().slice(0, 10),
     openHelpCount,
     bypassLocking: args.bypassLocking,
+    habit,
   });
 }

@@ -1,12 +1,12 @@
 "use client";
 
-import { playFeedbackSound, type FeedbackSound } from "@/lib/sound-feedback";
+import { playFeedback, type FeedbackKind } from "@/lib/sound-feedback";
 
 export type PartyPopOptions = {
   anchor?: HTMLElement | null;
   particleCount?: number;
   withSound?: boolean;
-  soundEffect?: FeedbackSound;
+  soundEffect?: FeedbackKind;
   dualPoppers?: boolean;
 };
 
@@ -72,13 +72,21 @@ export function firePartyPops(options?: PartyPopOptions) {
 
   const {
     withSound = true,
+    soundEffect = "success",
     particleCount = 240,
     dualPoppers = true,
   } = options ?? {};
 
+  let feedbackPlayed = false;
+  const playPopSound = () => {
+    if (!withSound || feedbackPlayed) return;
+    feedbackPlayed = true;
+    playFeedback(soundEffect);
+  };
+
   // Check prefers-reduced-motion
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    if (withSound) playFeedbackSound("success");
+    playPopSound();
     return;
   }
 
@@ -161,9 +169,7 @@ export function firePartyPops(options?: PartyPopOptions) {
   const flashes: Array<{ x: number; y: number; radius: number; maxRadius: number; alpha: number }> = [];
 
   function spawnConfettiExplosion(originX: number, originY: number, baseAngle: number) {
-    if (withSound) {
-      playFeedbackSound("success");
-    }
+    playPopSound();
 
     flashes.push({
       x: originX,

@@ -2,9 +2,10 @@ import "server-only";
 import type { Prisma } from "@/generated/prisma/client";
 import {
   chapterProgressStatus,
+  checkpointSatisfied,
   isCompletableBlock,
-  isCompleteResponseStatus,
 } from "./rules";
+import { milestoneReflectionBlocked } from "./reflection";
 
 // Recomputes denormalized rollups after a new Response is written — see
 // docs/04-progress-and-gating.mdx and the append-only-Response invariant in
@@ -22,7 +23,7 @@ export async function recomputeChapterProgress(
 ) {
   const blocks = await tx.block.findMany({
     where: { chapterId, archivedAt: null },
-    select: { id: true, type: true, required: true, points: true, archivedAt: true },
+    select: { id: true, type: true, required: true, points: true, archivedAt: true, config: true },
   });
   const completable = blocks.filter((block) => isCompletableBlock(block));
   const blocksTotal = completable.length;
@@ -32,10 +33,16 @@ export async function recomputeChapterProgress(
     select: { userId: true },
   });
 
-  const existing = await tx.chapterProgress.findUnique({
-    where: { enrollmentId_chapterId: { enrollmentId, chapterId } },
-    select: { status: true, startedAt: true, completedAt: true },
-  });
+  const [existing, chapter] = await Promise.all([
+    tx.chapterProgress.findUnique({
+      where: { enrollmentId_chapterId: { enrollmentId, chapterId } },
+      select: { status: true, startedAt: true, completedAt: true, learningLog: true },
+    }),
+    tx.chapter.findUnique({
+      where: { id: chapterId },
+      select: { isMilestone: true, source: true, compiled: true },
+    }),
+  ]);
 
   let blocksCompleted = 0;
   let score = 0;
@@ -46,12 +53,24 @@ export async function recomputeChapterProgress(
       where: { blockId: block.id, userId: enrollment.userId },
       orderBy: { attempt: "desc" },
     });
-    if (!latest || !isCompleteResponseStatus(latest.status)) continue;
+    if (
+      !checkpointSatisfied({
+        type: block.type,
+        config: block.config,
+        status: latest?.status ?? null,
+        isCorrect: latest?.isCorrect ?? null,
+      })
+    ) {
+      continue;
+    }
     blocksCompleted += 1;
-    if (latest.score !== null) score += latest.score;
-    if (latest.maxScore !== null) maxScore += latest.maxScore;
+    if (latest?.score != null) score += latest.score;
+    if (latest?.maxScore != null) maxScore += latest.maxScore;
   }
 
+  const reflectionBlocked = Boolean(
+    chapter?.isMilestone && milestoneReflectionBlocked(chapter.compiled || chapter.source, existing?.learningLog)
+  );
   const markedComplete = blocksTotal === 0 && existing?.status === "COMPLETED";
   const visited = Boolean(existing?.startedAt) || blocksCompleted > 0;
   const status = chapterProgressStatus({
@@ -59,6 +78,7 @@ export async function recomputeChapterProgress(
     completableCompleted: blocksCompleted,
     markedComplete,
     visited,
+    reflectionBlocked,
   });
 
   const completedAt =

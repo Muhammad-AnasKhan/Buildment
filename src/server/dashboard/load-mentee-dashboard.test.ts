@@ -10,9 +10,11 @@ vi.mock("@/server/db", () => ({
   prisma: {
     enrollment: { findMany: enrollmentFindMany },
     helpThread: { findMany: helpFindMany, count: helpCount },
-    dailyActivity: { findMany: vi.fn() },
-    studySession: { findMany: vi.fn() },
+    dailyActivity: { findMany: vi.fn().mockResolvedValue([]) },
+    studySession: { findMany: vi.fn(), count: vi.fn().mockResolvedValue(0) },
     response: { findMany: vi.fn() },
+    user: { findUnique: vi.fn().mockResolvedValue(null) },
+    chapterProgress: { count: vi.fn().mockResolvedValue(0) },
   },
 }));
 
@@ -30,7 +32,7 @@ describe("loadMenteeDashboard learner scope", () => {
     await loadMenteeDashboard({ learnerId: "learner-a", learnerName: "A" });
 
     expect(enrollmentFindMany).toHaveBeenCalledWith(expect.objectContaining({
-      where: { userId: "learner-a" },
+      where: { userId: "learner-a", status: { not: "DROPPED" } },
     }));
     expect(helpFindMany).toHaveBeenCalledWith(expect.objectContaining({
       where: { menteeId: "learner-a" },

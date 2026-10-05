@@ -71,18 +71,18 @@ export function LockedChapterView({
       <ReaderShellFade visible={visible}>
         <header className="flex shrink-0 items-center gap-2 border-b border-border bg-background px-3 py-2 sm:px-4">
           <SidebarToggle collapsed={collapsed} onClick={() => setCollapsed(!collapsed)} />
-          <div className="flex min-w-0 flex-1 items-center gap-1.5 text-xs text-muted-foreground">
-            <Link
-              href={`/courses/${courseSlug}`}
-              className="truncate transition-colors hover:text-foreground"
-            >
+          <nav aria-label="Breadcrumb" className="flex min-w-0 flex-1 items-center gap-1.5 text-xs text-muted-foreground">
+            <Link href="/dashboard" className="shrink-0 transition-colors hover:text-foreground">
+              Dashboard
+            </Link>
+            <span aria-hidden className="shrink-0 text-border">/</span>
+            <Link href={`/courses/${courseSlug}`} className="truncate transition-colors hover:text-foreground">
               {courseTitle}
             </Link>
-            <span aria-hidden className="shrink-0 text-border">
-              /
-            </span>
-            <span className="shrink-0 font-mono tabular-nums text-muted-foreground">{lessonLabel}</span>
-          </div>
+            <span aria-hidden className="hidden shrink-0 text-border sm:inline">/</span>
+            <span className="hidden truncate text-foreground sm:inline">{chapterTitle}</span>
+            <span className="shrink-0 font-mono tabular-nums text-muted-foreground sm:hidden">{lessonLabel}</span>
+          </nav>
           <CheckpointHeaderLabel
             completed={checkpointsCompleted}
             total={checkpointsTotal}
@@ -109,8 +109,9 @@ export function LockedChapterView({
                 {chapterTitle} is locked
               </h1>
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                Finish the previous chapter so this one unlocks. Sequential chapters keep the project
-                spine in order — you are not missing content, you are just not there yet.
+                {previous
+                  ? `Finish ${previous.title} to unlock this lesson.`
+                  : "Finish the previous lesson to unlock this one."}
               </p>
               <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
                 {previous ? (

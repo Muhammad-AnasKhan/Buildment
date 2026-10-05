@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { formatJsonDisplay } from "@/lib/format-json";
+import { PredictRevealHold, usePredictReveal } from "@/components/learn/predict-reveal";
 import { cn } from "@/lib/utils";
 
 const METHOD_STYLES: Record<string, { badge: string; bar: string }> = {
@@ -123,6 +124,8 @@ export function ApiRequest({
   const hasBody = Boolean(body?.trim());
   const hasBearer = Boolean(bearer?.trim());
   const [tab, setTab] = useState<RequestTab>(hasBody ? "body" : "headers");
+  const { gate, revealed } = usePredictReveal();
+  const hideResponse = gate && !revealed;
 
   const headersText = [
     hasBearer ? `Authorization: Bearer ${bearer}` : null,
@@ -191,6 +194,10 @@ export function ApiRequest({
 
         {/* Response column */}
         <div className="flex min-h-[14rem] flex-col">
+          {hideResponse ? (
+            <PredictRevealHold />
+          ) : (
+          <>
           <div className="flex items-center justify-between gap-3 border-b border-border bg-muted/50 px-3 py-2 sm:px-4">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Response
@@ -209,6 +216,8 @@ export function ApiRequest({
             emptyLabel="Empty response body."
             className="border-l-0 lg:border-l-0"
           />
+          </>
+          )}
         </div>
       </div>
     </article>

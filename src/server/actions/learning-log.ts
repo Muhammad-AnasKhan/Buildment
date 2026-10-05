@@ -8,6 +8,7 @@ import {
   parseLearningLog,
   type LearningLogData,
 } from "@/lib/learning-log";
+import { recomputeChapterProgress } from "@/server/progress/compute";
 
 export type LearningLogSaveResult = { ok: true; savedAt: string } | { ok: false; error: string };
 
@@ -55,24 +56,27 @@ export async function saveLearningLogAnswers(input: {
     checklist: current.checklist,
   });
 
-  await prisma.chapterProgress.upsert({
-    where: {
-      enrollmentId_chapterId: {
+  await prisma.$transaction(async (tx) => {
+    await tx.chapterProgress.upsert({
+      where: {
+        enrollmentId_chapterId: {
+          enrollmentId: enrollment.id,
+          chapterId: chapter.id,
+        },
+      },
+      create: {
         enrollmentId: enrollment.id,
         chapterId: chapter.id,
+        status: "IN_PROGRESS",
+        startedAt: new Date(),
+        learningLog,
       },
-    },
-    create: {
-      enrollmentId: enrollment.id,
-      chapterId: chapter.id,
-      status: "IN_PROGRESS",
-      startedAt: new Date(),
-      learningLog,
-    },
-    update: {
-      learningLog,
-      ...(existing?.status === "NOT_STARTED" ? { status: "IN_PROGRESS", startedAt: new Date() } : {}),
-    },
+      update: {
+        learningLog,
+        ...(existing?.status === "NOT_STARTED" ? { status: "IN_PROGRESS", startedAt: new Date() } : {}),
+      },
+    });
+    await recomputeChapterProgress(tx, enrollment.id, chapter.id);
   });
 
   return { ok: true, savedAt };

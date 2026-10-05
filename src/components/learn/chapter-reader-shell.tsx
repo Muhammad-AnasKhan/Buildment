@@ -21,6 +21,9 @@ import { StudyClock } from "@/components/learn/study-time-chip";
 import { useStudySession } from "@/lib/use-study-session";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { HelpThreadView } from "@/components/help/help-types";
+import type { StreakMilestone } from "@/server/progress/streak";
+import { HeadingNotesProvider } from "@/components/learn/heading-note";
+import { PredictRevealProvider } from "@/components/learn/predict-reveal";
 
 function FocusProgressBar({ scrollRef }: { scrollRef: React.RefObject<HTMLElement | null> }) {
   const { progress } = useReadingProgress(scrollRef);
@@ -56,6 +59,13 @@ export function ChapterReaderShell({
   checkpointsTotal,
   isGateChapter = false,
   nextLocked,
+  reflectionPending = false,
+  projectGoal = null,
+  recap,
+  streakMilestone = null,
+  headingNotes = {},
+  predictGate = false,
+  predictRevealed = true,
   courseId,
   helpThread,
   user,
@@ -78,6 +88,13 @@ export function ChapterReaderShell({
   checkpointsTotal: number;
   isGateChapter?: boolean;
   nextLocked: boolean;
+  reflectionPending?: boolean;
+  projectGoal?: string | null;
+  recap?: { checks: string; open: string; next: string };
+  streakMilestone?: StreakMilestone | null;
+  headingNotes?: Record<string, string>;
+  predictGate?: boolean;
+  predictRevealed?: boolean;
   courseId: string;
   helpThread: HelpThreadView | null;
   modules: SyllabusModule[];
@@ -160,12 +177,6 @@ export function ChapterReaderShell({
   }, [chapterSlug]);
 
   useEffect(() => {
-    if (readerMode === "QUIZ") {
-      void enterFocusMode();
-    }
-  }, [chapterSlug, readerMode, enterFocusMode]);
-
-  useEffect(() => {
     if (!showSkeleton) return;
     const timer = window.setTimeout(() => setShowSkeleton(false), 280);
     return () => window.clearTimeout(timer);
@@ -173,6 +184,7 @@ export function ChapterReaderShell({
 
   return (
     <div
+      data-reader-mode={readerMode}
       className={cn("relative h-[100dvh] bg-background text-foreground", focusMode && "bg-background")}
     >
       {showSkeleton ? (
@@ -189,20 +201,23 @@ export function ChapterReaderShell({
                 collapsed={leftCollapsed}
                 onClick={() => setLeftCollapsed(!leftCollapsed)}
               />
-              <div className="flex min-w-0 flex-1 items-center gap-1.5 text-xs text-muted-foreground">
+              <nav aria-label="Breadcrumb" className="flex min-w-0 flex-1 items-center gap-1.5 text-xs text-muted-foreground">
+                <Link href="/dashboard" className="shrink-0 transition-colors hover:text-foreground">
+                  Dashboard
+                </Link>
+                <span aria-hidden className="shrink-0 text-border">/</span>
                 <Link
                   href={`/courses/${courseSlug}`}
                   className="truncate transition-colors hover:text-foreground"
                 >
                   {courseTitle}
                 </Link>
-                <span aria-hidden className="shrink-0 text-border">
-                  /
-                </span>
-                <span className="shrink-0 font-mono tabular-nums text-muted-foreground">
+                <span aria-hidden className="hidden shrink-0 text-border sm:inline">/</span>
+                <span className="hidden truncate text-foreground sm:inline">{chapterTitle}</span>
+                <span className="shrink-0 font-mono tabular-nums text-muted-foreground sm:hidden">
                   {lessonLabel}
                 </span>
-              </div>
+              </nav>
               <CheckpointHeaderLabel
                 completed={checkpointsCompleted}
                 total={checkpointsTotal}
@@ -283,13 +298,16 @@ export function ChapterReaderShell({
                   <h1 className="mt-1.5 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                     {chapterTitle}
                   </h1>
+                  {projectGoal ? (
+                    <p className="mt-3 text-sm text-muted-foreground">This lesson is part of {projectGoal}.</p>
+                  ) : null}
                   {isGateChapter ? (
                     <p className="mt-3 inline-flex items-center gap-2 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-2 text-sm text-foreground">
                       <span className="text-[11px] font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">
                         Module gate
                       </span>
                       <span className="text-muted-foreground">
-                        Complete the checklist and learning log before the next module unlocks.
+                        Check every item and answer the learning log. The next chapter stays locked until both are saved.
                       </span>
                     </p>
                   ) : null}
@@ -323,7 +341,11 @@ export function ChapterReaderShell({
                         "prose-table:block prose-table:max-w-full prose-table:overflow-x-auto prose-th:whitespace-nowrap prose-td:align-top prose-td:text-sm"
                       )}
                     >
-                      {children}
+                      <HeadingNotesProvider chapterId={chapterId} notes={headingNotes}>
+                        <PredictRevealProvider gate={predictGate} revealed={predictRevealed}>
+                          {children}
+                        </PredictRevealProvider>
+                      </HeadingNotesProvider>
                     </article>
                   </ChecklistProvider>
                 </LearningLogProvider>
@@ -338,8 +360,13 @@ export function ChapterReaderShell({
                   canMarkComplete={canMarkComplete}
                   checkpointsCompleted={checkpointsCompleted}
                   checkpointsTotal={checkpointsTotal}
+                  nextHref={next ? `/courses/${courseSlug}/${next.slug}` : undefined}
+                  nextTitle={next?.title}
+                  reflectionPending={reflectionPending}
                   courseCompleted={modules.reduce((total, module) => total + module.completedCount, 0)}
                   courseTotal={modules.reduce((total, module) => total + module.chapters.length, 0)}
+                  recap={recap}
+                  streakMilestone={streakMilestone}
                 />
               </div>
             </main>

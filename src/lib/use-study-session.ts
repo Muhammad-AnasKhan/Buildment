@@ -100,7 +100,13 @@ export function useStudySession(chapterId: string) {
       try {
         const res = await fetch(`/api/progress/session?chapterId=${encodeURIComponent(chapterId)}`);
         if (!res.ok || requestEpoch.current !== epoch) return;
-        apply((await res.json()) as SessionPayload);
+        const data = (await res.json()) as SessionPayload;
+        apply(data);
+        if ((data.status ?? "idle") === "idle" && tabIsVisible() && requestEpoch.current === epoch) {
+          const started = await postSession(chapterId, "start");
+          if (requestEpoch.current !== epoch) return;
+          apply(started);
+        }
       } catch {
         /* leave the clock idle */
       }

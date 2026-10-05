@@ -8,6 +8,8 @@ import type {
 import { decorateSyllabus } from "@/server/progress/syllabus";
 import { pickContinueTarget } from "@/server/progress/enrollment-syllabus";
 import { isCompletableBlock } from "@/server/progress/rules";
+import { mentorReplyUnread } from "@/server/progress/attention";
+import type { LearnerHabit } from "@/server/progress/streak";
 
 export type DashboardChapterInput = {
   id: string;
@@ -60,7 +62,7 @@ export type DashboardResponseInput = {
   attempt: number;
   status: ResponseStatus;
   submittedAt: Date;
-  review: { feedback: string; verdict: "APPROVED" | "NEEDS_REVISION"; createdAt: Date } | null;
+  review: { feedback: string; verdict: "APPROVED" | "NEEDS_REVISION"; createdAt: Date; seenAt?: Date | null } | null;
   block: { chapter: { id: string; slug: string; title: string; course: { slug: string; title: string } } };
 };
 
@@ -71,6 +73,7 @@ export type DashboardHelpInput = {
   updatedAt: Date;
   course: { slug: string; title: string };
   chapter: { slug: string; title: string } | null;
+  menteeLastReadAt?: Date | null;
   messages: Array<{ authorId: string; createdAt: Date }>;
 };
 
@@ -97,6 +100,7 @@ export type DashboardAction = {
   statusLabel: string;
   href: string;
   occurredAt: string | null;
+  unread?: boolean;
 };
 
 export type DashboardCourse = {
@@ -163,6 +167,7 @@ export type MenteeDashboardViewModel = {
     latest: { title: string; courseTitle: string; status: HelpThreadStatus; href: string; updatedAt: string } | null;
   };
   recentEvents: DashboardEvent[];
+  habit: LearnerHabit;
 };
 
 function iso(date: Date | null): string | null {
@@ -178,6 +183,7 @@ function latestResponses(responses: DashboardResponseInput[]) {
 }
 
 export function buildMenteeDashboardViewModel(args: {
+  learnerId?: string;
   learnerName: string;
   enrollments: DashboardEnrollmentInput[];
   responses: DashboardResponseInput[];
@@ -187,6 +193,7 @@ export function buildMenteeDashboardViewModel(args: {
   todayKey: string;
   openHelpCount?: number;
   bypassLocking?: boolean;
+  habit?: LearnerHabit;
 }): MenteeDashboardViewModel {
   const latest = latestResponses(args.responses);
   const latestByEnrollment = new Map<string, DashboardResponseInput[]>();
@@ -308,14 +315,32 @@ export function buildMenteeDashboardViewModel(args: {
     const chapterHref = `/courses/${response.block.chapter.course.slug}/${response.block.chapter.slug}`;
     if (response.status === "NEEDS_REVISION") {
       actions.push({ id: `revision-${response.id}`, kind: "REVISION", title: "Revise submission", context: `${response.block.chapter.course.title} · ${response.block.chapter.title}`, reason: response.review?.feedback ?? "Your mentor requested a new attempt.", statusLabel: "Needs revision", href: chapterHref, occurredAt: iso(response.review?.createdAt ?? response.submittedAt) });
-    } else if (response.review) {
-      actions.push({ id: `feedback-${response.id}`, kind: "FEEDBACK", title: "Read mentor feedback", context: `${response.block.chapter.course.title} · ${response.block.chapter.title}`, reason: response.review.feedback, statusLabel: response.review.verdict === "APPROVED" ? "Reviewed" : "Needs revision", href: chapterHref, occurredAt: iso(response.review.createdAt) });
+    } else if (response.review && !response.review.seenAt) {
+      actions.push({ id: `feedback-${response.id}`, kind: "FEEDBACK", title: "Read mentor feedback", context: `${response.block.chapter.course.title} · ${response.block.chapter.title}`, reason: response.review.feedback, statusLabel: "Unread", href: chapterHref, occurredAt: iso(response.review.createdAt), unread: true });
     } else if (response.status === "PENDING_REVIEW") {
       actions.push({ id: `pending-${response.id}`, kind: "PENDING_REVIEW", title: "Awaiting mentor review", context: `${response.block.chapter.course.title} · ${response.block.chapter.title}`, reason: "Your submission is queued for review. No resubmission is needed right now.", statusLabel: "Waiting", href: chapterHref, occurredAt: iso(response.submittedAt) });
     }
   }
-  for (const thread of args.helpThreads.filter((item) => item.status === "OPEN")) {
-    actions.push({ id: `help-${thread.id}`, kind: "HELP", title: "Help request open", context: `${thread.course.title}${thread.chapter ? ` · ${thread.chapter.title}` : ""}`, reason: "Your help note is still open.", statusLabel: "Open", href: `/my-questions/${thread.id}`, occurredAt: iso(thread.updatedAt) });
+  for (const thread of args.helpThreads) {
+    const unread = args.learnerId
+      ? mentorReplyUnread({
+          menteeId: args.learnerId,
+          menteeLastReadAt: thread.menteeLastReadAt ?? null,
+          latestMessage: thread.messages[0] ?? null,
+        })
+      : false;
+    if (thread.status !== "OPEN" && !unread) continue;
+    actions.push({
+      id: `help-${thread.id}`,
+      kind: "HELP",
+      title: unread ? "Mentor replied" : "Help request open",
+      context: `${thread.course.title}${thread.chapter ? ` · ${thread.chapter.title}` : ""}`,
+      reason: unread ? "A reply is waiting in your help notes." : "Your help note is still open.",
+      statusLabel: unread ? "Unread" : "Open",
+      href: `/my-questions/${thread.id}`,
+      occurredAt: iso(thread.messages[0]?.createdAt ?? thread.updatedAt),
+      unread,
+    });
   }
   for (const course of courses) {
     if (course.id === primaryCourse?.id) continue;
@@ -394,5 +419,11 @@ export function buildMenteeDashboardViewModel(args: {
       latest: latestHelp ? { title: latestHelp.chapter?.title ?? latestHelp.course.title, courseTitle: latestHelp.course.title, status: latestHelp.status, href: `/my-questions/${latestHelp.id}`, updatedAt: latestHelp.updatedAt.toISOString() } : null,
     },
     recentEvents: events.slice(0, 10),
+    habit: args.habit ?? {
+      streakCount: 0,
+      graceUsed: false,
+      streakMilestone: null,
+      weeklyGoal: null,
+    },
   };
 }

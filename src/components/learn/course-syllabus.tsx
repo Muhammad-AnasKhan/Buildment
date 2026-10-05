@@ -18,6 +18,7 @@ export type SyllabusChapter = {
   blockCount: number;
   blocksCompleted?: number;
   locked?: boolean;
+  unlocksAfter?: string | null;
 };
 
 export type SyllabusModule = {

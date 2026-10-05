@@ -7,13 +7,15 @@ import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
 import { ChapterLockedError, assertChapterUnlocked } from "@/server/progress/gate";
 import {
   ensureChapterStarted,
+  recomputeChapterProgress,
   repairEnrollmentProgress,
   recomputeEnrollmentRollup,
 } from "@/server/progress/compute";
 import {
+  checkpointSatisfied,
   isCompletableBlock,
-  isCompleteResponseStatus,
 } from "@/server/progress/rules";
+import { milestoneReflectionBlocked } from "@/server/progress/reflection";
 import { LearningLogDataSchema, parseLearningLog } from "@/lib/learning-log";
 
 export type ProgressActionResult = { ok: true } | { ok: false; error: string };
@@ -28,7 +30,7 @@ export async function markChapterComplete(input: {
 
   const chapter = await prisma.chapter.findUnique({
     where: { id: parsed.data.chapterId },
-    select: { id: true, courseId: true },
+    select: { id: true, courseId: true, isMilestone: true, source: true, compiled: true },
   });
   if (!chapter) return { ok: false, error: "Chapter not found." };
 
@@ -51,7 +53,7 @@ export async function markChapterComplete(input: {
 
   const blocks = await prisma.block.findMany({
     where: { chapterId: chapter.id, archivedAt: null },
-    select: { id: true, type: true, required: true, archivedAt: true },
+    select: { id: true, type: true, required: true, archivedAt: true, config: true },
   });
   const completable = blocks.filter((block) => isCompletableBlock(block));
 
@@ -59,10 +61,27 @@ export async function markChapterComplete(input: {
     const latest = await prisma.response.findFirst({
       where: { blockId: block.id, userId: enrollment.userId },
       orderBy: { attempt: "desc" },
-      select: { status: true },
+      select: { status: true, isCorrect: true },
     });
-    if (!latest || !isCompleteResponseStatus(latest.status)) {
-      return { ok: false, error: "Finish the checkpoints in this chapter first." };
+    if (
+      !checkpointSatisfied({
+        type: block.type,
+        config: block.config,
+        status: latest?.status ?? null,
+        isCorrect: latest?.isCorrect ?? null,
+      })
+    ) {
+      return { ok: false, error: "Finish the checkpoints in this chapter first. A scored check counts when the answer is correct, unless retry is turned off." };
+    }
+  }
+
+  if (chapter.isMilestone) {
+    const progress = await prisma.chapterProgress.findUnique({
+      where: { enrollmentId_chapterId: { enrollmentId: enrollment.id, chapterId: chapter.id } },
+      select: { learningLog: true },
+    });
+    if (milestoneReflectionBlocked(chapter.compiled || chapter.source, progress?.learningLog)) {
+      return { ok: false, error: "Check every checklist item and answer the learning log before this gate chapter can be completed." };
     }
   }
 
@@ -173,6 +192,7 @@ export async function saveChecklistItem(input: {
       },
     });
     await ensureChapterStarted(tx, enrollment.id, chapter.id);
+    await recomputeChapterProgress(tx, enrollment.id, chapter.id);
   });
 
   return { ok: true };

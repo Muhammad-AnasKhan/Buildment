@@ -100,6 +100,14 @@ export type StudySessionItem = {
   startedAt: string;
 };
 
+export type EvaluationReflection = {
+  chapterId: string;
+  chapterTitle: string;
+  moduleTitle: string;
+  checklist: Array<{ id: string; checked: boolean }>;
+  answers: Array<{ id: string; text: string }>;
+};
+
 export type MenteeEvaluation = {
   course: { id: string; slug: string; title: string };
   mentee: { id: string; name: string; email: string | null };
@@ -128,4 +136,5 @@ export type MenteeEvaluation = {
   timeline: FeedbackEvent[];
   help: HelpRequest[];
   sessions: StudySessionItem[];
+  reflections: EvaluationReflection[];
 };

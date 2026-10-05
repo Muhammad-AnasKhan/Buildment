@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { playFeedback } from "@/lib/sound-feedback";
 import { cn } from "@/lib/utils";
 
 type QuizResultSummary = { score: number; maxScore: number; questions: number };
@@ -99,6 +100,11 @@ export function QuizChapterSessionClient({
       const body = await response.json().catch(() => null);
       if (!response.ok) throw new Error(body?.error ?? `Request failed (${response.status})`);
       setResult({ score: body.score, maxScore: body.maxScore, questions: body.questions });
+      const max = body.maxScore ?? 0;
+      const ratio = max > 0 ? body.score / max : 0;
+      if (ratio >= 1) playFeedback("celebration");
+      else if (ratio >= 0.5) playFeedback("success");
+      else playFeedback("notification");
       setDraftAnswers({});
       for (const blockId of quizBlockIds) {
         try {
@@ -109,6 +115,7 @@ export function QuizChapterSessionClient({
       }
       router.refresh();
     } catch (error) {
+      playFeedback("error");
       setSubmitError(error instanceof Error ? error.message : "Could not submit the quiz.");
     } finally {
       setSubmitting(false);
@@ -121,7 +128,8 @@ export function QuizChapterSessionClient({
 
   return (
     <section
-      className="not-prose mb-10 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm"
+      id="quiz-chapter-session"
+      className="not-prose mb-10 scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm"
       aria-label="Quiz session"
     >
       <header className="border-b border-border bg-muted/40 px-5 py-5 sm:px-8">
