@@ -1,17 +1,42 @@
 import { prisma } from "@/server/db";
 import { LearningObjectivesConfigSchema } from "./schema";
+import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
-export async function LearningObjectivesComponent({ id }: { id: string }) {
-  const block = await prisma.block.findUnique({ where: { id } });
-  const parsed = block ? LearningObjectivesConfigSchema.safeParse(block.config) : null;
-  const config = parsed?.success ? parsed.data : null;
+export async function LearningObjectivesComponent({
+  id,
+  objectives,
+  items,
+}: {
+  id?: string;
+  objectives?: string[];
+  items?: string[];
+}) {
+  let list = objectives ?? items;
 
-  if (!block || block.type !== "LEARNING_OBJECTIVES" || !config) {
-    return (
-      <div className="not-prose my-6 rounded-md border border-dashed border-destructive/50 p-4 text-sm text-destructive">
-        Learning objectives block {id} is missing or misconfigured.
-      </div>
-    );
+  if ((!list || !Array.isArray(list) || list.length === 0) && id) {
+    try {
+      const block = await prisma.block.findUnique({ where: { id } });
+      const parsed = block ? LearningObjectivesConfigSchema.safeParse(block.config) : null;
+      if (parsed?.success) {
+        list = parsed.data.objectives;
+      }
+    } catch {
+      // Ignore DB lookup error in preview / pending states
+    }
+  }
+
+  if (!list || !Array.isArray(list) || list.length === 0) {
+    if (id) {
+      return (
+        <PendingBlockCard
+          typeLabel="Learning Objectives"
+          title="Objectives in preparation"
+          description="The learning goals for this chapter are currently being finalized."
+          blockId={id}
+        />
+      );
+    }
+    return null;
   }
 
   return (
@@ -23,7 +48,7 @@ export async function LearningObjectivesComponent({ id }: { id: string }) {
         <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-100">Learning objectives</h4>
       </div>
       <ul className="divide-y divide-amber-200/60 dark:divide-amber-400/15">
-        {config.objectives.map((objective, i) => (
+        {list.map((objective, i) => (
           <li key={i} className="flex items-start gap-3 px-5 py-3 text-sm text-foreground/85">
             <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-200 text-[11px] font-bold text-amber-800 dark:bg-amber-500/20 dark:text-amber-100">
               {i + 1}

@@ -6,25 +6,37 @@ import {
 } from "@mdxeditor/editor";
 import {
   BetweenHorizontalStart,
+  Bookmark,
+  BookMarked,
   BookOpenCheck,
   Braces,
   ChevronDown,
   CircleHelp,
+  Database,
+  FileCheck,
   FileCode2,
+  FileDiff,
+  Flag,
   FolderTree,
   GitCompareArrows,
   GitFork,
+  Globe,
   Heading2,
+  HelpCircle,
   Image,
+  Layers,
   ListChecks,
   Map,
   MessageSquareText,
+  Network,
   NotebookPen,
   Plus,
   Sparkles,
   SquareCode,
+  Target,
   TerminalSquare,
   Video,
+  Workflow,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -58,10 +70,52 @@ const STRUCTURE_ITEMS: InsertableItem[] = [
     icon: Heading2,
   },
   {
+    id: "learning-objectives",
+    label: "Learning objectives",
+    description: "Key outcomes and capabilities gained in this chapter",
+    icon: Target,
+  },
+  {
     id: "callout",
     label: "Callout",
     description: "Highlight a tip, warning, or key idea",
     icon: MessageSquareText,
+  },
+  {
+    id: "checkpoint-intro",
+    label: "Checkpoint intro",
+    description: "Orient learner before an assessment or hands-on task",
+    icon: Flag,
+  },
+  {
+    id: "faq",
+    label: "FAQ group",
+    description: "Collapsible questions and answers for common confusions",
+    icon: HelpCircle,
+  },
+  {
+    id: "big-word",
+    label: "Big word alert",
+    description: "Demystify complex technical jargon in plain English",
+    icon: BookMarked,
+  },
+  {
+    id: "must-read",
+    label: "Must read",
+    description: "Required external documentation or reference reading",
+    icon: Bookmark,
+  },
+  {
+    id: "interesting-read",
+    label: "Interesting read",
+    description: "Curiosity-sparking deep dive or engineering backstory",
+    icon: Sparkles,
+  },
+  {
+    id: "real-world",
+    label: "Real-world event",
+    description: "Industry case study, production outage, or historical lesson",
+    icon: Globe,
   },
   {
     id: "glossary",
@@ -87,6 +141,12 @@ const STRUCTURE_ITEMS: InsertableItem[] = [
     description: "Private notes on your decisions and discoveries",
     icon: NotebookPen,
   },
+  {
+    id: "chapter-recap",
+    label: "Chapter recap",
+    description: "Summary bullet points of accomplishments",
+    icon: FileCheck,
+  },
 ];
 
 const VISUAL_ITEMS: InsertableItem[] = [
@@ -109,6 +169,12 @@ const VISUAL_ITEMS: InsertableItem[] = [
     icon: Image,
   },
   {
+    id: "project-preview",
+    label: "Project preview",
+    description: "Showcase the final project features and tech stack",
+    icon: Layers,
+  },
+  {
     id: "roadmap",
     label: "Roadmap",
     description: "Show milestones, the current step, and the goal",
@@ -129,13 +195,19 @@ const VISUAL_ITEMS: InsertableItem[] = [
   {
     id: "state-machine",
     label: "State diagram",
-    description: "Explain lifecycle and transitions",
+    description: "Explain lifecycle and transitions with Mermaid",
     icon: BetweenHorizontalStart,
+  },
+  {
+    id: "entity-diagram",
+    label: "Entity ER diagram",
+    description: "Map database relationships with Mermaid",
+    icon: Database,
   },
   {
     id: "file-tree",
     label: "File tree",
-    description: "Orient learners inside a project",
+    description: "Orient learners inside a project repo",
     icon: FolderTree,
   },
   {
@@ -143,6 +215,24 @@ const VISUAL_ITEMS: InsertableItem[] = [
     label: "Terminal steps",
     description: "Show commands and their output",
     icon: TerminalSquare,
+  },
+  {
+    id: "api-request",
+    label: "API request panel",
+    description: "HTTP endpoints, methods, and contract details",
+    icon: Network,
+  },
+  {
+    id: "diff",
+    label: "Code diff",
+    description: "Before and after code modifications",
+    icon: FileDiff,
+  },
+  {
+    id: "trace-request",
+    label: "Request trace",
+    description: "Stepped request lifecycle and middleware trace",
+    icon: Workflow,
   },
 ];
 
@@ -189,7 +279,7 @@ export function InsertContentMenu() {
         Insert
         <ChevronDown className="size-3.5 opacity-60" aria-hidden />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-80">
+      <DropdownMenuContent align="start" className="w-80 max-h-[85vh] overflow-y-auto">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="px-2 py-1.5">Structure and activities</DropdownMenuLabel>
           {STRUCTURE_ITEMS.map((item) => (

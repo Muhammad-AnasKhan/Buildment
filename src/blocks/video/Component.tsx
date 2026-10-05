@@ -1,6 +1,7 @@
 import { prisma } from "@/server/db";
 import { Video } from "@/components/learn/video-embed";
 import { VideoConfigSchema } from "./schema";
+import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
 export async function VideoComponent({
   id,
@@ -26,10 +27,17 @@ export async function VideoComponent({
     return null;
   }
 
-  const block = await prisma.block.findUnique({ where: { id } });
+  const block = await prisma.block.findUnique({ where: { id } }).catch(() => null);
   const parsed = block ? VideoConfigSchema.safeParse(block.config) : null;
   if (!block || block.type !== "VIDEO" || !parsed?.success) {
-    return <div className="not-prose my-6 rounded-md border border-dashed border-destructive/50 p-4 text-sm text-destructive">Video block {id} is missing or misconfigured.</div>;
+    return (
+      <PendingBlockCard
+        typeLabel="Video Walkthrough"
+        title={title || "Video lecture in preparation"}
+        description="The video walkthrough resource is being linked or prepared."
+        blockId={id}
+      />
+    );
   }
   return <Video src={parsed.data.sourceUrl} title={parsed.data.title} caption={parsed.data.caption} transcriptUrl={parsed.data.transcriptUrl} />;
 }

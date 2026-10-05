@@ -1,17 +1,56 @@
 import { prisma } from "@/server/db";
-import { ProjectPreviewConfigSchema } from "./schema";
+import { ProjectPreviewConfigSchema, type ProjectPreviewConfig } from "./schema";
+import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
-export async function ProjectPreviewComponent({ id }: { id: string }) {
-  const block = await prisma.block.findUnique({ where: { id } });
-  const parsed = block ? ProjectPreviewConfigSchema.safeParse(block.config) : null;
-  const config = parsed?.success ? parsed.data : null;
+export async function ProjectPreviewComponent({
+  id,
+  title,
+  description,
+  features,
+  techStack,
+  imageUrl,
+}: {
+  id?: string;
+  title?: string;
+  description?: string;
+  features?: string[];
+  techStack?: string[];
+  imageUrl?: string;
+}) {
+  let config: ProjectPreviewConfig | null = null;
 
-  if (!block || block.type !== "PROJECT_PREVIEW" || !config) {
-    return (
-      <div className="not-prose my-6 rounded-md border border-dashed border-destructive/50 p-4 text-sm text-destructive">
-        Project preview block {id} is missing or misconfigured.
-      </div>
-    );
+  if (title) {
+    config = {
+      title,
+      description: description ?? "",
+      features: Array.isArray(features) ? features : [],
+      techStack: Array.isArray(techStack) ? techStack : [],
+      imageUrl,
+    };
+  } else if (id) {
+    try {
+      const block = await prisma.block.findUnique({ where: { id } });
+      const parsed = block ? ProjectPreviewConfigSchema.safeParse(block.config) : null;
+      if (parsed?.success) {
+        config = parsed.data;
+      }
+    } catch {
+      // Ignore DB lookup error in preview / pending states
+    }
+  }
+
+  if (!config) {
+    if (id || title) {
+      return (
+        <PendingBlockCard
+          typeLabel="Project Preview"
+          title={title || "Project preview in progress"}
+          description="The overview of what you will build in this module is being prepared."
+          blockId={id}
+        />
+      );
+    }
+    return null;
   }
 
   return (
@@ -22,26 +61,32 @@ export async function ProjectPreviewComponent({ id }: { id: string }) {
             What you'll build
           </div>
           <h3 className="mt-3 text-xl font-bold text-foreground sm:text-2xl">{config.title}</h3>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            {config.description}
-          </p>
+          {config.description ? (
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              {config.description}
+            </p>
+          ) : null}
         </div>
       </div>
 
       <div className="px-6 py-5 sm:px-8">
-        <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Key features</h4>
-        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-          {config.features.map((feature, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-foreground/90">
-              <svg className="mt-0.5 size-4 shrink-0 text-muted-foreground" viewBox="0 0 16 16" fill="none">
-                <path d="M3 8l3 3 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              <span>{feature}</span>
-            </li>
-          ))}
-        </ul>
+        {config.features && config.features.length > 0 ? (
+          <>
+            <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Key features</h4>
+            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+              {config.features.map((feature, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-foreground/90">
+                  <svg className="mt-0.5 size-4 shrink-0 text-muted-foreground" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8l3 3 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
 
-        {config.techStack && config.techStack.length > 0 && (
+        {config.techStack && config.techStack.length > 0 ? (
           <>
             <h4 className="mt-5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Tech stack</h4>
             <div className="mt-3 flex flex-wrap gap-1.5">
@@ -55,7 +100,7 @@ export async function ProjectPreviewComponent({ id }: { id: string }) {
               ))}
             </div>
           </>
-        )}
+        ) : null}
       </div>
     </div>
   );

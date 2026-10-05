@@ -1,6 +1,7 @@
 import { prisma } from "@/server/db";
 import { VisualDiagramConfigSchema } from "./schema";
 import { VisualDiagramClient } from "./VisualDiagramClient";
+import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
 export async function VisualDiagramComponent({
   id,
@@ -32,13 +33,19 @@ export async function VisualDiagramComponent({
     );
   }
 
-
   if (!id) return null;
 
-  const block = await prisma.block.findUnique({ where: { id } });
+  const block = await prisma.block.findUnique({ where: { id } }).catch(() => null);
   const parsed = block ? VisualDiagramConfigSchema.safeParse(block.config) : null;
   if (!block || block.type !== "VISUAL_DIAGRAM" || !parsed?.success) {
-    return <div className="not-prose my-6 rounded-md border border-dashed border-destructive/50 p-4 text-sm text-destructive">Visual diagram block {id} is missing or misconfigured.</div>;
+    return (
+      <PendingBlockCard
+        typeLabel="Visual Diagram"
+        title={title || "Diagram in preparation"}
+        description="The concept diagram for this topic is being prepared."
+        blockId={id}
+      />
+    );
   }
   return <VisualDiagramClient {...parsed.data} />;
 }

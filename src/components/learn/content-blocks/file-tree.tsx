@@ -22,8 +22,14 @@ function collectItems(children: ReactNode): FileTreeItemProps[] {
   Children.forEach(children, (child) => {
     if (!isValidElement(child)) return;
     const type = child.type as { displayName?: string; name?: string };
-    if (type?.displayName === "FileTreeItem" || type?.name === "FileTreeItem") {
-      items.push(child.props as FileTreeItemProps);
+    const props = child.props as Record<string, unknown>;
+    if (
+      type?.displayName === "FileTreeItem" ||
+      type?.name === "FileTreeItem" ||
+      child.type === FileTreeItem ||
+      Boolean(props?.path)
+    ) {
+      items.push(props as FileTreeItemProps);
     }
   });
   return items;

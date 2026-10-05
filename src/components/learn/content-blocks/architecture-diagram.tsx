@@ -6,6 +6,8 @@ import { ARCH_LAYER_STYLES, type ArchLayer } from "./types";
 
 export type ArchNodeProps = {
   layer: ArchLayer;
+  label?: string;
+  name?: string;
   children?: ReactNode;
 };
 
@@ -20,8 +22,19 @@ function collectNodes(children: ReactNode): ArchNodeProps[] {
   Children.forEach(children, (child) => {
     if (!isValidElement(child)) return;
     const type = child.type as { displayName?: string; name?: string };
-    if (type?.displayName === "ArchNode" || type?.name === "ArchNode") {
-      nodes.push(child.props as ArchNodeProps);
+    const props = child.props as ArchNodeProps;
+    if (
+      type?.displayName === "ArchNode" ||
+      type?.name === "ArchNode" ||
+      child.type === ArchNode ||
+      Boolean(props?.layer || props?.label || props?.name || props?.children)
+    ) {
+      nodes.push({
+        layer: props?.layer ?? "External",
+        label: props?.label,
+        name: props?.name,
+        children: props?.children,
+      });
     }
   });
   return nodes;
@@ -50,7 +63,7 @@ export function ArchitectureDiagram({ title, children }: ArchitectureDiagramProp
                 {node.layer}
               </p>
               <div className="mt-2 text-sm font-medium leading-relaxed text-foreground">
-                {node.children}
+                {node.children ?? node.label ?? node.name}
               </div>
             </div>
             {index < nodes.length - 1 ? (

@@ -8,10 +8,14 @@ type InterestingReadProps = {
   title: string;
   hook: string;
   readMinutes?: number;
+  body?: string;
+  content?: string;
   children?: ReactNode;
 };
 
-export function InterestingRead({ title, hook, readMinutes, children }: InterestingReadProps) {
+export function InterestingRead({ title, hook, readMinutes, body, content, children }: InterestingReadProps) {
+  const contentToRender = children ?? body ?? content;
+
   return (
     <div className={cn("not-prose my-8", readerCard)}>
       <div className={cn(readerCardHeader, "flex items-center justify-between gap-3 py-3")}>
@@ -28,9 +32,9 @@ export function InterestingRead({ title, hook, readMinutes, children }: Interest
       <div className="px-5 py-5 sm:px-6 sm:py-6">
         <h3 className="text-[15px] font-semibold leading-snug text-foreground sm:text-base">{title}</h3>
         <p className="mt-2 text-[15px] font-medium leading-relaxed text-foreground/90">{hook}</p>
-        {children ? (
+        {contentToRender ? (
           <div className="prose prose-neutral mt-4 max-w-none text-[15px] leading-relaxed prose-p:my-2">
-            {renderProseMarkdown(children)}
+            {renderProseMarkdown(contentToRender)}
           </div>
         ) : null}
       </div>

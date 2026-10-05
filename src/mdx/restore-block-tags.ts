@@ -1,4 +1,4 @@
-/** Undo HTML escaping on interactive block placeholders stored in chapter MDX. */
+/** Undo HTML escaping on interactive block placeholders and components stored in chapter MDX. */
 export function restoreInteractiveBlockTags(source: string): string {
   let out = source
     // ArticleBreak was a purely decorative wrapper. Old published snapshots
@@ -6,55 +6,74 @@ export function restoreInteractiveBlockTags(source: string): string {
     .replace(/<ArticleBreak\b[^>]*>/g, "")
     .replace(/<\/ArticleBreak>/g, "")
     .replace(
-      /&lt;(Quiz|OpenQuestion|CodeExercise|ChapterRecap|ProjectPreview|LearningObjectives|Predict|MustRead|VideoBlock|VisualWalkthrough|VisualDiagram|Roadmap)\s+id="([^"]+)"\s*\/>/g,
-      '<$1 id="$2" />'
-    )
-    .replace(
-      /&lt;(MermaidDiagram)\s+chart="([^"]+)"\s*\/>/g,
+      /&lt;(MermaidDiagram|StateMachine|EntityDiagram)\s+chart="([^"]+)"\s*(\/&gt;|\/>)/g,
       '<$1 chart="$2" />'
-    )
-    .replace(
-      /&lt;(MandatoryReadCard|BigWordAlert|RealWorldEvent|GlossaryTerm)\s+([^/]+)\s*\/>/g,
-      '<$1 $2 />'
-    )
-    .replace(
-      /&lt;(DiffBlock)\s+([\s\S]*?)\s*\/>/g,
-      '<$1 $2 />'
     );
 
-  const pairedTags = [
+  const blockNames = [
+    "Quiz",
+    "OpenQuestion",
+    "CodeExercise",
+    "ChapterRecap",
+    "ProjectPreview",
+    "LearningObjectives",
+    "Predict",
+    "MustRead",
+    "VideoBlock",
+    "VisualWalkthrough",
+    "VisualDiagram",
+    "Roadmap",
+    "Steps",
+    "Step",
+    "Checklist",
+    "LearningLog",
+    "BigWordAlert",
+    "RealWorldEvent",
+    "GlossaryTerm",
+    "DiffBlock",
+    "CheckpointIntro",
+    "PendingBlock",
+    "PendingBlockCard",
     "Callout",
     "InterestingRead",
     "ApiRequestPanel",
-    "ComparePanel",
-    "FileTree",
-    "TerminalBlock",
-    "ArchitectureDiagram",
-    "TraceRequest",
-  ] as const;
-
-  for (const tag of pairedTags) {
-    out = out.replace(
-      new RegExp(`&lt;(${tag})([\\s\\S]*?)>([\\s\\S]*?)&lt;\\/\\1>`, "g"),
-      "<$1$2>$3</$1>"
-    );
-  }
-
-  const voidTags = [
     "ApiRequest",
+    "ComparePanel",
     "CompareColumn",
+    "FileTree",
     "FileTreeItem",
+    "TerminalBlock",
     "TerminalLine",
+    "ArchitectureDiagram",
     "ArchNode",
+    "TraceRequest",
     "TraceStep",
-  ] as const;
+    "FaqGroup",
+    "FaqItem",
+  ].join("|");
 
-  for (const tag of voidTags) {
-    out = out.replace(
-      new RegExp(`&lt;(${tag})\\s+([\\s\\S]*?)\\s*\\/>`, "g"),
-      "<$1 $2 />"
-    );
-  }
+  // 1. Self-closing tags: &lt;Tag ... /&gt; or &lt;Tag ... />
+  // Restrict attributes to not cross another tag boundary (&lt; or <)
+  out = out.replace(
+    new RegExp(`&lt;(${blockNames})\\s+((?:(?!&lt;|<|\\/&gt;|\\/>)[\\s\\S])*?)\\s*(\\/&gt;|\\/>)`, "g"),
+    "<$1 $2 />"
+  );
+  out = out.replace(
+    new RegExp(`&lt;(${blockNames})\\s*(\\/&gt;|\\/>)`, "g"),
+    "<$1 />"
+  );
+
+  // 2. Closing tags: &lt;/Tag&gt; or &lt;/Tag>
+  out = out.replace(
+    new RegExp(`&lt;\\/(${blockNames})(&gt;|>)`, "g"),
+    "</$1>"
+  );
+
+  // 3. Opening tags for paired blocks: &lt;Tag ...&gt; or &lt;Tag ...>
+  out = out.replace(
+    new RegExp(`&lt;(${blockNames})((?:(?!&lt;|<|&gt;|>)[\\s\\S])*?)(&gt;|>)`, "g"),
+    "<$1$2>"
+  );
 
   return out;
 }

@@ -111,11 +111,11 @@ All routes scope by **`req.user.userId`** (or your JWT payload field) — never 
 
 **Populate** productId and storeId — avoid N+1 (same discipline as Ch 14). Subtotal optional for gate — sum price * quantity if included.
 
-<MandatoryReadCard
+<MustRead
   title="HTTP request methods — POST"
-  href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST"
+  url="https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods/POST"
   source="MDN"
-  summary="When POST creates resources vs updates state. Cart add/update/remove routes rely on correct verb semantics and idempotent design where appropriate."
+  description="When POST creates resources vs updates state. Cart add/update/remove routes rely on correct verb semantics and idempotent design where appropriate."
   readMinutes={6}
 />
 

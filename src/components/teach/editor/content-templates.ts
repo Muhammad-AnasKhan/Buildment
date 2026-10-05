@@ -14,10 +14,23 @@ export type ContentTemplateId =
   | "terminal"
   | "architecture"
   | "state-machine"
+  | "entity-diagram"
   | "video"
   | "walkthrough"
   | "diagram"
-  | "roadmap";
+  | "roadmap"
+  | "faq"
+  | "big-word"
+  | "must-read"
+  | "interesting-read"
+  | "real-world"
+  | "checkpoint-intro"
+  | "api-request"
+  | "diff"
+  | "trace-request"
+  | "project-preview"
+  | "learning-objectives"
+  | "chapter-recap";
 
 const withSpacing = (markdown: string) => `\n\n${markdown.trim()}\n\n`;
 
@@ -85,12 +98,8 @@ Use <GlossaryTerm term="tenant isolation" definition="Keeping one vendor's data 
     case "compare":
       return withSpacing(`
 <ComparePanel title="Compare the approaches">
-  <CompareColumn label="Approach A">
-    Explain when this approach is useful.
-  </CompareColumn>
-  <CompareColumn label="Approach B">
-    Explain the trade-off of this approach.
-  </CompareColumn>
+  <CompareColumn label="Approach A" content="Explain when this approach is useful." />
+  <CompareColumn label="Approach B" content="Explain the trade-off of this approach." />
 </ComparePanel>
 `);
     case "file-tree":
@@ -175,6 +184,124 @@ milestones:
     description: Polish, deploy, and explain your decisions.
     state: goal
 \`\`\`
+`);
+    case "entity-diagram":
+      return withSpacing(`
+<EntityDiagram
+  title="Data relationships"
+  chart={"erDiagram\\n  ORGANIZATION ||--o{ USER : contains\\n  USER ||--o{ POST : writes"}
+/>
+`);
+    case "faq":
+      return withSpacing(`
+<FaqGroup title="Common Questions">
+  <FaqItem question="Why do we use this pattern?" answer="Explain the reasoning, trade-offs, and why alternatives were not chosen." />
+  <FaqItem question="What should you check if something fails?" answer="Describe common debugging steps, log messages to check, or configuration traps." />
+</FaqGroup>
+`);
+    case "big-word":
+      return withSpacing(`
+<BigWordAlert
+  term="Idempotency"
+  plainEnglish="An operation can be applied multiple times without changing the result beyond the initial application."
+  whyItMatters="Retrying a failed payment or webhook won't accidentally charge the user twice."
+/>
+`);
+    case "must-read":
+      return withSpacing(`
+<MustRead
+  title="Essential Guide"
+  url="https://example.com/guide"
+  description="Read this before continuing to understand the core pattern and avoid common pitfalls."
+  source="Official Documentation"
+  readMinutes={8}
+/>
+`);
+    case "interesting-read":
+      return withSpacing(`
+<InterestingRead
+  title="How distributed systems handle consistency"
+  hook="Ever wondered why your bank balance takes seconds to update across multiple ATMs?"
+  readMinutes={5}
+>
+  Explain the background story, interesting engineering trivia, or deeper architectural context here.
+</InterestingRead>
+`);
+    case "real-world":
+      return withSpacing(`
+<RealWorldEvent
+  title="The Knight Capital Glitch"
+  when="August 2012"
+  summary="A deployment misconfiguration caused an obsolete test code path to trigger 4 million unintended trades in 45 minutes, losing $440 million."
+  lesson="Always use feature flags, automated rollout verification, and automated circuit breakers."
+/>
+`);
+    case "checkpoint-intro":
+      return withSpacing(`
+<CheckpointIntro title="Before you begin" content="This checkpoint verifies that your local environment is configured and ready for the build." />
+`);
+    case "api-request":
+      return withSpacing(`
+<ApiRequestPanel title="User Authentication Endpoints">
+  <ApiRequest
+    method="POST"
+    url="/api/v1/auth/login"
+    responseStatus={200}
+    description="Authenticate user with email and password."
+  />
+  <ApiRequest
+    method="GET"
+    url="/api/v1/users/me"
+    responseStatus={200}
+    description="Retrieve currently authenticated user profile."
+  />
+</ApiRequestPanel>
+`);
+    case "diff":
+      return withSpacing(`
+<DiffBlock
+  title="Update configuration"
+  language="typescript"
+  before="// Previous code\\nexport const timeout = 1000;"
+  after="// Updated code\\nexport const timeout = 5000;\\nexport const retries = 3;"
+/>
+`);
+    case "trace-request":
+      return withSpacing(`
+<TraceRequest title="Trace the checkout request">
+  <TraceStep actor="Client" label="Submit payment" detail="Browser sends payment intent token to server" />
+  <TraceStep actor="API" label="Validate payload" detail="Check request signature and payload schema" status={200} />
+  <TraceStep actor="Data" label="Save order" detail="Insert order into database within transaction" status={200} />
+</TraceRequest>
+`);
+    case "project-preview":
+      return withSpacing(`
+<ProjectPreview
+  title="Real-time Multi-Vendor Marketplace"
+  description="Build a production-grade marketplace with stripe payments and webhook handling."
+  features={["Multi-tenant schema", "Webhook idempotent processor", "Real-time order tracker"]}
+  techStack={["Next.js", "Prisma", "PostgreSQL", "Tailwind CSS"]}
+/>
+`);
+    case "learning-objectives":
+      return withSpacing(`
+<LearningObjectives
+  objectives={[
+    "Understand the core architecture principles",
+    "Implement the initial database schema with tenant isolation",
+    "Verify the setup using automated integration tests"
+  ]}
+/>
+`);
+    case "chapter-recap":
+      return withSpacing(`
+<ChapterRecap
+  points={[
+    "Configured the development environment and database connections.",
+    "Established tenant boundaries in database models.",
+    "Verified the baseline health-check endpoint."
+  ]}
+/>
 `);
   }
 }

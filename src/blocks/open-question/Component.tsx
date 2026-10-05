@@ -4,64 +4,127 @@ import { sanitizeBlockConfig } from "@/mdx/sanitize";
 import { OpenQuestionConfigSchema, type SanitizedOpenQuestionConfig } from "./schema";
 import { getOpenQuestionGroupPosition } from "./group-position";
 import { OpenQuestionClient, type OpenQuestionInitialState } from "./OpenQuestionClient";
+import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
-// Registered in the MDX component map as <OpenQuestion id="...">. Server
-// component for the same reason as the Quiz block — see quiz/Component.tsx.
-export async function OpenQuestionComponent({ id }: { id: string }) {
-  const block = await prisma.block.findUnique({ where: { id } });
-  const parsed = block ? OpenQuestionConfigSchema.safeParse(block.config) : null;
-  if (!block || block.type !== "OPEN_QUESTION" || !parsed?.success) {
+export async function OpenQuestionComponent({
+  id,
+  prompt,
+  minWords = 0,
+  maxWords,
+  sampleAnswer,
+  allowSpeechInput = true,
+  speechPrimary = false,
+  submissionMode = "text",
+  allowUrl = false,
+  urlLabel,
+  urlRequired = false,
+  urlHint,
+}: {
+  id?: string;
+  prompt?: string;
+  minWords?: number;
+  maxWords?: number;
+  sampleAnswer?: string;
+  allowSpeechInput?: boolean;
+  speechPrimary?: boolean;
+  submissionMode?: "text" | "url" | "url_required" | "article" | "video_demo";
+  allowUrl?: boolean;
+  urlLabel?: string;
+  urlRequired?: boolean;
+  urlHint?: string;
+}) {
+  // Direct prop authoring fallback
+  if (prompt) {
+    const clientConfig: SanitizedOpenQuestionConfig = {
+      prompt,
+      minWords,
+      maxWords,
+      allowSpeechInput,
+      speechPrimary,
+      submissionMode,
+      allowUrl,
+      urlLabel,
+      urlRequired,
+      urlHint,
+    };
+
     return (
-      <div className="my-6 rounded-md border border-dashed border-destructive/50 p-4 text-sm text-destructive">
-        Open question block {id} is missing or misconfigured.
-      </div>
+      <OpenQuestionClient
+        id={id || "preview-open-question"}
+        config={clientConfig}
+        initialState={null}
+        groupPosition="single"
+        questionIndex={0}
+        questionTotal={1}
+      />
     );
   }
 
-  const chapterBlocks = await prisma.block.findMany({
-    where: { chapterId: block.chapterId, archivedAt: null },
-    orderBy: { order: "asc" },
-    select: { id: true, type: true },
-  });
+  if (id) {
+    try {
+      const block = await prisma.block.findUnique({ where: { id } });
+      const parsed = block ? OpenQuestionConfigSchema.safeParse(block.config) : null;
+      if (block && block.type === "OPEN_QUESTION" && parsed?.success) {
+        const chapterBlocks = await prisma.block.findMany({
+          where: { chapterId: block.chapterId, archivedAt: null },
+          orderBy: { order: "asc" },
+          select: { id: true, type: true },
+        });
 
-  const { position, index, total } = getOpenQuestionGroupPosition(chapterBlocks, id);
+        const { position, index, total } = getOpenQuestionGroupPosition(chapterBlocks, id);
+        const config = parsed.data;
+        const sanitized = sanitizeBlockConfig<typeof config, SanitizedOpenQuestionConfig>(config);
 
-  const config = parsed.data;
-  const sanitized = sanitizeBlockConfig<typeof config, SanitizedOpenQuestionConfig>(config);
+        const user = await getSessionUser();
+        let initialState: OpenQuestionInitialState | null = null;
+        if (user) {
+          const latest = await prisma.response.findFirst({
+            where: { blockId: id, userId: user.id },
+            orderBy: { attempt: "desc" },
+            include: { review: { select: { feedback: true, verdict: true } } },
+          });
+          if (latest && latest.status !== "DRAFT") {
+            const payload = latest.payload as { text?: string; url?: string } | null;
+            const text = typeof payload?.text === "string" ? payload.text : "";
+            const url = typeof payload?.url === "string" ? payload.url : null;
+            initialState = {
+              status: latest.status,
+              attempt: latest.attempt,
+              text,
+              url,
+              feedback: latest.review?.feedback ?? null,
+              verdict: latest.review?.verdict ?? null,
+            };
+          }
+        }
 
-  // Restore the mentee's prior attempt so submissions survive reloads and the
-  // needs-revision loop (docs/05-review-queue.mdx) can show mentor feedback.
-  const user = await getSessionUser();
-  let initialState: OpenQuestionInitialState | null = null;
-  if (user) {
-    const latest = await prisma.response.findFirst({
-      where: { blockId: id, userId: user.id },
-      orderBy: { attempt: "desc" },
-      include: { review: { select: { feedback: true, verdict: true } } },
-    });
-    if (latest && latest.status !== "DRAFT") {
-      const payload = latest.payload as { text?: string; url?: string } | null;
-      const text = typeof payload?.text === "string" ? payload.text : "";
-      const url = typeof payload?.url === "string" ? payload.url : null;
-      initialState = {
-        status: latest.status,
-        attempt: latest.attempt,
-        text,
-        url,
-        feedback: latest.review?.feedback ?? null,
-        verdict: latest.review?.verdict ?? null,
-      };
+        return (
+          <OpenQuestionClient
+            id={id}
+            config={sanitized}
+            initialState={initialState}
+            groupPosition={position}
+            questionIndex={index}
+            questionTotal={total}
+          />
+        );
+      }
+    } catch {
+      // Ignore DB lookup error in preview / pending states
     }
   }
 
-  return (
-    <OpenQuestionClient
-      id={id}
-      config={sanitized}
-      groupPosition={position}
-      questionIndex={index}
-      questionTotal={total}
-      initialState={initialState}
-    />
-  );
+  // Graceful pending state
+  if (id || prompt) {
+    return (
+      <PendingBlockCard
+        typeLabel="Reflective Question"
+        title={prompt || "Open question checkpoint in progress"}
+        description="Prompt instructions and reflection guidelines are being prepared for this section."
+        blockId={id}
+      />
+    );
+  }
+
+  return null;
 }

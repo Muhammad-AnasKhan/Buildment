@@ -1,5 +1,5 @@
 /**
- * Inject BigWordAlert, MandatoryReadCard, InterestingRead, and RealWorldEvent
+ * Inject BigWordAlert, MustRead, InterestingRead, and RealWorldEvent
  * into course import markdown at contextual anchors (not stacked at the top).
  *
  * Run: npx tsx scripts/enrich-course-blocks.ts
@@ -48,10 +48,10 @@ function bigWordMdx(w: BigWord): string {
 function mandatoryMdx(r: MandatoryRead): string {
   const sourceLine = r.source ? `\n  source="${escapeAttr(r.source)}"` : "";
   const minutes = r.readMinutes ?? 8;
-  return `<MandatoryReadCard
+  return `<MustRead
   title="${escapeAttr(r.title)}"
-  href="${escapeAttr(r.href)}"${sourceLine}
-  summary="${escapeAttr(r.summary)}"
+  url="${escapeAttr(r.href)}"${sourceLine}
+  description="${escapeAttr(r.summary)}"
   readMinutes={${minutes}}
 />`;
 }
@@ -108,7 +108,7 @@ function hashPick<T>(seed: string, arr: T[], offset = 0): T {
 export function stripEnrichmentBlocks(body: string): string {
   let result = body;
   result = result.replace(/<BigWordAlert[\s\S]*?\/>/g, "");
-  result = result.replace(/<MandatoryReadCard[\s\S]*?\/>/g, "");
+  result = result.replace(/<(MandatoryReadCard|MustRead)[\s\S]*?\/>/g, "");
   result = result.replace(/<RealWorldEvent[\s\S]*?\/>/g, "");
   result = result.replace(/<InterestingRead[\s\S]*?<\/InterestingRead>/g, "");
   result = result.replace(/<ArticleBreak\b[^>]*>\s*([\s\S]*?)\s*<\/ArticleBreak>/g, "$1");
