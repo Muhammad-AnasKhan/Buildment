@@ -40,11 +40,12 @@ const CALLOUT_STYLES = {
 type CalloutProps = {
   type?: keyof typeof CALLOUT_STYLES;
   title?: string;
-  children: ReactNode;
+  content?: string;
+  children?: ReactNode;
 };
 
-export function Callout({ type = "info", title, children }: CalloutProps) {
-  const style = CALLOUT_STYLES[type];
+export function Callout({ type = "info", title, content, children }: CalloutProps) {
+  const style = (type && CALLOUT_STYLES[type]) ? CALLOUT_STYLES[type] : CALLOUT_STYLES.info;
   const Icon = style.Icon;
   const heading = title ?? style.label;
 
@@ -70,7 +71,7 @@ export function Callout({ type = "info", title, children }: CalloutProps) {
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold tracking-tight text-foreground">{heading}</p>
           <div className="mt-2 text-sm leading-relaxed text-foreground/85 [&_p]:mt-0 [&_p+p]:mt-3 [&_strong]:font-semibold [&_strong]:text-foreground">
-            {children}
+            {children ?? content}
           </div>
         </div>
       </div>

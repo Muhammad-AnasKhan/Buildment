@@ -156,17 +156,51 @@ function parseJsxStringArray(source: string, attr: string): string[] | undefined
 
 /** Inline presentation JSX -> registered blocks with stable id placeholders. */
 function transformPresentationBlocks(body: string, pushBlock: (b: PendingBlock) => string): string {
-  return body.replace(/<(ChapterRecap|ProjectPreview|LearningObjectives|MandatoryReadCard)([\s\S]*?)\/>/g, (full, tagName: string, attrs: string) => {
+  return body.replace(/<(ChapterRecap|ProjectPreview|LearningObjectives|MustRead|VideoBlock)([\s\S]*?)\/>/g, (full, tagName: string, attrs: string) => {
     if (/\bid=/.test(attrs)) return full;
 
     const pseudo = `<X${attrs}/>`;
 
-    if (tagName === "MandatoryReadCard") {
+    if (tagName === "MustRead") {
       const title = parseJsxStringAttr(pseudo, "title");
-      const url = parseJsxStringAttr(pseudo, "href") ?? parseJsxStringAttr(pseudo, "url");
-      const description = parseJsxStringAttr(pseudo, "summary") ?? parseJsxStringAttr(pseudo, "description");
+      const url = parseJsxStringAttr(pseudo, "url") ?? parseJsxStringAttr(pseudo, "href");
+      const description = parseJsxStringAttr(pseudo, "description") ?? parseJsxStringAttr(pseudo, "summary");
+      const source = parseJsxStringAttr(pseudo, "source");
+      const readMinutesStr = parseJsxStringAttr(pseudo, "readMinutes");
+      const readMinutes = readMinutesStr ? Number(readMinutesStr) : undefined;
       if (!title || !url || !description) return full;
-      return pushBlock({ id: ulid(), type: "MUST_READ", required: true, config: { title, url, description, completionRule: "confirm_read" } });
+      return pushBlock({
+        id: ulid(),
+        type: "MUST_READ",
+        required: true,
+        config: {
+          title,
+          url,
+          description,
+          ...(source ? { source } : {}),
+          ...(readMinutes ? { readMinutes } : {}),
+          completionRule: "confirm_read",
+        },
+      });
+    }
+
+    if (tagName === "VideoBlock") {
+      const title = parseJsxStringAttr(pseudo, "title");
+      const sourceUrl = parseJsxStringAttr(pseudo, "sourceUrl") ?? parseJsxStringAttr(pseudo, "src");
+      const caption = parseJsxStringAttr(pseudo, "caption");
+      const transcriptUrl = parseJsxStringAttr(pseudo, "transcriptUrl");
+      if (!title || !sourceUrl) return full;
+      return pushBlock({
+        id: ulid(),
+        type: "VIDEO",
+        required: false,
+        config: {
+          title,
+          sourceUrl,
+          ...(caption ? { caption } : {}),
+          ...(transcriptUrl ? { transcriptUrl } : {}),
+        },
+      });
     }
 
     if (tagName === "LearningObjectives") {
@@ -333,7 +367,7 @@ function stripFocusChapterEnrichment(body: string): string {
   return body
     .replace(/<BigWordAlert[\s\S]*?\/>/g, "")
     .replace(/<RealWorldEvent[\s\S]*?\/>/g, "")
-    .replace(/<MandatoryReadCard[\s\S]*?\/>/g, "")
+    .replace(/<MustRead[\s\S]*?\/>/g, "")
     .replace(/<InterestingRead[\s\S]*?<\/InterestingRead>/g, "")
     .replace(/<ChapterRecap[\s\S]*?\/>/g, "")
     .replace(/\n{3,}/g, "\n\n")
@@ -386,7 +420,7 @@ function escapeMdxProse(body: string): string {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });
-  withMarkers = withMarkers.replace(/<MandatoryReadCard[\s\S]*?\/>/g, (tag) => {
+  withMarkers = withMarkers.replace(/<MustRead[\s\S]*?\/>/g, (tag) => {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });
@@ -428,7 +462,7 @@ function escapeMdxProse(body: string): string {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });
-  withMarkers = withMarkers.replace(/<(Quiz|OpenQuestion|CodeExercise|ChapterRecap|ProjectPreview|LearningObjectives|Predict)\s+id="[^"]+"\s*\/>/g, (tag) => {
+  withMarkers = withMarkers.replace(/<(Quiz|OpenQuestion|CodeExercise|ChapterRecap|ProjectPreview|LearningObjectives|Predict|MustRead|VideoBlock|VisualWalkthrough|VisualDiagram|Roadmap|Steps)\s+id="[^"]+"\s*\/>/g, (tag) => {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });

@@ -7,6 +7,8 @@ export type TerminalLineType = "prompt" | "output" | "error";
 
 export type TerminalLineProps = {
   type?: TerminalLineType;
+  content?: string;
+  command?: string;
   children?: ReactNode;
 };
 
@@ -21,8 +23,14 @@ function collectLines(children: ReactNode): TerminalLineProps[] {
   Children.forEach(children, (child) => {
     if (!isValidElement(child)) return;
     const type = child.type as { displayName?: string; name?: string };
-    if (type?.displayName === "TerminalLine" || type?.name === "TerminalLine") {
-      lines.push(child.props as TerminalLineProps);
+    const props = child.props as TerminalLineProps;
+    if (
+      type?.displayName === "TerminalLine" ||
+      type?.name === "TerminalLine" ||
+      child.type === TerminalLine ||
+      Boolean(props?.content || props?.command || props?.children)
+    ) {
+      lines.push(props);
     }
   });
   return lines;
@@ -58,7 +66,7 @@ export function TerminalBlock({ title, cwd, children }: TerminalBlockProps) {
               )}
             >
               {line.type === "prompt" ? "$ " : line.type === "error" ? "✗ " : ""}
-              {line.children}
+              {line.children ?? line.content ?? line.command}
             </div>
           ))}
         </pre>

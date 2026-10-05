@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Clock3, Link2, PenLine, RotateCcw, SendHorizontal } from "lucide-react";
+import { CheckCircle2, Clock3, Link2, PenLine, RotateCcw, SendHorizontal, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { parseSafeSubmissionUrl } from "@/lib/safe-submission-url";
 import { AnswerTextareaWithMic } from "@/components/learn/answer-textarea-with-mic";
 import { readerBlockGrouped, readerBlockInner } from "@/components/learn/reader-block-styles";
+import { firePartyPops } from "@/components/learn/party-pops";
+import { playFeedbackSound } from "@/lib/sound-feedback";
 import type { OpenQuestionGroupPosition } from "./group-position";
 import type { SanitizedOpenQuestionConfig } from "./schema";
 import { openQuestionUrlPresentation, validateOpenQuestionPayload } from "./schema";
@@ -39,6 +41,7 @@ export function OpenQuestionClient({
 }) {
   const needsRevision = initialState?.status === "NEEDS_REVISION";
   const router = useRouter();
+  const containerRef = useRef<HTMLDivElement>(null);
   const [text, setText] = useState(
     needsRevision ? initialState.text : initialState && !needsRevision ? initialState.text : ""
   );
@@ -46,6 +49,14 @@ export function OpenQuestionClient({
   const [submitted, setSubmitted] = useState(Boolean(initialState) && !needsRevision);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSuccessGlow, setIsSuccessGlow] = useState(false);
+
+  useEffect(() => {
+    if (isSuccessGlow) {
+      const timer = window.setTimeout(() => setIsSuccessGlow(false), 800);
+      return () => window.clearTimeout(timer);
+    }
+  }, [isSuccessGlow]);
 
   const wordCount = useMemo(() => text.trim().split(/\s+/).filter(Boolean).length, [text]);
   const tooShort =
@@ -65,6 +76,7 @@ export function OpenQuestionClient({
   async function submit() {
     if (clientValidation) {
       setError(clientValidation);
+      playFeedbackSound("failure");
       return;
     }
     setSubmitting(true);
@@ -84,9 +96,12 @@ export function OpenQuestionClient({
         throw new Error(body?.error ?? `Request failed (${res.status})`);
       }
       setSubmitted(true);
+      setIsSuccessGlow(true);
+      firePartyPops({ withSound: true });
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
+      playFeedbackSound("failure");
     } finally {
       setSubmitting(false);
     }
@@ -100,7 +115,14 @@ export function OpenQuestionClient({
     (text.trim().length > 0 || (urlMeta.showUrl && url.trim().length > 0));
 
   return (
-    <div className={readerBlockGrouped(groupPosition)}>
+    <div
+      ref={containerRef}
+      className={cn(
+        readerBlockGrouped(groupPosition),
+        "transition-all duration-300",
+        isSuccessGlow && "animate-feedback-success"
+      )}
+    >
       <div
         className={cn(
           readerBlockInner,

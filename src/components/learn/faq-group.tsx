@@ -9,9 +9,14 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 
-export function FaqGroup({ children }: { children: React.ReactNode }) {
+export function FaqGroup({ title, children }: { title?: string; children: React.ReactNode }) {
   return (
     <div className="not-prose my-8 overflow-hidden rounded-xl border border-border bg-card text-card-foreground">
+      {title ? (
+        <div className="border-b border-border bg-muted/40 px-5 py-3 font-semibold text-foreground">
+          {title}
+        </div>
+      ) : null}
       <div className="divide-y divide-border">{children}</div>
     </div>
   );
@@ -74,10 +79,12 @@ function FaqItemInner({
 
 export function FaqItem({
   question,
+  answer,
   children,
 }: {
   question: string;
-  children: React.ReactNode;
+  answer?: string;
+  children?: React.ReactNode;
 }) {
-  return <FaqItemInner question={question}>{children}</FaqItemInner>;
+  return <FaqItemInner question={question}>{children ?? answer}</FaqItemInner>;
 }

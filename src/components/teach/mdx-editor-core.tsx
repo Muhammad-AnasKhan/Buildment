@@ -27,25 +27,39 @@ import {
 } from "@mdxeditor/editor";
 
 import { contentBlockDescriptors } from "@/components/learn/content-blocks/editor-descriptors";
-import { predictEditorDescriptor } from "@/blocks/predict/editorDescriptor";
-import { GenericJsxEditor } from "@mdxeditor/editor";
-import type { JsxComponentDescriptor } from "@mdxeditor/editor";
 import { authoringComponentDescriptors } from "@/components/teach/editor/authoring-descriptors";
 import { InsertContentMenu } from "@/components/teach/editor/insert-content-menu";
 import { normalizeLearningLogQuestionProps } from "@/lib/learning-log";
+// Per-block editor descriptors — each block folder owns its own descriptor.
+import { quizEditorDescriptor } from "@/blocks/quiz/editorDescriptor";
+import { predictEditorDescriptor } from "@/blocks/predict/editorDescriptor";
+import { openQuestionEditorDescriptor } from "@/blocks/open-question/editorDescriptor";
+import { codeEditorDescriptor } from "@/blocks/code/editorDescriptor";
+import { mustReadEditorDescriptor } from "@/blocks/must-read/editorDescriptor";
+import { stepsEditorDescriptor } from "@/blocks/steps/editorDescriptor";
+import { projectPreviewEditorDescriptor } from "@/blocks/project-preview/editorDescriptor";
+import { learningObjectivesEditorDescriptor } from "@/blocks/learning-objectives/editorDescriptor";
+import { chapterRecapEditorDescriptor } from "@/blocks/chapter-recap/editorDescriptor";
+import { videoEditorDescriptor } from "@/blocks/video/editorDescriptor";
+import { visualWalkthroughEditorDescriptor } from "@/blocks/visual-walkthrough/editorDescriptor";
+import { visualDiagramEditorDescriptor } from "@/blocks/visual-diagram/editorDescriptor";
+import { roadmapEditorDescriptor } from "@/blocks/roadmap/editorDescriptor";
 
-const blockRegistryDescriptors: JsxComponentDescriptor[] = [
-  { name: "Quiz", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
+// All registered block types, each sourced from its own editorDescriptor.ts.
+const blockRegistryDescriptors = [
+  quizEditorDescriptor,
   predictEditorDescriptor,
-  { name: "OpenQuestion", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
-  { name: "CodeExercise", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
-  { name: "ChapterRecap", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
-  { name: "ProjectPreview", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
-  { name: "LearningObjectives", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
-  { name: "VideoBlock", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
-  { name: "VisualWalkthrough", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
-  { name: "VisualDiagram", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
-  { name: "Roadmap", kind: "text", props: [{ name: "id", type: "string", required: true }], hasChildren: false, Editor: GenericJsxEditor },
+  openQuestionEditorDescriptor,
+  codeEditorDescriptor,
+  mustReadEditorDescriptor,
+  stepsEditorDescriptor,
+  projectPreviewEditorDescriptor,
+  learningObjectivesEditorDescriptor,
+  chapterRecapEditorDescriptor,
+  videoEditorDescriptor,
+  visualWalkthroughEditorDescriptor,
+  visualDiagramEditorDescriptor,
+  roadmapEditorDescriptor,
 ];
 
 const jsxComponentDescriptors = [
@@ -97,9 +111,6 @@ export default function MdxEditorCore({
               sql: "SQL",
             },
           }),
-          // Block JSX round-trips through the editor untouched in M1; M2
-          // swaps the empty descriptor list for the block registry's
-          // editor descriptors.
           jsxPlugin({ jsxComponentDescriptors }),
           diffSourcePlugin({
             viewMode: "rich-text",

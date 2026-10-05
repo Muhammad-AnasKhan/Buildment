@@ -1,4 +1,14 @@
-// Steps blocks are authored directly in MDX as <Steps> / <Step> JSX tags,
-// not through a structured editor form. This descriptor is null (no form UI)
-// until a future milestone adds a visual step editor.
-export const stepsEditorDescriptor = null;
+import type { JsxComponentDescriptor } from "@mdxeditor/editor";
+import { GenericJsxEditor } from "@mdxeditor/editor";
+
+export const stepsEditorDescriptor: JsxComponentDescriptor = {
+  name: "Steps",
+  kind: "flow",
+  props: [
+    { name: "id", type: "string" },
+    { name: "title", type: "string" },
+    { name: "steps", type: "expression" },
+  ],
+  hasChildren: false,
+  Editor: GenericJsxEditor,
+};

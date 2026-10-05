@@ -56,11 +56,11 @@ Order model **extends** (migration or schema update):
 
 Mount under `/api` per your app convention. Webhook route must use **`express.raw`** for this path only — JSON parser breaks signature verification.
 
-<MandatoryReadCard
+<MustRead
   title="Stripe — Webhooks"
-  href="https://docs.stripe.com/webhooks"
+  url="https://docs.stripe.com/webhooks"
   source="Stripe"
-  summary="How to verify webhook signatures and handle events idempotently. Required reading before implementing the webhook handler."
+  description="How to verify webhook signatures and handle events idempotently. Required reading before implementing the webhook handler."
   readMinutes={12}
 />
 

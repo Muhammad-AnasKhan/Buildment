@@ -111,14 +111,14 @@ type RequestTab = "body" | "headers";
 
 export function ApiRequest({
   label,
-  method,
+  method = "GET",
   url,
   bearer,
   body,
   responseStatus,
   responseBody,
 }: ApiRequestProps) {
-  const normalizedMethod = method.toUpperCase();
+  const normalizedMethod = (method || "GET").toUpperCase();
   const styles = methodStyles(normalizedMethod);
   const hasBody = Boolean(body?.trim());
   const hasBearer = Boolean(bearer?.trim());

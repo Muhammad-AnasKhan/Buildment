@@ -138,7 +138,7 @@ export function Checklist({
   variant = "inline",
   isGate = false,
 }: {
-  items: ChecklistItemData[];
+  items?: Array<ChecklistItemData | string>;
   section?: string;
   variant?: "gate" | "section" | "inline";
   isGate?: boolean;
@@ -149,9 +149,23 @@ export function Checklist({
   const cardRef = useRef<HTMLDivElement>(null);
   const confettiFiredRef = useRef(false);
 
+  const normalizedItems = useMemo<ChecklistItemData[]>(() => {
+    if (!Array.isArray(items)) return [];
+    return items.map((item, index) => {
+      if (typeof item === "string") {
+        return { id: `item-${index}`, label: item };
+      }
+      return {
+        id: item?.id || `item-${index}`,
+        label: item?.label || "",
+        defaultChecked: item?.defaultChecked,
+      };
+    });
+  }, [items]);
+
   const [checkedMap, setCheckedMap] = useState<Record<string, boolean>>(() => {
     const initial: Record<string, boolean> = {};
-    for (const item of items) {
+    for (const item of normalizedItems) {
       initial[item.id] = initialChecks[item.id] ?? item.defaultChecked ?? false;
     }
     return initial;
@@ -167,10 +181,10 @@ export function Checklist({
   );
 
   const checkedCount = useMemo(
-    () => items.filter((item) => checkedMap[item.id]).length,
-    [items, checkedMap]
+    () => normalizedItems.filter((item) => checkedMap[item.id]).length,
+    [normalizedItems, checkedMap]
   );
-  const total = items.length;
+  const total = normalizedItems.length;
   const progress = total > 0 ? (checkedCount / total) * 100 : 0;
   const allDone = total > 0 && checkedCount === total;
 
@@ -252,7 +266,7 @@ export function Checklist({
       </div>
 
       <ul className="space-y-0.5 p-2 sm:p-3">
-        {items.map((item) => (
+        {normalizedItems.map((item) => (
           <ChecklistItemRow
             key={item.id}
             item={item}

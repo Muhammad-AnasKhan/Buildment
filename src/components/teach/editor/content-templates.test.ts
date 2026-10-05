@@ -18,10 +18,23 @@ const TEMPLATE_IDS: ContentTemplateId[] = [
   "terminal",
   "architecture",
   "state-machine",
+  "entity-diagram",
   "video",
   "walkthrough",
   "diagram",
   "roadmap",
+  "faq",
+  "big-word",
+  "must-read",
+  "interesting-read",
+  "real-world",
+  "checkpoint-intro",
+  "api-request",
+  "diff",
+  "trace-request",
+  "project-preview",
+  "learning-objectives",
+  "chapter-recap",
 ];
 
 describe("mentor content templates", () => {

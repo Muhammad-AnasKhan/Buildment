@@ -25,8 +25,14 @@ function collectSteps(children: ReactNode): TraceStepProps[] {
   Children.forEach(children, (child) => {
     if (!isValidElement(child)) return;
     const type = child.type as { displayName?: string; name?: string };
-    if (type?.displayName === "TraceStep" || type?.name === "TraceStep") {
-      steps.push(child.props as TraceStepProps);
+    const props = child.props as Record<string, unknown>;
+    if (
+      type?.displayName === "TraceStep" ||
+      type?.name === "TraceStep" ||
+      child.type === TraceStep ||
+      Boolean(props?.label)
+    ) {
+      steps.push(props as TraceStepProps);
     }
   });
   return steps;

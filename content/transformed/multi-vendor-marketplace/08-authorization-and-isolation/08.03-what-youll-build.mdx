@@ -23,11 +23,11 @@ Six deliverables, and they split cleanly into two kinds: **design artifacts** (t
 | PATCH /api/stores/:id | requireAuth + requireRole('vendor') + ownership |
 | IDOR test procedure | 8.13 — curl with two tokens |
 
-<MandatoryReadCard
+<MustRead
   title="OWASP — Broken Access Control"
-  href="https://owasp.org/Top10/A01_2021-Broken_Access_Control/"
+  url="https://owasp.org/Top10/A01_2021-Broken_Access_Control/"
   source="OWASP"
-  summary="Top web security risk: users accessing data or actions they should not. Read the examples before implementing role and ownership guards."
+  description="Top web security risk: users accessing data or actions they should not. Read the examples before implementing role and ownership guards."
   readMinutes={12}
 />
 

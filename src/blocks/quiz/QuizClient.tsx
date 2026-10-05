@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, RotateCcw, XCircle } from "lucide-react";
+import { CheckCircle2, RotateCcw, Sparkles, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { QuizOptions } from "@/components/learn/quiz-options";
 import { readerCard, readerCardFooter, readerCardHeader, readerTitle } from "@/components/learn/reader-theme";
+import { firePartyPops } from "@/components/learn/party-pops";
+import { playFeedbackSound } from "@/lib/sound-feedback";
 import type { SanitizedQuizConfig } from "./schema";
 
 type RespondResult = {
@@ -24,7 +26,11 @@ export type QuizInitialState = {
   explanation?: string;
 };
 
-function ResultBanner({ result, canRetry, onRetry }: {
+function ResultBanner({
+  result,
+  canRetry,
+  onRetry,
+}: {
   result: RespondResult;
   canRetry: boolean;
   onRetry: () => void;
@@ -34,26 +40,48 @@ function ResultBanner({ result, canRetry, onRetry }: {
     <div className="space-y-3">
       <div
         className={cn(
-          "flex items-start gap-2.5 rounded-lg border px-4 py-3.5 text-sm",
+          "relative overflow-hidden rounded-xl border px-4 py-3.5 text-sm transition-all duration-300",
           correct
-            ? "border-emerald-200 bg-emerald-50/60 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-100"
-            : "border-amber-200 bg-amber-50/60 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-50"
+            ? "border-emerald-300 bg-gradient-to-r from-emerald-50/90 via-emerald-50/50 to-teal-50/40 text-emerald-950 shadow-sm shadow-emerald-500/10 dark:border-emerald-800 dark:from-emerald-950/40 dark:via-emerald-950/25 dark:to-teal-950/20 dark:text-emerald-100"
+            : "border-amber-200 bg-amber-50/70 text-amber-950 dark:border-amber-900/80 dark:bg-amber-950/30 dark:text-amber-50"
         )}
       >
-        {correct ? (
-          <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-        ) : (
-          <XCircle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-        )}
-        <div className="min-w-0">
-          <p className="font-semibold">{correct ? "Correct" : "Review your answer"}</p>
-          {result.explanation ? (
-            <p className="mt-1.5 leading-relaxed opacity-90">{result.explanation}</p>
-          ) : null}
+        <div className="flex items-start gap-3">
+          {correct ? (
+            <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm dark:bg-emerald-400 dark:text-emerald-950">
+              <CheckCircle2 className="size-4" />
+            </div>
+          ) : (
+            <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-400">
+              <XCircle className="size-4" />
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2">
+              <p className="font-semibold tracking-tight">
+                {correct ? "Correct! Well done" : "Review your answer"}
+              </p>
+              {correct ? (
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">
+                  <Sparkles className="size-3" />
+                  +100%
+                </span>
+              ) : null}
+            </div>
+            {result.explanation ? (
+              <p className="mt-1.5 leading-relaxed opacity-90">{result.explanation}</p>
+            ) : null}
+          </div>
         </div>
       </div>
       {canRetry ? (
-        <Button type="button" size="sm" variant="ghost" className="gap-1.5 text-muted-foreground" onClick={onRetry}>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="gap-1.5 border-border/80 text-muted-foreground hover:text-foreground"
+          onClick={onRetry}
+        >
           <RotateCcw className="size-3.5" />
           Try again
         </Button>
@@ -74,6 +102,7 @@ export function QuizClient({
   presentation?: "standalone" | "wizard";
 }) {
   const router = useRouter();
+  const cardRef = useRef<HTMLDivElement>(null);
   const isMultiple = config.quizType === "multiple";
   const [selected, setSelected] = useState<string[]>(initialState?.selected ?? []);
   const [result, setResult] = useState<RespondResult | null>(
@@ -88,6 +117,22 @@ export function QuizClient({
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isShaking, setIsShaking] = useState(false);
+  const [isSuccessGlow, setIsSuccessGlow] = useState(false);
+
+  useEffect(() => {
+    if (isShaking) {
+      const timer = window.setTimeout(() => setIsShaking(false), 450);
+      return () => window.clearTimeout(timer);
+    }
+  }, [isShaking]);
+
+  useEffect(() => {
+    if (isSuccessGlow) {
+      const timer = window.setTimeout(() => setIsSuccessGlow(false), 800);
+      return () => window.clearTimeout(timer);
+    }
+  }, [isSuccessGlow]);
 
   function toggle(optionId: string) {
     if (isMultiple) {
@@ -112,7 +157,19 @@ export function QuizClient({
         const body = await res.json().catch(() => null);
         throw new Error(body?.error ?? `Request failed (${res.status})`);
       }
-      setResult(await res.json());
+      const data = (await res.json()) as RespondResult;
+      setResult(data);
+
+      if (data.isCorrect === true) {
+        setIsSuccessGlow(true);
+        setIsShaking(false);
+        firePartyPops({ withSound: true });
+      } else if (data.isCorrect === false) {
+        setIsSuccessGlow(false);
+        setIsShaking(true);
+        playFeedbackSound("failure");
+      }
+
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -125,7 +182,11 @@ export function QuizClient({
   const hasAnswered = result !== null;
 
   const optionsBlock = (
-    <div className={cn(presentation === "wizard" ? "overflow-hidden rounded-xl border border-border" : "")}>
+    <div
+      className={cn(
+        presentation === "wizard" ? "overflow-hidden rounded-xl border border-border" : ""
+      )}
+    >
       <QuizOptions
         options={config.options}
         selected={selected}
@@ -143,6 +204,7 @@ export function QuizClient({
       onRetry={() => {
         setResult(null);
         setSelected([]);
+        setIsShaking(false);
       }}
     />
   ) : (
@@ -152,7 +214,7 @@ export function QuizClient({
         size="sm"
         onClick={submit}
         disabled={selected.length === 0 || submitting}
-        className="h-9 rounded-md px-5 shadow-none"
+        className="h-9 rounded-md px-5 shadow-none transition-all active:scale-[0.98]"
       >
         {submitting ? "Checking…" : "Check answer"}
       </Button>
@@ -170,9 +232,18 @@ export function QuizClient({
 
   if (presentation === "wizard") {
     return (
-      <div className="not-prose space-y-6">
+      <div
+        ref={cardRef}
+        className={cn(
+          "not-prose space-y-6 transition-all duration-300",
+          isShaking && "animate-feedback-shake",
+          isSuccessGlow && "animate-feedback-success"
+        )}
+      >
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Knowledge check</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Knowledge check
+          </p>
           <p className="mt-2 text-lg font-medium leading-snug tracking-tight text-foreground sm:text-xl">
             {config.prompt}
           </p>
@@ -184,13 +255,23 @@ export function QuizClient({
   }
 
   return (
-    <div className={cn("not-prose my-8", readerCard)}>
+    <div
+      ref={cardRef}
+      className={cn(
+        "not-prose my-8 transition-all duration-300",
+        readerCard,
+        isShaking && "animate-feedback-shake",
+        isSuccessGlow && "animate-feedback-success"
+      )}
+    >
       <div className={cn(readerCardHeader, "flex items-start gap-3")}>
         <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">
           <span className="text-xs font-semibold">Q</span>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Knowledge check</p>
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            Knowledge check
+          </p>
           <p className={cn("mt-0.5", readerTitle)}>{config.prompt}</p>
         </div>
       </div>

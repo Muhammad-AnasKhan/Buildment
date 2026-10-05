@@ -162,12 +162,12 @@ function LearningLogQuestion({
 }
 
 export function LearningLog({
-  title,
+  title = "Share what you learned",
   instruction,
   questions,
   variant = "default",
 }: {
-  title: string;
+  title?: string;
   instruction?: string;
   questions: LearningLogQuestionData[] | string;
   variant?: keyof typeof VARIANT_STYLES;
@@ -300,7 +300,7 @@ export function LearningLog({
                 What you learned
               </p>
               <p className={cn("mt-0.5 text-base font-semibold leading-snug", styles.headerText)}>
-                {title.replace(/^(learning log|reflect on your work)\s*[—–-]?\s*/i, "") || "Share what you learned"}
+                {(title || "Share what you learned").replace(/^(learning log|reflect on your work)\s*[—–-]?\s*/i, "") || "Share what you learned"}
               </p>
               {instruction ? (
                 <p className={cn("mt-1.5 text-sm leading-relaxed", styles.subText)}>

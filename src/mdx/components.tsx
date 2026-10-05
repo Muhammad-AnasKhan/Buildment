@@ -4,6 +4,8 @@ import { PredictComponent } from "@/blocks/predict/Component";
 import { OpenQuestionComponent } from "@/blocks/open-question/Component";
 import { CodeExerciseComponent } from "@/blocks/code/Component";
 import { StepsComponent } from "@/blocks/steps/Component";
+import { Step } from "@/blocks/steps/Step";
+import { PendingBlockCard } from "@/components/learn/pending-block-card";
 import { ProjectPreviewComponent } from "@/blocks/project-preview/Component";
 import { LearningObjectivesComponent } from "@/blocks/learning-objectives/Component";
 import { ChapterRecapComponent } from "@/blocks/chapter-recap/Component";
@@ -12,7 +14,6 @@ import { VideoComponent } from "@/blocks/video/Component";
 import { VisualWalkthroughComponent } from "@/blocks/visual-walkthrough/Component";
 import { VisualDiagramComponent } from "@/blocks/visual-diagram/Component";
 import { RoadmapComponent } from "@/blocks/roadmap/Component";
-import { MandatoryReadCard } from "@/components/learn/mandatory-read-card";
 import { MermaidDiagram } from "@/components/learn/mermaid-diagram";
 import { Callout } from "@/components/learn/callout";
 import { FaqGroup, FaqItem } from "@/components/learn/faq-group";
@@ -36,7 +37,6 @@ import {
 } from "@/components/learn/content-blocks";
 import { Checklist } from "@/components/learn/checklist";
 import { LearningLog } from "@/components/learn/learning-log";
-import { Video } from "@/components/learn/video-embed";
 import { GlossaryTerm } from "@/components/learn/glossary-term";
 import { cn } from "@/lib/utils";
 import { slugify } from "@/lib/mdx-headings";
@@ -54,24 +54,23 @@ export const mdxComponents: MDXComponents = {
   OpenQuestion: OpenQuestionComponent,
   CodeExercise: CodeExerciseComponent,
   Steps: StepsComponent,
+  Step,
+  PendingBlock: PendingBlockCard,
+  PendingBlockCard,
   ProjectPreview: ProjectPreviewComponent,
   LearningObjectives: LearningObjectivesComponent,
   ChapterRecap: ChapterRecapComponent,
   MustRead: MustReadComponent,
-  // Compatibility for already-published course snapshots. New content is
-  // imported as <MustRead id="…" /> and uses the tracked block instead.
-  MandatoryReadCard,
   Checklist,
   LearningLog,
-  // Legacy raw embed kept for existing published snapshots. New video content
-  // is imported as the validated, database-backed <VideoBlock id="…" />.
-  Video,
   GlossaryTerm,
   VideoBlock: VideoComponent,
   VisualWalkthrough: VisualWalkthroughComponent,
   VisualDiagram: VisualDiagramComponent,
   Roadmap: RoadmapComponent,
   MermaidDiagram,
+  StateMachine: MermaidDiagram,
+  EntityDiagram: MermaidDiagram,
   Callout,
   FaqGroup,
   FaqItem,

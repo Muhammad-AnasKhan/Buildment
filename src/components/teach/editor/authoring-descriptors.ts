@@ -8,8 +8,9 @@ export const authoringComponentDescriptors: JsxComponentDescriptor[] = [
     props: [
       { name: "type", type: "string" },
       { name: "title", type: "string" },
+      { name: "content", type: "string" },
     ],
-    hasChildren: true,
+    hasChildren: false,
     Editor: GenericJsxEditor,
   },
   {
