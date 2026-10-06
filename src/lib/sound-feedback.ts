@@ -40,9 +40,8 @@ let lastPlay: { kind: FeedbackKind; at: number } | null = null;
 const DEDUPE_MS = 160;
 
 /**
- * Learner gesture feedback. Uses local audio files from FEEDBACK_AUDIO,
- * with Web Audio synthesis as a fallback. Opt out with localStorage
- * `buildment:sound=off`.
+ * Learner gesture feedback. Synthesized by default; optional local files in
+ * FEEDBACK_AUDIO. Opt out with localStorage `buildment:sound=off`.
  */
 export function isSoundEnabled(): boolean {
   if (typeof window === "undefined") return false;
