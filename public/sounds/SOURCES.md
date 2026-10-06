@@ -6,16 +6,16 @@ These are **short, trimmed, peak-normalized** clips chosen for a quiet tactile f
 
 ## Files
 
-| File | Role | Source (CC0) |
+| File | Role | Source |
 |------|------|----------------|
-| `tick.wav` | Checklist item (~48ms) | OwlishMedia [87 Clickety Clips](https://opengameart.org/content/87-clickety-clips) — `click84` |
-| `check.wav` | Read / mandatory ack | Clickety Clips — `click21` |
-| `submit.wav` | Submit cue | Clickety Clips — `click82` |
-| `notification.wav` | Open question / softer quiz result | Clickety Clips — `click85` |
-| `success.wav` | Correct block | Clickety Clips — `click81` |
-| `celebration.wav` | Full checklist / perfect quiz | Clickety Clips — `click27` |
-| `completion.wav` | Chapter complete (~240ms soft thud) | Robin Lamb UI pack ([OpenGameArt](https://opengameart.org/content/ui-sound-effects-button-clicks-user-feedback-notifications)) — `dum.wav` (VCSL/VSCO-derived) |
-| `error.wav` | Wrong / validation | Generated in-repo (short low sine, non-cartoon) |
+| `tick.wav` | Checklist item | `Pixabay` — (https://pixabay.com/sound-effects/film-special-effects-button-press-382713/) |
+| `check.wav` | Read / mandatory ack | `Pixabay` — (https://pixabay.com/sound-effects/film-special-effects-click-button-140881/) |
+| `submit.wav` | Submit cue | `Pixabay` — (https://pixabay.com/sound-effects/film-special-effects-level-up-03-199576/) |
+| `notification.wav` | Open question / softer quiz result | `Pixabay` — (https://pixabay.com/sound-effects/film-special-effects-new-notification-028-383966/) |
+| `success.wav` | Correct block | `Pixabay` — (https://pixabay.com/sound-effects/film-special-effects-success-221935/) |
+| `celebration.wav` | Full checklist / perfect quiz | Generated with Gemini
+| `completion.wav` | Chapter complete (~240ms soft thud) | Generated with Gemini
+| `error.wav` | Wrong / validation | `Pixabay` — (https://pixabay.com/sound-effects/film-special-effects-error-126627/)
 
 ## Replace a sound
 
@@ -23,5 +23,12 @@ Drop a new `.wav` in this folder and change the matching path in `FEEDBACK_AUDIO
 
 ## Licenses
 
-- **OwlishMedia Clickety Clips**: CC0 (OpenGameArt)
-- **Robin Lamb UI pack**: CC0 (OpenGameArt; VCSL / VSCO 2 CE samples)
+**Pixabay Content: Pixabay Content License**
+- Free use is permitted under the Pixabay Content License.
+- Attribution is not required, although credit is appreciated.
+- Content may be modified or adapted, subject to the license's prohibited uses and any additional rights that may apply.
+- License: https://pixabay.com/service/license-summary/
+
+**Gemini-generated audio**
+- `celebration.wav` and `completion.wav` were generated with Gemini.
+- These files are not sourced from a third-party audio library.
