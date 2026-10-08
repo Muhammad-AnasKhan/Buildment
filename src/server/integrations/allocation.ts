@@ -54,3 +54,17 @@ export async function consumeEnrollmentSlot(
 export function availableEnrollmentCount(allocation: OrganizationCourse): number {
   return Math.max(0, allocation.maxEnrollments - allocation.currentEnrollments);
 }
+
+/** Return one consumed slot when an org integration enrollment is cancelled. */
+export async function releaseEnrollmentSlot(
+  tx: Prisma.TransactionClient,
+  organizationId: string,
+  courseId: string
+): Promise<void> {
+  await tx.$executeRaw`
+    UPDATE "OrganizationCourse"
+    SET "currentEnrollments" = GREATEST("currentEnrollments" - 1, 0), "updatedAt" = NOW()
+    WHERE "organizationId" = ${organizationId}
+      AND "courseId" = ${courseId}
+  `;
+}

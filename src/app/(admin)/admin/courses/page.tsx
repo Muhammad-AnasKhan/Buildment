@@ -1,5 +1,16 @@
 import Link from "next/link";
 import { prisma } from "@/server/db";
+import { Badge } from "@/components/ui/badge";
+import { formatPriceCents } from "@/lib/format-price";
+import {
+  AdminPageHeader,
+  AdminTable,
+  AdminTableBody,
+  AdminTableCell,
+  AdminTableHead,
+  AdminTableHeaderCell,
+  AdminTableRow,
+} from "@/components/admin/admin-ui";
 
 export default async function AdminCoursesPage() {
   const courses = await prisma.course.findMany({
@@ -20,50 +31,59 @@ export default async function AdminCoursesPage() {
   });
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Courses</h1>
-      <p className="mt-1 text-sm text-neutral-500">Read-only catalog for support and allocation decisions.</p>
+    <div>
+      <AdminPageHeader
+        eyebrow="Catalog"
+        title="Courses"
+        description="Read-only view for support, allocation decisions, and integration troubleshooting."
+      />
 
-      <div className="mt-8 overflow-x-auto rounded-xl border border-neutral-200 bg-white">
-        <table className="w-full min-w-[900px] text-left text-sm">
-          <thead className="border-b border-neutral-200 bg-neutral-50 text-xs font-medium uppercase text-neutral-500">
-            <tr>
-              <th className="px-4 py-3">Title</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Pricing</th>
-              <th className="px-4 py-3">Instructor</th>
-              <th className="px-4 py-3 text-right">Enrollments</th>
-              <th className="px-4 py-3 text-right">Org allocations</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-100">
-            {courses.map((course) => (
-              <tr key={course.id} className="hover:bg-neutral-50/80">
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/courses/${course.slug}`}
-                    className="font-medium text-neutral-900 hover:underline"
-                  >
-                    {course.title}
-                  </Link>
-                  <p className="font-mono text-xs text-neutral-500">{course.slug}</p>
-                </td>
-                <td className="px-4 py-3">{course.status}</td>
-                <td className="px-4 py-3">
-                  {course.pricingType === "PAID"
-                    ? `${(course.priceCents ?? 0) / 100} ${course.currency ?? "USD"}`
-                    : course.pricingType}
-                </td>
-                <td className="px-4 py-3 text-neutral-700">
-                  {course.mentor.name ?? course.mentor.email}
-                </td>
-                <td className="px-4 py-3 text-right tabular-nums">{course._count.enrollments}</td>
-                <td className="px-4 py-3 text-right tabular-nums">{course._count.organizationCourses}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <AdminTable minWidth="900px">
+        <AdminTableHead>
+          <tr>
+            <AdminTableHeaderCell>Title</AdminTableHeaderCell>
+            <AdminTableHeaderCell>Status</AdminTableHeaderCell>
+            <AdminTableHeaderCell>Pricing</AdminTableHeaderCell>
+            <AdminTableHeaderCell>Instructor</AdminTableHeaderCell>
+            <AdminTableHeaderCell align="right">Enrollments</AdminTableHeaderCell>
+            <AdminTableHeaderCell align="right">Org allocations</AdminTableHeaderCell>
+          </tr>
+        </AdminTableHead>
+        <AdminTableBody>
+          {courses.map((course) => (
+            <AdminTableRow key={course.id}>
+              <AdminTableCell>
+                <Link
+                  href={`/courses/${course.slug}`}
+                  className="font-medium text-foreground hover:text-primary hover:underline"
+                >
+                  {course.title}
+                </Link>
+                <p className="mt-0.5 font-mono text-xs text-muted-foreground">{course.slug}</p>
+              </AdminTableCell>
+              <AdminTableCell>
+                <Badge variant={course.status === "PUBLISHED" ? "secondary" : "outline"}>
+                  {course.status}
+                </Badge>
+              </AdminTableCell>
+              <AdminTableCell>
+                {course.pricingType === "PAID"
+                  ? formatPriceCents(course.priceCents ?? 0, course.currency ?? "USD")
+                  : "Free"}
+              </AdminTableCell>
+              <AdminTableCell className="text-muted-foreground">
+                {course.mentor.name ?? course.mentor.email}
+              </AdminTableCell>
+              <AdminTableCell align="right" className="tabular-nums">
+                {course._count.enrollments}
+              </AdminTableCell>
+              <AdminTableCell align="right" className="tabular-nums">
+                {course._count.organizationCourses}
+              </AdminTableCell>
+            </AdminTableRow>
+          ))}
+        </AdminTableBody>
+      </AdminTable>
     </div>
   );
 }

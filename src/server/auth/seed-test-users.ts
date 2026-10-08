@@ -25,9 +25,15 @@ export async function ensureAllSeedTestUsersReady() {
   const passwordHash = hashPassword(SEED_DEV_PASSWORD);
   await Promise.all(
     SEED_USERS.map((seed) => {
-      const data: { emailVerified: Date; passwordHash: string; canInstruct?: boolean } = {
+      const data: {
+        emailVerified: Date;
+        passwordHash: string;
+        role: (typeof SEED_USERS)[number]["role"];
+        canInstruct?: boolean;
+      } = {
         emailVerified: new Date(),
         passwordHash,
+        role: seed.role,
       };
       if (seed.role === "MENTOR") data.canInstruct = true;
       return prisma.user.upsert({
@@ -36,7 +42,6 @@ export async function ensureAllSeedTestUsersReady() {
         create: {
           email: seed.email,
           name: seed.name,
-          role: seed.role,
           ...data,
         },
       });

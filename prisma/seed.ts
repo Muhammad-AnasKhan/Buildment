@@ -16,11 +16,16 @@ async function main() {
   const passwordHash = hashPassword(SEED_DEV_PASSWORD);
   await Promise.all(
     SEED_USERS.map((seed) => {
-      const data = { emailVerified: new Date(), passwordHash, ...(seed.role === "MENTOR" ? { canInstruct: true } : {}) };
+      const data = {
+        emailVerified: new Date(),
+        passwordHash,
+        role: seed.role,
+        ...(seed.role === "MENTOR" ? { canInstruct: true } : {}),
+      };
       return prisma.user.upsert({
         where: { email: seed.email },
         update: data,
-        create: { email: seed.email, name: seed.name, role: seed.role, ...data },
+        create: { email: seed.email, name: seed.name, ...data },
       });
     })
   );
@@ -58,7 +63,10 @@ async function main() {
     )
   );
 
+  const admin = await prisma.user.findUnique({ where: { email: "admin@buildment.dev" } });
+
   console.log("Seeded:");
+  if (admin) console.log(`  admin:   ${admin.email}`);
   console.log(`  mentor:  ${mentor.email}`);
   mentees.forEach((m) => console.log(`  mentee:  ${m.email}`));
   console.log(`  course:  ${course.slug} (${enrollments.length} enrollments, mentor included for dev preview)`);

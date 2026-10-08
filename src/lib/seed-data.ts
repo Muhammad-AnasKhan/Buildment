@@ -2,11 +2,14 @@
 // (src/app/(auth)/login/page.tsx) so the two can never drift apart.
 
 export const SEED_USERS = [
+  { email: "admin@buildment.dev", name: "Alex Admin", role: "ADMIN" as const },
   { email: "mentor@buildment.dev", name: "Morgan Mentor", role: "MENTOR" as const },
   { email: "mentee1@buildment.dev", name: "Ada Mentee", role: "MENTEE" as const },
   { email: "mentee2@buildment.dev", name: "Ben Mentee", role: "MENTEE" as const },
   { email: "mentee3@buildment.dev", name: "Cy Mentee", role: "MENTEE" as const },
 ] as const;
+
+export type SeedUserRole = (typeof SEED_USERS)[number]["role"];
 
 const SEED_TEST_EMAILS: Set<string> = new Set(SEED_USERS.map((user) => user.email));
 

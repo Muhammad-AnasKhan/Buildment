@@ -10,6 +10,11 @@ const ENDPOINTS = [
     description: "Lookup enrollment by course_id + learner_email or external_assignment_id",
   },
   { method: "POST", path: "/integrations/v1/enrollments", description: "Create Pathment-style enrollment" },
+  {
+    method: "POST",
+    path: "/integrations/v1/enrollments/cancel",
+    description: "Cancel org enrollment (org_slug, email, course_id, optional user_id / mentor_id)",
+  },
   { method: "GET", path: "/integrations/v1/progress", description: "Progress for org enrollment" },
   {
     method: "GET",

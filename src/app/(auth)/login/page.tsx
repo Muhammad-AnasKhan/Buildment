@@ -9,8 +9,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Logo } from "@/components/brand/logo";
 import { LoginBrandPanel } from "@/components/marketing/login-brand-panel";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { SEED_USERS } from "@/lib/seed-data";
+import { SEED_USERS, type SeedUserRole } from "@/lib/seed-data";
 import { SEED_DEV_PASSWORD } from "@/server/auth/seed-test-users";
+
+function devLoginRoleLabel(role: SeedUserRole): string {
+  switch (role) {
+    case "ADMIN":
+      return "Platform admin";
+    case "MENTOR":
+      return "Instructor";
+    case "MENTEE":
+      return "Learner";
+  }
+}
 import { safeRedirectTo } from "@/lib/safe-redirect";
 import { loginErrorMessage } from "@/lib/auth-errors";
 
@@ -154,7 +165,7 @@ export default async function LoginPage({
                     }`}
                     className="text-sm text-primary underline-offset-4 hover:underline"
                   >
-                    {seedUser.role === "MENTOR" ? "Instructor" : "Learner"} — {seedUser.email}
+                    {devLoginRoleLabel(seedUser.role)} — {seedUser.email}
                   </Link>
                 ))}
               </div>
