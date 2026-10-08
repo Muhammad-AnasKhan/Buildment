@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Clock3, Layers3, Target } from "lucide-react";
+import { ArrowRight, BookOpen, Clock3, Layers3, MessageSquareText, Target } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { CourseCover } from "@/components/learn/course-cover";
 import { cn } from "@/lib/utils";
 
 type CourseOverviewHeroProps = {
@@ -8,7 +10,12 @@ type CourseOverviewHeroProps = {
   title: string;
   description: string | null;
   projectGoal: string | null;
+  coverUrl?: string | null;
+  instructorName?: string | null;
   percentComplete: number;
+  chaptersCompleted?: number;
+  chaptersTotal?: number;
+  pendingReviews?: number;
   continueHref: string | null;
   continueLabel: string;
   moduleCount: number;
@@ -27,7 +34,12 @@ export function CourseOverviewHero({
   title,
   description,
   projectGoal,
+  coverUrl,
+  instructorName,
   percentComplete,
+  chaptersCompleted,
+  chaptersTotal,
+  pendingReviews = 0,
   continueHref,
   continueLabel,
   moduleCount,
@@ -37,9 +49,11 @@ export function CourseOverviewHero({
   const { lead, rest } = splitTitle(title);
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground">
-      <div className="grid sm:grid-cols-[minmax(0,1fr)_16rem] lg:grid-cols-[minmax(0,1fr)_19rem]">
-        <div className="p-6 sm:p-8 lg:p-9">
+    <section className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+      <CourseCover coverUrl={coverUrl} title={title} aspect="banner" className="rounded-none border-b border-border" />
+
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_18rem]">
+        <div className="p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-2">
             {difficulty ? (
               <span className="rounded-full border border-border bg-muted/40 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -47,42 +61,89 @@ export function CourseOverviewHero({
               </span>
             ) : null}
             {lead ? <span className="text-xs font-semibold text-muted-foreground">{lead}</span> : null}
+            {pendingReviews > 0 ? (
+              <Badge variant="secondary" className="gap-1">
+                <MessageSquareText className="size-3" aria-hidden />
+                {pendingReviews} awaiting review
+              </Badge>
+            ) : null}
           </div>
 
-          <h1 className="mt-4 max-w-3xl text-3xl font-semibold leading-[1.08] tracking-[-0.045em] lg:text-4xl">
+          <h1 className="mt-4 max-w-3xl text-3xl font-semibold leading-[1.08] tracking-[-0.045em] lg:text-[2rem]">
             {rest}
           </h1>
 
+          {instructorName ? (
+            <p className="mt-2 text-sm text-muted-foreground">Instructor · {instructorName}</p>
+          ) : null}
+
           {description ? (
-            <p className="mt-4 line-clamp-4 max-w-3xl text-sm leading-6 text-muted-foreground lg:text-[15px]">
+            <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground lg:text-[15px]">
               {description}
             </p>
           ) : null}
 
           <dl className="mt-6 flex flex-wrap gap-x-5 gap-y-3 border-t border-border pt-5 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2"><Layers3 className="size-3.5" /><dt className="sr-only">Modules</dt><dd>{moduleCount} modules</dd></div>
-            <div className="flex items-center gap-2"><BookOpen className="size-3.5" /><dt className="sr-only">Lessons</dt><dd>{chapterCount} lessons</dd></div>
-            {estimatedHours ? <div className="flex items-center gap-2"><Clock3 className="size-3.5" /><dt className="sr-only">Estimated duration</dt><dd>{estimatedHours} hours</dd></div> : null}
+            <div className="flex items-center gap-2">
+              <Layers3 className="size-3.5" />
+              <dt className="sr-only">Modules</dt>
+              <dd>{moduleCount} modules</dd>
+            </div>
+            <div className="flex items-center gap-2">
+              <BookOpen className="size-3.5" />
+              <dt className="sr-only">Lessons</dt>
+              <dd>{chapterCount} lessons</dd>
+            </div>
+            {estimatedHours ? (
+              <div className="flex items-center gap-2">
+                <Clock3 className="size-3.5" />
+                <dt className="sr-only">Estimated duration</dt>
+                <dd>~{estimatedHours} hours</dd>
+              </div>
+            ) : null}
+            {chaptersTotal != null && chaptersTotal > 0 ? (
+              <div className="flex items-center gap-2">
+                <dt className="sr-only">Chapters completed</dt>
+                <dd>
+                  {chaptersCompleted ?? 0}/{chaptersTotal} lessons complete
+                </dd>
+              </div>
+            ) : null}
           </dl>
         </div>
 
-        <aside className="flex flex-col justify-between border-t border-border bg-muted/20 p-6 sm:border-l sm:border-t-0 sm:p-7">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-semibold"><Target className="size-4" /> Your project</div>
-            {projectGoal ? <p className="mt-3 text-sm leading-6 text-muted-foreground">{projectGoal}</p> : null}
-          </div>
+        <aside className="flex flex-col justify-between border-t border-border bg-muted/15 p-6 lg:border-l lg:border-t-0 lg:p-7">
+          {projectGoal ? (
+            <div>
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <Target className="size-4" /> What you&apos;ll build
+              </div>
+              <p className="mt-3 text-sm leading-6 text-foreground/90">{projectGoal}</p>
+            </div>
+          ) : (
+            <p className="text-sm leading-6 text-muted-foreground">
+              Work through lessons in order, complete checkpoints, and track progress here.
+            </p>
+          )}
 
-          <div className="mt-7">
+          <div className={cn(projectGoal ? "mt-7" : "mt-auto pt-6")}>
             <div className="flex items-center justify-between gap-4 text-xs">
-              <span className="font-medium text-foreground">Progress</span>
+              <span className="font-medium text-foreground">Your progress</span>
               <span className="font-mono tabular-nums text-muted-foreground">{percentComplete}%</span>
             </div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
-              <div className="h-full rounded-full bg-foreground" style={{ width: `${percentComplete}%` }} />
+            <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary transition-[width]"
+                style={{ width: `${Math.min(100, Math.max(0, percentComplete))}%` }}
+              />
             </div>
             {continueHref ? (
-              <Link href={continueHref} className={cn(buttonVariants({ size: "lg" }), "mt-5 h-10 w-full gap-2 px-4")}>
-                {continueLabel}<ArrowRight className="size-4" />
+              <Link
+                href={continueHref}
+                className={cn(buttonVariants({ size: "lg" }), "mt-5 h-11 w-full gap-2 px-4")}
+              >
+                {continueLabel}
+                <ArrowRight className="size-4" />
               </Link>
             ) : null}
           </div>

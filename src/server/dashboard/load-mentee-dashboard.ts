@@ -19,6 +19,7 @@ export async function loadMenteeDashboard(args: {
     orderBy: [{ lastActiveAt: "desc" }, { createdAt: "asc" }],
     select: {
       id: true,
+      lifecycle: true,
       status: true,
       percentComplete: true,
       chaptersCompleted: true,

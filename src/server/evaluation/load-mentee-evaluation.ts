@@ -29,6 +29,7 @@ export async function loadMenteeEvaluation(args: {
     include: { user: { select: { id: true, name: true, email: true } } },
   });
   if (!enrollment || !isEnrollmentScopedToCourse(enrollment, args.course.id)) return null;
+  if (!enrollment.userId || !enrollment.user) return null;
 
   const [courseStructure, progressRows, responseRows, helpRows, sessionRows, study] =
     await Promise.all([

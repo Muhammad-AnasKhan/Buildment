@@ -9,6 +9,7 @@ export async function nudgeMenteeAction(input: { enrollmentId: string }) {
     where: { id: input.enrollmentId },
     include: {
       user: { select: { email: true, name: true } },
+      learnerProfile: { select: { email: true } },
       course: { select: { id: true, title: true } },
     },
   });
@@ -16,13 +17,13 @@ export async function nudgeMenteeAction(input: { enrollmentId: string }) {
 
   await requireMentorOfCourse(enrollment.courseId);
 
-  const email = enrollment.user.email;
+  const email = enrollment.user?.email ?? enrollment.learnerProfile?.email;
   if (!email) return { ok: false as const, error: "Mentee has no email on file" };
 
   const result = await sendEmail({
     to: email,
     subject: `Quick nudge — ${enrollment.course.title}`,
-    html: `<p>Hi ${enrollment.user.name ?? "there"},</p>
+    html: `<p>Hi ${enrollment.user?.name ?? "there"},</p>
 <p>Your mentor checked in on your progress in <strong>${enrollment.course.title}</strong>.</p>
 <p>Pick up where you left off when you have a few minutes today.</p>`,
     text: `Your mentor nudged you about ${enrollment.course.title}.`,

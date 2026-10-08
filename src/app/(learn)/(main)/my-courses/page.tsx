@@ -1,11 +1,13 @@
+import Link from "next/link";
 import { BookOpenText } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 import { MenteeCourseList } from "@/components/learn/dashboard/mentee-dashboard";
-import { requireRole } from "@/server/auth/guards";
+import { requireLearnSurface } from "@/server/auth/guards";
 import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
 import { loadMenteeDashboard } from "@/server/dashboard/load-mentee-dashboard";
 
 export default async function MenteeCoursesPage() {
-  const user = await requireRole("MENTEE");
+  const user = await requireLearnSurface();
   const model = await loadMenteeDashboard({
     learnerId: user.id,
     learnerName: user.name?.trim() || user.email?.split("@")[0] || "there",
@@ -31,8 +33,11 @@ export default async function MenteeCoursesPage() {
           <BookOpenText className="size-8 text-muted-foreground" aria-hidden />
           <h2 className="mt-4 text-lg font-semibold">No courses assigned yet</h2>
           <p className="mt-2 max-w-sm text-sm leading-6 text-muted-foreground">
-            Courses will appear here when a mentor assigns them to your account.
+            Enroll from the catalog or accept a mentor invite — assigned courses show up here too.
           </p>
+          <Link href="/catalog" className={buttonVariants({ className: "mt-6" })}>
+            Browse catalog
+          </Link>
         </div>
       )}
     </div>

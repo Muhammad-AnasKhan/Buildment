@@ -423,3 +423,75 @@
     opacity: 0;
   }
 }
+
+@keyframes chapter-complete-backdrop {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes chapter-complete-panel {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes chapter-complete-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes chapter-complete-popper-wiggle {
+  0% {
+    transform: scale(0.6) rotate(-18deg);
+  }
+  45% {
+    transform: scale(1.15) rotate(12deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.chapter-complete-backdrop {
+  animation: chapter-complete-backdrop 420ms ease-out both;
+}
+
+.chapter-complete-panel {
+  animation: chapter-complete-panel 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.chapter-complete-stagger {
+  animation: chapter-complete-rise 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  opacity: 0;
+}
+
+.chapter-complete-popper {
+  animation: chapter-complete-popper-wiggle 720ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  animation-delay: 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chapter-complete-backdrop,
+  .chapter-complete-panel,
+  .chapter-complete-stagger,
+  .chapter-complete-popper {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

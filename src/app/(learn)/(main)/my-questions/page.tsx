@@ -3,12 +3,12 @@ import { ChevronRight, Inbox } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { prisma } from "@/server/db";
-import { requireRole } from "@/server/auth/guards";
+import { requireLearnSurface } from "@/server/auth/guards";
 import { cn } from "@/lib/utils";
 import { mentorReplyUnread } from "@/server/progress/attention";
 
 export default async function MenteeHelpListPage() {
-  const user = await requireRole("MENTEE");
+  const user = await requireLearnSurface();
 
   const threads = await prisma.helpThread.findMany({
     where: { menteeId: user.id },

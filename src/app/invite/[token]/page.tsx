@@ -81,10 +81,10 @@ export default async function InviteAcceptPage({
           const name = String(formData.get("name") ?? "") || undefined;
           const result = await acceptInvite({ token, name });
           if (result.ok) {
-            if (user.role === "MENTEE") {
-              redirect(`/courses/${result.courseSlug}`);
+            if (result.checkoutRequired) {
+              redirect(`/courses/${result.courseSlug}/checkout`);
             }
-            redirect("/courses");
+            redirect(`/courses/${result.courseSlug}`);
           }
         }}
       >

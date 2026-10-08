@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { canAccessRole, homeRouteForRole, isMentorOfCourse } from "./access-rules";
+import {
+  canAccessLearnSurface,
+  canAccessRole,
+  canAccessTeachSurface,
+  homeRouteForRole,
+  isMentorOfCourse,
+  userCanInstruct,
+} from "./access-rules";
 
 describe("canAccessRole", () => {
   it("allows a role that's in the allowed list", () => {
@@ -22,6 +29,31 @@ describe("isMentorOfCourse", () => {
 
   it("always allows an admin, regardless of ownership", () => {
     expect(isMentorOfCourse("user_2", "ADMIN", { mentorId: "user_1" })).toBe(true);
+  });
+});
+
+describe("userCanInstruct", () => {
+  it("allows explicit instructor flag", () => {
+    expect(userCanInstruct({ role: "MENTEE", canInstruct: true })).toBe(true);
+  });
+
+  it("allows legacy mentor role", () => {
+    expect(userCanInstruct({ role: "MENTOR", canInstruct: false })).toBe(true);
+  });
+});
+
+describe("surface access", () => {
+  it("allows learners into learn surface", () => {
+    expect(canAccessLearnSurface({ role: "MENTEE" })).toBe(true);
+    expect(canAccessLearnSurface({ role: "MENTOR" })).toBe(true);
+  });
+
+  it("blocks admin from learn shell", () => {
+    expect(canAccessLearnSurface({ role: "ADMIN" })).toBe(false);
+  });
+
+  it("allows instructors into teach surface", () => {
+    expect(canAccessTeachSurface({ role: "MENTEE", canInstruct: true })).toBe(true);
   });
 });
 

@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { SurfaceSwitcher } from "@/components/workspace/surface-switcher";
 
 const LAST_COURSE_KEY = "buildment:mentor:last-course";
 const LAST_COURSE_EVENT = "buildment:last-course-change";
@@ -62,10 +63,12 @@ type NavItem = {
 export function MentorWorkspaceSidebar({
   courses,
   user,
+  canInstruct,
   signOutAction,
 }: {
   courses: MentorSidebarCourse[];
   user: { name?: string | null; email?: string | null };
+  canInstruct: boolean;
   signOutAction: () => Promise<void>;
 }) {
   const pathname = usePathname();
@@ -286,10 +289,11 @@ export function MentorWorkspaceSidebar({
           <SidebarGroup label="Workflow" items={workflowItems} />
         </nav>
 
-        <div className="border-t p-3">
+        <div className="border-t p-3 space-y-1">
+          <SurfaceSwitcher current="teach" canInstruct={canInstruct} />
           <div className="flex items-center gap-2.5 rounded-xl px-2 py-2">
             <span className="min-w-0 flex-1">
-              <span className="block truncate text-xs font-medium">{user.name ?? "Mentor"}</span>
+              <span className="block truncate text-xs font-medium">{user.name ?? "Instructor"}</span>
               <span className="block truncate text-[11px] text-muted-foreground">{user.email}</span>
             </span>
             <button

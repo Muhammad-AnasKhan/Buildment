@@ -30,22 +30,25 @@ export async function sendInactivityNudgesForCourse(courseId: string) {
         { OR: [{ lastNudgeSentAt: null }, { lastNudgeSentAt: { lt: cooldown } }] },
       ],
     },
-    include: { user: { select: { email: true, name: true } } },
+    include: {
+      user: { select: { email: true, name: true } },
+      learnerProfile: { select: { email: true } },
+    },
   });
 
   let sent = 0;
   for (const enrollment of enrollments) {
-    const email = enrollment.user.email;
+    const email = enrollment.user?.email ?? enrollment.learnerProfile?.email;
     if (!email) continue;
 
     const result = await sendEmail({
       to: email,
       subject: `We miss you on ${course.title}`,
-      html: `<p>Hi ${enrollment.user.name ?? "there"},</p>
+      html: `<p>Hi ${enrollment.user?.name ?? "there"},</p>
 <p>Your mentor noticed you have not studied <strong>${course.title}</strong> in a few days.</p>
 <p>Log in when you can — even 20 minutes keeps momentum.</p>
 <p>— buildment</p>`,
-      text: `Hi ${enrollment.user.name ?? "there"}, we miss you on ${course.title}. Log in when you can.`,
+      text: `Hi ${enrollment.user?.name ?? "there"}, we miss you on ${course.title}. Log in when you can.`,
     });
 
     if (result.sent) {

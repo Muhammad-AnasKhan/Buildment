@@ -33,6 +33,9 @@ type CourseSyllabusProps = {
   courseSlug: string;
   modules: SyllabusModule[];
   defaultOpenModuleId: string | null;
+  percentComplete?: number;
+  chaptersCompleted?: number;
+  chaptersTotal?: number;
 };
 
 function ModuleCard({
@@ -50,7 +53,7 @@ function ModuleCard({
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <article className="overflow-hidden rounded-xl border border-border bg-background">
+      <article className="overflow-hidden rounded-xl border border-border bg-muted/20 dark:bg-muted/30">
         <CollapsibleTrigger className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left">
           <div className="flex min-w-0 items-center gap-3">
             <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/40 font-mono text-xs font-bold tabular-nums text-muted-foreground">
@@ -91,16 +94,38 @@ function ModuleCard({
   );
 }
 
-export function CourseSyllabus({ courseSlug, modules, defaultOpenModuleId }: CourseSyllabusProps) {
-  const totalLessons = modules.reduce((sum, mod) => sum + mod.chapters.length, 0);
+export function CourseSyllabus({
+  courseSlug,
+  modules,
+  defaultOpenModuleId,
+  percentComplete,
+  chaptersCompleted,
+  chaptersTotal,
+}: CourseSyllabusProps) {
+  const totalLessons = chaptersTotal ?? modules.reduce((sum, mod) => sum + mod.chapters.length, 0);
+  const completed =
+    chaptersCompleted ?? modules.reduce((sum, mod) => sum + mod.completedCount, 0);
 
   return (
     <section className="rounded-2xl border border-border bg-card p-5 text-card-foreground sm:p-8">
-      <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-lg font-semibold tracking-tight text-foreground">
-          Course content
-        </h2>
-        <span className="text-sm text-muted-foreground">{totalLessons} lessons</span>
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-semibold tracking-tight text-foreground">Course content</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {completed}/{totalLessons} lessons complete
+            {percentComplete != null ? ` · ${percentComplete}% overall` : ""}
+          </p>
+        </div>
+        {percentComplete != null ? (
+          <div className="min-w-[8rem] flex-1 sm:max-w-xs">
+            <div className="h-2 overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-primary dark:bg-emerald-500"
+                style={{ width: `${percentComplete}%` }}
+              />
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="space-y-3">

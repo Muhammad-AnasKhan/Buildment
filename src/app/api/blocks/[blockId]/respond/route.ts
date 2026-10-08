@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db";
 import { getSessionUser } from "@/server/auth/guards";
+import { requireBlockSubmissionAccess } from "@/server/enrollment/api-learn-access";
 import { blockRegistry, isRegisteredBlockType } from "@/blocks/registry";
 import { QuizPayloadSchema } from "@/blocks/quiz/schema";
 import { PredictPayloadSchema } from "@/blocks/predict/schema";
@@ -22,13 +23,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const { blockId } = await params;
 
   const user = await getSessionUser();
-  if (!user) {
-    return NextResponse.json({ error: "Not signed in" }, { status: 401 });
-  }
-
-  if (!checkRateLimit(`respond:${user.id}:${blockId}`, { max: 40, windowMs: 60_000 })) {
-    return NextResponse.json({ error: "Too many submissions — wait a minute and try again." }, { status: 429 });
-  }
 
   const block = await prisma.block.findUnique({
     where: { id: blockId },
@@ -44,11 +38,17 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ error: "Submit this quiz from the final quiz step." }, { status: 400 });
   }
 
-  const enrollment = await prisma.enrollment.findUnique({
-    where: { courseId_userId: { courseId: block.chapter.courseId, userId: user.id } },
-  });
-  if (!enrollment) {
-    return NextResponse.json({ error: "Not enrolled in this course" }, { status: 403 });
+  const access = await requireBlockSubmissionAccess(block.chapter.courseId, user);
+  if (!access.ok) {
+    return NextResponse.json(
+      { error: access.error, code: access.code },
+      { status: access.status }
+    );
+  }
+  const { enrollment, user: verifiedUser } = access;
+
+  if (!checkRateLimit(`respond:${verifiedUser.id}:${blockId}`, { max: 40, windowMs: 60_000 })) {
+    return NextResponse.json({ error: "Too many submissions — wait a minute and try again." }, { status: 429 });
   }
 
   try {
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       courseId: block.chapter.courseId,
       enrollmentId: enrollment.id,
       chapterId: block.chapter.id,
-      bypassLocking: bypassProgressGatingForEmail(user.email ?? ""),
+      bypassLocking: bypassProgressGatingForEmail(verifiedUser.email ?? ""),
     });
   } catch (error) {
     if (error instanceof ChapterLockedError) {
@@ -111,14 +111,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   const previousAttempts = await prisma.response.count({
-    where: { blockId, userId: user.id },
+    where: { blockId, userId: verifiedUser.id },
   });
 
   const response = await prisma.$transaction(async (tx) => {
     const created = await tx.response.create({
       data: {
         blockId,
-        userId: user.id,
+        userId: verifiedUser.id,
         enrollmentId: enrollment.id,
         attempt: previousAttempts + 1,
         status: graded.status,

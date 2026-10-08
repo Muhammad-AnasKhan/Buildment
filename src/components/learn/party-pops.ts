@@ -149,6 +149,21 @@ export function firePartyPops(options?: PartyPopOptions) {
       alpha: 1,
       side: "right",
     });
+
+    if (particleCount >= 360) {
+      poppers.push({
+        x: w * 0.5,
+        y: h + 90,
+        targetY: midY + 20,
+        angle: -Math.PI * 0.5,
+        recoilAngle: -Math.PI * 0.5,
+        speed: 32,
+        state: "rising",
+        recoilTimer: 0,
+        alpha: 1,
+        side: "center",
+      });
+    }
   } else {
     // Central Party Popper shooting straight up from bottom to mid
     poppers.push({
@@ -175,7 +190,7 @@ export function firePartyPops(options?: PartyPopOptions) {
       x: originX,
       y: originY,
       radius: 10,
-      maxRadius: 110,
+      maxRadius: 120,
       alpha: 0.95,
     });
 

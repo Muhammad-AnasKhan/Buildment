@@ -75,7 +75,8 @@ export async function loadCourseMentees(args: { courseId: string; courseSlug: st
     openHelpByUser.set(thread.menteeId, (openHelpByUser.get(thread.menteeId) ?? 0) + 1);
   }
 
-  const mentees = course.enrollments.map((enrollment) => {
+  const mentees = course.enrollments.flatMap((enrollment) => {
+    if (!enrollment.userId || !enrollment.user) return [];
     const activity = activityState(enrollment.lastActiveAt, now);
     const openHelpRequests = openHelpByUser.get(enrollment.userId) ?? 0;
     const current = enrollment.chapterProgress[0] ?? null;
@@ -91,7 +92,7 @@ export async function loadCourseMentees(args: { courseId: string; courseSlug: st
     if (activity === "inactive" && enrollment.status === "IN_PROGRESS") attention.push({ kind: "inactive", label: "Inactive 7+ days" });
     if (stalled) attention.push({ kind: "stalled", label: "Long-running chapter" });
 
-    return {
+    return [{
       id: enrollment.id,
       userId: enrollment.userId,
       name: enrollment.user.name ?? enrollment.user.email ?? "Unnamed learner",
@@ -113,7 +114,7 @@ export async function loadCourseMentees(args: { courseId: string; courseSlug: st
       activityState: activity,
       attention,
       evaluationHref: `/courses/${course.slug}/mentees/${enrollment.id}`,
-    };
+    }];
   });
 
   return {

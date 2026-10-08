@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/server/db";
-import { requireRole } from "@/server/auth/guards";
+import { requireLearnSurface } from "@/server/auth/guards";
 import { STREAK_MILESTONES, type StreakMilestone } from "@/server/progress/streak";
 
 const goalInput = z.object({
@@ -12,7 +12,7 @@ const goalInput = z.object({
 });
 
 export async function setWeeklyGoal(input: { kind: "SESSIONS" | "CHAPTERS"; target: number }) {
-  const user = await requireRole("MENTEE");
+  const user = await requireLearnSurface();
   const parsed = goalInput.safeParse(input);
   if (!parsed.success) return { ok: false as const, error: "Choose sessions or chapters, from 1 to 50." };
 
@@ -28,7 +28,7 @@ export async function setWeeklyGoal(input: { kind: "SESSIONS" | "CHAPTERS"; targ
 }
 
 export async function clearWeeklyGoal() {
-  const user = await requireRole("MENTEE");
+  const user = await requireLearnSurface();
   await prisma.user.update({
     where: { id: user.id },
     data: { weeklyGoalKind: null, weeklyGoalTarget: null },
@@ -39,7 +39,7 @@ export async function clearWeeklyGoal() {
 
 export async function acknowledgeStreakMilestone(milestone: StreakMilestone) {
   if (!STREAK_MILESTONES.includes(milestone)) return;
-  const user = await requireRole("MENTEE");
+  const user = await requireLearnSurface();
   const row = await prisma.user.findUnique({
     where: { id: user.id },
     select: { celebratedStreakMilestones: true },

@@ -170,6 +170,9 @@ const courseSettingsSchema = z.object({
   difficulty: z.enum(["", "Easy", "Medium", "Hard"]),
   estimatedHours: z.union([z.literal(""), z.coerce.number().int().min(1).max(1000)]),
   sequential: z.boolean(),
+  pricingType: z.enum(["FREE", "PAID"]),
+  priceDollars: z.union([z.literal(""), z.coerce.number().min(0).max(99999)]),
+  currency: z.string().trim().min(3).max(3),
 });
 
 export async function updateCourseSettings(input: {
@@ -180,16 +183,32 @@ export async function updateCourseSettings(input: {
   difficulty: string;
   estimatedHours: string;
   sequential: boolean;
+  pricingType: string;
+  priceDollars: string;
+  currency: string;
 }): Promise<CourseBuilderActionResult> {
   const parsed = courseSettingsSchema.safeParse(input);
   if (!parsed.success) {
     return {
       ok: false,
-      errors: ["Check the title, difficulty, description, goal, and estimated hours."],
+      errors: ["Check the title, pricing, difficulty, description, goal, and estimated hours."],
     };
   }
 
   await requireMentorOfCourse(parsed.data.courseId);
+
+  const pricingType = parsed.data.pricingType;
+  let priceCents = 0;
+  if (pricingType === "PAID") {
+    if (parsed.data.priceDollars === "") {
+      return { ok: false, errors: ["Enter a price for paid courses."] };
+    }
+    priceCents = Math.round(parsed.data.priceDollars * 100);
+    if (priceCents <= 0) {
+      return { ok: false, errors: ["Paid courses need a price greater than zero."] };
+    }
+  }
+
   await prisma.course.update({
     where: { id: parsed.data.courseId },
     data: {
@@ -200,6 +219,9 @@ export async function updateCourseSettings(input: {
       estimatedHours:
         parsed.data.estimatedHours === "" ? null : parsed.data.estimatedHours,
       sequential: parsed.data.sequential,
+      pricingType,
+      priceCents,
+      currency: parsed.data.currency.toUpperCase(),
     },
   });
   await revalidateCourseBuilder(parsed.data.courseId);

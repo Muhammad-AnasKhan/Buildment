@@ -15,6 +15,7 @@ import { Progress, ProgressLabel } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { formatStudyAmount } from "@/lib/format-study-duration";
 import { WeeklyGoalEditor } from "@/components/learn/dashboard/weekly-goal-editor";
+import { CourseCover } from "@/components/learn/course-cover";
 import type {
   DashboardAction,
   DashboardCourse,
@@ -39,6 +40,7 @@ function relativeTime(value: string | null) {
 
 function statusDetails(state: DashboardCourse["state"]) {
   switch (state) {
+    case "PAYMENT_REQUIRED": return { label: "Payment due", variant: "destructive" as const };
     case "NEEDS_REVISION": return { label: "Needs revision", variant: "destructive" as const };
     case "AWAITING_REVIEW": return { label: "Awaiting review", variant: "secondary" as const };
     case "IN_PROGRESS": return { label: "In progress", variant: "secondary" as const };
@@ -65,7 +67,14 @@ function DashboardHeader({ model }: { model: MenteeDashboardViewModel }) {
 function ContinueLearning({ course }: { course: DashboardCourse }) {
   const status = statusDetails(course.state);
   return (
-    <section aria-labelledby="continue-heading" className="rounded-2xl border bg-card p-5 sm:p-7">
+    <section aria-labelledby="continue-heading" className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+      <CourseCover
+        coverUrl={course.coverUrl}
+        title={course.title}
+        aspect="banner"
+        className="aspect-auto min-h-[10.5rem] w-full rounded-none sm:min-h-[12.5rem] lg:min-h-[14rem]"
+      />
+      <div className="p-5 sm:p-7">
       <div className="flex flex-wrap items-center gap-2">
         <p id="continue-heading" className="text-sm font-semibold">Up next</p>
         <Badge variant={status.variant}>{status.label}</Badge>
@@ -92,13 +101,20 @@ function ContinueLearning({ course }: { course: DashboardCourse }) {
         </p>
       ) : null}
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <Link href={course.href} className={buttonVariants({ size: "lg" })}>
+        <Link
+          href={course.href}
+          className={buttonVariants({
+            size: "lg",
+            variant: course.state === "NEEDS_REVISION" ? "destructive" : "default",
+          })}
+        >
           {course.actionLabel}
           <ArrowRight data-icon="inline-end" />
         </Link>
         <Link href={course.overviewHref} className={buttonVariants({ variant: "ghost", size: "lg" })}>
           View course
         </Link>
+      </div>
       </div>
     </section>
   );
@@ -269,8 +285,8 @@ function CourseListPreview({ courses }: { courses: DashboardCourse[] }) {
                 href={course.href}
                 className="group flex min-w-0 flex-1 items-center gap-4 rounded-lg outline-none transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-muted">
-                  <BookOpen className="size-4 text-muted-foreground" aria-hidden />
+                <span className="relative size-12 shrink-0 overflow-hidden rounded-lg sm:size-14">
+                  <CourseCover coverUrl={course.coverUrl} title={course.title} aspect="thumb" className="size-full min-h-0 rounded-lg" />
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium">{course.title}</span>
@@ -297,15 +313,19 @@ function CourseCard({ course }: { course: DashboardCourse }) {
   return (
     <article className={cn("overflow-hidden rounded-xl border bg-card", course.state === "DROPPED" && "opacity-75")}>
       <div className="flex min-h-24 items-stretch border-b bg-muted/30">
-        <div className="flex w-28 shrink-0 items-center justify-center overflow-hidden bg-muted sm:w-36">
-          {course.coverUrl ? (
-            // Course covers may be mentor-provided remote URLs outside the configured image hosts.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={course.coverUrl} alt="" className="h-full w-full object-cover" />
-          ) : <BookOpen className="size-7 text-muted-foreground/60" aria-hidden />}
+        <div className="w-28 shrink-0 overflow-hidden sm:w-36">
+          <CourseCover coverUrl={course.coverUrl} title={course.title} aspect="thumb" className="h-full min-h-24 rounded-none" />
         </div>
         <div className="min-w-0 flex-1 p-4">
-          <Badge variant={status.variant}>{status.label}</Badge>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant={status.variant}>{status.label}</Badge>
+            {course.pendingReviews > 0 ? (
+              <Badge variant="secondary" className="gap-1">
+                <MessageSquareText className="size-3" aria-hidden />
+                {course.pendingReviews} review
+              </Badge>
+            ) : null}
+          </div>
           <h3 className="mt-2 line-clamp-2 font-semibold">{course.title}</h3>
           {course.currentModule ? <p className="mt-1 truncate text-xs text-muted-foreground">{course.currentModule}</p> : null}
         </div>
@@ -322,7 +342,14 @@ function CourseCard({ course }: { course: DashboardCourse }) {
           {course.maxScore > 0 ? <span>{Math.round((course.totalScore / course.maxScore) * 100)}% scored accuracy</span> : null}
         </div>
         <div className="mt-5 flex items-center justify-between gap-3">
-          <Link href={course.href} className={buttonVariants({ variant: course.state === "NEEDS_REVISION" ? "destructive" : "default" })}>{course.actionLabel}</Link>
+          <Link
+            href={course.href}
+            className={buttonVariants({
+              variant: course.state === "NEEDS_REVISION" ? "destructive" : "default",
+            })}
+          >
+            {course.actionLabel}
+          </Link>
           <Link href={course.overviewHref} className="text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">Course overview</Link>
         </div>
       </div>
@@ -347,9 +374,12 @@ function EmptyDashboard({ name }: { name: string }) {
       <Inbox className="mx-auto size-8 text-muted-foreground" aria-hidden />
       <h2 className="mt-4 text-lg font-semibold">No courses assigned yet</h2>
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-        {name}, your dashboard is ready. Assigned courses will appear here when a mentor adds you.
+        {name}, browse the catalog to enroll in published courses, or wait for an invite from your instructor.
       </p>
-      <Link href="/my-questions" className={cn(buttonVariants({ variant: "outline" }), "mt-6")}>Open my help notes</Link>
+      <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+        <Link href="/catalog" className={buttonVariants()}>Browse catalog</Link>
+        <Link href="/my-questions" className={buttonVariants({ variant: "outline" })}>My help notes</Link>
+      </div>
     </div>
   );
 }

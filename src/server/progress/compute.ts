@@ -48,9 +48,11 @@ export async function recomputeChapterProgress(
   let score = 0;
   let maxScore = 0;
 
+  const learnerUserId = enrollment.userId;
   for (const block of completable) {
+    if (!learnerUserId) continue;
     const latest = await tx.response.findFirst({
-      where: { blockId: block.id, userId: enrollment.userId },
+      where: { blockId: block.id, userId: learnerUserId },
       orderBy: { attempt: "desc" },
     });
     if (

@@ -31,6 +31,9 @@ export default async function CourseEditPage({
       estimatedHours: true,
       sequential: true,
       status: true,
+      pricingType: true,
+      priceCents: true,
+      currency: true,
       _count: { select: { enrollments: true } },
       modules: {
         orderBy: { order: "asc" },
@@ -93,6 +96,9 @@ export default async function CourseEditPage({
     estimatedHours: courseRow.estimatedHours,
     sequential: courseRow.sequential,
     status: courseRow.status,
+    pricingType: courseRow.pricingType,
+    priceCents: courseRow.priceCents,
+    currency: courseRow.currency,
     enrollmentCount: courseRow._count.enrollments,
     modules: courseRow.modules,
   };

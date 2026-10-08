@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronRight, Inbox } from "lucide-react";
 import { prisma } from "@/server/db";
 import { nowMs } from "@/server/time";
-import { requireRole } from "@/server/auth/guards";
+import { requireTeachSurface } from "@/server/auth/guards";
 import { AutoSubmitSelect } from "@/components/teach/auto-submit-select";
 
 const AGING_HOURS = 48;
@@ -12,7 +12,7 @@ export default async function ReviewQueuePage({
 }: {
   searchParams: Promise<{ courseId?: string }>;
 }) {
-  const user = await requireRole("MENTOR", "ADMIN");
+  const user = await requireTeachSurface();
   const { courseId: courseFilter } = await searchParams;
 
   const courses = await prisma.course.findMany({

@@ -2,10 +2,33 @@ import "server-only";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/server/db";
 import { auth } from "./auth";
-import { canAccessRole, homeRouteForRole, isMentorOfCourse } from "./access-rules";
+import { isEmailVerified } from "./email-verification";
+import {
+  canAccessLearnSurface,
+  canAccessRole,
+  canAccessTeachSurface,
+  homeRouteForRole,
+  isMentorOfCourse,
+  surfaceHomeRoute,
+  userCanInstruct,
+} from "./access-rules";
+import { getActiveSurface } from "./surface";
+import { ensureSeedTestUserVerified, shouldAutoVerifySeedTestUser } from "./seed-test-users";
 import { canAccessHelpThread } from "@/server/help/access";
+import {
+  LearnAccessError,
+  resolveLearnEnrollment,
+} from "@/server/enrollment/resolve-learn-enrollment";
 
-export { canAccessRole, homeRouteForRole, isMentorOfCourse } from "./access-rules";
+export {
+  canAccessLearnSurface,
+  canAccessRole,
+  canAccessTeachSurface,
+  homeRouteForRole,
+  isMentorOfCourse,
+  surfaceHomeRoute,
+  userCanInstruct,
+} from "./access-rules";
 
 // The single place authorization is decided — see docs/09-security.mdx.
 // Route handlers, server actions, and layouts call these instead of checking
@@ -25,6 +48,22 @@ export async function requireUser() {
   return user;
 }
 
+/** Signed-in user with a verified email — required for learner/instructor product surfaces. */
+export async function requireVerifiedUser() {
+  const user = await requireUser();
+  if (user.role === "ADMIN") return user;
+  if (!isEmailVerified(user.emailVerified)) {
+    if (shouldAutoVerifySeedTestUser(user.email)) {
+      const verifiedAt = await ensureSeedTestUserVerified(user.email!);
+      if (verifiedAt) {
+        return { ...user, emailVerified: verifiedAt };
+      }
+    }
+    redirect("/verify-email");
+  }
+  return user;
+}
+
 /** Redirects to that role's home if the signed-in user doesn't have one of `allowed`. */
 export async function requireRole(...allowed: readonly ["MENTOR" | "MENTEE" | "ADMIN", ...("MENTOR" | "MENTEE" | "ADMIN")[]]) {
   const user = await requireUser();
@@ -34,9 +73,37 @@ export async function requireRole(...allowed: readonly ["MENTOR" | "MENTEE" | "A
   return user;
 }
 
+/** Learner workspace — any signed-in user except platform admin shell. */
+export async function requireLearnSurface() {
+  const user = await requireVerifiedUser();
+  if (!canAccessLearnSurface(user)) {
+    redirect("/admin");
+  }
+  const canInstruct = userCanInstruct(user);
+  const surface = await getActiveSurface(canInstruct);
+  if (surface !== "learn") {
+    redirect(surfaceHomeRoute("teach"));
+  }
+  return user;
+}
+
+/** Instructor workspace — requires instructor capability and teach surface. */
+export async function requireTeachSurface() {
+  const user = await requireVerifiedUser();
+  if (!canAccessTeachSurface(user)) {
+    redirect(surfaceHomeRoute("learn"));
+  }
+  const canInstruct = userCanInstruct(user);
+  const surface = await getActiveSurface(canInstruct);
+  if (surface !== "teach") {
+    redirect(surfaceHomeRoute("learn"));
+  }
+  return user;
+}
+
 /** Throws ForbiddenError (never silently no-ops) if the signed-in user doesn't mentor this course. */
 export async function requireMentorOfCourse(courseId: string) {
-  const user = await requireRole("MENTOR", "ADMIN");
+  const user = await requireTeachSurface();
   const course = await prisma.course.findUnique({
     where: { id: courseId },
     select: { mentorId: true },
@@ -48,16 +115,25 @@ export async function requireMentorOfCourse(courseId: string) {
   return user;
 }
 
-/** Throws ForbiddenError if the signed-in user isn't enrolled in this course. */
+/** Throws if the user cannot read chapters or submit block responses for this course. */
 export async function requireEnrolledMentee(courseId: string) {
-  const user = await requireUser();
-  const enrollment = await prisma.enrollment.findUnique({
-    where: { courseId_userId: { courseId, userId: user.id } },
-  });
-  if (!enrollment) {
-    throw new ForbiddenError(`User ${user.id} is not enrolled in course ${courseId}`);
+  const user = await requireVerifiedUser();
+  try {
+    const enrollment = await resolveLearnEnrollment(user, courseId);
+    return { user, enrollment };
+  } catch (error) {
+    if (error instanceof LearnAccessError) {
+      throw new ForbiddenError(`Learn access denied (${error.code})`);
+    }
+    throw error;
   }
-  return { user, enrollment };
+}
+
+/** Enrollment row for the signed-in user, including payment-pending states. */
+export async function getEnrollmentForUser(courseId: string, userId: string) {
+  return prisma.enrollment.findUnique({
+    where: { courseId_userId: { courseId, userId } },
+  });
 }
 
 /** Throws ForbiddenError if the user cannot read this help thread (mentee owner or course mentor). */

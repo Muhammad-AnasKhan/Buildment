@@ -31,7 +31,7 @@ type DemoUser = {
 
 type DemoEnrollment = {
   id: string;
-  userId: string;
+  userId: string | null;
   courseId: string;
 };
 
@@ -234,6 +234,7 @@ async function ensurePendingResponse(args: {
 }
 
 async function syncChapterProgress(enrollment: DemoEnrollment, chapter: DemoChapter, forceComplete: boolean) {
+  if (!enrollment.userId) return;
   const blocks = chapter.blocks.filter(
     (block) => block.required && !block.archivedAt && COMPLETABLE.has(block.type),
   );
@@ -577,7 +578,7 @@ async function main() {
   console.log("Showcase demo data is ready:");
   for (const item of summary) {
     console.log(
-      `  ${item.user.email}: ${item.percentComplete}% · ${item.chaptersCompleted} chapters · ${item.pendingReviews} pending reviews`,
+      `  ${item.user?.email ?? "pending"}: ${item.percentComplete}% · ${item.chaptersCompleted} chapters · ${item.pendingReviews} pending reviews`,
     );
   }
 }

@@ -6,10 +6,14 @@ declare module "next-auth" {
     user: {
       id: string;
       role: Role;
+      canInstruct: boolean;
+      emailVerified: Date | null;
     } & DefaultSession["user"];
   }
 
   interface User {
     role: Role;
+    canInstruct: boolean;
+    emailVerified: Date | null;
   }
 }

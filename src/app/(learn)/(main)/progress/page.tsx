@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Progress, ProgressLabel } from "@/components/ui/progress";
 import { prisma } from "@/server/db";
-import { requireRole } from "@/server/auth/guards";
+import { requireLearnSurface } from "@/server/auth/guards";
 import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
 import { loadEnrollmentSyllabus, resolveContinueChapterPath } from "@/server/progress/enrollment-syllabus";
 import { formatStudyHours } from "@/lib/format-study-duration";
@@ -29,7 +29,7 @@ function accuracyState(value: number | null) {
 }
 
 export default async function MenteeProgressPage() {
-  const user = await requireRole("MENTEE");
+  const user = await requireLearnSurface();
   const bypassLocking = bypassProgressGatingForEmail(user.email ?? "");
 
   const enrollments = await prisma.enrollment.findMany({

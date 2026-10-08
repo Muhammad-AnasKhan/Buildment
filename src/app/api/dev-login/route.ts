@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/db";
 import { homeRouteForRole } from "@/server/auth/access-rules";
 import { safeRedirectTo } from "@/lib/safe-redirect";
+import { ensureSeedTestUserVerified, shouldAutoVerifySeedTestUser } from "@/server/auth/seed-test-users";
+import { isSeedTestEmail } from "@/lib/seed-test-users";
 
 // Dev-only shortcut to sign in as a seeded user without real Google/Resend credentials
 // configured — see README.md "Local dev login". Mints a real database Session row and
@@ -19,9 +21,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "?email= is required" }, { status: 400 });
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  if (!isSeedTestEmail(email)) {
+    return NextResponse.json({ error: "Dev login is only for seeded test accounts" }, { status: 403 });
+  }
+
+  let user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
-    return NextResponse.json({ error: `No user with email ${email} — seed the database first` }, { status: 404 });
+    return NextResponse.json({ error: `No user with email ${email} — run pnpm db:seed first` }, { status: 404 });
+  }
+  if (!user.emailVerified && shouldAutoVerifySeedTestUser(email)) {
+    await ensureSeedTestUserVerified(email);
+    user = await prisma.user.findUniqueOrThrow({ where: { email } });
   }
 
   const sessionToken = randomBytes(32).toString("hex");

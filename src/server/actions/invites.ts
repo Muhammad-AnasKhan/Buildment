@@ -3,8 +3,9 @@
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import { prisma } from "@/server/db";
-import { requireMentorOfCourse, requireUser } from "@/server/auth/guards";
+import { requireMentorOfCourse, requireVerifiedUser } from "@/server/auth/guards";
 import { inviteAcceptUrl, sendEmail } from "@/server/email/send";
+import { lifecycleForSignedInEnrollment } from "@/server/enrollment/lifecycle";
 
 // Assignment + invite flows (docs/phases/m7-assignment-and-polish.mdx).
 // Authorization always goes through the guards in server/auth — the mentee
@@ -123,6 +124,8 @@ export async function assignByEmails(input: {
           userId: existingUser.id,
           status: "ASSIGNED",
           assignedById: user.id,
+          source: "DIRECT",
+          lifecycle: "ACTIVE",
         },
       });
       enrolledEmails.push(email);
@@ -222,7 +225,7 @@ export async function revokeInvite(input: {
 }
 
 export type AcceptInviteResult =
-  | { ok: true; courseSlug: string }
+  | { ok: true; courseSlug: string; checkoutRequired: boolean }
   | {
       ok: false;
       error:
@@ -244,11 +247,22 @@ export async function acceptInvite(input: {
   token: string;
   name?: string;
 }): Promise<AcceptInviteResult> {
-  const user = await requireUser();
+  const user = await requireVerifiedUser();
 
   const invite = await prisma.invite.findUnique({
     where: { token: input.token },
-    include: { course: { select: { id: true, slug: true, status: true } } },
+    include: {
+      course: {
+        select: {
+          id: true,
+          slug: true,
+          status: true,
+          pricingType: true,
+          priceCents: true,
+          currency: true,
+        },
+      },
+    },
   });
   if (!invite) return { ok: false, error: "invalid" };
   if (invite.revokedAt) return { ok: false, error: "revoked" };
@@ -259,12 +273,35 @@ export async function acceptInvite(input: {
   }
   if (invite.course.status !== "PUBLISHED") return { ok: false, error: "course-unavailable" };
 
+  const lifecycle = lifecycleForSignedInEnrollment(invite.course.pricingType);
+  const checkoutRequired = lifecycle === "PAYMENT_REQUIRED";
+
   await prisma.$transaction(async (tx) => {
-    await tx.enrollment.upsert({
+    const enrollment = await tx.enrollment.upsert({
       where: { courseId_userId: { courseId: invite.courseId, userId: user.id } },
-      update: { status: "ASSIGNED" },
-      create: { courseId: invite.courseId, userId: user.id, status: "ASSIGNED" },
+      update: {},
+      create: {
+        courseId: invite.courseId,
+        userId: user.id,
+        status: checkoutRequired ? "ASSIGNED" : "IN_PROGRESS",
+        source: "INVITE",
+        lifecycle,
+        startedAt: checkoutRequired ? null : new Date(),
+      },
     });
+    if (checkoutRequired) {
+      await tx.payment.upsert({
+        where: { enrollmentId: enrollment.id },
+        create: {
+          enrollmentId: enrollment.id,
+          amountCents: invite.course.priceCents,
+          currency: invite.course.currency,
+          status: "PENDING",
+          provider: "stub",
+        },
+        update: {},
+      });
+    }
     await tx.invite.update({
       where: { id: invite.id },
       data: { acceptedAt: new Date(), acceptedById: user.id },
@@ -275,7 +312,7 @@ export async function acceptInvite(input: {
     }
   });
 
-  return { ok: true, courseSlug: invite.course.slug };
+  return { ok: true, courseSlug: invite.course.slug, checkoutRequired };
 }
 
 /** Mentee declines without signing anything — the invite stays usable. */

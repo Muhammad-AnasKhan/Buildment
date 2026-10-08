@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ChevronRight, Inbox } from "lucide-react";
 import { prisma } from "@/server/db";
 import { nowMs } from "@/server/time";
-import { requireRole } from "@/server/auth/guards";
+import { requireTeachSurface } from "@/server/auth/guards";
 import { AutoSubmitSelect } from "@/components/teach/auto-submit-select";
 import { countOpenHelpRequests } from "@/server/help/count-open";
 
@@ -19,7 +19,7 @@ export default async function MentorHelpInboxPage({
 }: {
   searchParams: Promise<{ courseId?: string; status?: string }>;
 }) {
-  const user = await requireRole("MENTOR", "ADMIN");
+  const user = await requireTeachSurface();
   const { courseId: courseFilter, status: statusFilter } = await searchParams;
   const openHelpCount = await countOpenHelpRequests(user);
 

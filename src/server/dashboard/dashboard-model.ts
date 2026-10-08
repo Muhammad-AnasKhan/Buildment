@@ -1,5 +1,6 @@
 import type {
   EnrollStatus,
+  EnrollmentLifecycle,
   HelpThreadStatus,
   ProgressStatus,
   ResponseStatus,
@@ -21,6 +22,7 @@ export type DashboardChapterInput = {
 
 export type DashboardEnrollmentInput = {
   id: string;
+  lifecycle: EnrollmentLifecycle;
   status: EnrollStatus;
   percentComplete: number;
   chaptersCompleted: number;
@@ -109,7 +111,14 @@ export type DashboardCourse = {
   title: string;
   coverUrl: string | null;
   enrollmentStatus: EnrollStatus;
-  state: "NOT_STARTED" | "IN_PROGRESS" | "NEEDS_REVISION" | "AWAITING_REVIEW" | "COMPLETED" | "DROPPED";
+  state:
+    | "PAYMENT_REQUIRED"
+    | "NOT_STARTED"
+    | "IN_PROGRESS"
+    | "NEEDS_REVISION"
+    | "AWAITING_REVIEW"
+    | "COMPLETED"
+    | "DROPPED";
   percentComplete: number;
   chaptersCompleted: number;
   chaptersTotal: number;
@@ -240,6 +249,12 @@ export function buildMenteeDashboardViewModel(args: {
       actionReason = "This enrollment is no longer active.";
       href = overviewHref;
       priority = 90;
+    } else if (enrollment.lifecycle === "PAYMENT_REQUIRED") {
+      state = "PAYMENT_REQUIRED";
+      actionLabel = "Complete payment";
+      actionReason = "Checkout is required before you can open chapters.";
+      href = `/courses/${enrollment.course.slug}/checkout`;
+      priority = 1;
     } else if (revision) {
       state = "NEEDS_REVISION";
       actionLabel = `Revise ${revision.block.chapter.title}`;

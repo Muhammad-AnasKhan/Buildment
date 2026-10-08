@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { prisma } from "@/server/db";
-import { requireEnrolledMentee, requireMentorOfCourse } from "@/server/auth/guards";
+import { ForbiddenError, requireEnrolledMentee, requireMentorOfCourse } from "@/server/auth/guards";
 import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
 import { ChapterLockedError, assertChapterUnlocked } from "@/server/progress/gate";
 import {
@@ -34,7 +34,16 @@ export async function markChapterComplete(input: {
   });
   if (!chapter) return { ok: false, error: "Chapter not found." };
 
-  const { enrollment, user } = await requireEnrolledMentee(chapter.courseId);
+  let enrollment;
+  let user;
+  try {
+    ({ enrollment, user } = await requireEnrolledMentee(chapter.courseId));
+  } catch (error) {
+    if (error instanceof ForbiddenError) {
+      return { ok: false, error: "You don't have access to submit progress for this course." };
+    }
+    throw error;
+  }
   const bypassLocking = bypassProgressGatingForEmail(user.email ?? "");
 
   try {
@@ -57,9 +66,12 @@ export async function markChapterComplete(input: {
   });
   const completable = blocks.filter((block) => isCompletableBlock(block));
 
+  const learnerUserId = enrollment.userId;
+  if (!learnerUserId) return { ok: false as const, error: "pending_account" as const };
+
   for (const block of completable) {
     const latest = await prisma.response.findFirst({
-      where: { blockId: block.id, userId: enrollment.userId },
+      where: { blockId: block.id, userId: learnerUserId },
       orderBy: { attempt: "desc" },
       select: { status: true, isCorrect: true },
     });
@@ -138,7 +150,16 @@ export async function saveChecklistItem(input: {
   });
   if (!chapter) return { ok: false, error: "Chapter not found." };
 
-  const { enrollment, user } = await requireEnrolledMentee(chapter.courseId);
+  let enrollment;
+  let user;
+  try {
+    ({ enrollment, user } = await requireEnrolledMentee(chapter.courseId));
+  } catch (error) {
+    if (error instanceof ForbiddenError) {
+      return { ok: false, error: "You don't have access to save checklist progress for this course." };
+    }
+    throw error;
+  }
   const bypassLocking = bypassProgressGatingForEmail(user.email ?? "");
 
   try {

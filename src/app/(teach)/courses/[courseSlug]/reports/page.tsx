@@ -57,13 +57,21 @@ export default async function CourseReportsPage({
   const enrollments = await prisma.enrollment.findMany({
     where: { courseId: course.id },
     orderBy: { createdAt: "asc" },
-    include: { user: { select: { name: true, email: true } } },
+    include: {
+      user: { select: { name: true, email: true } },
+      learnerProfile: { select: { email: true } },
+    },
   });
 
   const chapterProgress = await prisma.chapterProgress.findMany({
     where: { enrollment: { courseId: course.id } },
     include: {
-      enrollment: { select: { user: { select: { name: true, email: true } } } },
+      enrollment: {
+        select: {
+          user: { select: { name: true, email: true } },
+          learnerProfile: { select: { email: true } },
+        },
+      },
     },
   });
 
@@ -172,7 +180,7 @@ export default async function CourseReportsPage({
                     className="rounded-lg border border-amber-200 bg-background px-2.5 py-1.5 text-xs font-medium text-amber-900 dark:border-amber-500/30 dark:text-amber-200"
                   >
                     <Link href={`/courses/${course.slug}/mentees/${e.id}`} className="hover:underline">
-                      {e.user.name ?? e.user.email}
+                      {e.user?.name ?? e.user?.email ?? e.learnerProfile?.email ?? "Pending learner"}
                       {e.lastActiveAt
                         ? ` · ${relativeLastActive(now - e.lastActiveAt.getTime())}`
                         : ""}
@@ -209,7 +217,7 @@ export default async function CourseReportsPage({
                         <td className="px-3 py-3">
                           <p className="font-medium text-foreground">
                             <Link href={`/courses/${course.slug}/mentees/${e.id}`} className="hover:underline">
-                              {e.user.name ?? "Unnamed"}
+                              {e.user?.name ?? e.learnerProfile?.email ?? "Unnamed"}
                             </Link>
                             {isAtRisk && (
                               <span className="ml-2 rounded-md bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-300">
@@ -217,7 +225,9 @@ export default async function CourseReportsPage({
                               </span>
                             )}
                           </p>
-                          <p className="truncate text-xs text-muted-foreground">{e.user.email}</p>
+                          <p className="truncate text-xs text-muted-foreground">
+                            {e.user?.email ?? e.learnerProfile?.email ?? "—"}
+                          </p>
                         </td>
                         <td className="px-3 py-3">
                           <div className="flex items-center gap-2">
@@ -325,7 +335,14 @@ async function ChapterReport({ courseId, chapterId }: { courseId: string; chapte
     }),
     prisma.chapterProgress.findMany({
       where: { chapterId, enrollment: { courseId } },
-      include: { enrollment: { select: { user: { select: { name: true, email: true } } } } },
+      include: {
+        enrollment: {
+          select: {
+            user: { select: { name: true, email: true } },
+            learnerProfile: { select: { email: true } },
+          },
+        },
+      },
     }),
   ]);
 
@@ -398,7 +415,10 @@ async function ChapterReport({ courseId, chapterId }: { courseId: string; chapte
               {progressRows.map((row) => (
                 <tr key={row.id}>
                   <td className="px-4 py-2.5 text-xs font-medium text-foreground">
-                    {row.enrollment.user.name ?? row.enrollment.user.email}
+                    {row.enrollment.user?.name ??
+                      row.enrollment.user?.email ??
+                      row.enrollment.learnerProfile?.email ??
+                      "Pending learner"}
                   </td>
                   <td className="px-4 py-2.5 text-xs tabular-nums text-muted-foreground">
                     {row.blocksCompleted}/{row.blocksTotal}

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/server/db";
 import { getSessionUser } from "@/server/auth/guards";
+import { requireBlockSubmissionAccess } from "@/server/enrollment/api-learn-access";
 import { QuizPayloadSchema } from "@/blocks/quiz/schema";
 import { blockRegistry } from "@/blocks/registry";
 import { assertChapterUnlocked, ChapterLockedError } from "@/server/progress/gate";
@@ -22,10 +23,6 @@ export async function POST(
 ) {
   const { chapterId } = await params;
   const user = await getSessionUser();
-  if (!user) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
-  if (!checkRateLimit(`quiz-submit:${user.id}:${chapterId}`, { max: 10, windowMs: 60_000 })) {
-    return NextResponse.json({ error: "Too many quiz submissions. Please wait a moment." }, { status: 429 });
-  }
 
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId },
@@ -35,17 +32,25 @@ export async function POST(
     return NextResponse.json({ error: "Quiz chapter not found" }, { status: 404 });
   }
 
-  const enrollment = await prisma.enrollment.findUnique({
-    where: { courseId_userId: { courseId: chapter.courseId, userId: user.id } },
-  });
-  if (!enrollment) return NextResponse.json({ error: "Not enrolled in this course" }, { status: 403 });
+  const access = await requireBlockSubmissionAccess(chapter.courseId, user);
+  if (!access.ok) {
+    return NextResponse.json(
+      { error: access.error, code: access.code },
+      { status: access.status }
+    );
+  }
+  const { enrollment, user: verifiedUser } = access;
+
+  if (!checkRateLimit(`quiz-submit:${verifiedUser.id}:${chapterId}`, { max: 10, windowMs: 60_000 })) {
+    return NextResponse.json({ error: "Too many quiz submissions. Please wait a moment." }, { status: 429 });
+  }
 
   try {
     await assertChapterUnlocked({
       courseId: chapter.courseId,
       enrollmentId: enrollment.id,
       chapterId,
-      bypassLocking: bypassProgressGatingForEmail(user.email ?? ""),
+      bypassLocking: bypassProgressGatingForEmail(verifiedUser.email ?? ""),
     });
   } catch (error) {
     if (error instanceof ChapterLockedError) {
@@ -90,7 +95,7 @@ export async function POST(
       const { block, config, normalized } = item;
 
       const previous = await tx.response.findFirst({
-        where: { blockId: block.id, userId: user.id, status: { not: "DRAFT" } },
+        where: { blockId: block.id, userId: verifiedUser.id, status: { not: "DRAFT" } },
         orderBy: { attempt: "desc" },
       });
       if (previous && (previous.isCorrect === true || !config.allowRetry)) {
@@ -100,11 +105,13 @@ export async function POST(
 
       const payload = QuizPayloadSchema.parse({ selected: normalized });
       const graded = blockRegistry.QUIZ.grade(config, payload);
-      const previousAttempts = await tx.response.count({ where: { blockId: block.id, userId: user.id } });
+      const previousAttempts = await tx.response.count({
+        where: { blockId: block.id, userId: verifiedUser.id },
+      });
       await tx.response.create({
         data: {
           blockId: block.id,
-          userId: user.id,
+          userId: verifiedUser.id,
           enrollmentId: enrollment.id,
           attempt: previousAttempts + 1,
           status: graded.status,

@@ -19,10 +19,12 @@ const week = [
 ];
 
 function enrollment(overrides: Partial<DashboardEnrollmentInput> = {}): DashboardEnrollmentInput {
-  const id = overrides.id ?? "enrollment-1";
-  const slug = overrides.course?.slug ?? `course-${id}`;
+  const { lifecycle = "ACTIVE", ...rest } = overrides;
+  const id = rest.id ?? "enrollment-1";
+  const slug = rest.course?.slug ?? `course-${id}`;
   return {
     id,
+    lifecycle,
     status: "IN_PROGRESS",
     percentComplete: 25,
     chaptersCompleted: 0,
@@ -36,7 +38,7 @@ function enrollment(overrides: Partial<DashboardEnrollmentInput> = {}): Dashboar
     course: {
       id: `course-id-${id}`,
       slug,
-      title: overrides.course?.title ?? `Course ${id}`,
+      title: rest.course?.title ?? `Course ${id}`,
       coverUrl: null,
       sequential: true,
       modules: [{
@@ -52,7 +54,7 @@ function enrollment(overrides: Partial<DashboardEnrollmentInput> = {}): Dashboar
     chapterProgress: [
       { chapterId: `chapter-a-${id}`, status: "IN_PROGRESS", blocksCompleted: 0, blocksTotal: 1, timeSpentSeconds: 120, startedAt: now, completedAt: null },
     ],
-    ...overrides,
+    ...rest,
   };
 }
 

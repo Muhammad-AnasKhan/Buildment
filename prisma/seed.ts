@@ -2,6 +2,8 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { SEED_COURSE, SEED_USERS } from "../src/lib/seed-data";
+import { SEED_DEV_PASSWORD } from "../src/lib/seed-test-users";
+import { hashPassword } from "../src/server/auth/password";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -11,20 +13,21 @@ async function main() {
   const menteeSeeds = SEED_USERS.filter((u) => u.role === "MENTEE");
   if (!mentorSeed) throw new Error("SEED_USERS must include exactly one MENTOR");
 
-  const mentor = await prisma.user.upsert({
-    where: { email: mentorSeed.email },
-    update: {},
-    create: { email: mentorSeed.email, name: mentorSeed.name, role: "MENTOR" },
-  });
-
-  const mentees = await Promise.all(
-    menteeSeeds.map((seed) =>
-      prisma.user.upsert({
+  const passwordHash = hashPassword(SEED_DEV_PASSWORD);
+  await Promise.all(
+    SEED_USERS.map((seed) => {
+      const data = { emailVerified: new Date(), passwordHash, ...(seed.role === "MENTOR" ? { canInstruct: true } : {}) };
+      return prisma.user.upsert({
         where: { email: seed.email },
-        update: {},
-        create: { email: seed.email, name: seed.name, role: "MENTEE" },
-      })
-    )
+        update: data,
+        create: { email: seed.email, name: seed.name, role: seed.role, ...data },
+      });
+    })
+  );
+
+  const mentor = await prisma.user.findUniqueOrThrow({ where: { email: mentorSeed.email } });
+  const mentees = await Promise.all(
+    menteeSeeds.map((seed) => prisma.user.findUniqueOrThrow({ where: { email: seed.email } }))
   );
 
   const course = await prisma.course.upsert({

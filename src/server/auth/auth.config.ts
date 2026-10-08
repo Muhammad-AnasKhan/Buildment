@@ -9,6 +9,7 @@ export const authConfig = {
   pages: {
     signIn: "/login",
     verifyRequest: "/verify",
+    newUser: "/dashboard",
   },
   providers: [],
 } satisfies NextAuthConfig;

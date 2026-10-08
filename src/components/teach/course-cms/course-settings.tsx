@@ -28,6 +28,9 @@ export function CourseSettings({ course }: { course: CourseBuilderCourse }) {
               difficulty: String(formData.get("difficulty") ?? ""),
               estimatedHours: String(formData.get("estimatedHours") ?? ""),
               sequential: formData.get("sequential") === "on",
+              pricingType: String(formData.get("pricingType") ?? "FREE"),
+              priceDollars: String(formData.get("priceDollars") ?? ""),
+              currency: String(formData.get("currency") ?? "USD"),
             });
           }}
         >
@@ -76,6 +79,43 @@ export function CourseSettings({ course }: { course: CourseBuilderCourse }) {
                 max={1000}
                 defaultValue={course.estimatedHours ?? ""}
                 placeholder="12"
+              />
+            </Field>
+          </div>
+          <Field label="Pricing" htmlFor="course-pricing">
+            <select
+              id="course-pricing"
+              name="pricingType"
+              defaultValue={course.pricingType}
+              className="h-9 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <option value="FREE">Free — learners enroll without payment</option>
+              <option value="PAID">Paid — learners pay before access (Stripe in a later phase)</option>
+            </select>
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Price (USD)" htmlFor="course-price">
+              <Input
+                id="course-price"
+                name="priceDollars"
+                type="number"
+                min={0}
+                step={0.01}
+                defaultValue={
+                  course.pricingType === "PAID" && course.priceCents > 0
+                    ? (course.priceCents / 100).toFixed(2)
+                    : ""
+                }
+                placeholder="49.00"
+              />
+            </Field>
+            <Field label="Currency" htmlFor="course-currency">
+              <Input
+                id="course-currency"
+                name="currency"
+                defaultValue={course.currency}
+                maxLength={3}
+                placeholder="USD"
               />
             </Field>
           </div>

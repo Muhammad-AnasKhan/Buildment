@@ -27,6 +27,9 @@ export type CourseBuilderCourse = {
   estimatedHours: number | null;
   sequential: boolean;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  pricingType: "FREE" | "PAID";
+  priceCents: number;
+  currency: string;
   enrollmentCount: number;
   modules: CourseBuilderModule[];
 };

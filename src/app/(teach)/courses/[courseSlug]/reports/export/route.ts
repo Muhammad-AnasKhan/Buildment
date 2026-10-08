@@ -22,7 +22,10 @@ export async function GET(
   const enrollments = await prisma.enrollment.findMany({
     where: { courseId: course.id },
     orderBy: { createdAt: "asc" },
-    include: { user: { select: { name: true, email: true } } },
+    include: {
+      user: { select: { name: true, email: true } },
+      learnerProfile: { select: { email: true } },
+    },
   });
 
   const header = [
@@ -40,8 +43,8 @@ export async function GET(
   ];
 
   const rows = enrollments.map((e) => [
-    e.user.name ?? "",
-    e.user.email ?? "",
+    e.user?.name ?? e.learnerProfile?.email ?? "",
+    e.user?.email ?? e.learnerProfile?.email ?? "",
     e.status,
     String(e.percentComplete),
     String(e.chaptersCompleted),

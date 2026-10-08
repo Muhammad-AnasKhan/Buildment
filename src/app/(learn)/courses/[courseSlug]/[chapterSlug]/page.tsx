@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/server/db";
-import { requireEnrolledMentee } from "@/server/auth/guards";
+import { ForbiddenError, requireEnrolledMentee } from "@/server/auth/guards";
+import {
+  LearnAccessDenied,
+  forbiddenToLearnReason,
+} from "@/components/learn/learn-access-denied";
 import { ChapterMdx } from "@/mdx/compile";
 import { QuizChapterWizard } from "@/components/learn/quiz-chapter-wizard";
 import { stripInteractiveBlockTags } from "@/lib/strip-interactive-block-tags";
@@ -65,7 +69,21 @@ export default async function ChapterReaderPage({
   });
   if (!course) notFound();
 
-  const { enrollment, user } = await requireEnrolledMentee(course.id);
+  let enrollment;
+  let user;
+  try {
+    ({ enrollment, user } = await requireEnrolledMentee(course.id));
+  } catch (error) {
+    if (error instanceof ForbiddenError) {
+      return (
+        <LearnAccessDenied
+          courseSlug={courseSlug}
+          reason={forbiddenToLearnReason(error.message)}
+        />
+      );
+    }
+    throw error;
+  }
   const bypassLocking = bypassProgressGatingForEmail(user.email ?? "");
 
   const flatChapters = course.modules.flatMap((mod) =>

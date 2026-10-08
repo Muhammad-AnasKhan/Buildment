@@ -1,9 +1,11 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/server/db";
-import { requireRole } from "@/server/auth/guards";
+import { requireTeachSurface } from "@/server/auth/guards";
 import { slugify } from "@/lib/utils";
+import { validateCoursePublish } from "@/server/courses/publish-rules";
 
 export type CourseActionResult =
   | { ok: true; courseSlug: string }
@@ -23,7 +25,7 @@ export async function createCourse(input: {
   title: string;
   description?: string;
 }): Promise<CourseActionResult> {
-  const user = await requireRole("MENTOR", "ADMIN");
+  const user = await requireTeachSurface();
   const parsed = createCourseInput.safeParse(input);
   if (!parsed.success) {
     return { ok: false, errors: ["A title of at least 3 characters is required."] };
@@ -56,24 +58,60 @@ async function uniqueCourseSlug(base: string): Promise<string> {
   }
 }
 
-export async function publishCourse(input: {
-  courseId: string;
-}): Promise<CourseActionResult> {
-  const user = await requireRole("MENTOR", "ADMIN");
-  const course = await prisma.course.findUnique({
-    where: { id: input.courseId },
-    select: { id: true, slug: true, mentorId: true, status: true },
-  });
-  if (!course) return { ok: false, errors: ["Course not found."] };
+async function assertCourseOwner(
+  user: { id: string; role: "MENTOR" | "MENTEE" | "ADMIN" },
+  course: { mentorId: string }
+): Promise<CourseActionResult | null> {
   if (user.role !== "ADMIN" && course.mentorId !== user.id) {
     return { ok: false, errors: ["You don't own this course."] };
   }
+  return null;
+}
+
+async function revalidateCourseSlug(courseId: string) {
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { slug: true },
+  });
+  if (course) revalidatePath(`/courses/${course.slug}/edit`);
+}
+
+export async function publishCourse(input: {
+  courseId: string;
+}): Promise<CourseActionResult> {
+  const user = await requireTeachSurface();
+  const course = await prisma.course.findUnique({
+    where: { id: input.courseId },
+    select: {
+      id: true,
+      slug: true,
+      mentorId: true,
+      status: true,
+      pricingType: true,
+      priceCents: true,
+      _count: { select: { chapters: true } },
+      chapters: { where: { publishedAt: { not: null } }, select: { id: true } },
+    },
+  });
+  if (!course) return { ok: false, errors: ["Course not found."] };
+  const ownerError = await assertCourseOwner(user, course);
+  if (ownerError) return ownerError;
   if (course.status === "PUBLISHED") return { ok: true, courseSlug: course.slug };
+
+  const publishErrors = validateCoursePublish({
+    status: course.status,
+    pricingType: course.pricingType,
+    priceCents: course.priceCents,
+    chapterCount: course._count.chapters,
+    publishedChapterCount: course.chapters.length,
+  });
+  if (publishErrors.length > 0) return { ok: false, errors: publishErrors };
 
   await prisma.course.update({
     where: { id: course.id },
     data: { status: "PUBLISHED", publishedAt: new Date() },
   });
+  await revalidateCourseSlug(course.id);
   return { ok: true, courseSlug: course.slug };
 }
 
@@ -82,7 +120,7 @@ export async function unpublishCourse(input: {
   /** Required when mentees are enrolled — the UI collects this confirmation. */
   confirmedWithEnrollments?: boolean;
 }): Promise<CourseActionResult> {
-  const user = await requireRole("MENTOR", "ADMIN");
+  const user = await requireTeachSurface();
   const course = await prisma.course.findUnique({
     where: { id: input.courseId },
     select: {
@@ -94,22 +132,48 @@ export async function unpublishCourse(input: {
     },
   });
   if (!course) return { ok: false, errors: ["Course not found."] };
-  if (user.role !== "ADMIN" && course.mentorId !== user.id) {
-    return { ok: false, errors: ["You don't own this course."] };
-  }
-  if (course.status === "DRAFT") return { ok: true, courseSlug: course.slug };
+  const ownerError = await assertCourseOwner(user, course);
+  if (ownerError) return ownerError;
+  if (course.status !== "PUBLISHED") return { ok: true, courseSlug: course.slug };
   if (course._count.enrollments > 0 && !input.confirmedWithEnrollments) {
     return {
       ok: false,
       errors: [
-        `${course._count.enrollments} mentee(s) are enrolled. Confirm you want to unpublish anyway.`,
+        `${course._count.enrollments} learner(s) are enrolled. Confirm you want to archive this course.`,
       ],
     };
   }
+
+  const nextStatus = course._count.enrollments > 0 ? "ARCHIVED" : "DRAFT";
+  await prisma.course.update({
+    where: { id: course.id },
+    data: {
+      status: nextStatus,
+      ...(nextStatus === "DRAFT" ? { publishedAt: null } : {}),
+    },
+  });
+  await revalidateCourseSlug(course.id);
+  return { ok: true, courseSlug: course.slug };
+}
+
+/** Move an archived course back to draft for editing before re-publish. */
+export async function restoreCourseToDraft(input: {
+  courseId: string;
+}): Promise<CourseActionResult> {
+  const user = await requireTeachSurface();
+  const course = await prisma.course.findUnique({
+    where: { id: input.courseId },
+    select: { id: true, slug: true, mentorId: true, status: true },
+  });
+  if (!course) return { ok: false, errors: ["Course not found."] };
+  const ownerError = await assertCourseOwner(user, course);
+  if (ownerError) return ownerError;
+  if (course.status !== "ARCHIVED") return { ok: true, courseSlug: course.slug };
 
   await prisma.course.update({
     where: { id: course.id },
     data: { status: "DRAFT", publishedAt: null },
   });
+  await revalidateCourseSlug(course.id);
   return { ok: true, courseSlug: course.slug };
 }

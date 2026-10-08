@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { prisma } from "@/server/db";
 import { requireMentorOfCourse } from "@/server/auth/guards";
 import { formatStudyHours } from "@/lib/format-study-duration";
+import { enrollmentLearnerEmail, enrollmentLearnerLabel } from "@/lib/enrollment-display";
 
 export default async function CourseActivityPage({
   params,
@@ -34,7 +35,10 @@ export default async function CourseActivityPage({
   const [enrollments, activityRows] = await Promise.all([
     prisma.enrollment.findMany({
       where: { courseId: course.id },
-      include: { user: { select: { name: true, email: true } } },
+      include: {
+        user: { select: { name: true, email: true } },
+        learnerProfile: { select: { email: true } },
+      },
       orderBy: { createdAt: "asc" },
     }),
     prisma.dailyActivity.findMany({
@@ -147,11 +151,11 @@ export default async function CourseActivityPage({
                             href={`/courses/${course.slug}/mentees/${enrollment.id}`}
                             className="block max-w-44 truncate font-medium underline-offset-2 hover:underline"
                           >
-                            {enrollment.user.name ?? enrollment.user.email}
+                            {enrollmentLearnerLabel(enrollment)}
                           </Link>
-                          {enrollment.user.name ? (
+                          {enrollment.user?.name && enrollmentLearnerEmail(enrollment) ? (
                             <span className="block max-w-44 truncate text-xs text-muted-foreground">
-                              {enrollment.user.email}
+                              {enrollmentLearnerEmail(enrollment)}
                             </span>
                           ) : null}
                         </td>
