@@ -24,6 +24,7 @@ export function CourseSettings({ course }: { course: CourseBuilderCourse }) {
               courseId: course.id,
               title: String(formData.get("title") ?? ""),
               description: String(formData.get("description") ?? ""),
+              coverUrl: String(formData.get("coverUrl") ?? ""),
               projectGoal: String(formData.get("projectGoal") ?? ""),
               difficulty: String(formData.get("difficulty") ?? ""),
               estimatedHours: String(formData.get("estimatedHours") ?? ""),
@@ -36,6 +37,23 @@ export function CourseSettings({ course }: { course: CourseBuilderCourse }) {
         >
           <Field label="Course title" htmlFor="course-title">
             <Input id="course-title" name="title" defaultValue={course.title} minLength={3} maxLength={120} required />
+          </Field>
+          <Field label="Cover image URL" htmlFor="course-cover-url">
+            <Input
+              id="course-cover-url"
+              name="coverUrl"
+              type="url"
+              defaultValue={course.coverUrl ?? ""}
+              maxLength={2048}
+              placeholder="https://example.com/cover.jpg"
+            />
+            {course.coverUrl && (
+              <img
+                src={course.coverUrl}
+                alt="Cover preview"
+                className="mt-1.5 aspect-video w-full rounded-md border object-cover"
+              />
+            )}
           </Field>
           <Field label="Short description" htmlFor="course-description">
             <Textarea

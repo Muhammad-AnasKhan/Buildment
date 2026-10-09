@@ -1,5 +1,6 @@
 import "server-only";
 import { isEmailVerified } from "@/server/auth/email-verification";
+import { ensureSeedTestUserVerified, shouldAutoVerifySeedTestUser } from "@/server/auth/seed-test-users";
 import type { getSessionUser } from "@/server/auth/guards";
 import {
   LearnAccessError,
@@ -22,6 +23,32 @@ export async function requireBlockSubmissionAccess(
   if (!user) {
     return { ok: false, status: 401, error: "Not signed in" };
   }
+  if (user.role !== "ADMIN" && !isEmailVerified(user.emailVerified)) {
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { emailVerified: true },
+    });
+    if (dbUser && isEmailVerified(dbUser.emailVerified)) {
+      user.emailVerified = dbUser.emailVerified;
+    } else if (
+      user.email &&
+      (shouldAutoVerifySeedTestUser(user.email) ||
+        (!process.env.AUTH_RESEND_KEY && process.env.NODE_ENV !== "production"))
+    ) {
+      const verified = await ensureSeedTestUserVerified(user.email);
+      if (verified) {
+        user.emailVerified = verified;
+      } else {
+        const updated = await prisma.user.update({
+          where: { id: user.id },
+          data: { emailVerified: new Date() },
+          select: { emailVerified: true },
+        });
+        user.emailVerified = updated.emailVerified;
+      }
+    }
+  }
+
   if (user.role !== "ADMIN" && !isEmailVerified(user.emailVerified)) {
     return { ok: false, status: 403, error: "Verify your email before submitting checkpoints." };
   }

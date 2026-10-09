@@ -56,6 +56,7 @@ export async function QuizComponent({
         initialState={null}
         presentation={presentation}
         draftStorageKey={draftStoragePrefix && id ? `${draftStoragePrefix}:${id}` : undefined}
+        correctOptionIds={correctOptionIds}
       />
     );
   }

@@ -685,7 +685,7 @@ function transformOpenQuestionFences(body: string, pushBlock: (b: PendingBlock) 
 }
 
 export function parseLesson(moduleNum: number, moduleDir: string, fileName: string, lessonNum: number, slugPart: string): ParsedLesson {
-  const raw = fs.readFileSync(path.join(COURSE_SOURCE_DIR, moduleDir, fileName), "utf8");
+  const raw = fs.readFileSync(path.join(COURSE_SOURCE_DIR, moduleDir, fileName), "utf8").replace(/\r\n/g, "\n");
   const { frontmatter, body } = parseFrontmatter(raw);
 
   const blocks: PendingBlock[] = [];

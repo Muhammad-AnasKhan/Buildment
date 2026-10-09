@@ -97,12 +97,14 @@ export function QuizClient({
   initialState,
   presentation = "standalone",
   draftStorageKey,
+  correctOptionIds,
 }: {
   id: string;
   config: SanitizedQuizConfig;
   initialState?: QuizInitialState | null;
   presentation?: "standalone" | "wizard";
   draftStorageKey?: string;
+  correctOptionIds?: string[];
 }) {
   const router = useRouter();
   const cardRef = useRef<HTMLDivElement>(null);
@@ -198,6 +200,36 @@ export function QuizClient({
     setSubmitting(true);
     setError(null);
     try {
+      if (id === "preview-quiz" || (correctOptionIds && correctOptionIds.length > 0 && id.startsWith("preview"))) {
+        const correctSet = new Set(correctOptionIds ?? []);
+        const selectedSet = new Set(selected);
+        const isCorrect =
+          correctSet.size > 0
+            ? selectedSet.size === correctSet.size && [...selectedSet].every((optionId) => correctSet.has(optionId))
+            : true;
+        const data: RespondResult = {
+          isCorrect,
+          score: isCorrect ? 1 : 0,
+          maxScore: 1,
+          explanation: config.explanation,
+        };
+        setResult(data);
+
+        if (data.isCorrect === true) {
+          setIsSuccessGlow(true);
+          setIsShaking(false);
+          firePartyPops({ withSound: false });
+          playFeedback("success");
+        } else if (data.isCorrect === false) {
+          setIsSuccessGlow(false);
+          setIsShaking(true);
+          playFeedback("error");
+        }
+
+        router.refresh();
+        return;
+      }
+
       const res = await fetch(`/api/blocks/${id}/respond`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -205,6 +237,33 @@ export function QuizClient({
       });
       if (!res.ok) {
         const body = await res.json().catch(() => null);
+        if (res.status === 404 && correctOptionIds && correctOptionIds.length > 0) {
+          const correctSet = new Set(correctOptionIds);
+          const selectedSet = new Set(selected);
+          const isCorrect =
+            correctSet.size === selectedSet.size && [...selectedSet].every((optionId) => correctSet.has(optionId));
+          const data: RespondResult = {
+            isCorrect,
+            score: isCorrect ? 1 : 0,
+            maxScore: 1,
+            explanation: config.explanation,
+          };
+          setResult(data);
+
+          if (data.isCorrect === true) {
+            setIsSuccessGlow(true);
+            setIsShaking(false);
+            firePartyPops({ withSound: false });
+            playFeedback("success");
+          } else if (data.isCorrect === false) {
+            setIsSuccessGlow(false);
+            setIsShaking(true);
+            playFeedback("error");
+          }
+
+          router.refresh();
+          return;
+        }
         throw new Error(body?.error ?? `Request failed (${res.status})`);
       }
       const data = (await res.json()) as RespondResult;

@@ -45,6 +45,7 @@ export function PredictClient({
   id: string;
   config: SanitizedPredictConfig;
   initialState?: PredictInitialState | null;
+  correctOptionId?: string;
 }) {
   const router = useRouter();
   const [selected, setSelected] = useState<string>(initialState?.selected ?? "");
@@ -65,6 +66,20 @@ export function PredictClient({
     setSubmitting(true);
     setError(null);
     try {
+      if (id === "preview-predict" || (correctOptionId && id.startsWith("preview"))) {
+        const isCorrect = correctOptionId ? selected === correctOptionId : true;
+        const outcome: RespondResult = {
+          isCorrect,
+          score: isCorrect ? 1 : 0,
+          maxScore: 1,
+          explanation: config.explanation,
+        };
+        setResult(outcome);
+        playFeedback(outcome.isCorrect ? "success" : "error");
+        router.refresh();
+        return;
+      }
+
       const res = await fetch(`/api/blocks/${id}/respond`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,6 +87,19 @@ export function PredictClient({
       });
       if (!res.ok) {
         const body = await res.json().catch(() => null);
+        if (res.status === 404 && correctOptionId) {
+          const isCorrect = selected === correctOptionId;
+          const outcome: RespondResult = {
+            isCorrect,
+            score: isCorrect ? 1 : 0,
+            maxScore: 1,
+            explanation: config.explanation,
+          };
+          setResult(outcome);
+          playFeedback(outcome.isCorrect ? "success" : "error");
+          router.refresh();
+          return;
+        }
         throw new Error(body?.error ?? `Request failed (${res.status})`);
       }
       const outcome = await res.json() as RespondResult;
