@@ -23,34 +23,24 @@ export async function requireBlockSubmissionAccess(
   if (!user) {
     return { ok: false, status: 401, error: "Not signed in" };
   }
+
   if (user.role !== "ADMIN" && !isEmailVerified(user.emailVerified)) {
     const dbUser = await prisma.user.findUnique({
       where: { id: user.id },
       select: { emailVerified: true },
     });
+
     if (dbUser && isEmailVerified(dbUser.emailVerified)) {
       user.emailVerified = dbUser.emailVerified;
-    } else if (
-      user.email &&
-      (shouldAutoVerifySeedTestUser(user.email) ||
-        (!process.env.AUTH_RESEND_KEY && process.env.NODE_ENV !== "production"))
-    ) {
-      const verified = await ensureSeedTestUserVerified(user.email);
-      if (verified) {
-        user.emailVerified = verified;
-      } else {
-        const updated = await prisma.user.update({
-          where: { id: user.id },
-          data: { emailVerified: new Date() },
-          select: { emailVerified: true },
-        });
-        user.emailVerified = updated.emailVerified;
-      }
     }
   }
 
   if (user.role !== "ADMIN" && !isEmailVerified(user.emailVerified)) {
-    return { ok: false, status: 403, error: "Verify your email before submitting checkpoints." };
+    return {
+      ok: false,
+      status: 403,
+      error: "Verify your email before submitting checkpoints.",
+    };
   }
 
   try {
@@ -60,10 +50,12 @@ export async function requireBlockSubmissionAccess(
     if (error instanceof LearnAccessError) {
       const messages: Record<LearnAccessError["code"], string> = {
         not_enrolled: "Not enrolled in this course",
-        payment_required: "Complete payment to submit checkpoints for this course",
+        payment_required:
+          "Complete payment to submit checkpoints for this course",
         pending_account: "Link your account before submitting checkpoints",
         inactive: "This enrollment is not active",
       };
+
       return {
         ok: false,
         status: 403,
@@ -71,9 +63,12 @@ export async function requireBlockSubmissionAccess(
         code: error.code,
       };
     }
+
     throw error;
   }
 }
+
+
 
 /** Read-only enrollment lookup for block SSR (initial response state). */
 export async function findEnrollmentForBlockState(courseId: string, userId: string) {
