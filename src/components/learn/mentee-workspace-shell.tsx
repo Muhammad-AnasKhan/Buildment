@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { SurfaceSwitcher } from "@/components/workspace/surface-switcher";
+import type { InstructorAccessView } from "@/lib/instructor-access";
 
 type LearnerNavItem = {
   label: string;
@@ -38,7 +39,7 @@ type LearnerNavItem = {
 export function MenteeWorkspaceShell({
   children,
   user,
-  canInstruct,
+  instructorAccess,
   assignedCourses,
   openHelpRequests,
   pendingReviews,
@@ -46,7 +47,7 @@ export function MenteeWorkspaceShell({
 }: {
   children: ReactNode;
   user: { name?: string | null; email?: string | null };
-  canInstruct: boolean;
+  instructorAccess: InstructorAccessView;
   assignedCourses: number;
   openHelpRequests: number;
   pendingReviews: number;
@@ -183,7 +184,7 @@ export function MenteeWorkspaceShell({
         </nav>
 
         <div className="border-t p-3 space-y-1">
-          <SurfaceSwitcher current="learn" canInstruct={canInstruct} />
+          <SurfaceSwitcher current="learn" instructorAccess={instructorAccess} />
           <div className="flex items-center gap-2.5 rounded-xl px-2 py-2">
             <span className="min-w-0 flex-1">
               <span className="block truncate text-xs font-medium">{user.name ?? "Learner"}</span>

@@ -1,14 +1,23 @@
 import "server-only";
 
-import type { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db";
 import { blockRegistry, isRegisteredBlockType } from "@/blocks/registry";
 import { restoreInteractiveBlockTags } from "@/mdx/restore-block-tags";
 import { diffBlocks, extractBlocksFromSource } from "@/mdx/extract";
 import { blockConfigFromSource, extractBlockConfigsFromSource } from "@/mdx/extract-block-config";
 
-function asBlockConfigJson(config: unknown): Prisma.InputJsonValue {
-  return config as Prisma.InputJsonValue;
+type BlockUpdateData = Parameters<typeof prisma.block.update>[0]["data"];
+type BlockCreateManyData = NonNullable<Parameters<typeof prisma.block.createMany>[0]>["data"];
+type BlockCreateManyRow = BlockCreateManyData extends readonly (infer Row)[]
+  ? Row
+  : BlockCreateManyData extends (infer Row)[]
+    ? Row
+    : BlockCreateManyData;
+
+function asBlockConfigJson(
+  config: unknown
+): BlockCreateManyRow extends { config?: infer C } ? C : never {
+  return config as BlockCreateManyRow extends { config?: infer C } ? C : never;
 }
 
 export async function syncChapterBlocksFromSource(chapterId: string, source: string) {
@@ -59,7 +68,7 @@ export async function syncChapterBlocksFromSource(chapterId: string, source: str
       const inlineConfig =
         extractedBlock && blockConfigFromSource(extractedBlock, configs);
       const existingBlock = existing.find((row) => row.id === block.id);
-      const data: Prisma.BlockUpdateInput = {
+      const data: BlockUpdateData = {
         version: { increment: 1 },
         sourceHash: block.sourceHash,
       };
@@ -77,7 +86,7 @@ export async function syncChapterBlocksFromSource(chapterId: string, source: str
       const inlineConfig =
         extractedBlock && blockConfigFromSource(extractedBlock, configs);
       const existingBlock = existing.find((row) => row.id === block.id);
-      const data: Prisma.BlockUpdateInput = {
+      const data: BlockUpdateData = {
         sourceHash: block.sourceHash,
       };
       if (extractedBlock) data.order = extractedBlock.order;

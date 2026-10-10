@@ -14,15 +14,25 @@ export async function setUserInstructorAccessAction(formData: FormData): Promise
   const existing = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
   if (!existing) throw new Error("User not found.");
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      canInstruct: enabled,
-      ...(enabled && existing.role !== "ADMIN" ? { role: "MENTOR" } : {}),
-    },
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: userId },
+      data: {
+        canInstruct: enabled,
+        ...(enabled && existing.role !== "ADMIN" ? { role: "MENTOR" } : {}),
+      },
+    });
+    if (enabled) {
+      await tx.instructorAccessRequest.upsert({
+        where: { userId },
+        create: { userId, status: "APPROVED", reviewedAt: new Date() },
+        update: { status: "APPROVED", reviewedAt: new Date() },
+      });
+    }
   });
 
   revalidatePath("/admin/users");
+  revalidatePath("/", "layout");
 }
 
 const inviteInstructorSchema = z.object({
@@ -43,7 +53,7 @@ export async function grantInstructorByEmailAction(formData: FormData): Promise<
 
   const email = parsed.data.email.toLowerCase();
   const existing = await prisma.user.findUnique({ where: { email }, select: { role: true } });
-  await prisma.user.upsert({
+  const user = await prisma.user.upsert({
     where: { email },
     create: {
       email,
@@ -56,7 +66,15 @@ export async function grantInstructorByEmailAction(formData: FormData): Promise<
       canInstruct: true,
       ...(existing?.role === "ADMIN" ? {} : { role: "MENTOR" }),
     },
+    select: { id: true },
+  });
+
+  await prisma.instructorAccessRequest.upsert({
+    where: { userId: user.id },
+    create: { userId: user.id, status: "APPROVED", reviewedAt: new Date() },
+    update: { status: "APPROVED", reviewedAt: new Date() },
   });
 
   revalidatePath("/admin/users");
+  revalidatePath("/", "layout");
 }

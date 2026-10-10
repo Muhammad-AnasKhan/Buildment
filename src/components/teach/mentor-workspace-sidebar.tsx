@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { SurfaceSwitcher } from "@/components/workspace/surface-switcher";
+import type { InstructorAccessView } from "@/lib/instructor-access";
 
 const LAST_COURSE_KEY = "buildment:mentor:last-course";
 const LAST_COURSE_EVENT = "buildment:last-course-change";
@@ -63,12 +64,12 @@ type NavItem = {
 export function MentorWorkspaceSidebar({
   courses,
   user,
-  canInstruct,
+  instructorAccess,
   signOutAction,
 }: {
   courses: MentorSidebarCourse[];
   user: { name?: string | null; email?: string | null };
-  canInstruct: boolean;
+  instructorAccess: InstructorAccessView;
   signOutAction: () => Promise<void>;
 }) {
   const pathname = usePathname();
@@ -290,7 +291,7 @@ export function MentorWorkspaceSidebar({
         </nav>
 
         <div className="border-t p-3 space-y-1">
-          <SurfaceSwitcher current="teach" canInstruct={canInstruct} />
+          <SurfaceSwitcher current="teach" instructorAccess={instructorAccess} />
           <div className="flex items-center gap-2.5 rounded-xl px-2 py-2">
             <span className="min-w-0 flex-1">
               <span className="block truncate text-xs font-medium">{user.name ?? "Instructor"}</span>

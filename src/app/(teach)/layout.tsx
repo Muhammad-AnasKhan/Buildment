@@ -1,10 +1,12 @@
-import { requireTeachSurface, userCanInstruct } from "@/server/auth/guards";
+import { requireTeachSurface } from "@/server/auth/guards";
+import { loadInstructorAccessState } from "@/server/instructor-access/load-status";
 import { MentorWorkspaceSidebar } from "@/components/teach/mentor-workspace-sidebar";
 import { signOutAction } from "@/server/auth/actions";
 import { prisma } from "@/server/db";
 
 export default async function TeachLayout({ children }: { children: React.ReactNode }) {
   const user = await requireTeachSurface();
+  const instructorAccess = await loadInstructorAccessState(user);
   const rows = await prisma.course.findMany({
     where: user.role === "ADMIN" ? undefined : { mentorId: user.id },
     orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
@@ -34,7 +36,7 @@ export default async function TeachLayout({ children }: { children: React.ReactN
       <MentorWorkspaceSidebar
         courses={courses}
         user={user}
-        canInstruct={userCanInstruct(user)}
+        instructorAccess={instructorAccess}
         signOutAction={signOutAction}
       />
       <main className="min-h-dvh lg:pl-72">
