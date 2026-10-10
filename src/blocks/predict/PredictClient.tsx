@@ -41,6 +41,7 @@ export function PredictClient({
   id,
   config,
   initialState,
+  correctOptionId,
 }: {
   id: string;
   config: SanitizedPredictConfig;
