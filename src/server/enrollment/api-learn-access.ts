@@ -1,5 +1,6 @@
 import "server-only";
 import { isEmailVerified } from "@/server/auth/email-verification";
+import { ensureSeedTestUserVerified, shouldAutoVerifySeedTestUser } from "@/server/auth/seed-test-users";
 import type { getSessionUser } from "@/server/auth/guards";
 import {
   LearnAccessError,
@@ -22,8 +23,24 @@ export async function requireBlockSubmissionAccess(
   if (!user) {
     return { ok: false, status: 401, error: "Not signed in" };
   }
+
   if (user.role !== "ADMIN" && !isEmailVerified(user.emailVerified)) {
-    return { ok: false, status: 403, error: "Verify your email before submitting checkpoints." };
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { emailVerified: true },
+    });
+
+    if (dbUser && isEmailVerified(dbUser.emailVerified)) {
+      user.emailVerified = dbUser.emailVerified;
+    }
+  }
+
+  if (user.role !== "ADMIN" && !isEmailVerified(user.emailVerified)) {
+    return {
+      ok: false,
+      status: 403,
+      error: "Verify your email before submitting checkpoints.",
+    };
   }
 
   try {
@@ -33,10 +50,12 @@ export async function requireBlockSubmissionAccess(
     if (error instanceof LearnAccessError) {
       const messages: Record<LearnAccessError["code"], string> = {
         not_enrolled: "Not enrolled in this course",
-        payment_required: "Complete payment to submit checkpoints for this course",
+        payment_required:
+          "Complete payment to submit checkpoints for this course",
         pending_account: "Link your account before submitting checkpoints",
         inactive: "This enrollment is not active",
       };
+
       return {
         ok: false,
         status: 403,
@@ -44,9 +63,12 @@ export async function requireBlockSubmissionAccess(
         code: error.code,
       };
     }
+
     throw error;
   }
 }
+
+
 
 /** Read-only enrollment lookup for block SSR (initial response state). */
 export async function findEnrollmentForBlockState(courseId: string, userId: string) {

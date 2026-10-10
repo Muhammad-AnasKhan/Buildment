@@ -41,6 +41,7 @@ correct: 0
     const transformedQuiz = transformVisualFences(quizFence);
     expect(transformedQuiz).toContain("<Quiz");
     expect(transformedQuiz).toContain("What is an idempotent operation?");
+    expect(transformedQuiz).toContain('correctOptionIds={["opt-0"]}');
 
     const openQuestionFence = `
 \`\`\`openquestion

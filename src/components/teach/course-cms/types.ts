@@ -26,6 +26,7 @@ export type CourseBuilderCourse = {
   difficulty: string | null;
   estimatedHours: number | null;
   sequential: boolean;
+  coverUrl: string | null;
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   pricingType: "FREE" | "PAID";
   priceCents: number;

@@ -166,6 +166,7 @@ const courseSettingsSchema = z.object({
   courseId: courseIdSchema,
   title: z.string().trim().min(3).max(120),
   description: z.string().trim().max(500),
+  coverUrl: z.string().trim().max(2048),
   projectGoal: z.string().trim().max(240),
   difficulty: z.enum(["", "Easy", "Medium", "Hard"]),
   estimatedHours: z.union([z.literal(""), z.coerce.number().int().min(1).max(1000)]),
@@ -179,6 +180,7 @@ export async function updateCourseSettings(input: {
   courseId: string;
   title: string;
   description: string;
+  coverUrl: string;
   projectGoal: string;
   difficulty: string;
   estimatedHours: string;
@@ -214,6 +216,7 @@ export async function updateCourseSettings(input: {
     data: {
       title: parsed.data.title,
       description: parsed.data.description || null,
+      coverUrl: parsed.data.coverUrl || null,
       projectGoal: parsed.data.projectGoal || null,
       difficulty: parsed.data.difficulty || null,
       estimatedHours:

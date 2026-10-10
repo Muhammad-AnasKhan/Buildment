@@ -108,7 +108,10 @@ export function transformVisualFences(source: string): string {
             ? ` explanation=${JSON.stringify(String(data.explanation))}`
             : "";
           const contextAttr = data.context ? ` context={${JSON.stringify(data.context)}}` : "";
-          return `\n\n<Predict prompt=${JSON.stringify(prompt)} options={${JSON.stringify(normalizedOpts)}}${explanation}${contextAttr} />\n\n`;
+          const correctAttr = data.correctOptionId
+            ? ` correctOptionId=${JSON.stringify(String(data.correctOptionId))}`
+            : "";
+          return `\n\n<Predict prompt=${JSON.stringify(prompt)} options={${JSON.stringify(normalizedOpts)}}${explanation}${contextAttr}${correctAttr} />\n\n`;
         }
 
         if (fenceType === "codeexercise") {

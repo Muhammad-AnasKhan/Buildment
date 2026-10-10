@@ -9,8 +9,11 @@ import {
   CreateLink,
   DiffSourceToggleWrapper,
   diffSourcePlugin,
+  frontmatterPlugin,
   headingsPlugin,
+  imagePlugin,
   InsertCodeBlock,
+  InsertImage,
   InsertTable,
   InsertThematicBreak,
   jsxPlugin,
@@ -22,6 +25,7 @@ import {
   quotePlugin,
   Separator,
   tablePlugin,
+  thematicBreakPlugin,
   toolbarPlugin,
   UndoRedo,
 } from "@mdxeditor/editor";
@@ -97,6 +101,9 @@ export default function MdxEditorCore({
           linkDialogPlugin(),
           quotePlugin(),
           tablePlugin(),
+          thematicBreakPlugin(),
+          frontmatterPlugin(),
+          imagePlugin(),
           codeBlockPlugin({ defaultCodeBlockLanguage: "js" }),
           codeMirrorPlugin({
             codeBlockLanguages: {
@@ -129,6 +136,7 @@ export default function MdxEditorCore({
                 <ListsToggle />
                 <Separator />
                 <CreateLink />
+                <InsertImage />
                 <InsertCodeBlock />
                 <InsertTable />
                 <InsertThematicBreak />

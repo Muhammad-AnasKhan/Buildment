@@ -15,6 +15,7 @@ export async function PredictComponent({
   explanation,
   allowRetry = true,
   context,
+  correctOptionId,
 }: {
   id?: string;
   prompt?: string;
@@ -27,6 +28,7 @@ export async function PredictComponent({
     bearer?: string;
     responseHint?: string;
   };
+  correctOptionId?: string;
 }) {
   // Direct prop authoring fallback
   if (prompt && Array.isArray(options) && options.length >= 2) {
@@ -49,6 +51,7 @@ export async function PredictComponent({
         id={id || "preview-predict"}
         config={clientConfig}
         initialState={null}
+        correctOptionId={correctOptionId}
       />
     );
   }
