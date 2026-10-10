@@ -1,10 +1,15 @@
 import "server-only";
 
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db";
 import { blockRegistry, isRegisteredBlockType } from "@/blocks/registry";
 import { restoreInteractiveBlockTags } from "@/mdx/restore-block-tags";
 import { diffBlocks, extractBlocksFromSource } from "@/mdx/extract";
 import { blockConfigFromSource, extractBlockConfigsFromSource } from "@/mdx/extract-block-config";
+
+function asBlockConfigJson(config: unknown): Prisma.InputJsonValue {
+  return config as Prisma.InputJsonValue;
+}
 
 export async function syncChapterBlocksFromSource(chapterId: string, source: string) {
   const renderable = restoreInteractiveBlockTags(source);
@@ -35,7 +40,7 @@ export async function syncChapterBlocksFromSource(chapterId: string, source: str
             chapterId,
             type,
             order: block.order,
-            config,
+            config: asBlockConfigJson(config),
             sourceHash: block.sourceHash,
           };
         }),
@@ -54,13 +59,15 @@ export async function syncChapterBlocksFromSource(chapterId: string, source: str
       const inlineConfig =
         extractedBlock && blockConfigFromSource(extractedBlock, configs);
       const existingBlock = existing.find((row) => row.id === block.id);
-      const data: { version: { increment: number }; sourceHash: string; config?: unknown; order?: number } = {
+      const data: Prisma.BlockUpdateInput = {
         version: { increment: 1 },
         sourceHash: block.sourceHash,
       };
       if (extractedBlock) data.order = extractedBlock.order;
       if (inlineConfig && existingBlock && isRegisteredBlockType(existingBlock.type)) {
-        data.config = blockRegistry[existingBlock.type].schema.parse(inlineConfig);
+        data.config = asBlockConfigJson(
+          blockRegistry[existingBlock.type].schema.parse(inlineConfig)
+        );
       }
       await tx.block.update({ where: { id: block.id }, data });
     }
@@ -70,12 +77,14 @@ export async function syncChapterBlocksFromSource(chapterId: string, source: str
       const inlineConfig =
         extractedBlock && blockConfigFromSource(extractedBlock, configs);
       const existingBlock = existing.find((row) => row.id === block.id);
-      const data: { sourceHash: string; config?: unknown; order?: number } = {
+      const data: Prisma.BlockUpdateInput = {
         sourceHash: block.sourceHash,
       };
       if (extractedBlock) data.order = extractedBlock.order;
       if (inlineConfig && existingBlock && isRegisteredBlockType(existingBlock.type)) {
-        data.config = blockRegistry[existingBlock.type].schema.parse(inlineConfig);
+        data.config = asBlockConfigJson(
+          blockRegistry[existingBlock.type].schema.parse(inlineConfig)
+        );
       }
       await tx.block.update({ where: { id: block.id }, data });
     }
@@ -93,7 +102,7 @@ export async function syncChapterBlocksFromSource(chapterId: string, source: str
       if (!parsed.success) continue;
       await tx.block.update({
         where: { id: block.id },
-        data: { config: parsed.data, order: block.order },
+        data: { config: asBlockConfigJson(parsed.data), order: block.order },
       });
     }
   });
