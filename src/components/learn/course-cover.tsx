@@ -29,9 +29,9 @@ export function CourseCover({
     >
       {coverUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={coverUrl} alt="" className="size-full object-cover" />
+        <img src={coverUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
       ) : (
-        <div className="flex size-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-muted to-muted/40 p-4 text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-muted to-muted/40 p-4 text-center">
           <BookOpen className="size-8 text-muted-foreground/50" aria-hidden />
           <span className="line-clamp-2 max-w-[90%] text-xs font-medium text-muted-foreground">
             {title}

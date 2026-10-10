@@ -6,8 +6,8 @@ function ShimmerBar({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-md bg-neutral-200/80",
-        "after:absolute after:inset-0 after:-translate-x-full after:animate-[reader-shimmer_1.4s_ease-in-out_infinite] after:bg-gradient-to-r after:from-transparent after:via-white/60 after:to-transparent",
+        "relative overflow-hidden rounded-md bg-muted",
+        "after:absolute after:inset-0 after:-translate-x-full after:animate-[reader-shimmer_1.4s_ease-in-out_infinite] after:bg-gradient-to-r after:from-transparent after:via-background/50 after:to-transparent dark:after:via-foreground/10",
         className
       )}
     />
@@ -38,7 +38,7 @@ export function ReaderShellSkeleton({ visible }: { visible?: boolean }) {
             <ShimmerBar className="size-8 rounded-full" />
           </div>
         </div>
-        <ShimmerBar className="mt-2 h-px w-full rounded-none bg-neutral-100 after:via-neutral-50/80" />
+        <ShimmerBar className="mt-2 h-px w-full rounded-none bg-border after:via-muted/80" />
       </div>
 
       <div className="flex min-h-0 flex-1">

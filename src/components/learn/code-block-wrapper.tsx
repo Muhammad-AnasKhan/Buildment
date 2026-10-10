@@ -37,14 +37,14 @@ export function CodeBlockWrapper({
   };
 
   return (
-    <div className="not-prose group relative my-6 overflow-hidden rounded-xl border border-neutral-800 bg-neutral-950 shadow-sm">
+    <div className="not-prose group relative my-6 overflow-hidden rounded-xl border border-[var(--code-border)] bg-[var(--code-surface)] shadow-sm">
       {filename ? (
-        <div className="flex items-center justify-between border-b border-neutral-800 bg-neutral-900 px-4 py-2">
-          <span className="text-xs font-medium text-neutral-400">{decodeURIComponent(filename)}</span>
+        <div className="flex items-center justify-between border-b border-[var(--code-border)] bg-[var(--code-toolbar)] px-4 py-2">
+          <span className="text-xs font-medium text-[var(--code-lang-fg)]">{decodeURIComponent(filename)}</span>
           <button
             type="button"
             onClick={handleCopy}
-            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-neutral-400 transition-colors hover:bg-neutral-800 hover:text-neutral-200"
+            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-[var(--code-lang-fg)] transition-colors hover:bg-[var(--code-border)]/30 hover:text-[var(--code-fg)]"
             aria-label="Copy code"
           >
             {copied ? (
@@ -64,7 +64,7 @@ export function CodeBlockWrapper({
         <button
           type="button"
           onClick={handleCopy}
-          className="absolute right-3 top-3 z-10 opacity-0 transition-opacity group-hover:opacity-100 flex items-center gap-1.5 rounded-md bg-neutral-800 px-2 py-1 text-xs text-neutral-400 transition-colors hover:bg-neutral-700 hover:text-neutral-200"
+          className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-md bg-[var(--code-toolbar)] px-2 py-1 text-xs text-[var(--code-lang-fg)] opacity-0 transition-opacity group-hover:opacity-100 hover:bg-[var(--code-border)]/30 hover:text-[var(--code-fg)]"
           aria-label="Copy code"
         >
           {copied ? (

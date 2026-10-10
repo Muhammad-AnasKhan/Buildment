@@ -211,7 +211,7 @@ export function PredictClient({
               {submitting ? "Checking…" : "Check my prediction"}
             </Button>
             {error ? (
-              <p className="text-sm text-red-600">{error}</p>
+              <p className="text-sm text-destructive">{error}</p>
             ) : (
               <p className="text-xs text-muted-foreground">
                 {selected ? "Your choice is ready — check it when you are." : "Choose the outcome you expect."}

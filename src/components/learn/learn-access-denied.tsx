@@ -42,9 +42,9 @@ export function LearnAccessDenied({
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
       <div className="mt-16 flex flex-col items-center text-center">
-        <Lock className="size-8 text-neutral-300" aria-hidden />
-        <p className="mt-3 text-sm font-medium text-neutral-700">{copy.title}</p>
-        <p className="mt-1 max-w-sm text-sm text-neutral-400">{copy.body}</p>
+        <Lock className="size-8 text-muted-foreground" aria-hidden />
+        <p className="mt-3 text-sm font-medium text-foreground">{copy.title}</p>
+        <p className="mt-1 max-w-sm text-sm text-muted-foreground">{copy.body}</p>
         <Link href={copy.href} className={cn(buttonVariants(), "mt-6")}>
           {copy.cta}
         </Link>

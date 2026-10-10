@@ -264,7 +264,7 @@ export function OpenQuestionClient({
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     {config.minWords > 0 ? (
                       <div className="flex items-center gap-2">
-                        <span className={cn(tooShort && wordCount > 0 && "text-amber-700")}>
+                        <span className={cn(tooShort && wordCount > 0 && "text-amber-700 dark:text-amber-400")}>
                           {wordCount} / {config.minWords} words minimum
                         </span>
                         <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">

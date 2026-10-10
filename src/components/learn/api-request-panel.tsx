@@ -93,7 +93,7 @@ function CodePane({
   return (
     <div
       className={cn(
-        "min-h-[11rem] flex-1 overflow-auto bg-[#0d1117] font-mono text-[12px] leading-[1.65] text-[#e6edf3] sm:min-h-[12rem] sm:text-[13px]",
+        "min-h-[11rem] flex-1 overflow-auto bg-[var(--code-surface)] font-mono text-[12px] leading-[1.65] text-[var(--code-fg)] sm:min-h-[12rem] sm:text-[13px]",
         className
       )}
     >
@@ -102,7 +102,7 @@ function CodePane({
           <code>{formatJsonDisplay(text)}</code>
         </pre>
       ) : (
-        <p className="p-4 text-neutral-400">{emptyLabel}</p>
+        <p className="p-4 text-[var(--code-lang-fg)]">{emptyLabel}</p>
       )}
     </div>
   );

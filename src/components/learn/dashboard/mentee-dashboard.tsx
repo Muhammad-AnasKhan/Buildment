@@ -72,7 +72,7 @@ function ContinueLearning({ course }: { course: DashboardCourse }) {
         coverUrl={course.coverUrl}
         title={course.title}
         aspect="banner"
-        className="aspect-auto min-h-[10.5rem] w-full rounded-none sm:min-h-[12.5rem] lg:min-h-[14rem]"
+        className="h-[180px] w-full rounded-none"
       />
       <div className="p-5 sm:p-7">
       <div className="flex flex-wrap items-center gap-2">

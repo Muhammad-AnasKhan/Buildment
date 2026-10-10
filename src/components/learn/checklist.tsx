@@ -95,7 +95,7 @@ function ChecklistItemRow({
           onCheckedChange={(value) => onToggle(value === true)}
           className={cn(
             "mt-0.5 size-5 rounded-md border-2",
-            checked && "border-emerald-600 bg-emerald-600"
+            checked && "border-emerald-600 bg-emerald-600 dark:border-emerald-500 dark:bg-emerald-500"
           )}
           aria-label={item.label.replace(/\*\*/g, "")}
         />
@@ -109,7 +109,7 @@ function ChecklistItemRow({
         </span>
         {checked ? (
           <CheckCircle2
-            className="mt-0.5 size-4 shrink-0 text-emerald-600 opacity-100 transition-opacity"
+            className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400 opacity-100 transition-opacity"
             aria-hidden
           />
         ) : (

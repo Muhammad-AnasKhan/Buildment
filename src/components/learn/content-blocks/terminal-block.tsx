@@ -46,10 +46,14 @@ export function TerminalBlock({ title, cwd, children }: TerminalBlockProps) {
   const lines = collectLines(children);
 
   return (
-    <LearnPanelShell eyebrow="Terminal" title={title} contentClassName="border-neutral-800 bg-[#0d1117]">
+    <LearnPanelShell
+      eyebrow="Terminal"
+      title={title}
+      contentClassName="border-[var(--code-border)] bg-[var(--code-surface)]"
+    >
       {cwd ? (
-        <div className="flex items-center gap-2 border-b border-neutral-800 px-4 py-2">
-          <span className="rounded bg-neutral-800 px-2 py-0.5 font-mono text-[11px] text-neutral-400">
+        <div className="flex items-center gap-2 border-b border-[var(--code-border)] px-4 py-2">
+          <span className="rounded bg-[var(--code-border)]/40 px-2 py-0.5 font-mono text-[11px] text-[var(--code-lang-fg)]">
             {cwd}
           </span>
         </div>
@@ -61,7 +65,7 @@ export function TerminalBlock({ title, cwd, children }: TerminalBlockProps) {
               key={i}
               className={cn(
                 line.type === "prompt" && "text-[#79c0ff]",
-                line.type === "output" && "text-neutral-400",
+                line.type === "output" && "text-[var(--code-lang-fg)]",
                 line.type === "error" && "text-amber-400"
               )}
             >

@@ -60,9 +60,9 @@ function CodeEditor({
   }, [syncScroll]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-neutral-800 bg-[#0d1117] shadow-inner">
+    <div className="overflow-hidden rounded-xl border border-[var(--code-border)] bg-[var(--code-surface)] shadow-inner">
       {/* Editor title bar */}
-      <div className="flex items-center justify-between gap-3 border-b border-neutral-800 bg-[#161b22] px-3 py-2.5 sm:px-4">
+      <div className="flex items-center justify-between gap-3 border-b border-[var(--code-border)] bg-[var(--code-toolbar)] px-3 py-2.5 sm:px-4">
         <div className="flex min-w-0 items-center gap-3">
           <div className="hidden items-center gap-1.5 sm:flex" aria-hidden>
             <span className="size-2.5 rounded-full bg-[#ff5f57]" />
@@ -70,20 +70,20 @@ function CodeEditor({
             <span className="size-2.5 rounded-full bg-[#28c840]" />
           </div>
           <div className="flex min-w-0 items-center gap-2 font-mono text-xs">
-            <span className="truncate text-neutral-300">{filename}</span>
-            <span className="shrink-0 rounded bg-neutral-800 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-neutral-500">
+            <span className="truncate text-[var(--code-fg)]">{filename}</span>
+            <span className="shrink-0 rounded bg-[var(--code-border)]/40 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-[var(--code-lang-fg)]">
               {language}
             </span>
           </div>
         </div>
-        <span className="shrink-0 text-[10px] text-neutral-600">Editable</span>
+        <span className="shrink-0 text-[10px] text-[var(--code-lang-fg)]">Editable</span>
       </div>
 
       <div className="flex max-h-[min(420px,55vh)] min-h-[220px]">
         {/* Line numbers */}
         <div
           ref={gutterRef}
-          className="hidden shrink-0 overflow-hidden border-r border-neutral-800 bg-[#0d1117] py-4 pr-3 pl-3 text-right font-mono text-[13px] leading-[1.65] text-neutral-600 select-none sm:block"
+          className="hidden shrink-0 overflow-hidden border-r border-[var(--code-border)] bg-[var(--code-surface)] py-4 pr-3 pl-3 text-right font-mono text-[13px] leading-[1.65] text-[var(--code-lang-fg)] select-none sm:block"
           aria-hidden
         >
           {Array.from({ length: lines }, (_, i) => (
@@ -101,8 +101,8 @@ function CodeEditor({
           autoCapitalize="off"
           autoCorrect="off"
           className={cn(
-            "block min-h-[220px] w-full flex-1 resize-none bg-transparent py-4 pr-4 pl-4 font-mono text-[13px] leading-[1.65] text-[#e6edf3] outline-none sm:pl-3",
-            "placeholder:text-neutral-600 caret-indigo-400",
+            "block min-h-[220px] w-full flex-1 resize-none bg-transparent py-4 pr-4 pl-4 font-mono text-[13px] leading-[1.65] text-[var(--code-fg)] outline-none sm:pl-3",
+            "placeholder:text-[var(--code-lang-fg)] caret-indigo-400",
             "selection:bg-indigo-500/30",
             readOnly && "opacity-90"
           )}
@@ -111,7 +111,7 @@ function CodeEditor({
       </div>
 
       {/* Status bar */}
-      <div className="flex items-center justify-between border-t border-neutral-800 bg-[#161b22] px-3 py-1.5 font-mono text-[10px] text-neutral-500 sm:px-4">
+      <div className="flex items-center justify-between border-t border-[var(--code-border)] bg-[var(--code-toolbar)] px-3 py-1.5 font-mono text-[10px] text-[var(--code-lang-fg)] sm:px-4">
         <span>{lines} line{lines === 1 ? "" : "s"}</span>
         <span>UTF-8 · Spaces: 2</span>
       </div>
@@ -122,17 +122,17 @@ function CodeEditor({
 function ReadOnlyCodeBlock({ source, label }: { source: string; label: string }) {
   const lines = source.split("\n");
   return (
-    <div className="overflow-hidden rounded-xl border border-neutral-200 bg-neutral-950">
-      <div className="border-b border-neutral-800 bg-neutral-900 px-4 py-2 text-xs font-medium text-neutral-400">
+    <div className="overflow-hidden rounded-xl border border-[var(--code-border)] bg-[var(--code-surface)]">
+      <div className="border-b border-[var(--code-border)] bg-[var(--code-toolbar)] px-4 py-2 text-xs font-medium text-[var(--code-lang-fg)]">
         {label}
       </div>
       <div className="flex overflow-x-auto">
-        <div className="hidden shrink-0 border-r border-neutral-800 py-4 pr-3 pl-4 text-right font-mono text-xs leading-[1.65] text-neutral-600 sm:block">
+        <div className="hidden shrink-0 border-r border-[var(--code-border)] py-4 pr-3 pl-4 text-right font-mono text-xs leading-[1.65] text-[var(--code-lang-fg)] sm:block">
           {lines.map((_, i) => (
             <div key={i}>{i + 1}</div>
           ))}
         </div>
-        <pre className="m-0 flex-1 p-4 font-mono text-[13px] leading-[1.65] text-neutral-100">
+        <pre className="m-0 flex-1 p-4 font-mono text-[13px] leading-[1.65] text-[var(--code-fg)]">
           <code>{source}</code>
         </pre>
       </div>
@@ -305,9 +305,9 @@ export function CodeExerciseClient({
               )}
             >
               {passed ? (
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" />
+                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
               ) : (
-                <XCircle className="mt-0.5 size-5 shrink-0 text-amber-600" />
+                <XCircle className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
               )}
               <div className="min-w-0 text-sm">
                 <p className={cn("font-semibold", passed ? "text-emerald-900 dark:text-emerald-100" : "text-amber-900 dark:text-amber-100")}>
@@ -317,7 +317,7 @@ export function CodeExerciseClient({
                   <p className="mt-1.5 text-amber-900/90 dark:text-amber-100/90">
                     Failed: <span className="font-medium">{result.failedTestName}</span>
                     {result.errorMessage ? (
-                      <code className="mt-2 block overflow-x-auto rounded-lg bg-amber-100/80 px-2.5 py-2 font-mono text-xs text-amber-950">
+                      <code className="mt-2 block overflow-x-auto rounded-lg bg-amber-100/80 px-2.5 py-2 font-mono text-xs text-amber-950 dark:bg-amber-950/40 dark:text-amber-100">
                         {result.errorMessage}
                       </code>
                     ) : null}
@@ -332,7 +332,7 @@ export function CodeExerciseClient({
             {passed && result.solution ? (
               <div className="space-y-2">
                 <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <Sparkles className="size-3.5 text-emerald-600" />
+                  <Sparkles className="size-3.5 text-emerald-600 dark:text-emerald-400" />
                   Reference solution
                 </p>
                 <ReadOnlyCodeBlock source={result.solution} label={filename} />
@@ -388,7 +388,7 @@ export function CodeExerciseClient({
         </div>
         <p className="text-xs text-muted-foreground">
           {error ? (
-            <span className="text-red-600">{error}</span>
+            <span className="text-destructive">{error}</span>
           ) : (
             <>
               {config.testCount} check{config.testCount === 1 ? "" : "s"} · {language}
