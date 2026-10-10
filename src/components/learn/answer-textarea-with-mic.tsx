@@ -4,6 +4,7 @@ import { Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useEffect, useRef } from "react";
 import { useSpeechInput } from "@/lib/use-speech-input";
 
 export function AnswerTextareaWithMic({
@@ -23,23 +24,37 @@ export function AnswerTextareaWithMic({
   enableSpeech?: boolean;
   className?: string;
 }) {
+  const committedRef = useRef(value);
+
   const appendTranscript = (chunk: string, isFinal: boolean) => {
-    if (!chunk.trim()) return;
-    onChange(
-      isFinal
-        ? `${value}${value && !value.endsWith(" ") ? " " : ""}${chunk.trim()}`
-        : value
-    );
+    const spoken = chunk.trim();
+    if (!spoken) return;
+    const base = committedRef.current;
+    const spacer = base && !base.endsWith(" ") ? " " : "";
+    if (isFinal) {
+      const next = `${base}${spacer}${spoken}`;
+      committedRef.current = next;
+      onChange(next);
+      return;
+    }
+    onChange(`${base}${spacer}${spoken}`);
   };
 
   const { supported, listening, error, toggle } = useSpeechInput(appendTranscript);
+
+  useEffect(() => {
+    if (!listening) committedRef.current = value;
+  }, [listening, value]);
 
   return (
     <div className="space-y-2">
       <div className="relative">
         <Textarea
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => {
+            committedRef.current = e.target.value;
+            onChange(e.target.value);
+          }}
           placeholder={placeholder}
           rows={rows}
           aria-label={ariaLabel}
@@ -67,11 +82,11 @@ export function AnswerTextareaWithMic({
         ) : null}
       </div>
       {enableSpeech && !supported ? (
-        <p className="text-xs text-neutral-500">Speech input is not available in this browser — type your answer.</p>
+        <p className="text-xs text-muted-foreground">Speech input is not available in this browser — type your answer.</p>
       ) : null}
       {error ? <p className="text-xs text-amber-700">{error}</p> : null}
       {listening ? (
-        <p className="text-xs font-medium text-rose-600">Listening… speak clearly, then tap the mic to stop.</p>
+        <p className="text-xs font-medium text-rose-600">Listening… words appear as you speak.</p>
       ) : null}
     </div>
   );

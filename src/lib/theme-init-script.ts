@@ -1,0 +1,2 @@
+/** Inline bootstrap for next-themes (attribute=class, storageKey=theme, defaultTheme=system). */
+export const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem("theme")||"system";var d=t==="dark"||(t==="system"&&window.matchMedia("(prefers-color-scheme: dark)").matches);var r=document.documentElement;if(d){r.classList.add("dark");r.style.colorScheme="dark";}else{r.classList.remove("dark");r.style.colorScheme="light";}}catch(e){}})();`;

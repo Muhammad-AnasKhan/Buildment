@@ -35,7 +35,7 @@ export function EvaluationHeader({ evaluation }: { evaluation: MenteeEvaluation 
           {evaluation.reviewNextHref ? (
             <Link href={evaluation.reviewNextHref} className={cn(buttonVariants({ size: "lg" }), "gap-2")}>Review next <ArrowRight /></Link>
           ) : (
-            <span className={cn(buttonVariants({ variant: "outline", size: "lg" }), "pointer-events-none text-muted-foreground")}>Review queue clear</span>
+            <span className={cn(buttonVariants({ variant: "outline", size: "lg" }), "pointer-events-none text-muted-foreground")}>Nothing waiting</span>
           )}
         </div>
       </div>

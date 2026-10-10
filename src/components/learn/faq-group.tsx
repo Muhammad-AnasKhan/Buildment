@@ -67,7 +67,7 @@ function FaqItemInner({
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="border-t border-border px-5 pb-5 pt-4 sm:px-6">
-            <div className="border-l-2 border-border pl-4 text-[15px] leading-relaxed text-muted-foreground [&>p]:m-0">
+            <div className="text-[15px] leading-relaxed text-foreground/85 [&>p]:m-0">
               {children}
             </div>
           </div>

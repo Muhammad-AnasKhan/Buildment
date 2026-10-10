@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { createChapter, moveChapter } from "@/server/actions/chapters";
@@ -215,7 +216,9 @@ function ModuleCard({
                 <p className="mt-0.5 text-xs text-muted-foreground">You will choose content blocks in the chapter editor.</p>
               </div>
               <Input id={`chapter-${module.id}`} name="title" required maxLength={120} placeholder="e.g. Synchronize player movement" autoFocus />
-              <Button type="submit" className="w-full">Create and open editor</Button>
+              <PendingSubmitButton className="w-full" pendingLabel="Opening editor…">
+                Create and open editor
+              </PendingSubmitButton>
             </form>
           </details>
         </div>

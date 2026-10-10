@@ -100,8 +100,15 @@ export function LockedChapterView({
             onToggle={() => setCollapsed(!collapsed)}
             mobileSheet={isMobile}
           />
-          <main className="flex-1 overflow-y-auto px-4 py-16 sm:px-6 lg:px-10">
-            <div className="mx-auto max-w-lg text-center">
+          <main className="relative flex-1 overflow-hidden">
+            <div className="pointer-events-none select-none space-y-4 px-6 py-10 opacity-30 blur-[1.5px] sm:px-10" aria-hidden>
+              <div className="h-8 w-2/3 rounded-lg bg-muted" />
+              <div className="h-4 w-full rounded bg-muted" />
+              <div className="h-4 w-11/12 rounded bg-muted" />
+              <div className="h-40 rounded-xl bg-muted" />
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center bg-background/75 p-6 backdrop-blur-sm">
+            <div className="mx-auto w-full max-w-lg rounded-2xl border border-border bg-card p-8 text-center shadow-xl">
               <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                 <Lock className="size-5" aria-hidden />
               </div>
@@ -129,6 +136,7 @@ export function LockedChapterView({
                   Back to syllabus
                 </Link>
               </div>
+            </div>
             </div>
           </main>
         </div>

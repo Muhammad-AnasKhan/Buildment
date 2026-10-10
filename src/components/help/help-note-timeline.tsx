@@ -34,15 +34,15 @@ export function HelpNoteTimeline({
             <article
               className={
                 message.authorRole === "MENTOR"
-                  ? "border-l-2 border-neutral-900 pl-4"
-                  : "border-l-2 border-neutral-200 pl-4"
+                  ? "rounded-lg bg-muted/50 px-4 py-3"
+                  : "rounded-lg bg-background px-4 py-3"
               }
             >
-              <header className="flex flex-wrap items-baseline gap-x-2 gap-y-0 text-xs text-neutral-500">
-                <span className="font-medium text-neutral-800">{roleLabel}</span>
+              <header className="flex flex-wrap items-baseline gap-x-2 gap-y-0 text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">{roleLabel}</span>
                 <time dateTime={message.createdAt}>{formatWhen(message.createdAt)}</time>
               </header>
-              <p className="mt-1.5 text-[15px] leading-relaxed whitespace-pre-wrap text-neutral-800">
+              <p className="mt-1.5 whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">
                 {message.body}
               </p>
             </article>

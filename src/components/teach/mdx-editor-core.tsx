@@ -49,6 +49,7 @@ import { visualWalkthroughEditorDescriptor } from "@/blocks/visual-walkthrough/e
 import { visualDiagramEditorDescriptor } from "@/blocks/visual-diagram/editorDescriptor";
 import { roadmapEditorDescriptor } from "@/blocks/roadmap/editorDescriptor";
 import { ChapterBlockConfigsProvider } from "@/components/teach/editor/chapter-block-configs";
+import { EditorSlashMenu } from "@/components/teach/editor/editor-slash-menu";
 
 // All registered block types, each sourced from its own editorDescriptor.ts.
 const blockRegistryDescriptors = [
@@ -93,7 +94,7 @@ export default function MdxEditorCore({
 }) {
   return (
     <ChapterBlockConfigsProvider configs={blockConfigs}>
-    <div className="chapter-mdx-editor overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
+    <div className="chapter-mdx-editor overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
       <MDXEditor
         markdown={initialMarkdown}
         onChange={(markdown) => onChange(normalizeLearningLogQuestionProps(markdown))}
@@ -133,6 +134,7 @@ export default function MdxEditorCore({
                 <UndoRedo />
                 <Separator />
                 <InsertContentMenu />
+                <EditorSlashMenu />
                 <Separator />
                 <BoldItalicUnderlineToggles />
                 <Separator />

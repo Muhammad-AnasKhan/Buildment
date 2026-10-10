@@ -48,6 +48,7 @@ export default async function ChapterReaderPage({
           order: true,
           title: true,
           chapters: {
+            where: { publishedAt: { not: null } },
             orderBy: { order: "asc" },
             select: {
               id: true,

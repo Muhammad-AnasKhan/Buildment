@@ -67,14 +67,14 @@ export default async function MentorHelpInboxPage({
     <div className="mx-auto max-w-4xl">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
-            Mentee requests
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            Help notes
           </h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Help notes from your learners — reply in writing today; live meetups come next.
+          <p className="mt-1 text-sm text-muted-foreground">
+            Notes from your learners. Reply here, and they will see it on the lesson.
           </p>
           {openHelpCount > 0 && (statusFilter ?? "open") !== "resolved" && (
-            <p className="mt-2 text-sm font-medium text-neutral-800">
+            <p className="mt-2 text-sm font-medium text-foreground">
               {openHelpCount} open {openHelpCount === 1 ? "request" : "requests"} need a response
             </p>
           )}
@@ -84,7 +84,7 @@ export default async function MentorHelpInboxPage({
           <AutoSubmitSelect
             name="status"
             defaultValue={statusFilter ?? "open"}
-            className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none focus:border-neutral-400"
+            className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-ring"
           >
             <option value="open">Open ({openHelpCount})</option>
             <option value="resolved">Resolved</option>
@@ -94,7 +94,7 @@ export default async function MentorHelpInboxPage({
             <AutoSubmitSelect
               name="courseId"
               defaultValue={courseFilter ?? ""}
-              className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none focus:border-neutral-400"
+              className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-ring"
             >
               <option value="">All courses</option>
               {courses.map((course) => (
@@ -109,16 +109,16 @@ export default async function MentorHelpInboxPage({
 
       {threads.length === 0 ? (
         <div className="mt-12 flex flex-col items-center gap-2 text-center">
-          <Inbox className="size-8 text-neutral-300" aria-hidden />
-          <p className="text-sm font-medium text-neutral-700">
+          <Inbox className="size-8 text-muted-foreground" aria-hidden />
+          <p className="text-sm font-medium text-foreground">
             {statusFilter === "resolved" ? "No resolved requests" : "No open requests"}
           </p>
-          <p className="max-w-md text-sm text-neutral-400">
+          <p className="max-w-md text-sm text-muted-foreground">
             When a mentee sends a help note from a chapter, it appears here for you to review.
           </p>
         </div>
       ) : (
-        <ul className="mt-6 divide-y divide-neutral-100 overflow-hidden rounded-xl border border-neutral-200 bg-white">
+        <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
           {threads.map((thread) => {
             const preview = thread.messages[0];
             const ageHours = preview
@@ -131,38 +131,38 @@ export default async function MentorHelpInboxPage({
               <li key={thread.id}>
                 <Link
                   href={`/help/${thread.id}`}
-                  className="flex items-center gap-4 px-4 py-4 transition-colors hover:bg-neutral-50/80 sm:px-5"
+                  className="flex items-center gap-4 px-4 py-4 transition-colors hover:bg-muted/50 sm:px-5"
                 >
                   <div
-                    className="flex size-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-xs font-semibold text-neutral-600"
+                    className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground"
                     aria-hidden
                   >
                     {initials(menteeLabel)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate text-sm font-medium text-neutral-900">{menteeLabel}</p>
+                      <p className="truncate text-sm font-medium text-foreground">{menteeLabel}</p>
                       {isAging && (
-                        <span className="rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">
+                        <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-200">
                           {Math.floor(ageHours)}h waiting
                         </span>
                       )}
                       {thread.status === "RESOLVED" && (
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
+                        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                           Resolved
                         </span>
                       )}
                     </div>
-                    <p className="mt-0.5 truncate text-xs text-neutral-500">
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
                       {thread.chapter?.title ?? thread.course.title}
                     </p>
                     {preview && (
-                      <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-neutral-600">
+                      <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
                         {preview.body}
                       </p>
                     )}
                   </div>
-                  <ChevronRight className="size-4 shrink-0 text-neutral-300" aria-hidden />
+                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                 </Link>
               </li>
             );

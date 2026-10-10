@@ -67,21 +67,21 @@ export function AskHelpDialog({
         onClick={(event) => {
           if (event.target === event.currentTarget) close();
         }}
-        className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-0 backdrop:bg-neutral-950/40 open:flex open:items-center open:justify-center open:p-4"
+        className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-0 backdrop:bg-background/70 open:flex open:items-center open:justify-center open:p-4"
         aria-labelledby="ask-help-title"
       >
-        <div className="flex max-h-[min(32rem,90dvh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-xl">
-          <div className="flex items-start justify-between gap-3 border-b border-neutral-100 px-5 py-4">
+        <div className="flex max-h-[min(32rem,90dvh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-xl">
+          <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
             <div className="min-w-0">
-              <h2 id="ask-help-title" className="text-base font-semibold text-neutral-950">
+              <h2 id="ask-help-title" className="text-base font-semibold text-foreground">
                 Send a help note
               </h2>
-              <p className="mt-0.5 truncate text-sm text-neutral-500">{chapterTitle}</p>
+              <p className="mt-0.5 truncate text-sm text-muted-foreground">{chapterTitle}</p>
             </div>
             <button
               type="button"
               onClick={close}
-              className="rounded-lg p-1.5 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700"
+              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               aria-label="Close"
             >
               <X className="size-4" />

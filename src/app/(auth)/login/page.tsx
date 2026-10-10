@@ -55,7 +55,7 @@ export default async function LoginPage({
             <CardHeader className="text-center sm:text-left">
               <CardTitle className="text-2xl">Welcome back</CardTitle>
               <CardDescription>
-                Sign in with email and password, or use Google / a magic link.
+                Sign in with email and password, or use a magic link.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -112,17 +112,6 @@ export default async function LoginPage({
                 <span className="text-xs text-muted-foreground">or</span>
                 <Separator className="flex-1" />
               </div>
-
-              <form
-                action={async () => {
-                  "use server";
-                  await signIn("google", { redirectTo: redirectTo ?? "/dashboard" });
-                }}
-              >
-                <Button type="submit" variant="outline" className="h-10 w-full">
-                  Continue with Google
-                </Button>
-              </form>
 
               <form
                 action={async (formData) => {

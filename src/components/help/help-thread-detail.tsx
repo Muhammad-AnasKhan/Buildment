@@ -13,6 +13,7 @@ import { HelpNoteTimeline } from "./help-note-timeline";
 import { HelpNoteComposer } from "./help-note-composer";
 import { helpOutlineButton, helpPanel } from "./help-styles";
 import { cn } from "@/lib/utils";
+import { toast } from "@/components/ui/app-toast";
 import type { HelpMessageView } from "./help-types";
 
 type BaseProps = {
@@ -63,6 +64,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
 
       if (!result.ok) {
         setError(result.error);
+        toast(result.error);
         return;
       }
       setBody("");
@@ -77,6 +79,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
       const result = await replyToHelpThread({ threadId: props.threadId, body });
       if (!result.ok) {
         setError(result.error);
+        toast(result.error);
         return;
       }
       setBody("");
@@ -91,6 +94,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
       const result = await resolveHelpThread({ threadId: props.threadId });
       if (!result.ok) {
         setError(result.error);
+        toast(result.error);
         return;
       }
       router.refresh();
@@ -100,7 +104,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
   const timelineBlock = (
     <>
       {!props.messages.length && props.variant === "mentee" && (
-        <p className="text-sm leading-relaxed text-neutral-600">
+        <p className="text-sm leading-relaxed text-muted-foreground">
           Tell your mentor what you&apos;re trying to do, what happened instead, and any error
           messages. They&apos;ll reply here — check back after you reload this page.
         </p>
@@ -111,7 +115,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
       {isResolved && props.variant === "mentee" && (
         <p
           className={cn(
-            "text-xs text-neutral-500",
+            "text-xs text-muted-foreground",
             props.messages.length > 0 ? "mt-4" : undefined
           )}
         >
@@ -143,7 +147,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
             props.layout === "modal" ? (
               <Link
                 href={props.footerLink.href}
-                className="mr-auto text-xs font-medium text-neutral-500 underline-offset-2 hover:text-neutral-800 hover:underline"
+                className="mr-auto text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
                 onClick={props.footerLink.onNavigate}
               >
                 {props.footerLink.label}
@@ -185,7 +189,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
           }
         />
       ) : (
-        <p className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
+        <p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
           Resolved — the mentee can open a new note from the chapter if they need more help.
         </p>
       )
@@ -195,13 +199,13 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
     return (
       <>
         <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{timelineBlock}</div>
-        <div className="space-y-3 border-t border-neutral-100 bg-neutral-50/80 px-5 py-4">
+        <div className="space-y-3 border-t border-border bg-muted/30 px-5 py-4">
           {menteeComposer}
           {props.footerLink && (
             <div className="flex justify-start sm:hidden">
               <Link
                 href={props.footerLink.href}
-                className="text-xs font-medium text-neutral-500 underline-offset-2 hover:underline"
+                className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline"
                 onClick={props.footerLink.onNavigate}
               >
                 {props.footerLink.label}
@@ -220,7 +224,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
         {isOpen || !hasThread ? (
           <section className={helpPanel}>{menteeComposer}</section>
         ) : (
-          <p className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
+          <p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
             Resolved — use <strong className="font-medium">Ask for help</strong> on the chapter to
             start a new note.
           </p>
@@ -232,7 +236,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
   return (
     <div className="min-w-0 space-y-6">
       <section>
-        <h2 className="text-sm font-semibold text-neutral-900">Help note thread</h2>
+        <h2 className="text-sm font-semibold text-foreground">Help note thread</h2>
         <div className={cn(helpPanel, "mt-4")}>{timelineBlock}</div>
       </section>
       <section className={helpPanel}>{mentorComposer}</section>

@@ -73,8 +73,8 @@ export function firePartyPops(options?: PartyPopOptions) {
   const {
     withSound = true,
     soundEffect = "success",
-    particleCount = 240,
-    dualPoppers = true,
+    particleCount = 28,
+    dualPoppers = false,
   } = options ?? {};
 
   let feedbackPlayed = false;

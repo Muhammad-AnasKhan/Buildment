@@ -148,6 +148,17 @@
     );
     background-attachment: fixed;
   }
+  .dark .chapter-mdx-editor .mdxeditor,
+  .dark .chapter-mdx-editor .mdxeditor-toolbar,
+  .dark .chapter-mdx-editor .mdxeditor-root-contenteditable,
+  .dark .chapter-mdx-editor .cm-editor {
+    background: var(--card);
+    color: var(--foreground);
+  }
+  .dark .chapter-mdx-editor .mdxeditor-toolbar {
+    background: var(--muted);
+    border-color: var(--border);
+  }
   .dark ::selection {
     background: oklch(0.55 0.04 82 / 48%);
     color: oklch(0.97 0.01 88);

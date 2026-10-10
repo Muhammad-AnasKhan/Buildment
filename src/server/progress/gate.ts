@@ -27,6 +27,7 @@ export async function loadCourseGate(
         select: {
           order: true,
           chapters: {
+            where: { publishedAt: { not: null } },
             orderBy: { order: "asc" },
             select: { id: true, order: true, slug: true, title: true },
           },

@@ -3,7 +3,6 @@ import NextAuth from "next-auth";
 import { encode as encodeJwt } from "next-auth/jwt";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
-import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
 import { prisma } from "@/server/db";
 import { linkLearnerProfileToUser } from "@/server/enrollment/link-learner-profile";
@@ -63,7 +62,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         };
       },
     }),
-    Google,
     Resend({
       apiKey: process.env.AUTH_RESEND_KEY,
       from: process.env.EMAIL_FROM,

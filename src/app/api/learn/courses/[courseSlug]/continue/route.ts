@@ -26,6 +26,7 @@ export async function GET(
           order: true,
           title: true,
           chapters: {
+            where: { publishedAt: { not: null } },
             orderBy: { order: "asc" },
             select: {
               id: true,

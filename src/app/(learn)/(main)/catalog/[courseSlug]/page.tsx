@@ -6,7 +6,8 @@ import { selfEnrollInCourseAction } from "@/server/actions/enroll";
 import { enrollmentGrantsContentAccess } from "@/server/enrollment/lifecycle";
 import { CourseCover } from "@/components/learn/course-cover";
 import { formatPriceCents } from "@/lib/format-price";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { cn } from "@/lib/utils";
 
 export default async function CatalogCoursePage({
@@ -33,6 +34,19 @@ export default async function CatalogCoursePage({
       currency: true,
       status: true,
       mentor: { select: { name: true } },
+      modules: {
+        orderBy: { order: "asc" },
+        select: {
+          id: true,
+          title: true,
+          order: true,
+          chapters: {
+            where: { publishedAt: { not: null } },
+            orderBy: { order: "asc" },
+            select: { id: true, title: true, order: true, estimatedMinutes: true },
+          },
+        },
+      },
     },
   });
   if (!course || course.status !== "PUBLISHED") notFound();
@@ -86,6 +100,37 @@ export default async function CatalogCoursePage({
       </header>
       </div>
 
+      {course.modules.some((module) => module.chapters.length > 0) ? (
+        <section className="mt-6 rounded-xl border bg-card p-5">
+          <h2 className="text-sm font-semibold">Curriculum</h2>
+          <ol className="mt-4 space-y-5">
+            {course.modules.map((module) =>
+              module.chapters.length === 0 ? null : (
+                <li key={module.id}>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {String(module.order).padStart(2, "0")} · {module.title}
+                  </p>
+                  <ol className="mt-2 space-y-1.5">
+                    {module.chapters.map((chapter) => (
+                      <li key={chapter.id} className="flex items-baseline justify-between gap-3 text-sm">
+                        <span>
+                          {String(chapter.order).padStart(2, "0")} {chapter.title}
+                        </span>
+                        {chapter.estimatedMinutes ? (
+                          <span className="shrink-0 text-xs text-muted-foreground">
+                            {chapter.estimatedMinutes} min
+                          </span>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ol>
+                </li>
+              )
+            )}
+          </ol>
+        </section>
+      ) : null}
+
       {course.projectGoal ? (
         <section className="mt-6 rounded-xl border bg-muted/20 p-4 text-sm">
           <p className="font-medium text-foreground">What you&apos;ll build</p>
@@ -109,9 +154,9 @@ export default async function CatalogCoursePage({
           <form action={selfEnrollInCourseAction}>
             <input type="hidden" name="courseId" value={course.id} />
             <input type="hidden" name="returnTo" value={`/courses/${course.slug}`} />
-            <Button type="submit" size="lg">
+            <PendingSubmitButton size="lg" pendingLabel="Enrolling…" className="h-10 px-4">
               {course.pricingType === "PAID" ? "Enroll & checkout" : "Enroll for free"}
-            </Button>
+            </PendingSubmitButton>
           </form>
         )}
         {!hasAccess && !needsPayment ? (

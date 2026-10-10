@@ -45,6 +45,7 @@ export default async function CourseOverviewPage({
           order: true,
           title: true,
           chapters: {
+            where: { publishedAt: { not: null } },
             orderBy: { order: "asc" },
             select: {
               id: true,

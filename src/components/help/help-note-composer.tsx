@@ -36,10 +36,10 @@ export function HelpNoteComposer({
   return (
     <div className="space-y-3">
       <div>
-        <label htmlFor={id} className="text-sm font-semibold text-neutral-900">
+        <label htmlFor={id} className="text-sm font-semibold text-foreground">
           {label}
         </label>
-        {hint && <p className="mt-1 text-xs text-neutral-500">{hint}</p>}
+        {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
       </div>
       <textarea
         id={id}
@@ -51,7 +51,7 @@ export function HelpNoteComposer({
         className={cn(helpTextarea, "min-h-[100px]")}
       />
       {error && (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-destructive" role="alert">
           {error}
         </p>
       )}

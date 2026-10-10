@@ -17,7 +17,7 @@ export default async function VerifyEmailPage({
   if (user && (await resolveEmailVerifiedForUser(user))) {
     redirect(homeRouteForRole(user.role));
   }
-  const showResend = Boolean(user);
+  const signedIn = Boolean(user);
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center bg-background px-6 py-24">
@@ -34,11 +34,9 @@ export default async function VerifyEmailPage({
             ? "Your account was created. Open the link we sent to your inbox to activate it, then sign in."
             : "Verify your email before using Buildment. Check your inbox for the link, or resend below."}
         </p>
-        {showResend ? (
-          <div className="mt-6">
-            <ResendVerificationButton />
-          </div>
-        ) : null}
+        <div className="mt-6">
+          <ResendVerificationButton signedIn={signedIn} />
+        </div>
         <p className="mt-8 text-sm text-muted-foreground">
           <Link href="/login" className="text-primary underline-offset-4 hover:underline">
             Back to sign in

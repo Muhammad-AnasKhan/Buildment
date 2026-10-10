@@ -66,10 +66,10 @@ export default async function ReviewQueuePage({
     <div className="mx-auto max-w-4xl">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
-            Review queue
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            Answers to check
           </h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             Open answers waiting for your feedback — oldest first.
           </p>
         </div>
@@ -79,7 +79,7 @@ export default async function ReviewQueuePage({
             <AutoSubmitSelect
               name="courseId"
               defaultValue={courseFilter ?? ""}
-              className="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-700 outline-none focus:border-indigo-300"
+              className="h-9 rounded-lg border border-border bg-background px-3 text-sm text-foreground outline-none focus:border-ring"
             >
               <option value="">All courses</option>
               {courses.map((course) => (
@@ -94,10 +94,10 @@ export default async function ReviewQueuePage({
 
       {pending.length === 0 ? (
         <div className="mt-12 flex flex-col items-center gap-2 text-center">
-          <Inbox className="size-8 text-neutral-300" />
-          <p className="text-sm font-medium text-neutral-700">Nothing waiting for review</p>
-          <p className="text-sm text-neutral-400">
-            When mentees submit open answers in your courses, they appear here.
+          <Inbox className="size-8 text-muted-foreground" />
+          <p className="text-sm font-medium text-foreground">Nothing waiting</p>
+          <p className="text-sm text-muted-foreground">
+            When learners submit open answers in your courses, they appear here.
           </p>
         </div>
       ) : (
@@ -111,37 +111,37 @@ export default async function ReviewQueuePage({
               <li key={response.id}>
                 <Link
                   href={`/review/${response.id}`}
-                  className={`flex items-center gap-4 rounded-xl border bg-white p-4 transition-colors ${
+                  className={`flex items-center gap-4 rounded-xl border bg-card p-4 text-card-foreground transition-colors ${
                     isAging
-                      ? "border-amber-300 bg-amber-50/30 hover:border-amber-400"
-                      : "border-neutral-200 hover:border-neutral-300"
+                      ? "border-amber-400/50 bg-amber-500/10"
+                      : "border-border hover:bg-muted/40"
                   }`}
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-neutral-900">
+                    <p className="truncate text-sm font-medium text-foreground">
                       {response.user.name ?? response.user.email}
-                      <span className="font-normal text-neutral-400">
+                      <span className="font-normal text-muted-foreground">
                         {" "}
                         · attempt {response.attempt}
                       </span>
                     </p>
-                    <p className="mt-0.5 truncate text-xs text-neutral-500">
+                    <p className="mt-0.5 truncate text-xs text-muted-foreground">
                       {course.title} › {response.block.chapter.title}
                     </p>
                   </div>
 
                   <div className="flex shrink-0 items-center gap-3">
                     {isAging && (
-                      <span className="rounded-md bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                      <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-200">
                         {Math.floor(ageHours / 24) >= 1
                           ? `${Math.floor(ageHours / 24)}d waiting`
                           : `${Math.floor(ageHours)}h waiting`}
                       </span>
                     )}
-                    <span className="text-xs text-neutral-400">
+                    <span className="text-xs text-muted-foreground">
                       {response.submittedAt.toLocaleDateString()}
                     </span>
-                    <ChevronRight className="size-4 text-neutral-300" />
+                    <ChevronRight className="size-4 text-muted-foreground" />
                   </div>
                 </Link>
               </li>

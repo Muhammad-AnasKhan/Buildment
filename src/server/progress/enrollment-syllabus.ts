@@ -14,6 +14,7 @@ const courseModulesSelect = {
       order: true,
       title: true,
       chapters: {
+        where: { publishedAt: { not: null } },
         orderBy: { order: "asc" as const },
         select: {
           id: true,

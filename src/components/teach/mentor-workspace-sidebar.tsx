@@ -152,14 +152,14 @@ export function MentorWorkspaceSidebar({
   ];
   const workflowItems: NavItem[] = [
     {
-      label: "Review queue",
+      label: "Answers to check",
       href: selectedCourse ? `/review?courseId=${selectedCourse.id}` : "/review",
       icon: MessageSquareText,
       active: pathname.startsWith("/review"),
       count: selectedCourse?.pendingReviews,
     },
     {
-      label: "Mentee requests",
+      label: "Help notes",
       href: selectedCourse ? `/help?courseId=${selectedCourse.id}` : "/help",
       icon: CircleHelp,
       active: pathname.startsWith("/help"),

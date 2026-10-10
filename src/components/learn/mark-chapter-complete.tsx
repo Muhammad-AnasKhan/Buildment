@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2 } from "lucide-react";
+import { ArrowUp, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { markChapterComplete } from "@/server/actions/progress";
 import { acknowledgeStreakMilestone } from "@/server/actions/weekly-goal";
@@ -12,6 +12,7 @@ import { firePartyPops } from "@/components/learn/party-pops";
 import { ChapterCompleteCelebrationModal } from "@/components/learn/chapter-complete-celebration-modal";
 import { scrollToNextCheckpoint } from "@/components/learn/checkpoint-marker";
 import { playFeedback } from "@/lib/sound-feedback";
+import { toast } from "@/components/ui/app-toast";
 
 const MODAL_OPEN_DELAY_MS = 820;
 
@@ -94,8 +95,8 @@ function ChapterCompletionMoment({
     }
 
     firePartyPops({
-      particleCount: 80,
-      dualPoppers: true,
+      particleCount: 18,
+      dualPoppers: false,
       withSound: true,
       soundEffect: "completion",
     });
@@ -127,6 +128,7 @@ function ChapterCompletionMoment({
       const result = await markChapterComplete({ chapterId });
       if (!result.ok) {
         setError(result.error);
+        toast(result.error);
         return;
       }
       beginCelebration();
@@ -201,9 +203,12 @@ function ChapterCompletionMoment({
               type="button"
               variant="outline"
               onClick={scrollToNextCheckpoint}
-              className="h-10 w-full min-w-[11rem] rounded-lg px-5 text-sm font-medium sm:w-auto"
+              className="h-10 w-full min-w-[11rem] gap-2 rounded-lg px-5 text-sm font-medium sm:w-auto"
             >
-              Next checkpoint
+              <ArrowUp className="size-4 shrink-0" aria-hidden />
+              {remaining === 1
+                ? "Complete remaining checkpoint"
+                : "Complete remaining checkpoints"}
             </Button>
           )}
         </div>
