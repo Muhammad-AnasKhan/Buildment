@@ -9,22 +9,20 @@ const requestSchema = z.object({
   message: z.string().trim().max(500).optional(),
 });
 
-export async function requestInstructorAccessAction(
-  formData: FormData
-): Promise<{ ok: true } | { ok: false; error: string }> {
+export async function requestInstructorAccessAction(formData: FormData): Promise<void> {
   const user = await requireVerifiedUser();
   if (userCanInstruct(user)) {
-    return { ok: false, error: "You already have instructor access." };
+    throw new Error("You already have instructor access.");
   }
   if (user.role === "ADMIN") {
-    return { ok: false, error: "Platform admins use the admin console." };
+    throw new Error("Platform admins use the admin console.");
   }
 
   const parsed = requestSchema.safeParse({
     message: formData.get("message") || undefined,
   });
   if (!parsed.success) {
-    return { ok: false, error: "Could not submit request." };
+    throw new Error("Could not submit request.");
   }
 
   const existing = await prisma.instructorAccessRequest.findUnique({
@@ -32,7 +30,7 @@ export async function requestInstructorAccessAction(
     select: { status: true },
   });
   if (existing?.status === "PENDING") {
-    return { ok: false, error: "Your request is already pending review." };
+    throw new Error("Your request is already pending review.");
   }
 
   await prisma.instructorAccessRequest.upsert({
@@ -51,5 +49,4 @@ export async function requestInstructorAccessAction(
   });
 
   revalidatePath("/", "layout");
-  return { ok: true };
 }

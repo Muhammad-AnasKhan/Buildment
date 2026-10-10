@@ -188,35 +188,6 @@ export function IntegrationDocsContent({ baseUrl }: { baseUrl: string }) {
             </div>
           </section>
 
-          <section id="local-dev" aria-labelledby="local-dev-heading">
-            <h2 id="local-dev-heading" className="text-xl font-semibold tracking-tight">
-              Local development
-            </h2>
-            <Card className="mt-4 border-dashed">
-              <CardContent className="space-y-3 pt-6 text-sm leading-relaxed text-muted-foreground">
-                <p>
-                  1. Seed the demo course and users:{" "}
-                  <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">pnpm db:seed</code>
-                </p>
-                <p>
-                  2. Create a demo org, allocation, and fresh API keys:{" "}
-                  <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">pnpm db:seed:integration</code>
-                </p>
-                <p>
-                  3. Use the printed keys with curl (see Verify credentials above) against{" "}
-                  <code className="rounded bg-muted px-1 font-mono text-xs">{origin}</code>.
-                </p>
-                <p className="text-xs">
-                  Platform admins manage live orgs under{" "}
-                  <Link href="/admin/organizations" className="text-primary underline-offset-4 hover:underline">
-                    Admin → Organizations
-                  </Link>
-                  . Sign in as{" "}
-                  <code className="rounded bg-muted px-1 font-mono text-[11px]">admin@buildment.dev</code> after seeding.
-                </p>
-              </CardContent>
-            </Card>
-          </section>
       </div>
     </div>
   );
