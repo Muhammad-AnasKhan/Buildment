@@ -23,6 +23,12 @@ export default async function ChapterEditorPage({
   });
   if (!chapter) notFound();
 
+  const blocks = await prisma.block.findMany({
+    where: { chapterId: chapter.id, archivedAt: null },
+    select: { id: true, config: true },
+  });
+  const blockConfigs = Object.fromEntries(blocks.map((block) => [block.id, block.config]));
+
   // The editor works with real JSX block nodes, so the escaped placeholders
   // the import pipeline stores are normalized on the way in; autosave writes
   // the normalized form back (docs/02-content-authoring.mdx).
@@ -41,6 +47,7 @@ export default async function ChapterEditorPage({
       }
       initialSource={restoreInteractiveBlockTags(chapter.source)}
       lastPublishedSource={chapter.compiled}
+      blockConfigs={blockConfigs}
     />
   );
 }

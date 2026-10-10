@@ -58,6 +58,7 @@ export function ChapterEditor({
   initialHasUnpublishedChanges,
   initialSource,
   lastPublishedSource,
+  blockConfigs = {},
 }: {
   chapterId: string;
   courseSlug: string;
@@ -70,6 +71,7 @@ export function ChapterEditor({
   initialHasUnpublishedChanges: boolean;
   initialSource: string;
   lastPublishedSource: string | null;
+  blockConfigs?: Record<string, unknown>;
 }) {
   const [saveState, setSaveState] = useState<SaveState>({ kind: "idle" });
   const [publishErrors, setPublishErrors] = useState<string[]>([]);
@@ -354,6 +356,7 @@ export function ChapterEditor({
           initialMarkdown={initialSource}
           diffMarkdown={lastPublishedSource ?? undefined}
           onChange={handleChange}
+          blockConfigs={blockConfigs}
         />
       </div>
     </div>

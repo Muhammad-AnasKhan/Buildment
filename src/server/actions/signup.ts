@@ -4,7 +4,11 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/server/db";
 import { hashPassword } from "@/server/auth/password";
-import { sendVerificationEmail } from "@/server/auth/email-verification";
+import {
+  ensureUserEmailVerified,
+  sendVerificationEmail,
+  shouldAutoVerifyWithoutEmailDelivery,
+} from "@/server/auth/email-verification";
 
 const signupSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),
@@ -41,7 +45,7 @@ export async function signupAction(
   }
 
   const passwordHash = hashPassword(parsed.data.password);
-  await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       email,
       name: parsed.data.name,
@@ -56,6 +60,11 @@ export async function signupAction(
     },
   });
 
-    await sendVerificationEmail({ email, name: parsed.data.name });
-    redirect("/verify-email?signup=1");
+  if (shouldAutoVerifyWithoutEmailDelivery()) {
+    await ensureUserEmailVerified(user.id);
+    redirect(`/login?verified=1&email=${encodeURIComponent(email)}`);
+  }
+
+  await sendVerificationEmail({ email, name: parsed.data.name });
+  redirect("/verify-email?signup=1");
 }

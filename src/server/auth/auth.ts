@@ -7,7 +7,11 @@ import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
 import { prisma } from "@/server/db";
 import { linkLearnerProfileToUser } from "@/server/enrollment/link-learner-profile";
-import { isEmailVerified } from "@/server/auth/email-verification";
+import {
+  ensureUserEmailVerified,
+  isEmailVerified,
+  shouldAutoVerifyWithoutEmailDelivery,
+} from "@/server/auth/email-verification";
 import { verifyPassword } from "@/server/auth/password";
 import { authConfig } from "./auth.config";
 import { ensureSeedTestUserVerified, shouldAutoVerifySeedTestUser } from "./seed-test-users";
@@ -36,8 +40,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         let user = await prisma.user.findUnique({ where: { email } });
         if (!user || !verifyPassword(password, user.passwordHash)) return null;
         if (!isEmailVerified(user.emailVerified)) {
-          if (!shouldAutoVerifySeedTestUser(email)) return null;
-          await ensureSeedTestUserVerified(email);
+          const canAutoVerify =
+            shouldAutoVerifySeedTestUser(email) || shouldAutoVerifyWithoutEmailDelivery();
+          if (!canAutoVerify) return null;
+          if (shouldAutoVerifySeedTestUser(email)) {
+            await ensureSeedTestUserVerified(email);
+          } else {
+            await ensureUserEmailVerified(user.id);
+          }
           user = await prisma.user.findUnique({ where: { email } });
           if (!user || !isEmailVerified(user.emailVerified)) return null;
         }

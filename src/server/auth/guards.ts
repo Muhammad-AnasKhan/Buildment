@@ -2,7 +2,12 @@ import "server-only";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/server/db";
 import { auth } from "./auth";
-import { isEmailVerified } from "./email-verification";
+import {
+  ensureUserEmailVerified,
+  isEmailVerified,
+  resolveEmailVerifiedForUser,
+  shouldAutoVerifyWithoutEmailDelivery,
+} from "./email-verification";
 import {
   canAccessLearnSurface,
   canAccessRole,
@@ -58,6 +63,16 @@ export async function requireVerifiedUser() {
       if (verifiedAt) {
         return { ...user, emailVerified: verifiedAt };
       }
+    }
+    if (shouldAutoVerifyWithoutEmailDelivery()) {
+      const verifiedAt = await ensureUserEmailVerified(user.id);
+      if (verifiedAt) {
+        return { ...user, emailVerified: verifiedAt };
+      }
+    }
+    const verifiedAt = await resolveEmailVerifiedForUser(user);
+    if (verifiedAt) {
+      return { ...user, emailVerified: verifiedAt };
     }
     redirect("/verify-email");
   }

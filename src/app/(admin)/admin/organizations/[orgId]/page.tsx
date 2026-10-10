@@ -4,14 +4,9 @@ import { prisma } from "@/server/db";
 import { CredentialReveal } from "@/components/admin/credential-reveal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { BulkCourseAllocationForm } from "@/components/admin/bulk-course-allocation-form";
+import { rotateOrganizationCredentialFormAction } from "@/server/actions/admin/organizations";
 import {
-  rotateOrganizationCredentialFormAction,
-  upsertOrganizationCourseAllocationAction,
-} from "@/server/actions/admin/organizations";
-import {
-  adminSelectClassName,
   AdminBackLink,
   AdminPageHeader,
   AdminPanel,
@@ -57,7 +52,27 @@ export default async function AdminOrganizationDetailPage({
     select: { id: true, title: true, slug: true },
   });
 
-  const allocatedIds = new Set(org.courseAllocations.map((a) => a.courseId));
+  const allocationByCourseId = new Map(org.courseAllocations.map((row) => [row.courseId, row]));
+  const pendingRequestCourseIds = new Set(org.courseRequests.map((r) => r.courseId));
+  const mapCourseForBulk = (course: (typeof publishedCourses)[number]) => {
+    const allocation = allocationByCourseId.get(course.id);
+    return {
+      id: course.id,
+      title: course.title,
+      slug: course.slug,
+      allocated: Boolean(allocation),
+      pendingRequest: pendingRequestCourseIds.has(course.id),
+      maxEnrollments: allocation?.maxEnrollments ?? 100,
+      expiresAt: allocation?.expiresAt
+        ? allocation.expiresAt.toLocaleDateString("en-CA")
+        : "",
+    };
+  };
+
+  const allPublishedCourses = publishedCourses.map(mapCourseForBulk);
+  const coursesInCatalog = publishedCourses
+    .filter((course) => allocationByCourseId.has(course.id))
+    .map(mapCourseForBulk);
 
   return (
     <div>
@@ -143,8 +158,8 @@ export default async function AdminOrganizationDetailPage({
       </AdminSection>
 
       <AdminSection
-        title="Course allocations"
-        description="Caps and expiry are enforced on integration enrollments. Organizations cannot edit these themselves."
+        title="Courses in catalog"
+        description="Published courses currently allocated to this organization. Caps and expiry are enforced on integration enrollments."
       >
         <AdminTable minWidth="720px">
           <AdminTableHead>
@@ -166,8 +181,13 @@ export default async function AdminOrganizationDetailPage({
               org.courseAllocations.map((row) => (
                 <AdminTableRow key={row.id}>
                   <AdminTableCell>
-                    <span className="font-medium">{row.course.title}</span>
-                    <span className="ml-2 font-mono text-xs text-muted-foreground">{row.course.slug}</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium">{row.course.title}</span>
+                      <Badge variant="secondary" className="text-[10px]">
+                        In catalog
+                      </Badge>
+                    </div>
+                    <span className="mt-0.5 block font-mono text-xs text-muted-foreground">{row.course.slug}</span>
                   </AdminTableCell>
                   <AdminTableCell align="right" className="tabular-nums">
                     {row.currentEnrollments} / {row.maxEnrollments}
@@ -187,38 +207,38 @@ export default async function AdminOrganizationDetailPage({
             )}
           </AdminTableBody>
         </AdminTable>
+      </AdminSection>
 
-        <AdminPanel className="mt-6 max-w-xl">
-          <h3 className="text-sm font-semibold">Add or update allocation</h3>
-          <form action={upsertOrganizationCourseAllocationAction} className="mt-4 space-y-4">
-            <input type="hidden" name="organizationId" value={org.id} />
-            <div className="space-y-1.5">
-              <Label htmlFor="courseId">Published course</Label>
-              <select id="courseId" name="courseId" required className={adminSelectClassName}>
-                <option value="">Select course…</option>
-                {publishedCourses.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.title} {allocatedIds.has(c.id) ? "(update)" : ""}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="maxEnrollments">Max enrollments</Label>
-              <Input id="maxEnrollments" name="maxEnrollments" type="number" min={1} defaultValue={100} required />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="expiresAt">Expires (optional)</Label>
-              <Input id="expiresAt" name="expiresAt" type="date" />
-            </div>
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" name="isAllowed" defaultChecked className="size-4 rounded border-input" />
-              Allowed for new enrollments
-            </label>
-            <Button type="submit">Save allocation</Button>
-          </form>
+      <AdminSection
+        title="Add courses to catalog"
+        description="Browse published courses. Rows marked Added to catalog are already allocated — select Not in catalog courses to add. Pending requests show a Requested badge."
+        className="mt-10"
+      >
+        <AdminPanel className="max-w-4xl">
+          <BulkCourseAllocationForm
+            organizationId={org.id}
+            courses={allPublishedCourses}
+            intent="add"
+            emptyMessage="No published courses on the platform yet."
+          />
         </AdminPanel>
       </AdminSection>
+
+      {coursesInCatalog.length > 0 ? (
+        <AdminSection
+          title="Update catalog courses"
+          description="Change max enrollments or expiry for courses already in this organization's catalog."
+          className="mt-10"
+        >
+          <AdminPanel className="max-w-4xl">
+            <BulkCourseAllocationForm
+              organizationId={org.id}
+              courses={coursesInCatalog}
+              intent="update"
+            />
+          </AdminPanel>
+        </AdminSection>
+      ) : null}
     </div>
   );
 }

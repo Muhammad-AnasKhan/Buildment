@@ -236,9 +236,17 @@ const VISUAL_ITEMS: InsertableItem[] = [
   },
 ];
 
+const ASSESSED_ITEMS: InsertableItem[] = [
+  {
+    id: "quiz",
+    label: "Quiz",
+    description: "Multiple-choice checkpoint with feedback",
+    icon: CircleHelp,
+  },
+];
+
 const PLANNED_ITEMS = [
   { label: "Predict", icon: Sparkles },
-  { label: "Quiz", icon: CircleHelp },
   { label: "Open question", icon: Braces },
   { label: "Code exercise", icon: SquareCode },
 ] satisfies Array<{ label: string; icon: LucideIcon }>;
@@ -295,10 +303,10 @@ export function InsertContentMenu() {
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="flex items-center justify-between px-2 py-1.5">
-            Assessed activities
-            <span className="font-normal text-muted-foreground">Builder required</span>
-          </DropdownMenuLabel>
+          <DropdownMenuLabel className="px-2 py-1.5">Assessed activities</DropdownMenuLabel>
+          {ASSESSED_ITEMS.map((item) => (
+            <MenuItem key={item.id} item={item} onInsert={onInsert} />
+          ))}
           {PLANNED_ITEMS.map(({ label, icon: Icon }) => (
             <DropdownMenuItem key={label} disabled className="gap-2.5 px-2 py-2">
               <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
@@ -314,7 +322,7 @@ export function InsertContentMenu() {
         <DropdownMenuSeparator />
         <div className="flex items-start gap-2 px-2 py-2 text-xs leading-relaxed text-muted-foreground">
           <FileCode2 className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-          Switch to Source for full MDX control. Correct answers are never stored in chapter source.
+          Switch to Source for full MDX control. Learners never receive correct answers in the rendered page.
         </div>
       </DropdownMenuContent>
     </DropdownMenu>

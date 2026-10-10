@@ -1,7 +1,7 @@
 import "server-only";
 import { randomBytes } from "node:crypto";
 import { prisma } from "@/server/db";
-import { appBaseUrl, sendEmail } from "@/server/email/send";
+import { appBaseUrl, emailConfigured, sendEmail } from "@/server/email/send";
 import { linkLearnerProfileToUser } from "@/server/enrollment/link-learner-profile";
 
 const VERIFY_TTL_MS = 24 * 60 * 60 * 1000;
@@ -68,6 +68,45 @@ export async function confirmEmailVerificationToken(token: string): Promise<Conf
   return { ok: true, email: user.email };
 }
 
-export function isEmailVerified(emailVerified: Date | null | undefined): boolean {
-  return emailVerified instanceof Date && !Number.isNaN(emailVerified.getTime());
+/** Auth.js sessions often carry ISO strings — not only `Date` instances from Prisma. */
+export function isEmailVerified(emailVerified: Date | string | null | undefined): boolean {
+  if (emailVerified == null) return false;
+  if (emailVerified instanceof Date) return !Number.isNaN(emailVerified.getTime());
+  if (typeof emailVerified === "string" && emailVerified.trim()) {
+    return !Number.isNaN(new Date(emailVerified).getTime());
+  }
+  return false;
+}
+
+/** When Resend is not configured, skip the verify-email gate (typical local dev). */
+export function shouldAutoVerifyWithoutEmailDelivery(): boolean {
+  return !emailConfigured();
+}
+
+export async function ensureUserEmailVerified(userId: string): Promise<Date | null> {
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: { emailVerified: new Date() },
+    select: { emailVerified: true },
+  });
+  return user.emailVerified;
+}
+
+/** Prefer DB when the session cookie still has a stale `emailVerified` value. */
+export async function resolveEmailVerifiedForUser(user: {
+  id: string;
+  emailVerified: Date | string | null | undefined;
+}): Promise<Date | null> {
+  if (isEmailVerified(user.emailVerified)) {
+    const verified = user.emailVerified;
+    return verified instanceof Date ? verified : new Date(verified as string);
+  }
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { emailVerified: true },
+  });
+  if (dbUser && isEmailVerified(dbUser.emailVerified)) {
+    return dbUser.emailVerified;
+  }
+  return null;
 }

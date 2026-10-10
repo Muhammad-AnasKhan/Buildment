@@ -9,6 +9,7 @@ import { collectUnknownComponents } from "./extract";
 import { restoreInteractiveBlockTags } from "./restore-block-tags";
 import { transformVisualFences } from "./transform-visual-fences";
 import { rehypePrettyCodePlugins } from "./rehype-pretty-code-config";
+import { chapterBodyForReader } from "@/lib/mdx-frontmatter";
 
 function UnsupportedBlock({
   name,
@@ -53,7 +54,7 @@ function withUnknownComponentFallback(components: MDXComponents, source: string)
 // rendered as text, not executed. Uppercase tags missing from mdxComponents
 // (docs/09-security.mdx allowlist) render as a callout instead of failing the chapter.
 export function ChapterMdx({ source }: { source: string }) {
-  const transformed = transformVisualFences(source);
+  const transformed = transformVisualFences(chapterBodyForReader(source));
   const mdxSource = restoreInteractiveBlockTags(transformed);
   return (
     <MDXRemote

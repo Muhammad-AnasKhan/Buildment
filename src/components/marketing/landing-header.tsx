@@ -44,6 +44,12 @@ export function LandingHeader({ showCourses }: { showCourses: boolean }) {
                 Courses
               </a>
             ) : null}
+            <Link
+              href="/integrations"
+              className={cn(navLinkClass, "px-3 py-2 text-sm hover:bg-muted/60")}
+            >
+              Integrations
+            </Link>
           </nav>
           <div className="flex items-center gap-1.5">
             <ThemeToggle className="size-9 p-0" />
@@ -77,6 +83,9 @@ export function LandingHeader({ showCourses }: { showCourses: boolean }) {
               Courses
             </a>
           ) : null}
+          <Link href="/integrations" className={cn(navLinkClass, "shrink-0 px-2 py-1.5 text-xs")}>
+            Integrations
+          </Link>
         </nav>
       </div>
     </header>

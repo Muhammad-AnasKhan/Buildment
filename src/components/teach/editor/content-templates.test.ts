@@ -35,6 +35,7 @@ const TEMPLATE_IDS: ContentTemplateId[] = [
   "project-preview",
   "learning-objectives",
   "chapter-recap",
+  "quiz",
 ];
 
 describe("mentor content templates", () => {

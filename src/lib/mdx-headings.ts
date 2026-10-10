@@ -2,6 +2,7 @@ import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkMdx from "remark-mdx";
 import { visit } from "unist-util-visit";
+import { chapterBodyForReader } from "@/lib/mdx-frontmatter";
 
 export interface Heading {
   level: number;
@@ -14,7 +15,7 @@ export interface Heading {
  * Used for the chapter TOC sidebar.
  */
 export function extractHeadings(source: string): Heading[] {
-  const tree = unified().use(remarkParse).use(remarkMdx).parse(source);
+  const tree = unified().use(remarkParse).use(remarkMdx).parse(chapterBodyForReader(source));
   const headings: Heading[] = [];
 
   visit(tree, "heading", (node: { depth: number; children: unknown[] }) => {

@@ -1,10 +1,9 @@
 import type { JsxComponentDescriptor } from "@mdxeditor/editor";
-import { GenericJsxEditor } from "@mdxeditor/editor";
+import { QuizJsxEditor } from "./QuizJsxEditor";
 
-// Quiz config (quizType, prompt, options[], correctOptionIds[], explanation,
-// allowRetry) is stored in the DB only. Config is complex nested JSON that
-// cannot be represented as simple MDX attributes. In MDX a Quiz is referenced
-// by its id only.
+// Quiz content is authored inline in MDX (prompt, options, correct answers,
+// feedback) and synced to Block.config on draft save / publish. Learners still
+// receive a sanitized projection without correctOptionIds at render time.
 export const quizEditorDescriptor: JsxComponentDescriptor = {
   name: "Quiz",
   kind: "flow",
@@ -19,5 +18,5 @@ export const quizEditorDescriptor: JsxComponentDescriptor = {
     { name: "allowRetry", type: "expression" },
   ],
   hasChildren: false,
-  Editor: GenericJsxEditor,
+  Editor: QuizJsxEditor,
 };

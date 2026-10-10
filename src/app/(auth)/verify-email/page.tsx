@@ -1,9 +1,11 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { MailCheck } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { ResendVerificationButton } from "@/components/auth/resend-verification-button";
 import { getSessionUser } from "@/server/auth/guards";
-import { isEmailVerified } from "@/server/auth/email-verification";
+import { homeRouteForRole } from "@/server/auth/access-rules";
+import { resolveEmailVerifiedForUser } from "@/server/auth/email-verification";
 
 export default async function VerifyEmailPage({
   searchParams,
@@ -12,7 +14,10 @@ export default async function VerifyEmailPage({
 }) {
   const { signup } = await searchParams;
   const user = await getSessionUser();
-  const showResend = user && !isEmailVerified(user.emailVerified);
+  if (user && (await resolveEmailVerifiedForUser(user))) {
+    redirect(homeRouteForRole(user.role));
+  }
+  const showResend = Boolean(user);
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center bg-background px-6 py-24">

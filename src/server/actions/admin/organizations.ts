@@ -7,6 +7,11 @@ import { prisma } from "@/server/db";
 import { requireRole } from "@/server/auth/guards";
 import { slugify } from "@/lib/utils";
 import {
+  approvePendingCourseRequestsForAllocation,
+  parseAllocationExpiresAt,
+  upsertOrganizationCourseAllocation,
+} from "@/server/admin/organization-course-allocation";
+import {
   generateAccessKey,
   generateSecretKey,
   hashSecret,
@@ -69,7 +74,7 @@ const allocateSchema = z.object({
 });
 
 export async function upsertOrganizationCourseAllocationAction(formData: FormData): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const parsed = allocateSchema.safeParse({
     organizationId: formData.get("organizationId"),
     courseId: formData.get("courseId"),
@@ -85,36 +90,96 @@ export async function upsertOrganizationCourseAllocationAction(formData: FormDat
     where: { id: parsed.data.courseId },
     select: { id: true, status: true },
   });
-  if (!course) throw new Error("Course not found.");
-
-  const expiresAt = parsed.data.expiresAt ? new Date(parsed.data.expiresAt) : null;
-  if (expiresAt && Number.isNaN(expiresAt.getTime())) {
-    throw new Error("Invalid expiry date.");
+  if (!course || course.status !== "PUBLISHED") {
+    throw new Error("Course not found or not published.");
   }
 
-  await prisma.organizationCourse.upsert({
-    where: {
-      organizationId_courseId: {
+  const expiresAt = parseAllocationExpiresAt(parsed.data.expiresAt);
+
+  await prisma.$transaction(async (tx) => {
+    await upsertOrganizationCourseAllocation(
+      {
         organizationId: parsed.data.organizationId,
         courseId: parsed.data.courseId,
+        maxEnrollments: parsed.data.maxEnrollments,
+        isAllowed: parsed.data.isAllowed,
+        expiresAt,
       },
-    },
-    create: {
-      organizationId: parsed.data.organizationId,
-      courseId: parsed.data.courseId,
-      maxEnrollments: parsed.data.maxEnrollments,
-      isAllowed: parsed.data.isAllowed,
-      expiresAt,
-    },
-    update: {
-      maxEnrollments: parsed.data.maxEnrollments,
-      isAllowed: parsed.data.isAllowed,
-      expiresAt,
-    },
+      tx
+    );
+    await approvePendingCourseRequestsForAllocation(
+      parsed.data.organizationId,
+      parsed.data.courseId,
+      admin.id,
+      tx
+    );
   });
 
   revalidatePath(`/admin/organizations/${parsed.data.organizationId}`);
   revalidatePath("/admin/organizations");
+  revalidatePath("/admin/requests");
+}
+
+const maxEnrollmentsField = z.coerce.number().int().min(1).max(1_000_000);
+
+function parsePerCourseAllocation(formData: FormData, courseId: string) {
+  const maxRaw = formData.get(`maxEnrollments_${courseId}`);
+  const maxParsed = maxEnrollmentsField.safeParse(maxRaw);
+  if (!maxParsed.success) {
+    throw new Error(`Invalid max enrollments for course ${courseId}.`);
+  }
+  const expiresRaw = String(formData.get(`expiresAt_${courseId}`) ?? "").trim() || undefined;
+  return {
+    maxEnrollments: maxParsed.data,
+    expiresAt: parseAllocationExpiresAt(expiresRaw),
+  };
+}
+
+/** Allocate many published courses to an org catalog in one step (platform admin). */
+export async function bulkUpsertOrganizationCourseAllocationsAction(formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  const organizationId = String(formData.get("organizationId") ?? "");
+  if (!organizationId) throw new Error("Missing organization.");
+
+  const courseIds = [...new Set(formData.getAll("courseIds").map(String).filter(Boolean))];
+  if (courseIds.length === 0) {
+    throw new Error("Select at least one course.");
+  }
+
+  const isAllowed = formData.get("isAllowed") === "on" || formData.get("isAllowed") === "true";
+
+  const published = await prisma.course.findMany({
+    where: { id: { in: courseIds }, status: "PUBLISHED" },
+    select: { id: true },
+  });
+  if (published.length !== courseIds.length) {
+    throw new Error("One or more selected courses are missing or not published.");
+  }
+
+  const allocations = courseIds.map((courseId) => ({
+    courseId,
+    ...parsePerCourseAllocation(formData, courseId),
+  }));
+
+  await prisma.$transaction(async (tx) => {
+    for (const row of allocations) {
+      await upsertOrganizationCourseAllocation(
+        {
+          organizationId,
+          courseId: row.courseId,
+          maxEnrollments: row.maxEnrollments,
+          isAllowed,
+          expiresAt: row.expiresAt,
+        },
+        tx
+      );
+      await approvePendingCourseRequestsForAllocation(organizationId, row.courseId, admin.id, tx);
+    }
+  });
+
+  revalidatePath(`/admin/organizations/${organizationId}`);
+  revalidatePath("/admin/organizations");
+  revalidatePath("/admin/requests");
 }
 
 export async function rotateOrganizationCredentialFormAction(formData: FormData): Promise<void> {

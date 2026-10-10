@@ -13,6 +13,8 @@ import {
   diffBlocks,
   extractBlocksFromSource,
 } from "@/mdx/extract";
+import { blockConfigFromSource, extractBlockConfigsFromSource } from "@/mdx/extract-block-config";
+import { syncChapterBlocksFromSource } from "@/server/chapters/sync-blocks-from-source";
 import { mdxComponents } from "@/mdx/components";
 import { blockRegistry, isRegisteredBlockType } from "@/blocks/registry";
 import { slugify } from "@/lib/utils";
@@ -92,6 +94,10 @@ export async function saveChapterDraft(input: {
     where: { id: chapter.id },
     data: { source: parsed.data.source },
   });
+  await syncChapterBlocksFromSource(
+    chapter.id,
+    restoreInteractiveBlockTags(parsed.data.source)
+  );
   return { ok: true, savedAt: new Date().toISOString() };
 }
 
@@ -134,33 +140,35 @@ export async function publishChapter(input: {
   }
 
   const extracted = extractBlocksFromSource(renderable);
+  const configs = extractBlockConfigsFromSource(renderable);
   const existing = await prisma.block.findMany({
     where: { chapterId: chapter.id, archivedAt: null },
     select: { id: true, type: true, config: true, sourceHash: true },
   });
   const diff = diffBlocks(extracted, existing);
 
-  // M1 scaffolding: new blocks can only be created once their config can be
-  // extracted (M2 plugs that in). Until then, a hand-authored block tag gets
-  // a clear publish error instead of a row whose schema can't parse.
   for (const block of diff.create) {
     if (!block.blockType || !isRegisteredBlockType(block.blockType)) continue;
-    const configParsed = blockRegistry[block.blockType].schema.safeParse({});
-    if (!configParsed.success) {
+    const inlineConfig = blockConfigFromSource(block, configs);
+    const result = blockRegistry[block.blockType].schema.safeParse(inlineConfig ?? {});
+    if (!result.success) {
       errors.push(
-        `Block "${block.id}" (<${block.tagName}>) has no config yet — interactive block authoring arrives in M2.`
+        `Block "${block.id}" (<${block.tagName}>) is missing valid content — edit it in the rich UI or source before publishing.`
       );
     }
   }
 
-  // A block reference in MDX is only publishable when its persisted config is
-  // valid for the registry's active schema. This makes broken imported or
-  // builder-created blocks fail before learners can reach a chapter.
   for (const block of extracted) {
     if (!block.blockType || !isRegisteredBlockType(block.blockType)) continue;
+    const inlineConfig = blockConfigFromSource(block, configs);
     const persisted = existing.find((candidate) => candidate.id === block.id);
-    if (!persisted) continue; // handled by the create/config check above
-    const result = blockRegistry[block.blockType].schema.safeParse(persisted.config);
+    const config = inlineConfig ?? persisted?.config;
+    if (!config) {
+      if (!persisted) continue;
+      errors.push(`${block.tagName} block "${block.id}" has no configuration yet. Publish blocked.`);
+      continue;
+    }
+    const result = blockRegistry[block.blockType].schema.safeParse(config);
     if (!result.success) {
       const details = result.error.issues.map((issue) => issue.path.join(".") || "configuration").join(", ");
       errors.push(`${block.tagName} block "${block.id}" has invalid configuration: ${details}. Publish blocked.`);
@@ -169,41 +177,10 @@ export async function publishChapter(input: {
 
   if (errors.length > 0) return { ok: false, errors };
 
-  await prisma.$transaction(async (tx) => {
-    if (diff.create.length > 0) {
-      await tx.block.createMany({
-        data: diff.create.map((block) => ({
-          id: block.id,
-          chapterId: chapter.id,
-          type: block.blockType ?? "QUIZ",
-          order: block.order,
-          config: {},
-          sourceHash: block.sourceHash,
-        })),
-      });
-    }
-    if (diff.archiveIds.length > 0) {
-      await tx.block.updateMany({
-        where: { id: { in: diff.archiveIds }, chapterId: chapter.id },
-        data: { archivedAt: new Date() },
-      });
-    }
-    for (const block of diff.bump) {
-      await tx.block.update({
-        where: { id: block.id },
-        data: { version: { increment: 1 }, sourceHash: block.sourceHash },
-      });
-    }
-    for (const block of diff.backfill) {
-      await tx.block.update({
-        where: { id: block.id },
-        data: { sourceHash: block.sourceHash },
-      });
-    }
-    await tx.chapter.update({
-      where: { id: chapter.id },
-      data: { compiled: chapter.source, publishedAt: new Date() },
-    });
+  await syncChapterBlocksFromSource(chapter.id, renderable);
+  await prisma.chapter.update({
+    where: { id: chapter.id },
+    data: { compiled: chapter.source, publishedAt: new Date() },
   });
 
   return { ok: true };

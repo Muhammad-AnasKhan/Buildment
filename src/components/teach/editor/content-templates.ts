@@ -30,7 +30,8 @@ export type ContentTemplateId =
   | "trace-request"
   | "project-preview"
   | "learning-objectives"
-  | "chapter-recap";
+  | "chapter-recap"
+  | "quiz";
 
 const withSpacing = (markdown: string) => `\n\n${markdown.trim()}\n\n`;
 
@@ -303,5 +304,22 @@ milestones:
   ]}
 />
 `);
+    case "quiz": {
+      const id = ulid();
+      return withSpacing(`
+<Quiz
+  id="${id}"
+  quizType="single"
+  prompt="What should the learner remember from this section?"
+  options={${JSON.stringify([
+    { id: "opt-0", label: "First option" },
+    { id: "opt-1", label: "Second option" },
+  ])}}
+  correctOptionIds={${JSON.stringify(["opt-0"])}}
+  explanation="Briefly explain why the correct answer is right."
+  allowRetry={true}
+/>
+`);
+    }
   }
 }

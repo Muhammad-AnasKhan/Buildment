@@ -48,6 +48,7 @@ import { videoEditorDescriptor } from "@/blocks/video/editorDescriptor";
 import { visualWalkthroughEditorDescriptor } from "@/blocks/visual-walkthrough/editorDescriptor";
 import { visualDiagramEditorDescriptor } from "@/blocks/visual-diagram/editorDescriptor";
 import { roadmapEditorDescriptor } from "@/blocks/roadmap/editorDescriptor";
+import { ChapterBlockConfigsProvider } from "@/components/teach/editor/chapter-block-configs";
 
 // All registered block types, each sourced from its own editorDescriptor.ts.
 const blockRegistryDescriptors = [
@@ -83,12 +84,15 @@ export default function MdxEditorCore({
   initialMarkdown,
   diffMarkdown,
   onChange,
+  blockConfigs = {},
 }: {
   initialMarkdown: string;
   diffMarkdown?: string;
   onChange: (markdown: string) => void;
+  blockConfigs?: Record<string, unknown>;
 }) {
   return (
+    <ChapterBlockConfigsProvider configs={blockConfigs}>
     <div className="chapter-mdx-editor overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm">
       <MDXEditor
         markdown={initialMarkdown}
@@ -146,5 +150,6 @@ export default function MdxEditorCore({
         ]}
       />
     </div>
+    </ChapterBlockConfigsProvider>
   );
 }
