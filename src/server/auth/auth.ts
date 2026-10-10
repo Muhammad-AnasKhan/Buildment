@@ -1,4 +1,6 @@
+import { randomBytes } from "node:crypto";
 import NextAuth from "next-auth";
+import { encode as encodeJwt } from "next-auth/jwt";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
@@ -10,10 +12,13 @@ import { verifyPassword } from "@/server/auth/password";
 import { authConfig } from "./auth.config";
 import { ensureSeedTestUserVerified, shouldAutoVerifySeedTestUser } from "./seed-test-users";
 
+const adapter = PrismaAdapter(prisma);
+const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: "database" },
+  adapter,
+  session: { strategy: "database", maxAge: SESSION_MAX_AGE_MS / 1000 },
   providers: [
     Credentials({
       name: "Email and password",
@@ -55,12 +60,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    // Auth.js does not persist Credentials sign-ins into a database Session by
+    // default. Without this, authorize() succeeds, /dashboard flashes, then
+    // requireUser() sees no cookie and bounces back to /login.
+    jwt({ token, account }) {
+      if (account?.provider === "credentials") {
+        token.credentials = true;
+      }
+      return token;
+    },
     session({ session, user }) {
       session.user.id = user.id;
       session.user.role = user.role;
       session.user.canInstruct = user.canInstruct;
       session.user.emailVerified = user.emailVerified;
       return session;
+    },
+  },
+  jwt: {
+    async encode(params) {
+      if (params.token?.credentials) {
+        if (!params.token.sub) {
+          throw new Error("Credentials sign-in is missing a user id");
+        }
+        const sessionToken = randomBytes(32).toString("hex");
+        const created = await adapter.createSession?.({
+          sessionToken,
+          userId: params.token.sub,
+          expires: new Date(Date.now() + SESSION_MAX_AGE_MS),
+        });
+        if (!created) {
+          throw new Error("Failed to persist credentials session");
+        }
+        return sessionToken;
+      }
+      return encodeJwt(params);
     },
   },
   events: {

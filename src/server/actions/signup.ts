@@ -56,6 +56,6 @@ export async function signupAction(
     },
   });
 
-  await sendVerificationEmail({ email, name: parsed.data.name });
-  redirect("/verify-email?signup=1");
+    await sendVerificationEmail({ email, name: parsed.data.name });
+    redirect("/verify-email?signup=1");
 }
