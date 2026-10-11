@@ -1,28 +1,37 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { playFeedback } from "@/lib/sound-feedback";
 import { cn } from "@/lib/utils";
+import { QuizSessionContext, type QuizBlockGrade } from "@/components/learn/quiz-session-context";
 
 type QuizResultSummary = { score: number; maxScore: number; questions: number };
+
+function isPerfectScore(summary: QuizResultSummary | null) {
+  return Boolean(summary && summary.maxScore > 0 && summary.score === summary.maxScore);
+}
 
 export function QuizChapterSessionClient({
   children,
   chapterId,
+  chapterTitle,
   quizBlockIds,
   draftStoragePrefix,
   initialAnswers,
-  initialQuizResult,
+  initialScoreSummary,
+  initialBlockGrades,
 }: {
   children: React.ReactNode;
   chapterId: string;
+  chapterTitle: string;
   quizBlockIds: string[];
   draftStoragePrefix: string;
   initialAnswers: Record<string, string[]>;
-  initialQuizResult: QuizResultSummary | null;
+  initialScoreSummary: QuizResultSummary | null;
+  initialBlockGrades: Record<string, QuizBlockGrade>;
 }) {
   const router = useRouter();
   const steps = React.Children.toArray(children).filter(Boolean);
@@ -30,42 +39,54 @@ export function QuizChapterSessionClient({
   const [index, setIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [result, setResult] = useState<QuizResultSummary | null>(initialQuizResult);
+  const [scoreSummary, setScoreSummary] = useState<QuizResultSummary | null>(initialScoreSummary);
+  const [blockGrades, setBlockGrades] = useState<Record<string, QuizBlockGrade>>(initialBlockGrades);
+  const [dirtyBlockIds, setDirtyBlockIds] = useState<Set<string>>(() => new Set());
   const [draftAnswers, setDraftAnswers] = useState<Record<string, string[]>>({});
 
+  const perfectScore = useMemo(() => isPerfectScore(scoreSummary), [scoreSummary]);
+  const reviewMode = scoreSummary !== null;
+
   useEffect(() => {
-    setIndex(0);
-  }, [total]);
+    setScoreSummary(initialScoreSummary);
+    setBlockGrades(initialBlockGrades);
+    setDirtyBlockIds(new Set());
+  }, [initialScoreSummary, initialBlockGrades]);
+
+  useEffect(() => {
+    if (isPerfectScore(initialScoreSummary)) {
+      window.dispatchEvent(new Event("buildment:quiz-perfect"));
+    }
+  }, [initialScoreSummary]);
 
   const go = useCallback(
     (next: number) => {
       setIndex(Math.max(0, Math.min(total - 1, next)));
-      window.scrollTo({ top: 0, behavior: "smooth" });
     },
     [total]
   );
 
   useEffect(() => {
-    setResult(initialQuizResult);
-  }, [initialQuizResult]);
-
-  useEffect(() => {
-    const onRetry = () => setResult(null);
     const onAnswerChange = (event: Event) => {
       const detail = (event as CustomEvent<{ blockId: string; selected: string[] }>).detail;
       if (!detail || !Array.isArray(detail.selected)) return;
       setDraftAnswers((previous) => ({ ...previous, [detail.blockId]: detail.selected }));
+      setDirtyBlockIds((previous) => {
+        const next = new Set(previous);
+        next.add(detail.blockId);
+        return next;
+      });
+      setScoreSummary((previous) => (isPerfectScore(previous) ? previous : null));
+      setSubmitError(null);
     };
-    window.addEventListener("buildment:quiz-retry", onRetry);
     window.addEventListener("buildment:quiz-answer-change", onAnswerChange);
     return () => {
-      window.removeEventListener("buildment:quiz-retry", onRetry);
       window.removeEventListener("buildment:quiz-answer-change", onAnswerChange);
     };
   }, []);
 
   const submitQuiz = async () => {
-    if (submitting || result || quizBlockIds.length === 0) return;
+    if (submitting || perfectScore || quizBlockIds.length === 0) return;
     setSubmitting(true);
     setSubmitError(null);
     const answers = quizBlockIds.map((blockId) => {
@@ -86,7 +107,12 @@ export function QuizChapterSessionClient({
       return { blockId, selected };
     });
     const unanswered = answers.filter((answer) => answer.selected.length === 0).length;
-    if (unanswered > 0 && !window.confirm(`${unanswered} question${unanswered === 1 ? " is" : "s are"} unanswered. Submit anyway? Unanswered questions will be marked incorrect.`)) {
+    if (
+      unanswered > 0 &&
+      !window.confirm(
+        `${unanswered} question${unanswered === 1 ? " is" : "s are"} unanswered. Submit anyway? Unanswered questions will be marked incorrect.`
+      )
+    ) {
       setSubmitting(false);
       return;
     }
@@ -99,20 +125,54 @@ export function QuizChapterSessionClient({
       });
       const body = await response.json().catch(() => null);
       if (!response.ok) throw new Error(body?.error ?? `Request failed (${response.status})`);
-      setResult({ score: body.score, maxScore: body.maxScore, questions: body.questions });
-      const max = body.maxScore ?? 0;
-      const ratio = max > 0 ? body.score / max : 0;
-      if (ratio >= 1) playFeedback("celebration");
-      else if (ratio >= 0.5) playFeedback("success");
-      else playFeedback("notification");
-      setDraftAnswers({});
-      for (const blockId of quizBlockIds) {
-        try {
-          window.localStorage.removeItem(`${draftStoragePrefix}:${blockId}`);
-        } catch {
-          // A stale draft is ignored because the server now has the submitted response.
-        }
+
+      const summary = {
+        score: body.score as number,
+        maxScore: body.maxScore as number,
+        questions: body.questions as number,
+      };
+      setScoreSummary(summary);
+      setDirtyBlockIds(new Set());
+
+      const gradesFromApi = Array.isArray(body.grades)
+        ? (body.grades as Array<{
+            blockId: string;
+            isCorrect: boolean | null;
+            selected?: string[];
+          }>)
+        : [];
+      if (gradesFromApi.length > 0) {
+        setBlockGrades((previous) => {
+          const next = { ...previous };
+          for (const grade of gradesFromApi) {
+            const existing = previous[grade.blockId];
+            next[grade.blockId] = {
+              selected: Array.isArray(grade.selected)
+                ? grade.selected.filter((item): item is string => typeof item === "string")
+                : (existing?.selected ?? []),
+              isCorrect: grade.isCorrect,
+              explanation: existing?.explanation,
+            };
+          }
+          return next;
+        });
       }
+
+      if (isPerfectScore(summary)) {
+        playFeedback("celebration");
+        window.dispatchEvent(new Event("buildment:quiz-perfect"));
+        for (const blockId of quizBlockIds) {
+          try {
+            window.localStorage.removeItem(`${draftStoragePrefix}:${blockId}`);
+          } catch {
+            // Server is the source of truth after a perfect run.
+          }
+        }
+      } else if (summary.score <= 0) {
+        playFeedback("error");
+      }
+
+      setDraftAnswers({});
       router.refresh();
     } catch (error) {
       playFeedback("error");
@@ -126,78 +186,111 @@ export function QuizChapterSessionClient({
 
   const progressPct = total > 0 ? ((index + 1) / total) * 100 : 0;
 
+  const sessionValue = useMemo(
+    () => ({
+      chapterTitle,
+      questionTotal: total,
+      reviewMode,
+      dirtyBlockIds,
+      blockGrades,
+    }),
+    [chapterTitle, total, reviewMode, dirtyBlockIds, blockGrades]
+  );
+
   return (
-    <section
-      id="quiz-chapter-session"
-      className="not-prose mb-10 scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm"
-      aria-label="Quiz session"
-    >
-      <header className="border-b border-border bg-muted/40 px-5 py-5 sm:px-8">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <p className="text-xs font-medium text-muted-foreground">Knowledge check</p>
-            <p className="mt-1 text-sm leading-relaxed text-foreground/90">
-              Select your answers, then submit at the end to see quiz feedback. Other activities save separately.
+    <QuizSessionContext.Provider value={sessionValue}>
+      <section id="quiz-chapter-session" className="not-prose mb-10 scroll-mt-24" aria-label="Quiz session">
+        <header className="mb-8 border-b border-border pb-6">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            Quiz: {chapterTitle}
+          </h1>
+          <p className="mt-3 text-sm font-medium text-muted-foreground">
+            Question {index + 1} of {total}
+          </p>
+          {scoreSummary ? (
+            <p className="mt-2 text-sm text-foreground">
+              Last score {scoreSummary.score}/{scoreSummary.maxScore}
+              {perfectScore ? " · all correct" : " · update answers and submit again"}
             </p>
-          </div>
-          <div className="text-right">
-            <p className="font-mono text-xs tabular-nums text-muted-foreground">{index + 1} / {total}</p>
-            {result ? <p className="mt-1 text-xs font-semibold text-foreground">Score {result.score}/{result.maxScore}</p> : null}
-          </div>
-        </div>
-        <div
-          className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted"
-          role="progressbar"
-          aria-valuenow={index + 1}
-          aria-valuemin={1}
-          aria-valuemax={total}
-          aria-label="Quiz progress"
-        >
+          ) : null}
           <div
-            className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out"
-            style={{ width: `${progressPct}%` }}
-          />
+            className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted"
+            role="progressbar"
+            aria-valuenow={index + 1}
+            aria-valuemin={1}
+            aria-valuemax={total}
+            aria-label="Quiz progress"
+          >
+            <div
+              className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out dark:bg-emerald-500"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+        </header>
+
+        <div className="relative min-h-[12rem]">
+          {steps.map((step, stepIndex) => (
+            <div
+              key={quizBlockIds[stepIndex] ?? stepIndex}
+              className={cn(stepIndex === index ? "block" : "hidden")}
+              aria-hidden={stepIndex !== index}
+            >
+              {step}
+            </div>
+          ))}
         </div>
-      </header>
 
-      <div className="px-5 py-6 sm:px-8 sm:py-8">{steps[index]}</div>
+        {scoreSummary ? (
+          <div
+            className={cn(
+              "mt-8 rounded-xl border px-4 py-3 text-sm",
+              perfectScore
+                ? "border-emerald-500/30 bg-emerald-500/10 text-foreground"
+                : "border-border bg-muted/40 text-foreground"
+            )}
+            role="status"
+          >
+            {perfectScore
+              ? `Quiz complete · ${scoreSummary.score}/${scoreSummary.maxScore} correct.`
+              : `${scoreSummary.score}/${scoreSummary.maxScore} correct so far. Change any answer above, then submit again.`}
+          </div>
+        ) : null}
 
-      {result ? (
-        <div className="border-t border-border bg-emerald-500/10 px-5 py-3 text-sm font-medium text-foreground sm:px-8" role="status">
-          Quiz submitted · {result.score}/{result.maxScore} correct. Review each answer for feedback.
-        </div>
-      ) : null}
-
-      <footer className="flex items-center justify-between gap-3 border-t border-border bg-muted/20 px-5 py-4 sm:px-8">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          disabled={index === 0}
-          onClick={() => go(index - 1)}
-          className="gap-1"
-        >
-          <ChevronLeft className="size-4" aria-hidden />
-          Back
-        </Button>
-        <span className="hidden text-xs text-muted-foreground sm:inline">
-          You can change answers before submitting.
-        </span>
-        {index < total - 1 ? (
-          <Button type="button" size="sm" onClick={() => go(index + 1)} className="gap-1">
-            Next <ChevronRight className="size-4" aria-hidden />
+        <footer className="mt-10 flex items-center justify-between gap-3 border-t border-border pt-6">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={index === 0}
+            onClick={() => go(index - 1)}
+            className="gap-1"
+          >
+            <ChevronLeft className="size-4" aria-hidden />
+            Back
           </Button>
-        ) : quizBlockIds.length > 0 ? (
-          <Button type="button" size="sm" disabled={submitting || Boolean(result)} onClick={() => void submitQuiz()}>
-            {submitting ? "Submitting…" : result ? "Submitted" : "Submit quiz"}
-          </Button>
-        ) : (
-          <Button type="button" size="sm" disabled={index >= total - 1} onClick={() => go(index + 1)} className="gap-1">
-            Next <ChevronRight className="size-4" aria-hidden />
-          </Button>
-        )}
-      </footer>
-      {submitError ? <p className="border-t border-border px-5 py-3 text-sm text-destructive sm:px-8">{submitError}</p> : null}
-    </section>
+          {index < total - 1 ? (
+            <Button type="button" size="sm" onClick={() => go(index + 1)} className="gap-1">
+              Next
+              <ChevronRight className="size-4" aria-hidden />
+            </Button>
+          ) : quizBlockIds.length > 0 ? (
+            <Button
+              type="button"
+              size="sm"
+              disabled={submitting || perfectScore}
+              onClick={() => void submitQuiz()}
+            >
+              {submitting ? "Submitting…" : perfectScore ? "All correct" : scoreSummary ? "Submit again" : "Submit quiz"}
+            </Button>
+          ) : (
+            <Button type="button" size="sm" disabled={index >= total - 1} onClick={() => go(index + 1)} className="gap-1">
+              Next
+              <ChevronRight className="size-4" aria-hidden />
+            </Button>
+          )}
+        </footer>
+        {submitError ? <p className="mt-3 text-sm text-destructive">{submitError}</p> : null}
+      </section>
+    </QuizSessionContext.Provider>
   );
 }

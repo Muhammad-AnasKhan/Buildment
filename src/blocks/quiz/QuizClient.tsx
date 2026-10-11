@@ -2,10 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, RotateCcw, Sparkles, XCircle } from "lucide-react";
+import { CheckCircle2, Sparkles, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { QuizOptions } from "@/components/learn/quiz-options";
+import { QuizPromptBody } from "@/components/learn/quiz-prompt-body";
+import { useQuizSession } from "@/components/learn/quiz-session-context";
 import { readerCard, readerCardFooter, readerCardHeader, readerTitle } from "@/components/learn/reader-theme";
 import { firePartyPops } from "@/components/learn/party-pops";
 import { playFeedback } from "@/lib/sound-feedback";
@@ -27,66 +29,45 @@ export type QuizInitialState = {
   explanation?: string;
 };
 
-function ResultBanner({
-  result,
-  canRetry,
-  onRetry,
-}: {
-  result: RespondResult;
-  canRetry: boolean;
-  onRetry: () => void;
-}) {
+function ResultBanner({ result }: { result: RespondResult }) {
   const correct = result.isCorrect === true;
   return (
-    <div className="space-y-3">
-      <div
-        className={cn(
-          "relative overflow-hidden rounded-xl border px-4 py-3.5 text-sm transition-all duration-300",
-          correct
-            ? "border-emerald-300 bg-gradient-to-r from-emerald-50/90 via-emerald-50/50 to-teal-50/40 text-emerald-950 shadow-sm shadow-emerald-500/10 dark:border-emerald-800 dark:from-emerald-950/40 dark:via-emerald-950/25 dark:to-teal-950/20 dark:text-emerald-100"
-            : "border-amber-200 bg-amber-50/70 text-amber-950 dark:border-amber-900/80 dark:bg-amber-950/30 dark:text-amber-50"
+    <div
+      className={cn(
+        "rounded-xl border px-4 py-3.5 text-sm",
+        correct
+          ? "border-emerald-300 bg-emerald-500/10 text-emerald-950 dark:border-emerald-800 dark:text-emerald-100"
+          : "border-red-300 bg-red-500/10 text-red-950 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-50"
+      )}
+      role="status"
+    >
+      <div className="flex items-start gap-3">
+        {correct ? (
+          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white dark:bg-emerald-400 dark:text-emerald-950">
+            <CheckCircle2 className="size-4" />
+          </div>
+        ) : (
+          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-red-500/20 text-red-700 dark:text-red-400">
+            <XCircle className="size-4" />
+          </div>
         )}
-      >
-        <div className="flex items-start gap-3">
-          {correct ? (
-            <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white shadow-sm dark:bg-emerald-400 dark:text-emerald-950">
-              <CheckCircle2 className="size-4" />
-            </div>
-          ) : (
-            <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-400">
-              <XCircle className="size-4" />
-            </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <p className="font-semibold tracking-tight">
-                {correct ? "Correct! Well done" : "Review your answer"}
-              </p>
-              {correct ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">
-                  <Sparkles className="size-3" />
-                  +100%
-                </span>
-              ) : null}
-            </div>
-            {result.explanation ? (
-              <p className="mt-1.5 leading-relaxed opacity-90">{result.explanation}</p>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="font-semibold tracking-tight">
+              {correct ? "Correct! Well done" : "Wrong answer. Select the correct option."}
+            </p>
+            {correct ? (
+              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">
+                <Sparkles className="size-3" />
+                +100%
+              </span>
             ) : null}
           </div>
+          {result.explanation ? (
+            <p className="mt-1.5 leading-relaxed opacity-90">{result.explanation}</p>
+          ) : null}
         </div>
       </div>
-      {canRetry ? (
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className="gap-1.5 border-border/80 text-muted-foreground hover:text-foreground"
-          onClick={onRetry}
-        >
-          <RotateCcw className="size-3.5" />
-          Try again
-        </Button>
-      ) : null}
     </div>
   );
 }
@@ -107,7 +88,9 @@ export function QuizClient({
   correctOptionIds?: string[];
 }) {
   const router = useRouter();
+  const quizSession = useQuizSession();
   const cardRef = useRef<HTMLDivElement>(null);
+  const wizardStorageHydrated = useRef(false);
   const isMultiple = config.quizType === "multiple";
   const [selected, setSelected] = useState<string[]>(initialState?.selected ?? []);
   const [result, setResult] = useState<RespondResult | null>(
@@ -120,6 +103,7 @@ export function QuizClient({
         }
       : null
   );
+  const [wrongSelection, setWrongSelection] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isShaking, setIsShaking] = useState(false);
@@ -142,17 +126,46 @@ export function QuizClient({
 
   useEffect(() => {
     if (!initialState) return;
-    setSelected(initialState.selected);
+    if (presentation !== "wizard") {
+      setSelected(initialState.selected);
+      setResult({
+        isCorrect: initialState.isCorrect,
+        score: initialState.score,
+        maxScore: initialState.maxScore,
+        explanation: initialState.explanation,
+      });
+      if (initialState.isCorrect === false) {
+        setWrongSelection(initialState.selected);
+      }
+    }
+  }, [initialState, presentation]);
+
+  useEffect(() => {
+    if (presentation !== "wizard" || !quizSession) return;
+    const grade = quizSession.blockGrades[id];
+    const showReview = quizSession.reviewMode && grade && !quizSession.dirtyBlockIds.has(id);
+    if (!showReview || !grade) return;
+    setSelected(grade.selected);
     setResult({
-      isCorrect: initialState.isCorrect,
-      score: initialState.score,
-      maxScore: initialState.maxScore,
-      explanation: initialState.explanation,
+      isCorrect: grade.isCorrect,
+      score: grade.isCorrect ? 1 : 0,
+      maxScore: 1,
+      explanation: grade.explanation,
     });
-  }, [initialState]);
+    setWrongSelection(grade.isCorrect === false ? grade.selected : []);
+  }, [presentation, quizSession, id]);
 
   useEffect(() => {
     if (presentation !== "wizard" || !draftStorageKey) {
+      setDraftLoaded(true);
+      return;
+    }
+    if (wizardStorageHydrated.current) {
+      setDraftLoaded(true);
+      return;
+    }
+    wizardStorageHydrated.current = true;
+    if (quizSession?.reviewMode) {
       setDraftLoaded(true);
       return;
     }
@@ -162,24 +175,110 @@ export function QuizClient({
         const parsed: unknown = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.every((value) => typeof value === "string")) {
           setSelected(parsed);
-          setResult(null);
-          window.dispatchEvent(new CustomEvent("buildment:quiz-answer-change", { detail: { blockId: id, selected: parsed } }));
         }
+      } else if (initialState?.selected.length) {
+        setSelected(initialState.selected);
       }
     } catch {
       // Draft persistence is best-effort; selections still work in memory.
     }
     setDraftLoaded(true);
-  }, [presentation, draftStorageKey, initialState, id]);
+  }, [presentation, draftStorageKey, quizSession?.reviewMode, initialState?.selected, id]);
 
   useEffect(() => {
-    if (presentation !== "wizard" || !draftStorageKey || !draftLoaded || result) return;
+    if (!draftStorageKey || !draftLoaded) return;
+    if (presentation === "wizard") {
+      try {
+        window.localStorage.setItem(draftStorageKey, JSON.stringify(selected));
+      } catch {
+        // The quiz remains usable when browser storage is unavailable.
+      }
+      return;
+    }
+    if (result) return;
     try {
       window.localStorage.setItem(draftStorageKey, JSON.stringify(selected));
     } catch {
       // The quiz remains usable when browser storage is unavailable.
     }
   }, [presentation, draftStorageKey, draftLoaded, result, selected]);
+
+  async function submitSelection(nextSelected: string[]) {
+    setSubmitting(true);
+    setError(null);
+    try {
+      if (id === "preview-quiz" || (correctOptionIds && correctOptionIds.length > 0 && id.startsWith("preview"))) {
+        const correctSet = new Set(correctOptionIds ?? []);
+        const selectedSet = new Set(nextSelected);
+        const isCorrect =
+          correctSet.size > 0
+            ? selectedSet.size === correctSet.size && [...selectedSet].every((optionId) => correctSet.has(optionId))
+            : true;
+        const data: RespondResult = {
+          isCorrect,
+          score: isCorrect ? 1 : 0,
+          maxScore: 1,
+          explanation: config.explanation,
+        };
+        applyResult(data, nextSelected);
+        router.refresh();
+        return;
+      }
+
+      const res = await fetch(`/api/blocks/${id}/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "QUIZ", selected: nextSelected }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        if (res.status === 404 && correctOptionIds && correctOptionIds.length > 0) {
+          const correctSet = new Set(correctOptionIds);
+          const selectedSet = new Set(nextSelected);
+          const isCorrect =
+            correctSet.size === selectedSet.size && [...selectedSet].every((optionId) => correctSet.has(optionId));
+          const data: RespondResult = {
+            isCorrect,
+            score: isCorrect ? 1 : 0,
+            maxScore: 1,
+            explanation: config.explanation,
+          };
+          applyResult(data, nextSelected);
+          router.refresh();
+          return;
+        }
+        throw new Error(body?.error ?? `Request failed (${res.status})`);
+      }
+      const data = (await res.json()) as RespondResult;
+      applyResult(data, nextSelected);
+      router.refresh();
+    } catch (err) {
+      playFeedback("error");
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function applyResult(data: RespondResult, nextSelected: string[]) {
+    setResult(data);
+    if (data.isCorrect === true) {
+      setWrongSelection([]);
+      setIsSuccessGlow(true);
+      setIsShaking(false);
+      firePartyPops({ withSound: false });
+      playFeedback("success");
+    } else if (data.isCorrect === false) {
+      setWrongSelection(nextSelected);
+      setIsSuccessGlow(false);
+      setIsShaking(true);
+      playFeedback("error");
+    }
+  }
+
+  async function submit() {
+    await submitSelection(selected);
+  }
 
   function toggle(optionId: string) {
     let next: string[];
@@ -191,164 +290,85 @@ export function QuizClient({
       next = [optionId];
     }
     setSelected(next);
+
     if (presentation === "wizard") {
-      window.dispatchEvent(new CustomEvent("buildment:quiz-answer-change", { detail: { blockId: id, selected: next } }));
+      setResult(null);
+      setWrongSelection([]);
+      window.dispatchEvent(
+        new CustomEvent("buildment:quiz-answer-change", { detail: { blockId: id, selected: next } })
+      );
+      return;
+    }
+
+    if (result?.isCorrect === false) {
+      setResult(null);
+      setWrongSelection([]);
+      if (!isMultiple) {
+        void submitSelection(next);
+      }
+      return;
+    }
+
+    if (result?.isCorrect === true) {
+      return;
     }
   }
 
-  async function submit() {
-    setSubmitting(true);
-    setError(null);
-    try {
-      if (id === "preview-quiz" || (correctOptionIds && correctOptionIds.length > 0 && id.startsWith("preview"))) {
-        const correctSet = new Set(correctOptionIds ?? []);
-        const selectedSet = new Set(selected);
-        const isCorrect =
-          correctSet.size > 0
-            ? selectedSet.size === correctSet.size && [...selectedSet].every((optionId) => correctSet.has(optionId))
-            : true;
-        const data: RespondResult = {
-          isCorrect,
-          score: isCorrect ? 1 : 0,
-          maxScore: 1,
-          explanation: config.explanation,
-        };
-        setResult(data);
-
-        if (data.isCorrect === true) {
-          setIsSuccessGlow(true);
-          setIsShaking(false);
-          firePartyPops({ withSound: false });
-          playFeedback("success");
-        } else if (data.isCorrect === false) {
-          setIsSuccessGlow(false);
-          setIsShaking(true);
-          playFeedback("error");
-        }
-
-        router.refresh();
-        return;
-      }
-
-      const res = await fetch(`/api/blocks/${id}/respond`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "QUIZ", selected }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        if (res.status === 404 && correctOptionIds && correctOptionIds.length > 0) {
-          const correctSet = new Set(correctOptionIds);
-          const selectedSet = new Set(selected);
-          const isCorrect =
-            correctSet.size === selectedSet.size && [...selectedSet].every((optionId) => correctSet.has(optionId));
-          const data: RespondResult = {
-            isCorrect,
-            score: isCorrect ? 1 : 0,
-            maxScore: 1,
-            explanation: config.explanation,
-          };
-          setResult(data);
-
-          if (data.isCorrect === true) {
-            setIsSuccessGlow(true);
-            setIsShaking(false);
-            firePartyPops({ withSound: false });
-            playFeedback("success");
-          } else if (data.isCorrect === false) {
-            setIsSuccessGlow(false);
-            setIsShaking(true);
-            playFeedback("error");
-          }
-
-          router.refresh();
-          return;
-        }
-        throw new Error(body?.error ?? `Request failed (${res.status})`);
-      }
-      const data = (await res.json()) as RespondResult;
-      setResult(data);
-
-      if (data.isCorrect === true) {
-        setIsSuccessGlow(true);
-        setIsShaking(false);
-        firePartyPops({ withSound: false });
-        playFeedback("success");
-      } else if (data.isCorrect === false) {
-        setIsSuccessGlow(false);
-        setIsShaking(true);
-        playFeedback("error");
-      }
-
-      router.refresh();
-    } catch (err) {
-      playFeedback("error");
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  const canRetry = Boolean(result && !result.isCorrect && config.allowRetry);
+  const wizardReviewGrade =
+    presentation === "wizard" && quizSession?.reviewMode && !quizSession.dirtyBlockIds.has(id)
+      ? quizSession.blockGrades[id]
+      : undefined;
+  const wizardShowingReview = Boolean(wizardReviewGrade && wizardReviewGrade.isCorrect !== null);
+  const optionsLocked =
+    (wizardShowingReview && wizardReviewGrade?.isCorrect === true) || result?.isCorrect === true;
   const hasAnswered = result !== null;
   const settled = hasAnswered && (result.isCorrect === true || config.allowRetry === false);
+  const showWrongOptions = result?.isCorrect === false;
+  const showCorrectOptions = result?.isCorrect === true;
 
   const optionsBlock = (
-    <div
-      className={cn(
-        presentation === "wizard" ? "overflow-hidden rounded-xl border border-border" : ""
-      )}
-    >
-      <QuizOptions
-        options={config.options}
-        selected={selected}
-        onToggle={toggle}
-        disabled={hasAnswered}
-        multiple={isMultiple}
-      />
-    </div>
+    <QuizOptions
+      options={config.options}
+      selected={selected}
+      onToggle={toggle}
+      disabled={optionsLocked}
+      multiple={isMultiple}
+      incorrectOptionIds={showWrongOptions ? wrongSelection : []}
+      correctOptionIds={showCorrectOptions ? selected : []}
+      showAnswerState={showWrongOptions || showCorrectOptions}
+    />
   );
 
-  const actionsBlock = hasAnswered && result ? (
-    <ResultBanner
-      result={result}
-      canRetry={canRetry}
-      onRetry={() => {
-        setResult(null);
-        setSelected([]);
-        setIsShaking(false);
-        if (presentation === "wizard") {
-          window.dispatchEvent(new CustomEvent("buildment:quiz-answer-change", { detail: { blockId: id, selected: [] } }));
-          window.dispatchEvent(new Event("buildment:quiz-retry"));
-        }
-      }}
-    />
-  ) : presentation === "wizard" ? (
-    <p className="text-xs text-muted-foreground" aria-live="polite">
-      {selected.length === 0 ? "Choose an answer. You can review it before submitting the quiz." : `${selected.length} selected · saved as a draft on this device`}
-    </p>
-  ) : (
-    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
-      <Button
-        type="button"
-        size="sm"
-        onClick={submit}
-        disabled={selected.length === 0 || submitting}
-        className="h-9 rounded-md px-5 shadow-none transition-all active:scale-[0.98]"
-      >
-        {submitting ? "Checking…" : "Check answer"}
-      </Button>
-      {error ? (
-        <p className="text-sm text-destructive">{error}</p>
-      ) : (
-        <p className="text-xs text-muted-foreground">
-          {selected.length === 0
-            ? "Select an option, then check your answer"
-            : `${selected.length} selected`}
-        </p>
-      )}
-    </div>
-  );
+  const actionsBlock = hasAnswered && result && (presentation !== "wizard" || wizardShowingReview) ? (
+      <ResultBanner result={result} />
+    ) : presentation === "wizard" ? (
+      <p className="text-xs text-muted-foreground" aria-live="polite">
+        {selected.length === 0
+          ? "Choose an answer. You can change it before submitting the quiz."
+          : `${selected.length} selected · saved on this device`}
+      </p>
+    ) : (
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => void submit()}
+          disabled={selected.length === 0 || submitting}
+          className="h-9 rounded-md px-5 shadow-none transition-all active:scale-[0.98]"
+        >
+          {submitting ? "Checking…" : "Check answer"}
+        </Button>
+        {error ? (
+          <p className="text-sm text-destructive">{error}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">
+            {selected.length === 0
+              ? "Select an option, then check your answer"
+              : `${selected.length} selected`}
+          </p>
+        )}
+      </div>
+    );
 
   if (presentation === "wizard") {
     return (
@@ -356,19 +376,12 @@ export function QuizClient({
         ref={cardRef}
         {...checkpointAttrs(id, settled)}
         className={cn(
-          "not-prose scroll-mt-24 space-y-6 transition-all duration-300",
+          "not-prose scroll-mt-24 space-y-8 transition-all duration-300",
           isShaking && "animate-feedback-shake",
           isSuccessGlow && "animate-feedback-success"
         )}
       >
-        <div>
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
-            Knowledge check
-          </p>
-          <p className="mt-2 text-lg font-medium leading-snug tracking-tight text-foreground sm:text-xl">
-            {config.prompt}
-          </p>
-        </div>
+        <QuizPromptBody prompt={config.prompt} className="font-medium sm:text-lg" />
         {optionsBlock}
         {actionsBlock}
       </div>
@@ -394,10 +407,12 @@ export function QuizClient({
           <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             Knowledge check
           </p>
-          <p className={cn("mt-0.5", readerTitle)}>{config.prompt}</p>
+          <div className={cn("mt-2", readerTitle)}>
+            <QuizPromptBody prompt={config.prompt} />
+          </div>
         </div>
       </div>
-      {optionsBlock}
+      <div className="px-5 py-4 sm:px-6">{optionsBlock}</div>
       <div className={readerCardFooter}>{actionsBlock}</div>
     </div>
   );

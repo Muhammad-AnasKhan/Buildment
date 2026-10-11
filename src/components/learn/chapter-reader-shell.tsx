@@ -119,6 +119,7 @@ export function ChapterReaderShell({
   const [focusMode, setFocusMode] = useState(false);
   const study = useStudySession(chapterId);
   const layoutBeforeFocus = useRef({ left: true, right: true });
+  const quizAutoFocusSlug = useRef<string | null>(null);
 
   const exitFocusMode = useCallback(async () => {
     setFocusMode(false);
@@ -175,6 +176,22 @@ export function ChapterReaderShell({
   useEffect(() => {
     scrollRef.current?.scrollTo(0, 0);
   }, [chapterSlug]);
+
+  useEffect(() => {
+    if (readerMode !== "QUIZ") return;
+    if (quizAutoFocusSlug.current === chapterSlug) return;
+    quizAutoFocusSlug.current = chapterSlug;
+    void enterFocusMode();
+  }, [chapterSlug, readerMode, enterFocusMode]);
+
+  useEffect(() => {
+    if (readerMode !== "QUIZ") return;
+    const onQuizPerfect = () => {
+      void exitFocusMode();
+    };
+    window.addEventListener("buildment:quiz-perfect", onQuizPerfect);
+    return () => window.removeEventListener("buildment:quiz-perfect", onQuizPerfect);
+  }, [readerMode, exitFocusMode]);
 
   useEffect(() => {
     if (!showSkeleton) return;
@@ -294,14 +311,14 @@ export function ChapterReaderShell({
               )}
             >
               <div className={cn("mx-auto max-w-3xl", focusMode && "max-w-2xl lg:max-w-3xl")}>
-                <header className="mb-8">
+                <header className={cn("mb-8", readerMode === "QUIZ" && "sr-only")}>
                   <h1 className="mt-1.5 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                     {chapterTitle}
                   </h1>
-                  {projectGoal ? (
+                  {projectGoal && readerMode !== "QUIZ" ? (
                     <p className="mt-3 text-sm text-muted-foreground">This lesson is part of {projectGoal}.</p>
                   ) : null}
-                  {isGateChapter ? (
+                  {isGateChapter && readerMode !== "QUIZ" ? (
                     <p className="mt-3 inline-flex items-center gap-2 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-2 text-sm text-foreground">
                       <span className="text-[11px] font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">
                         Module gate
@@ -350,24 +367,29 @@ export function ChapterReaderShell({
                   </ChecklistProvider>
                 </LearningLogProvider>
 
-                <ChapterNav
-                  courseSlug={courseSlug}
-                  prev={prev}
-                  next={next}
-                  nextLocked={nextLocked}
-                  chapterId={chapterId}
-                  chapterComplete={chapterComplete}
-                  canMarkComplete={canMarkComplete}
-                  checkpointsCompleted={checkpointsCompleted}
-                  checkpointsTotal={checkpointsTotal}
-                  nextHref={next ? `/courses/${courseSlug}/${next.slug}` : undefined}
-                  nextTitle={next?.title}
-                  reflectionPending={reflectionPending}
-                  courseCompleted={modules.reduce((total, module) => total + module.completedCount, 0)}
-                  courseTotal={modules.reduce((total, module) => total + module.chapters.length, 0)}
-                  recap={recap}
-                  streakMilestone={streakMilestone}
-                />
+                {!(focusMode && readerMode === "QUIZ") ? (
+                  <ChapterNav
+                    courseSlug={courseSlug}
+                    prev={prev}
+                    next={next}
+                    nextLocked={nextLocked}
+                    chapterId={chapterId}
+                    chapterComplete={chapterComplete}
+                    canMarkComplete={canMarkComplete}
+                    checkpointsCompleted={checkpointsCompleted}
+                    checkpointsTotal={checkpointsTotal}
+                    nextHref={next ? `/courses/${courseSlug}/${next.slug}` : undefined}
+                    nextTitle={next?.title}
+                    reflectionPending={reflectionPending}
+                    courseCompleted={modules.reduce((total, module) => total + module.completedCount, 0)}
+                    courseTotal={modules.reduce((total, module) => total + module.chapters.length, 0)}
+                    recap={recap}
+                    streakMilestone={streakMilestone}
+                    suppressAutoCelebration={
+                      readerMode === "QUIZ" && checkpointsCompleted < checkpointsTotal
+                    }
+                  />
+                ) : null}
               </div>
             </main>
 

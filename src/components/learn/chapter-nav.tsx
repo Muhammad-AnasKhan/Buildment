@@ -29,6 +29,7 @@ type ChapterNavProps = {
   courseTotal: number;
   recap?: { checks: string; open: string; next: string };
   streakMilestone?: StreakMilestone | null;
+  suppressAutoCelebration?: boolean;
 };
 
 function lessonLabel(chapter: NavChapter) {
@@ -196,6 +197,7 @@ export function ChapterNav({
   courseTotal,
   recap,
   streakMilestone,
+  suppressAutoCelebration = false,
 }: ChapterNavProps) {
   const hasBoth = Boolean(prev && next);
   const hasLessonNav = Boolean(prev || next);
@@ -217,6 +219,7 @@ export function ChapterNav({
             courseTotal={courseTotal}
             recap={recap}
             streakMilestone={streakMilestone}
+            suppressAutoCelebration={suppressAutoCelebration}
           />
         </div>
 

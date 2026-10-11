@@ -241,8 +241,11 @@ export default async function ChapterReaderPage({
       prev={prev ? { slug: prev.slug, title: prev.title, moduleOrder: prev.moduleOrder, order: prev.order } : undefined}
       next={next ? { slug: next.slug, title: next.title, moduleOrder: next.moduleOrder, order: next.order } : undefined}
     >
-      {chapter.readerMode === "QUIZ" ? <QuizChapterWizard chapterId={chapter.id} /> : null}
-      <ChapterMdx source={source} />
+      {chapter.readerMode === "QUIZ" ? (
+        <QuizChapterWizard chapterId={chapter.id} chapterTitle={chapter.title} />
+      ) : (
+        <ChapterMdx source={source} />
+      )}
     </ChapterReaderShell>
   );
 }

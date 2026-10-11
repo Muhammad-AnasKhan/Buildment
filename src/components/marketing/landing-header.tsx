@@ -24,18 +24,6 @@ export function LandingHeader({ showCourses }: { showCourses: boolean }) {
             aria-label="Primary navigation"
             className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex"
           >
-            <a
-              href="#why"
-              className={cn(navLinkClass, "px-3 py-2 text-sm hover:bg-muted/60")}
-            >
-              Why buildment
-            </a>
-            <a
-              href="#work"
-              className={cn(navLinkClass, "px-3 py-2 text-sm hover:bg-muted/60")}
-            >
-              How it works
-            </a>
             {showCourses ? (
               <a
                 href="#courses"
@@ -44,6 +32,18 @@ export function LandingHeader({ showCourses }: { showCourses: boolean }) {
                 Courses
               </a>
             ) : null}
+            <a
+              href="#why"
+              className={cn(navLinkClass, "px-3 py-2 text-sm hover:bg-muted/60")}
+            >
+              Features
+            </a>
+            <a
+              href="#work"
+              className={cn(navLinkClass, "px-3 py-2 text-sm hover:bg-muted/60")}
+            >
+              How it works
+            </a>
             <Link
               href="/integrations"
               className={cn(navLinkClass, "px-3 py-2 text-sm hover:bg-muted/60")}
@@ -69,12 +69,6 @@ export function LandingHeader({ showCourses }: { showCourses: boolean }) {
           aria-label="Mobile navigation"
           className="-mx-1 flex h-10 items-center gap-1 overflow-x-auto md:hidden"
         >
-          <a href="#why" className={cn(navLinkClass, "shrink-0 px-2 py-1.5 text-xs")}>
-            Why buildment
-          </a>
-          <a href="#work" className={cn(navLinkClass, "shrink-0 px-2 py-1.5 text-xs")}>
-            How it works
-          </a>
           {showCourses ? (
             <a
               href="#courses"
@@ -83,6 +77,12 @@ export function LandingHeader({ showCourses }: { showCourses: boolean }) {
               Courses
             </a>
           ) : null}
+          <a href="#why" className={cn(navLinkClass, "shrink-0 px-2 py-1.5 text-xs")}>
+            Features
+          </a>
+          <a href="#work" className={cn(navLinkClass, "shrink-0 px-2 py-1.5 text-xs")}>
+            How it works
+          </a>
           <Link href="/integrations" className={cn(navLinkClass, "shrink-0 px-2 py-1.5 text-xs")}>
             Integrations
           </Link>

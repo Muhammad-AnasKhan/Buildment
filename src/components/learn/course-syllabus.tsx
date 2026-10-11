@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { CheckCircle2, ChevronDown } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -50,13 +50,34 @@ function ModuleCard({
   const [open, setOpen] = useState(defaultOpen);
   const total = module.chapters.length;
   const done = module.completedCount;
+  const moduleComplete = total > 0 && done === total;
+  const moduleInProgress = !moduleComplete && done > 0;
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <article className="overflow-hidden rounded-xl border border-border bg-muted/20 dark:bg-muted/30">
-        <CollapsibleTrigger className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left">
+      <article
+        className={cn(
+          "overflow-hidden rounded-xl border border-border",
+          moduleComplete
+            ? "border-emerald-500/20 bg-emerald-500/[0.12] dark:border-emerald-400/25 dark:bg-emerald-500/15"
+            : "bg-muted/20 dark:bg-muted/30"
+        )}
+      >
+        <CollapsibleTrigger
+          className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left"
+          aria-label={`${module.title}: ${done} of ${total} lessons complete${moduleComplete ? ", module complete" : ""}`}
+        >
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/40 font-mono text-xs font-bold tabular-nums text-muted-foreground">
+            <span
+              className={cn(
+                "flex size-8 shrink-0 items-center justify-center rounded-lg border font-mono text-xs font-bold tabular-nums",
+                moduleComplete
+                  ? "border-border bg-muted/50 text-muted-foreground"
+                  : moduleInProgress
+                    ? "border-primary/25 bg-primary/10 text-primary"
+                    : "border-border bg-muted/40 text-muted-foreground"
+              )}
+            >
               {String(module.order).padStart(2, "0")}
             </span>
             <div className="min-w-0">
@@ -68,12 +89,20 @@ function ModuleCard({
               </p>
             </div>
           </div>
-          <ChevronDown
-            className={cn(
-              "size-4 shrink-0 text-muted-foreground transition-transform duration-200",
-              open && "rotate-180"
-            )}
-          />
+          <div className="flex shrink-0 items-center gap-2">
+            {moduleComplete ? (
+              <CheckCircle2
+                className="size-4 text-emerald-600/80 dark:text-emerald-400/80"
+                aria-hidden
+              />
+            ) : null}
+            <ChevronDown
+              className={cn(
+                "size-4 text-muted-foreground transition-transform duration-200",
+                open && "rotate-180"
+              )}
+            />
+          </div>
         </CollapsibleTrigger>
 
         <CollapsibleContent>

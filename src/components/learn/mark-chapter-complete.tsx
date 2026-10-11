@@ -29,6 +29,7 @@ export function ChapterCompletionStrip(props: {
   courseTotal: number;
   recap?: { checks: string; open: string; next: string };
   streakMilestone?: StreakMilestone | null;
+  suppressAutoCelebration?: boolean;
 }) {
   return <ChapterCompletionMoment key={props.chapterId} {...props} />;
 }
@@ -48,6 +49,7 @@ function ChapterCompletionMoment({
   courseTotal,
   recap,
   streakMilestone = null,
+  suppressAutoCelebration = false,
 }: {
   chapterId: string;
   chapterComplete: boolean;
@@ -61,6 +63,7 @@ function ChapterCompletionMoment({
   courseTotal: number;
   recap?: { checks: string; open: string; next: string };
   streakMilestone?: StreakMilestone | null;
+  suppressAutoCelebration?: boolean;
 }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +77,7 @@ function ChapterCompletionMoment({
   }
 
   function beginCelebration() {
-    if (celebrationPhase !== "idle") return;
+    if (celebrationPhase !== "idle" || suppressAutoCelebration) return;
     setCelebrationPhase("burst");
   }
 

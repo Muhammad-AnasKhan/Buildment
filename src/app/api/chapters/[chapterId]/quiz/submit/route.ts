@@ -133,5 +133,12 @@ export async function POST(
     score: results.reduce((sum, item) => sum + (item.score ?? 0), 0),
     maxScore: results.reduce((sum, item) => sum + (item.maxScore ?? 0), 0),
     questions: results.length,
+    grades: results.map((item) => ({
+      blockId: item.blockId,
+      isCorrect: item.isCorrect,
+      score: item.score,
+      maxScore: item.maxScore,
+      selected: answersByBlock.get(item.blockId) ?? [],
+    })),
   });
 }

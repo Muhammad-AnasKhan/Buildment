@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight, BookOpen, Clock3, Layers3 } from "lucide-react";
+import { ArrowUpRight, BookOpen, Layers3 } from "lucide-react";
 import { CourseCover } from "@/components/learn/course-cover";
 
 type CourseCardProps = {
@@ -18,10 +18,6 @@ type CourseCardProps = {
 
 export function CourseCard({ course }: CourseCardProps) {
   const blurb = course.projectGoal ?? course.description;
-  const difficulty = course.difficulty
-    ? course.difficulty.toLowerCase().replaceAll("_", " ")
-    : null;
-
   return (
     <Link
       href={`/login?redirectTo=${encodeURIComponent(`/courses/${course.slug}`)}`}
@@ -47,10 +43,13 @@ export function CourseCard({ course }: CourseCardProps) {
         </span>
       </div>
       <div className="flex min-w-0 flex-1 flex-col p-5 sm:p-6">
-        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-          Featured learning path
-        </span>
-        <h3 className="mt-3 text-xl leading-snug font-semibold tracking-[-0.03em] text-foreground sm:text-[1.35rem]">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          {course.difficulty ? (
+            <span className="font-medium uppercase tracking-wide">{course.difficulty}</span>
+          ) : null}
+          {course.estimatedHours !== null ? <span>~{course.estimatedHours}h</span> : null}
+        </div>
+        <h3 className="mt-2 text-lg font-semibold leading-snug tracking-tight text-foreground">
           {course.title}
         </h3>
         {blurb ? (
@@ -71,15 +70,8 @@ export function CourseCard({ course }: CourseCardProps) {
             <BookOpen className="size-3.5 shrink-0" aria-hidden />
             {course.chapterCount} {course.chapterCount === 1 ? "chapter" : "chapters"}
           </li>
-          {course.estimatedHours !== null ? (
-            <li className="flex items-center gap-1.5">
-              <Clock3 className="size-3.5 shrink-0" aria-hidden />
-              {course.estimatedHours} {course.estimatedHours === 1 ? "hour" : "hours"}
-            </li>
-          ) : null}
-          {difficulty ? <li className="w-full capitalize">{difficulty} level</li> : null}
         </ul>
-        <p className="mt-4 text-sm font-semibold text-foreground">Explore the course</p>
+        <p className="mt-4 text-sm font-medium text-foreground">View course</p>
       </div>
     </Link>
   );
