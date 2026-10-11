@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { cn } from "@/lib/utils";
+import { patchMermaidSvgForDarkMode } from "@/lib/mermaid-dark-patch";
 
 type MermaidApi = {
   initialize: (config: Record<string, unknown>) => void;
@@ -61,6 +63,97 @@ function loadMermaid() {
   return mermaidPromise;
 }
 
+function mermaidThemeVariables(isDark: boolean): Record<string, string | boolean> {
+  if (isDark) {
+    return {
+      darkMode: true,
+      background: "transparent",
+      primaryColor: "#3a352e",
+      primaryBorderColor: "rgba(243, 238, 230, 0.28)",
+      primaryTextColor: "#f3eee6",
+      secondaryColor: "#2a2620",
+      secondaryBorderColor: "rgba(243, 238, 230, 0.22)",
+      secondaryTextColor: "#e8e4dc",
+      tertiaryColor: "#332e26",
+      tertiaryBorderColor: "rgba(243, 238, 230, 0.18)",
+      tertiaryTextColor: "#f0e4d0",
+      lineColor: "#a3998e",
+      textColor: "#f3eee6",
+      mainBkg: "#2a2620",
+      secondBkg: "#242018",
+      border1: "rgba(243, 238, 230, 0.22)",
+      border2: "rgba(243, 238, 230, 0.16)",
+      fontSize: "15px",
+      // erDiagram entity / attribute rows
+      entityBkg: "#3a352e",
+      entityBorderColor: "rgba(243, 238, 230, 0.28)",
+      entityTextColor: "#f3eee6",
+      attributeBackgroundColorOdd: "#2a2620",
+      attributeBackgroundColorEven: "#322e28",
+      attributeBorderColor: "rgba(243, 238, 230, 0.18)",
+      attributeTextColor: "#e8e4dc",
+      relationColor: "#a3998e",
+      relationLabelBackground: "#2a2620",
+      relationLabelColor: "#f3eee6",
+      // flowchart
+      nodeBkg: "#3a352e",
+      nodeBorder: "rgba(243, 238, 230, 0.28)",
+      nodeTextColor: "#f3eee6",
+      clusterBkg: "#242018",
+      clusterBorder: "rgba(243, 238, 230, 0.22)",
+      defaultLinkColor: "#a3998e",
+      edgeLabelBackground: "#2a2620",
+      edgeLabelText: "#f3eee6",
+      // sequenceDiagram
+      actorBkg: "#3a352e",
+      actorBorder: "rgba(243, 238, 230, 0.28)",
+      actorTextColor: "#f3eee6",
+      actorLineColor: "#a3998e",
+      signalColor: "#a3998e",
+      labelBoxBkgColor: "#2a2620",
+      labelTextColor: "#f3eee6",
+      loopTextColor: "#f3eee6",
+      noteBkgColor: "#332e26",
+      noteTextColor: "#f3eee6",
+      noteBorderColor: "rgba(243, 238, 230, 0.22)",
+      activationBkgColor: "#3a352e",
+      activationBorderColor: "rgba(243, 238, 230, 0.28)",
+      sequenceNumberColor: "#f3eee6",
+    };
+  }
+
+  return {
+    darkMode: false,
+    background: "transparent",
+    primaryColor: "#f5f6f7",
+    primaryBorderColor: "#6b7280",
+    primaryTextColor: "#1f2937",
+    secondaryColor: "#f3f7f4",
+    secondaryBorderColor: "#6b8a75",
+    secondaryTextColor: "#23402d",
+    tertiaryColor: "#faf7f1",
+    tertiaryBorderColor: "#89785d",
+    tertiaryTextColor: "#423727",
+    lineColor: "#697386",
+    textColor: "#1f2937",
+    mainBkg: "#ffffff",
+    secondBkg: "#f9fafb",
+    border1: "#e5e7eb",
+    border2: "#d1d5db",
+    fontSize: "15px",
+    entityBkg: "#f5f6f7",
+    entityBorderColor: "#6b7280",
+    entityTextColor: "#1f2937",
+    attributeBackgroundColorOdd: "#ffffff",
+    attributeBackgroundColorEven: "#f9fafb",
+    attributeBorderColor: "#d1d5db",
+    attributeTextColor: "#374151",
+    relationColor: "#697386",
+    relationLabelBackground: "#ffffff",
+    relationLabelColor: "#1f2937",
+  };
+}
+
 function initMermaid(api: MermaidApi, isDark: boolean) {
   api.initialize({
     startOnLoad: false,
@@ -68,19 +161,7 @@ function initMermaid(api: MermaidApi, isDark: boolean) {
     look: "classic",
     securityLevel: "strict",
     fontFamily: "inherit",
-    themeVariables: {
-      primaryColor: isDark ? "#2c2823" : "#f5f6f7",
-      primaryBorderColor: isDark ? "#8d8478" : "#6b7280",
-      primaryTextColor: isDark ? "#f3eee6" : "#1f2937",
-      secondaryColor: isDark ? "#243028" : "#f3f7f4",
-      secondaryBorderColor: isDark ? "#6c927a" : "#6b8a75",
-      secondaryTextColor: isDark ? "#d4e7da" : "#23402d",
-      tertiaryColor: isDark ? "#332e26" : "#faf7f1",
-      tertiaryBorderColor: isDark ? "#a89170" : "#89785d",
-      tertiaryTextColor: isDark ? "#f0e4d0" : "#423727",
-      lineColor: isDark ? "#a3988c" : "#697386",
-      fontSize: "15px",
-    },
+    themeVariables: mermaidThemeVariables(isDark),
   });
   return api;
 }
@@ -120,7 +201,7 @@ export function MermaidDiagram({ chart, title, legend }: MermaidDiagramProps) {
       enqueueRender(`mermaid-${reactId}`, chart, isDark)
         .then(({ svg: svgCode }) => {
           if (!cancelled) {
-            setSvg(svgCode);
+            setSvg(isDark ? patchMermaidSvgForDarkMode(svgCode) : svgCode);
             setError(null);
           }
         })
@@ -158,7 +239,10 @@ export function MermaidDiagram({ chart, title, legend }: MermaidDiagramProps) {
       {title ? <p className="mb-4 text-sm font-semibold text-foreground">{title}</p> : null}
       {svg ? (
         <div
-          className="mermaid-svg flex items-center justify-center"
+          className={cn(
+            "mermaid-svg flex items-center justify-center",
+            isDark && "mermaid-svg-dark"
+          )}
           dangerouslySetInnerHTML={{ __html: svg }}
         />
       ) : (

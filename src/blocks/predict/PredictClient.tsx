@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, RotateCcw, Route, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { CheckCircle2, Route, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { QuizOptions } from "@/components/learn/quiz-options";
 import { LearnPanelShell } from "@/components/learn/content-blocks/learn-panel-shell";
@@ -60,23 +59,32 @@ export function PredictClient({
         }
       : null
   );
+  const [wrongSelection, setWrongSelection] = useState<string[]>(
+    initialState?.isCorrect === false && initialState.selected ? [initialState.selected] : []
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function submit() {
+  async function submitSelection(optionId: string) {
+    if (submitting) return;
+    if (result?.isCorrect === true) return;
+
+    setSelected(optionId);
     setSubmitting(true);
     setError(null);
+
     try {
       if (id === "preview-predict" || (correctOptionId && id.startsWith("preview"))) {
-        const isCorrect = correctOptionId ? selected === correctOptionId : true;
-        const outcome: RespondResult = {
-          isCorrect,
-          score: isCorrect ? 1 : 0,
-          maxScore: 1,
-          explanation: config.explanation,
-        };
-        setResult(outcome);
-        playFeedback(outcome.isCorrect ? "success" : "error");
+        const isCorrect = correctOptionId ? optionId === correctOptionId : true;
+        applyOutcome(
+          {
+            isCorrect,
+            score: isCorrect ? 1 : 0,
+            maxScore: 1,
+            explanation: config.explanation,
+          },
+          optionId
+        );
         router.refresh();
         return;
       }
@@ -84,28 +92,28 @@ export function PredictClient({
       const res = await fetch(`/api/blocks/${id}/respond`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "PREDICT", selected }),
+        body: JSON.stringify({ type: "PREDICT", selected: optionId }),
       });
       if (!res.ok) {
         const body = await res.json().catch(() => null);
         if (res.status === 404 && correctOptionId) {
-          const isCorrect = selected === correctOptionId;
-          const outcome: RespondResult = {
-            isCorrect,
-            score: isCorrect ? 1 : 0,
-            maxScore: 1,
-            explanation: config.explanation,
-          };
-          setResult(outcome);
-          playFeedback(outcome.isCorrect ? "success" : "error");
+          const isCorrect = optionId === correctOptionId;
+          applyOutcome(
+            {
+              isCorrect,
+              score: isCorrect ? 1 : 0,
+              maxScore: 1,
+              explanation: config.explanation,
+            },
+            optionId
+          );
           router.refresh();
           return;
         }
         throw new Error(body?.error ?? `Request failed (${res.status})`);
       }
-      const outcome = await res.json() as RespondResult;
-      setResult(outcome);
-      playFeedback(outcome.isCorrect ? "success" : "error");
+      const outcome = (await res.json()) as RespondResult;
+      applyOutcome(outcome, optionId);
       router.refresh();
     } catch (err) {
       playFeedback("error");
@@ -115,9 +123,35 @@ export function PredictClient({
     }
   }
 
-  const canRetry = result && !result.isCorrect && config.allowRetry;
+  function applyOutcome(outcome: RespondResult, optionId: string) {
+    setResult(outcome);
+    if (outcome.isCorrect === true) {
+      setWrongSelection([]);
+      playFeedback("success");
+    } else if (outcome.isCorrect === false) {
+      setWrongSelection([optionId]);
+      playFeedback("error");
+    }
+  }
+
+  function onPick(optionId: string) {
+    if (result?.isCorrect === true) return;
+    if (result?.isCorrect === false && config.allowRetry) {
+      setResult(null);
+      setWrongSelection([]);
+      void submitSelection(optionId);
+      return;
+    }
+    if (!result) {
+      void submitSelection(optionId);
+    }
+  }
+
   const hasAnswered = result !== null;
   const settled = hasAnswered && (result.isCorrect === true || config.allowRetry === false);
+  const optionsLocked = result?.isCorrect === true || submitting;
+  const showWrongOptions = result?.isCorrect === false;
+  const showCorrectOptions = result?.isCorrect === true;
   const ctx = config.context;
 
   return (
@@ -154,71 +188,54 @@ export function PredictClient({
         ) : null}
       </div>
 
-      <QuizOptions
-        options={config.options}
-        selected={selected ? [selected] : []}
-        onToggle={(optionId) => setSelected(optionId)}
-        disabled={hasAnswered}
-        multiple={false}
-      />
+      <div className="px-5 py-4 sm:px-6">
+        <QuizOptions
+          options={config.options}
+          selected={selected ? [selected] : []}
+          onToggle={onPick}
+          disabled={optionsLocked}
+          multiple={false}
+          incorrectOptionIds={showWrongOptions ? wrongSelection : []}
+          correctOptionIds={showCorrectOptions && selected ? [selected] : []}
+          showAnswerState={showWrongOptions || showCorrectOptions}
+        />
+      </div>
 
       <div className="border-t border-border bg-muted/30 px-5 py-4 sm:px-6">
         {hasAnswered && result ? (
-          <div className="space-y-3">
-            <div
-              className={cn(
-                "flex items-start gap-2.5 rounded-lg p-3 text-sm",
-                result.isCorrect
-                  ? "border border-emerald-200 bg-emerald-50/60 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-100"
-                  : "border border-amber-200 bg-amber-50/60 text-amber-950 dark:border-amber-900 dark:bg-amber-950/20 dark:text-amber-50"
-              )}
-            >
-              {result.isCorrect ? (
-                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-              ) : (
-                <XCircle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-              )}
-              <div>
-                <p className="font-semibold">{result.isCorrect ? "Correct" : "Review your prediction"}</p>
-                {result.explanation ? (
-                  <p className="mt-1 leading-relaxed opacity-90">{result.explanation}</p>
-                ) : null}
-              </div>
+          <div
+            className={cn(
+              "flex items-start gap-2.5 rounded-lg p-3 text-sm",
+              result.isCorrect
+                ? "border border-emerald-200 bg-emerald-50/60 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-100"
+                : "border border-red-300 bg-red-500/10 text-red-950 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-50"
+            )}
+            role="status"
+          >
+            {result.isCorrect ? (
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            ) : (
+              <XCircle className="mt-0.5 size-4 shrink-0 text-red-600 dark:text-red-400" />
+            )}
+            <div>
+              <p className="font-semibold">
+                {result.isCorrect
+                  ? "Correct"
+                  : config.allowRetry
+                    ? "Not quite — pick another outcome."
+                    : "Review your prediction"}
+              </p>
+              {result.explanation ? (
+                <p className="mt-1 leading-relaxed opacity-90">{result.explanation}</p>
+              ) : null}
             </div>
-            {canRetry ? (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="gap-1.5 text-muted-foreground hover:text-foreground"
-                onClick={() => {
-                  setResult(null);
-                  setSelected("");
-                }}
-              >
-                <RotateCcw className="size-3.5" />
-                Try again
-              </Button>
-            ) : null}
           </div>
         ) : (
-          <div className="flex items-center gap-3">
-            <Button
-              size="sm"
-              onClick={submit}
-              disabled={!selected || submitting}
-              className="h-9 gap-1.5 rounded-md bg-foreground px-5 text-sm font-medium text-background shadow-none hover:bg-foreground/90"
-            >
-              {submitting ? "Checking…" : "Check my prediction"}
-            </Button>
-            {error ? (
-              <p className="text-sm text-destructive">{error}</p>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                {selected ? "Your choice is ready — check it when you are." : "Choose the outcome you expect."}
-              </p>
-            )}
-          </div>
+          <p className="text-xs text-muted-foreground">
+            {submitting ? "Checking…" : "Choose an outcome to see if your prediction is correct."}
+          </p>
         )}
+        {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
       </div>
     </LearnPanelShell>
   );

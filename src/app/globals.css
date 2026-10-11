@@ -517,3 +517,70 @@
     transform: none !important;
   }
 }
+
+/* Mermaid erDiagram — fallback when inline SVG fills ignore themeVariables */
+.dark .mermaid-svg-dark svg .entityBox,
+.dark .mermaid-svg-dark svg .er.entityBox {
+  fill: oklch(0.265 0.012 76) !important;
+  stroke: oklch(0.93 0.012 88 / 28%) !important;
+}
+
+.dark .mermaid-svg-dark svg .attributeBoxOdd,
+.dark .mermaid-svg-dark svg .er.attributeBoxOdd {
+  fill: oklch(0.205 0.012 76) !important;
+  stroke: oklch(0.93 0.012 88 / 18%) !important;
+}
+
+.dark .mermaid-svg-dark svg .attributeBoxEven,
+.dark .mermaid-svg-dark svg .er.attributeBoxEven {
+  fill: oklch(0.235 0.012 76) !important;
+  stroke: oklch(0.93 0.012 88 / 18%) !important;
+}
+
+.dark .mermaid-svg-dark svg .entityLabel text,
+.dark .mermaid-svg-dark svg .attributeLabel text,
+.dark .mermaid-svg-dark svg .relationshipLabel text,
+.dark .mermaid-svg-dark svg text.entityLabel,
+.dark .mermaid-svg-dark svg text.attributeLabel {
+  fill: oklch(0.935 0.012 88) !important;
+}
+
+.dark .mermaid-svg-dark svg .relationshipLine,
+.dark .mermaid-svg-dark svg .er.relationshipLine,
+.dark .mermaid-svg-dark svg path.relationshipLine {
+  stroke: oklch(0.74 0.016 82) !important;
+}
+
+.dark .mermaid-svg-dark svg marker path {
+  fill: oklch(0.74 0.016 82) !important;
+  stroke: oklch(0.74 0.016 82) !important;
+}
+
+.dark .mermaid-svg-dark svg .node rect,
+.dark .mermaid-svg-dark svg .node polygon,
+.dark .mermaid-svg-dark svg .node circle,
+.dark .mermaid-svg-dark svg .node path {
+  stroke: oklch(0.93 0.012 88 / 28%);
+}
+
+.dark .mermaid-svg-dark svg .node .label text,
+.dark .mermaid-svg-dark svg .edgeLabel text,
+.dark .mermaid-svg-dark svg .cluster-label text,
+.dark .mermaid-svg-dark svg .messageText,
+.dark .mermaid-svg-dark svg .actor text {
+  fill: oklch(0.935 0.012 88) !important;
+}
+
+.dark .mermaid-svg-dark svg .actor-line {
+  stroke: oklch(0.74 0.016 82) !important;
+}
+
+.dark .mermaid-svg-dark svg .messageLine0,
+.dark .mermaid-svg-dark svg .messageLine1 {
+  stroke: oklch(0.74 0.016 82) !important;
+}
+
+.dark .mermaid-svg-dark svg .loopLine,
+.dark .mermaid-svg-dark svg .labelBox {
+  stroke: oklch(0.93 0.012 88 / 22%) !important;
+}
