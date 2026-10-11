@@ -63,6 +63,7 @@ export default async function MarketingHomePage() {
       difficulty: true,
       estimatedHours: true,
       projectGoal: true,
+      coverUrl: true,
       _count: { select: { modules: true, chapters: true } },
     },
     orderBy: { title: "asc" },
@@ -184,7 +185,7 @@ export default async function MarketingHomePage() {
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Start with a real product</p>
                 <h2 id="courses-heading" className="mt-4 text-3xl font-semibold tracking-[-0.035em] sm:text-4xl">One codebase. Every important decision.</h2>
               </div>
-              <div className="mt-10 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-background shadow-sm">
+              <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {courses.map((course) => (
                   <CourseCard
                     key={course.id}
@@ -193,6 +194,7 @@ export default async function MarketingHomePage() {
                       title: course.title,
                       description: course.description,
                       projectGoal: course.projectGoal,
+                      coverUrl: course.coverUrl,
                       difficulty: course.difficulty,
                       estimatedHours: course.estimatedHours,
                       moduleCount: course._count.modules,

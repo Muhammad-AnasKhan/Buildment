@@ -1,6 +1,6 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowUpRight, BookOpen, Clock3, Layers3 } from "lucide-react";
+import { CourseCover } from "@/components/learn/course-cover";
 
 type CourseCardProps = {
   course: {
@@ -8,6 +8,7 @@ type CourseCardProps = {
     title: string;
     description: string | null;
     projectGoal?: string | null;
+    coverUrl?: string | null;
     difficulty: string | null;
     estimatedHours: number | null;
     moduleCount: number;
@@ -25,84 +26,60 @@ export function CourseCard({ course }: CourseCardProps) {
     <Link
       href={`/login?redirectTo=${encodeURIComponent(`/courses/${course.slug}`)}`}
       aria-label={`View ${course.title} course`}
-      className="group grid bg-card text-card-foreground outline-none transition-colors hover:bg-muted/20 focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ring/50 md:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)]"
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm outline-none transition-[box-shadow,background-color] hover:bg-muted/15 hover:shadow-md focus-visible:ring-3 focus-visible:ring-inset focus-visible:ring-ring/50"
     >
-      <div className="relative aspect-[16/10] min-h-52 overflow-hidden border-b border-border bg-muted md:aspect-auto md:min-h-80 md:border-r md:border-b-0">
-        <Image
-          src="/showcase/multi-vendor-marketplace/freshmarket-catalogue-hd.png"
-          alt="FreshMarket storefront, unified checkout, and vendor management screens"
-          fill
-          sizes="(min-width: 1280px) 560px, (min-width: 768px) 46vw, 100vw"
-          className="object-cover object-top transition-transform duration-500 ease-out group-hover:scale-[1.015] motion-reduce:transform-none"
+      <div className="relative">
+        <CourseCover
+          coverUrl={course.coverUrl}
+          title={course.title}
+          aspect="video"
+          className="rounded-none"
         />
         <div
-          className="absolute inset-0 bg-gradient-to-t from-foreground/20 via-transparent to-transparent dark:from-background/45"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-foreground/25 via-transparent to-transparent dark:from-background/50"
           aria-hidden
         />
+        <span
+          className="absolute top-3 right-3 grid size-8 place-items-center rounded-full border border-border/80 bg-background/90 text-muted-foreground shadow-sm backdrop-blur-sm transition-colors group-hover:border-foreground/20 group-hover:text-foreground"
+          aria-hidden
+        >
+          <ArrowUpRight className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none" />
+        </span>
       </div>
-      <div className="flex min-w-0 flex-col p-5 sm:p-7 lg:p-9">
-        <div>
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              Featured learning path
-            </span>
-            <span
-              className="grid size-8 shrink-0 place-items-center rounded-full border border-border bg-background text-muted-foreground transition-colors group-hover:border-foreground/20 group-hover:text-foreground"
-              aria-hidden
-            >
-              <ArrowUpRight className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 motion-reduce:transform-none" />
-            </span>
-          </div>
-          <h3 className="mt-5 text-2xl leading-tight font-semibold tracking-[-0.03em] text-foreground sm:text-[1.75rem]">
-            {course.title}
-          </h3>
-          {blurb ? (
-            <p className="mt-3 line-clamp-3 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-[15px]">
-              {blurb}
-            </p>
-          ) : (
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              A guided project course with a clear path from concept to working product.
-            </p>
-          )}
-        </div>
-        <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-3 border-y border-border py-4 text-xs text-muted-foreground sm:grid-cols-3">
-          <div className="flex items-center gap-2">
+      <div className="flex min-w-0 flex-1 flex-col p-5 sm:p-6">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          Featured learning path
+        </span>
+        <h3 className="mt-3 text-xl leading-snug font-semibold tracking-[-0.03em] text-foreground sm:text-[1.35rem]">
+          {course.title}
+        </h3>
+        {blurb ? (
+          <p className="mt-2 line-clamp-3 flex-1 text-sm leading-6 text-muted-foreground">
+            {blurb}
+          </p>
+        ) : (
+          <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">
+            A guided project course with a clear path from concept to working product.
+          </p>
+        )}
+        <ul className="mt-4 flex flex-wrap gap-x-4 gap-y-2 border-t border-border pt-4 text-xs text-muted-foreground">
+          <li className="flex items-center gap-1.5">
             <Layers3 className="size-3.5 shrink-0" aria-hidden />
-            <dt className="sr-only">Modules</dt>
-            <dd>
-              {course.moduleCount} {course.moduleCount === 1 ? "module" : "modules"}
-            </dd>
-          </div>
-          <div className="flex items-center gap-2">
+            {course.moduleCount} {course.moduleCount === 1 ? "module" : "modules"}
+          </li>
+          <li className="flex items-center gap-1.5">
             <BookOpen className="size-3.5 shrink-0" aria-hidden />
-            <dt className="sr-only">Chapters</dt>
-            <dd>
-              {course.chapterCount} {course.chapterCount === 1 ? "chapter" : "chapters"}
-            </dd>
-          </div>
+            {course.chapterCount} {course.chapterCount === 1 ? "chapter" : "chapters"}
+          </li>
           {course.estimatedHours !== null ? (
-            <div className="flex items-center gap-2">
+            <li className="flex items-center gap-1.5">
               <Clock3 className="size-3.5 shrink-0" aria-hidden />
-              <dt className="sr-only">Estimated duration</dt>
-              <dd>
-                {course.estimatedHours} {course.estimatedHours === 1 ? "hour" : "hours"}
-              </dd>
-            </div>
+              {course.estimatedHours} {course.estimatedHours === 1 ? "hour" : "hours"}
+            </li>
           ) : null}
-          {difficulty ? (
-            <div className="col-span-2 capitalize sm:col-span-3">
-              <dt className="sr-only">Difficulty</dt>
-              <dd>{difficulty} level</dd>
-            </div>
-          ) : null}
-        </dl>
-        <div className="mt-auto flex items-center justify-between gap-4 pt-5">
-          <span className="text-sm font-semibold text-foreground">Explore the course</span>
-          <span className="hidden text-xs text-muted-foreground sm:inline">
-            See the full learning path
-          </span>
-        </div>
+          {difficulty ? <li className="w-full capitalize">{difficulty} level</li> : null}
+        </ul>
+        <p className="mt-4 text-sm font-semibold text-foreground">Explore the course</p>
       </div>
     </Link>
   );
