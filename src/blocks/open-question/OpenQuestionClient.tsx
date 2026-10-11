@@ -2,14 +2,14 @@
 
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle2, Clock3, Link2, PenLine, RotateCcw, SendHorizontal, Sparkles } from "lucide-react";
+import { CheckCircle2, Clock3, Link2, PenLine, RotateCcw, SendHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { parseSafeSubmissionUrl } from "@/lib/safe-submission-url";
 import { AnswerTextareaWithMic } from "@/components/learn/answer-textarea-with-mic";
 import { readerBlockGrouped, readerBlockInner } from "@/components/learn/reader-block-styles";
-import { firePartyPops } from "@/components/learn/party-pops";
+import { fireMiniConfetti } from "@/components/learn/mini-confetti";
 import { playFeedback } from "@/lib/sound-feedback";
 import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
 import type { OpenQuestionGroupPosition } from "./group-position";
@@ -98,7 +98,7 @@ export function OpenQuestionClient({
       }
       setSubmitted(true);
       setIsSuccessGlow(true);
-      firePartyPops({ withSound: false });
+      if (containerRef.current) fireMiniConfetti(containerRef.current);
       playFeedback("notification");
       router.refresh();
     } catch (err) {

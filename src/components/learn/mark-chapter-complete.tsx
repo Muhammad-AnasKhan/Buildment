@@ -8,7 +8,7 @@ import { markChapterComplete } from "@/server/actions/progress";
 import { acknowledgeStreakMilestone } from "@/server/actions/weekly-goal";
 import type { StreakMilestone } from "@/server/progress/streak";
 import { cn } from "@/lib/utils";
-import { firePartyPops } from "@/components/learn/party-pops";
+import { fireMiniConfetti } from "@/components/learn/mini-confetti";
 import { ChapterCompleteCelebrationModal } from "@/components/learn/chapter-complete-celebration-modal";
 import { scrollToNextCheckpoint } from "@/components/learn/checkpoint-marker";
 import { playFeedback } from "@/lib/sound-feedback";
@@ -71,6 +71,7 @@ function ChapterCompletionMoment({
   const [celebrationPhase, setCelebrationPhase] = useState<CelebrationPhase>("idle");
   const [trackedComplete, setTrackedComplete] = useState(chapterComplete);
   const modalTimerRef = useRef<number | null>(null);
+  const celebrationAnchorRef = useRef<HTMLDivElement>(null);
 
   function prefersReducedMotion() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -97,12 +98,10 @@ function ChapterCompletionMoment({
       return;
     }
 
-    firePartyPops({
-      particleCount: 18,
-      dualPoppers: false,
-      withSound: true,
-      soundEffect: "completion",
-    });
+    if (celebrationAnchorRef.current) {
+      fireMiniConfetti(celebrationAnchorRef.current);
+    }
+    playFeedback("completion");
     if (streakMilestone) void acknowledgeStreakMilestone(streakMilestone);
 
     modalTimerRef.current = window.setTimeout(() => {
@@ -160,7 +159,10 @@ function ChapterCompletionMoment({
 
   return (
     <>
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div
+        ref={celebrationAnchorRef}
+        className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      >
         <div className="min-w-0">
           <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
             Finish this lesson

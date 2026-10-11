@@ -9,7 +9,7 @@ import { QuizOptions } from "@/components/learn/quiz-options";
 import { QuizPromptBody } from "@/components/learn/quiz-prompt-body";
 import { useQuizSession } from "@/components/learn/quiz-session-context";
 import { readerCard, readerCardFooter, readerCardHeader, readerTitle } from "@/components/learn/reader-theme";
-import { firePartyPops } from "@/components/learn/party-pops";
+import { fireMiniConfetti } from "@/components/learn/mini-confetti";
 import { playFeedback } from "@/lib/sound-feedback";
 import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
 import type { SanitizedQuizConfig } from "./schema";
@@ -266,7 +266,7 @@ export function QuizClient({
       setWrongSelection([]);
       setIsSuccessGlow(true);
       setIsShaking(false);
-      firePartyPops({ withSound: false });
+      if (cardRef.current) fireMiniConfetti(cardRef.current);
       playFeedback("success");
     } else if (data.isCorrect === false) {
       setWrongSelection(nextSelected);

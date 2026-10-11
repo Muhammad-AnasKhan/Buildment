@@ -5,6 +5,11 @@ import { z } from "zod";
 import { prisma } from "@/server/db";
 import { requireMentorOfCourse, requireVerifiedUser } from "@/server/auth/guards";
 import { inviteAcceptUrl, sendEmail } from "@/server/email/send";
+import {
+  notifyMenteeCourseEnrollment,
+  notifyMentorNewEnrollment,
+} from "@/server/email/event-notifications";
+import { queueEmail } from "@/server/email/queue";
 import { lifecycleForSignedInEnrollment } from "@/server/enrollment/lifecycle";
 
 // Assignment + invite flows (docs/phases/m7-assignment-and-polish.mdx).
@@ -116,7 +121,7 @@ export async function assignByEmails(input: {
     const existingUser = await prisma.user.findUnique({ where: { email } });
 
     if (existingUser) {
-      await prisma.enrollment.upsert({
+      const enrollment = await prisma.enrollment.upsert({
         where: { courseId_userId: { courseId: course.id, userId: existingUser.id } },
         update: { status: "ASSIGNED" },
         create: {
@@ -127,7 +132,10 @@ export async function assignByEmails(input: {
           source: "DIRECT",
           lifecycle: "ACTIVE",
         },
+        select: { id: true },
       });
+      queueEmail(() => notifyMenteeCourseEnrollment(enrollment.id));
+      queueEmail(() => notifyMentorNewEnrollment(enrollment.id));
       enrolledEmails.push(email);
       continue;
     }
@@ -276,7 +284,7 @@ export async function acceptInvite(input: {
   const lifecycle = lifecycleForSignedInEnrollment(invite.course.pricingType);
   const checkoutRequired = lifecycle === "PAYMENT_REQUIRED";
 
-  await prisma.$transaction(async (tx) => {
+  const enrollmentId = await prisma.$transaction(async (tx) => {
     const enrollment = await tx.enrollment.upsert({
       where: { courseId_userId: { courseId: invite.courseId, userId: user.id } },
       update: {},
@@ -310,7 +318,11 @@ export async function acceptInvite(input: {
     if (name) {
       await tx.user.update({ where: { id: user.id }, data: { name } });
     }
+    return enrollment.id;
   });
+
+  queueEmail(() => notifyMenteeCourseEnrollment(enrollmentId));
+  queueEmail(() => notifyMentorNewEnrollment(enrollmentId));
 
   return { ok: true, courseSlug: invite.course.slug, checkoutRequired };
 }

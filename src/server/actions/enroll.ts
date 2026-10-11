@@ -8,6 +8,8 @@ import {
   createSelfEnrollment,
   SelfEnrollmentError,
 } from "@/server/enrollment/create-self-enrollment";
+import { notifyMentorNewEnrollment } from "@/server/email/event-notifications";
+import { queueEmail } from "@/server/email/queue";
 export async function selfEnrollInCourseAction(formData: FormData): Promise<void> {
   const user = await requireVerifiedUser();
   const courseId = String(formData.get("courseId") ?? "");
@@ -17,6 +19,9 @@ export async function selfEnrollInCourseAction(formData: FormData): Promise<void
 
   try {
     const result = await createSelfEnrollment(prisma, { userId: user.id, courseId });
+    if (result.created) {
+      queueEmail(() => notifyMentorNewEnrollment(result.enrollmentId));
+    }
     revalidatePath("/my-courses");
     revalidatePath("/dashboard");
     revalidatePath("/catalog");

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, PartyPopper, X } from "lucide-react";
+import { ArrowRight, CheckCircle2, X } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -98,7 +98,7 @@ export function ChapterCompleteCelebrationModal({
             className="chapter-complete-stagger flex size-14 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
             style={{ animationDelay: "80ms" }}
           >
-            <PartyPopper className="chapter-complete-popper size-8" aria-hidden />
+            <CheckCircle2 className="chapter-complete-icon size-8" aria-hidden />
           </div>
           <button
             type="button"

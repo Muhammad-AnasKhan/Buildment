@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/server/db";
 import { requireRole } from "@/server/auth/guards";
+import { notifyUserGrantedInstructorByAdmin } from "@/server/email/admin-notifications";
+import { queueEmail } from "@/server/email/queue";
 
 export async function setUserInstructorAccessAction(formData: FormData): Promise<void> {
   await requireRole("ADMIN");
@@ -66,7 +68,7 @@ export async function grantInstructorByEmailAction(formData: FormData): Promise<
       canInstruct: true,
       ...(existing?.role === "ADMIN" ? {} : { role: "MENTOR" }),
     },
-    select: { id: true },
+    select: { id: true, name: true },
   });
 
   await prisma.instructorAccessRequest.upsert({
@@ -74,6 +76,10 @@ export async function grantInstructorByEmailAction(formData: FormData): Promise<
     create: { userId: user.id, status: "APPROVED", reviewedAt: new Date() },
     update: { status: "APPROVED", reviewedAt: new Date() },
   });
+
+  queueEmail(() =>
+    notifyUserGrantedInstructorByAdmin({ email, name: user.name ?? parsed.data.name ?? null })
+  );
 
   revalidatePath("/admin/users");
   revalidatePath("/", "layout");

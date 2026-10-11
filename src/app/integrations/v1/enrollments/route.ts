@@ -5,6 +5,11 @@ import { authenticateOrganizationFromRequest } from "@/server/integrations/authe
 import { integrationErrorResponse } from "@/server/integrations/respond";
 import { createPathmentEnrollment } from "@/server/integrations/pathment/create-pathment-enrollment";
 import {
+  notifyMenteeCourseEnrollment,
+  notifyMentorNewEnrollment,
+} from "@/server/email/event-notifications";
+import { queueEmail } from "@/server/email/queue";
+import {
   findOrganizationEnrollment,
   missingEnrollmentLookupParams,
   serializeIntegrationEnrollment,
@@ -60,6 +65,10 @@ export async function POST(request: Request) {
     });
 
     const { enrollment, created } = result;
+    if (created) {
+      queueEmail(() => notifyMenteeCourseEnrollment(enrollment.id));
+      queueEmail(() => notifyMentorNewEnrollment(enrollment.id));
+    }
     return NextResponse.json(
       {
         enrollment_id: enrollment.id,

@@ -18,6 +18,8 @@ import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
 import { ChapterLockedError, assertChapterUnlocked } from "@/server/progress/gate";
 import type { GradeResult } from "@/blocks/types";
 import { checkRateLimit } from "@/server/rate-limit";
+import { notifyMentorPendingReview } from "@/server/email/event-notifications";
+import { queueEmail } from "@/server/email/queue";
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ blockId: string }> }) {
   const { blockId } = await params;
@@ -139,6 +141,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     await recomputeChapterProgress(tx, enrollment.id, block.chapter.id);
     return created;
   });
+
+  if (response.status === "PENDING_REVIEW") {
+    queueEmail(() => notifyMentorPendingReview(response.id));
+  }
 
   return NextResponse.json({
     score: response.score,

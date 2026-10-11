@@ -11,7 +11,7 @@ import {
 } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, ListChecks, PartyPopper } from "lucide-react";
+import { CheckCircle2, ListChecks } from "lucide-react";
 import { fireMiniConfetti } from "@/components/learn/mini-confetti";
 import { playFeedback } from "@/lib/sound-feedback";
 import { saveChecklistItem } from "@/server/actions/progress";
@@ -286,7 +286,7 @@ export function Checklist({
       {allDone ? (
         <div className="border-t border-emerald-200/80 bg-emerald-50/80 px-5 py-3.5 dark:border-emerald-400/25 dark:bg-emerald-500/10">
           <p className="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-100">
-            <PartyPopper className="size-4 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden />
+            <CheckCircle2 className="size-4 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden />
             All items complete — nice work!
           </p>
         </div>

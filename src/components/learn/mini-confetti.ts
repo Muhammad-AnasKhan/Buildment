@@ -13,13 +13,13 @@ export function fireMiniConfetti(anchor: HTMLElement) {
     "pointer-events:none;position:fixed;inset:0;z-index:9999;overflow:hidden;";
   document.body.appendChild(container);
 
-  const particleCount = 22;
+  const particleCount = 34;
 
   for (let i = 0; i < particleCount; i++) {
     const el = document.createElement("span");
-    const size = 4 + Math.random() * 4;
+    const size = 4 + Math.random() * 5;
     const angle = (Math.PI * 2 * i) / particleCount + (Math.random() - 0.5) * 0.4;
-    const velocity = 48 + Math.random() * 56;
+    const velocity = 52 + Math.random() * 64;
     const dx = Math.cos(angle) * velocity;
     const dy = Math.sin(angle) * velocity - 40;
     const color = colors[i % colors.length]!;

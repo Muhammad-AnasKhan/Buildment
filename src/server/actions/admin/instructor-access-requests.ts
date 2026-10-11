@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/server/db";
 import { requireRole } from "@/server/auth/guards";
+import { notifyUserInstructorAccessDecision } from "@/server/email/admin-notifications";
+import { queueEmail } from "@/server/email/queue";
 
 export async function approveInstructorAccessRequestAction(formData: FormData): Promise<void> {
   const admin = await requireRole("ADMIN");
@@ -35,6 +37,8 @@ export async function approveInstructorAccessRequestAction(formData: FormData): 
     }),
   ]);
 
+  queueEmail(() => notifyUserInstructorAccessDecision({ userId: request.userId, approved: true }));
+
   revalidatePath("/admin/users");
   revalidatePath("/", "layout");
 }
@@ -46,7 +50,7 @@ export async function rejectInstructorAccessRequestAction(formData: FormData): P
 
   const request = await prisma.instructorAccessRequest.findUnique({
     where: { id: requestId },
-    select: { id: true, status: true },
+    select: { id: true, userId: true, status: true },
   });
   if (!request || request.status !== "PENDING") {
     throw new Error("Request not found or already reviewed.");
@@ -60,6 +64,8 @@ export async function rejectInstructorAccessRequestAction(formData: FormData): P
       reviewedAt: new Date(),
     },
   });
+
+  queueEmail(() => notifyUserInstructorAccessDecision({ userId: request.userId, approved: false }));
 
   revalidatePath("/admin/users");
   revalidatePath("/", "layout");

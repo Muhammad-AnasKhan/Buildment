@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/server/db";
 import { requireRole } from "@/server/auth/guards";
+import { notifyMentorOrganizationCourseApproved } from "@/server/email/admin-notifications";
+import { queueEmail } from "@/server/email/queue";
 
 async function requireAdmin() {
   return requireRole("ADMIN");
@@ -68,6 +70,8 @@ export async function approveOrganizationCourseRequestAction(formData: FormData)
       },
     });
   });
+
+  queueEmail(() => notifyMentorOrganizationCourseApproved(request.id));
 
   revalidatePath("/admin/requests");
   revalidatePath(`/admin/organizations/${request.organizationId}`);

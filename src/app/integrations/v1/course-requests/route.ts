@@ -4,6 +4,8 @@ import { prisma } from "@/server/db";
 import { authenticateOrganizationFromRequest } from "@/server/integrations/authenticate-organization";
 import { integrationErrorResponse } from "@/server/integrations/respond";
 import { listOrganizationCourseRequests } from "@/server/integrations/course-request-list";
+import { notifyAdminsOrganizationCourseRequest } from "@/server/email/admin-notifications";
+import { queueEmail } from "@/server/email/queue";
 
 export async function GET(request: Request) {
   try {
@@ -87,6 +89,8 @@ export async function POST(request: Request) {
         status: "PENDING",
       },
     });
+
+    queueEmail(() => notifyAdminsOrganizationCourseRequest(created.id));
 
     return NextResponse.json(
       {

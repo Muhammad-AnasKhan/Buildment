@@ -7,6 +7,9 @@ import "server-only";
 // When no key is configured (typical in local dev) sending is a no-op that
 // logs the payload instead, and callers surface the raw link in the UI so the
 // flow stays fully testable without email delivery.
+//
+// Optional ADMIN_NOTIFY_EMAIL — comma-separated inboxes notified for admin
+// queue items (in addition to every user with role ADMIN).
 
 export type SendEmailInput = {
   to: string;

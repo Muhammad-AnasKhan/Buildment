@@ -8,6 +8,8 @@ import {
   recomputeChapterProgress,
   resolvePendingBlockReview,
 } from "@/server/progress/compute";
+import { notifyMenteeReviewFeedback } from "@/server/email/event-notifications";
+import { queueEmail } from "@/server/email/queue";
 
 // Mentor review of human-graded submissions (docs/05-review-queue.mdx).
 // The needs-revision loop never reverts chapter completion — completion tracks
@@ -79,6 +81,14 @@ export async function submitReview(input: {
     await adjustEnrollmentPendingReviews(tx, response.enrollmentId, -1);
     await recomputeChapterProgress(tx, response.enrollmentId, response.block.chapter.id);
   });
+
+  queueEmail(() =>
+    notifyMenteeReviewFeedback({
+      responseId: response.id,
+      verdict: parsed.data.verdict,
+      feedbackPreview: parsed.data.feedback,
+    })
+  );
 
   return { ok: true };
 }

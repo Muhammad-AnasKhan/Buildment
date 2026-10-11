@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/server/db";
 import { requireVerifiedUser, userCanInstruct } from "@/server/auth/guards";
+import { notifyAdminsInstructorAccessRequest } from "@/server/email/admin-notifications";
+import { queueEmail } from "@/server/email/queue";
 
 const requestSchema = z.object({
   message: z.string().trim().max(500).optional(),
@@ -33,7 +35,7 @@ export async function requestInstructorAccessAction(formData: FormData): Promise
     throw new Error("Your request is already pending review.");
   }
 
-  await prisma.instructorAccessRequest.upsert({
+  const request = await prisma.instructorAccessRequest.upsert({
     where: { userId: user.id },
     create: {
       userId: user.id,
@@ -46,7 +48,10 @@ export async function requestInstructorAccessAction(formData: FormData): Promise
       reviewedById: null,
       reviewedAt: null,
     },
+    select: { id: true },
   });
+
+  queueEmail(() => notifyAdminsInstructorAccessRequest(request.id));
 
   revalidatePath("/", "layout");
 }

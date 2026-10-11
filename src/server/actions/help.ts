@@ -7,6 +7,12 @@ import { requireEnrolledMentee, requireHelpThreadAccess } from "@/server/auth/gu
 import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
 import { ChapterLockedError, assertChapterUnlocked } from "@/server/progress/gate";
 import { canReplyToHelpThread, canResolveHelpThread } from "@/server/help/access";
+import {
+  notifyMenteeHelpReply,
+  notifyMenteeHelpThreadResolved,
+  notifyMentorHelpQuestion,
+} from "@/server/email/event-notifications";
+import { queueEmail } from "@/server/email/queue";
 
 export type HelpActionResult = { ok: true; threadId: string } | { ok: false; error: string };
 
@@ -122,6 +128,14 @@ export async function askMentorFromChapter(input: {
     threadId: thread.id,
   });
 
+  queueEmail(() =>
+    notifyMentorHelpQuestion({
+      threadId: thread.id,
+      body: parsed.data.body,
+      menteeName: user.name,
+    })
+  );
+
   return { ok: true, threadId: thread.id };
 }
 
@@ -164,6 +178,24 @@ export async function replyToHelpThread(input: {
     threadId: thread.id,
   });
 
+  if (user.id === thread.menteeId) {
+    queueEmail(() =>
+      notifyMentorHelpQuestion({
+        threadId: thread.id,
+        body: parsed.data.body,
+        menteeName: user.name,
+      })
+    );
+  } else {
+    queueEmail(() =>
+      notifyMenteeHelpReply({
+        threadId: thread.id,
+        body: parsed.data.body,
+        mentorName: user.name,
+      })
+    );
+  }
+
   return { ok: true, threadId: thread.id };
 }
 
@@ -192,6 +224,8 @@ export async function resolveHelpThread(input: { threadId: string }): Promise<He
     chapterSlug: thread.chapter?.slug,
     threadId: thread.id,
   });
+
+  queueEmail(() => notifyMenteeHelpThreadResolved(thread.id));
 
   return { ok: true, threadId: thread.id };
 }
