@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Progress, ProgressLabel } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { helpUiCopy } from "@/lib/help-ui-copy";
 import { formatStudyAmount } from "@/lib/format-study-duration";
 import { WeeklyGoalEditor } from "@/components/learn/dashboard/weekly-goal-editor";
 import { CourseCover } from "@/components/learn/course-cover";
@@ -378,7 +379,7 @@ function EmptyDashboard({ name }: { name: string }) {
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <Link href="/catalog" className={buttonVariants()}>Browse catalog</Link>
-        <Link href="/my-questions" className={buttonVariants({ variant: "outline" })}>My help notes</Link>
+        <Link href="/my-questions" className={buttonVariants({ variant: "outline" })}>{helpUiCopy.learnerNav}</Link>
       </div>
     </div>
   );

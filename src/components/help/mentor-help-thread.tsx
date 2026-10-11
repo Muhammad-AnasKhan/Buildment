@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { HelpNoteTimeline } from "./help-note-timeline";
 import type { HelpMessageView } from "./help-types";
+import { helpUiCopy as copy } from "@/lib/help-ui-copy";
 
 export function MentorHelpThread({
   threadId,
@@ -58,7 +59,7 @@ export function MentorHelpThread({
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_240px]">
       <div className="min-w-0 space-y-6">
         <section>
-          <h2 className="text-sm font-semibold text-neutral-900">Help note thread</h2>
+          <h2 className="text-sm font-semibold text-neutral-900">{copy.mentorThreadTitle}</h2>
           <div className="mt-4 rounded-xl border border-neutral-200 bg-white p-5">
             <HelpNoteTimeline messages={messages} viewerId={mentorId} />
           </div>
@@ -76,7 +77,7 @@ export function MentorHelpThread({
               Write a reply
             </label>
             <p className="mt-1 text-xs text-neutral-500">
-              Your mentee sees this when they reopen the lesson or check My help notes.
+              {copy.mentorComposerHint}
             </p>
             <Textarea
               id="mentor-reply"
@@ -116,7 +117,7 @@ export function MentorHelpThread({
           </section>
         ) : (
           <p className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
-            Resolved — the mentee can open a new note from the chapter if they need more help.
+            {copy.resolvedMentorSide}
           </p>
         )}
       </div>

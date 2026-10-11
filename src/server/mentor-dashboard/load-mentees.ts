@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/server/db";
 import { activityState, average, formatLastActive, progressState } from "./helpers";
 import type { CourseMenteesView, MenteeAttentionKind } from "./types";
+import { helpUiCopy } from "@/lib/help-ui-copy";
 
 const RESPONSE_EVIDENCE_LIMIT = 500;
 
@@ -87,7 +88,8 @@ export async function loadCourseMentees(args: { courseId: string; courseSlug: st
     });
     const attention: Array<{ kind: MenteeAttentionKind; label: string }> = [];
     if (enrollment.pendingReviews > 0) attention.push({ kind: "review", label: `${enrollment.pendingReviews} waiting` });
-    if (openHelpRequests > 0) attention.push({ kind: "help", label: `${openHelpRequests} help request${openHelpRequests === 1 ? "" : "s"}` });
+    if (openHelpRequests > 0)
+      attention.push({ kind: "help", label: helpUiCopy.menteeAttentionLabel(openHelpRequests) });
     if (revisionEnrollmentIds.has(enrollment.id)) attention.push({ kind: "revision", label: "Revision due" });
     if (activity === "inactive" && enrollment.status === "IN_PROGRESS") attention.push({ kind: "inactive", label: "Inactive 7+ days" });
     if (stalled) attention.push({ kind: "stalled", label: "Long-running chapter" });

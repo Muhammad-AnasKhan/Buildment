@@ -16,6 +16,7 @@ import type {
   MenteeEvaluation,
   ProjectEvidence,
 } from "@/components/teach/evaluation/types";
+import { helpUiCopy as copy } from "@/lib/help-ui-copy";
 
 const RESPONSE_LIMIT = 240;
 const INACTIVE_DAYS = 7;
@@ -388,7 +389,7 @@ function buildAttention(args: {
     }
   }
   for (const thread of args.help.filter((item) => item.status === "OPEN")) {
-    items.push({ id: `help-${thread.id}`, kind: "help", title: "Open help request", detail: thread.chapterTitle, href: thread.href, action: "Reply" });
+    items.push({ id: `help-${thread.id}`, kind: "help", title: copy.evaluationOpenItem, detail: thread.chapterTitle, href: thread.href, action: "Reply" });
   }
   const chapterById = new Map(
     args.courseStructure.modules.flatMap((module) => module.chapters.map((chapter) => [chapter.id, chapter] as const))

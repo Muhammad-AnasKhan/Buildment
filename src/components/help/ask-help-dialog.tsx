@@ -5,6 +5,7 @@ import { HandHelping, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HelpThreadDetail } from "./help-thread-detail";
 import type { HelpThreadView } from "./help-types";
+import { helpUiCopy as copy } from "@/lib/help-ui-copy";
 
 export function AskHelpDialog({
   courseId,
@@ -38,9 +39,9 @@ export function AskHelpDialog({
     setOpen(false);
   }
 
-  let triggerLabel = "Ask for help";
-  if (mentorReplied) triggerLabel = "Mentor replied";
-  else if (isOpen) triggerLabel = "Help note sent";
+  let triggerLabel: string = copy.askQuestion;
+  if (mentorReplied) triggerLabel = copy.mentorReplied;
+  else if (isOpen) triggerLabel = copy.questionSent;
 
   return (
     <>
@@ -58,7 +59,7 @@ export function AskHelpDialog({
       >
         <HandHelping className="size-3.5 shrink-0 opacity-80" aria-hidden />
         <span className="hidden sm:inline">{triggerLabel}</span>
-        <span className="sm:hidden">Help</span>
+        <span className="sm:hidden">{copy.askQuestionShort}</span>
       </button>
 
       <dialog
@@ -74,7 +75,7 @@ export function AskHelpDialog({
           <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
             <div className="min-w-0">
               <h2 id="ask-help-title" className="text-base font-semibold text-foreground">
-                Send a help note
+                {copy.dialogTitle}
               </h2>
               <p className="mt-0.5 truncate text-sm text-muted-foreground">{chapterTitle}</p>
             </div>
@@ -99,7 +100,7 @@ export function AskHelpDialog({
             chapterId={chapterId}
             footerLink={{
               href: "/my-questions",
-              label: "All my notes",
+              label: copy.allQuestionsLink,
               onNavigate: close,
             }}
           />

@@ -11,6 +11,7 @@ import { pickContinueTarget } from "@/server/progress/enrollment-syllabus";
 import { isCompletableBlock } from "@/server/progress/rules";
 import { mentorReplyUnread } from "@/server/progress/attention";
 import type { LearnerHabit } from "@/server/progress/streak";
+import { helpUiCopy as copy } from "@/lib/help-ui-copy";
 
 export type DashboardChapterInput = {
   id: string;
@@ -348,9 +349,9 @@ export function buildMenteeDashboardViewModel(args: {
     actions.push({
       id: `help-${thread.id}`,
       kind: "HELP",
-      title: unread ? "Mentor replied" : "Help request open",
+      title: unread ? copy.dashboardTitleUnread : copy.dashboardTitleOpen,
       context: `${thread.course.title}${thread.chapter ? ` · ${thread.chapter.title}` : ""}`,
-      reason: unread ? "A reply is waiting in your help notes." : "Your help note is still open.",
+      reason: unread ? copy.dashboardReasonUnread : copy.dashboardReasonOpen,
       statusLabel: unread ? "Unread" : "Open",
       href: `/my-questions/${thread.id}`,
       occurredAt: iso(thread.messages[0]?.createdAt ?? thread.updatedAt),
@@ -386,7 +387,7 @@ export function buildMenteeDashboardViewModel(args: {
     if (response.review) events.push({ id: `review-${response.id}`, type: response.review.verdict === "NEEDS_REVISION" ? "REVISION" : "REVIEW", title: response.review.verdict === "NEEDS_REVISION" ? "Revision requested" : "Mentor review received", context: `${response.block.chapter.course.title} · ${response.block.chapter.title}`, occurredAt: response.review.createdAt.toISOString(), href });
   }
   for (const thread of args.helpThreads.slice(0, 6)) {
-    events.push({ id: `help-${thread.id}-${thread.status}`, type: thread.status === "RESOLVED" ? "HELP_RESOLVED" : "HELP_CREATED", title: thread.status === "RESOLVED" ? "Help request resolved" : "Help request created", context: `${thread.course.title}${thread.chapter ? ` · ${thread.chapter.title}` : ""}`, occurredAt: (thread.status === "RESOLVED" ? thread.updatedAt : thread.createdAt).toISOString(), href: `/my-questions/${thread.id}` });
+    events.push({ id: `help-${thread.id}-${thread.status}`, type: thread.status === "RESOLVED" ? "HELP_RESOLVED" : "HELP_CREATED", title: thread.status === "RESOLVED" ? copy.eventQuestionResolved : copy.eventQuestionCreated, context: `${thread.course.title}${thread.chapter ? ` · ${thread.chapter.title}` : ""}`, occurredAt: (thread.status === "RESOLVED" ? thread.updatedAt : thread.createdAt).toISOString(), href: `/my-questions/${thread.id}` });
   }
   for (const enrollment of args.enrollments) {
     const chapters = enrollment.course.modules.flatMap((module) => module.chapters);

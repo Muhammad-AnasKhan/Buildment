@@ -23,7 +23,7 @@ export function NeedsAttention({ items }: { items: EvaluationAttention[] }) {
           })}
         </div>
       ) : (
-        <div className="mt-5 flex items-center gap-3 rounded-xl border border-dashed bg-muted/20 p-4"><CheckCircle2 className="size-5 text-emerald-600" /><div><p className="text-sm font-medium">Nothing needs intervention</p><p className="text-xs text-muted-foreground">Reviews, help requests, and recent progress all look clear.</p></div></div>
+        <div className="mt-5 flex items-center gap-3 rounded-xl border border-dashed bg-muted/20 p-4"><CheckCircle2 className="size-5 text-emerald-600" /><div><p className="text-sm font-medium">Nothing needs intervention</p><p className="text-xs text-muted-foreground">Reviews, open questions, and recent progress all look clear.</p></div></div>
       )}
     </section>
   );

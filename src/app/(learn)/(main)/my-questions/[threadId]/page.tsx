@@ -6,6 +6,7 @@ import { mapHelpMessages } from "@/lib/help-serialize";
 import { HelpThreadDetail } from "@/components/help/help-thread-detail";
 import { LearnerBreadcrumb } from "@/components/learn/learner-breadcrumb";
 import { buttonVariants } from "@/components/ui/button";
+import { helpUiCopy as copy } from "@/lib/help-ui-copy";
 
 export default async function MenteeHelpThreadPage({
   params,
@@ -56,7 +57,7 @@ export default async function MenteeHelpThreadPage({
       <div className="mt-4 flex flex-wrap items-start justify-between gap-3 border-b border-border pb-6">
         <div>
           <Link href="/my-questions" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-            My help notes
+            {copy.learnerNav}
           </Link>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">{title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{course.title}</p>

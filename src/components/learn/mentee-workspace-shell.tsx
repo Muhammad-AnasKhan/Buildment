@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { helpUiCopy } from "@/lib/help-ui-copy";
 import { SurfaceSwitcher } from "@/components/workspace/surface-switcher";
 import type { InstructorAccessView } from "@/lib/instructor-access";
 
@@ -94,7 +95,7 @@ export function MenteeWorkspaceShell({
       active: pathname === "/settings/profile",
     },
     {
-      label: "My help notes",
+      label: helpUiCopy.learnerNav,
       href: "/my-questions",
       icon: CircleHelp,
       active: pathname.startsWith("/my-questions"),

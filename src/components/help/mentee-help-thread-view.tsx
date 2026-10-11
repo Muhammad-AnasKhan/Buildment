@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/app-toast";
 import { HelpNoteTimeline } from "./help-note-timeline";
 import type { HelpMessageView } from "./help-types";
+import { helpUiCopy as copy } from "@/lib/help-ui-copy";
 
 export function MenteeHelpThreadView({
   threadId,
@@ -49,11 +50,9 @@ export function MenteeHelpThreadView({
       {status === "OPEN" ? (
         <section className="rounded-xl border border-border bg-card p-5">
           <label htmlFor="mentee-followup" className="text-sm font-semibold text-foreground">
-            Add to your note
+            {copy.composerFollowUp}
           </label>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Your mentor gets this on their Help notes list.
-          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{copy.mentorSeesInbox}</p>
           <Textarea
             id="mentee-followup"
             value={body}
@@ -82,15 +81,15 @@ export function MenteeHelpThreadView({
                   Sending…
                 </>
               ) : (
-                "Send update"
+                copy.sendFollowUp
               )}
             </Button>
           </div>
         </section>
       ) : (
         <p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-          Resolved — use <strong className="font-medium">Ask for help</strong> on the chapter to start a
-          new note.
+          Resolved — use <strong className="font-medium">{copy.resolvedAskAgain}</strong> on the chapter
+          to {copy.resolvedStartNew}.
         </p>
       )}
     </div>

@@ -6,6 +6,7 @@ import { prisma } from "@/server/db";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { cn } from "@/lib/utils";
 import { mentorReplyUnread } from "@/server/progress/attention";
+import { helpUiCopy as copy } from "@/lib/help-ui-copy";
 
 export default async function MenteeHelpListPage() {
   const user = await requireLearnSurface();
@@ -27,19 +28,19 @@ export default async function MenteeHelpListPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
       <header className="border-b border-border pb-6">
-        <p className="text-sm font-medium text-muted-foreground">Support</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">My help notes</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Notes you sent from lessons. Your mentor replies here.
-        </p>
+        <p className="text-sm font-medium text-muted-foreground">{copy.pageEyebrow}</p>
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">{copy.pageTitle}</h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{copy.pageSubtitle}</p>
       </header>
 
       {threads.length === 0 ? (
         <div className="mt-8 flex flex-col items-center rounded-2xl border border-dashed bg-muted/20 px-6 py-16 text-center">
           <Inbox className="size-8 text-muted-foreground" aria-hidden />
-          <p className="mt-4 text-lg font-semibold">No help notes yet</p>
+          <p className="mt-4 text-lg font-semibold">{copy.emptyTitle}</p>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            When you are stuck, use <strong className="font-medium text-foreground">Ask for help</strong> in the header of any chapter.
+            {copy.emptyHintBefore}
+            <strong className="font-medium text-foreground">{copy.askQuestion}</strong>
+            {copy.emptyHintAfter}
           </p>
           <Link href="/dashboard" className={cn(buttonVariants({ variant: "outline" }), "mt-6")}>
             Back to dashboard

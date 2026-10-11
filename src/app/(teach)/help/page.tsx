@@ -5,6 +5,7 @@ import { nowMs } from "@/server/time";
 import { requireTeachSurface } from "@/server/auth/guards";
 import { AutoSubmitSelect } from "@/components/teach/auto-submit-select";
 import { countOpenHelpRequests } from "@/server/help/count-open";
+import { helpUiCopy as copy } from "@/lib/help-ui-copy";
 
 const AGING_HOURS = 48;
 
@@ -67,15 +68,11 @@ export default async function MentorHelpInboxPage({
     <div className="mx-auto max-w-4xl">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Help notes
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Notes from your learners. Reply here, and they will see it on the lesson.
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{copy.mentorTitle}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{copy.mentorSubtitle}</p>
           {openHelpCount > 0 && (statusFilter ?? "open") !== "resolved" && (
             <p className="mt-2 text-sm font-medium text-foreground">
-              {openHelpCount} open {openHelpCount === 1 ? "request" : "requests"} need a response
+              {copy.mentorOpenCount(openHelpCount)}
             </p>
           )}
         </div>
@@ -111,11 +108,9 @@ export default async function MentorHelpInboxPage({
         <div className="mt-12 flex flex-col items-center gap-2 text-center">
           <Inbox className="size-8 text-muted-foreground" aria-hidden />
           <p className="text-sm font-medium text-foreground">
-            {statusFilter === "resolved" ? "No resolved requests" : "No open requests"}
+            {statusFilter === "resolved" ? copy.mentorEmptyResolved : copy.mentorEmptyOpen}
           </p>
-          <p className="max-w-md text-sm text-muted-foreground">
-            When a mentee sends a help note from a chapter, it appears here for you to review.
-          </p>
+          <p className="max-w-md text-sm text-muted-foreground">{copy.mentorEmpty}</p>
         </div>
       ) : (
         <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">

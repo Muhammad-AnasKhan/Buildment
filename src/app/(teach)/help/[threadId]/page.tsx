@@ -5,6 +5,7 @@ import { requireHelpThreadAccess } from "@/server/auth/guards";
 import { mapHelpMessages } from "@/lib/help-serialize";
 import { HelpThreadDetail } from "@/components/help/help-thread-detail";
 import { MentorMeetAside } from "@/components/help/mentor-meet-aside";
+import { helpUiCopy as copy } from "@/lib/help-ui-copy";
 
 export default async function MentorHelpThreadPage({
   params,
@@ -35,7 +36,7 @@ export default async function MentorHelpThreadPage({
         href="/help"
         className="text-sm text-neutral-500 transition-colors hover:text-neutral-900"
       >
-        ← Mentee requests
+        ← {copy.mentorNav}
       </Link>
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-3 border-b border-neutral-200 pb-6">

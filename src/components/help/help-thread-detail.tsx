@@ -15,6 +15,7 @@ import { helpOutlineButton, helpPanel } from "./help-styles";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/app-toast";
 import type { HelpMessageView } from "./help-types";
+import { helpUiCopy as copy } from "@/lib/help-ui-copy";
 
 type BaseProps = {
   threadId: string | null;
@@ -119,7 +120,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
             props.messages.length > 0 ? "mt-4" : undefined
           )}
         >
-          This request was marked resolved. Send a new note below if you&apos;re stuck again.
+          {copy.resolvedFollowUpBelow}
         </p>
       )}
     </>
@@ -129,19 +130,15 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
     props.variant === "mentee" ? (
       <HelpNoteComposer
         id={props.layout === "modal" ? "help-modal-note" : "help-page-note"}
-        label={hasThread && isOpen ? "Add to your note" : "Your help note"}
-        hint={
-          hasThread && isOpen
-            ? "Your mentor sees this on Mentee requests."
-            : undefined
-        }
-        placeholder="What do you need help with on this lesson?"
+        label={hasThread && isOpen ? copy.composerFollowUp : copy.composerNew}
+        hint={hasThread && isOpen ? copy.mentorSeesInbox : undefined}
+        placeholder={copy.composerPlaceholder}
         body={body}
         onBodyChange={setBody}
         onSubmit={sendMenteeNote}
         pending={pending}
         error={error}
-        submitLabel={hasThread && isOpen ? "Add to note" : "Send note to mentor"}
+        submitLabel={hasThread && isOpen ? copy.sendFollowUp : copy.sendToMentor}
         secondaryAction={
           props.footerLink ? (
             props.layout === "modal" ? (
@@ -164,7 +161,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
         <HelpNoteComposer
           id="mentor-reply"
           label="Write a reply"
-          hint="Your mentee sees this when they reopen the lesson or check My help notes."
+          hint={copy.mentorComposerHint}
           placeholder="Point them to the step, concept, or file to check…"
           body={body}
           onBodyChange={setBody}
@@ -190,7 +187,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
         />
       ) : (
         <p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-          Resolved — the mentee can open a new note from the chapter if they need more help.
+          {copy.resolvedMentorSide}
         </p>
       )
     ) : null;
@@ -225,8 +222,8 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
           <section className={helpPanel}>{menteeComposer}</section>
         ) : (
           <p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-            Resolved — use <strong className="font-medium">Ask for help</strong> on the chapter to
-            start a new note.
+            Resolved — use <strong className="font-medium">{copy.resolvedAskAgain}</strong> on the
+            chapter to {copy.resolvedStartNew}.
           </p>
         )}
       </div>
@@ -236,7 +233,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
   return (
     <div className="min-w-0 space-y-6">
       <section>
-        <h2 className="text-sm font-semibold text-foreground">Help note thread</h2>
+        <h2 className="text-sm font-semibold text-foreground">{copy.mentorThreadTitle}</h2>
         <div className={cn(helpPanel, "mt-4")}>{timelineBlock}</div>
       </section>
       <section className={helpPanel}>{mentorComposer}</section>
