@@ -1,9 +1,5 @@
 "use server";
 
-import { z } from "zod";
-import { prisma } from "@/server/db";
-import { requireMentorOfCourse } from "@/server/auth/guards";
-import { repairEnrollmentProgress } from "@/server/progress/compute";
 import { ApiError } from "@/lib/api-client";
 import { serverApiFetch } from "@/lib/api-server";
 
@@ -34,26 +30,7 @@ export async function saveChecklistItem(input: {
   );
 }
 
-const enrollmentInput = z.object({ enrollmentId: z.string().min(1) });
-
-/** Mentor-only: rebuild chapter + enrollment rollups from Response rows. Moves to the API with the instructor domain. */
-export async function repairEnrollmentProgressAction(input: {
-  enrollmentId: string;
-}): Promise<ProgressActionResult> {
-  const parsed = enrollmentInput.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Invalid enrollment." };
-
-  const enrollment = await prisma.enrollment.findUnique({
-    where: { id: parsed.data.enrollmentId },
-    select: { id: true, courseId: true },
-  });
-  if (!enrollment) return { ok: false, error: "Enrollment not found." };
-
-  await requireMentorOfCourse(enrollment.courseId);
-
-  await prisma.$transaction(async (tx) => {
-    await repairEnrollmentProgress(tx, enrollment.id, enrollment.courseId);
-  });
-
-  return { ok: true };
+/** Mentor-only: rebuild chapter + enrollment rollups from Response rows. */
+export async function repairEnrollmentProgressAction(input: { enrollmentId: string }): Promise<ProgressActionResult> {
+  return chapterCall(`/api/v1/teach/enrollments/${encodeURIComponent(input.enrollmentId)}/repair-progress`, { method: "POST" });
 }

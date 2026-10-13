@@ -4,6 +4,9 @@ import * as workspace from "../services/teach/workspace.js";
 import * as courses from "../services/teach/courses.js";
 import * as modules from "../services/teach/modules.js";
 import * as chapters from "../services/teach/chapters.js";
+import * as mentees from "../services/teach/mentees.js";
+import * as invites from "../services/teach/invites.js";
+import * as enrollments from "../services/teach/enrollments.js";
 import type {
   ChapterSettingsBody,
   CourseSettingsBody,
@@ -110,5 +113,46 @@ export async function saveChapterDraft(req: Request, res: Response) {
 // POST /api/v1/teach/chapters/:chapterId/publish
 export async function publishChapter(req: Request, res: Response) {
   await chapters.publishChapter(req.user!, param(req, "chapterId"));
+  noContent(res);
+}
+
+// GET /api/v1/teach/courses/:courseSlug/mentees
+export async function listMentees(req: Request, res: Response) {
+  ok(res, await mentees.loadCourseMentees(req.user!, param(req, "courseSlug")));
+}
+
+// GET /api/v1/teach/courses/:courseSlug/mentees/:enrollmentId
+export async function getMenteeEvaluation(req: Request, res: Response) {
+  ok(res, await mentees.loadMenteeEvaluationForCourse(req.user!, param(req, "courseSlug"), param(req, "enrollmentId")));
+}
+
+// POST /api/v1/teach/courses/:courseId/invites/assign
+export async function assignByEmails(req: Request, res: Response) {
+  const { emails } = req.body as { emails: string };
+  ok(res, await invites.assignByEmails(req.user!, param(req, "courseId"), emails));
+}
+
+// POST /api/v1/teach/courses/:courseId/invites/link
+export async function createInviteLink(req: Request, res: Response) {
+  const result = await invites.createInviteLink(req.user!, param(req, "courseId"));
+  if (result.reused) ok(res, result);
+  else created(res, result);
+}
+
+// DELETE /api/v1/teach/courses/:courseId/invites/:inviteId
+export async function revokeInvite(req: Request, res: Response) {
+  await invites.revokeInvite(req.user!, param(req, "courseId"), param(req, "inviteId"));
+  noContent(res);
+}
+
+// POST /api/v1/teach/enrollments/:enrollmentId/nudge
+export async function nudgeMentee(req: Request, res: Response) {
+  await enrollments.nudgeMentee(req.user!, param(req, "enrollmentId"));
+  noContent(res);
+}
+
+// POST /api/v1/teach/enrollments/:enrollmentId/repair-progress
+export async function repairProgress(req: Request, res: Response) {
+  await enrollments.repairProgress(req.user!, param(req, "enrollmentId"));
   noContent(res);
 }

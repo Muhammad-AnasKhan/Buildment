@@ -1,8 +1,7 @@
-import { notFound } from "next/navigation";
 import { Users } from "lucide-react";
-import { prisma } from "@/server/db";
-import { requireMentorOfCourse } from "@/server/auth/guards";
-import { loadCourseMentees } from "@/server/mentor-dashboard/load-mentees";
+import type { CourseMenteesView } from "@buildment/shared/api/teach";
+import { requireTeachSurface } from "@/server/auth/guards";
+import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { MenteesHeader } from "@/components/teach/mentees/mentees-header";
 import { CohortSummary } from "@/components/teach/mentees/cohort-summary";
 import { InvitePanel, type AssignmentQuery } from "@/components/teach/mentees/invite-panel";
@@ -12,12 +11,8 @@ import { MenteeRoster } from "@/components/teach/mentees/mentee-roster";
 export default async function CourseMenteesPage({ params, searchParams }: { params: Promise<{ courseSlug: string }>; searchParams: Promise<AssignmentQuery> }) {
   const { courseSlug } = await params;
   const query = await searchParams;
-  const course = await prisma.course.findUnique({ where: { slug: courseSlug }, select: { id: true } });
-  if (!course) notFound();
-  await requireMentorOfCourse(course.id);
-
-  const view = await loadCourseMentees({ courseId: course.id, courseSlug });
-  if (!view) notFound();
+  await requireTeachSurface();
+  const view = await serverApiFetchOrNotFound<CourseMenteesView>(`/api/v1/teach/courses/${encodeURIComponent(courseSlug)}/mentees`);
 
   return <div className="mx-auto max-w-7xl space-y-7">
     <MenteesHeader view={view} />

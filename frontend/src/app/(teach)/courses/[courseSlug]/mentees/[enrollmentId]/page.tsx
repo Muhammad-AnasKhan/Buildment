@@ -1,7 +1,6 @@
-import { notFound } from "next/navigation";
-import { prisma } from "@/server/db";
-import { requireMentorOfCourse } from "@/server/auth/guards";
-import { loadMenteeEvaluation } from "@/server/evaluation/load-mentee-evaluation";
+import type { MenteeEvaluation } from "@buildment/shared/api/teach";
+import { requireTeachSurface } from "@/server/auth/guards";
+import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { EvaluationHeader } from "@/components/teach/evaluation/evaluation-header";
 import { EvaluationSummary } from "@/components/teach/evaluation/evaluation-summary";
 import { NeedsAttention } from "@/components/teach/evaluation/needs-attention";
@@ -14,12 +13,10 @@ import { LearnerReflections } from "@/components/teach/evaluation/learner-reflec
 
 export default async function MenteeEvaluationPage({ params }: { params: Promise<{ courseSlug: string; enrollmentId: string }> }) {
   const { courseSlug, enrollmentId } = await params;
-  const course = await prisma.course.findUnique({ where: { slug: courseSlug }, select: { id: true, slug: true, title: true } });
-  if (!course) notFound();
-  await requireMentorOfCourse(course.id);
-
-  const evaluation = await loadMenteeEvaluation({ course, enrollmentId });
-  if (!evaluation) notFound();
+  await requireTeachSurface();
+  const evaluation = await serverApiFetchOrNotFound<MenteeEvaluation>(
+    `/api/v1/teach/courses/${encodeURIComponent(courseSlug)}/mentees/${encodeURIComponent(enrollmentId)}`
+  );
 
   return <div className="min-h-screen">
     <EvaluationHeader evaluation={evaluation} />

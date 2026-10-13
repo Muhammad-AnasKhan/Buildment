@@ -1,17 +1,24 @@
-import "server-only";
+import type { CourseMenteesView, MenteeAttentionKind, MenteeEvaluation } from "@buildment/shared/api/teach";
+import { helpUiCopy } from "@buildment/shared/lib/help-ui-copy";
+import { prisma } from "../../db/prisma.js";
+import { NotFoundError } from "../../utils/errors.js";
+import type { SessionUser } from "../../types/auth.js";
+import { inviteAcceptUrl } from "../email/send.js";
+import { requireCourseBySlug } from "./access.js";
+import { loadMenteeEvaluation } from "./evaluation/load-mentee-evaluation.js";
+import { activityState, average, formatLastActive, progressState } from "./helpers.js";
 
-import { prisma } from "@/server/db";
-import { activityState, average, formatLastActive, progressState } from "./helpers";
-import type { CourseMenteesView, MenteeAttentionKind } from "./types";
-import { helpUiCopy } from "@/lib/help-ui-copy";
-import { inviteAcceptUrl } from "@/server/email/send";
+// Cohort roster for one course: every enrolled account with its progress,
+// attention flags and the course's pending invites.
 
 const RESPONSE_EVIDENCE_LIMIT = 500;
 
-export async function loadCourseMentees(args: { courseId: string; courseSlug: string }): Promise<CourseMenteesView | null> {
+export async function loadCourseMentees(user: SessionUser, courseSlug: string): Promise<CourseMenteesView> {
+  const owned = await requireCourseBySlug(user, courseSlug);
   const now = Date.now();
-  const course = await prisma.course.findUnique({
-    where: { id: args.courseId },
+
+  const course = await prisma.course.findUniqueOrThrow({
+    where: { id: owned.id },
     select: {
       id: true,
       slug: true,
@@ -51,25 +58,24 @@ export async function loadCourseMentees(args: { courseId: string; courseSlug: st
       helpThreads: { where: { status: "OPEN" }, select: { menteeId: true } },
     },
   });
-  if (!course || course.slug !== args.courseSlug) return null;
 
+  // Latest response per (enrollment, block) decides whether a revision is still owed.
   const enrollmentIds = course.enrollments.map((item) => item.id);
   const recentResponses = enrollmentIds.length
     ? await prisma.response.findMany({
         where: { enrollmentId: { in: enrollmentIds }, status: { not: "DRAFT" } },
         orderBy: { submittedAt: "desc" },
         take: RESPONSE_EVIDENCE_LIMIT,
-        select: { id: true, enrollmentId: true, blockId: true, status: true },
+        select: { enrollmentId: true, blockId: true, status: true },
       })
     : [];
-
-  const latestResponseKeys = new Set<string>();
-  const revisionEnrollmentIds = new Set<string>();
+  const seen = new Set<string>();
+  const revisionDue = new Set<string>();
   for (const response of recentResponses) {
     const key = `${response.enrollmentId}:${response.blockId}`;
-    if (latestResponseKeys.has(key)) continue;
-    latestResponseKeys.add(key);
-    if (response.status === "NEEDS_REVISION") revisionEnrollmentIds.add(response.enrollmentId);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    if (response.status === "NEEDS_REVISION") revisionDue.add(response.enrollmentId);
   }
 
   const openHelpByUser = new Map<string, number>();
@@ -78,6 +84,7 @@ export async function loadCourseMentees(args: { courseId: string; courseSlug: st
   }
 
   const mentees = course.enrollments.flatMap((enrollment) => {
+    // Pathment rows without a Buildment account yet have nothing to evaluate.
     if (!enrollment.userId || !enrollment.user) return [];
     const activity = activityState(enrollment.lastActiveAt, now);
     const openHelpRequests = openHelpByUser.get(enrollment.userId) ?? 0;
@@ -87,46 +94,49 @@ export async function loadCourseMentees(args: { courseId: string; courseSlug: st
       const expected = (item.chapter.estimatedMinutes ?? 0) * 60;
       return item.status === "IN_PROGRESS" && expected > 0 && item.timeSpentSeconds > Math.max(7200, expected * 3);
     });
+
     const attention: Array<{ kind: MenteeAttentionKind; label: string }> = [];
     if (enrollment.pendingReviews > 0) attention.push({ kind: "review", label: `${enrollment.pendingReviews} waiting` });
-    if (openHelpRequests > 0)
-      attention.push({ kind: "help", label: helpUiCopy.menteeAttentionLabel(openHelpRequests) });
-    if (revisionEnrollmentIds.has(enrollment.id)) attention.push({ kind: "revision", label: "Revision due" });
+    if (openHelpRequests > 0) attention.push({ kind: "help", label: helpUiCopy.menteeAttentionLabel(openHelpRequests) });
+    if (revisionDue.has(enrollment.id)) attention.push({ kind: "revision", label: "Revision due" });
     if (activity === "inactive" && enrollment.status === "IN_PROGRESS") attention.push({ kind: "inactive", label: "Inactive 7+ days" });
     if (stalled) attention.push({ kind: "stalled", label: "Long-running chapter" });
 
-    return [{
-      id: enrollment.id,
-      userId: enrollment.userId,
-      name: enrollment.user.name ?? enrollment.user.email ?? "Unnamed learner",
-      email: enrollment.user.email,
-      image: enrollment.user.image,
-      status: enrollment.status,
-      progressState: progressState(enrollment.status, enrollment.percentComplete),
-      percentComplete: enrollment.percentComplete,
-      chaptersCompleted: enrollment.chaptersCompleted,
-      chapterCount: course._count.chapters,
-      score: enrollment.totalScore,
-      maxScore: enrollment.maxScore,
-      pendingReviews: enrollment.pendingReviews,
-      openHelpRequests,
-      currentChapter: current?.chapter.title ?? null,
-      studySeconds,
-      lastActiveAt: enrollment.lastActiveAt?.toISOString() ?? null,
-      lastActiveLabel: formatLastActive(enrollment.lastActiveAt, now),
-      activityState: activity,
-      attention,
-      evaluationHref: `/courses/${course.slug}/mentees/${enrollment.id}`,
-    }];
+    return [
+      {
+        id: enrollment.id,
+        userId: enrollment.userId,
+        name: enrollment.user.name ?? enrollment.user.email ?? "Unnamed learner",
+        email: enrollment.user.email,
+        image: enrollment.user.image,
+        status: enrollment.status,
+        progressState: progressState(enrollment.status, enrollment.percentComplete),
+        percentComplete: enrollment.percentComplete,
+        chaptersCompleted: enrollment.chaptersCompleted,
+        chapterCount: course._count.chapters,
+        score: enrollment.totalScore,
+        maxScore: enrollment.maxScore,
+        pendingReviews: enrollment.pendingReviews,
+        openHelpRequests,
+        currentChapter: current?.chapter.title ?? null,
+        studySeconds,
+        lastActiveAt: enrollment.lastActiveAt?.toISOString() ?? null,
+        lastActiveLabel: formatLastActive(enrollment.lastActiveAt, now),
+        activityState: activity,
+        attention,
+        evaluationHref: `/courses/${course.slug}/mentees/${enrollment.id}`,
+      },
+    ];
   });
+
+  const linkInvite = course.invites.find((invite) => invite.email === null) ?? null;
 
   return {
     course: { id: course.id, slug: course.slug, title: course.title, status: course.status, chapterCount: course._count.chapters },
-    linkInvite: (() => {
-      const invite = course.invites.find((item) => item.email === null);
-      return invite ? { id: invite.id, token: invite.token, url: inviteAcceptUrl(invite.token) } : null;
-    })(),
-    pendingEmailInvites: course.invites.flatMap((invite) => invite.email ? [{ id: invite.id, email: invite.email, createdAt: invite.createdAt.toISOString() }] : []),
+    linkInvite: linkInvite ? { id: linkInvite.id, token: linkInvite.token, url: inviteAcceptUrl(linkInvite.token) } : null,
+    pendingEmailInvites: course.invites.flatMap((invite) =>
+      invite.email ? [{ id: invite.id, email: invite.email, createdAt: invite.createdAt.toISOString() }] : []
+    ),
     mentees,
     attentionMentees: mentees.filter((mentee) => mentee.attention.length > 0),
     summary: {
@@ -139,4 +149,12 @@ export async function loadCourseMentees(args: { courseId: string; courseSlug: st
       inactive: mentees.filter((mentee) => mentee.activityState === "inactive" && mentee.status === "IN_PROGRESS").length,
     },
   };
+}
+
+/** One learner's full evaluation page; 404 unless the enrollment belongs to this course. */
+export async function loadMenteeEvaluationForCourse(user: SessionUser, courseSlug: string, enrollmentId: string): Promise<MenteeEvaluation> {
+  const course = await requireCourseBySlug(user, courseSlug);
+  const evaluation = await loadMenteeEvaluation({ course: { id: course.id, slug: course.slug, title: course.title }, enrollmentId });
+  if (!evaluation) throw new NotFoundError("Enrollment not found");
+  return evaluation;
 }

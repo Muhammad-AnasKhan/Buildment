@@ -1,22 +1,20 @@
-import "server-only";
-
-import { prisma } from "@/server/db";
-import { OpenQuestionConfigSchema, openQuestionUrlPresentation } from "@/blocks/open-question/schema";
-import { submissionPreview } from "@/server/progress/submission-preview";
-import { isCompletableBlock, flattenChapterIds, lockedChapterIds } from "@/server/progress/rules";
-import { loadStudyWeek } from "@/server/progress/study-summary";
-import { classifyProjectEvidence, evidenceUrlParts } from "./evidence";
-import { isEnrollmentScopedToCourse, latestByBlock } from "./helpers";
-import { parseLearningLog } from "@/lib/learning-log";
-import type { EvaluationReflection } from "@/components/teach/evaluation/types";
+import { prisma } from "../../../db/prisma.js";
+import { OpenQuestionConfigSchema, openQuestionUrlPresentation } from "@buildment/shared/blocks/open-question/schema";
+import { submissionPreview } from "../../progress/submission-preview.js";
+import { isCompletableBlock, flattenChapterIds, lockedChapterIds } from "../../progress/rules.js";
+import { loadStudyWeek } from "../../progress/study-summary.js";
+import { classifyProjectEvidence, evidenceUrlParts } from "./evidence.js";
+import { isEnrollmentScopedToCourse, latestByBlock } from "./helpers.js";
+import { parseLearningLog } from "@buildment/shared/lib/learning-log";
+import type { EvaluationReflection } from "@buildment/shared/api/teach";
 import type {
   EvaluationAttention,
   EvaluationModule,
   FeedbackEvent,
   MenteeEvaluation,
   ProjectEvidence,
-} from "@/components/teach/evaluation/types";
-import { helpUiCopy as copy } from "@/lib/help-ui-copy";
+} from "@buildment/shared/api/teach";
+import { helpUiCopy as copy } from "@buildment/shared/lib/help-ui-copy";
 
 const RESPONSE_LIMIT = 240;
 const INACTIVE_DAYS = 7;

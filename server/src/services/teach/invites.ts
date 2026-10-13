@@ -1,0 +1,142 @@
+import { randomBytes } from "node:crypto";
+import { z } from "zod";
+import type { AssignByEmailsResult, InviteLinkResult } from "@buildment/shared/api/teach";
+import { TEACH_ERROR_CODES } from "@buildment/shared/api/teach";
+import { prisma } from "../../db/prisma.js";
+import { UnprocessableError } from "../../utils/errors.js";
+import type { SessionUser } from "../../types/auth.js";
+import { notifyMenteeCourseEnrollment, notifyMentorNewEnrollment } from "../email/event-notifications.js";
+import { queueEmail } from "../email/queue.js";
+import { inviteAcceptUrl, sendEmail } from "../email/send.js";
+import { requireCourseById, type OwnedCourse } from "./access.js";
+
+// Mentor side of assignment and invites (docs/phases/m7-assignment-and-polish.mdx).
+// Acceptance lives in services/invites — brand-new accounts accept before they
+// have any role history, so it only needs a signed-in user.
+
+const INVITE_TTL_DAYS = 14;
+
+const newInviteToken = () => randomBytes(24).toString("base64url");
+const inviteExpiry = () => new Date(Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000);
+
+function normalizeEmail(raw: string): string | null {
+  const trimmed = raw.trim().toLowerCase();
+  return z.string().email().safeParse(trimmed).success ? trimmed : null;
+}
+
+function requirePublished(course: OwnedCourse, action: string) {
+  if (course.status !== "PUBLISHED") {
+    throw new UnprocessableError(`Publish the course before ${action}.`, TEACH_ERROR_CODES.COURSE_NOT_PUBLISHED, [
+      `Publish the course before ${action}.`,
+    ]);
+  }
+}
+
+async function sendInviteEmail(input: { to: string; token: string; courseTitle: string; mentorName: string | null }): Promise<boolean> {
+  const url = inviteAcceptUrl(input.token);
+  const mentor = input.mentorName ?? "Your mentor";
+  const result = await sendEmail({
+    to: input.to,
+    subject: `${mentor} invited you to "${input.courseTitle}" on buildment`,
+    text: `${mentor} invited you to the course "${input.courseTitle}" on buildment.\n\nOpen this link to create your profile and start learning:\n${url}\n\nThe invite expires in ${INVITE_TTL_DAYS} days.`,
+    html: `
+      <div style="font-family:ui-sans-serif,system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 16px;color:#0a0a0a">
+        <p style="font-size:15px;line-height:1.6">
+          <strong>${mentor}</strong> invited you to the course
+          <strong>${input.courseTitle}</strong> on buildment.
+        </p>
+        <p style="margin:24px 0">
+          <a href="${url}" style="display:inline-block;background:#4f46e5;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:10px 20px;border-radius:9999px">
+            Accept invite &amp; start learning
+          </a>
+        </p>
+        <p style="font-size:13px;color:#737373;line-height:1.6">
+          Or paste this link into your browser:<br/>
+          <a href="${url}" style="color:#4f46e5">${url}</a>
+        </p>
+        <p style="font-size:12px;color:#a3a3a3;margin-top:24px">
+          This invite expires in ${INVITE_TTL_DAYS} days. If you don't have a buildment
+          profile yet, you'll create one when you open the link.
+        </p>
+      </div>
+    `,
+  });
+  return result.sent;
+}
+
+/**
+ * Assigns a course by email. Addresses with an account get an Enrollment right
+ * away; the rest get an email-bound invite whose acceptance creates one.
+ */
+export async function assignByEmails(user: SessionUser, courseId: string, emailsRaw: string): Promise<AssignByEmailsResult> {
+  const course = await requireCourseById(user, courseId);
+
+  const emails = Array.from(
+    new Set(emailsRaw.split(/[\n,;\s]+/).map(normalizeEmail).filter((email): email is string => email !== null))
+  );
+  if (emails.length === 0) {
+    throw new UnprocessableError("Enter at least one valid email address.", "VALIDATION_ERROR", ["Enter at least one valid email address."]);
+  }
+  requirePublished(course, "assigning it to mentees");
+
+  const enrolledEmails: string[] = [];
+  const invitedEmails: string[] = [];
+  let emailFailed = false;
+
+  for (const email of emails) {
+    const existingUser = await prisma.user.findUnique({ where: { email }, select: { id: true } });
+
+    if (existingUser) {
+      const enrollment = await prisma.enrollment.upsert({
+        where: { courseId_userId: { courseId: course.id, userId: existingUser.id } },
+        update: { status: "ASSIGNED" },
+        create: { courseId: course.id, userId: existingUser.id, status: "ASSIGNED", assignedById: user.id, source: "DIRECT", lifecycle: "ACTIVE" },
+        select: { id: true },
+      });
+      queueEmail(() => notifyMenteeCourseEnrollment(enrollment.id));
+      queueEmail(() => notifyMentorNewEnrollment(enrollment.id));
+      enrolledEmails.push(email);
+      continue;
+    }
+
+    // Re-sending reuses the still-valid invite instead of stacking duplicates.
+    let invite = await prisma.invite.findFirst({
+      where: { courseId: course.id, email, acceptedAt: null, revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+    });
+    invite ??= await prisma.invite.create({
+      data: { token: newInviteToken(), courseId: course.id, email, invitedById: user.id, expiresAt: inviteExpiry() },
+    });
+
+    const sent = await sendInviteEmail({ to: email, token: invite.token, courseTitle: course.title, mentorName: user.name });
+    if (!sent) emailFailed = true;
+    invitedEmails.push(email);
+  }
+
+  return { enrolledEmails, invitedEmails, emailFailed };
+}
+
+/** Course-scoped open invite link — any signed-in account can self-enrol. Reuses a live one. */
+export async function createInviteLink(user: SessionUser, courseId: string): Promise<InviteLinkResult> {
+  const course = await requireCourseById(user, courseId);
+  requirePublished(course, "sharing an invite link");
+
+  const existing = await prisma.invite.findFirst({
+    where: { courseId: course.id, email: null, acceptedAt: null, revokedAt: null, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+    orderBy: { createdAt: "desc" },
+  });
+  if (existing) return { token: existing.token, url: inviteAcceptUrl(existing.token), reused: true };
+
+  const invite = await prisma.invite.create({
+    data: { token: newInviteToken(), courseId: course.id, invitedById: user.id, expiresAt: inviteExpiry() },
+  });
+  return { token: invite.token, url: inviteAcceptUrl(invite.token), reused: false };
+}
+
+/** Revoking an accepted invite is a no-op; the enrollment it created stays. */
+export async function revokeInvite(user: SessionUser, courseId: string, inviteId: string): Promise<void> {
+  await requireCourseById(user, courseId);
+  await prisma.invite.updateMany({
+    where: { id: inviteId, courseId, acceptedAt: null },
+    data: { revokedAt: new Date() },
+  });
+}

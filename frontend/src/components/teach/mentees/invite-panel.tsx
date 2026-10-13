@@ -4,7 +4,6 @@ import { MailPlus, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { assignByEmails, revokeInvite } from "@/server/actions/invites";
-import { inviteAcceptUrl } from "@/server/email/send";
 import { InviteLinkManager } from "@/components/teach/invite-link-manager";
 import type { CourseMenteesView } from "@/server/mentor-dashboard/types";
 
@@ -26,7 +25,7 @@ export function InvitePanel({ view, query }: { view: CourseMenteesView; query: A
           if (result.emailFailed) params.set("emailFailed", "1");
           redirect(`/courses/${course.slug}/mentees?${params.toString()}`);
         }}><Textarea name="emails" required rows={3} aria-label="Learner email addresses" placeholder={"One email per line\nada@example.com\nben@example.com"} /><Button type="submit"><MailPlus /> Assign learners</Button></form></div>
-        <div className="lg:border-l lg:pl-5"><h3 className="text-sm font-semibold">Invite link</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Anyone with the link can enroll while it remains active.</p><div className="mt-3"><InviteLinkManager courseId={course.id} existing={view.linkInvite ? { id: view.linkInvite.id, url: inviteAcceptUrl(view.linkInvite.token) } : null} /></div></div>
+        <div className="lg:border-l lg:pl-5"><h3 className="text-sm font-semibold">Invite link</h3><p className="mt-1 text-xs leading-5 text-muted-foreground">Anyone with the link can enroll while it remains active.</p><div className="mt-3"><InviteLinkManager courseId={course.id} existing={view.linkInvite ? { id: view.linkInvite.id, url: view.linkInvite.url } : null} /></div></div>
       </div>
     </details>}
     {view.pendingEmailInvites.length ? <details className="mt-3 rounded-xl border bg-card"><summary className="cursor-pointer px-4 py-3 text-sm font-medium">Pending email invitations · {view.pendingEmailInvites.length}</summary><ul className="divide-y border-t">{view.pendingEmailInvites.map((invite) => <li key={invite.id} className="flex items-center justify-between gap-3 px-4 py-3"><div className="min-w-0"><p className="truncate text-sm">{invite.email}</p><p className="text-xs text-muted-foreground">Invited {new Date(invite.createdAt).toLocaleDateString()}</p></div><form action={async () => { "use server"; await revokeInvite({ inviteId: invite.id, courseId: course.id }); redirect(`/courses/${course.slug}/mentees`); }}><Button type="submit" variant="ghost" size="sm" className="text-destructive">Revoke</Button></form></li>)}</ul></details> : null}

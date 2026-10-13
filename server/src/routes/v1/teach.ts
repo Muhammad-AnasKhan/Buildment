@@ -5,6 +5,7 @@ import { requireInstructor } from "../../middlewares/require-instructor.js";
 import { requireVerified } from "../../middlewares/require-verified.js";
 import { validate, validateBody, validateParams } from "../../middlewares/validate.js";
 import {
+  assignByEmailsBody,
   chapterDraftBody,
   chapterIdParams,
   chapterSettingsBody,
@@ -14,6 +15,9 @@ import {
   createChapterBody,
   createCourseBody,
   createModuleBody,
+  enrollmentIdParams,
+  inviteParams,
+  menteeParams,
   moduleIdParams,
   moveBody,
   renameModuleBody,
@@ -46,5 +50,13 @@ router.get("/chapters/:chapterId/editor", validateParams(chapterIdParams), teach
 router.patch("/chapters/:chapterId/settings", validate({ params: chapterIdParams, body: chapterSettingsBody }), teach.updateChapterSettings);
 router.put("/chapters/:chapterId/draft", validate({ params: chapterIdParams, body: chapterDraftBody }), teach.saveChapterDraft);
 router.post("/chapters/:chapterId/publish", validateParams(chapterIdParams), teach.publishChapter);
+
+router.get("/courses/:courseSlug/mentees", validateParams(courseSlugParams), teach.listMentees);
+router.get("/courses/:courseSlug/mentees/:enrollmentId", validateParams(menteeParams), teach.getMenteeEvaluation);
+router.post("/courses/:courseId/invites/assign", validate({ params: courseIdParams, body: assignByEmailsBody }), teach.assignByEmails);
+router.post("/courses/:courseId/invites/link", validateParams(courseIdParams), teach.createInviteLink);
+router.delete("/courses/:courseId/invites/:inviteId", validateParams(inviteParams), teach.revokeInvite);
+router.post("/enrollments/:enrollmentId/nudge", validateParams(enrollmentIdParams), teach.nudgeMentee);
+router.post("/enrollments/:enrollmentId/repair-progress", validateParams(enrollmentIdParams), teach.repairProgress);
 
 export default router;
