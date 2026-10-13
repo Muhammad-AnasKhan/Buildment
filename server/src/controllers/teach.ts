@@ -9,11 +9,13 @@ import * as invites from "../services/teach/invites.js";
 import * as enrollments from "../services/teach/enrollments.js";
 import * as reports from "../services/teach/reports.js";
 import * as reviews from "../services/teach/reviews.js";
+import * as helpInbox from "../services/teach/help-inbox.js";
 import type {
   ChapterSettingsBody,
   CourseSettingsBody,
   CreateChapterBody,
   CreateCourseBody,
+  HelpInboxQuery,
   MoveDirection,
   SubmitReviewBody,
 } from "../validations/teach.js";
@@ -197,4 +199,9 @@ export async function submitReview(req: Request, res: Response) {
 // POST /api/v1/teach/review/:responseId/ai-draft
 export async function generateAiReviewDraft(req: Request, res: Response) {
   ok(res, await reviews.generateAiReviewDraft(req.user!, param(req, "responseId")));
+}
+
+// GET /api/v1/teach/help/threads?courseId=&status=
+export async function getHelpInbox(req: Request, res: Response) {
+  ok(res, await helpInbox.loadMentorHelpInbox(req.user!, req.query as HelpInboxQuery));
 }

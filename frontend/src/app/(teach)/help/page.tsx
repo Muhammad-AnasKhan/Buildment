@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { ChevronRight, Inbox } from "lucide-react";
-import { prisma } from "@/server/db";
-import { nowMs } from "@/server/time";
+import type { MentorHelpInboxView } from "@buildment/shared/api/teach";
 import { requireTeachSurface } from "@/server/auth/guards";
+import { serverApiFetch } from "@/lib/api-server";
 import { AutoSubmitSelect } from "@/components/teach/auto-submit-select";
-import { countOpenHelpRequests } from "@/server/help/count-open";
 import { helpUiCopy as copy } from "@/lib/help-ui-copy";
 
 const AGING_HOURS = 48;
@@ -20,49 +19,15 @@ export default async function MentorHelpInboxPage({
 }: {
   searchParams: Promise<{ courseId?: string; status?: string }>;
 }) {
-  const user = await requireTeachSurface();
-  const { courseId: courseFilter, status: statusFilter } = await searchParams;
-  const openHelpCount = await countOpenHelpRequests(user);
+  await requireTeachSurface();
+  const { courseId: courseFilter, status: rawStatus } = await searchParams;
+  const statusFilter = rawStatus === "resolved" || rawStatus === "all" ? rawStatus : undefined;
 
-  const courses = await prisma.course.findMany({
-    where: user.role === "ADMIN" ? undefined : { mentorId: user.id },
-    orderBy: { title: "asc" },
-    select: { id: true, title: true },
-  });
-  const courseIds = courses.map((course) => course.id);
-
-  const threads =
-    courseIds.length === 0
-      ? []
-      : await prisma.helpThread.findMany({
-          where: {
-            courseId:
-              courseFilter && courseIds.includes(courseFilter)
-                ? courseFilter
-                : { in: courseIds },
-            ...(statusFilter === "resolved"
-              ? { status: "RESOLVED" }
-              : statusFilter === "all"
-                ? {}
-                : { status: "OPEN" }),
-          },
-          orderBy:
-            statusFilter === "resolved"
-              ? { updatedAt: "desc" }
-              : { updatedAt: "asc" },
-          include: {
-            mentee: { select: { id: true, name: true, email: true } },
-            course: { select: { id: true, slug: true, title: true } },
-            chapter: { select: { slug: true, title: true } },
-            messages: {
-              orderBy: { createdAt: "desc" },
-              take: 1,
-              select: { body: true, createdAt: true },
-            },
-          },
-        });
-
-  const now = nowMs();
+  const query = new URLSearchParams();
+  if (courseFilter) query.set("courseId", courseFilter);
+  if (statusFilter) query.set("status", statusFilter);
+  const suffix = query.size ? `?${query}` : "";
+  const { courses, openCount: openHelpCount, threads } = await serverApiFetch<MentorHelpInboxView>(`/api/v1/teach/help/threads${suffix}`);
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -115,12 +80,7 @@ export default async function MentorHelpInboxPage({
       ) : (
         <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
           {threads.map((thread) => {
-            const preview = thread.messages[0];
-            const ageHours = preview
-              ? (now - preview.createdAt.getTime()) / (1000 * 60 * 60)
-              : 0;
-            const isAging = thread.status === "OPEN" && ageHours >= AGING_HOURS;
-            const menteeLabel = thread.mentee.name ?? thread.mentee.email;
+            const isAging = thread.status === "OPEN" && thread.ageHours >= AGING_HOURS;
 
             return (
               <li key={thread.id}>
@@ -132,14 +92,14 @@ export default async function MentorHelpInboxPage({
                     className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground"
                     aria-hidden
                   >
-                    {initials(menteeLabel)}
+                    {initials(thread.menteeLabel)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate text-sm font-medium text-foreground">{menteeLabel}</p>
+                      <p className="truncate text-sm font-medium text-foreground">{thread.menteeLabel}</p>
                       {isAging && (
                         <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-200">
-                          {Math.floor(ageHours)}h waiting
+                          {Math.floor(thread.ageHours)}h waiting
                         </span>
                       )}
                       {thread.status === "RESOLVED" && (
@@ -149,11 +109,11 @@ export default async function MentorHelpInboxPage({
                       )}
                     </div>
                     <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                      {thread.chapter?.title ?? thread.course.title}
+                      {thread.chapterTitle ?? thread.courseTitle}
                     </p>
-                    {preview && (
+                    {thread.preview && (
                       <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                        {preview.body}
+                        {thread.preview.body}
                       </p>
                     )}
                   </div>

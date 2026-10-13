@@ -16,6 +16,7 @@ import {
   createCourseBody,
   createModuleBody,
   enrollmentIdParams,
+  helpInboxQuery,
   inviteParams,
   menteeParams,
   moduleIdParams,
@@ -71,5 +72,7 @@ router.get("/review", validate({ query: reviewQueueQuery }), teach.getReviewQueu
 router.get("/review/:responseId", validateParams(responseIdParams), teach.getReviewDetail);
 router.post("/review/:responseId", validate({ params: responseIdParams, body: submitReviewBody }), teach.submitReview);
 router.post("/review/:responseId/ai-draft", validateParams(responseIdParams), teach.generateAiReviewDraft);
+
+router.get("/help/threads", validate({ query: helpInboxQuery }), teach.getHelpInbox);
 
 export default router;

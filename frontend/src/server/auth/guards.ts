@@ -1,18 +1,15 @@
 import "server-only";
-import { notFound, redirect } from "next/navigation";
-import { prisma } from "@/server/db";
+import { redirect } from "next/navigation";
 import { getSessionUser } from "./session";
 import {
   canAccessLearnSurface,
   canAccessRole,
   canAccessTeachSurface,
   homeRouteForRole,
-  isMentorOfCourse,
   surfaceHomeRoute,
   userCanInstruct,
 } from "./access-rules";
 import { getActiveSurface } from "./surface";
-import { canAccessHelpThread } from "@/server/help/access";
 
 export { getSessionUser } from "./session";
 export type { SessionUser } from "./session";
@@ -26,11 +23,9 @@ export {
   userCanInstruct,
 } from "./access-rules";
 
-// The single place authorization is decided — see docs/09-security.mdx.
-// Layouts, pages and server actions call these instead of checking
-// session/role/ownership themselves.
-
-export class ForbiddenError extends Error {}
+// Where the web app decides which surface a visitor may enter — see
+// docs/09-security.mdx. Ownership of courses, threads and enrollments is
+// enforced by the API (403), so pages only need the session and surface checks.
 
 /** Redirects to /login if there's no session. Use in layouts/pages/actions that require any signed-in user. */
 export async function requireUser() {
@@ -82,43 +77,4 @@ export async function requireTeachSurface() {
     redirect(surfaceHomeRoute("learn"));
   }
   return user;
-}
-
-/** Throws ForbiddenError (never silently no-ops) if the signed-in user doesn't mentor this course. */
-export async function requireMentorOfCourse(courseId: string) {
-  const user = await requireTeachSurface();
-  const course = await prisma.course.findUnique({
-    where: { id: courseId },
-    select: { mentorId: true },
-  });
-  if (!course) notFound();
-  if (!isMentorOfCourse(user.id, user.role, course)) {
-    throw new ForbiddenError(`User ${user.id} does not mentor course ${courseId}`);
-  }
-  return user;
-}
-
-/** Enrollment row for the signed-in user, including payment-pending states. */
-export async function getEnrollmentForUser(courseId: string, userId: string) {
-  return prisma.enrollment.findUnique({
-    where: { courseId_userId: { courseId, userId } },
-  });
-}
-
-/** Throws ForbiddenError if the user cannot read this help thread (mentee owner or course mentor). */
-export async function requireHelpThreadAccess(threadId: string) {
-  const user = await requireUser();
-  const thread = await prisma.helpThread.findUnique({
-    where: { id: threadId },
-    include: {
-      course: { select: { id: true, slug: true, title: true, mentorId: true } },
-      chapter: { select: { id: true, slug: true, title: true } },
-      mentee: { select: { id: true, name: true, email: true } },
-    },
-  });
-  if (!thread) notFound();
-  if (!canAccessHelpThread(user, thread, thread.course)) {
-    throw new ForbiddenError(`User ${user.id} cannot access help thread ${threadId}`);
-  }
-  return { user, thread };
 }

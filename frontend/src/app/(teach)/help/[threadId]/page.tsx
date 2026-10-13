@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { prisma } from "@/server/db";
-import { requireHelpThreadAccess } from "@/server/auth/guards";
-import { mapHelpMessages } from "@/lib/help-serialize";
-import { HelpThreadDetail } from "@/components/help/help-thread-detail";
+import type { HelpThreadDetail } from "@buildment/shared/api/help";
+import { requireTeachSurface } from "@/server/auth/guards";
+import { serverApiFetchOrNotFound } from "@/lib/api-server";
+import { HelpThreadDetail as HelpThreadDetailPanel } from "@/components/help/help-thread-detail";
 import { MentorMeetAside } from "@/components/help/mentor-meet-aside";
 import { helpUiCopy as copy } from "@/lib/help-ui-copy";
 
@@ -13,21 +12,9 @@ export default async function MentorHelpThreadPage({
   params: Promise<{ threadId: string }>;
 }) {
   const { threadId } = await params;
-  const { user, thread } = await requireHelpThreadAccess(threadId);
-
-  const full = await prisma.helpThread.findUnique({
-    where: { id: thread.id },
-    include: {
-      messages: {
-        orderBy: { createdAt: "asc" },
-        include: { author: { select: { id: true, name: true, role: true } } },
-      },
-    },
-  });
-  if (!full) notFound();
-
-  const fallbackName = thread.mentee.name ?? thread.mentee.email ?? "Learner";
-  const messages = mapHelpMessages(full.messages, fallbackName);
+  const user = await requireTeachSurface();
+  // The shared thread endpoint answers 403 unless the caller mentors the course.
+  const thread = await serverApiFetchOrNotFound<HelpThreadDetail>(`/api/v1/help/threads/${encodeURIComponent(threadId)}`);
   const menteeName = thread.mentee.name ?? thread.mentee.email ?? "Learner";
 
   return (
@@ -60,12 +47,12 @@ export default async function MentorHelpThreadPage({
       </div>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_240px]">
-        <HelpThreadDetail
+        <HelpThreadDetailPanel
           variant="mentor"
           layout="page"
-          threadId={full.id}
-          status={full.status}
-          messages={messages}
+          threadId={thread.id}
+          status={thread.status}
+          messages={thread.messages}
           viewerId={user.id}
         />
         <MentorMeetAside menteeName={menteeName} />
