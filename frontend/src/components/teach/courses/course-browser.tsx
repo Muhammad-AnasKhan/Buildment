@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { MentorCourseCard } from "@buildment/shared/api/teach";
+import type { MentorCourseCard } from "@/shared/api/teach";
 
 type StatusFilter = "all" | "PUBLISHED" | "DRAFT" | "attention";
 

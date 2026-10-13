@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { CatalogCourseDetail } from "@buildment/shared/api/catalog";
+import type { CatalogCourseDetail } from "@/shared/api/catalog";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { selfEnrollInCourseAction } from "@/server/actions/enroll";

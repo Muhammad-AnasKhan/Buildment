@@ -1,4 +1,4 @@
-import { HELP_ERROR_CODES, type HelpThreadDetail, type HelpThreadSummary } from "@buildment/shared/api/help";
+import { HELP_ERROR_CODES, type HelpThreadDetail, type HelpThreadSummary } from "../../shared/api/help.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, ForbiddenError, NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

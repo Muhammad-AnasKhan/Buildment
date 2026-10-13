@@ -1,20 +1,20 @@
 import { prisma } from "../../../db/prisma.js";
-import { OpenQuestionConfigSchema, openQuestionUrlPresentation } from "@buildment/shared/blocks/open-question/schema";
+import { OpenQuestionConfigSchema, openQuestionUrlPresentation } from "../../../shared/blocks/open-question/schema.js";
 import { submissionPreview } from "../../progress/submission-preview.js";
 import { isCompletableBlock, flattenChapterIds, lockedChapterIds } from "../../progress/rules.js";
 import { loadStudyWeek } from "../../progress/study-summary.js";
 import { classifyProjectEvidence, evidenceUrlParts } from "./evidence.js";
 import { isEnrollmentScopedToCourse, latestByBlock } from "./helpers.js";
-import { parseLearningLog } from "@buildment/shared/lib/learning-log";
-import type { EvaluationReflection } from "@buildment/shared/api/teach";
+import { parseLearningLog } from "../../../shared/lib/learning-log.js";
+import type { EvaluationReflection } from "../../../shared/api/teach.js";
 import type {
   EvaluationAttention,
   EvaluationModule,
   FeedbackEvent,
   MenteeEvaluation,
   ProjectEvidence,
-} from "@buildment/shared/api/teach";
-import { helpUiCopy as copy } from "@buildment/shared/lib/help-ui-copy";
+} from "../../../shared/api/teach.js";
+import { helpUiCopy as copy } from "../../../shared/lib/help-ui-copy.js";
 
 const RESPONSE_LIMIT = 240;
 const INACTIVE_DAYS = 7;

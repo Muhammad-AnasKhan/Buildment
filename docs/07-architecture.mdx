@@ -97,10 +97,11 @@ full config, used everywhere else) — this is a hard requirement on Vercel, not
 
 ## Repository layout
 
-> **2026-10-13:** the backend moved out of Next.js into `server/` (Express 5 + TypeScript), with
-> `shared/` holding the contracts both sides import. The web app is UI only: Server Components
-> and Server Actions call the API over HTTP and the browser reaches it through the `/api/v1`
-> proxy. The tree below describes the frontend half; see
+> **2026-10-13:** the backend moved out of Next.js into `server/` (Express 5 + TypeScript). The
+> contract code both apps run lives in `server/src/shared` and is copied into
+> `frontend/src/shared` (`pnpm sync-shared`), so each folder is an independent deployable. The
+> web app is UI only: Server Components and Server Actions call the API over HTTP and the browser
+> reaches it through the `/api/v1` proxy. The tree below describes the frontend half; see
 > [`phases/backend-split.mdx`](phases/backend-split.mdx) for the server layout and the full
 > endpoint map.
 

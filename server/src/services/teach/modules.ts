@@ -1,4 +1,4 @@
-import { TEACH_ERROR_CODES } from "@buildment/shared/api/teach";
+import { TEACH_ERROR_CODES } from "../../shared/api/teach.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

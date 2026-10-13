@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/logo";
-import type { AcceptInviteResult, InvitePublicView } from "@buildment/shared/api/invites";
+import type { AcceptInviteResult, InvitePublicView } from "@/shared/api/invites";
 import { getSessionUser } from "@/server/auth/guards";
 import { ApiError } from "@/lib/api-client";
 import { serverApiFetch } from "@/lib/api-server";

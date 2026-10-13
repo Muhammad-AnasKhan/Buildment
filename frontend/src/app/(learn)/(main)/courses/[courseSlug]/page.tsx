@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, Lock } from "lucide-react";
-import type { CourseOverview } from "@buildment/shared/api/catalog";
+import type { CourseOverview } from "@/shared/api/catalog";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { CourseOverviewHero } from "@/components/learn/course-overview-hero";

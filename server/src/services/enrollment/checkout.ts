@@ -1,4 +1,4 @@
-import type { Checkout } from "@buildment/shared/api/catalog";
+import type { Checkout } from "../../shared/api/catalog.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, NotFoundError } from "../../utils/errors.js";
 import { enrollmentGrantsContentAccess } from "./lifecycle.js";

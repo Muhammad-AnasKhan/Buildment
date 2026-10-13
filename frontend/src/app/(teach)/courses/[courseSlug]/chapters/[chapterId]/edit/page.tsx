@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import type { ChapterEditorView } from "@buildment/shared/api/teach";
+import type { ChapterEditorView } from "@/shared/api/teach";
 import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { ChapterEditor } from "@/components/teach/chapter-editor";

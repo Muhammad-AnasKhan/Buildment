@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { EvaluationSubmission } from "@buildment/shared/api/teach";
+import type { EvaluationSubmission } from "@/shared/api/teach";
 
 export function SubmissionCard({ item }: { item: EvaluationSubmission }) {
   const status = item.status.toLowerCase().replaceAll("_", " ");

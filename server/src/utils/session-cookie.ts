@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import { SESSION_COOKIE_NAME } from "@buildment/shared/api/auth";
+import { SESSION_COOKIE_NAME } from "../shared/api/auth.js";
 import { isProduction } from "../config/env.js";
 
 const COOKIE_OPTIONS = { httpOnly: true, sameSite: "lax" as const, secure: isProduction, path: "/" };

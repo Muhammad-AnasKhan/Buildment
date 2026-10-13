@@ -5,7 +5,7 @@ import {
   defaultSurfaceForUser,
   isActiveSurface,
   type ActiveSurface,
-} from "@buildment/shared/lib/active-surface";
+} from "@/shared/lib/active-surface";
 
 export async function getActiveSurface(canInstruct: boolean): Promise<ActiveSurface> {
   const jar = await cookies();

@@ -20,7 +20,7 @@ export default defineConfig({
     ? undefined
     : [
         {
-          command: "pnpm --filter @buildment/server dev",
+          command: "pnpm --dir ../server dev",
           url: `${process.env.API_URL ?? "http://localhost:4000"}/health`,
           env: { DISABLE_RATE_LIMITS: "true" },
           reuseExistingServer: !process.env.CI,

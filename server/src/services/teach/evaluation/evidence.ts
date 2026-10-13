@@ -1,4 +1,4 @@
-import { parseSafeSubmissionUrl } from "@buildment/shared/lib/safe-submission-url";
+import { parseSafeSubmissionUrl } from "../../../shared/lib/safe-submission-url.js";
 
 export type EvidenceClassificationInput = {
   prompt: string;

@@ -1,4 +1,4 @@
-import type { MenteeDashboardViewModel } from "@buildment/shared/api/learner";
+import type { MenteeDashboardViewModel } from "@/shared/api/learner";
 import { MenteeDashboard } from "@/components/learn/dashboard/mentee-dashboard";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";

@@ -10,11 +10,10 @@ const apiUrl = (process.env.API_URL ?? "http://localhost:4000").replace(/\/$/, "
 const nextConfig: NextConfig = {
   // Self-contained server for the Docker image (frontend/Dockerfile); no effect on `next dev`.
   output: "standalone",
-  // Pin the workspace root to the monorepo so the symlinked @buildment/shared package
-  // compiles (Turbopack refuses files outside the root) and an unrelated lockfile in a
-  // parent directory can't make Next.js guess wrong.
+  // This folder is the whole app (the API's contract code is copied into src/shared), so
+  // Turbopack's root is this directory even inside the larger repository.
   turbopack: {
-    root: path.join(__dirname, ".."),
+    root: __dirname,
   },
   // Mermaid is loaded as a static script from /vendor/mermaid.min.js — never bundle it.
   serverExternalPackages: ["mermaid"],

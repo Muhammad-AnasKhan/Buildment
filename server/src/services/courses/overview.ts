@@ -1,4 +1,4 @@
-import type { CourseOverview } from "@buildment/shared/api/catalog";
+import type { CourseOverview } from "../../shared/api/catalog.js";
 import { prisma } from "../../db/prisma.js";
 import { NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

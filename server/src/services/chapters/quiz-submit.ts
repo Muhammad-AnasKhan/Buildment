@@ -1,5 +1,5 @@
-import { blockDefinitions } from "@buildment/shared/blocks/definitions";
-import { QuizPayloadSchema } from "@buildment/shared/blocks/quiz/schema";
+import { blockDefinitions } from "../../shared/blocks/definitions.js";
+import { QuizPayloadSchema } from "../../shared/blocks/quiz/schema.js";
 import { prisma } from "../../db/prisma.js";
 import { BadRequestError, ForbiddenError, NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

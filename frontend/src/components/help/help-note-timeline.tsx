@@ -1,4 +1,4 @@
-import type { HelpMessageView } from "@buildment/shared/api/help";
+import type { HelpMessageView } from "@/shared/api/help";
 
 function formatWhen(iso: string) {
   return new Date(iso).toLocaleString(undefined, {

@@ -1,4 +1,4 @@
-import type { LearnerProfile } from "@buildment/shared/api/learner";
+import type { LearnerProfile } from "@/shared/api/learner";
 import { requireVerifiedUser } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { ProfileForm } from "@/components/auth/profile-form";

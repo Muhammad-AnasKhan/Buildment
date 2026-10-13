@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import type { AuthSession } from "@buildment/shared/api/auth";
+import type { AuthSession } from "../shared/api/auth.js";
 import { created, ok } from "../utils/responses.js";
 import { clearSessionCookie, setSessionCookie } from "../utils/session-cookie.js";
 import { confirmEmailVerificationToken, resendVerification } from "../services/auth/email-verification.js";

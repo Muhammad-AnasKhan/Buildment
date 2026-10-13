@@ -1,4 +1,4 @@
-import type { LearnerWorkspace } from "@buildment/shared/api/learner";
+import type { LearnerWorkspace } from "../../shared/api/learner.js";
 import { prisma } from "../../db/prisma.js";
 import type { SessionUser } from "../../types/auth.js";
 import { loadInstructorAccessState } from "../instructor-access/status.js";

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { AdminCourseRow } from "@buildment/shared/api/admin";
+import type { AdminCourseRow } from "@/shared/api/admin";
 import { serverApiFetch } from "@/lib/api-server";
 import { Badge } from "@/components/ui/badge";
 import { formatPriceCents } from "@/lib/format-price";

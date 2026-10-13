@@ -1,5 +1,5 @@
-import type { AdminCourseRequestsView } from "@buildment/shared/api/admin";
-import { ADMIN_ERROR_CODES } from "@buildment/shared/api/admin";
+import type { AdminCourseRequestsView } from "../../shared/api/admin.js";
+import { ADMIN_ERROR_CODES } from "../../shared/api/admin.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, NotFoundError } from "../../utils/errors.js";
 import type { ApproveCourseRequestBody } from "../../validations/admin.js";

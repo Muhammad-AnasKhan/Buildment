@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CheckCheck, Send } from "lucide-react";
-import type { FeedbackEvent } from "@buildment/shared/api/teach";
+import type { FeedbackEvent } from "@/shared/api/teach";
 
 export function FeedbackTimeline({ items }: { items: FeedbackEvent[] }) {
   return <section aria-labelledby="timeline-title" className="rounded-2xl border bg-card p-5 sm:p-6">

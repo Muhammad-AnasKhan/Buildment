@@ -1,4 +1,4 @@
-import type { QuizChapterState } from "@buildment/shared/api/blocks";
+import type { QuizChapterState } from "@/shared/api/blocks";
 import { QuizComponent } from "@/blocks/quiz/Component";
 import { getSessionUser } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";

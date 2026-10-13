@@ -10,15 +10,15 @@ import { decorateSyllabus } from "../progress/syllabus.js";
 import { pickContinueTarget } from "../progress/enrollment-syllabus.js";
 import { isCompletableBlock } from "../progress/rules.js";
 import { mentorReplyUnread } from "../progress/attention.js";
-import type { LearnerHabit } from "@buildment/shared/lib/streak";
+import type { LearnerHabit } from "../../shared/lib/streak.js";
 import type {
   DashboardAction,
   DashboardCourse,
   DashboardDay,
   DashboardEvent,
   MenteeDashboardViewModel,
-} from "@buildment/shared/api/learner";
-import { helpUiCopy as copy } from "@buildment/shared/lib/help-ui-copy";
+} from "../../shared/api/learner.js";
+import { helpUiCopy as copy } from "../../shared/lib/help-ui-copy.js";
 
 export type DashboardChapterInput = {
   id: string;
@@ -105,7 +105,7 @@ export type {
   DashboardDay,
   DashboardEvent,
   MenteeDashboardViewModel,
-} from "@buildment/shared/api/learner";
+} from "../../shared/api/learner.js";
 
 function iso(date: Date | null): string | null {
   return date?.toISOString() ?? null;

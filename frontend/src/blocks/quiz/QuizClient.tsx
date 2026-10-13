@@ -13,7 +13,7 @@ import { fireMiniConfetti } from "@/components/learn/mini-confetti";
 import { playFeedback } from "@/lib/sound-feedback";
 import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
 import { ApiError, apiFetch } from "@/lib/api-client";
-import type { SanitizedQuizConfig } from "@buildment/shared/blocks/quiz/schema";
+import type { SanitizedQuizConfig } from "@/shared/blocks/quiz/schema";
 
 type RespondResult = {
   isCorrect: boolean | null;

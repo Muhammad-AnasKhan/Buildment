@@ -2,7 +2,7 @@ import Link from "next/link";
 import { BookOpenText } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { MenteeCourseList } from "@/components/learn/dashboard/mentee-dashboard";
-import type { MenteeDashboardViewModel } from "@buildment/shared/api/learner";
+import type { MenteeDashboardViewModel } from "@/shared/api/learner";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 

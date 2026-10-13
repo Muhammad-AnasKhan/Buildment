@@ -1,4 +1,4 @@
-import { INVITE_ERROR_CODES, type AcceptInviteResult, type InvitePublicView, type InviteState } from "@buildment/shared/api/invites";
+import { INVITE_ERROR_CODES, type AcceptInviteResult, type InvitePublicView, type InviteState } from "../../shared/api/invites.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, ForbiddenError, NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

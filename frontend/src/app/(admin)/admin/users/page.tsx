@@ -1,4 +1,4 @@
-import type { AdminUsersView } from "@buildment/shared/api/admin";
+import type { AdminUsersView } from "@/shared/api/admin";
 import { serverApiFetch } from "@/lib/api-server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

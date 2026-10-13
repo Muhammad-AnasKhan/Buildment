@@ -1,5 +1,5 @@
 import { CheckCircle2, CircleHelp, Clock3, Gauge, MessageSquareText, Radio, Users } from "lucide-react";
-import type { CourseMenteesView } from "@buildment/shared/api/teach";
+import type { CourseMenteesView } from "@/shared/api/teach";
 
 export function CohortSummary({ summary }: { summary: CourseMenteesView["summary"] }) {
   const metrics = [

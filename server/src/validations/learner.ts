@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { STREAK_MILESTONES } from "@buildment/shared/lib/streak";
+import { STREAK_MILESTONES } from "../shared/lib/streak.js";
 
 export const weeklyGoalBody = z.object({
   kind: z.enum(["SESSIONS", "CHAPTERS"]),

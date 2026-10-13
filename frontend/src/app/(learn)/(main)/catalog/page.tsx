@@ -1,4 +1,4 @@
-import type { CatalogCourseSummary } from "@buildment/shared/api/catalog";
+import type { CatalogCourseSummary } from "@/shared/api/catalog";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { CatalogCourseCard } from "@/components/learn/catalog-course-card";

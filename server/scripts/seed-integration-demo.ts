@@ -8,7 +8,7 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/index.js";
-import { SEED_COURSE } from "@buildment/shared/lib/seed-data";
+import { SEED_COURSE } from "../src/shared/lib/seed-data.js";
 import { randomBytes } from "node:crypto";
 import { hashIntegrationSecret } from "../src/services/integrations/credential-hash.js";
 

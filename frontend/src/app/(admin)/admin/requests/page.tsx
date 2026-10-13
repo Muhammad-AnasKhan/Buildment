@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { AdminCourseRequestsView } from "@buildment/shared/api/admin";
+import type { AdminCourseRequestsView } from "@/shared/api/admin";
 import { serverApiFetch } from "@/lib/api-server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

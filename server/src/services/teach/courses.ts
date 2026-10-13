@@ -1,7 +1,7 @@
-import type { CourseBuilderChapter, CourseBuilderView, CourseSlugResult } from "@buildment/shared/api/teach";
-import { TEACH_ERROR_CODES } from "@buildment/shared/api/teach";
-import { validateCoursePublish } from "@buildment/shared/lib/course-publish-rules";
-import { slugify } from "@buildment/shared/lib/mdx-headings";
+import type { CourseBuilderChapter, CourseBuilderView, CourseSlugResult } from "../../shared/api/teach.js";
+import { TEACH_ERROR_CODES } from "../../shared/api/teach.js";
+import { validateCoursePublish } from "../../shared/lib/course-publish-rules.js";
+import { slugify } from "../../shared/lib/mdx-headings.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, UnprocessableError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

@@ -1,4 +1,4 @@
-import type { LearnerProfile, ProfileUpdateInput } from "@buildment/shared/api/learner";
+import type { LearnerProfile, ProfileUpdateInput } from "../../shared/api/learner.js";
 import { prisma } from "../../db/prisma.js";
 import type { SessionUser } from "../../types/auth.js";
 

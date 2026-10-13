@@ -9,9 +9,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { formatPriceDisplay } from "@buildment/shared/lib/course-publish-rules";
+import { formatPriceDisplay } from "@/shared/lib/course-publish-rules";
 import { publishCourse, restoreCourseToDraft, unpublishCourse } from "@/server/actions/courses";
-import type { CourseBuilderCourse } from "@buildment/shared/api/teach";
+import type { CourseBuilderCourse } from "@/shared/api/teach";
 
 export function CourseHeader({
   course,

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import type { Checkout } from "@buildment/shared/api/catalog";
+import type { Checkout } from "@/shared/api/catalog";
 import {
   completeEnrollmentPaymentStubAction,
   selfEnrollInCourseAction,

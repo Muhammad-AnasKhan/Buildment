@@ -1,4 +1,4 @@
-import type { MentorCoursesView, TeachWorkspace } from "@buildment/shared/api/teach";
+import type { MentorCoursesView, TeachWorkspace } from "../../shared/api/teach.js";
 import { prisma } from "../../db/prisma.js";
 import type { SessionUser } from "../../types/auth.js";
 import { loadInstructorAccessState } from "../instructor-access/status.js";

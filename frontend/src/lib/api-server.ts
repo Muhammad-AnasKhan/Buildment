@@ -1,7 +1,7 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { SESSION_COOKIE_NAME } from "@buildment/shared/api/auth";
+import { SESSION_COOKIE_NAME } from "@/shared/api/auth";
 import { ApiError, apiHeaders, parseApiResponse, type ApiRequestInit } from "@/lib/api-client";
 
 // Server-side counterpart of apiFetch: Server Components and Server Actions call

@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import { AUTH_ERROR_CODES } from "@buildment/shared/api/auth";
+import { AUTH_ERROR_CODES } from "../shared/api/auth.js";
 import { ForbiddenError, UnauthorizedError } from "../utils/errors.js";
 import { isEmailVerified } from "../services/auth/email-verification.js";
 import { resolveVerificationState } from "../services/auth/login.js";

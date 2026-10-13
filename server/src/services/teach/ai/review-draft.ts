@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { AiReviewDraft } from "@buildment/shared/api/teach";
+import type { AiReviewDraft } from "../../../shared/api/teach.js";
 import { env } from "../../../config/env.js";
 
 // Advisory review drafts for open-question submissions via OpenRouter. The

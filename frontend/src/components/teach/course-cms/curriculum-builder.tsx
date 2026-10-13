@@ -26,7 +26,7 @@ import type {
   CourseBuilderChapter,
   CourseBuilderCourse,
   CourseBuilderModule,
-} from "@buildment/shared/api/teach";
+} from "@/shared/api/teach";
 
 export function CurriculumBuilder({
   course,

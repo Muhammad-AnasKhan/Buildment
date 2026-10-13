@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { clearWeeklyGoal, setWeeklyGoal } from "@/server/actions/weekly-goal";
 import { Button } from "@/components/ui/button";
-import type { LearnerHabit } from "@buildment/shared/lib/streak";
+import type { LearnerHabit } from "@/shared/lib/streak";
 
 export function WeeklyGoalEditor({ goal }: { goal: LearnerHabit["weeklyGoal"] }) {
   const [kind, setKind] = useState<"SESSIONS" | "CHAPTERS">(goal?.kind ?? "SESSIONS");

@@ -1,4 +1,4 @@
-import { AUTH_ERROR_CODES, type SignupResult } from "@buildment/shared/api/auth";
+import { AUTH_ERROR_CODES, type SignupResult } from "../../shared/api/auth.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError } from "../../utils/errors.js";
 import { hashPassword } from "./password.js";

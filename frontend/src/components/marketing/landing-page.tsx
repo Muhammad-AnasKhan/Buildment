@@ -5,7 +5,7 @@ import {
   ChartNoAxesCombined,
   MessageSquareText,
 } from "lucide-react";
-import type { CatalogCourseSummary } from "@buildment/shared/api/catalog";
+import type { CatalogCourseSummary } from "@/shared/api/catalog";
 import { serverApiFetch } from "@/lib/api-server";
 import { Logo } from "@/components/brand/logo";
 import { CourseCard } from "@/components/marketing/course-card";

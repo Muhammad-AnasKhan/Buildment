@@ -1,0 +1,83 @@
+// GENERATED from server/src/shared — do not edit here. Run `pnpm sync-shared` in server/.
+import type { ResponseStatus, ReviewVerdict } from "../domain/enums";
+import type { SanitizedCodeConfig } from "../blocks/code/schema";
+import type { SanitizedOpenQuestionConfig } from "../blocks/open-question/schema";
+import type { SanitizedPredictConfig } from "../blocks/predict/schema";
+import type { SanitizedQuizConfig } from "../blocks/quiz/schema";
+import type { OpenQuestionGroupPosition } from "../blocks/open-question/group-position";
+import type { StepsConfig } from "../blocks/steps/schema";
+import type { VideoConfig } from "../blocks/video/schema";
+import type { ChapterRecapConfig } from "../blocks/chapter-recap/schema";
+import type { LearningObjectivesConfig } from "../blocks/learning-objectives/schema";
+import type { ProjectPreviewConfig } from "../blocks/project-preview/schema";
+import type { RoadmapConfig } from "../blocks/roadmap/schema";
+import type { VisualDiagramConfig } from "../blocks/visual-diagram/schema";
+import type { VisualWalkthroughConfig } from "../blocks/visual-walkthrough/schema";
+
+// Wire contract for GET /api/v1/blocks/:blockId/state: the client-safe config plus
+// the caller's latest answer, shaped for each block's client component.
+
+export type QuizBlockState = {
+  type: "QUIZ";
+  config: SanitizedQuizConfig;
+  initialState: { selected: string[]; isCorrect: boolean | null; score: number | null; maxScore: number | null; explanation?: string } | null;
+};
+
+export type PredictBlockState = {
+  type: "PREDICT";
+  config: SanitizedPredictConfig;
+  initialState: { selected: string; isCorrect: boolean | null; score: number | null; maxScore: number | null; explanation?: string } | null;
+};
+
+export type CodeBlockState = {
+  type: "CODE";
+  config: SanitizedCodeConfig;
+  initialState: { source: string; isCorrect: boolean | null } | null;
+};
+
+export type OpenQuestionBlockState = {
+  type: "OPEN_QUESTION";
+  config: SanitizedOpenQuestionConfig;
+  group: { position: OpenQuestionGroupPosition; index: number; total: number };
+  initialState: {
+    status: ResponseStatus;
+    attempt: number;
+    text: string;
+    url: string | null;
+    feedback: string | null;
+    verdict: ReviewVerdict | null;
+  } | null;
+};
+
+export type MustReadBlockState = {
+  type: "MUST_READ";
+  config: { title: string; url: string; description: string; source?: string; readMinutes?: number };
+  initialRead: boolean;
+};
+
+/** Presentation blocks carry no answer; the reader only needs their config. */
+export type ContentBlockState =
+  | { type: "STEPS"; config: StepsConfig }
+  | { type: "VIDEO"; config: VideoConfig }
+  | { type: "CHAPTER_RECAP"; config: ChapterRecapConfig }
+  | { type: "LEARNING_OBJECTIVES"; config: LearningObjectivesConfig }
+  | { type: "PROJECT_PREVIEW"; config: ProjectPreviewConfig }
+  | { type: "ROADMAP"; config: RoadmapConfig }
+  | { type: "VISUAL_DIAGRAM"; config: VisualDiagramConfig }
+  | { type: "VISUAL_WALKTHROUGH"; config: VisualWalkthroughConfig };
+
+export type BlockState =
+  | QuizBlockState
+  | PredictBlockState
+  | CodeBlockState
+  | OpenQuestionBlockState
+  | MustReadBlockState
+  | ContentBlockState;
+
+/** Quiz-mode chapter: every question's last answer, for the wizard's initial state. */
+export type QuizChapterState = {
+  blockIds: string[];
+  initialAnswers: Record<string, string[]>;
+  initialBlockGrades: Record<string, { selected: string[]; isCorrect: boolean | null; explanation?: string }>;
+  initialScoreSummary: { score: number; maxScore: number; questions: number } | null;
+};

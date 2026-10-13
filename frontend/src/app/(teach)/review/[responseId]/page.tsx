@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import type { ReviewDetailView } from "@buildment/shared/api/teach";
+import type { ReviewDetailView } from "@/shared/api/teach";
 import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { submitReview } from "@/server/actions/reviews";

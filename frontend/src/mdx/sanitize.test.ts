@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { sanitizeBlockConfig } from "./sanitize";
-import { QuizConfigSchema } from "@buildment/shared/blocks/quiz/schema";
-import { OpenQuestionConfigSchema } from "@buildment/shared/blocks/open-question/schema";
-import { PredictConfigSchema } from "@buildment/shared/blocks/predict/schema";
-import { CodeConfigSchema } from "@buildment/shared/blocks/code/schema";
+import { QuizConfigSchema } from "@/shared/blocks/quiz/schema";
+import { OpenQuestionConfigSchema } from "@/shared/blocks/open-question/schema";
+import { PredictConfigSchema } from "@/shared/blocks/predict/schema";
+import { CodeConfigSchema } from "@/shared/blocks/code/schema";
 
 // Required by docs/09-security.mdx "The sanitizer contract" — must fail if a
 // `correct`/`correctOptionIds`/`rubric`/`sampleAnswer`/`hiddenTests` key ever

@@ -1,5 +1,5 @@
-import type { LearningLogSaveResult } from "@buildment/shared/api/chapters";
-import { LearningLogDataSchema, parseLearningLog, type LearningLogData } from "@buildment/shared/lib/learning-log";
+import type { LearningLogSaveResult } from "../../shared/api/chapters.js";
+import { LearningLogDataSchema, parseLearningLog, type LearningLogData } from "../../shared/lib/learning-log.js";
 import { prisma, type Prisma } from "../../db/prisma.js";
 import { NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/app-toast";
 import { HelpNoteTimeline } from "./help-note-timeline";
-import type { HelpMessageView } from "@buildment/shared/api/help";
-import { helpUiCopy as copy } from "@buildment/shared/lib/help-ui-copy";
+import type { HelpMessageView } from "@/shared/api/help";
+import { helpUiCopy as copy } from "@/shared/lib/help-ui-copy";
 
 export function MenteeHelpThreadView({
   threadId,

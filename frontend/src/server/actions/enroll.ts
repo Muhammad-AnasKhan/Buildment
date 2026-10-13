@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { ENROLLMENT_ERROR_CODES, type SelfEnrollResult } from "@buildment/shared/api/catalog";
-import { safeRedirectTo } from "@buildment/shared/lib/safe-redirect";
+import { ENROLLMENT_ERROR_CODES, type SelfEnrollResult } from "@/shared/api/catalog";
+import { safeRedirectTo } from "@/shared/lib/safe-redirect";
 import { ApiError } from "@/lib/api-client";
 import { serverApiFetch } from "@/lib/api-server";
 

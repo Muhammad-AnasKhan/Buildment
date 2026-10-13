@@ -1,4 +1,4 @@
-import type { MentorCoursesView } from "@buildment/shared/api/teach";
+import type { MentorCoursesView } from "@/shared/api/teach";
 import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { CoursesHeader } from "@/components/teach/courses/courses-header";

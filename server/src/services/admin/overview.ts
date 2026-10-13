@@ -1,4 +1,4 @@
-import type { AdminCourseRow, AdminOverview } from "@buildment/shared/api/admin";
+import type { AdminCourseRow, AdminOverview } from "../../shared/api/admin.js";
 import { prisma } from "../../db/prisma.js";
 
 const COURSE_LIST_LIMIT = 200;

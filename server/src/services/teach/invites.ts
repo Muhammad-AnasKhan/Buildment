@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
-import type { AssignByEmailsResult, InviteLinkResult } from "@buildment/shared/api/teach";
-import { TEACH_ERROR_CODES } from "@buildment/shared/api/teach";
+import type { AssignByEmailsResult, InviteLinkResult } from "../../shared/api/teach.js";
+import { TEACH_ERROR_CODES } from "../../shared/api/teach.js";
 import { prisma } from "../../db/prisma.js";
 import { UnprocessableError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

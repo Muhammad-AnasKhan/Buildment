@@ -1,4 +1,4 @@
-import { AUTH_ERROR_CODES } from "@buildment/shared/api/auth";
+import { AUTH_ERROR_CODES } from "../../shared/api/auth.js";
 import { prisma } from "../../db/prisma.js";
 import { ForbiddenError, UnauthorizedError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

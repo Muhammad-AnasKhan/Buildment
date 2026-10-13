@@ -1,4 +1,4 @@
-import { blockDefinitions } from "@buildment/shared/blocks/definitions";
+import { blockDefinitions } from "@/shared/blocks/definitions";
 import { QuizComponent } from "./quiz/Component";
 import { OpenQuestionComponent } from "./open-question/Component";
 import { StepsComponent } from "./steps/Component";
@@ -13,10 +13,10 @@ import { VisualWalkthroughComponent } from "./visual-walkthrough/Component";
 import { VisualDiagramComponent } from "./visual-diagram/Component";
 import { RoadmapComponent } from "./roadmap/Component";
 
-export { isRegisteredBlockType, type RegisteredBlockType } from "@buildment/shared/blocks/definitions";
+export { isRegisteredBlockType, type RegisteredBlockType } from "@/shared/blocks/definitions";
 
 // The block registry — the one place a BlockType maps to its implementation.
-// Schema/grader/report come from @buildment/shared (shared with the API); this
+// Schema/grader/report come from src/shared (the same code the API runs); this
 // file only attaches the React component. Adding a block type means one entry in
 // shared/src/blocks/definitions.ts plus one line here — never a switch statement
 // scattered across submission handling, progress, or reports.

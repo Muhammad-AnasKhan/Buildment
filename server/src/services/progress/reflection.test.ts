@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { extractReflectionRequirements, reflectionSatisfied } from "./reflection.js";
-import { parseLearningLog } from "@buildment/shared/lib/learning-log";
+import { parseLearningLog } from "../../shared/lib/learning-log.js";
 
 describe("extractReflectionRequirements", () => {
   it("reads checklist and learning-log ids from the reader transforms", () => {

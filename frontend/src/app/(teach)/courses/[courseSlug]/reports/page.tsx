@@ -8,7 +8,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import type { ChapterReportView, CourseReportView } from "@buildment/shared/api/teach";
+import type { ChapterReportView, CourseReportView } from "@/shared/api/teach";
 import { nowMs } from "@/server/time";
 import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";

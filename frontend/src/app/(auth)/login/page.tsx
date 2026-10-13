@@ -9,8 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Logo } from "@/components/brand/logo";
 import { LoginBrandPanel } from "@/components/marketing/login-brand-panel";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { SEED_USERS, type SeedUserRole } from "@buildment/shared/lib/seed-data";
-import { SEED_DEV_PASSWORD } from "@buildment/shared/lib/seed-test-users";
+import { SEED_USERS, type SeedUserRole } from "@/shared/lib/seed-data";
+import { SEED_DEV_PASSWORD } from "@/shared/lib/seed-test-users";
 
 function devLoginRoleLabel(role: SeedUserRole): string {
   switch (role) {
@@ -22,7 +22,7 @@ function devLoginRoleLabel(role: SeedUserRole): string {
       return "Learner";
   }
 }
-import { safeRedirectTo } from "@buildment/shared/lib/safe-redirect";
+import { safeRedirectTo } from "@/shared/lib/safe-redirect";
 import { loginErrorMessage } from "@/lib/auth-errors";
 
 export default async function LoginPage({

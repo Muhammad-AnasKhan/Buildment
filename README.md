@@ -13,14 +13,19 @@ Postgres with Mongo — the LMS stays relational; Mongo is what the FreshMarket 
 
 ## Stack
 
-Two deployables plus a shared package — the split from the original Next.js monolith is recorded
-in [`docs/phases/backend-split.mdx`](docs/phases/backend-split.mdx):
+Two independent apps, each with its own `package.json` and lockfile, deployable from its own
+folder (Vercel root directory `frontend`, Heroku/Render/Fly from `server`). The split from the
+original Next.js monolith is recorded in [`docs/phases/backend-split.mdx`](docs/phases/backend-split.mdx):
 
 | Folder | What | Stack |
 |---|---|---|
 | `frontend/` | Web app, UI only — every read and write goes through the API | Next.js 16 (App Router) · TypeScript · Tailwind + shadcn/ui · Playwright |
-| `server/` | API — owns Postgres, sessions, email, background jobs, content scripts | Express 5 · TypeScript · Prisma 7 · Zod · Vitest + supertest |
-| `shared/` | `@buildment/shared` — contracts both sides import | Block schemas + graders, domain enums, MDX block extraction, API wire types |
+| `server/` | API — owns Postgres, sessions, email, background jobs, content scripts, and the contract code in `src/shared` | Express 5 · TypeScript · Prisma 7 · Zod · Vitest + supertest |
+
+The code both apps run (block schemas and graders, API wire types, enums, MDX block extraction,
+pure helpers) lives in `server/src/shared`. The web app carries a committed copy in
+`frontend/src/shared`; `pnpm sync-shared` refreshes it and CI fails when it is stale. There is no
+workspace link between the two folders, which is what lets each deploy on its own.
 
 Browser code calls same-origin `/api/v1/*`; Next.js proxies it to the API (`API_URL`). Pathment and
 other tenants call `/integrations/v1/*` on the API host directly.
@@ -34,18 +39,18 @@ other tenants call `/integrations/v1/*` on the API host directly.
 ## Setup
 
 ```bash
-pnpm install                          # installs all workspaces, builds shared/, generates Prisma clients
+pnpm install && pnpm install:all      # root: the `concurrently` helper; then server/ and frontend/
 cp server/.env.example server/.env    # DATABASE_URL, APP_URL, email keys
 cp frontend/.env.example frontend/.env # API_URL (the web app never talks to Postgres)
 docker compose up -d                  # starts local Postgres on :5432
 pnpm db:ready                         # migrate deploy + prisma generate (use after git pull)
 pnpm db:seed                          # 1 admin, 1 mentor, 3 mentees, 1 course, 4 preview enrollments
 pnpm content:import                   # sync FreshMarket chapters/blocks from content/import
-pnpm dev                              # API on :4000, web on :3000, shared/ rebuilding on change
+pnpm dev                              # API on :4000, web on :3000
 ```
 
-Run one side on its own with `pnpm --filter @buildment/server dev` or
-`pnpm --filter @buildment/frontend dev`.
+Run one side on its own with `pnpm --dir server dev` or `pnpm --dir frontend dev` — or `cd` into
+the folder and treat it as a normal project; nothing outside it is needed.
 
 ### Email delivery (optional for local dev)
 
@@ -81,19 +86,20 @@ Run from the repo root unless noted.
 
 | Command | What it does |
 |---|---|
-| `pnpm dev` | Start API, web app and the shared package watcher together |
-| `pnpm build` | Build shared → server → frontend |
-| `pnpm test` | Vitest in every workspace (server suite needs Postgres) |
-| `pnpm typecheck` / `pnpm lint` | Type-check / lint every workspace |
+| `pnpm dev` | Start the API and the web app together |
+| `pnpm build` | Build server, then frontend |
+| `pnpm test` | Vitest in both apps (server suite needs Postgres) |
+| `pnpm typecheck` / `pnpm lint` | Type-check / lint both apps |
+| `pnpm sync-shared` | Refresh `frontend/src/shared` from `server/src/shared` after editing contract code |
 | `pnpm db:migrate` | `prisma migrate dev` (server) |
 | `pnpm db:seed` | Re-run the seed script (idempotent — upserts) |
 | `pnpm db:studio` | Prisma Studio, a GUI for the local database |
 | `pnpm content:import` | Import course content from `content/import/` into the database |
 | `pnpm content:validate` | Compile-check every stored chapter the way publish does (needs DB) |
-| `pnpm --filter @buildment/server content:validate:source` | Compile-check from `content/import/` (no DB) |
-| `pnpm --filter @buildment/server content:audit` | Structural audit (gates, learning logs, STYLE heuristics) |
-| `pnpm --filter @buildment/server db:seed:showcase` | Add realistic, repeatable demo history after the course import |
-| `pnpm --filter @buildment/frontend exec playwright test` | Browser end-to-end suite (starts API + web itself; see `frontend/playwright.config.ts`) |
+| `pnpm --dir server content:validate:source` | Compile-check from `content/import/` (no DB) |
+| `pnpm --dir server content:audit` | Structural audit (gates, learning logs, STYLE heuristics) |
+| `pnpm --dir server db:seed:showcase` | Add realistic, repeatable demo history after the course import |
+| `pnpm --dir frontend exec playwright test` | Browser end-to-end suite (starts API + web itself; see `frontend/playwright.config.ts`) |
 
 Content and seed scripts live in `server/scripts` next to the database they write.
 
@@ -120,25 +126,25 @@ Nothing to configure for local development.
 
 ## Deploying
 
-The two apps ship as separate containers built from the repository root:
+Each folder deploys on its own; nothing outside it is needed.
 
-```bash
-docker build -f server/Dockerfile   -t buildment-api .
-docker build -f frontend/Dockerfile -t buildment-web .
-docker compose --profile app up --build     # or: Postgres + both images locally, migrations included
-```
-
-- **API** (`server/Dockerfile`): set `DATABASE_URL`, `APP_URL`, `CORS_ORIGINS`, the email and
-  OpenRouter keys from `server/.env.example`. Run `prisma migrate deploy` as a release step (the
-  compose `migrate` service shows the command). Background jobs run inside the process once a day;
-  set `JOBS_ENABLED=false` on every replica but one, or hand the schedule to an external cron that
-  calls `POST /api/v1/jobs/*` with `CRON_SECRET`.
-- **Web** (`frontend/Dockerfile`): a Next.js standalone server; it only needs `API_URL` (reachable
-  from the container) and `APP_URL`. Browser traffic to `/api/v1/*` and `/integrations/v1/*` is
-  proxied to the API, so one public hostname is enough; third parties may also call the API host
-  directly.
-- **CI** (`.github/workflows/ci.yml`) runs typecheck, lint, every unit and API suite against a
-  Postgres service, both production builds, and on `main` builds both images.
+- **Web on Vercel:** import the repository, set Root Directory to `frontend`, keep the Next.js
+  preset. Environment: `API_URL` (the API's public URL) and `APP_URL` (the Vercel URL). Browser
+  traffic to `/api/v1/*` and `/integrations/v1/*` is proxied to the API server-side, so there is
+  no CORS and the session cookie just works.
+- **API on Heroku:** deploy the `server` folder (with the monorepo buildpack, `APP_BASE=server`,
+  or push a subtree). `server/Procfile` runs `prisma migrate deploy` as the release phase and
+  `node dist/index.js` as the web process; the `build` script generates the Prisma client and
+  compiles. Config vars: `DATABASE_URL`, `APP_URL` (the web URL — used in email links),
+  `CORS_ORIGINS`, the email and OpenRouter keys from `server/.env.example`, `CRON_SECRET`.
+  Background jobs run inside the process once a day; set `JOBS_ENABLED=false` on every dyno but
+  one, or hand the schedule to an external scheduler calling `POST /api/v1/jobs/*`.
+- **Containers anywhere:** `docker build -t buildment-api server/` and
+  `docker build -t buildment-web frontend/` (Next.js standalone output);
+  `docker compose --profile app up --build` runs Postgres, migrations and both apps locally.
+- **CI** (`.github/workflows/ci.yml`): one job per app (typecheck, lint, tests against Postgres,
+  production build), a check that `frontend/src/shared` matches `server/src/shared`, and on
+  `main` both image builds.
 
 ## Project layout
 

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { CourseSettingsInput } from "@buildment/shared/api/teach";
+import type { CourseSettingsInput } from "@/shared/api/teach";
 import { teachCall } from "./teach-call";
 
 export type CourseBuilderActionResult = { ok: true } | { ok: false; errors: string[] };

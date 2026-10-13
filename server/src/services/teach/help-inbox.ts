@@ -1,4 +1,4 @@
-import type { MentorHelpInboxView } from "@buildment/shared/api/teach";
+import type { MentorHelpInboxView } from "../../shared/api/teach.js";
 import { prisma } from "../../db/prisma.js";
 import type { SessionUser } from "../../types/auth.js";
 import type { HelpInboxQuery } from "../../validations/teach.js";

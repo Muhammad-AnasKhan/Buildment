@@ -1,4 +1,4 @@
-import type { ChapterReportView, CourseActivityView, CourseReportView } from "@buildment/shared/api/teach";
+import type { ChapterReportView, CourseActivityView, CourseReportView } from "../../shared/api/teach.js";
 import { prisma } from "../../db/prisma.js";
 import { toCsv } from "../../utils/csv.js";
 import type { SessionUser } from "../../types/auth.js";

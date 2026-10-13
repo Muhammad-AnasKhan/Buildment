@@ -1,6 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { SESSION_COOKIE_NAME } from "@buildment/shared/api/auth";
+import { SESSION_COOKIE_NAME } from "@/shared/api/auth";
 
 // Server Actions call the API from the Next.js server, so the API's Set-Cookie
 // never reaches the browser; the action stores the returned token itself.

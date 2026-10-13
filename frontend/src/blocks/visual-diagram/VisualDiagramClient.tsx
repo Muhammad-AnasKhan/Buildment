@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Expand, X } from "lucide-react";
-import type { VisualDiagramConfig } from "@buildment/shared/blocks/visual-diagram/schema";
+import type { VisualDiagramConfig } from "@/shared/blocks/visual-diagram/schema";
 
 export function VisualDiagramClient({ title, imageUrl, alt, caption, kind, legend }: VisualDiagramConfig) {
   const [open, setOpen] = useState(false);

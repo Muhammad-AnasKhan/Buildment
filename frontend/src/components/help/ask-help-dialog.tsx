@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { HandHelping, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HelpThreadDetail } from "./help-thread-detail";
-import type { HelpThreadView } from "@buildment/shared/api/help";
-import { helpUiCopy as copy } from "@buildment/shared/lib/help-ui-copy";
+import type { HelpThreadView } from "@/shared/api/help";
+import { helpUiCopy as copy } from "@/shared/lib/help-ui-copy";
 
 export function AskHelpDialog({
   courseId,

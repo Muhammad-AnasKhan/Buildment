@@ -1,6 +1,6 @@
 "use server";
 
-import type { AiReviewDraft, AiReviewDraftResult } from "@buildment/shared/api/teach";
+import type { AiReviewDraft, AiReviewDraftResult } from "@/shared/api/teach";
 import { teachCall } from "./teach-call";
 
 export type AiReviewActionResult =

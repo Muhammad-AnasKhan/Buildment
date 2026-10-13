@@ -1,5 +1,5 @@
-import type { Role } from "@buildment/shared/domain/enums";
-import type { ActiveSurface } from "@buildment/shared/lib/active-surface";
+import type { Role } from "@/shared/domain/enums";
+import type { ActiveSurface } from "@/shared/lib/active-surface";
 
 // Pure authorization decisions, deliberately free of any Next.js/Auth.js/Prisma
 // runtime imports so they're trivial to unit test — see guards.test.ts and

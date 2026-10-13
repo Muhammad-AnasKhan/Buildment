@@ -1,4 +1,4 @@
-import type { LearnerProgressCourse, LearnerProgressView } from "@buildment/shared/api/learner";
+import type { LearnerProgressCourse, LearnerProgressView } from "../../shared/api/learner.js";
 import { prisma } from "../../db/prisma.js";
 import { closedWrongCheckpoints } from "../progress/attention.js";
 import { loadEnrollmentSyllabus, resolveContinueChapterPath } from "../progress/enrollment-syllabus.js";

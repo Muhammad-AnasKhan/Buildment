@@ -1,0 +1,11 @@
+# Single-package config (no workspace members). pnpm 10 only runs install scripts of
+# packages listed here; these need their native binaries.
+allowBuilds:
+  '@prisma/engines': true
+  esbuild: true
+  prisma: true
+
+# pnpm 10 delays brand-new package versions by default (minimumReleaseAge). A fresh install
+# (CI, Docker, Vercel, Heroku) then fails whenever a transitive dependency released in the last
+# day is the only match, so the delay is off; the lockfile pins exact versions and hashes.
+minimumReleaseAge: 0

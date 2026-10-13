@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { SyllabusChapterRow } from "./syllabus-chapter-row";
 
-import type { SyllabusChapter, SyllabusModule } from "@buildment/shared/api/syllabus";
+import type { SyllabusChapter, SyllabusModule } from "@/shared/api/syllabus";
 
 export type { SyllabusChapter, SyllabusModule };
 

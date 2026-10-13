@@ -1,5 +1,5 @@
 import type { Role } from "../../generated/prisma/index.js";
-import type { ActiveSurface } from "@buildment/shared/lib/active-surface";
+import type { ActiveSurface } from "../../shared/lib/active-surface.js";
 
 // Pure authorization decisions, deliberately free of any Next.js/Auth.js/Prisma
 // runtime imports so they're trivial to unit test — see guards.test.ts and

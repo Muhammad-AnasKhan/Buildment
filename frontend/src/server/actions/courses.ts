@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { CourseSlugResult } from "@buildment/shared/api/teach";
+import type { CourseSlugResult } from "@/shared/api/teach";
 import { teachCall } from "./teach-call";
 
 export type CourseActionResult =

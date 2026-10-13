@@ -1,4 +1,4 @@
-import type { CourseBuilderView } from "@buildment/shared/api/teach";
+import type { CourseBuilderView } from "@/shared/api/teach";
 import { CourseHeader } from "@/components/teach/course-cms/course-header";
 import { CourseSettings } from "@/components/teach/course-cms/course-settings";
 import { CurriculumBuilder } from "@/components/teach/course-cms/curriculum-builder";

@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { safeRedirectTo } from "@buildment/shared/lib/safe-redirect";
+import { safeRedirectTo } from "../../shared/lib/safe-redirect.js";
 import { prisma } from "../../db/prisma.js";
 import { logger } from "../../utils/logger.js";
 import { appBaseUrl, sendEmail } from "../email/send.js";

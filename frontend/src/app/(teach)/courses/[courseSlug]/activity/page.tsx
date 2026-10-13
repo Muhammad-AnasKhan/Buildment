@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Activity, CalendarDays, Clock3, Users, type LucideIcon } from "lucide-react";
-import type { CourseActivityView } from "@buildment/shared/api/teach";
+import type { CourseActivityView } from "@/shared/api/teach";
 import { CourseInsightsTabs } from "@/components/teach/course-insights-tabs";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

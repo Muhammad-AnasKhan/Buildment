@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { CheckCircle2, RefreshCw, Sparkles } from "lucide-react";
 import { generateAiReviewDraft } from "@/server/actions/ai-review";
-import type { AiReviewDraft } from "@buildment/shared/api/teach";
+import type { AiReviewDraft } from "@/shared/api/teach";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

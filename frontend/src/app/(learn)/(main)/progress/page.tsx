@@ -9,7 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Progress, ProgressLabel } from "@/components/ui/progress";
-import type { LearnerProgressView } from "@buildment/shared/api/learner";
+import type { LearnerProgressView } from "@/shared/api/learner";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { formatStudyHours } from "@/lib/format-study-duration";

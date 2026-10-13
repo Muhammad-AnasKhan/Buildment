@@ -1,4 +1,4 @@
-import { INSTRUCTOR_ACCESS_ERROR_CODES } from "@buildment/shared/api/learner";
+import { INSTRUCTOR_ACCESS_ERROR_CODES } from "../../shared/api/learner.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, ForbiddenError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

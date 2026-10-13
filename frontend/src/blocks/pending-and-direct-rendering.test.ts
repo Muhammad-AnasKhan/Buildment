@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { restoreInteractiveBlockTags } from "@buildment/shared/mdx/restore-block-tags";
+import { restoreInteractiveBlockTags } from "@/shared/mdx/restore-block-tags";
 import { transformVisualFences } from "@/mdx/transform-visual-fences";
 
 describe("Mentee side block rendering and tag restoration", () => {

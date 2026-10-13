@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { updateCourseSettings } from "@/server/actions/modules";
-import type { CourseBuilderCourse } from "@buildment/shared/api/teach";
+import type { CourseBuilderCourse } from "@/shared/api/teach";
 
 export function CourseSettings({ course }: { course: CourseBuilderCourse }) {
   return (

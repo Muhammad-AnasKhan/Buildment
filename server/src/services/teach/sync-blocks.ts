@@ -1,7 +1,7 @@
-import { blockDefinitions, isRegisteredBlockType } from "@buildment/shared/blocks/definitions";
-import { diffBlocks, extractBlocksFromSource } from "@buildment/shared/mdx/extract";
-import { blockConfigFromSource, extractBlockConfigsFromSource } from "@buildment/shared/mdx/extract-block-config";
-import { restoreInteractiveBlockTags } from "@buildment/shared/mdx/restore-block-tags";
+import { blockDefinitions, isRegisteredBlockType } from "../../shared/blocks/definitions.js";
+import { diffBlocks, extractBlocksFromSource } from "../../shared/mdx/extract.js";
+import { blockConfigFromSource, extractBlockConfigsFromSource } from "../../shared/mdx/extract-block-config.js";
+import { restoreInteractiveBlockTags } from "../../shared/mdx/restore-block-tags.js";
 import { prisma } from "../../db/prisma.js";
 import type { Prisma } from "../../generated/prisma/index.js";
 

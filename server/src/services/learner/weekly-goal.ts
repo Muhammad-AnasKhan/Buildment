@@ -1,5 +1,5 @@
-import type { WeeklyGoalInput } from "@buildment/shared/api/learner";
-import { STREAK_MILESTONES, type StreakMilestone } from "@buildment/shared/lib/streak";
+import type { WeeklyGoalInput } from "../../shared/api/learner.js";
+import { STREAK_MILESTONES, type StreakMilestone } from "../../shared/lib/streak.js";
 import { prisma } from "../../db/prisma.js";
 
 export async function setWeeklyGoal(userId: string, goal: WeeklyGoalInput) {

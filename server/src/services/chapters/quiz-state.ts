@@ -1,5 +1,5 @@
-import type { QuizChapterState } from "@buildment/shared/api/blocks";
-import { QuizConfigSchema } from "@buildment/shared/blocks/quiz/schema";
+import type { QuizChapterState } from "../../shared/api/blocks.js";
+import { QuizConfigSchema } from "../../shared/blocks/quiz/schema.js";
 import { prisma } from "../../db/prisma.js";
 
 /** Initial state for a quiz-mode chapter's wizard: last answers, grades and the score once every question is attempted. */

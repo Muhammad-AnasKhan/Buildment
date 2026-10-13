@@ -1,5 +1,5 @@
 import "server-only";
-import type { BlockState } from "@buildment/shared/api/blocks";
+import type { BlockState } from "@/shared/api/blocks";
 import { ApiError } from "@/lib/api-client";
 import { serverApiFetch } from "@/lib/api-server";
 

@@ -14,14 +14,14 @@ import { ReaderShellFade, ReaderShellSkeleton } from "@/components/learn/reader-
 import { FocusModeToggle, ReaderFocusDock } from "@/components/learn/reader-focus-dock";
 import { cn } from "@/lib/utils";
 import { useReaderLayout } from "@/lib/use-reader-layout";
-import type { Heading } from "@buildment/shared/lib/mdx-headings";
+import type { Heading } from "@/shared/lib/mdx-headings";
 import type { SyllabusModule } from "@/components/learn/course-syllabus";
 import { AskHelpDialog } from "@/components/help/ask-help-dialog";
 import { StudyClock } from "@/components/learn/study-time-chip";
 import { useStudySession } from "@/lib/use-study-session";
 import { ThemeToggle } from "@/components/theme-toggle";
-import type { HelpThreadView } from "@buildment/shared/api/help";
-import type { StreakMilestone } from "@buildment/shared/lib/streak";
+import type { HelpThreadView } from "@/shared/api/help";
+import type { StreakMilestone } from "@/shared/lib/streak";
 import { HeadingNotesProvider } from "@/components/learn/heading-note";
 import { PredictRevealProvider } from "@/components/learn/predict-reveal";
 

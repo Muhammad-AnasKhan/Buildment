@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronRight, Inbox } from "lucide-react";
-import type { ReviewQueueView } from "@buildment/shared/api/teach";
+import type { ReviewQueueView } from "@/shared/api/teach";
 import { nowMs } from "@/server/time";
 import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";

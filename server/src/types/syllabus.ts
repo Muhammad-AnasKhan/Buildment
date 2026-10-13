@@ -1,1 +1,1 @@
-export type { SyllabusChapter, SyllabusModule } from "@buildment/shared/api/syllabus";
+export type { SyllabusChapter, SyllabusModule } from "../shared/api/syllabus.js";

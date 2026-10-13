@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { AUTH_ERROR_CODES } from "@buildment/shared/api/auth";
+import { AUTH_ERROR_CODES } from "../../shared/api/auth.js";
 import { prisma } from "../../db/prisma.js";
 import { BadRequestError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

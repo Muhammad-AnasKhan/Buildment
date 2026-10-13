@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import { PlaySquare, ExternalLink } from "lucide-react";
-import { resolveVideoEmbed } from "@buildment/shared/lib/video-embed";
+import { resolveVideoEmbed } from "@/shared/lib/video-embed";
 
 // MDX embed for videos: `<Video src="https://…" caption="…" />`.
 // Direct video files render a native player; YouTube/Vimeo/Loom URLs render a

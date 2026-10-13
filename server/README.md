@@ -14,6 +14,8 @@ src/
 ├─ controllers/      thin: read validated input, call a service, send a response
 ├─ services/         all business logic and Prisma access, grouped by domain
 ├─ middlewares/      authenticate, requireOrganization, validate, rate limits, error handlers
+├─ shared/           contract code both apps run: block schemas + graders, API wire types,
+│                    enums, MDX block extraction, pure helpers (copied to frontend/src/shared)
 ├─ jobs/             in-process daily scheduler (inactivity nudges)
 ├─ utils/            errors (AppError family), responses (ok/created), logger
 ├─ types/            Express request augmentation, SessionUser, view models
@@ -22,9 +24,10 @@ tests/
 ├─ api/              supertest suites against a real Postgres
 ├─ scripts/          unit tests for the content scripts
 └─ helpers/          fixtures that build and tear down their own course/org
-scripts/             course import/validation/audit, demo seeds, stats backfill (tsx)
+scripts/             course import/validation/audit, demo seeds, stats backfill, sync-shared (tsx)
 prisma/              schema, migrations, seed
-Dockerfile           production image, built from the repository root
+Dockerfile           production image, self-contained (build from this folder)
+Procfile             Heroku: release = migrate deploy, web = node dist/index.js
 ```
 
 ## Conventions
@@ -36,8 +39,9 @@ Dockerfile           production image, built from the repository root
 - **Auth:** opaque session tokens in the `Session` table, accepted as `Authorization: Bearer` or
   the `authjs.session-token` cookie. `authenticate` rejects, `optionalAuth` only decorates.
 - **Config:** import `env` from `config/env.ts`; never read `process.env` elsewhere.
-- **Shared code:** block schemas/graders, domain enums, MDX extraction and API wire types come
-  from `@buildment/shared`.
+- **Shared code:** `src/shared` is the single source of the code both apps run. After editing it,
+  run `pnpm sync-shared` to refresh `frontend/src/shared` and commit both; CI runs
+  `pnpm sync-shared:check`. Files there must stay free of Express, Prisma and React imports.
 - **Authorization:** `requireInstructor` / `requireAdmin` gate the routers; course, thread and
   enrollment ownership is decided in `services/teach/access.ts` and nowhere else.
 - **Jobs:** `jobs/scheduler.ts` runs each job at its UTC hour inside the process
@@ -55,14 +59,15 @@ Dockerfile           production image, built from the repository root
 | `pnpm db:migrate` / `db:ready` / `db:seed` / `db:studio` | Prisma |
 | `pnpm content:import` / `content:validate` / `content:validate:source` / `content:audit` | course content pipeline (`content/import/` → Postgres) |
 | `pnpm db:seed:showcase` / `db:seed:integration` / `stats:backfill` | demo data and maintenance |
+| `pnpm sync-shared` / `sync-shared:check` | copy `src/shared` into the web app / verify the copy is current |
 
 ## Docker
 
 ```bash
-docker build -f server/Dockerfile -t buildment-api .          # from the repository root
-docker run --rm --env-file server/.env buildment-api pnpm exec prisma migrate deploy
-docker run -p 4000:4000 --env-file server/.env buildment-api
+docker build -t buildment-api .                 # from this folder
+docker run --rm --env-file .env buildment-api pnpm exec prisma migrate deploy
+docker run -p 4000:4000 --env-file .env buildment-api
 ```
 
-The image carries the compiled API, the Prisma schema and migrations, and the content scripts, so
-`pnpm content:import` and `pnpm db:seed` work inside the container too.
+The image carries the compiled API, the Prisma schema and migrations, and the scripts, so
+`pnpm db:seed` works inside the container too (the course import reads `content/` from a checkout).

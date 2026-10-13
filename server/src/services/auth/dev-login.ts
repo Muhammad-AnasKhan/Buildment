@@ -1,5 +1,5 @@
-import { isSeedTestEmail } from "@buildment/shared/lib/seed-data";
-import { safeRedirectTo } from "@buildment/shared/lib/safe-redirect";
+import { isSeedTestEmail } from "../../shared/lib/seed-data.js";
+import { safeRedirectTo } from "../../shared/lib/safe-redirect.js";
 import { prisma } from "../../db/prisma.js";
 import { isProduction } from "../../config/env.js";
 import { BadRequestError, ForbiddenError, NotFoundError } from "../../utils/errors.js";

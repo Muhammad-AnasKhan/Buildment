@@ -1,4 +1,4 @@
-import type { MenteeEvaluation } from "@buildment/shared/api/teach";
+import type { MenteeEvaluation } from "@/shared/api/teach";
 import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { EvaluationHeader } from "@/components/teach/evaluation/evaluation-header";

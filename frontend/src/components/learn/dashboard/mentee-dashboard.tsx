@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Progress, ProgressLabel } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { helpUiCopy } from "@buildment/shared/lib/help-ui-copy";
+import { helpUiCopy } from "@/shared/lib/help-ui-copy";
 import { formatStudyAmount } from "@/lib/format-study-duration";
 import { WeeklyGoalEditor } from "@/components/learn/dashboard/weekly-goal-editor";
 import { CourseCover } from "@/components/learn/course-cover";
@@ -23,7 +23,7 @@ import type {
   DashboardDay,
   DashboardEvent,
   MenteeDashboardViewModel,
-} from "@buildment/shared/api/learner";
+} from "@/shared/api/learner";
 
 function relativeTime(value: string | null) {
   if (!value) return "No activity yet";

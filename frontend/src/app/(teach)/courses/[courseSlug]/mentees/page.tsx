@@ -1,5 +1,5 @@
 import { Users } from "lucide-react";
-import type { CourseMenteesView } from "@buildment/shared/api/teach";
+import type { CourseMenteesView } from "@/shared/api/teach";
 import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { MenteesHeader } from "@/components/teach/mentees/mentees-header";

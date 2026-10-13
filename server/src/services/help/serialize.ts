@@ -1,4 +1,4 @@
-import type { HelpMessageView, HelpThreadView } from "@buildment/shared/api/help";
+import type { HelpMessageView, HelpThreadView } from "../../shared/api/help.js";
 
 export type HelpMessageRow = {
   id: string;

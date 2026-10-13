@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { AdminOrganizationRow } from "@buildment/shared/api/admin";
+import type { AdminOrganizationRow } from "@/shared/api/admin";
 import { serverApiFetch } from "@/lib/api-server";
 import { buttonVariants } from "@/components/ui/button";
 import {

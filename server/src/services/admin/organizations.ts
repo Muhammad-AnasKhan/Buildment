@@ -4,9 +4,9 @@ import type {
   AdminOrganizationRow,
   CreatedOrganization,
   IssuedCredential,
-} from "@buildment/shared/api/admin";
-import { ADMIN_ERROR_CODES } from "@buildment/shared/api/admin";
-import { slugify } from "@buildment/shared/lib/mdx-headings";
+} from "../../shared/api/admin.js";
+import { ADMIN_ERROR_CODES } from "../../shared/api/admin.js";
+import { slugify } from "../../shared/lib/mdx-headings.js";
 import { prisma } from "../../db/prisma.js";
 import type { Prisma } from "../../generated/prisma/index.js";
 import { NotFoundError, UnprocessableError } from "../../utils/errors.js";

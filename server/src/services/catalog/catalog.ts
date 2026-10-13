@@ -1,4 +1,4 @@
-import type { CatalogCourseDetail, CatalogCourseSummary } from "@buildment/shared/api/catalog";
+import type { CatalogCourseDetail, CatalogCourseSummary } from "../../shared/api/catalog.js";
 import { prisma } from "../../db/prisma.js";
 import { NotFoundError } from "../../utils/errors.js";
 import { enrollmentGrantsContentAccess } from "../enrollment/lifecycle.js";

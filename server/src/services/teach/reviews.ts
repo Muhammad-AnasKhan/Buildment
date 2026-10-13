@@ -1,7 +1,7 @@
-import type { AiReviewDraftResult, ReviewDetailView, ReviewQueueView } from "@buildment/shared/api/teach";
-import { TEACH_ERROR_CODES } from "@buildment/shared/api/teach";
-import { OpenQuestionConfigSchema, OpenQuestionPayloadSchema } from "@buildment/shared/blocks/open-question/schema";
-import { parseSafeSubmissionUrl } from "@buildment/shared/lib/safe-submission-url";
+import type { AiReviewDraftResult, ReviewDetailView, ReviewQueueView } from "../../shared/api/teach.js";
+import { TEACH_ERROR_CODES } from "../../shared/api/teach.js";
+import { OpenQuestionConfigSchema, OpenQuestionPayloadSchema } from "../../shared/blocks/open-question/schema.js";
+import { parseSafeSubmissionUrl } from "../../shared/lib/safe-submission-url.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, NotFoundError, UnprocessableError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

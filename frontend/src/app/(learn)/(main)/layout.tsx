@@ -1,4 +1,4 @@
-import type { LearnerWorkspace } from "@buildment/shared/api/learner";
+import type { LearnerWorkspace } from "@/shared/api/learner";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { MenteeWorkspaceShell } from "@/components/learn/mentee-workspace-shell";

@@ -7,7 +7,7 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import type { AdminOverview } from "@buildment/shared/api/admin";
+import type { AdminOverview } from "@/shared/api/admin";
 import { serverApiFetch } from "@/lib/api-server";
 import { AdminPageHeader, AdminPanel } from "@/components/admin/admin-ui";
 import { cn } from "@/lib/utils";

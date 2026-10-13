@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChapterCompletionStrip } from "@/components/learn/mark-chapter-complete";
-import type { StreakMilestone } from "@buildment/shared/lib/streak";
+import type { StreakMilestone } from "@/shared/lib/streak";
 
 type NavChapter = {
   slug: string;

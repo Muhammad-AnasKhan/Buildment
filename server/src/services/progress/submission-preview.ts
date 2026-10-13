@@ -1,7 +1,7 @@
-import { CodeConfigSchema } from "@buildment/shared/blocks/code/schema";
-import { OpenQuestionConfigSchema } from "@buildment/shared/blocks/open-question/schema";
-import { PredictConfigSchema } from "@buildment/shared/blocks/predict/schema";
-import { QuizConfigSchema } from "@buildment/shared/blocks/quiz/schema";
+import { CodeConfigSchema } from "../../shared/blocks/code/schema.js";
+import { OpenQuestionConfigSchema } from "../../shared/blocks/open-question/schema.js";
+import { PredictConfigSchema } from "../../shared/blocks/predict/schema.js";
+import { QuizConfigSchema } from "../../shared/blocks/quiz/schema.js";
 
 /** Mentor-facing answer text. Does not include correct answers, rubrics, or hidden tests. */
 export function submissionPreview(

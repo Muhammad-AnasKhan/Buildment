@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { WeeklyGoalInput } from "@buildment/shared/api/learner";
-import type { StreakMilestone } from "@buildment/shared/lib/streak";
+import type { WeeklyGoalInput } from "@/shared/api/learner";
+import type { StreakMilestone } from "@/shared/lib/streak";
 import { ApiError } from "@/lib/api-client";
 import { serverApiFetch } from "@/lib/api-server";
 

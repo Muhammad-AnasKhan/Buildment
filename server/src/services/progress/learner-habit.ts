@@ -1,7 +1,7 @@
 
 import { prisma } from "../../db/prisma.js";
 import { utcDateOnly } from "./heartbeat.js";
-import { currentStreak, uncelebratedStreakMilestone, type LearnerHabit } from "@buildment/shared/lib/streak";
+import { currentStreak, uncelebratedStreakMilestone, type LearnerHabit } from "../../shared/lib/streak.js";
 
 export type { LearnerHabit };
 

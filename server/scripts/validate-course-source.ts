@@ -8,11 +8,11 @@ import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import remarkGfm from "remark-gfm";
-import { collectUnknownComponents } from "@buildment/shared/mdx/extract";
-import { remarkChecklist } from "@buildment/shared/mdx/remark-checklist";
-import { remarkLearningLog } from "@buildment/shared/mdx/remark-learning-log";
-import { remarkMermaid } from "@buildment/shared/mdx/remark-mermaid";
-import { restoreInteractiveBlockTags } from "@buildment/shared/mdx/restore-block-tags";
+import { collectUnknownComponents } from "../src/shared/mdx/extract.js";
+import { remarkChecklist } from "../src/shared/mdx/remark-checklist.js";
+import { remarkLearningLog } from "../src/shared/mdx/remark-learning-log.js";
+import { remarkMermaid } from "../src/shared/mdx/remark-mermaid.js";
+import { restoreInteractiveBlockTags } from "../src/shared/mdx/restore-block-tags.js";
 import { parseLesson, readLessonFiles, readModuleDirs } from "./import-course.js";
 
 const componentNames = [

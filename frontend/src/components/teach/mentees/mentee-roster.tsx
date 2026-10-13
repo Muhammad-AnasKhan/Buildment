@@ -11,7 +11,7 @@ import { NudgeMenteeButton } from "@/components/teach/nudge-mentee-button";
 import { RepairEnrollmentProgressButton } from "@/components/teach/repair-enrollment-progress-button";
 import { formatStudyAmount } from "@/lib/format-study-duration";
 import { cn } from "@/lib/utils";
-import type { MenteeRosterItem } from "@buildment/shared/api/teach";
+import type { MenteeRosterItem } from "@/shared/api/teach";
 
 export function MenteeRoster({ mentees }: { mentees: MenteeRosterItem[] }) {
   const [query, setQuery] = useState("");

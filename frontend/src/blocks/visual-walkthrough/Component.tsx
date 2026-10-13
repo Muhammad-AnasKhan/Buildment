@@ -1,5 +1,5 @@
 import { fetchBlockState } from "@/blocks/block-state";
-import type { VisualWalkthroughConfig } from "@buildment/shared/blocks/visual-walkthrough/schema";
+import type { VisualWalkthroughConfig } from "@/shared/blocks/visual-walkthrough/schema";
 import { VisualWalkthroughClient } from "./VisualWalkthroughClient";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 

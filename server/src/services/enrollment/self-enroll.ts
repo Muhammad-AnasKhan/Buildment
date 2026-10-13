@@ -1,4 +1,4 @@
-import { ENROLLMENT_ERROR_CODES, type SelfEnrollResult } from "@buildment/shared/api/catalog";
+import { ENROLLMENT_ERROR_CODES, type SelfEnrollResult } from "../../shared/api/catalog.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, NotFoundError } from "../../utils/errors.js";
 import { notifyMentorNewEnrollment } from "../email/event-notifications.js";

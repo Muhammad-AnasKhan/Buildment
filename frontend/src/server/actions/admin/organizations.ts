@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import type { CreatedOrganization, IssuedCredential } from "@buildment/shared/api/admin";
+import type { CreatedOrganization, IssuedCredential } from "@/shared/api/admin";
 import { adminCall } from "./call";
 
 // Tenants and their integration access. The API returns a credential secret

@@ -1,9 +1,9 @@
 import type { ComponentType } from "react";
-import type { BlockDefinition } from "@buildment/shared/blocks/types";
+import type { BlockDefinition } from "@/shared/blocks/types";
 
-export type { BlockDefinition, GradeResult } from "@buildment/shared/blocks/types";
+export type { BlockDefinition, GradeResult } from "@/shared/blocks/types";
 
-// A block's schema, grader and report live in @buildment/shared (the API grades
+// A block's schema, grader and report live in src/shared, a copy of the API's contract code (the API grades
 // with them too). The frontend adds the server component rendered in place of the
 // block's JSX tag — see docs/03-blocks-registry.mdx "The registry pattern".
 export type BlockRegistryEntry<Config = unknown, Payload = unknown> = BlockDefinition<Config, Payload> & {

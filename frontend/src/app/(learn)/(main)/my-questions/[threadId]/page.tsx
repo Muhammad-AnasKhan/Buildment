@@ -1,11 +1,11 @@
 import Link from "next/link";
-import type { HelpThreadDetail as HelpThreadDetailModel } from "@buildment/shared/api/help";
+import type { HelpThreadDetail as HelpThreadDetailModel } from "@/shared/api/help";
 import { requireUser } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { HelpThreadDetail } from "@/components/help/help-thread-detail";
 import { LearnerBreadcrumb } from "@/components/learn/learner-breadcrumb";
 import { buttonVariants } from "@/components/ui/button";
-import { helpUiCopy as copy } from "@buildment/shared/lib/help-ui-copy";
+import { helpUiCopy as copy } from "@/shared/lib/help-ui-copy";
 
 export default async function MenteeHelpThreadPage({
   params,

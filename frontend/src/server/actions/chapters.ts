@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import type { ChapterIdResult, ChapterSettingsInput, SavedAtResult } from "@buildment/shared/api/teach";
+import type { ChapterIdResult, ChapterSettingsInput, SavedAtResult } from "@/shared/api/teach";
 import { teachCall } from "./teach-call";
 
 // Mentor-facing chapter mutations, forwarded to /api/v1/teach. The editor keeps

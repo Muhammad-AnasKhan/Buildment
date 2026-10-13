@@ -1,6 +1,6 @@
 "use server";
 
-import type { LearningLogSaveResult as SaveResponse } from "@buildment/shared/api/chapters";
+import type { LearningLogSaveResult as SaveResponse } from "@/shared/api/chapters";
 import { ApiError } from "@/lib/api-client";
 import { serverApiFetch } from "@/lib/api-server";
 

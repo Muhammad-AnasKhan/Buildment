@@ -1,7 +1,7 @@
 
 import { prisma } from "../../db/prisma.js";
 import { userCanInstruct } from "../auth/access-rules.js";
-import type { InstructorAccessView } from "@buildment/shared/lib/instructor-access";
+import type { InstructorAccessView } from "../../shared/lib/instructor-access.js";
 import type { Role } from "../../generated/prisma/index.js";
 
 export async function loadInstructorAccessState(user: {

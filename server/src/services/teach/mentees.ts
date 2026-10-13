@@ -1,5 +1,5 @@
-import type { CourseMenteesView, MenteeAttentionKind, MenteeEvaluation } from "@buildment/shared/api/teach";
-import { helpUiCopy } from "@buildment/shared/lib/help-ui-copy";
+import type { CourseMenteesView, MenteeAttentionKind, MenteeEvaluation } from "../../shared/api/teach.js";
+import { helpUiCopy } from "../../shared/lib/help-ui-copy.js";
 import { prisma } from "../../db/prisma.js";
 import { NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

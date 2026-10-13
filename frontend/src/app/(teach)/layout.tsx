@@ -1,4 +1,4 @@
-import type { TeachWorkspace } from "@buildment/shared/api/teach";
+import type { TeachWorkspace } from "@/shared/api/teach";
 import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { MentorWorkspaceSidebar } from "@/components/teach/mentor-workspace-sidebar";

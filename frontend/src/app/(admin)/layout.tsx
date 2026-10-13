@@ -1,4 +1,4 @@
-import type { AdminOverview } from "@buildment/shared/api/admin";
+import type { AdminOverview } from "@/shared/api/admin";
 import { requireRole } from "@/server/auth/guards";
 import { signOutAction } from "@/server/auth/actions";
 import { serverApiFetch } from "@/lib/api-server";

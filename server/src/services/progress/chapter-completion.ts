@@ -1,4 +1,4 @@
-import { CHAPTER_ERROR_CODES } from "@buildment/shared/api/chapters";
+import { CHAPTER_ERROR_CODES } from "../../shared/api/chapters.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, ForbiddenError, NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import type { WeeklyGoalInput } from "@buildment/shared/api/learner";
-import type { StreakMilestone } from "@buildment/shared/lib/streak";
+import type { WeeklyGoalInput } from "../shared/api/learner.js";
+import type { StreakMilestone } from "../shared/lib/streak.js";
 import { created, noContent, ok } from "../utils/responses.js";
 import { bypassProgressGatingForEmail } from "../services/auth/seed-access.js";
 import { loadLearnerWorkspace } from "../services/learner/workspace.js";
@@ -9,7 +9,7 @@ import { loadLearnerProgress } from "../services/learner/progress.js";
 import * as weeklyGoal from "../services/learner/weekly-goal.js";
 import { loadProfile, updateProfile } from "../services/learner/profile.js";
 import { requestInstructorAccess } from "../services/instructor-access/request.js";
-import type { ProfileUpdateInput } from "@buildment/shared/api/learner";
+import type { ProfileUpdateInput } from "../shared/api/learner.js";
 
 function displayName(user: { name: string | null; email: string }) {
   return user.name?.trim() || user.email.split("@")[0] || "there";

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import type { ChapterReaderView } from "@buildment/shared/api/reader";
+import type { ChapterReaderView } from "@/shared/api/reader";
 import { requireVerifiedUser } from "@/server/auth/guards";
 import { ApiError } from "@/lib/api-client";
 import { serverApiFetch } from "@/lib/api-server";
@@ -7,7 +7,7 @@ import { LearnAccessDenied, forbiddenToLearnReason } from "@/components/learn/le
 import { ChapterMdx } from "@/mdx/compile";
 import { QuizChapterWizard } from "@/components/learn/quiz-chapter-wizard";
 import { stripInteractiveBlockTags } from "@/lib/strip-interactive-block-tags";
-import { extractHeadings } from "@buildment/shared/lib/mdx-headings";
+import { extractHeadings } from "@/shared/lib/mdx-headings";
 import { ChapterReaderShell } from "@/components/learn/chapter-reader-shell";
 import { LockedChapterView } from "@/components/learn/locked-chapter";
 import { signOutAction } from "@/server/auth/actions";

@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, CircleUserRound } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { MenteeEvaluation } from "@buildment/shared/api/teach";
+import type { MenteeEvaluation } from "@/shared/api/teach";
 
 export function EvaluationHeader({ evaluation }: { evaluation: MenteeEvaluation }) {
   const { course, mentee, enrollment } = evaluation;

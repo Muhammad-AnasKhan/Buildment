@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MDX_COMPONENT_NAMES } from "@buildment/shared/mdx/component-allowlist";
+import { MDX_COMPONENT_NAMES } from "@/shared/mdx/component-allowlist";
 import { mdxComponents } from "./components";
 
 // The API validates chapter drafts against the shared allowlist; the frontend

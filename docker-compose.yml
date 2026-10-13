@@ -1,6 +1,6 @@
 # Local Postgres by default:          docker compose up -d
 # The whole stack from source:         docker compose --profile app up --build
-# The app profile builds both images from this repository and runs migrations before the API starts.
+# The app profile builds server/ and frontend/ as independent images and runs migrations first.
 services:
   postgres:
     image: postgres:16-alpine
@@ -21,9 +21,7 @@ services:
 
   migrate:
     profiles: ["app"]
-    build:
-      context: .
-      dockerfile: server/Dockerfile
+    build: ./server
     command: ["pnpm", "exec", "prisma", "migrate", "deploy"]
     environment:
       DATABASE_URL: postgresql://buildment:buildment@postgres:5432/buildment
@@ -33,9 +31,7 @@ services:
 
   api:
     profiles: ["app"]
-    build:
-      context: .
-      dockerfile: server/Dockerfile
+    build: ./server
     restart: unless-stopped
     env_file:
       - path: server/.env
@@ -53,9 +49,7 @@ services:
 
   web:
     profiles: ["app"]
-    build:
-      context: .
-      dockerfile: frontend/Dockerfile
+    build: ./frontend
     restart: unless-stopped
     env_file:
       - path: frontend/.env

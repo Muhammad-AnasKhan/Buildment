@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { ChevronRight, Inbox } from "lucide-react";
-import type { MentorHelpInboxView } from "@buildment/shared/api/teach";
+import type { MentorHelpInboxView } from "@/shared/api/teach";
 import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { AutoSubmitSelect } from "@/components/teach/auto-submit-select";
-import { helpUiCopy as copy } from "@buildment/shared/lib/help-ui-copy";
+import { helpUiCopy as copy } from "@/shared/lib/help-ui-copy";
 
 const AGING_HOURS = 48;
 

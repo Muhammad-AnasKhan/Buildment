@@ -6,9 +6,9 @@ import "dotenv/config";
 import { compile } from "@mdx-js/mdx";
 import remarkGfm from "remark-gfm";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { remarkChecklist } from "@buildment/shared/mdx/remark-checklist";
-import { remarkLearningLog } from "@buildment/shared/mdx/remark-learning-log";
-import { restoreInteractiveBlockTags } from "@buildment/shared/mdx/restore-block-tags";
+import { remarkChecklist } from "../src/shared/mdx/remark-checklist.js";
+import { remarkLearningLog } from "../src/shared/mdx/remark-learning-log.js";
+import { restoreInteractiveBlockTags } from "../src/shared/mdx/restore-block-tags.js";
 import { PrismaClient } from "../src/generated/prisma/index.js";
 
 const COURSE_SLUG = process.argv[2] ?? "multi-vendor-marketplace";

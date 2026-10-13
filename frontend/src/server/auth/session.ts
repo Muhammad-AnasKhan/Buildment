@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
-import { SESSION_COOKIE_NAME, type SessionUser } from "@buildment/shared/api/auth";
+import { SESSION_COOKIE_NAME, type SessionUser } from "@/shared/api/auth";
 import { ApiError } from "@/lib/api-client";
 import { serverApiFetch } from "@/lib/api-server";
 

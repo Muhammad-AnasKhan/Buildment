@@ -33,7 +33,7 @@ import {
 import { contentBlockDescriptors } from "@/components/learn/content-blocks/editor-descriptors";
 import { authoringComponentDescriptors } from "@/components/teach/editor/authoring-descriptors";
 import { InsertContentMenu } from "@/components/teach/editor/insert-content-menu";
-import { normalizeLearningLogQuestionProps } from "@buildment/shared/lib/learning-log";
+import { normalizeLearningLogQuestionProps } from "@/shared/lib/learning-log";
 // Per-block editor descriptors — each block folder owns its own descriptor.
 import { quizEditorDescriptor } from "@/blocks/quiz/editorDescriptor";
 import { predictEditorDescriptor } from "@/blocks/predict/editorDescriptor";

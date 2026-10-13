@@ -1,5 +1,5 @@
-import type { ChapterReaderView } from "@buildment/shared/api/reader";
-import { learningLogToAnswers, learningLogToChecklist, parseLearningLog } from "@buildment/shared/lib/learning-log";
+import type { ChapterReaderView } from "../../shared/api/reader.js";
+import { learningLogToAnswers, learningLogToChecklist, parseLearningLog } from "../../shared/lib/learning-log.js";
 import { prisma } from "../../db/prisma.js";
 import { NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";

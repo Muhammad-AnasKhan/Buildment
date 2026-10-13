@@ -2,11 +2,11 @@ import Link from "next/link";
 import { ChevronRight, Inbox } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import type { HelpThreadSummary } from "@buildment/shared/api/help";
+import type { HelpThreadSummary } from "@/shared/api/help";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { cn } from "@/lib/utils";
-import { helpUiCopy as copy } from "@buildment/shared/lib/help-ui-copy";
+import { helpUiCopy as copy } from "@/shared/lib/help-ui-copy";
 
 export default async function MenteeHelpListPage() {
   await requireLearnSurface();

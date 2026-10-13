@@ -1,5 +1,5 @@
-import type { AdminUsersView } from "@buildment/shared/api/admin";
-import { ADMIN_ERROR_CODES } from "@buildment/shared/api/admin";
+import type { AdminUsersView } from "../../shared/api/admin.js";
+import { ADMIN_ERROR_CODES } from "../../shared/api/admin.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, NotFoundError } from "../../utils/errors.js";
 import type { GrantInstructorBody } from "../../validations/admin.js";

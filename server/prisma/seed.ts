@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client.js";
-import { SEED_COURSE, SEED_USERS } from "@buildment/shared/lib/seed-data";
-import { SEED_DEV_PASSWORD } from "@buildment/shared/lib/seed-test-users";
+import { SEED_COURSE, SEED_USERS } from "../src/shared/lib/seed-data.js";
+import { SEED_DEV_PASSWORD } from "../src/shared/lib/seed-test-users.js";
 import { hashPassword } from "../src/services/auth/password.js";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });

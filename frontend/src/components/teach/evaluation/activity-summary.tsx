@@ -2,8 +2,8 @@ import Link from "next/link";
 import { CircleHelp, Clock3, MessageCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatStudyAmount } from "@/lib/format-study-duration";
-import type { HelpRequest, StudySessionItem } from "@buildment/shared/api/teach";
-import { helpUiCopy as copy } from "@buildment/shared/lib/help-ui-copy";
+import type { HelpRequest, StudySessionItem } from "@/shared/api/teach";
+import { helpUiCopy as copy } from "@/shared/lib/help-ui-copy";
 
 export function ActivitySummary({ help, sessions }: { help: HelpRequest[]; sessions: StudySessionItem[] }) {
   return <section id="activity" aria-labelledby="activity-title" className="rounded-2xl border bg-card p-5 sm:p-6">

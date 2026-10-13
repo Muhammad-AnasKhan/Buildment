@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { SESSION_COOKIE_NAME, type SessionUser as SessionUserWire } from "@buildment/shared/api/auth";
+import { SESSION_COOKIE_NAME, type SessionUser as SessionUserWire } from "../../shared/api/auth.js";
 import { prisma } from "../../db/prisma.js";
 import type { SessionUser } from "../../types/auth.js";
 

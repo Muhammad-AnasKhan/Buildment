@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import type { SignupResult } from "@buildment/shared/api/auth";
+import type { SignupResult } from "@/shared/api/auth";
 import { ApiError } from "@/lib/api-client";
 import { serverApiFetch } from "@/lib/api-server";
 

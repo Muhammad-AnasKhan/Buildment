@@ -1,12 +1,12 @@
 
 import { prisma } from "../../db/prisma.js";
-import { SEED_USERS } from "@buildment/shared/lib/seed-data";
+import { SEED_USERS } from "../../shared/lib/seed-data.js";
 import { hashPassword } from "./password.js";
 import {
   isSeedTestEmail,
   SEED_DEV_PASSWORD,
   shouldAutoVerifySeedTestUser,
-} from "@buildment/shared/lib/seed-test-users";
+} from "../../shared/lib/seed-test-users.js";
 
 export { SEED_DEV_PASSWORD, shouldAutoVerifySeedTestUser };
 

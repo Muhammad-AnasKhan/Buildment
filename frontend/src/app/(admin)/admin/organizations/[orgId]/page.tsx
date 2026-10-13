@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { AdminOrganizationDetail } from "@buildment/shared/api/admin";
+import type { AdminOrganizationDetail } from "@/shared/api/admin";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { CredentialReveal } from "@/components/admin/credential-reveal";
 import { Badge } from "@/components/ui/badge";

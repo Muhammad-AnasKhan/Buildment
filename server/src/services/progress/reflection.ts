@@ -3,9 +3,9 @@ import remarkParse from "remark-parse";
 import remarkMdx from "remark-mdx";
 import remarkGfm from "remark-gfm";
 import { visit } from "unist-util-visit";
-import { remarkChecklist } from "@buildment/shared/mdx/remark-checklist";
-import { remarkLearningLog } from "@buildment/shared/mdx/remark-learning-log";
-import { parseLearningLog, type LearningLogData } from "@buildment/shared/lib/learning-log";
+import { remarkChecklist } from "../../shared/mdx/remark-checklist.js";
+import { remarkLearningLog } from "../../shared/mdx/remark-learning-log.js";
+import { parseLearningLog, type LearningLogData } from "../../shared/lib/learning-log.js";
 
 export type ReflectionRequirements = {
   checklistIds: string[];

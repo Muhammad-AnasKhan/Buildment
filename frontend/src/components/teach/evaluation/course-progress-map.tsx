@@ -1,7 +1,7 @@
 import { CheckCircle2, Circle, Clock3, LockKeyhole, MessageSquareText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatStudyAmount } from "@/lib/format-study-duration";
-import type { EvaluationModule } from "@buildment/shared/api/teach";
+import type { EvaluationModule } from "@/shared/api/teach";
 
 function date(value: string | null) { return value ? new Date(value).toLocaleDateString() : null; }
 

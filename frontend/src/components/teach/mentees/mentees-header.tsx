@@ -3,7 +3,7 @@ import { ArrowLeft, BarChart3, BookOpen, MessageSquareText, Users } from "lucide
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { CourseMenteesView } from "@buildment/shared/api/teach";
+import type { CourseMenteesView } from "@/shared/api/teach";
 
 export function MenteesHeader({ view }: { view: CourseMenteesView }) {
   const { course, summary } = view;

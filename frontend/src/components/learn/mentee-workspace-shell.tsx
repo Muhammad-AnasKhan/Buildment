@@ -25,9 +25,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { helpUiCopy } from "@buildment/shared/lib/help-ui-copy";
+import { helpUiCopy } from "@/shared/lib/help-ui-copy";
 import { SurfaceSwitcher } from "@/components/workspace/surface-switcher";
-import type { InstructorAccessView } from "@buildment/shared/lib/instructor-access";
+import type { InstructorAccessView } from "@/shared/lib/instructor-access";
 
 type LearnerNavItem = {
   label: string;

@@ -1,6 +1,6 @@
 "use server";
 
-import type { AssignByEmailsResult as AssignByEmailsData, InviteLinkResult } from "@buildment/shared/api/teach";
+import type { AssignByEmailsResult as AssignByEmailsData, InviteLinkResult } from "@/shared/api/teach";
 import { teachCall } from "./teach-call";
 
 // Mentor side of assignment and invites; acceptance moved to the API with the
