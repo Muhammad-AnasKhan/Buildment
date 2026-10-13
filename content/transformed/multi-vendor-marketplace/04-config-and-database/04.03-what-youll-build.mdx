@@ -17,7 +17,7 @@ By the end of Chapter 4, your marketplace API will:
 3. **Report database status** on the `/health` endpoint
 4. **Show database status** on your React Home page
 
-<ProjectPreview id="01M3P088RTJ0B69QW4GMD3SCC3" />
+<ProjectPreview id="01M4THGCKYG5BGK2FJ9S6RVWXB" />
 
 ## Why this matters
 
@@ -69,13 +69,7 @@ If you `listen` first, health checks may report `status: ok` while DB is down �
 | `PORT` | no (default 5000) | `5000` |
 | `NODE_ENV` | no | `development` |
 
-<MustRead
-  title="MongoDB Node.js driver — Connect to MongoDB"
-  url="https://www.mongodb.com/docs/drivers/node/current/connect/"
-  source="MongoDB"
-  description="Official guide to connecting a Node.js app to MongoDB with the modern driver. Matches what you implement in the db module this chapter."
-  readMinutes={10}
-/>
+<MustRead id="01M4THGCKZ3J72RX9FJWYCZVYE" />
 
 <RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />
 
@@ -133,7 +127,7 @@ No — and this is an important separation to internalise. The React app never t
 | client env/UI | 4.14 |
 | failure tests | 4.15 |
 
-<ChapterRecap id="01M3P088RTN2QAC9YTP65AABAP" />
+<ChapterRecap id="01M4THGCKZJ5DJWM0DGEBAHFF2" />
 
 **Next:** Environment variables vs hardcoded values — why `.env.example` is documentation.
 <InterestingRead title="The `.env` leak that took down a startup demo" hook="One committed secret becomes everyone's secret." readMinutes={3}>

@@ -12,15 +12,11 @@ summary: "**Where the project is now:** Chapter 4 gave you a connected MongoDB �
 
 This is a **build chapter**. The gate is **runnable proof**: seed runs, Compass shows documents, you can explain the ownership chain aloud.
 
-<ArticleBreak title="The FreshMarket ownership chain" subtitle="User → vendor → store → product → cart → order" readMinutes={7}>
-
 Every document in FreshMarket answers one question: who owns this, and who is allowed to change it?
 
 A User becomes a vendor by opening a store. Products belong to exactly one store. Carts belong to shoppers. Orders split by vendor at checkout because each shop fulfils its own items.
 
 Draw this chain before you write handlers. Authorization bugs — a vendor editing another vendor's tomatoes — almost always trace back to a missing link in this chain.
-
-</ArticleBreak>
 
 ## Bridge from last chapter
 
@@ -139,13 +135,7 @@ server/src/
 
 No routes yet — models only. Auth API comes in Chapter 6.
 
-<MustRead
-  title="Mongoose — Schemas"
-  url="https://mongoosejs.com/docs/guide.html"
-  source="Mongoose"
-  description="How Mongoose schemas define shape, defaults, and validation on MongoDB documents. Directly applies to User, Store, Product, Cart, and Order models."
-  readMinutes={12}
-/>
+<MustRead id="01M4THGCQ406YNXZ7HR8QZ9PQ7" />
 
 ## The Week 1 demo completes here
 

@@ -1,9 +1,7 @@
-import { prisma } from "@/server/db";
-import { getSessionUser } from "@/server/auth/guards";
-import { getLatestBlockResponse } from "@/server/progress/latest-response";
+import type { MustReadBlockState } from "@buildment/shared/api/blocks";
+import { fetchBlockState } from "@/blocks/block-state";
 import { MandatoryReadCard } from "@/components/learn/mandatory-read-card";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
-import { MustReadConfigSchema } from "./schema";
 
 export async function MustReadComponent({
   id,
@@ -29,12 +27,11 @@ export async function MustReadComponent({
   const directDescription = description ?? summary;
 
   if (directUrl && directTitle && directDescription) {
-    const user = await getSessionUser();
-    const latest = user && id ? await getLatestBlockResponse(id, user.id) : null;
+    const state = id ? await fetchBlockState<MustReadBlockState>(id, "MUST_READ") : null;
     return (
       <MandatoryReadCard
         blockId={id}
-        initialRead={Boolean(latest && latest.status !== "DRAFT")}
+        initialRead={state?.initialRead ?? false}
         title={directTitle}
         href={directUrl}
         source={source}
@@ -48,9 +45,8 @@ export async function MustReadComponent({
     return null;
   }
 
-  const block = await prisma.block.findUnique({ where: { id } });
-  const parsed = block ? MustReadConfigSchema.safeParse(block.config) : null;
-  if (!block || block.type !== "MUST_READ" || !parsed?.success) {
+  const state = await fetchBlockState<MustReadBlockState>(id, "MUST_READ");
+  if (!state) {
     return (
       <PendingBlockCard
         typeLabel="Mandatory Reading"
@@ -60,17 +56,15 @@ export async function MustReadComponent({
       />
     );
   }
-  const user = await getSessionUser();
-  const latest = user ? await getLatestBlockResponse(id, user.id) : null;
   return (
     <MandatoryReadCard
       blockId={id}
-      initialRead={Boolean(latest && latest.status !== "DRAFT")}
-      title={parsed.data.title}
-      href={parsed.data.url}
-      source={parsed.data.source}
-      summary={parsed.data.description}
-      readMinutes={parsed.data.readMinutes}
+      initialRead={state.initialRead}
+      title={state.config.title}
+      href={state.config.url}
+      source={state.config.source}
+      summary={state.config.description}
+      readMinutes={state.config.readMinutes}
     />
   );
 }

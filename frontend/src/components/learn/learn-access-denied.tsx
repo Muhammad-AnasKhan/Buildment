@@ -53,10 +53,11 @@ export function LearnAccessDenied({
   );
 }
 
-export function forbiddenToLearnReason(message: string) {
-  if (message.includes("payment_required")) return "payment_required" as const;
-  if (message.includes("not_enrolled")) return "not_enrolled" as const;
-  if (message.includes("pending_account")) return "pending_account" as const;
-  if (message.includes("inactive")) return "inactive" as const;
+/** Maps the API's learn-access denial code onto the copy above. */
+export function forbiddenToLearnReason(code: string) {
+  if (code.includes("payment_required")) return "payment_required" as const;
+  if (code.includes("not_enrolled")) return "not_enrolled" as const;
+  if (code.includes("pending_account")) return "pending_account" as const;
+  if (code.includes("inactive")) return "inactive" as const;
   return "unknown" as const;
 }

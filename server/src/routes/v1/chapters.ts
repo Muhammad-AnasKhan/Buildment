@@ -31,6 +31,7 @@ router.post(
 
 // Learner progress on a chapter: completion, checklist ticks, reflections, margin notes.
 const learner = [authenticate, requireVerified] as const;
+router.get("/:chapterId/quiz", ...learner, validateParams(chapterParams), chapters.quizState);
 router.post("/:chapterId/complete", ...learner, validateParams(chapterParams), chapters.complete);
 router.put("/:chapterId/checklist/:itemId", ...learner, validate({ params: checklistItemParams, body: checklistItemBody }), chapters.putChecklistItem);
 router.put("/:chapterId/learning-log", ...learner, validate({ params: chapterParams, body: learningLogBody }), chapters.putLearningLog);

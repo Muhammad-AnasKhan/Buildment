@@ -1,0 +1,53 @@
+import type { QuizChapterState } from "@buildment/shared/api/blocks";
+import { QuizConfigSchema } from "@buildment/shared/blocks/quiz/schema";
+import { prisma } from "../../db/prisma.js";
+
+/** Initial state for a quiz-mode chapter's wizard: last answers, grades and the score once every question is attempted. */
+export async function loadQuizChapterState(chapterId: string, userId: string): Promise<QuizChapterState> {
+  const blocks = await prisma.block.findMany({
+    where: { chapterId, archivedAt: null, type: "QUIZ" },
+    orderBy: { order: "asc" },
+    select: { id: true, config: true },
+  });
+  const blockIds = blocks.map((block) => block.id);
+  if (blockIds.length === 0) return { blockIds, initialAnswers: {}, initialBlockGrades: {}, initialScoreSummary: null };
+
+  const responses = await prisma.response.findMany({
+    where: { blockId: { in: blockIds }, userId, status: { not: "DRAFT" } },
+    orderBy: { attempt: "desc" },
+  });
+  const latestByBlock = new Map<string, (typeof responses)[number]>();
+  for (const response of responses) {
+    if (!latestByBlock.has(response.blockId)) latestByBlock.set(response.blockId, response);
+  }
+  const selectedFor = (blockId: string) => {
+    const payload = latestByBlock.get(blockId)?.payload as { selected?: unknown } | undefined;
+    return Array.isArray(payload?.selected) ? payload.selected.filter((item): item is string => typeof item === "string") : [];
+  };
+
+  const initialBlockGrades: QuizChapterState["initialBlockGrades"] = {};
+  for (const block of blocks) {
+    const response = latestByBlock.get(block.id);
+    if (!response) continue;
+    const parsed = QuizConfigSchema.safeParse(block.config);
+    initialBlockGrades[block.id] = {
+      selected: selectedFor(block.id),
+      isCorrect: response.isCorrect,
+      explanation: parsed.success ? parsed.data.explanation : undefined,
+    };
+  }
+
+  const allAttempted = blockIds.every((blockId) => latestByBlock.has(blockId));
+  return {
+    blockIds,
+    initialAnswers: Object.fromEntries(blockIds.map((blockId) => [blockId, selectedFor(blockId)])),
+    initialBlockGrades,
+    initialScoreSummary: allAttempted
+      ? {
+          score: blockIds.reduce((total, id) => total + (latestByBlock.get(id)?.score ?? 0), 0),
+          maxScore: blockIds.reduce((total, id) => total + (latestByBlock.get(id)?.maxScore ?? 0), 0),
+          questions: blockIds.length,
+        }
+      : null,
+  };
+}

@@ -100,13 +100,7 @@ Mount under `/api` per your app convention.
 
 Array of orders for `customerId === auth.userId`. Each order includes embedded `orderItems` — no live product price. Populate `storeId` name optional for display.
 
-<MustRead
-  title="Stripe — Checkout Session"
-  url="https://docs.stripe.com/payments/checkout"
-  source="Stripe"
-  description="How Stripe Checkout collects payment securely. Read before wiring checkout routes and payment intents in the next chapter."
-  readMinutes={15}
-/>
+<MustRead id="01M4THGE8XDP58J986AJYSEHSZ" />
 
 <RealWorldEvent title="Double-charge incidents during flash sales" when="Various" summary="E-commerce outages and retries caused duplicate charges until teams adopted idempotent payment APIs and clear order states." lesson="Model order status explicitly — pending, paid, failed — and never create a second order for the same checkout attempt." />
 

@@ -1,9 +1,7 @@
-import { prisma } from "@/server/db";
-import { getSessionUser } from "@/server/auth/guards";
-import { sanitizeBlockConfig } from "@/mdx/sanitize";
-import { PredictConfigSchema, type SanitizedPredictConfig } from "./schema";
-import { PredictClient, type PredictInitialState } from "./PredictClient";
-import { getLatestBlockResponse } from "@/server/progress/latest-response";
+import type { PredictBlockState } from "@buildment/shared/api/blocks";
+import { fetchBlockState } from "@/blocks/block-state";
+import type { SanitizedPredictConfig } from "./schema";
+import { PredictClient } from "./PredictClient";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
 export type PredictOptionInput = string | { id?: string; label: string };
@@ -57,35 +55,8 @@ export async function PredictComponent({
   }
 
   if (id) {
-    try {
-      const block = await prisma.block.findUnique({ where: { id } });
-      const parsed = block ? PredictConfigSchema.safeParse(block.config) : null;
-      if (block && block.type === "PREDICT" && parsed?.success) {
-        const sanitized = sanitizeBlockConfig<typeof parsed.data, SanitizedPredictConfig>(parsed.data);
-        const user = await getSessionUser();
-        let initialState: PredictInitialState | null = null;
-        if (user) {
-          const latest = await getLatestBlockResponse(id, user.id);
-          if (latest) {
-            const selected =
-              typeof (latest.payload as { selected?: unknown } | null)?.selected === "string"
-                ? (latest.payload as { selected: string }).selected
-                : "";
-            initialState = {
-              selected,
-              isCorrect: latest.isCorrect,
-              score: latest.score,
-              maxScore: latest.maxScore,
-              explanation: parsed.data.explanation,
-            };
-          }
-        }
-
-        return <PredictClient id={id} config={sanitized} initialState={initialState} />;
-      }
-    } catch {
-      // Ignore DB lookup error in preview / pending states
-    }
+    const state = await fetchBlockState<PredictBlockState>(id, "PREDICT");
+    if (state) return <PredictClient id={id} config={state.config} initialState={state.initialState} />;
   }
 
   // Graceful pending state

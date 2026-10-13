@@ -4,6 +4,7 @@ import { submitChapterQuiz } from "../services/chapters/quiz-submit.js";
 import { markChapterComplete } from "../services/progress/chapter-completion.js";
 import { saveChecklistItem, saveLearningLogAnswers } from "../services/progress/learning-log.js";
 import { saveHeadingNote } from "../services/chapters/heading-notes.js";
+import { loadQuizChapterState } from "../services/chapters/quiz-state.js";
 import type { QuizSubmitBody } from "../validations/chapters.js";
 
 // POST /api/v1/chapters/:chapterId/quiz/submit
@@ -38,4 +39,9 @@ export async function putHeadingNote(req: Request, res: Response) {
   const { chapterId, headingId } = req.params as { chapterId: string; headingId: string };
   const { body } = req.body as { body: string };
   ok(res, await saveHeadingNote(req.user!, { chapterId, headingId, body }));
+}
+
+// GET /api/v1/chapters/:chapterId/quiz
+export async function quizState(req: Request, res: Response) {
+  ok(res, await loadQuizChapterState(req.params.chapterId as string, req.user!.id));
 }

@@ -1,9 +1,7 @@
-import { prisma } from "@/server/db";
-import { getSessionUser } from "@/server/auth/guards";
-import { sanitizeBlockConfig } from "@/mdx/sanitize";
-import { OpenQuestionConfigSchema, type SanitizedOpenQuestionConfig } from "./schema";
-import { getOpenQuestionGroupPosition } from "./group-position";
-import { OpenQuestionClient, type OpenQuestionInitialState } from "./OpenQuestionClient";
+import type { OpenQuestionBlockState } from "@buildment/shared/api/blocks";
+import { fetchBlockState } from "@/blocks/block-state";
+import type { SanitizedOpenQuestionConfig } from "./schema";
+import { OpenQuestionClient } from "./OpenQuestionClient";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
 export async function OpenQuestionComponent({
@@ -61,56 +59,18 @@ export async function OpenQuestionComponent({
   }
 
   if (id) {
-    try {
-      const block = await prisma.block.findUnique({ where: { id } });
-      const parsed = block ? OpenQuestionConfigSchema.safeParse(block.config) : null;
-      if (block && block.type === "OPEN_QUESTION" && parsed?.success) {
-        const chapterBlocks = await prisma.block.findMany({
-          where: { chapterId: block.chapterId, archivedAt: null },
-          orderBy: { order: "asc" },
-          select: { id: true, type: true },
-        });
-
-        const { position, index, total } = getOpenQuestionGroupPosition(chapterBlocks, id);
-        const config = parsed.data;
-        const sanitized = sanitizeBlockConfig<typeof config, SanitizedOpenQuestionConfig>(config);
-
-        const user = await getSessionUser();
-        let initialState: OpenQuestionInitialState | null = null;
-        if (user) {
-          const latest = await prisma.response.findFirst({
-            where: { blockId: id, userId: user.id },
-            orderBy: { attempt: "desc" },
-            include: { review: { select: { feedback: true, verdict: true } } },
-          });
-          if (latest && latest.status !== "DRAFT") {
-            const payload = latest.payload as { text?: string; url?: string } | null;
-            const text = typeof payload?.text === "string" ? payload.text : "";
-            const url = typeof payload?.url === "string" ? payload.url : null;
-            initialState = {
-              status: latest.status,
-              attempt: latest.attempt,
-              text,
-              url,
-              feedback: latest.review?.feedback ?? null,
-              verdict: latest.review?.verdict ?? null,
-            };
-          }
-        }
-
-        return (
-          <OpenQuestionClient
-            id={id}
-            config={sanitized}
-            initialState={initialState}
-            groupPosition={position}
-            questionIndex={index}
-            questionTotal={total}
-          />
-        );
-      }
-    } catch {
-      // Ignore DB lookup error in preview / pending states
+    const state = await fetchBlockState<OpenQuestionBlockState>(id, "OPEN_QUESTION");
+    if (state) {
+      return (
+        <OpenQuestionClient
+          id={id}
+          config={state.config}
+          initialState={state.initialState}
+          groupPosition={state.group.position}
+          questionIndex={state.group.index}
+          questionTotal={state.group.total}
+        />
+      );
     }
   }
 

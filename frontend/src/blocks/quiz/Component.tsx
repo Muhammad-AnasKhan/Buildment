@@ -1,9 +1,7 @@
-import { prisma } from "@/server/db";
-import { getSessionUser } from "@/server/auth/guards";
-import { sanitizeBlockConfig } from "@/mdx/sanitize";
-import { QuizConfigSchema, type SanitizedQuizConfig } from "./schema";
-import { QuizClient, type QuizInitialState } from "./QuizClient";
-import { getLatestBlockResponse } from "@/server/progress/latest-response";
+import type { QuizBlockState } from "@buildment/shared/api/blocks";
+import { fetchBlockState } from "@/blocks/block-state";
+import type { SanitizedQuizConfig } from "./schema";
+import { QuizClient } from "./QuizClient";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
 export type QuizOptionInput = string | { id?: string; label: string };
@@ -62,41 +60,17 @@ export async function QuizComponent({
   }
 
   if (id) {
-    try {
-      const block = await prisma.block.findUnique({ where: { id } });
-      const parsed = block ? QuizConfigSchema.safeParse(block.config) : null;
-      if (block && block.type === "QUIZ" && parsed?.success) {
-        const sanitized = sanitizeBlockConfig<typeof parsed.data, SanitizedQuizConfig>(parsed.data);
-        const user = await getSessionUser();
-        let initialState: QuizInitialState | null = null;
-        if (user) {
-          const latest = await getLatestBlockResponse(id, user.id);
-          if (latest) {
-            const selected = Array.isArray((latest.payload as { selected?: unknown } | null)?.selected)
-              ? ((latest.payload as { selected: string[] }).selected)
-              : [];
-            initialState = {
-              selected,
-              isCorrect: latest.isCorrect,
-              score: latest.score,
-              maxScore: latest.maxScore,
-              explanation: parsed.data.explanation,
-            };
-          }
-        }
-
-        return (
-          <QuizClient
-            id={id}
-            config={sanitized}
-            initialState={initialState}
-            presentation={presentation}
-            draftStorageKey={draftStoragePrefix ? `${draftStoragePrefix}:${id}` : undefined}
-          />
-        );
-      }
-    } catch {
-      // Ignore DB lookup error in preview / pending states
+    const state = await fetchBlockState<QuizBlockState>(id, "QUIZ");
+    if (state) {
+      return (
+        <QuizClient
+          id={id}
+          config={state.config}
+          initialState={state.initialState}
+          presentation={presentation}
+          draftStorageKey={draftStoragePrefix ? `${draftStoragePrefix}:${id}` : undefined}
+        />
+      );
     }
   }
 

@@ -66,3 +66,6 @@ export type CourseStatus = (typeof COURSE_STATUSES)[number];
 
 export const COURSE_PRICING_TYPES = ["FREE", "PAID"] as const;
 export type CoursePricingType = (typeof COURSE_PRICING_TYPES)[number];
+
+export const CHAPTER_READER_MODES = ["DEFAULT", "QUIZ"] as const;
+export type ChapterReaderMode = (typeof CHAPTER_READER_MODES)[number];

@@ -13,10 +13,6 @@ import {
 } from "./access-rules";
 import { getActiveSurface } from "./surface";
 import { canAccessHelpThread } from "@/server/help/access";
-import {
-  LearnAccessError,
-  resolveLearnEnrollment,
-} from "@/server/enrollment/resolve-learn-enrollment";
 
 export { getSessionUser } from "./session";
 export type { SessionUser } from "./session";
@@ -100,20 +96,6 @@ export async function requireMentorOfCourse(courseId: string) {
     throw new ForbiddenError(`User ${user.id} does not mentor course ${courseId}`);
   }
   return user;
-}
-
-/** Throws if the user cannot read chapters or submit block responses for this course. */
-export async function requireEnrolledMentee(courseId: string) {
-  const user = await requireVerifiedUser();
-  try {
-    const enrollment = await resolveLearnEnrollment(user, courseId);
-    return { user, enrollment };
-  } catch (error) {
-    if (error instanceof LearnAccessError) {
-      throw new ForbiddenError(`Learn access denied (${error.code})`);
-    }
-    throw error;
-  }
 }
 
 /** Enrollment row for the signed-in user, including payment-pending states. */

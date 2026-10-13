@@ -1,9 +1,8 @@
-import { prisma } from "@/server/db";
-import { getSessionUser } from "@/server/auth/guards";
-import { getLatestBlockResponse } from "@/server/progress/latest-response";
+import type { CodeBlockState } from "@buildment/shared/api/blocks";
+import { fetchBlockState } from "@/blocks/block-state";
 import { sanitizeBlockConfig } from "@/mdx/sanitize";
-import { CodeConfigSchema, type SanitizedCodeConfig } from "./schema";
-import { CodeExerciseClient, type CodeInitialState } from "./CodeExerciseClient";
+import type { SanitizedCodeConfig } from "./schema";
+import { CodeExerciseClient } from "./CodeExerciseClient";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
 export async function CodeExerciseComponent({
@@ -60,36 +59,8 @@ export async function CodeExerciseComponent({
   }
 
   if (id) {
-    try {
-      const block = await prisma.block.findUnique({ where: { id } });
-      const parsed = block ? CodeConfigSchema.safeParse(block.config) : null;
-      if (block && block.type === "CODE" && parsed?.success) {
-        const user = await getSessionUser();
-        let initialState: CodeInitialState | null = null;
-        if (user) {
-          const latest = await getLatestBlockResponse(id, user.id);
-          if (latest) {
-            initialState = {
-              source:
-                typeof (latest.payload as { source?: unknown }).source === "string"
-                  ? (latest.payload as { source: string }).source
-                  : parsed.data.starterCode,
-              isCorrect: latest.isCorrect,
-            };
-          }
-        }
-
-        return (
-          <CodeExerciseClient
-            id={id}
-            config={sanitizeBlockConfig<typeof parsed.data, SanitizedCodeConfig>(parsed.data)}
-            initialState={initialState}
-          />
-        );
-      }
-    } catch {
-      // Ignore DB lookup error in preview / pending states
-    }
+    const state = await fetchBlockState<CodeBlockState>(id, "CODE");
+    if (state) return <CodeExerciseClient id={id} config={state.config} initialState={state.initialState} />;
   }
 
   // Graceful pending state

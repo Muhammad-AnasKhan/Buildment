@@ -22,7 +22,7 @@ Before you install Mongoose or paste a connection string (Chapter 4), you'll dec
 
 This is a **design chapter**. There's no new API endpoint to demo yet. The deliverable is understanding + a design file: `docs/erd-draft.md`.
 
-<ProjectPreview id="01M3P088P5RXED2GNG6YMPD0WK" />
+<ProjectPreview id="01M4THGCF7SQM455GWXESHP337" />
 
 ## Why this chapter matters
 
@@ -63,23 +63,13 @@ decide → connect → implement. Chapter 3 decides. Chapter 4 connects. Chapter
 
 **Planning shelf labels before the warehouse opens.** Chapter 2 built the building (skeleton). This chapter decides what goes on each shelf — users here, stores there, products with grocery units, carts, orders with frozen receipt lines. You're not moving stock in yet; you're drawing the layout so Chapter 4 can connect the warehouse and Chapter 5 can fill shelves without guessing.
 
-<ArticleBreak title="Embedding vs referencing: the grocery catalog decision" subtitle="How FreshMarket thinks about product data before schemas exist" readMinutes={8}>
-
 In a grocery marketplace, a product belongs to a store, and a store belongs to a vendor. You can embed store details inside each product document for fast reads, or store IDs and fetch related documents when needed.
 
 Embedding makes catalogue pages fast — one query returns product plus store name. Referencing keeps updates clean — change a store name once, not on thousands of products.
 
 FreshMarket uses a hybrid: embed small, stable snapshots (like store display name) where read performance matters, and reference IDs where ownership and updates matter. You will feel this trade-off again in checkout when order snapshots must not change if a vendor renames their shop later.
 
-</ArticleBreak>
-
-<MustRead
-  title="MongoDB manual — Introduction"
-  url="https://www.mongodb.com/docs/manual/introduction/"
-  source="MongoDB"
-  description="Official overview of how MongoDB stores documents, collections, and databases. Read the core concepts section before you wire the driver in the next chapter."
-  readMinutes={15}
-/>
+<MustRead id="01M4THGCF70PSHG5GQJ7ZN6BH3" />
 
 <RealWorldEvent title="Walmart's polyglot data strategy" when="2010s–present" summary="Large retailers run multiple database technologies — relational systems for transactions and accounting, document or search stores for catalogs and recommendations." lesson="Choosing MongoDB for FreshMarket is a domain-driven decision. Document the trade-off so future you can defend it in an interview." />
 
@@ -140,7 +130,7 @@ This chapter is less typing than Chapter 2, more thinking. Estimated time: half 
 - [ ] You can name the two actors (vendor and customer)
 - [ ] `docs/` folder exists in your repo
 
-<ChapterRecap id="01M3P088P6R37533EKYV3WVVK5" />
+<ChapterRecap id="01M4THGCF86TGA1QD0DCZTZ4CG" />
 
 **Next:** Why grocery data is different from generic products — and why that matters for your database choice.
 <InterestingRead title="When SQL still wins" hook="MongoDB is a choice, not a religion." readMinutes={4}>

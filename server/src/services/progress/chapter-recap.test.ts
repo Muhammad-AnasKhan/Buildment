@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chapterOpenLine, latestChapterResponses } from "./chapter-recap";
+import { chapterOpenLine, latestChapterResponses } from "./chapter-recap.js";
 
 describe("chapterOpenLine", () => {
   it("keeps the latest response for each check", () => {

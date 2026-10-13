@@ -4,6 +4,7 @@ import { optionalAuth } from "../../middlewares/authenticate.js";
 import { userRateLimit } from "../../middlewares/rate-limit.js";
 import { validate } from "../../middlewares/validate.js";
 import { respondBody, respondParams } from "../../validations/blocks.js";
+import { validateParams } from "../../middlewares/validate.js";
 
 const router = Router();
 
@@ -21,5 +22,8 @@ router.post(
   }),
   blocks.respond
 );
+
+// Config + the caller's latest answer; anonymous callers get the config only.
+router.get("/:blockId/state", optionalAuth, validateParams(respondParams), blocks.state);
 
 export default router;

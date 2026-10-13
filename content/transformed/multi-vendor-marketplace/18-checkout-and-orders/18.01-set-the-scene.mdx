@@ -12,15 +12,11 @@ summary: "**Where the project is now:** Chapter 16–17 gave you a **multi-vendo
 
 This is a **backend build chapter**. It pairs with Chapter 20 the way Chapter 16 paired with Chapter 17. The gate is **API proof**: split orders, immutable snapshots, stock reduced, cart empty.
 
-<ArticleBreak title="Money enters the building" subtitle="Checkout is a state machine, not a form submit" readMinutes={8}>
-
 Checkout is the most dangerous feature in FreshMarket. Cart totals, inventory, vendor splits, and payment authorization must agree within seconds.
 
 Think in states: cart locked → orders created → payment initiated → payment confirmed → cart cleared. Each transition should be recoverable if the network drops.
 
 Never assume the client saw the Stripe success page. Webhooks in module 19 confirm payment — checkout routes prepare orders; webhooks finalize them.
-
-</ArticleBreak>
 
 ## Bridge from last chapter
 
@@ -198,10 +194,4 @@ If a checkout request times out, clients and webhooks may retry. Idempotency key
 **Sub-chapter 18.2:** Price snapshot trap — why `productId` alone on order lines breaks history.
 
 One checkout button is coming. First understand why receipts must freeze prices.
-<MustRead
-  title="Stripe — Checkout Session"
-  url="https://docs.stripe.com/payments/checkout"
-  source="Stripe"
-  description="How Stripe Checkout collects payment securely. Read before wiring checkout routes and payment intents in the next chapter."
-  readMinutes={15}
-/>
+<MustRead id="01M4THGE87WCPRK93WM2ZTAX6Q" />
