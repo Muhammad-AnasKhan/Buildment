@@ -39,6 +39,10 @@ const schema = z.object({
   /** Shared secret an external scheduler presents to the jobs endpoints. */
   CRON_SECRET: optionalString,
 
+  /** OpenRouter access for AI review drafts; drafting is disabled without a key. */
+  OPENROUTER_API_KEY: optionalString,
+  OPENROUTER_REVIEW_MODEL: optionalString,
+
   /** Local testing only: e2e suites sign up repeatedly from one IP. Never set in production. */
   DISABLE_RATE_LIMITS: z
     .string()

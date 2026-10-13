@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { ChevronRight, Inbox } from "lucide-react";
-import { prisma } from "@/server/db";
+import type { ReviewQueueView } from "@buildment/shared/api/teach";
 import { nowMs } from "@/server/time";
 import { requireTeachSurface } from "@/server/auth/guards";
+import { serverApiFetch } from "@/lib/api-server";
 import { AutoSubmitSelect } from "@/components/teach/auto-submit-select";
 
 const AGING_HOURS = 48;
@@ -12,54 +13,10 @@ export default async function ReviewQueuePage({
 }: {
   searchParams: Promise<{ courseId?: string }>;
 }) {
-  const user = await requireTeachSurface();
+  await requireTeachSurface();
   const { courseId: courseFilter } = await searchParams;
-
-  const courses = await prisma.course.findMany({
-    where: user.role === "ADMIN" ? undefined : { mentorId: user.id },
-    orderBy: { title: "asc" },
-    select: { id: true, title: true },
-  });
-  const courseIds = courses.map((course) => course.id);
-
-  const pending =
-    courseIds.length === 0
-      ? []
-      : await prisma.response.findMany({
-          where: {
-            status: "PENDING_REVIEW",
-            block: {
-              chapter: {
-                courseId: courseFilter && courseIds.includes(courseFilter)
-                  ? courseFilter
-                  : { in: courseIds },
-              },
-            },
-          },
-          orderBy: { submittedAt: "asc" },
-          include: {
-            user: { select: { id: true, name: true, email: true } },
-            block: {
-              select: {
-                id: true,
-                type: true,
-                chapter: {
-                  select: { title: true, course: { select: { id: true, slug: true, title: true } } },
-                },
-              },
-            },
-          },
-        });
-
-  // Resubmissions after a needs-revision verdict jump the queue (docs/05),
-  // then both groups stay oldest-first internally.
-  pending.sort((a, b) => {
-    const aResub = a.attempt > 1 ? 0 : 1;
-    const bResub = b.attempt > 1 ? 0 : 1;
-    if (aResub !== bResub) return aResub - bResub;
-    return a.submittedAt.getTime() - b.submittedAt.getTime();
-  });
-
+  const query = courseFilter ? `?courseId=${encodeURIComponent(courseFilter)}` : "";
+  const { courses, items } = await serverApiFetch<ReviewQueueView>(`/api/v1/teach/review${query}`);
   const now = nowMs();
 
   return (
@@ -92,7 +49,7 @@ export default async function ReviewQueuePage({
         )}
       </div>
 
-      {pending.length === 0 ? (
+      {items.length === 0 ? (
         <div className="mt-12 flex flex-col items-center gap-2 text-center">
           <Inbox className="size-8 text-muted-foreground" />
           <p className="text-sm font-medium text-foreground">Nothing waiting</p>
@@ -102,10 +59,10 @@ export default async function ReviewQueuePage({
         </div>
       ) : (
         <ul className="mt-6 space-y-3">
-          {pending.map((response) => {
-            const ageHours = (now - response.submittedAt.getTime()) / (1000 * 60 * 60);
+          {items.map((response) => {
+            const submittedAt = new Date(response.submittedAt);
+            const ageHours = (now - submittedAt.getTime()) / (1000 * 60 * 60);
             const isAging = ageHours >= AGING_HOURS;
-            const course = response.block.chapter.course;
 
             return (
               <li key={response.id}>
@@ -119,14 +76,14 @@ export default async function ReviewQueuePage({
                 >
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">
-                      {response.user.name ?? response.user.email}
+                      {response.learnerLabel}
                       <span className="font-normal text-muted-foreground">
                         {" "}
                         · attempt {response.attempt}
                       </span>
                     </p>
                     <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                      {course.title} › {response.block.chapter.title}
+                      {response.courseTitle} › {response.chapterTitle}
                     </p>
                   </div>
 
@@ -139,7 +96,7 @@ export default async function ReviewQueuePage({
                       </span>
                     )}
                     <span className="text-xs text-muted-foreground">
-                      {response.submittedAt.toLocaleDateString()}
+                      {submittedAt.toLocaleDateString()}
                     </span>
                     <ChevronRight className="size-4 text-muted-foreground" />
                   </div>

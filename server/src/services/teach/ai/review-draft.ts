@@ -1,6 +1,10 @@
-import "server-only";
-
 import { z } from "zod";
+import type { AiReviewDraft } from "@buildment/shared/api/teach";
+import { env } from "../../../config/env.js";
+
+// Advisory review drafts for open-question submissions via OpenRouter. The
+// prompt treats course and learner text as untrusted evidence; the mentor
+// always edits and submits the final review.
 
 const DEFAULT_MODEL = "google/gemini-2.5-flash";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -15,7 +19,7 @@ export const AiReviewDraftSchema = z.object({
   confidence: z.enum(["LOW", "MEDIUM", "HIGH"]),
 });
 
-export type AiReviewDraft = z.infer<typeof AiReviewDraftSchema>;
+export type { AiReviewDraft };
 
 export type ReviewDraftContext = {
   courseTitle: string;
@@ -106,19 +110,19 @@ export async function generateReviewDraft(
   context: ReviewDraftContext,
   options: GenerateOptions = {},
 ): Promise<{ draft: AiReviewDraft; model: string }> {
-  const apiKey = options.apiKey ?? process.env.OPENROUTER_API_KEY;
+  const apiKey = options.apiKey ?? env.OPENROUTER_API_KEY;
   if (!apiKey) {
     throw new Error("AI drafting is not configured. Add OPENROUTER_API_KEY on the server.");
   }
 
-  const model = options.model ?? process.env.OPENROUTER_REVIEW_MODEL ?? DEFAULT_MODEL;
+  const model = options.model ?? env.OPENROUTER_REVIEW_MODEL ?? DEFAULT_MODEL;
   const fetchImpl = options.fetchImpl ?? fetch;
   const response = await fetchImpl(OPENROUTER_URL, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": process.env.AUTH_URL ?? "http://localhost:3000",
+      "HTTP-Referer": env.APP_URL,
       "X-OpenRouter-Title": "buildment",
     },
     body: JSON.stringify({

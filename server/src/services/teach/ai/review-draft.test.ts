@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { buildReviewDraftPrompt, generateReviewDraft } from "./review-draft";
+import { buildReviewDraftPrompt, generateReviewDraft } from "./review-draft.js";
 
 const context = {
   courseTitle: "Backend foundations",

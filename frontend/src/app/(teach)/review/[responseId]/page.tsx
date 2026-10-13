@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { prisma } from "@/server/db";
-import { requireMentorOfCourse } from "@/server/auth/guards";
+import { redirect } from "next/navigation";
+import type { ReviewDetailView } from "@buildment/shared/api/teach";
+import { requireTeachSurface } from "@/server/auth/guards";
+import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { submitReview } from "@/server/actions/reviews";
-import { OpenQuestionConfigSchema } from "@/blocks/open-question/schema";
-import { parseSafeSubmissionUrl } from "@/lib/safe-submission-url";
 import { ReviewForm } from "@/components/teach/review-form";
 
 export default async function ReviewDetailPage({
@@ -13,47 +12,13 @@ export default async function ReviewDetailPage({
   params: Promise<{ responseId: string }>;
 }) {
   const { responseId } = await params;
+  await requireTeachSurface();
 
-  const response = await prisma.response.findUnique({
-    where: { id: responseId },
-    include: {
-      user: { select: { id: true, name: true, email: true } },
-      block: {
-        include: {
-          chapter: {
-            select: { title: true, course: { select: { id: true, slug: true, title: true } } },
-          },
-        },
-      },
-      review: true,
-    },
-  });
-  if (!response) notFound();
-
-  await requireMentorOfCourse(response.block.chapter.course.id);
-
-  // Threaded exchange history: every attempt by this mentee on this block,
-  // oldest first, so prior feedback sits next to the resubmission (docs/05).
-  const history = await prisma.response.findMany({
-    where: { blockId: response.blockId, userId: response.userId },
-    orderBy: { attempt: "asc" },
-    include: { review: { include: { reviewer: { select: { name: true } } } } },
-  });
-
-  const config = OpenQuestionConfigSchema.safeParse(response.block.config);
-  const prompt = config.success ? config.data.prompt : null;
-  const payload = response.payload as { text?: string; url?: string } | null;
-  const answerText =
-    typeof payload?.text === "string" && payload.text.trim()
-      ? payload.text
-      : payload?.url
-        ? `(Link submission)\n${payload.url}`
-        : JSON.stringify(response.payload, null, 2);
-  const rawAnswerUrl = typeof payload?.url === "string" ? payload.url : null;
-  const answerUrl = rawAnswerUrl ? parseSafeSubmissionUrl(rawAnswerUrl)?.toString() ?? null : null;
-
+  const response = await serverApiFetchOrNotFound<ReviewDetailView>(
+    `/api/v1/teach/review/${encodeURIComponent(responseId)}`
+  );
+  const { course, question, history } = response;
   const alreadyReviewed = response.status !== "PENDING_REVIEW";
-  const course = response.block.chapter.course;
   const reviewResponseId = response.id;
 
   async function submitReviewAction(formData: FormData) {
@@ -82,11 +47,11 @@ export default async function ReviewDetailPage({
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            {course.title} › {response.block.chapter.title}
+            {course.title} › {response.chapterTitle}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {response.user.name ?? response.user.email} · attempt {response.attempt} ·{" "}
-            submitted {response.submittedAt.toLocaleString()}
+            {response.learner.name ?? response.learner.email} · attempt {response.attempt} ·{" "}
+            submitted {new Date(response.submittedAt).toLocaleString()}
           </p>
         </div>
         {response.status === "PENDING_REVIEW" && (
@@ -101,53 +66,45 @@ export default async function ReviewDetailPage({
         <section className="rounded-xl border bg-card p-5 text-card-foreground shadow-sm">
           <h2 className="text-sm font-semibold">Question</h2>
           <p className="mt-2 text-[15px] font-medium leading-snug">
-            {prompt ?? "(prompt unavailable)"}
+            {question?.prompt ?? "(prompt unavailable)"}
           </p>
 
-          {config.success && config.data.minWords > 0 && (
+          {question && question.minWords > 0 && (
             <p className="mt-2 text-xs text-muted-foreground">
-              Minimum {config.data.minWords} words
-              {config.data.maxWords ? ` · maximum ${config.data.maxWords}` : ""}
+              Minimum {question.minWords} words
+              {question.maxWords ? ` · maximum ${question.maxWords}` : ""}
             </p>
           )}
 
-          {config.success && config.data.rubric && (
+          {question?.rubric && (
             <div className="mt-4 rounded-lg border bg-muted/40 p-4">
               <h3 className="text-xs font-medium text-muted-foreground">Rubric (mentor only)</h3>
-              <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed">
-                {config.data.rubric}
-              </p>
+              <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed">{question.rubric}</p>
             </div>
           )}
 
-          {config.success && config.data.sampleAnswer && (
+          {question?.sampleAnswer && (
             <div className="mt-3 rounded-lg border bg-muted/40 p-4">
               <h3 className="text-xs font-medium text-muted-foreground">
                 Reference answer (mentor only)
               </h3>
-              <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed">
-                {config.data.sampleAnswer}
-              </p>
+              <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed">{question.sampleAnswer}</p>
             </div>
           )}
 
-          {history.filter((item) => item.review).length > 0 && (
+          {history.length > 0 && (
             <div className="mt-4 space-y-3">
               <h3 className="text-sm font-semibold">Previous exchange</h3>
-              {history
-                .filter((item) => item.review)
-                .map((item) => (
-                  <div key={item.id} className="rounded-lg border p-3">
-                    <p className="text-xs font-medium text-muted-foreground">
-                      Attempt {item.attempt} ·{" "}
-                      {item.review!.verdict === "APPROVED" ? "approved" : "sent back for revision"}{" "}
-                      by {item.review!.reviewer.name ?? "mentor"}
-                    </p>
-                    <p className="mt-1.5 whitespace-pre-wrap text-sm">
-                      {item.review!.feedback}
-                    </p>
-                  </div>
-                ))}
+              {history.map((item) => (
+                <div key={item.id} className="rounded-lg border p-3">
+                  <p className="text-xs font-medium text-muted-foreground">
+                    Attempt {item.attempt} ·{" "}
+                    {item.verdict === "APPROVED" ? "approved" : "sent back for revision"} by{" "}
+                    {item.reviewerName ?? "mentor"}
+                  </p>
+                  <p className="mt-1.5 whitespace-pre-wrap text-sm">{item.feedback}</p>
+                </div>
+              ))}
             </div>
           )}
         </section>
@@ -157,13 +114,13 @@ export default async function ReviewDetailPage({
           <div className="rounded-xl border bg-card p-5 text-card-foreground shadow-sm">
             <h2 className="text-sm font-semibold">Mentee&apos;s answer</h2>
             <p className="mt-2 whitespace-pre-wrap text-[15px] leading-relaxed">
-              {answerText}
+              {response.answerText}
             </p>
-            {answerUrl ? (
+            {response.answerUrl ? (
               <p className="mt-3 text-sm">
                 <span className="font-medium">Submitted link: </span>
-                <a href={answerUrl} className="break-all text-primary underline underline-offset-2" target="_blank" rel="noreferrer noopener">
-                  {answerUrl}
+                <a href={response.answerUrl} className="break-all text-primary underline underline-offset-2" target="_blank" rel="noreferrer noopener">
+                  {response.answerUrl}
                 </a>
               </p>
             ) : null}

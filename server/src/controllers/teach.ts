@@ -8,12 +8,14 @@ import * as mentees from "../services/teach/mentees.js";
 import * as invites from "../services/teach/invites.js";
 import * as enrollments from "../services/teach/enrollments.js";
 import * as reports from "../services/teach/reports.js";
+import * as reviews from "../services/teach/reviews.js";
 import type {
   ChapterSettingsBody,
   CourseSettingsBody,
   CreateChapterBody,
   CreateCourseBody,
   MoveDirection,
+  SubmitReviewBody,
 } from "../validations/teach.js";
 
 // Instructor workspace. Every handler runs behind authenticate + requireVerified +
@@ -173,4 +175,26 @@ export async function exportCourseReport(req: Request, res: Response) {
 // GET /api/v1/teach/courses/:courseSlug/activity
 export async function getCourseActivity(req: Request, res: Response) {
   ok(res, await reports.loadCourseActivity(req.user!, param(req, "courseSlug")));
+}
+
+// GET /api/v1/teach/review?courseId=
+export async function getReviewQueue(req: Request, res: Response) {
+  const { courseId } = req.query as { courseId?: string };
+  ok(res, await reviews.loadReviewQueue(req.user!, courseId));
+}
+
+// GET /api/v1/teach/review/:responseId
+export async function getReviewDetail(req: Request, res: Response) {
+  ok(res, await reviews.loadReviewDetail(req.user!, param(req, "responseId")));
+}
+
+// POST /api/v1/teach/review/:responseId
+export async function submitReview(req: Request, res: Response) {
+  await reviews.submitReview(req.user!, param(req, "responseId"), req.body as SubmitReviewBody);
+  noContent(res);
+}
+
+// POST /api/v1/teach/review/:responseId/ai-draft
+export async function generateAiReviewDraft(req: Request, res: Response) {
+  ok(res, await reviews.generateAiReviewDraft(req.user!, param(req, "responseId")));
 }

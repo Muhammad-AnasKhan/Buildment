@@ -22,6 +22,9 @@ import {
   moveBody,
   renameModuleBody,
   reportsQuery,
+  responseIdParams,
+  reviewQueueQuery,
+  submitReviewBody,
   unpublishCourseBody,
 } from "../../validations/teach.js";
 
@@ -63,5 +66,10 @@ router.post("/enrollments/:enrollmentId/repair-progress", validateParams(enrollm
 router.get("/courses/:courseSlug/reports", validate({ params: courseSlugParams, query: reportsQuery }), teach.getCourseReport);
 router.get("/courses/:courseSlug/reports/export", validateParams(courseSlugParams), teach.exportCourseReport);
 router.get("/courses/:courseSlug/activity", validateParams(courseSlugParams), teach.getCourseActivity);
+
+router.get("/review", validate({ query: reviewQueueQuery }), teach.getReviewQueue);
+router.get("/review/:responseId", validateParams(responseIdParams), teach.getReviewDetail);
+router.post("/review/:responseId", validate({ params: responseIdParams, body: submitReviewBody }), teach.submitReview);
+router.post("/review/:responseId/ai-draft", validateParams(responseIdParams), teach.generateAiReviewDraft);
 
 export default router;
