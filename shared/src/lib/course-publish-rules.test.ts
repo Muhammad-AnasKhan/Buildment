@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateCoursePublish } from "./publish-rules";
+import { validateCoursePublish } from "./course-publish-rules.js";
 
 describe("validateCoursePublish", () => {
   it("requires chapters and a published chapter", () => {

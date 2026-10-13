@@ -4,8 +4,8 @@ import {
   collectUnknownComponents,
   diffBlocks,
   extractBlocksFromSource,
-} from "./extract";
-import { restoreInteractiveBlockTags } from "./restore-block-tags";
+} from "./extract.js";
+import { restoreInteractiveBlockTags } from "./restore-block-tags.js";
 
 // Scaffolding for docs/02-content-authoring.mdx "Block extraction and the
 // sync problem": id is the join key, new ids create, missing ids archive,

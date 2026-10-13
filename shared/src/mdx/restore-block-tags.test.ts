@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { restoreInteractiveBlockTags } from "./restore-block-tags";
+import { restoreInteractiveBlockTags } from "./restore-block-tags.js";
 
 describe("restoreInteractiveBlockTags", () => {
   it("restores escaped Quiz and OpenQuestion placeholders", () => {

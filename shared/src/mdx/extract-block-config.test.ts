@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { extractBlockConfigsFromSource, extractQuizConfigFromElement } from "./extract-block-config";
-import { QuizConfigSchema } from "@/blocks/quiz/schema";
+import { extractBlockConfigsFromSource, extractQuizConfigFromElement } from "./extract-block-config.js";
+import { QuizConfigSchema } from "../blocks/quiz/schema.js";
 
 describe("extractBlockConfigsFromSource", () => {
   it("parses inline Quiz props into block config", () => {
