@@ -1,33 +1,11 @@
-import { prisma } from "@/server/db";
+import type { CatalogCourseSummary } from "@buildment/shared/api/catalog";
 import { requireLearnSurface } from "@/server/auth/guards";
+import { serverApiFetch } from "@/lib/api-server";
 import { CatalogCourseCard } from "@/components/learn/catalog-course-card";
 
 export default async function CatalogPage() {
-  const user = await requireLearnSurface();
-
-  const courses = await prisma.course.findMany({
-    where: { status: "PUBLISHED" },
-    orderBy: { title: "asc" },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      description: true,
-      coverUrl: true,
-      difficulty: true,
-      estimatedHours: true,
-      pricingType: true,
-      priceCents: true,
-      currency: true,
-      mentor: { select: { name: true } },
-    },
-  });
-
-  const enrolled = await prisma.enrollment.findMany({
-    where: { userId: user.id, courseId: { in: courses.map((c) => c.id) } },
-    select: { courseId: true, lifecycle: true },
-  });
-  const enrolledByCourse = new Map(enrolled.map((e) => [e.courseId, e.lifecycle]));
+  await requireLearnSurface();
+  const { courses } = await serverApiFetch<{ courses: CatalogCourseSummary[] }>("/api/v1/catalog");
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
@@ -44,7 +22,7 @@ export default async function CatalogPage() {
       ) : (
         <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {courses.map((course) => {
-            const lifecycle = enrolledByCourse.get(course.id);
+            const lifecycle = course.enrollmentLifecycle;
             const enrolledLabel =
               lifecycle === "PAYMENT_REQUIRED"
                 ? "Payment due"
@@ -64,7 +42,7 @@ export default async function CatalogPage() {
                   pricingType={course.pricingType}
                   priceCents={course.priceCents}
                   currency={course.currency}
-                  instructorName={course.mentor.name}
+                  instructorName={course.instructorName}
                   enrolledLabel={enrolledLabel}
                 />
               </li>

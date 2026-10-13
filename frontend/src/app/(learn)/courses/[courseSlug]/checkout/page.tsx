@@ -1,10 +1,12 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
+import type { Checkout } from "@buildment/shared/api/catalog";
 import {
   completeEnrollmentPaymentStubAction,
   selfEnrollInCourseAction,
 } from "@/server/actions/enroll";
-import { loadCheckoutForCourseSlug } from "@/server/enrollment/load-checkout";
+import { requireVerifiedUser } from "@/server/auth/guards";
+import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { formatPriceCents } from "@/lib/format-price";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -15,11 +17,11 @@ export default async function CourseCheckoutPage({
   params: Promise<{ courseSlug: string }>;
 }) {
   const { courseSlug } = await params;
-  const data = await loadCheckoutForCourseSlug(courseSlug);
-  if (!data) notFound();
-
-  const { course, enrollment } = data;
-  if ("alreadyPaid" in data && data.alreadyPaid) {
+  await requireVerifiedUser();
+  const { course, enrollment, state } = await serverApiFetchOrNotFound<Checkout>(
+    `/api/v1/courses/${encodeURIComponent(courseSlug)}/checkout`
+  );
+  if (state === "already_paid") {
     redirect(`/courses/${course.slug}`);
   }
 
@@ -54,6 +56,7 @@ export default async function CourseCheckoutPage({
         {!enrollment ? (
           <form action={selfEnrollInCourseAction} className="mt-6">
             <input type="hidden" name="courseId" value={course.id} />
+            <input type="hidden" name="courseSlug" value={course.slug} />
             <Button type="submit" className="w-full">
               Enroll & continue
             </Button>

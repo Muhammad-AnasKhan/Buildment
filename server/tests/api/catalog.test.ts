@@ -1,0 +1,111 @@
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import request from "supertest";
+import { createApp } from "../../src/app.js";
+import { prisma } from "../../src/db/prisma.js";
+import { createCourseFixture } from "../helpers/fixtures.js";
+
+const app = createApp();
+let fx: Awaited<ReturnType<typeof createCourseFixture>>;
+let paidCourseId = "";
+let paidSlug = "";
+
+beforeAll(async () => {
+  fx = await createCourseFixture();
+  const paid = await prisma.course.create({
+    data: {
+      slug: `paid-course-${fx.tag}`,
+      title: "Paid course",
+      status: "PUBLISHED",
+      pricingType: "PAID",
+      priceCents: 4900,
+      currency: "USD",
+      mentorId: fx.mentor.id,
+      publishedAt: new Date(),
+    },
+  });
+  paidCourseId = paid.id;
+  paidSlug = paid.slug;
+});
+afterAll(async () => {
+  const enrollments = await prisma.enrollment.findMany({ where: { courseId: paidCourseId }, select: { id: true } });
+  await prisma.payment.deleteMany({ where: { enrollmentId: { in: enrollments.map((e) => e.id) } } });
+  await prisma.enrollment.deleteMany({ where: { courseId: paidCourseId } });
+  await prisma.course.delete({ where: { id: paidCourseId } });
+  await fx.cleanup();
+});
+
+const auth = () => ({ Authorization: `Bearer ${fx.learnerToken}` });
+
+describe("catalog", () => {
+  it("lists published courses with the caller's enrollment state", async () => {
+    const res = await request(app).get("/api/v1/catalog").set(auth());
+    expect(res.status).toBe(200);
+    const mine = res.body.data.courses.find((c: { slug: string }) => c.slug === fx.course.slug);
+    expect(mine).toMatchObject({ instructorName: "Test Mentor", enrollmentLifecycle: "ACTIVE", pricingType: "FREE" });
+    const paid = res.body.data.courses.find((c: { slug: string }) => c.slug === paidSlug);
+    expect(paid).toMatchObject({ priceCents: 4900, enrollmentLifecycle: null });
+  });
+
+  it("describes one course with curriculum and access", async () => {
+    const res = await request(app).get(`/api/v1/catalog/${fx.course.slug}`).set(auth());
+    expect(res.status).toBe(200);
+    expect(res.body.data.access).toBe("active");
+    expect(res.body.data.modules[0].chapters.map((c: { title: string }) => c.title)).toEqual(["Chapter A", "Chapter B"]);
+    expect((await request(app).get("/api/v1/catalog/nope").set(auth())).status).toBe(404);
+  });
+});
+
+describe("course overview", () => {
+  it("returns the syllabus for an active enrollment", async () => {
+    const res = await request(app).get(`/api/v1/courses/${fx.course.slug}/overview`).set(auth());
+    expect(res.status).toBe(200);
+    expect(res.body.data.access).toBe("active");
+    expect(res.body.data.syllabus.chapterCount).toBe(2);
+    expect(res.body.data.syllabus.continueHref).toBe(`/courses/${fx.course.slug}/chapter-a`);
+    expect(res.body.data.syllabus.modules[0].chapters[1].locked).toBe(true);
+  });
+
+  it("reports no access without an enrollment", async () => {
+    const res = await request(app).get(`/api/v1/courses/${paidSlug}/overview`).set(auth());
+    expect(res.body.data).toMatchObject({ access: "none", enrollment: null, syllabus: null });
+  });
+});
+
+describe("self-enrolment and checkout", () => {
+  it("refuses a duplicate enrolment with a stable code", async () => {
+    const res = await request(app).post("/api/v1/enrollments").set(auth()).send({ courseId: fx.course.id });
+    expect(res.status).toBe(409);
+    expect(res.body.code).toBe("ALREADY_ENROLLED");
+  });
+
+  it("enrols into a paid course as payment-required, then the stub payment activates it", async () => {
+    const before = await request(app).get(`/api/v1/courses/${paidSlug}/checkout`).set(auth());
+    expect(before.body.data.state).toBe("no_enrollment");
+
+    const enrol = await request(app).post("/api/v1/enrollments").set(auth()).send({ courseId: paidCourseId });
+    expect(enrol.status).toBe(201);
+    expect(enrol.body.data).toMatchObject({ courseSlug: paidSlug, lifecycle: "PAYMENT_REQUIRED", created: true });
+
+    const again = await request(app).post("/api/v1/enrollments").set(auth()).send({ courseId: paidCourseId });
+    expect(again.body.code).toBe("PAYMENT_PENDING");
+
+    const pending = await request(app).get(`/api/v1/courses/${paidSlug}/checkout`).set(auth());
+    expect(pending.body.data.state).toBe("payment_required");
+    const overview = await request(app).get(`/api/v1/courses/${paidSlug}/overview`).set(auth());
+    expect(overview.body.data.access).toBe("payment_required");
+
+    const pay = await request(app).post(`/api/v1/enrollments/${enrol.body.data.enrollmentId}/payment-stub`).set(auth());
+    expect(pay.status).toBe(200);
+    expect(pay.body.data).toEqual({ courseSlug: paidSlug, alreadyActive: false });
+
+    const paid = await request(app).get(`/api/v1/courses/${paidSlug}/checkout`).set(auth());
+    expect(paid.body.data.state).toBe("already_paid");
+    const payment = await prisma.payment.findUnique({ where: { enrollmentId: enrol.body.data.enrollmentId } });
+    expect(payment?.status).toBe("SUCCEEDED");
+  });
+
+  it("will not pay for someone else's enrolment", async () => {
+    const res = await request(app).post(`/api/v1/enrollments/${fx.enrollment.id}/payment-stub`).set({ Authorization: `Bearer ${fx.unverifiedToken}` });
+    expect(res.status).toBe(404);
+  });
+});

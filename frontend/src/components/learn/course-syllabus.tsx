@@ -10,24 +10,9 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { SyllabusChapterRow } from "./syllabus-chapter-row";
 
-export type SyllabusChapter = {
-  id: string;
-  slug: string;
-  title: string;
-  status: "NOT_STARTED" | "IN_PROGRESS" | "COMPLETED";
-  blockCount: number;
-  blocksCompleted?: number;
-  locked?: boolean;
-  unlocksAfter?: string | null;
-};
+import type { SyllabusChapter, SyllabusModule } from "@buildment/shared/api/syllabus";
 
-export type SyllabusModule = {
-  id: string;
-  order: number;
-  title: string;
-  chapters: SyllabusChapter[];
-  completedCount: number;
-};
+export type { SyllabusChapter, SyllabusModule };
 
 type CourseSyllabusProps = {
   courseSlug: string;

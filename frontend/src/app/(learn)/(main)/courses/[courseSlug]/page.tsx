@@ -1,19 +1,12 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { ArrowLeft, Lock } from "lucide-react";
-import { prisma } from "@/server/db";
-import { ForbiddenError, getSessionUser, requireEnrolledMentee } from "@/server/auth/guards";
-import { enrollmentGrantsContentAccess } from "@/server/enrollment/lifecycle";
+import type { CourseOverview } from "@buildment/shared/api/catalog";
+import { requireLearnSurface } from "@/server/auth/guards";
+import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { CourseOverviewHero } from "@/components/learn/course-overview-hero";
 import { CourseSyllabus } from "@/components/learn/course-syllabus";
 import { CourseProjectShowcase } from "@/components/learn/course-project-showcase";
 import { LearnerBreadcrumb } from "@/components/learn/learner-breadcrumb";
-import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
-import {
-  pickDefaultOpenModule,
-  resolveContinueChapterPath,
-  syllabusForEnrollment,
-} from "@/server/progress/enrollment-syllabus";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -24,63 +17,11 @@ export default async function CourseOverviewPage({
 }) {
   const { courseSlug } = await params;
 
-  const course = await prisma.course.findUnique({
-    where: { slug: courseSlug },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      description: true,
-      projectGoal: true,
-      coverUrl: true,
-      difficulty: true,
-      estimatedHours: true,
-      sequential: true,
-      status: true,
-      mentor: { select: { name: true } },
-      modules: {
-        orderBy: { order: "asc" },
-        select: {
-          id: true,
-          order: true,
-          title: true,
-          chapters: {
-            where: { publishedAt: { not: null } },
-            orderBy: { order: "asc" },
-            select: {
-              id: true,
-              slug: true,
-              title: true,
-              order: true,
-              blocks: {
-                where: { archivedAt: null },
-                select: { type: true, required: true, archivedAt: true },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
-  if (!course) notFound();
+  await requireLearnSurface();
+  const overview = await serverApiFetchOrNotFound<CourseOverview>(`/api/v1/courses/${encodeURIComponent(courseSlug)}/overview`);
+  const { course, enrollment, syllabus } = overview;
 
-  const user = await getSessionUser();
-  if (!user) {
-    return (
-      <div className="mx-auto max-w-4xl px-6 py-10">
-        <p className="text-sm text-muted-foreground">Sign in to view this course.</p>
-        <Link href="/login" className={cn(buttonVariants(), "mt-4 inline-flex")}>
-          Sign in
-        </Link>
-      </div>
-    );
-  }
-
-  const enrollmentRecord = await prisma.enrollment.findUnique({
-    where: { courseId_userId: { courseId: course.id, userId: user.id } },
-  });
-
-  if (!enrollmentRecord) {
+  if (overview.access === "none" || !enrollment) {
     return (
       <div className="mx-auto max-w-4xl px-6 py-10">
         <Link
@@ -108,7 +49,7 @@ export default async function CourseOverviewPage({
     );
   }
 
-  if (!enrollmentGrantsContentAccess(enrollmentRecord.lifecycle)) {
+  if (overview.access === "payment_required" || !syllabus) {
     return (
       <div className="mx-auto max-w-4xl px-6 py-10">
         <Link
@@ -135,24 +76,7 @@ export default async function CourseOverviewPage({
     );
   }
 
-  let enrolled;
-  try {
-    enrolled = await requireEnrolledMentee(course.id);
-  } catch (error) {
-    if (error instanceof ForbiddenError) {
-      notFound();
-    }
-    throw error;
-  }
-
-  const { enrollment, user: verifiedUser } = enrolled;
-  const bypassLocking = bypassProgressGatingForEmail(verifiedUser.email ?? "");
-  const { modules, flatChapters } = await syllabusForEnrollment(
-    course,
-    enrollment.id,
-    bypassLocking
-  );
-  const defaultOpenModuleId = pickDefaultOpenModule(modules);
+  const { modules, chapterCount, continueHref, defaultOpenModuleId } = syllabus;
 
   const continueLabel =
     enrollment.percentComplete === 0
@@ -171,15 +95,15 @@ export default async function CourseOverviewPage({
         description={course.description}
         projectGoal={course.projectGoal}
         coverUrl={course.coverUrl}
-        instructorName={course.mentor.name}
+        instructorName={course.instructorName}
         percentComplete={enrollment.percentComplete}
         chaptersCompleted={enrollment.chaptersCompleted}
-        chaptersTotal={flatChapters.length}
+        chaptersTotal={chapterCount}
         pendingReviews={enrollment.pendingReviews}
-        continueHref={resolveContinueChapterPath(course.slug, flatChapters)}
+        continueHref={continueHref}
         continueLabel={continueLabel}
         moduleCount={modules.length}
-        chapterCount={flatChapters.length}
+        chapterCount={chapterCount}
         estimatedHours={course.estimatedHours}
       />
 
@@ -191,7 +115,7 @@ export default async function CourseOverviewPage({
         defaultOpenModuleId={defaultOpenModuleId}
         percentComplete={enrollment.percentComplete}
         chaptersCompleted={enrollment.chaptersCompleted}
-        chaptersTotal={flatChapters.length}
+        chaptersTotal={chapterCount}
       />
     </div>
   );

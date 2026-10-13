@@ -2,92 +2,51 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { prisma } from "@/server/db";
-import { requireVerifiedUser } from "@/server/auth/guards";
-import {
-  createSelfEnrollment,
-  SelfEnrollmentError,
-} from "@/server/enrollment/create-self-enrollment";
-import { notifyMentorNewEnrollment } from "@/server/email/event-notifications";
-import { queueEmail } from "@/server/email/queue";
+import { ENROLLMENT_ERROR_CODES, type SelfEnrollResult } from "@buildment/shared/api/catalog";
+import { safeRedirectTo } from "@/lib/safe-redirect";
+import { ApiError } from "@/lib/api-client";
+import { serverApiFetch } from "@/lib/api-server";
+
+function refreshLearnerPages() {
+  revalidatePath("/my-courses");
+  revalidatePath("/dashboard");
+  revalidatePath("/catalog");
+}
+
 export async function selfEnrollInCourseAction(formData: FormData): Promise<void> {
-  const user = await requireVerifiedUser();
   const courseId = String(formData.get("courseId") ?? "");
-  const returnTo = String(formData.get("returnTo") ?? "").trim();
+  const courseSlug = String(formData.get("courseSlug") ?? "");
+  const returnTo = safeRedirectTo(String(formData.get("returnTo") ?? "").trim());
+  if (!courseId || !courseSlug) throw new Error("Missing course.");
 
-  if (!courseId) throw new Error("Missing course.");
-
+  let result: SelfEnrollResult;
   try {
-    const result = await createSelfEnrollment(prisma, { userId: user.id, courseId });
-    if (result.created) {
-      queueEmail(() => notifyMentorNewEnrollment(result.enrollmentId));
-    }
-    revalidatePath("/my-courses");
-    revalidatePath("/dashboard");
-    revalidatePath("/catalog");
-
-    if (result.lifecycle === "PAYMENT_REQUIRED") {
-      redirect(`/courses/${result.courseSlug}/checkout`);
-    }
-    redirect(returnTo || `/courses/${result.courseSlug}`);
+    result = await serverApiFetch<SelfEnrollResult>("/api/v1/enrollments", { method: "POST", json: { courseId } });
   } catch (error) {
-    if (error instanceof SelfEnrollmentError) {
-      if (error.code === "PAYMENT_PENDING") {
-        const course = await prisma.course.findUnique({
-          where: { id: courseId },
-          select: { slug: true },
-        });
-        if (course) redirect(`/courses/${course.slug}/checkout`);
-      }
-      if (error.code === "ALREADY_ENROLLED") {
-        const course = await prisma.course.findUnique({
-          where: { id: courseId },
-          select: { slug: true },
-        });
-        if (course) redirect(returnTo || `/courses/${course.slug}`);
-      }
+    if (error instanceof ApiError && error.status === 409) {
+      // Already enrolled or awaiting payment: send the learner where they can continue.
+      if (error.code === ENROLLMENT_ERROR_CODES.PAYMENT_PENDING) redirect(`/courses/${courseSlug}/checkout`);
+      if (error.code === ENROLLMENT_ERROR_CODES.ALREADY_ENROLLED) redirect(returnTo ?? `/courses/${courseSlug}`);
       throw new Error(error.message);
     }
     throw error;
   }
+
+  refreshLearnerPages();
+  if (result.lifecycle === "PAYMENT_REQUIRED") {
+    redirect(`/courses/${result.courseSlug}/checkout`);
+  }
+  redirect(returnTo ?? `/courses/${result.courseSlug}`);
 }
 
-/** Simulates a successful checkout until Stripe is wired (Phase 5 stub). */
+/** Simulates a successful checkout until a payment provider is wired. */
 export async function completeEnrollmentPaymentStubAction(formData: FormData): Promise<void> {
-  const user = await requireVerifiedUser();
   const enrollmentId = String(formData.get("enrollmentId") ?? "");
   if (!enrollmentId) throw new Error("Missing enrollment.");
 
-  const enrollment = await prisma.enrollment.findFirst({
-    where: { id: enrollmentId, userId: user.id },
-    include: { course: { select: { slug: true } }, payment: true },
+  const result = await serverApiFetch<{ courseSlug: string }>(`/api/v1/enrollments/${enrollmentId}/payment-stub`, {
+    method: "POST",
   });
-  if (!enrollment) throw new Error("Enrollment not found.");
-  if (enrollment.lifecycle !== "PAYMENT_REQUIRED") {
-    redirect(`/courses/${enrollment.course.slug}`);
-  }
-
-  await prisma.$transaction(async (tx) => {
-    await tx.payment.update({
-      where: { enrollmentId: enrollment.id },
-      data: {
-        status: "SUCCEEDED",
-        paidAt: new Date(),
-        provider: "stub",
-        providerRef: `stub_${Date.now()}`,
-      },
-    });
-    await tx.enrollment.update({
-      where: { id: enrollment.id },
-      data: {
-        lifecycle: "ACTIVE",
-        status: "IN_PROGRESS",
-        startedAt: enrollment.startedAt ?? new Date(),
-      },
-    });
-  });
-
-  revalidatePath("/my-courses");
-  revalidatePath("/dashboard");
-  redirect(`/courses/${enrollment.course.slug}`);
+  refreshLearnerPages();
+  redirect(`/courses/${result.courseSlug}`);
 }

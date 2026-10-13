@@ -1,7 +1,8 @@
 import "server-only";
 import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
 import { SESSION_COOKIE_NAME } from "@buildment/shared/api/auth";
-import { apiHeaders, parseApiResponse, type ApiRequestInit } from "@/lib/api-client";
+import { ApiError, apiHeaders, parseApiResponse, type ApiRequestInit } from "@/lib/api-client";
 
 // Server-side counterpart of apiFetch: Server Components and Server Actions call
 // the API host directly and pass the visitor's session along as a Bearer token.
@@ -27,4 +28,14 @@ export async function serverApiFetch<T>(path: string, init: ServerApiRequestInit
     body: json !== undefined ? JSON.stringify(json) : undefined,
   });
   return parseApiResponse<T>(response);
+}
+
+/** Same as serverApiFetch, but a 404 from the API renders the Next.js not-found page. */
+export async function serverApiFetchOrNotFound<T>(path: string, init: ServerApiRequestInit = {}): Promise<T> {
+  try {
+    return await serverApiFetch<T>(path, init);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) notFound();
+    throw error;
+  }
 }

@@ -6,6 +6,8 @@ import courseRoutes from "./courses.js";
 import progressRoutes from "./progress.js";
 import jobRoutes from "./jobs.js";
 import learnerRoutes from "./learner.js";
+import catalogRoutes from "./catalog.js";
+import enrollmentRoutes from "./enrollments.js";
 
 // First-party API, versioned. Everything here answers with the { success, data } envelope.
 const router = Router();
@@ -17,5 +19,7 @@ router.use("/courses", courseRoutes);
 router.use("/progress", progressRoutes);
 router.use("/jobs", jobRoutes);
 router.use("/learner", learnerRoutes);
+router.use("/catalog", catalogRoutes);
+router.use("/enrollments", enrollmentRoutes);
 
 export default router;

@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { prisma } from "@/server/db";
+import type { CatalogCourseDetail } from "@buildment/shared/api/catalog";
 import { requireLearnSurface } from "@/server/auth/guards";
+import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { selfEnrollInCourseAction } from "@/server/actions/enroll";
-import { enrollmentGrantsContentAccess } from "@/server/enrollment/lifecycle";
 import { CourseCover } from "@/components/learn/course-cover";
 import { formatPriceCents } from "@/lib/format-price";
 import { buttonVariants } from "@/components/ui/button";
@@ -16,48 +15,10 @@ export default async function CatalogCoursePage({
   params: Promise<{ courseSlug: string }>;
 }) {
   const { courseSlug } = await params;
-  const user = await requireLearnSurface();
-
-  const course = await prisma.course.findUnique({
-    where: { slug: courseSlug },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      description: true,
-      coverUrl: true,
-      projectGoal: true,
-      difficulty: true,
-      estimatedHours: true,
-      pricingType: true,
-      priceCents: true,
-      currency: true,
-      status: true,
-      mentor: { select: { name: true } },
-      modules: {
-        orderBy: { order: "asc" },
-        select: {
-          id: true,
-          title: true,
-          order: true,
-          chapters: {
-            where: { publishedAt: { not: null } },
-            orderBy: { order: "asc" },
-            select: { id: true, title: true, order: true, estimatedMinutes: true },
-          },
-        },
-      },
-    },
-  });
-  if (!course || course.status !== "PUBLISHED") notFound();
-
-  const enrollment = await prisma.enrollment.findUnique({
-    where: { courseId_userId: { courseId: course.id, userId: user.id } },
-    select: { lifecycle: true },
-  });
-
-  const hasAccess = enrollment ? enrollmentGrantsContentAccess(enrollment.lifecycle) : false;
-  const needsPayment = enrollment?.lifecycle === "PAYMENT_REQUIRED";
+  await requireLearnSurface();
+  const course = await serverApiFetchOrNotFound<CatalogCourseDetail>(`/api/v1/catalog/${encodeURIComponent(courseSlug)}`);
+  const hasAccess = course.access === "active";
+  const needsPayment = course.access === "payment_required";
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-7 sm:px-6 sm:py-10">
@@ -69,7 +30,7 @@ export default async function CatalogCoursePage({
         <CourseCover coverUrl={course.coverUrl} title={course.title} aspect="banner" className="rounded-none" />
         <header className="border-b border-border p-6 sm:p-8">
         <p className="text-sm text-muted-foreground">
-          {course.mentor.name ? `Instructor · ${course.mentor.name}` : "Instructor-led course"}
+          {course.instructorName ? `Instructor · ${course.instructorName}` : "Instructor-led course"}
         </p>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight">{course.title}</h1>
         {course.description ? (
@@ -153,6 +114,7 @@ export default async function CatalogCoursePage({
         ) : (
           <form action={selfEnrollInCourseAction}>
             <input type="hidden" name="courseId" value={course.id} />
+            <input type="hidden" name="courseSlug" value={course.slug} />
             <input type="hidden" name="returnTo" value={`/courses/${course.slug}`} />
             <PendingSubmitButton size="lg" pendingLabel="Enrolling…" className="h-10 px-4">
               {course.pricingType === "PAID" ? "Enroll & checkout" : "Enroll for free"}

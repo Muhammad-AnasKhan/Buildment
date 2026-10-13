@@ -193,6 +193,6 @@ describe("buildMenteeDashboardViewModel", () => {
 
   it("never exposes mentor-only configuration keys in the client view model", () => {
     const json = JSON.stringify(build());
-    for (const forbidden of ["config", "correct", "rubric", "sampleAnswer", "hiddenTests", "payload"]) expect(json).not.toContain(`\"${forbidden}\"`);
+    for (const forbidden of ["config", "correct", "rubric", "sampleAnswer", "hiddenTests", "payload"]) expect(json).not.toContain(`"${forbidden}"`);
   });
 });

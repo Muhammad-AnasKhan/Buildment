@@ -1,6 +1,5 @@
-import "server-only";
-import type { PrismaClient } from "@/generated/prisma/client";
-import { lifecycleForSignedInEnrollment } from "@/server/enrollment/lifecycle";
+import type { PrismaClient } from "../../generated/prisma/index.js";
+import { lifecycleForSignedInEnrollment } from "./lifecycle.js";
 
 export class SelfEnrollmentError extends Error {
   readonly code:
