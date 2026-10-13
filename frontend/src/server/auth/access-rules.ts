@@ -1,4 +1,4 @@
-import type { Role } from "@/generated/prisma/client";
+import type { Role } from "@buildment/shared/domain/enums";
 import type { ActiveSurface } from "@/lib/active-surface";
 
 // Pure authorization decisions, deliberately free of any Next.js/Auth.js/Prisma

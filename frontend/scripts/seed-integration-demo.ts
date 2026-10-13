@@ -9,11 +9,14 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { SEED_COURSE } from "../src/lib/seed-data";
-import {
-  generateAccessKey,
-  generateSecretKey,
-  hashSecret,
-} from "../src/server/admin/credentials";
+import { randomBytes } from "node:crypto";
+import { hashIntegrationSecret } from "../src/server/integrations/credential-hash";
+
+// Credential helpers mirror server/src/services/admin/organizations.ts; this script
+// moves to the server package with the rest of the seeds in Phase 6.
+const generateAccessKey = () => `org_live_${randomBytes(12).toString("hex")}`;
+const generateSecretKey = () => randomBytes(24).toString("base64url");
+const hashSecret = (secret: string) => hashIntegrationSecret(secret);
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });

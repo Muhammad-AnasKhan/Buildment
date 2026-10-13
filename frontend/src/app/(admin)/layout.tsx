@@ -1,20 +1,18 @@
+import type { AdminOverview } from "@buildment/shared/api/admin";
 import { requireRole } from "@/server/auth/guards";
 import { signOutAction } from "@/server/auth/actions";
-import { prisma } from "@/server/db";
+import { serverApiFetch } from "@/lib/api-server";
 import { AdminWorkspaceShell } from "@/components/admin/admin-workspace-shell";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requireRole("ADMIN");
-  const [pendingRequests, organizationCount] = await Promise.all([
-    prisma.organizationCourseRequest.count({ where: { status: "PENDING" } }),
-    prisma.organization.count(),
-  ]);
+  const overview = await serverApiFetch<AdminOverview>("/api/v1/admin/overview");
 
   return (
     <AdminWorkspaceShell
       user={user}
-      pendingRequests={pendingRequests}
-      organizationCount={organizationCount}
+      pendingRequests={overview.pendingCourseRequests}
+      organizationCount={overview.organizations}
       signOutAction={signOutAction}
     >
       {children}

@@ -1,86 +1,25 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
-import { prisma } from "@/server/db";
-import { requireRole } from "@/server/auth/guards";
-import { notifyUserGrantedInstructorByAdmin } from "@/server/email/admin-notifications";
-import { queueEmail } from "@/server/email/queue";
+import { adminCall } from "./call";
 
 export async function setUserInstructorAccessAction(formData: FormData): Promise<void> {
-  await requireRole("ADMIN");
   const userId = String(formData.get("userId") ?? "");
-  const enabled = formData.get("canInstruct") === "true";
   if (!userId) throw new Error("Missing user.");
-
-  const existing = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
-  if (!existing) throw new Error("User not found.");
-
-  await prisma.$transaction(async (tx) => {
-    await tx.user.update({
-      where: { id: userId },
-      data: {
-        canInstruct: enabled,
-        ...(enabled && existing.role !== "ADMIN" ? { role: "MENTOR" } : {}),
-      },
-    });
-    if (enabled) {
-      await tx.instructorAccessRequest.upsert({
-        where: { userId },
-        create: { userId, status: "APPROVED", reviewedAt: new Date() },
-        update: { status: "APPROVED", reviewedAt: new Date() },
-      });
-    }
+  await adminCall<void>(`/api/v1/admin/users/${encodeURIComponent(userId)}/instructor-access`, {
+    method: "PATCH",
+    json: { enabled: formData.get("canInstruct") === "true" },
   });
-
   revalidatePath("/admin/users");
   revalidatePath("/", "layout");
 }
 
-const inviteInstructorSchema = z.object({
-  email: z.string().email(),
-  name: z.string().trim().min(1).max(120).optional(),
-});
-
-/** Grant instructor tools to an existing user by email (admin invite). */
+/** Grant instructor tools by email; the API creates a verified account when the address is new. */
 export async function grantInstructorByEmailAction(formData: FormData): Promise<void> {
-  await requireRole("ADMIN");
-  const parsed = inviteInstructorSchema.safeParse({
-    email: formData.get("email"),
-    name: formData.get("name") || undefined,
+  await adminCall<void>("/api/v1/admin/instructors", {
+    method: "POST",
+    json: { email: String(formData.get("email") ?? ""), name: String(formData.get("name") ?? "").trim() || undefined },
   });
-  if (!parsed.success) {
-    throw new Error("Enter a valid email.");
-  }
-
-  const email = parsed.data.email.toLowerCase();
-  const existing = await prisma.user.findUnique({ where: { email }, select: { role: true } });
-  const user = await prisma.user.upsert({
-    where: { email },
-    create: {
-      email,
-      name: parsed.data.name ?? email.split("@")[0],
-      role: "MENTOR",
-      canInstruct: true,
-      emailVerified: new Date(),
-    },
-    update: {
-      canInstruct: true,
-      ...(existing?.role === "ADMIN" ? {} : { role: "MENTOR" }),
-    },
-    select: { id: true, name: true },
-  });
-
-  await prisma.instructorAccessRequest.upsert({
-    where: { userId: user.id },
-    create: { userId: user.id, status: "APPROVED", reviewedAt: new Date() },
-    update: { status: "APPROVED", reviewedAt: new Date() },
-  });
-
-  queueEmail(() =>
-    notifyUserGrantedInstructorByAdmin({ email, name: user.name ?? parsed.data.name ?? null })
-  );
-
   revalidatePath("/admin/users");
   revalidatePath("/", "layout");
 }

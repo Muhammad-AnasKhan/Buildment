@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { prisma } from "@/server/db";
+import type { AdminCourseRow } from "@buildment/shared/api/admin";
+import { serverApiFetch } from "@/lib/api-server";
 import { Badge } from "@/components/ui/badge";
 import { formatPriceCents } from "@/lib/format-price";
 import {
@@ -13,22 +14,7 @@ import {
 } from "@/components/admin/admin-ui";
 
 export default async function AdminCoursesPage() {
-  const courses = await prisma.course.findMany({
-    orderBy: { updatedAt: "desc" },
-    take: 200,
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      status: true,
-      pricingType: true,
-      priceCents: true,
-      currency: true,
-      updatedAt: true,
-      mentor: { select: { email: true, name: true } },
-      _count: { select: { enrollments: true, organizationCourses: true } },
-    },
-  });
+  const { courses } = await serverApiFetch<{ courses: AdminCourseRow[] }>("/api/v1/admin/courses");
 
   return (
     <div>
@@ -72,13 +58,13 @@ export default async function AdminCoursesPage() {
                   : "Free"}
               </AdminTableCell>
               <AdminTableCell className="text-muted-foreground">
-                {course.mentor.name ?? course.mentor.email}
+                {course.instructorLabel}
               </AdminTableCell>
               <AdminTableCell align="right" className="tabular-nums">
-                {course._count.enrollments}
+                {course.enrollmentCount}
               </AdminTableCell>
               <AdminTableCell align="right" className="tabular-nums">
-                {course._count.organizationCourses}
+                {course.allocationCount}
               </AdminTableCell>
             </AdminTableRow>
           ))}

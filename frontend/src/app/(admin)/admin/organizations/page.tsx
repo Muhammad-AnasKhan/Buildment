@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { prisma } from "@/server/db";
+import type { AdminOrganizationRow } from "@buildment/shared/api/admin";
+import { serverApiFetch } from "@/lib/api-server";
 import { buttonVariants } from "@/components/ui/button";
 import {
   AdminEmptyState,
@@ -14,13 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export default async function AdminOrganizationsPage() {
-  const organizations = await prisma.organization.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      _count: { select: { courseAllocations: true, enrollments: true } },
-      apiCredentials: { where: { active: true }, take: 1, select: { accessKey: true } },
-    },
-  });
+  const { organizations } = await serverApiFetch<{ organizations: AdminOrganizationRow[] }>("/api/v1/admin/organizations");
 
   return (
     <div>
@@ -72,14 +67,14 @@ export default async function AdminOrganizationsPage() {
                 </AdminTableCell>
                 <AdminTableCell className="max-w-[12rem]">
                   <span className="block truncate font-mono text-xs text-muted-foreground">
-                    {org.apiCredentials[0]?.accessKey ?? "—"}
+                    {org.accessKey ?? "—"}
                   </span>
                 </AdminTableCell>
                 <AdminTableCell align="right" className="tabular-nums">
-                  {org._count.courseAllocations}
+                  {org.allocationCount}
                 </AdminTableCell>
                 <AdminTableCell align="right" className="tabular-nums">
-                  {org._count.enrollments}
+                  {org.enrollmentCount}
                 </AdminTableCell>
               </AdminTableRow>
             ))}

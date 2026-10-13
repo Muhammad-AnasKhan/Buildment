@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { prisma } from "@/server/db";
+import type { AdminOrganizationDetail } from "@buildment/shared/api/admin";
+import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { CredentialReveal } from "@/components/admin/credential-reveal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,31 +29,11 @@ export default async function AdminOrganizationDetailPage({
   const { orgId } = await params;
   const query = await searchParams;
 
-  const org = await prisma.organization.findUnique({
-    where: { id: orgId },
-    include: {
-      apiCredentials: { orderBy: { createdAt: "desc" } },
-      courseAllocations: {
-        orderBy: { updatedAt: "desc" },
-        include: { course: { select: { id: true, title: true, slug: true, status: true } } },
-      },
-      courseRequests: {
-        where: { status: "PENDING" },
-        include: { course: { select: { title: true, slug: true } } },
-      },
-      _count: { select: { enrollments: true } },
-    },
-  });
-  if (!org) notFound();
+  const { organization: org, credentials, allocations, pendingRequests, publishedCourses } =
+    await serverApiFetchOrNotFound<AdminOrganizationDetail>(`/api/v1/admin/organizations/${encodeURIComponent(orgId)}`);
 
-  const publishedCourses = await prisma.course.findMany({
-    where: { status: "PUBLISHED" },
-    orderBy: { title: "asc" },
-    select: { id: true, title: true, slug: true },
-  });
-
-  const allocationByCourseId = new Map(org.courseAllocations.map((row) => [row.courseId, row]));
-  const pendingRequestCourseIds = new Set(org.courseRequests.map((r) => r.courseId));
+  const allocationByCourseId = new Map(allocations.map((row) => [row.course.id, row]));
+  const pendingRequestCourseIds = new Set(pendingRequests.map((r) => r.courseId));
   const mapCourseForBulk = (course: (typeof publishedCourses)[number]) => {
     const allocation = allocationByCourseId.get(course.id);
     return {
@@ -63,9 +43,7 @@ export default async function AdminOrganizationDetailPage({
       allocated: Boolean(allocation),
       pendingRequest: pendingRequestCourseIds.has(course.id),
       maxEnrollments: allocation?.maxEnrollments ?? 100,
-      expiresAt: allocation?.expiresAt
-        ? allocation.expiresAt.toLocaleDateString("en-CA")
-        : "",
+      expiresAt: allocation?.expiresAt ? allocation.expiresAt.slice(0, 10) : "",
     };
   };
 
@@ -86,8 +64,8 @@ export default async function AdminOrganizationDetailPage({
             <>
               <span className="font-mono text-xs">{org.slug}</span>
               <span className="mt-1 block">
-                {org._count.enrollments} integration enrollment
-                {org._count.enrollments === 1 ? "" : "s"}
+                {org.enrollmentCount} integration enrollment
+                {org.enrollmentCount === 1 ? "" : "s"}
               </span>
             </>
           }
@@ -108,13 +86,13 @@ export default async function AdminOrganizationDetailPage({
         </div>
       ) : null}
 
-      {org.courseRequests.length > 0 ? (
+      {pendingRequests.length > 0 ? (
         <AdminPanel className="mt-6 border-primary/20 bg-primary/5">
           <h2 className="text-sm font-semibold">Pending course requests</h2>
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-            {org.courseRequests.map((r) => (
+            {pendingRequests.map((r) => (
               <li key={r.id}>
-                {r.course.title}{" "}
+                {r.courseTitle}{" "}
                 <Link href="/admin/requests" className="font-medium text-foreground underline-offset-4 hover:underline">
                   Review in queue →
                 </Link>
@@ -135,7 +113,7 @@ export default async function AdminOrganizationDetailPage({
             </tr>
           </AdminTableHead>
           <AdminTableBody>
-            {org.apiCredentials.map((cred) => (
+            {credentials.map((cred) => (
               <AdminTableRow key={cred.id}>
                 <AdminTableCell>
                   <span className="font-mono text-xs">{cred.accessKey}</span>
@@ -149,7 +127,7 @@ export default async function AdminOrganizationDetailPage({
                   )}
                 </AdminTableCell>
                 <AdminTableCell className="text-muted-foreground">
-                  {cred.lastUsedAt ? cred.lastUsedAt.toLocaleDateString() : "—"}
+                  {cred.lastUsedAt ? new Date(cred.lastUsedAt).toLocaleDateString() : "—"}
                 </AdminTableCell>
               </AdminTableRow>
             ))}
@@ -171,14 +149,14 @@ export default async function AdminOrganizationDetailPage({
             </tr>
           </AdminTableHead>
           <AdminTableBody>
-            {org.courseAllocations.length === 0 ? (
+            {allocations.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-4 py-10 text-center text-sm text-muted-foreground">
                   No allocations yet.
                 </td>
               </tr>
             ) : (
-              org.courseAllocations.map((row) => (
+              allocations.map((row) => (
                 <AdminTableRow key={row.id}>
                   <AdminTableCell>
                     <div className="flex flex-wrap items-center gap-2">
@@ -193,7 +171,7 @@ export default async function AdminOrganizationDetailPage({
                     {row.currentEnrollments} / {row.maxEnrollments}
                   </AdminTableCell>
                   <AdminTableCell className="text-muted-foreground">
-                    {row.expiresAt ? row.expiresAt.toLocaleDateString() : "—"}
+                    {row.expiresAt ? new Date(row.expiresAt).toLocaleDateString() : "—"}
                   </AdminTableCell>
                   <AdminTableCell>
                     {row.isAllowed ? (

@@ -7,7 +7,8 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
-import { prisma } from "@/server/db";
+import type { AdminOverview } from "@buildment/shared/api/admin";
+import { serverApiFetch } from "@/lib/api-server";
 import { AdminPageHeader, AdminPanel } from "@/components/admin/admin-ui";
 import { cn } from "@/lib/utils";
 
@@ -47,12 +48,8 @@ function OverviewTile({
 }
 
 export default async function AdminHomePage() {
-  const [orgCount, pendingRequests, publishedCourses, instructors] = await Promise.all([
-    prisma.organization.count(),
-    prisma.organizationCourseRequest.count({ where: { status: "PENDING" } }),
-    prisma.course.count({ where: { status: "PUBLISHED" } }),
-    prisma.user.count({ where: { canInstruct: true } }),
-  ]);
+  const { organizations: orgCount, pendingCourseRequests: pendingRequests, publishedCourses, instructors } =
+    await serverApiFetch<AdminOverview>("/api/v1/admin/overview");
 
   const tiles = [
     {

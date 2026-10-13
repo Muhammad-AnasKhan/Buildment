@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { prisma } from "@/server/db";
+import type { AdminCourseRequestsView } from "@buildment/shared/api/admin";
+import { serverApiFetch } from "@/lib/api-server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,25 +23,7 @@ import {
 } from "@/components/admin/admin-ui";
 
 export default async function AdminCourseRequestsPage() {
-  const pending = await prisma.organizationCourseRequest.findMany({
-    where: { status: "PENDING" },
-    orderBy: { requestedAt: "asc" },
-    include: {
-      organization: { select: { id: true, name: true, slug: true } },
-      course: { select: { title: true, slug: true, status: true } },
-    },
-  });
-
-  const recent = await prisma.organizationCourseRequest.findMany({
-    where: { status: { in: ["APPROVED", "REJECTED"] } },
-    orderBy: { reviewedAt: "desc" },
-    take: 20,
-    include: {
-      organization: { select: { name: true } },
-      course: { select: { title: true } },
-      reviewedBy: { select: { email: true } },
-    },
-  });
+  const { pending, recent } = await serverApiFetch<AdminCourseRequestsView>("/api/v1/admin/course-requests");
 
   return (
     <div>
@@ -77,7 +60,7 @@ export default async function AdminCourseRequestsPage() {
                         >
                           {req.organization.name}
                         </Link>{" "}
-                        · {req.requestedAt.toLocaleDateString()}
+                        · {new Date(req.requestedAt).toLocaleDateString()}
                       </p>
                     </div>
                     <Badge variant="outline">{req.course.status}</Badge>
@@ -131,16 +114,16 @@ export default async function AdminCourseRequestsPage() {
             <AdminTableBody>
               {recent.map((row) => (
                 <AdminTableRow key={row.id}>
-                  <AdminTableCell>{row.course.title}</AdminTableCell>
-                  <AdminTableCell>{row.organization.name}</AdminTableCell>
+                  <AdminTableCell>{row.courseTitle}</AdminTableCell>
+                  <AdminTableCell>{row.organizationName}</AdminTableCell>
                   <AdminTableCell>
                     <Badge variant={row.status === "APPROVED" ? "secondary" : "outline"}>
                       {row.status}
                     </Badge>
                   </AdminTableCell>
                   <AdminTableCell className="text-muted-foreground">
-                    {row.reviewedAt?.toLocaleDateString() ?? "—"}
-                    {row.reviewedBy ? ` · ${row.reviewedBy.email}` : ""}
+                    {row.reviewedAt ? new Date(row.reviewedAt).toLocaleDateString() : "—"}
+                    {row.reviewerEmail ? ` · ${row.reviewerEmail}` : ""}
                   </AdminTableCell>
                 </AdminTableRow>
               ))}

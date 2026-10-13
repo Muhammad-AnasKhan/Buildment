@@ -1,4 +1,5 @@
-import { prisma } from "@/server/db";
+import type { AdminUsersView } from "@buildment/shared/api/admin";
+import { serverApiFetch } from "@/lib/api-server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,28 +24,7 @@ import {
 } from "@/components/admin/admin-ui";
 
 export default async function AdminUsersPage() {
-  const pendingInstructorRequests = await prisma.instructorAccessRequest.findMany({
-    where: { status: "PENDING" },
-    orderBy: { createdAt: "desc" },
-    include: {
-      user: { select: { id: true, email: true, name: true, role: true } },
-    },
-  });
-
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 100,
-    select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      canInstruct: true,
-      emailVerified: true,
-      createdAt: true,
-      _count: { select: { enrollments: true, coursesOwned: true } },
-    },
-  });
+  const { pendingInstructorRequests, users } = await serverApiFetch<AdminUsersView>("/api/v1/admin/users");
 
   return (
     <div>
@@ -123,10 +103,10 @@ export default async function AdminUsersPage() {
                   )}
                 </AdminTableCell>
                 <AdminTableCell align="right" className="tabular-nums">
-                  {user._count.enrollments}
+                  {user.enrollmentCount}
                 </AdminTableCell>
                 <AdminTableCell align="right" className="tabular-nums">
-                  {user._count.coursesOwned}
+                  {user.courseCount}
                 </AdminTableCell>
                 <AdminTableCell>
                   {user.role === "ADMIN" ? (

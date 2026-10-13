@@ -11,6 +11,7 @@ import enrollmentRoutes from "./enrollments.js";
 import helpRoutes from "./help.js";
 import inviteRoutes from "./invites.js";
 import teachRoutes from "./teach.js";
+import adminRoutes from "./admin.js";
 
 // First-party API, versioned. Everything here answers with the { success, data } envelope.
 const router = Router();
@@ -27,5 +28,6 @@ router.use("/enrollments", enrollmentRoutes);
 router.use("/help", helpRoutes);
 router.use("/invites", inviteRoutes);
 router.use("/teach", teachRoutes);
+router.use("/admin", adminRoutes);
 
 export default router;

@@ -69,3 +69,7 @@ export type CoursePricingType = (typeof COURSE_PRICING_TYPES)[number];
 
 export const CHAPTER_READER_MODES = ["DEFAULT", "QUIZ"] as const;
 export type ChapterReaderMode = (typeof CHAPTER_READER_MODES)[number];
+
+/** Shared by organisation course requests and instructor access requests. */
+export const REQUEST_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
+export type RequestStatus = (typeof REQUEST_STATUSES)[number];
