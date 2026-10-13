@@ -1,16 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
-import { prisma } from "@/server/db";
-import { requireVerifiedUser } from "@/server/auth/guards";
+import { ApiError } from "@/lib/api-client";
+import { serverApiFetch } from "@/lib/api-server";
 
-const profileSchema = z.object({
-  name: z.string().trim().min(1).max(120),
-  timezone: z.string().trim().min(1).max(64),
-  skills: z.string().max(2000),
-});
-
+/** "sql, react; node" → ["sql", "react", "node"], de-duplicated, capped at 30. */
 function parseSkills(raw: string): string[] {
   const parts = raw
     .split(/[,;\n]/)
@@ -25,37 +19,21 @@ export async function updateProfileAction(
   _prev: ProfileUpdateState | undefined,
   formData: FormData
 ): Promise<ProfileUpdateState> {
-  const user = await requireVerifiedUser();
-  const parsed = profileSchema.safeParse({
-    name: formData.get("name"),
-    timezone: formData.get("timezone"),
-    skills: formData.get("skills"),
-  });
-
-  if (!parsed.success) {
-    return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
+  try {
+    await serverApiFetch("/api/v1/learner/profile", {
+      method: "PATCH",
+      json: {
+        name: String(formData.get("name") ?? ""),
+        timezone: String(formData.get("timezone") ?? ""),
+        skills: parseSkills(String(formData.get("skills") ?? "")),
+      },
+    });
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { ok: false, errors: error.errors.length ? error.errors.map((issue) => issue.message) : [error.message] };
+    }
+    throw error;
   }
-
-  const skills = parseSkills(parsed.data.skills);
-
-  await prisma.$transaction([
-    prisma.user.update({
-      where: { id: user.id },
-      data: { name: parsed.data.name },
-    }),
-    prisma.userProfile.upsert({
-      where: { userId: user.id },
-      create: {
-        userId: user.id,
-        timezone: parsed.data.timezone,
-        skills,
-      },
-      update: {
-        timezone: parsed.data.timezone,
-        skills,
-      },
-    }),
-  ]);
 
   revalidatePath("/settings/profile");
   return { ok: true };

@@ -1,30 +1,22 @@
-import { prisma } from "@/server/db";
+import type { LearnerProfile } from "@buildment/shared/api/learner";
 import { requireVerifiedUser } from "@/server/auth/guards";
+import { serverApiFetch } from "@/lib/api-server";
 import { ProfileForm } from "@/components/auth/profile-form";
 import { ProfileSettingsHero } from "@/components/auth/profile-settings-hero";
 
 export default async function ProfileSettingsPage() {
-  const user = await requireVerifiedUser();
-  const [profile, featuredEnrollment] = await Promise.all([
-    prisma.userProfile.findUnique({ where: { userId: user.id } }),
-    prisma.enrollment.findFirst({
-      where: { userId: user.id, status: { not: "DROPPED" } },
-      orderBy: [{ lastActiveAt: "desc" }, { createdAt: "desc" }],
-      select: {
-        course: { select: { title: true, coverUrl: true } },
-      },
-    }),
-  ]);
+  await requireVerifiedUser();
+  const profile = await serverApiFetch<LearnerProfile>("/api/v1/learner/profile");
 
-  const coverUrl = featuredEnrollment?.course.coverUrl ?? null;
-  const coverLabel = featuredEnrollment?.course.title ?? user.name ?? "Your profile";
+  const coverUrl = profile.featuredCourse?.coverUrl ?? null;
+  const coverLabel = profile.featuredCourse?.title ?? profile.name ?? "Your profile";
 
   return (
     <div className="min-h-dvh bg-background">
       <ProfileSettingsHero
-        name={user.name}
-        email={user.email ?? ""}
-        image={user.image}
+        name={profile.name}
+        email={profile.email}
+        image={profile.image}
         coverUrl={coverUrl}
         coverLabel={coverLabel}
       />
@@ -39,11 +31,11 @@ export default async function ProfileSettingsPage() {
             </p>
           </div>
           <ProfileForm
-            email={user.email ?? ""}
+            email={profile.email}
             initial={{
-              name: user.name ?? "",
-              timezone: profile?.timezone ?? "UTC",
-              skills: (profile?.skills ?? []).join(", "),
+              name: profile.name ?? "",
+              timezone: profile.timezone,
+              skills: profile.skills.join(", "),
             }}
             variant="plain"
           />

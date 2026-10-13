@@ -1,9 +1,18 @@
 import { Router } from "express";
 import * as chapters from "../../controllers/chapters.js";
-import { optionalAuth } from "../../middlewares/authenticate.js";
+import { authenticate, optionalAuth } from "../../middlewares/authenticate.js";
+import { requireVerified } from "../../middlewares/require-verified.js";
 import { userRateLimit } from "../../middlewares/rate-limit.js";
-import { validate } from "../../middlewares/validate.js";
-import { chapterParams, quizSubmitBody } from "../../validations/chapters.js";
+import { validate, validateParams } from "../../middlewares/validate.js";
+import {
+  chapterParams,
+  checklistItemBody,
+  checklistItemParams,
+  headingNoteBody,
+  headingNoteParams,
+  learningLogBody,
+  quizSubmitBody,
+} from "../../validations/chapters.js";
 
 const router = Router();
 
@@ -19,5 +28,12 @@ router.post(
   }),
   chapters.submitQuiz
 );
+
+// Learner progress on a chapter: completion, checklist ticks, reflections, margin notes.
+const learner = [authenticate, requireVerified] as const;
+router.post("/:chapterId/complete", ...learner, validateParams(chapterParams), chapters.complete);
+router.put("/:chapterId/checklist/:itemId", ...learner, validate({ params: checklistItemParams, body: checklistItemBody }), chapters.putChecklistItem);
+router.put("/:chapterId/learning-log", ...learner, validate({ params: chapterParams, body: learningLogBody }), chapters.putLearningLog);
+router.put("/:chapterId/notes/:headingId", ...learner, validate({ params: headingNoteParams, body: headingNoteBody }), chapters.putHeadingNote);
 
 export default router;

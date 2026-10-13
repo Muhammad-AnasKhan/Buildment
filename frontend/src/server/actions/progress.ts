@@ -2,226 +2,41 @@
 
 import { z } from "zod";
 import { prisma } from "@/server/db";
-import { ForbiddenError, requireEnrolledMentee, requireMentorOfCourse } from "@/server/auth/guards";
-import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
-import { ChapterLockedError, assertChapterUnlocked } from "@/server/progress/gate";
-import {
-  ensureChapterStarted,
-  recomputeChapterProgress,
-  repairEnrollmentProgress,
-  recomputeEnrollmentRollup,
-} from "@/server/progress/compute";
-import {
-  checkpointSatisfied,
-  isCompletableBlock,
-} from "@/server/progress/rules";
-import { milestoneReflectionBlocked } from "@/server/progress/reflection";
-import { LearningLogDataSchema, parseLearningLog } from "@/lib/learning-log";
+import { requireMentorOfCourse } from "@/server/auth/guards";
+import { repairEnrollmentProgress } from "@/server/progress/compute";
+import { ApiError } from "@/lib/api-client";
+import { serverApiFetch } from "@/lib/api-server";
 
 export type ProgressActionResult = { ok: true } | { ok: false; error: string };
 
-const chapterInput = z.object({ chapterId: z.string().min(1) });
-
-export async function markChapterComplete(input: {
-  chapterId: string;
-}): Promise<ProgressActionResult> {
-  const parsed = chapterInput.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Invalid chapter." };
-
-  const chapter = await prisma.chapter.findUnique({
-    where: { id: parsed.data.chapterId },
-    select: { id: true, courseId: true, isMilestone: true, source: true, compiled: true },
-  });
-  if (!chapter) return { ok: false, error: "Chapter not found." };
-
-  let enrollment;
-  let user;
+async function chapterCall(path: string, init: { method: "POST" | "PUT"; json?: unknown }): Promise<ProgressActionResult> {
   try {
-    ({ enrollment, user } = await requireEnrolledMentee(chapter.courseId));
+    await serverApiFetch(path, init);
+    return { ok: true };
   } catch (error) {
-    if (error instanceof ForbiddenError) {
-      return { ok: false, error: "You don't have access to submit progress for this course." };
-    }
+    if (error instanceof ApiError) return { ok: false, error: error.message };
     throw error;
   }
-  const bypassLocking = bypassProgressGatingForEmail(user.email ?? "");
-
-  try {
-    await assertChapterUnlocked({
-      courseId: chapter.courseId,
-      enrollmentId: enrollment.id,
-      chapterId: chapter.id,
-      bypassLocking,
-    });
-  } catch (error) {
-    if (error instanceof ChapterLockedError) {
-      return { ok: false, error: "Finish the previous chapter first." };
-    }
-    throw error;
-  }
-
-  const blocks = await prisma.block.findMany({
-    where: { chapterId: chapter.id, archivedAt: null },
-    select: { id: true, type: true, required: true, archivedAt: true, config: true },
-  });
-  const completable = blocks.filter((block) => isCompletableBlock(block));
-
-  const learnerUserId = enrollment.userId;
-  if (!learnerUserId) return { ok: false as const, error: "pending_account" as const };
-
-  for (const block of completable) {
-    const latest = await prisma.response.findFirst({
-      where: { blockId: block.id, userId: learnerUserId },
-      orderBy: { attempt: "desc" },
-      select: { status: true, isCorrect: true },
-    });
-    if (
-      !checkpointSatisfied({
-        type: block.type,
-        config: block.config,
-        status: latest?.status ?? null,
-        isCorrect: latest?.isCorrect ?? null,
-      })
-    ) {
-      return { ok: false, error: "Finish the checkpoints in this chapter first. A scored check counts when the answer is correct, unless retry is turned off." };
-    }
-  }
-
-  if (chapter.isMilestone) {
-    const progress = await prisma.chapterProgress.findUnique({
-      where: { enrollmentId_chapterId: { enrollmentId: enrollment.id, chapterId: chapter.id } },
-      select: { learningLog: true },
-    });
-    if (milestoneReflectionBlocked(chapter.compiled || chapter.source, progress?.learningLog)) {
-      return { ok: false, error: "Check every checklist item and answer the learning log before this gate chapter can be completed." };
-    }
-  }
-
-  await prisma.$transaction(async (tx) => {
-    const existing = await tx.chapterProgress.findUnique({
-      where: {
-        enrollmentId_chapterId: { enrollmentId: enrollment.id, chapterId: chapter.id },
-      },
-      select: { completedAt: true },
-    });
-    await tx.chapterProgress.upsert({
-      where: {
-        enrollmentId_chapterId: { enrollmentId: enrollment.id, chapterId: chapter.id },
-      },
-      create: {
-        enrollmentId: enrollment.id,
-        chapterId: chapter.id,
-        status: "COMPLETED",
-        blocksTotal: completable.length,
-        blocksCompleted: completable.length,
-        startedAt: new Date(),
-        completedAt: new Date(),
-      },
-      update: {
-        status: "COMPLETED",
-        blocksTotal: completable.length,
-        blocksCompleted: completable.length,
-        completedAt: existing?.completedAt ?? new Date(),
-      },
-    });
-    await recomputeEnrollmentRollup(tx, enrollment.id);
-  });
-
-  return { ok: true };
 }
 
-const checklistInput = z.object({
-  chapterId: z.string().min(1),
-  itemId: z.string().min(1).max(200),
-  checked: z.boolean(),
-});
+export async function markChapterComplete(input: { chapterId: string }): Promise<ProgressActionResult> {
+  return chapterCall(`/api/v1/chapters/${encodeURIComponent(input.chapterId)}/complete`, { method: "POST" });
+}
 
 export async function saveChecklistItem(input: {
   chapterId: string;
   itemId: string;
   checked: boolean;
 }): Promise<ProgressActionResult> {
-  const parsed = checklistInput.safeParse(input);
-  if (!parsed.success) return { ok: false, error: "Invalid checklist item." };
-
-  const chapter = await prisma.chapter.findUnique({
-    where: { id: parsed.data.chapterId },
-    select: { id: true, courseId: true },
-  });
-  if (!chapter) return { ok: false, error: "Chapter not found." };
-
-  let enrollment;
-  let user;
-  try {
-    ({ enrollment, user } = await requireEnrolledMentee(chapter.courseId));
-  } catch (error) {
-    if (error instanceof ForbiddenError) {
-      return { ok: false, error: "You don't have access to save checklist progress for this course." };
-    }
-    throw error;
-  }
-  const bypassLocking = bypassProgressGatingForEmail(user.email ?? "");
-
-  try {
-    await assertChapterUnlocked({
-      courseId: chapter.courseId,
-      enrollmentId: enrollment.id,
-      chapterId: chapter.id,
-      bypassLocking,
-    });
-  } catch (error) {
-    if (error instanceof ChapterLockedError) {
-      return { ok: false, error: "This chapter is locked." };
-    }
-    throw error;
-  }
-
-  const existing = await prisma.chapterProgress.findUnique({
-    where: {
-      enrollmentId_chapterId: { enrollmentId: enrollment.id, chapterId: chapter.id },
-    },
-    select: { learningLog: true, status: true },
-  });
-  const current = parseLearningLog(existing?.learningLog);
-  const savedAt = new Date().toISOString();
-  const learningLog = LearningLogDataSchema.parse({
-    version: 1,
-    answers: current.answers,
-    checklist: {
-      ...current.checklist,
-      [parsed.data.itemId]: { checked: parsed.data.checked, updatedAt: savedAt },
-    },
-  });
-
-  await prisma.$transaction(async (tx) => {
-    await tx.chapterProgress.upsert({
-      where: {
-        enrollmentId_chapterId: { enrollmentId: enrollment.id, chapterId: chapter.id },
-      },
-      create: {
-        enrollmentId: enrollment.id,
-        chapterId: chapter.id,
-        status: "IN_PROGRESS",
-        startedAt: new Date(),
-        learningLog,
-      },
-      update: {
-        learningLog,
-        ...(existing?.status === "NOT_STARTED"
-          ? { status: "IN_PROGRESS" as const, startedAt: new Date() }
-          : {}),
-      },
-    });
-    await ensureChapterStarted(tx, enrollment.id, chapter.id);
-    await recomputeChapterProgress(tx, enrollment.id, chapter.id);
-  });
-
-  return { ok: true };
+  return chapterCall(
+    `/api/v1/chapters/${encodeURIComponent(input.chapterId)}/checklist/${encodeURIComponent(input.itemId)}`,
+    { method: "PUT", json: { checked: input.checked } }
+  );
 }
 
 const enrollmentInput = z.object({ enrollmentId: z.string().min(1) });
 
-/** Mentor-only: rebuild chapter + enrollment rollups from Response rows. */
+/** Mentor-only: rebuild chapter + enrollment rollups from Response rows. Moves to the API with the instructor domain. */
 export async function repairEnrollmentProgressAction(input: {
   enrollmentId: string;
 }): Promise<ProgressActionResult> {

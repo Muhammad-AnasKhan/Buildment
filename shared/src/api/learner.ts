@@ -150,3 +150,20 @@ export type LearnerProgressView = {
 };
 
 export type WeeklyGoalInput = { kind: "SESSIONS" | "CHAPTERS"; target: number };
+
+export type LearnerProfile = {
+  name: string | null;
+  email: string;
+  image: string | null;
+  timezone: string;
+  skills: string[];
+  /** Most recently active course, used as the settings page cover. */
+  featuredCourse: { title: string; coverUrl: string | null } | null;
+};
+
+export type ProfileUpdateInput = { name: string; timezone: string; skills: string[] };
+
+export const INSTRUCTOR_ACCESS_ERROR_CODES = {
+  ALREADY_INSTRUCTOR: "ALREADY_INSTRUCTOR",
+  REQUEST_PENDING: "REQUEST_PENDING",
+} as const;
