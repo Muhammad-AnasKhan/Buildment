@@ -132,7 +132,7 @@ export async function askMentorFromChapter(input: {
     notifyMentorHelpQuestion({
       threadId: thread.id,
       body: parsed.data.body,
-      menteeName: user.name,
+      menteeName: user.name ?? null,
     })
   );
 
@@ -183,7 +183,7 @@ export async function replyToHelpThread(input: {
       notifyMentorHelpQuestion({
         threadId: thread.id,
         body: parsed.data.body,
-        menteeName: user.name,
+        menteeName: user.name ?? null,
       })
     );
   } else {
@@ -191,7 +191,7 @@ export async function replyToHelpThread(input: {
       notifyMenteeHelpReply({
         threadId: thread.id,
         body: parsed.data.body,
-        mentorName: user.name,
+        mentorName: user.name ?? null,
       })
     );
   }

@@ -14,12 +14,12 @@ function adminEmailsFromEnv(): string[] {
 
 export async function listAdminNotificationEmails(): Promise<string[]> {
   const admins = await prisma.user.findMany({
-    where: { role: "ADMIN", email: { not: null } },
+    where: { role: "ADMIN" },
     select: { email: true },
   });
   const combined = [
     ...adminEmailsFromEnv(),
-    ...admins.map((row) => row.email!.trim().toLowerCase()),
+    ...admins.map((row) => row.email.trim().toLowerCase()),
   ];
   return [...new Set(combined)];
 }
