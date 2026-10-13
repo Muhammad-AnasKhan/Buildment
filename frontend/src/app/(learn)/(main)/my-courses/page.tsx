@@ -2,17 +2,13 @@ import Link from "next/link";
 import { BookOpenText } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { MenteeCourseList } from "@/components/learn/dashboard/mentee-dashboard";
+import type { MenteeDashboardViewModel } from "@buildment/shared/api/learner";
 import { requireLearnSurface } from "@/server/auth/guards";
-import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
-import { loadMenteeDashboard } from "@/server/dashboard/load-mentee-dashboard";
+import { serverApiFetch } from "@/lib/api-server";
 
 export default async function MenteeCoursesPage() {
-  const user = await requireLearnSurface();
-  const model = await loadMenteeDashboard({
-    learnerId: user.id,
-    learnerName: user.name?.trim() || user.email?.split("@")[0] || "there",
-    bypassLocking: bypassProgressGatingForEmail(user.email ?? ""),
-  });
+  await requireLearnSurface();
+  const model = await serverApiFetch<MenteeDashboardViewModel>("/api/v1/learner/dashboard");
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">

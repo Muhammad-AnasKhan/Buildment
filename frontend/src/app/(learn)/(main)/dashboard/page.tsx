@@ -1,15 +1,11 @@
+import type { MenteeDashboardViewModel } from "@buildment/shared/api/learner";
 import { MenteeDashboard } from "@/components/learn/dashboard/mentee-dashboard";
 import { requireLearnSurface } from "@/server/auth/guards";
-import { loadMenteeDashboard } from "@/server/dashboard/load-mentee-dashboard";
-import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
+import { serverApiFetch } from "@/lib/api-server";
 
 export default async function MenteeDashboardPage() {
-  const user = await requireLearnSurface();
-  const model = await loadMenteeDashboard({
-    learnerId: user.id,
-    learnerName: user.name?.trim() || user.email?.split("@")[0] || "there",
-    bypassLocking: bypassProgressGatingForEmail(user.email ?? ""),
-  });
+  await requireLearnSurface();
+  const model = await serverApiFetch<MenteeDashboardViewModel>("/api/v1/learner/dashboard");
 
   return <MenteeDashboard model={model} />;
 }

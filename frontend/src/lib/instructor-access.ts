@@ -1,14 +1,2 @@
-/** Serializable instructor / learner switch state for workspace sidebars. */
-export type InstructorAccessView = {
-  canInstruct: boolean;
-  requestStatus: "none" | "pending" | "rejected";
-  canRequestAccess: boolean;
-};
-
-export function instructorAccessView(input: {
-  canInstruct: boolean;
-  requestStatus: InstructorAccessView["requestStatus"];
-  canRequestAccess: boolean;
-}): InstructorAccessView {
-  return input;
-}
+// Moved to @buildment/shared (used by the API too). Re-exported so existing imports keep working.
+export * from "@buildment/shared/lib/instructor-access";

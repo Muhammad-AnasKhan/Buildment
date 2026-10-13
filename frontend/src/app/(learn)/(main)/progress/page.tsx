@@ -9,12 +9,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Progress, ProgressLabel } from "@/components/ui/progress";
-import { prisma } from "@/server/db";
+import type { LearnerProgressView } from "@buildment/shared/api/learner";
 import { requireLearnSurface } from "@/server/auth/guards";
-import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
-import { loadEnrollmentSyllabus, resolveContinueChapterPath } from "@/server/progress/enrollment-syllabus";
+import { serverApiFetch } from "@/lib/api-server";
 import { formatStudyHours } from "@/lib/format-study-duration";
-import { closedWrongCheckpoints } from "@/server/progress/attention";
 import { cn } from "@/lib/utils";
 
 function percentage(score: number, maxScore: number) {
@@ -29,120 +27,8 @@ function accuracyState(value: number | null) {
 }
 
 export default async function MenteeProgressPage() {
-  const user = await requireLearnSurface();
-  const bypassLocking = bypassProgressGatingForEmail(user.email ?? "");
-
-  const enrollments = await prisma.enrollment.findMany({
-    where: { userId: user.id, status: { not: "DROPPED" } },
-    orderBy: [{ lastActiveAt: "desc" }, { createdAt: "asc" }],
-    select: {
-      id: true,
-      courseId: true,
-      percentComplete: true,
-      chaptersCompleted: true,
-      totalScore: true,
-      maxScore: true,
-      pendingReviews: true,
-      lastActiveAt: true,
-      course: { select: { id: true, slug: true, title: true } },
-      chapterProgress: {
-        select: {
-          chapterId: true,
-          status: true,
-          score: true,
-          maxScore: true,
-          timeSpentSeconds: true,
-        },
-      },
-    },
-  });
-
-  const enrollmentIds = enrollments.map((enrollment) => enrollment.id);
-  const since = new Date();
-  since.setUTCDate(since.getUTCDate() - 6);
-  since.setUTCHours(0, 0, 0, 0);
-
-  const missedResponses = enrollmentIds.length === 0
-    ? []
-    : await prisma.response.findMany({
-        where: {
-          userId: user.id,
-          enrollmentId: { in: enrollmentIds },
-          isCorrect: false,
-          status: { not: "DRAFT" },
-          block: { archivedAt: null, type: { in: ["QUIZ", "PREDICT", "CODE"] } },
-        },
-        orderBy: { attempt: "desc" },
-        select: {
-          blockId: true,
-          attempt: true,
-          isCorrect: true,
-          block: {
-            select: {
-              type: true,
-              config: true,
-              chapter: { select: { slug: true, title: true, course: { select: { slug: true, title: true } } } },
-            },
-          },
-        },
-      });
-  const closedWrong = closedWrongCheckpoints(missedResponses).slice(0, 12);
-
-  const dailyRows = enrollmentIds.length > 0
-    ? await prisma.dailyActivity.findMany({
-        where: { enrollmentId: { in: enrollmentIds }, date: { gte: since } },
-        select: { enrollmentId: true, date: true, activeSeconds: true },
-      })
-    : [];
-
-  const courseProgress = await Promise.all(enrollments.map(async (enrollment) => {
-    const syllabus = await loadEnrollmentSyllabus({
-      courseId: enrollment.courseId,
-      enrollmentId: enrollment.id,
-      bypassLocking,
-    });
-    const continueHref = syllabus
-      ? resolveContinueChapterPath(enrollment.course.slug, syllabus.flatChapters)
-      : null;
-    const progressByChapter = new Map(
-      enrollment.chapterProgress.map((row) => [row.chapterId, row])
-    );
-    const modules = (syllabus?.modules ?? []).map((module) => {
-      const rows = module.chapters.map((chapter) => progressByChapter.get(chapter.id));
-      const score = rows.reduce((sum, row) => sum + (row?.score ?? 0), 0);
-      const maxScore = rows.reduce((sum, row) => sum + (row?.maxScore ?? 0), 0);
-      return {
-        id: module.id,
-        order: module.order,
-        title: module.title,
-        completed: rows.filter((row) => row?.status === "COMPLETED").length,
-        total: module.chapters.length,
-        score,
-        maxScore,
-      };
-    });
-    const week = dailyRows.filter((row) => row.enrollmentId === enrollment.id);
-    const activeDays = new Set(
-      week.filter((row) => row.activeSeconds > 0).map((row) => row.date.toISOString().slice(0, 10))
-    ).size;
-    const weekSeconds = week.reduce((sum, row) => sum + row.activeSeconds, 0);
-    const totalStudySeconds = enrollment.chapterProgress.reduce((sum, row) => sum + row.timeSpentSeconds, 0);
-    const totalChapters = modules.reduce((sum, module) => sum + module.total, 0);
-
-    return { enrollment, modules, activeDays, weekSeconds, totalStudySeconds, totalChapters, continueHref };
-  }));
-
-  const overall = courseProgress.reduce(
-    (summary, course) => ({
-      chaptersCompleted: summary.chaptersCompleted + course.enrollment.chaptersCompleted,
-      totalChapters: summary.totalChapters + course.totalChapters,
-      score: summary.score + course.enrollment.totalScore,
-      maxScore: summary.maxScore + course.enrollment.maxScore,
-      weekSeconds: summary.weekSeconds + course.weekSeconds,
-      pendingReviews: summary.pendingReviews + course.enrollment.pendingReviews,
-    }),
-    { chaptersCompleted: 0, totalChapters: 0, score: 0, maxScore: 0, weekSeconds: 0, pendingReviews: 0 }
-  );
+  await requireLearnSurface();
+  const { courses: courseProgress, closedWrong, overall } = await serverApiFetch<LearnerProgressView>("/api/v1/learner/progress");
   const overallAccuracy = percentage(overall.score, overall.maxScore);
 
   return (
@@ -178,13 +64,13 @@ export default async function MenteeProgressPage() {
               <ul className="mt-4 divide-y divide-border overflow-hidden rounded-xl border bg-card">
                 {closedWrong.map((row) => (
                   <li key={row.blockId}>
-                    <Link href={`/courses/${row.block.chapter.course.slug}/${row.block.chapter.slug}`} className="flex items-center justify-between gap-4 p-4 transition-colors hover:bg-muted/50">
+                    <Link href={`/courses/${row.course.slug}/${row.chapter.slug}`} className="flex items-center justify-between gap-4 p-4 transition-colors hover:bg-muted/50">
                       <span className="min-w-0">
-                        <span className="block truncate text-sm font-medium">{row.block.chapter.title}</span>
-                        <span className="mt-0.5 block truncate text-xs text-muted-foreground">{row.block.chapter.course.title}</span>
+                        <span className="block truncate text-sm font-medium">{row.chapter.title}</span>
+                        <span className="mt-0.5 block truncate text-xs text-muted-foreground">{row.course.title}</span>
                       </span>
                       <span className="shrink-0 text-xs text-muted-foreground">
-                        {row.block.type === "PREDICT" ? "Prediction" : row.block.type === "CODE" ? "Code" : "Quiz"}
+                        {row.type === "PREDICT" ? "Prediction" : row.type === "CODE" ? "Code" : "Quiz"}
                       </span>
                     </Link>
                   </li>
@@ -194,7 +80,8 @@ export default async function MenteeProgressPage() {
           ) : null}
 
           <div className="mt-8 space-y-6">
-            {courseProgress.map(({ enrollment, modules, activeDays, weekSeconds, totalStudySeconds, totalChapters, continueHref }) => {
+            {courseProgress.map((enrollment) => {
+              const { modules, activeDays, weekSeconds, totalStudySeconds, totalChapters, continueHref } = enrollment;
               const accuracy = percentage(enrollment.totalScore, enrollment.maxScore);
               const understanding = accuracyState(accuracy);
               const UnderstandingIcon = understanding.icon;
@@ -235,7 +122,7 @@ export default async function MenteeProgressPage() {
                       <CourseMetric label="Completion" value={`${enrollment.percentComplete}%`} detail={`${enrollment.chaptersCompleted} of ${totalChapters} chapters`} />
                       <CourseMetric label="Scored accuracy" value={accuracy === null ? "—" : `${accuracy}%`} detail={enrollment.maxScore > 0 ? `${enrollment.totalScore}/${enrollment.maxScore} points` : "Not scored yet"} />
                       <CourseMetric label="Estimated study time" value={formatStudyHours(totalStudySeconds)} detail={`${formatStudyHours(weekSeconds)} this week`} />
-                      <CourseMetric label="Consistency" value={`${activeDays}/7 days`} detail={enrollment.lastActiveAt ? `Last active ${enrollment.lastActiveAt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "Not started"} />
+                      <CourseMetric label="Consistency" value={`${activeDays}/7 days`} detail={enrollment.lastActiveAt ? `Last active ${new Date(enrollment.lastActiveAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : "Not started"} />
                     </div>
 
                     <div className="mt-5">
