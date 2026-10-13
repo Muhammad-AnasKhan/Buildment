@@ -13,14 +13,14 @@ Postgres with Mongo — the LMS stays relational; Mongo is what the FreshMarket 
 
 ## Stack
 
-Two deployables plus a shared package — see [`docs/phases/backend-split.mdx`](docs/phases/backend-split.mdx)
-for the migration status:
+Two deployables plus a shared package — the split from the original Next.js monolith is recorded
+in [`docs/phases/backend-split.mdx`](docs/phases/backend-split.mdx):
 
 | Folder | What | Stack |
 |---|---|---|
-| `frontend/` | Web app | Next.js 16 (App Router) · TypeScript · Tailwind + shadcn/ui |
-| `server/` | API | Express 5 · TypeScript · Prisma 7 + PostgreSQL · Zod · sessions, email, jobs · Vitest + supertest |
-| `shared/` | `@buildment/shared` | Block schemas + graders, domain enums, learning-log schema, mdx remark plugins |
+| `frontend/` | Web app, UI only — every read and write goes through the API | Next.js 16 (App Router) · TypeScript · Tailwind + shadcn/ui · Playwright |
+| `server/` | API — owns Postgres, sessions, email, background jobs, content scripts | Express 5 · TypeScript · Prisma 7 · Zod · Vitest + supertest |
+| `shared/` | `@buildment/shared` — contracts both sides import | Block schemas + graders, domain enums, MDX block extraction, API wire types |
 
 Browser code calls same-origin `/api/v1/*`; Next.js proxies it to the API (`API_URL`). Pathment and
 other tenants call `/integrations/v1/*` on the API host directly.
@@ -36,11 +36,11 @@ other tenants call `/integrations/v1/*` on the API host directly.
 ```bash
 pnpm install                          # installs all workspaces, builds shared/, generates Prisma clients
 cp server/.env.example server/.env    # DATABASE_URL, APP_URL, email keys
-cp frontend/.env.example frontend/.env # API_URL, DATABASE_URL (transitional)
+cp frontend/.env.example frontend/.env # API_URL (the web app never talks to Postgres)
 docker compose up -d                  # starts local Postgres on :5432
 pnpm db:ready                         # migrate deploy + prisma generate (use after git pull)
 pnpm db:seed                          # 1 admin, 1 mentor, 3 mentees, 1 course, 4 preview enrollments
-pnpm --filter @buildment/frontend content:import   # sync FreshMarket chapters/blocks from content/import
+pnpm content:import                   # sync FreshMarket chapters/blocks from content/import
 pnpm dev                              # API on :4000, web on :3000, shared/ rebuilding on change
 ```
 
@@ -88,22 +88,22 @@ Run from the repo root unless noted.
 | `pnpm db:migrate` | `prisma migrate dev` (server) |
 | `pnpm db:seed` | Re-run the seed script (idempotent — upserts) |
 | `pnpm db:studio` | Prisma Studio, a GUI for the local database |
-| `pnpm --filter @buildment/frontend db:seed:showcase` | Add realistic, repeatable demo history after the course import |
-| `pnpm --filter @buildment/frontend content:import` | Import course content from `content/import/` into the database |
-| `pnpm --filter @buildment/frontend content:validate` | Compile-check every chapter's MDX (needs DB) |
-| `pnpm --filter @buildment/frontend content:validate:source` | Compile-check from `content/import/` (no DB) |
-| `pnpm --filter @buildment/frontend content:audit` | Structural audit (gates, learning logs, STYLE heuristics) |
+| `pnpm content:import` | Import course content from `content/import/` into the database |
+| `pnpm content:validate` | Compile-check every stored chapter the way publish does (needs DB) |
+| `pnpm --filter @buildment/server content:validate:source` | Compile-check from `content/import/` (no DB) |
+| `pnpm --filter @buildment/server content:audit` | Structural audit (gates, learning logs, STYLE heuristics) |
+| `pnpm --filter @buildment/server db:seed:showcase` | Add realistic, repeatable demo history after the course import |
+| `pnpm --filter @buildment/frontend exec playwright test` | Browser end-to-end suite (starts API + web itself; see `frontend/playwright.config.ts`) |
 
-The content scripts still live in `frontend/scripts` and move to the server in the last phase of the
-backend split.
+Content and seed scripts live in `server/scripts` next to the database they write.
 
 ## 15-minute demo (local)
 
 After setup, import course content and start the app:
 
 ```bash
-pnpm --filter @buildment/frontend content:import   # FreshMarket course → Postgres (351 chapters)
-pnpm dev                                           # http://localhost:3000 (API on :4000)
+pnpm content:import   # FreshMarket course → Postgres
+pnpm dev              # http://localhost:3000 (API on :4000)
 ```
 
 1. **Mentee path** — dev-login as a mentee (e.g. `mentee1@example.com` from seed). Open **Dashboard → Continue** into module 1. Complete the **1.11 gate** (checklist + learning log — try the **mic** on a question). Submit the **2.7 quiz** (short answer supports dictation). On **3.10 gate**, submit the **ERD link** open question.
@@ -117,6 +117,28 @@ Full day-by-day checklist: [`docs/phases/demo-10-day.mdx`](docs/phases/demo-10-d
 
 Sentry and PostHog are both wired to no-op unless their env vars are set — see `frontend/.env.example`.
 Nothing to configure for local development.
+
+## Deploying
+
+The two apps ship as separate containers built from the repository root:
+
+```bash
+docker build -f server/Dockerfile   -t buildment-api .
+docker build -f frontend/Dockerfile -t buildment-web .
+docker compose --profile app up --build     # or: Postgres + both images locally, migrations included
+```
+
+- **API** (`server/Dockerfile`): set `DATABASE_URL`, `APP_URL`, `CORS_ORIGINS`, the email and
+  OpenRouter keys from `server/.env.example`. Run `prisma migrate deploy` as a release step (the
+  compose `migrate` service shows the command). Background jobs run inside the process once a day;
+  set `JOBS_ENABLED=false` on every replica but one, or hand the schedule to an external cron that
+  calls `POST /api/v1/jobs/*` with `CRON_SECRET`.
+- **Web** (`frontend/Dockerfile`): a Next.js standalone server; it only needs `API_URL` (reachable
+  from the container) and `APP_URL`. Browser traffic to `/api/v1/*` and `/integrations/v1/*` is
+  proxied to the API, so one public hostname is enough; third parties may also call the API host
+  directly.
+- **CI** (`.github/workflows/ci.yml`) runs typecheck, lint, every unit and API suite against a
+  Postgres service, both production builds, and on `main` builds both images.
 
 ## Project layout
 

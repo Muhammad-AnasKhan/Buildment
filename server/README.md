@@ -14,13 +14,17 @@ src/
 ├─ controllers/      thin: read validated input, call a service, send a response
 ├─ services/         all business logic and Prisma access, grouped by domain
 ├─ middlewares/      authenticate, requireOrganization, validate, rate limits, error handlers
+├─ jobs/             in-process daily scheduler (inactivity nudges)
 ├─ utils/            errors (AppError family), responses (ok/created), logger
 ├─ types/            Express request augmentation, SessionUser, view models
 └─ generated/prisma  Prisma client (generated, git-ignored)
 tests/
 ├─ api/              supertest suites against a real Postgres
+├─ scripts/          unit tests for the content scripts
 └─ helpers/          fixtures that build and tear down their own course/org
+scripts/             course import/validation/audit, demo seeds, stats backfill (tsx)
 prisma/              schema, migrations, seed
+Dockerfile           production image, built from the repository root
 ```
 
 ## Conventions
@@ -32,7 +36,13 @@ prisma/              schema, migrations, seed
 - **Auth:** opaque session tokens in the `Session` table, accepted as `Authorization: Bearer` or
   the `authjs.session-token` cookie. `authenticate` rejects, `optionalAuth` only decorates.
 - **Config:** import `env` from `config/env.ts`; never read `process.env` elsewhere.
-- **Shared code:** block schemas/graders and domain enums come from `@buildment/shared`.
+- **Shared code:** block schemas/graders, domain enums, MDX extraction and API wire types come
+  from `@buildment/shared`.
+- **Authorization:** `requireInstructor` / `requireAdmin` gate the routers; course, thread and
+  enrollment ownership is decided in `services/teach/access.ts` and nowhere else.
+- **Jobs:** `jobs/scheduler.ts` runs each job at its UTC hour inside the process
+  (`JOBS_ENABLED`, `INACTIVITY_NUDGE_HOUR_UTC`); `/api/v1/jobs/*` + `CRON_SECRET` exist for
+  external schedulers and multi-replica deployments.
 
 ## Commands
 
@@ -43,3 +53,16 @@ prisma/              schema, migrations, seed
 | `pnpm test` | unit + API tests (`DATABASE_URL`, or `TEST_DATABASE_URL`, must point at Postgres) |
 | `pnpm typecheck` / `pnpm lint` | |
 | `pnpm db:migrate` / `db:ready` / `db:seed` / `db:studio` | Prisma |
+| `pnpm content:import` / `content:validate` / `content:validate:source` / `content:audit` | course content pipeline (`content/import/` → Postgres) |
+| `pnpm db:seed:showcase` / `db:seed:integration` / `stats:backfill` | demo data and maintenance |
+
+## Docker
+
+```bash
+docker build -f server/Dockerfile -t buildment-api .          # from the repository root
+docker run --rm --env-file server/.env buildment-api pnpm exec prisma migrate deploy
+docker run -p 4000:4000 --env-file server/.env buildment-api
+```
+
+The image carries the compiled API, the Prisma schema and migrations, and the content scripts, so
+`pnpm content:import` and `pnpm db:seed` work inside the container too.

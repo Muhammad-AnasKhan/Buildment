@@ -1,3 +1,6 @@
+# Local Postgres by default:          docker compose up -d
+# The whole stack from source:         docker compose --profile app up --build
+# The app profile builds both images from this repository and runs migrations before the API starts.
 services:
   postgres:
     image: postgres:16-alpine
@@ -10,6 +13,60 @@ services:
       - "5432:5432"
     volumes:
       - buildment-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U buildment -d buildment"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    command: ["pnpm", "exec", "prisma", "migrate", "deploy"]
+    environment:
+      DATABASE_URL: postgresql://buildment:buildment@postgres:5432/buildment
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - path: server/.env
+        required: false
+    environment:
+      DATABASE_URL: postgresql://buildment:buildment@postgres:5432/buildment
+      APP_URL: http://localhost:3000
+      CORS_ORIGINS: http://localhost:3000
+      PORT: "4000"
+    ports:
+      - "4000:4000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - path: frontend/.env
+        required: false
+    environment:
+      API_URL: http://api:4000
+      APP_URL: http://localhost:3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
 
 volumes:
   buildment-postgres-data:

@@ -1,6 +1,6 @@
 ---
 title: Backend split — Next.js monolith → frontend + Express API
-status: in progress — Phases 1–5 complete 2026-10-13, Phase 6 next
+status: complete — all six phases landed 2026-10-13
 ---
 
 # Backend split
@@ -44,7 +44,7 @@ buildment/
   the browser. Desktop/third-party clients call the API host directly.
 - **ESM throughout** (`unified`/`remark` are ESM-only). Server and shared compile with `tsc`;
   dev runs through `tsx`.
-- **Prisma lives in `server/prisma`.** Until the frontend stops reading the database (Phase 6) the
+- **Prisma lives in `server/prisma`.** During the migration (until Phase 6) the
   schema has a second, clearly-marked generator that emits a client into `frontend/`.
 - **pnpm uses the hoisted linker** (`.npmrc`). Turbopack could not resolve `next` through pnpm's
   isolated symlink layout on an ntfs3 checkout; a flat `node_modules` with the monorepo as
@@ -91,6 +91,30 @@ Server Actions in the frontend call these through `serverApiFetch` and store the
 as the cookie themselves; `next-auth` and `@auth/prisma-adapter` are gone. Browser-facing API
 redirects (dev login, email confirmation, magic-link verify) are relative so they resolve against
 whatever host the web app is served from.
+
+### Phase 6 — cleanup and operations
+
+- Content and seed scripts moved from `frontend/scripts` to `server/scripts` (typechecked with
+  the API, run with `tsx`); the chapter validator now compiles with `@mdx-js/mdx` exactly like
+  publish does. The transitional Prisma generator, the frontend's generated client and its
+  Prisma dependencies are gone, and `frontend/.env.example` has no `DATABASE_URL`.
+- The 52 re-export shims under `frontend/src` were removed; importers name the
+  `@buildment/shared` module directly. `frontend/src/server` now holds only Server Actions
+  (API wrappers) and the session/surface guards.
+- Background jobs run inside the API (`src/jobs/scheduler.ts`) at a configurable UTC hour;
+  `JOBS_ENABLED=false` hands the schedule to an external cron hitting `/api/v1/jobs/*`.
+- Deployment: `server/Dockerfile` and `frontend/Dockerfile` (Next.js standalone output), a root
+  `.dockerignore`, `docker compose --profile app` for the full stack with migrations, and
+  `.github/workflows/ci.yml` running typecheck, lint, all suites against Postgres, both builds and
+  both images.
+
+### Phase 6 verification (2026-10-13)
+
+- `server`: 245 unit + API tests including the scheduler slot maths and the importer unit test
+  that moved with the scripts; `pnpm content:validate` compiles all 379 stored chapters.
+- `shared`: 67 tests. `frontend`: `tsc` clean with no Prisma dependency, 68 unit tests, Turbopack
+  production build (standalone output).
+- Both Docker images build from the repository root.
 
 ### Phase 5 — admin endpoints
 

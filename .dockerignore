@@ -1,0 +1,13 @@
+# Both images build from the repository root so the shared workspace package is available.
+**/node_modules
+**/dist
+**/.next
+**/.turbo
+**/test-results
+**/playwright-report
+**/.env
+**/.env.*
+!**/.env.example
+.git
+docs
+SPEC.md

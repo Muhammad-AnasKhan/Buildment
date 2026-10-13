@@ -8,6 +8,8 @@ import { withSentryConfig } from "@sentry/nextjs";
 const apiUrl = (process.env.API_URL ?? "http://localhost:4000").replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
+  // Self-contained server for the Docker image (frontend/Dockerfile); no effect on `next dev`.
+  output: "standalone",
   // Pin the workspace root to the monorepo so the symlinked @buildment/shared package
   // compiles (Turbopack refuses files outside the root) and an unrelated lockfile in a
   // parent directory can't make Next.js guess wrong.
