@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+// localhost, not 127.0.0.1: Next.js dev only serves its client assets to the host it was started on.
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? "http://localhost:3000";
 
 export default defineConfig({
   testDir: "e2e",
@@ -21,6 +22,7 @@ export default defineConfig({
         {
           command: "pnpm --filter @buildment/server dev",
           url: `${process.env.API_URL ?? "http://localhost:4000"}/health`,
+          env: { DISABLE_RATE_LIMITS: "true" },
           reuseExistingServer: !process.env.CI,
           timeout: 120_000,
         },

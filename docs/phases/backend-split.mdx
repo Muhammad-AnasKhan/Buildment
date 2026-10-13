@@ -96,10 +96,15 @@ whatever host the web app is served from.
 
 - `server`: 127 unit + API tests (signup, login, logout, resend, magic-link request/verify/misuse).
 - `frontend`: `tsc` clean, 199 unit tests, Turbopack production build.
-- Playwright (`frontend/e2e/auth.spec.ts` + `platform.spec.ts`, 10 tests) against the production
-  build: wrong-password message, password sign-in → dashboard → sign-out, anonymous redirect,
-  signup without email delivery → immediate sign-in, duplicate-email error, magic-link request →
-  "check your email", dev login → catalog, integrations catalog/401.
+- Playwright (`frontend/e2e/auth.spec.ts` + `platform.spec.ts`, 10 tests) against both the
+  production build and `next dev` + API: wrong-password message, password sign-in → dashboard →
+  sign-out, anonymous redirect, signup without email delivery → immediate sign-in,
+  duplicate-email error, magic-link request → "check your email", dev login → catalog,
+  integrations catalog/401.
+- Two things learned on the way: Next.js dev refuses client assets to an origin other than the
+  one it was started on, so Playwright's base URL is `localhost`, not `127.0.0.1` (pages render
+  but never hydrate otherwise); and the API's per-IP signup limit trips repeated local runs, so
+  `DISABLE_RATE_LIMITS=true` exists for dev machines and is ignored in production.
 
 ### Phase 1 verification (2026-10-13)
 

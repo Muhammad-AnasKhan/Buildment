@@ -28,6 +28,7 @@ test.describe("password sign-in", () => {
   });
 
   test("signs a seeded learner in, shows the dashboard, and signs out", async ({ page }) => {
+    test.setTimeout(120_000); // first dashboard compile on a cold dev server is slow
     await page.goto("/login");
     await page.getByLabel("Email", { exact: true }).fill("mentee1@buildment.dev");
     await page.getByLabel("Password", { exact: true }).fill(SEED_PASSWORD);
@@ -38,11 +39,12 @@ test.describe("password sign-in", () => {
 
     await page.setViewportSize({ width: 1400, height: 900 });
     // The sidebar button is a client handler; on a cold dev server hydration can
-    // land after the first paint, so retry the click until it navigates.
+    // land after the first paint, so retry the click until it navigates. The inner
+    // wait must outlast the action round-trip or the retry re-clicks mid-redirect.
     await expect(async () => {
       await page.getByRole("button", { name: "Sign out" }).first().click();
-      await expect(page).toHaveURL(/\/$/, { timeout: 3_000 });
-    }).toPass({ timeout: 60_000 });
+      await expect(page).toHaveURL(/\/$/, { timeout: 15_000 });
+    }).toPass({ timeout: 90_000 });
     expect(await whoAmI(page)).toBeNull();
   });
 

@@ -1,5 +1,6 @@
 import type { Request, RequestHandler } from "express";
 import { rateLimit } from "express-rate-limit";
+import { rateLimitsEnabled } from "../config/env.js";
 import { TooManyRequestsError } from "../utils/errors.js";
 import { errorBody } from "../utils/responses.js";
 
@@ -12,6 +13,7 @@ export const apiLimiter = rateLimit({
   standardHeaders: "draft-7",
   legacyHeaders: false,
   message: limited,
+  skip: () => !rateLimitsEnabled,
 });
 
 type Options = {
@@ -33,6 +35,7 @@ const buckets = new Map<string, number[]>();
  */
 export function userRateLimit({ scope, max, windowMs = 60_000, message, keyFrom }: Options): RequestHandler {
   return (req, _res, next) => {
+    if (!rateLimitsEnabled) return next();
     const subject = req.user?.id ?? req.ip ?? "anonymous";
     const key = `${scope}:${subject}${keyFrom ? `:${keyFrom(req)}` : ""}`;
     const now = Date.now();

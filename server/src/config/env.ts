@@ -38,6 +38,12 @@ const schema = z.object({
 
   /** Shared secret an external scheduler presents to the jobs endpoints. */
   CRON_SECRET: optionalString,
+
+  /** Local testing only: e2e suites sign up repeatedly from one IP. Never set in production. */
+  DISABLE_RATE_LIMITS: z
+    .string()
+    .optional()
+    .transform((value) => value === "true"),
 });
 
 export type Env = z.infer<typeof schema>;
@@ -59,4 +65,5 @@ function loadEnv(): Env {
 export const env = loadEnv();
 
 export const isProduction = env.NODE_ENV === "production";
+export const rateLimitsEnabled = !(env.DISABLE_RATE_LIMITS && !isProduction);
 export const isTest = env.NODE_ENV === "test";
