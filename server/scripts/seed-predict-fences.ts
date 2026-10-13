@@ -5,7 +5,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { readLessonFiles, readModuleDirs } from "./import-course";
+import { readLessonFiles, readModuleDirs } from "./import-course.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "../../content/import/multi-vendor-marketplace");

@@ -7,7 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { load as loadYaml } from "js-yaml";
-import { readLessonFiles, readModuleDirs } from "./import-course";
+import { readLessonFiles, readModuleDirs } from "./import-course.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const COURSE_DIR = path.resolve(__dirname, "../../content/import/multi-vendor-marketplace");

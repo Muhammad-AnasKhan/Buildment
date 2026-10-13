@@ -8,14 +8,6 @@ generator client {
   output   = "../src/generated/prisma"
 }
 
-// TRANSITIONAL — removed in the final phase of docs/phases/backend-split.mdx.
-// The Next.js app still reads the database directly on pages that have not moved
-// to the API yet, so it gets its own copy of the client from this one schema.
-generator frontendClient {
-  provider = "prisma-client-js"
-  output   = "../../frontend/src/generated/prisma"
-}
-
 datasource db {
   provider = "postgresql"
 }

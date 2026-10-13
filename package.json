@@ -15,7 +15,9 @@
     "db:migrate": "pnpm --filter @buildment/server db:migrate",
     "db:seed": "pnpm --filter @buildment/server db:seed",
     "db:studio": "pnpm --filter @buildment/server db:studio",
-    "postinstall": "pnpm --filter @buildment/shared build && pnpm --filter @buildment/server prisma:generate"
+    "postinstall": "pnpm --filter @buildment/shared build && pnpm --filter @buildment/server prisma:generate",
+    "content:import": "pnpm --filter @buildment/server content:import",
+    "content:validate": "pnpm --filter @buildment/server content:validate"
   },
   "devDependencies": {
     "concurrently": "^10.0.6"

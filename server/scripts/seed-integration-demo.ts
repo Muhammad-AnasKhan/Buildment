@@ -7,10 +7,10 @@
  */
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../src/generated/prisma/client";
-import { SEED_COURSE } from "../src/lib/seed-data";
+import { PrismaClient } from "../src/generated/prisma/index.js";
+import { SEED_COURSE } from "@buildment/shared/lib/seed-data";
 import { randomBytes } from "node:crypto";
-import { hashIntegrationSecret } from "../src/server/integrations/credential-hash";
+import { hashIntegrationSecret } from "../src/services/integrations/credential-hash.js";
 
 // Credential helpers mirror server/src/services/admin/organizations.ts; this script
 // moves to the server package with the rest of the seeds in Phase 6.

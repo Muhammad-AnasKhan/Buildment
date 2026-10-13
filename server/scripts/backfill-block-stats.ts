@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "../src/generated/prisma/client";
+import { PrismaClient } from "../src/generated/prisma/index.js";
 
 // One-off backfill for the denormalized report rollups added with the M6/M7
 // work (BlockStats + Enrollment.pendingReviews). New writes maintain both via

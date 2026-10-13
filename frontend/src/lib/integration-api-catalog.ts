@@ -1,7 +1,7 @@
 import {
   INTEGRATION_ACCESS_KEY_HEADER,
   INTEGRATION_SECRET_KEY_HEADER,
-} from "@/server/integrations/headers";
+} from "@buildment/shared/api/integrations";
 
 export { INTEGRATION_ACCESS_KEY_HEADER, INTEGRATION_SECRET_KEY_HEADER };
 

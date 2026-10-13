@@ -33,7 +33,6 @@ yarn-error.log*
 .vercel
 
 # prisma generated clients
-frontend/src/generated/
 server/src/generated/
 
 # AI coding agent tooling (local only)

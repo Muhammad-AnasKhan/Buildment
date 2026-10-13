@@ -29,12 +29,12 @@ import { fileURLToPath } from "node:url";
 import { load as loadYaml } from "js-yaml";
 import { ulid } from "ulid";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, type Prisma } from "../src/generated/prisma/client";
-import { SEED_COURSE, SEED_USERS } from "../src/lib/seed-data";
-import { VideoConfigSchema } from "../src/blocks/video/schema";
-import { VisualWalkthroughConfigSchema } from "../src/blocks/visual-walkthrough/schema";
-import { VisualDiagramConfigSchema } from "../src/blocks/visual-diagram/schema";
-import { RoadmapConfigSchema } from "../src/blocks/roadmap/schema";
+import { PrismaClient, type Prisma } from "../src/generated/prisma/index.js";
+import { SEED_COURSE, SEED_USERS } from "@buildment/shared/lib/seed-data";
+import { VideoConfigSchema } from "@buildment/shared/blocks/video/schema";
+import { VisualWalkthroughConfigSchema } from "@buildment/shared/blocks/visual-walkthrough/schema";
+import { VisualDiagramConfigSchema } from "@buildment/shared/blocks/visual-diagram/schema";
+import { RoadmapConfigSchema } from "@buildment/shared/blocks/roadmap/schema";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const COURSE_SOURCE_DIR = path.resolve(__dirname, "../../content/import/multi-vendor-marketplace");
 const COURSE_OUTPUT_DIR = path.resolve(__dirname, "../../content/transformed/multi-vendor-marketplace");
@@ -778,7 +778,7 @@ async function upsertCourse() {
 }
 
 async function main() {
-  const { findBrokenChapters } = await import("./validate-course-source");
+  const { findBrokenChapters } = await import("./validate-course-source.js");
   const { total, failed } = findBrokenChapters();
   if (failed.length > 0) {
     console.error(`Refusing to import — ${failed.length} of ${total} chapters do not compile:`);

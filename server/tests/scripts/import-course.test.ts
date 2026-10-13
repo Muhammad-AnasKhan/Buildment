@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseLesson } from "../../scripts/import-course";
+import { parseLesson } from "../../scripts/import-course.js";
 
 describe("course importer interaction intent", () => {
   it("does not invent an OpenQuestion for a lesson without an authored interaction", () => {

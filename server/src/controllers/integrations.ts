@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { INTEGRATION_ACCESS_KEY_HEADER, INTEGRATION_SECRET_KEY_HEADER } from "../services/integrations/headers.js";
+import { INTEGRATION_ACCESS_KEY_HEADER, INTEGRATION_SECRET_KEY_HEADER } from "@buildment/shared/api/integrations";
 import { listAllocatedCourses, listAllocations } from "../services/integrations/catalog.js";
 import { cancelEnrollment, createEnrollment, lookupEnrollment } from "../services/integrations/enrollments.js";
 import { getLearnerProgress } from "../services/integrations/progress.js";

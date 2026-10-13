@@ -8,12 +8,12 @@ import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import remarkGfm from "remark-gfm";
-import { collectUnknownComponents } from "../src/mdx/extract";
-import { remarkChecklist } from "../src/mdx/remark-checklist";
-import { remarkLearningLog } from "../src/mdx/remark-learning-log";
-import { remarkMermaid } from "../src/mdx/remark-mermaid";
-import { restoreInteractiveBlockTags } from "../src/mdx/restore-block-tags";
-import { parseLesson, readLessonFiles, readModuleDirs } from "./import-course";
+import { collectUnknownComponents } from "@buildment/shared/mdx/extract";
+import { remarkChecklist } from "@buildment/shared/mdx/remark-checklist";
+import { remarkLearningLog } from "@buildment/shared/mdx/remark-learning-log";
+import { remarkMermaid } from "@buildment/shared/mdx/remark-mermaid";
+import { restoreInteractiveBlockTags } from "@buildment/shared/mdx/restore-block-tags";
+import { parseLesson, readLessonFiles, readModuleDirs } from "./import-course.js";
 
 const componentNames = [
   "Quiz",
