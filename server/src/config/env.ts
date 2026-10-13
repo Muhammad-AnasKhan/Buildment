@@ -38,6 +38,12 @@ const schema = z.object({
 
   /** Shared secret an external scheduler presents to the jobs endpoints. */
   CRON_SECRET: optionalString,
+  /** In-process daily jobs (inactivity nudges). Turn off when another replica or an external cron owns them. */
+  JOBS_ENABLED: z
+    .string()
+    .optional()
+    .transform((value) => value !== "false"),
+  INACTIVITY_NUDGE_HOUR_UTC: z.coerce.number().int().min(0).max(23).default(9),
 
   /** OpenRouter access for AI review drafts; drafting is disabled without a key. */
   OPENROUTER_API_KEY: optionalString,

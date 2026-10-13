@@ -3,6 +3,7 @@ import { env } from "./config/env.js";
 import { logger } from "./utils/logger.js";
 import { prisma } from "./db/prisma.js";
 import { createApp } from "./app.js";
+import { startScheduler } from "./jobs/scheduler.js";
 
 async function start() {
   await prisma.$connect();
@@ -17,9 +18,11 @@ async function start() {
   server.listen(env.PORT, () => {
     logger.info({ port: env.PORT, env: env.NODE_ENV }, `API listening on http://localhost:${env.PORT}`);
   });
+  const stopScheduler = startScheduler();
 
   const shutdown = (signal: string) => {
     logger.info({ signal }, "shutting down");
+    stopScheduler();
     server.close(async () => {
       await prisma.$disconnect();
       process.exit(0);
