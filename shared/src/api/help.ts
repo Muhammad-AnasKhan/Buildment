@@ -33,6 +33,7 @@ export type HelpThreadDetail = HelpThreadView & {
   courseId: string;
   chapterId: string | null;
   menteeId: string;
+  mentee: { id: string; name: string | null; email: string };
   course: { slug: string; title: string };
   chapter: { slug: string; title: string } | null;
 };

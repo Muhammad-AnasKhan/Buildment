@@ -1,36 +1,6 @@
-export type CourseBuilderChapter = {
-  id: string;
-  title: string;
-  slug: string;
-  order: number;
-  publishedAt: Date | null;
-  estimatedMinutes: number | null;
-  isMilestone: boolean;
-  readerMode: "DEFAULT" | "QUIZ";
-  blocks: Array<{ type: string }>;
-};
-
-export type CourseBuilderModule = {
-  id: string;
-  title: string;
-  order: number;
-  chapters: CourseBuilderChapter[];
-};
-
-export type CourseBuilderCourse = {
-  id: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  projectGoal: string | null;
-  difficulty: string | null;
-  estimatedHours: number | null;
-  sequential: boolean;
-  coverUrl: string | null;
-  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-  pricingType: "FREE" | "PAID";
-  priceCents: number;
-  currency: string;
-  enrollmentCount: number;
-  modules: CourseBuilderModule[];
-};
+// Wire types now live in @buildment/shared/api/teach; re-exported so existing imports keep working.
+export type {
+  CourseBuilderChapter,
+  CourseBuilderCourse,
+  CourseBuilderModule,
+} from "@buildment/shared/api/teach";

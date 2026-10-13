@@ -1,35 +1,12 @@
+import type { TeachWorkspace } from "@buildment/shared/api/teach";
 import { requireTeachSurface } from "@/server/auth/guards";
-import { loadInstructorAccessState } from "@/server/instructor-access/load-status";
+import { serverApiFetch } from "@/lib/api-server";
 import { MentorWorkspaceSidebar } from "@/components/teach/mentor-workspace-sidebar";
 import { signOutAction } from "@/server/auth/actions";
-import { prisma } from "@/server/db";
 
 export default async function TeachLayout({ children }: { children: React.ReactNode }) {
   const user = await requireTeachSurface();
-  const instructorAccess = await loadInstructorAccessState(user);
-  const rows = await prisma.course.findMany({
-    where: user.role === "ADMIN" ? undefined : { mentorId: user.id },
-    orderBy: [{ updatedAt: "desc" }, { title: "asc" }],
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      status: true,
-      _count: { select: { chapters: true, enrollments: true } },
-      enrollments: { select: { pendingReviews: true } },
-      helpThreads: { where: { status: "OPEN" }, select: { id: true } },
-    },
-  });
-  const courses = rows.map((course) => ({
-    id: course.id,
-    slug: course.slug,
-    title: course.title,
-    status: course.status,
-    chapterCount: course._count.chapters,
-    learnerCount: course._count.enrollments,
-    pendingReviews: course.enrollments.reduce((sum, item) => sum + item.pendingReviews, 0),
-    openHelpRequests: course.helpThreads.length,
-  }));
+  const { courses, instructorAccess } = await serverApiFetch<TeachWorkspace>("/api/v1/teach/workspace");
 
   return (
     <div className="min-h-dvh bg-background text-foreground">

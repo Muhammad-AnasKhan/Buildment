@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@buildment/shared": "workspace:*",
+    "@mdx-js/mdx": "^3.1.1",
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "cookie-parser": "^1.4.7",

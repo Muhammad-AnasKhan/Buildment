@@ -52,6 +52,7 @@ async function loadAccessibleThread(threadId: string, user: SessionUser) {
     include: {
       course: { select: { id: true, slug: true, title: true, mentorId: true } },
       chapter: { select: { id: true, slug: true, title: true } },
+      mentee: { select: { id: true, name: true, email: true } },
     },
   });
   if (!thread) throw new NotFoundError("Thread not found");
@@ -76,6 +77,7 @@ export async function getThread(threadId: string, user: SessionUser): Promise<He
     courseId: thread.courseId,
     chapterId: thread.chapterId,
     menteeId: thread.menteeId,
+    mentee: thread.mentee,
     course: { slug: thread.course.slug, title: thread.course.title },
     chapter: thread.chapter ? { slug: thread.chapter.slug, title: thread.chapter.title } : null,
     messages: mapHelpMessages(messages),

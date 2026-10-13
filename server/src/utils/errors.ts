@@ -63,6 +63,13 @@ export class ConflictError extends AppError {
   }
 }
 
+/** The request is well-formed but a business rule rejects it; `errors` lists each reason. */
+export class UnprocessableError extends AppError {
+  constructor(message: string, code = "UNPROCESSABLE", reasons: string[] = []) {
+    super(message, 422, code, { errors: reasons.map((reason) => ({ field: "_", message: reason })) });
+  }
+}
+
 export class TooManyRequestsError extends AppError {
   constructor(message = "Too many requests, please try again later") {
     super(message, 429, "RATE_LIMITED");

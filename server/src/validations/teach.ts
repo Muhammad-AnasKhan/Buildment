@@ -1,0 +1,75 @@
+import { z } from "zod";
+import { id, params } from "./common.js";
+
+export const courseIdParams = params("courseId");
+export const courseSlugParams = params("courseSlug");
+export const moduleIdParams = params("moduleId");
+export const chapterIdParams = params("chapterId");
+export const enrollmentIdParams = params("enrollmentId");
+export const responseIdParams = params("responseId");
+export const menteeParams = z.object({ courseSlug: id, enrollmentId: id });
+export const inviteParams = z.object({ courseId: id, inviteId: id });
+
+export const createCourseBody = z.object({
+  title: z.string().trim().min(3).max(120),
+  description: z.string().trim().max(500).optional(),
+});
+export type CreateCourseBody = z.infer<typeof createCourseBody>;
+
+export const unpublishCourseBody = z.object({ confirmedWithEnrollments: z.boolean().optional() });
+
+// The settings form posts strings; the service turns "" into null and dollars into cents.
+export const courseSettingsBody = z.object({
+  title: z.string().trim().min(3).max(120),
+  description: z.string().trim().max(500),
+  coverUrl: z.string().trim().max(2048),
+  projectGoal: z.string().trim().max(240),
+  difficulty: z.enum(["", "Easy", "Medium", "Hard"]),
+  estimatedHours: z.union([z.literal(""), z.coerce.number().int().min(1).max(1000)]),
+  sequential: z.boolean(),
+  pricingType: z.enum(["FREE", "PAID"]),
+  priceDollars: z.union([z.literal(""), z.coerce.number().min(0).max(99999)]),
+  currency: z.string().trim().length(3),
+});
+export type CourseSettingsBody = z.infer<typeof courseSettingsBody>;
+
+const moduleTitle = z.string().trim().min(1).max(120);
+export const createModuleBody = z.object({ title: moduleTitle });
+export const renameModuleBody = z.object({ title: moduleTitle });
+export const moveBody = z.object({ direction: z.enum(["up", "down"]) });
+export type MoveDirection = z.infer<typeof moveBody>["direction"];
+
+export const createChapterBody = z.object({
+  moduleId: id.optional(),
+  title: z.string().trim().min(1).max(120),
+});
+export type CreateChapterBody = z.infer<typeof createChapterBody>;
+
+export const chapterSettingsBody = z.object({
+  title: z.string().trim().min(1, "Title is required.").max(120),
+  summary: z.string().trim().max(280).nullable(),
+  estimatedMinutes: z.number().int().min(1).max(600).nullable(),
+  readerMode: z.enum(["DEFAULT", "QUIZ"]),
+  isMilestone: z.boolean(),
+});
+export type ChapterSettingsBody = z.infer<typeof chapterSettingsBody>;
+
+export const chapterDraftBody = z.object({ source: z.string().max(2_000_000) });
+
+export const assignByEmailsBody = z.object({ emails: z.string().min(1).max(20_000) });
+
+export const reportsQuery = z.object({ chapterId: z.string().optional() });
+
+export const reviewQueueQuery = z.object({ courseId: z.string().optional() });
+export const submitReviewBody = z.object({
+  verdict: z.enum(["APPROVED", "NEEDS_REVISION"]),
+  feedback: z.string().min(1, "Feedback is required — the mentee sees this verbatim.").max(5000),
+  score: z.coerce.number().int().min(0).optional(),
+});
+export type SubmitReviewBody = z.infer<typeof submitReviewBody>;
+
+export const helpInboxQuery = z.object({
+  courseId: z.string().optional(),
+  status: z.enum(["open", "resolved", "all"]).optional(),
+});
+export type HelpInboxQuery = z.infer<typeof helpInboxQuery>;

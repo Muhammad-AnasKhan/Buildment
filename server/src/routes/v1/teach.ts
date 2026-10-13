@@ -1,0 +1,50 @@
+import { Router } from "express";
+import * as teach from "../../controllers/teach.js";
+import { authenticate } from "../../middlewares/authenticate.js";
+import { requireInstructor } from "../../middlewares/require-instructor.js";
+import { requireVerified } from "../../middlewares/require-verified.js";
+import { validate, validateBody, validateParams } from "../../middlewares/validate.js";
+import {
+  chapterDraftBody,
+  chapterIdParams,
+  chapterSettingsBody,
+  courseIdParams,
+  courseSettingsBody,
+  courseSlugParams,
+  createChapterBody,
+  createCourseBody,
+  createModuleBody,
+  moduleIdParams,
+  moveBody,
+  renameModuleBody,
+  unpublishCourseBody,
+} from "../../validations/teach.js";
+
+// Instructor workspace. Ownership of each course is checked in the services;
+// this router only guarantees a verified instructor is calling.
+const router = Router();
+
+router.use(authenticate, requireVerified, requireInstructor);
+
+router.get("/workspace", teach.getWorkspace);
+
+router.get("/courses", teach.listCourses);
+router.post("/courses", validateBody(createCourseBody), teach.createCourse);
+router.get("/courses/:courseSlug/builder", validateParams(courseSlugParams), teach.getCourseBuilder);
+router.patch("/courses/:courseId/settings", validate({ params: courseIdParams, body: courseSettingsBody }), teach.updateCourseSettings);
+router.post("/courses/:courseId/publish", validateParams(courseIdParams), teach.publishCourse);
+router.post("/courses/:courseId/unpublish", validate({ params: courseIdParams, body: unpublishCourseBody }), teach.unpublishCourse);
+router.post("/courses/:courseId/restore", validateParams(courseIdParams), teach.restoreCourse);
+
+router.post("/courses/:courseId/modules", validate({ params: courseIdParams, body: createModuleBody }), teach.createModule);
+router.patch("/modules/:moduleId", validate({ params: moduleIdParams, body: renameModuleBody }), teach.renameModule);
+router.post("/modules/:moduleId/move", validate({ params: moduleIdParams, body: moveBody }), teach.moveModule);
+
+router.post("/courses/:courseId/chapters", validate({ params: courseIdParams, body: createChapterBody }), teach.createChapter);
+router.post("/chapters/:chapterId/move", validate({ params: chapterIdParams, body: moveBody }), teach.moveChapter);
+router.get("/chapters/:chapterId/editor", validateParams(chapterIdParams), teach.getChapterEditor);
+router.patch("/chapters/:chapterId/settings", validate({ params: chapterIdParams, body: chapterSettingsBody }), teach.updateChapterSettings);
+router.put("/chapters/:chapterId/draft", validate({ params: chapterIdParams, body: chapterDraftBody }), teach.saveChapterDraft);
+router.post("/chapters/:chapterId/publish", validateParams(chapterIdParams), teach.publishChapter);
+
+export default router;

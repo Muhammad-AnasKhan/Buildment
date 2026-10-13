@@ -1,13 +1,9 @@
-import { notFound } from "next/navigation";
+import type { CourseBuilderView } from "@buildment/shared/api/teach";
 import { CourseHeader } from "@/components/teach/course-cms/course-header";
 import { CourseSettings } from "@/components/teach/course-cms/course-settings";
 import { CurriculumBuilder } from "@/components/teach/course-cms/curriculum-builder";
-import type {
-  CourseBuilderChapter,
-  CourseBuilderCourse,
-} from "@/components/teach/course-cms/types";
-import { requireMentorOfCourse } from "@/server/auth/guards";
-import { prisma } from "@/server/db";
+import { requireTeachSurface } from "@/server/auth/guards";
+import { serverApiFetchOrNotFound } from "@/lib/api-server";
 
 export default async function CourseEditPage({
   params,
@@ -18,99 +14,16 @@ export default async function CourseEditPage({
 }) {
   const { courseSlug } = await params;
   const query = await searchParams;
+  await requireTeachSurface();
 
-  const courseRow = await prisma.course.findUnique({
-    where: { slug: courseSlug },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      description: true,
-      coverUrl: true,
-      projectGoal: true,
-      difficulty: true,
-      estimatedHours: true,
-      sequential: true,
-      status: true,
-      pricingType: true,
-      priceCents: true,
-      currency: true,
-      _count: { select: { enrollments: true } },
-      modules: {
-        orderBy: { order: "asc" },
-        select: {
-          id: true,
-          title: true,
-          order: true,
-          chapters: {
-            orderBy: { order: "asc" },
-            select: {
-              id: true,
-              title: true,
-              slug: true,
-              order: true,
-              publishedAt: true,
-              estimatedMinutes: true,
-              isMilestone: true,
-              readerMode: true,
-              blocks: {
-                where: { archivedAt: null },
-                orderBy: { order: "asc" },
-                select: { type: true },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
-  if (!courseRow) notFound();
-  await requireMentorOfCourse(courseRow.id);
-
-  const looseChapters: CourseBuilderChapter[] = await prisma.chapter.findMany({
-    where: { courseId: courseRow.id, moduleId: null },
-    orderBy: { order: "asc" },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      order: true,
-      publishedAt: true,
-      estimatedMinutes: true,
-      isMilestone: true,
-      readerMode: true,
-      blocks: {
-        where: { archivedAt: null },
-        orderBy: { order: "asc" },
-        select: { type: true },
-      },
-    },
-  });
-
-  const course: CourseBuilderCourse = {
-    id: courseRow.id,
-    slug: courseRow.slug,
-    title: courseRow.title,
-    description: courseRow.description,
-    coverUrl: courseRow.coverUrl,
-    projectGoal: courseRow.projectGoal,
-    difficulty: courseRow.difficulty,
-    estimatedHours: courseRow.estimatedHours,
-    sequential: courseRow.sequential,
-    status: courseRow.status,
-    pricingType: courseRow.pricingType,
-    priceCents: courseRow.priceCents,
-    currency: courseRow.currency,
-    enrollmentCount: courseRow._count.enrollments,
-    modules: courseRow.modules,
-  };
+  // The API answers 404 for unknown courses and 403 for someone else's.
+  const { course, looseChapters } = await serverApiFetchOrNotFound<CourseBuilderView>(
+    `/api/v1/teach/courses/${encodeURIComponent(courseSlug)}/builder`
+  );
 
   return (
     <div className="mx-auto w-full max-w-7xl space-y-8 px-1 pb-16 sm:px-2">
-      <CourseHeader
-        course={course}
-        publishError={query.publishError}
-      />
+      <CourseHeader course={course} publishError={query.publishError} />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
         <CurriculumBuilder course={course} looseChapters={looseChapters} />

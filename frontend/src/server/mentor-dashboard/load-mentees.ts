@@ -4,6 +4,7 @@ import { prisma } from "@/server/db";
 import { activityState, average, formatLastActive, progressState } from "./helpers";
 import type { CourseMenteesView, MenteeAttentionKind } from "./types";
 import { helpUiCopy } from "@/lib/help-ui-copy";
+import { inviteAcceptUrl } from "@/server/email/send";
 
 const RESPONSE_EVIDENCE_LIMIT = 500;
 
@@ -121,7 +122,10 @@ export async function loadCourseMentees(args: { courseId: string; courseSlug: st
 
   return {
     course: { id: course.id, slug: course.slug, title: course.title, status: course.status, chapterCount: course._count.chapters },
-    linkInvite: course.invites.find((invite) => invite.email === null) ?? null,
+    linkInvite: (() => {
+      const invite = course.invites.find((item) => item.email === null);
+      return invite ? { id: invite.id, token: invite.token, url: inviteAcceptUrl(invite.token) } : null;
+    })(),
     pendingEmailInvites: course.invites.flatMap((invite) => invite.email ? [{ id: invite.id, email: invite.email, createdAt: invite.createdAt.toISOString() }] : []),
     mentees,
     attentionMentees: mentees.filter((mentee) => mentee.attention.length > 0),

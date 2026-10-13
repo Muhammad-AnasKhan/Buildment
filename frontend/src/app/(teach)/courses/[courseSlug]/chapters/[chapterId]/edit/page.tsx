@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
-import { prisma } from "@/server/db";
-import { requireMentorOfCourse } from "@/server/auth/guards";
+import type { ChapterEditorView } from "@buildment/shared/api/teach";
+import { requireTeachSurface } from "@/server/auth/guards";
+import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { ChapterEditor } from "@/components/teach/chapter-editor";
-import { restoreInteractiveBlockTags } from "@/mdx/restore-block-tags";
 
 export default async function ChapterEditorPage({
   params,
@@ -10,44 +10,30 @@ export default async function ChapterEditorPage({
   params: Promise<{ courseSlug: string; chapterId: string }>;
 }) {
   const { courseSlug, chapterId } = await params;
+  await requireTeachSurface();
 
-  const course = await prisma.course.findUnique({
-    where: { slug: courseSlug },
-    select: { id: true, slug: true },
-  });
-  if (!course) notFound();
-  await requireMentorOfCourse(course.id);
+  const chapter = await serverApiFetchOrNotFound<ChapterEditorView>(
+    `/api/v1/teach/chapters/${encodeURIComponent(chapterId)}/editor`
+  );
+  // The chapter id is global; make sure the URL names its own course.
+  if (chapter.courseSlug !== courseSlug) notFound();
 
-  const chapter = await prisma.chapter.findFirst({
-    where: { id: chapterId, courseId: course.id },
-  });
-  if (!chapter) notFound();
-
-  const blocks = await prisma.block.findMany({
-    where: { chapterId: chapter.id, archivedAt: null },
-    select: { id: true, config: true },
-  });
-  const blockConfigs = Object.fromEntries(blocks.map((block) => [block.id, block.config]));
-
-  // The editor works with real JSX block nodes, so the escaped placeholders
-  // the import pipeline stores are normalized on the way in; autosave writes
-  // the normalized form back (docs/02-content-authoring.mdx).
+  // The API already restored escaped block placeholders to real JSX
+  // (docs/02-content-authoring.mdx); autosave writes that form back.
   return (
     <ChapterEditor
-      chapterId={chapter.id}
-      courseSlug={course.slug}
+      chapterId={chapter.chapterId}
+      courseSlug={chapter.courseSlug}
       chapterTitle={chapter.title}
       chapterSummary={chapter.summary}
       estimatedMinutes={chapter.estimatedMinutes}
       readerMode={chapter.readerMode}
       isMilestone={chapter.isMilestone}
-      initialPublishedAt={chapter.publishedAt?.toISOString() ?? null}
-      initialHasUnpublishedChanges={
-        chapter.publishedAt !== null && chapter.compiled !== chapter.source
-      }
-      initialSource={restoreInteractiveBlockTags(chapter.source)}
-      lastPublishedSource={chapter.compiled}
-      blockConfigs={blockConfigs}
+      initialPublishedAt={chapter.publishedAt}
+      initialHasUnpublishedChanges={chapter.hasUnpublishedChanges}
+      initialSource={chapter.source}
+      lastPublishedSource={chapter.lastPublishedSource}
+      blockConfigs={chapter.blockConfigs}
     />
   );
 }
