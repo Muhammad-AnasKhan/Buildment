@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { chapterBodyForReader, stripYamlFrontmatter } from "./mdx-frontmatter";
+import { chapterBodyForReader, stripYamlFrontmatter } from "./mdx-frontmatter.js";
 
 describe("stripYamlFrontmatter", () => {
   it("removes import-style lesson metadata", () => {

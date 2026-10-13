@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getOpenQuestionGroupPosition } from "./group-position";
+import { getOpenQuestionGroupPosition } from "./group-position.js";
 
 describe("getOpenQuestionGroupPosition", () => {
   it("returns single for one open question", () => {

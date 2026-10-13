@@ -1,11 +1,3 @@
-import type { ProjectPreviewConfig } from "./schema";
-
-// Stub projector — see docs/06-reports.mdx.
-export function reportProjectPreview(_config: ProjectPreviewConfig) {
-  return {
-    type: "PROJECT_PREVIEW" as const,
-    title: "Project preview",
-    summary: "",
-    details: [],
-  };
-}
+// Moved to @buildment/shared so the API grades with the same code. Re-exported here
+// so existing imports keep working.
+export * from "@buildment/shared/blocks/project-preview/report";

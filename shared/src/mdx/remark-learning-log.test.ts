@@ -1,13 +1,17 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkMdx from "remark-mdx";
 import { visit } from "unist-util-visit";
-import { remarkChecklist } from "./remark-checklist";
-import { remarkLearningLog } from "./remark-learning-log";
+import { remarkChecklist } from "./remark-checklist.js";
+import { remarkLearningLog } from "./remark-learning-log.js";
+
+// Course fixtures live at the repo root, not inside this package.
+const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 
 function jsxElements(source: string): Array<{ name: string; attrs: Record<string, unknown> }> {
   const elements: Array<{ name: string; attrs: Record<string, unknown> }> = [];
@@ -48,7 +52,7 @@ function jsxElements(source: string): Array<{ name: string; attrs: Record<string
 describe("remarkLearningLog on gate chapters", () => {
   it("transforms ## Learning log on 3-10 checklist", () => {
     const file = path.join(
-      process.cwd(),
+      REPO_ROOT,
       "content/transformed/multi-vendor-marketplace/03-why-mongodb/03.10-checklist.mdx"
     );
     const body = fs.readFileSync(file, "utf8").replace(/^---[\s\S]*?---\n/, "");
@@ -60,7 +64,7 @@ describe("remarkLearningLog on gate chapters", () => {
       "content/transformed/multi-vendor-marketplace/03-why-mongodb/03.10-checklist.mdx",
       "content/transformed/multi-vendor-marketplace/04-config-and-database/04.17-checklist.mdx",
     ]) {
-      const body = fs.readFileSync(path.join(process.cwd(), rel), "utf8").replace(/^---[\s\S]*?---\n/, "");
+      const body = fs.readFileSync(path.join(REPO_ROOT, rel), "utf8").replace(/^---[\s\S]*?---\n/, "");
       const log = jsxElements(body).find((e) => e.name === "LearningLog");
       expect(log?.attrs.variant, rel).toBe("default");
     }
@@ -68,7 +72,7 @@ describe("remarkLearningLog on gate chapters", () => {
 
   it("places learning log before All boxes ticked on 4-17", () => {
     const file = path.join(
-      process.cwd(),
+      REPO_ROOT,
       "content/transformed/multi-vendor-marketplace/04-config-and-database/04.17-checklist.mdx"
     );
     const body = fs.readFileSync(file, "utf8").replace(/^---[\s\S]*?---\n/, "");

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { gradeCode, gradeCodeDetails } from "./grade";
-import type { CodeConfig } from "./schema";
+import { gradeCode, gradeCodeDetails } from "./grade.js";
+import type { CodeConfig } from "./schema.js";
 
 const baseConfig: CodeConfig = {
   mode: "implement",

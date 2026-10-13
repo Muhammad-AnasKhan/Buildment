@@ -1,7 +1,3 @@
-import { z } from "zod";
-
-export const LearningObjectivesConfigSchema = z.object({
-  objectives: z.array(z.string()).min(1).max(10),
-});
-
-export type LearningObjectivesConfig = z.infer<typeof LearningObjectivesConfigSchema>;
+// Moved to @buildment/shared so the API grades with the same code. Re-exported here
+// so existing imports keep working.
+export * from "@buildment/shared/blocks/learning-objectives/schema";

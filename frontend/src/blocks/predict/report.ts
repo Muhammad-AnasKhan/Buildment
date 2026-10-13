@@ -1,7 +1,3 @@
-import type { PredictConfig } from "./schema";
-
-export function reportPredict(_config: PredictConfig) {
-  return {
-    metric: "correctRate" as const,
-  };
-}
+// Moved to @buildment/shared so the API grades with the same code. Re-exported here
+// so existing imports keep working.
+export * from "@buildment/shared/blocks/predict/report";

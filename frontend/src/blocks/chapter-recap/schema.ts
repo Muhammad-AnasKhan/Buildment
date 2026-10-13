@@ -1,7 +1,3 @@
-import { z } from "zod";
-
-export const ChapterRecapConfigSchema = z.object({
-  points: z.array(z.string()).min(1).max(8),
-});
-
-export type ChapterRecapConfig = z.infer<typeof ChapterRecapConfigSchema>;
+// Moved to @buildment/shared so the API grades with the same code. Re-exported here
+// so existing imports keep working.
+export * from "@buildment/shared/blocks/chapter-recap/schema";

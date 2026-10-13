@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { gradePredict } from "./grade";
-import { PredictConfigSchema } from "./schema";
+import { gradePredict } from "./grade.js";
+import { PredictConfigSchema } from "./schema.js";
 
 describe("gradePredict", () => {
   const config = PredictConfigSchema.parse({

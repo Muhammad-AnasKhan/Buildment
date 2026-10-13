@@ -1,8 +1,3 @@
-import type { OpenQuestionConfig } from "./schema";
-
-// Stub projector — see docs/06-reports.mdx.
-export function reportOpenQuestion(_config: OpenQuestionConfig) {
-  return {
-    metric: "reviewStatus" as const,
-  };
-}
+// Moved to @buildment/shared so the API grades with the same code. Re-exported here
+// so existing imports keep working.
+export * from "@buildment/shared/blocks/open-question/report";

@@ -1,10 +1,3 @@
-import type { CodeConfig } from "./schema";
-
-export function reportCode(config: CodeConfig) {
-  return {
-    type: "CODE",
-    title: "Code exercise",
-    summary: config.prompt,
-    details: [{ mode: config.mode, language: config.language }],
-  };
-}
+// Moved to @buildment/shared so the API grades with the same code. Re-exported here
+// so existing imports keep working.
+export * from "@buildment/shared/blocks/code/report";

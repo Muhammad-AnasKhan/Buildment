@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   normalizeLearningLogQuestionProps,
   parseLearningLogQuestions,
-} from "./learning-log";
+} from "./learning-log.js";
 
 describe("LearningLog MDX props", () => {
   const questions = [{ id: "01JTEST", title: "What changed?" }];

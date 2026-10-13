@@ -3,7 +3,7 @@ import {
   OpenQuestionConfigSchema,
   OpenQuestionPayloadSchema,
   validateOpenQuestionPayload,
-} from "./schema";
+} from "./schema.js";
 
 const baseConfig = OpenQuestionConfigSchema.parse({
   prompt: "Explain your design",
