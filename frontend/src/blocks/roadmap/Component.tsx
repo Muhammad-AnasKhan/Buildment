@@ -1,6 +1,5 @@
-import { prisma } from "@/server/db";
+import { fetchBlockState } from "@/blocks/block-state";
 import type { RoadmapConfig } from "./schema";
-import { RoadmapConfigSchema } from "./schema";
 import { RoadmapClient } from "./RoadmapClient";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
@@ -19,9 +18,8 @@ export async function RoadmapComponent({
 
   if (!id) return null;
 
-  const block = await prisma.block.findUnique({ where: { id } }).catch(() => null);
-  const parsed = block ? RoadmapConfigSchema.safeParse(block.config) : null;
-  if (!block || block.type !== "ROADMAP" || !parsed?.success) {
+  const state = await fetchBlockState(id, "ROADMAP");
+  if (!state) {
     return (
       <PendingBlockCard
         typeLabel="Learning Roadmap"
@@ -31,7 +29,7 @@ export async function RoadmapComponent({
       />
     );
   }
-  return <RoadmapClient {...parsed.data} />;
+  return <RoadmapClient {...state.config} />;
 }
 
 

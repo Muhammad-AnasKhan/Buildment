@@ -4,6 +4,14 @@ import type { SanitizedOpenQuestionConfig } from "../blocks/open-question/schema
 import type { SanitizedPredictConfig } from "../blocks/predict/schema.js";
 import type { SanitizedQuizConfig } from "../blocks/quiz/schema.js";
 import type { OpenQuestionGroupPosition } from "../blocks/open-question/group-position.js";
+import type { StepsConfig } from "../blocks/steps/schema.js";
+import type { VideoConfig } from "../blocks/video/schema.js";
+import type { ChapterRecapConfig } from "../blocks/chapter-recap/schema.js";
+import type { LearningObjectivesConfig } from "../blocks/learning-objectives/schema.js";
+import type { ProjectPreviewConfig } from "../blocks/project-preview/schema.js";
+import type { RoadmapConfig } from "../blocks/roadmap/schema.js";
+import type { VisualDiagramConfig } from "../blocks/visual-diagram/schema.js";
+import type { VisualWalkthroughConfig } from "../blocks/visual-walkthrough/schema.js";
 
 // Wire contract for GET /api/v1/blocks/:blockId/state: the client-safe config plus
 // the caller's latest answer, shaped for each block's client component.
@@ -46,7 +54,24 @@ export type MustReadBlockState = {
   initialRead: boolean;
 };
 
-export type BlockState = QuizBlockState | PredictBlockState | CodeBlockState | OpenQuestionBlockState | MustReadBlockState;
+/** Presentation blocks carry no answer; the reader only needs their config. */
+export type ContentBlockState =
+  | { type: "STEPS"; config: StepsConfig }
+  | { type: "VIDEO"; config: VideoConfig }
+  | { type: "CHAPTER_RECAP"; config: ChapterRecapConfig }
+  | { type: "LEARNING_OBJECTIVES"; config: LearningObjectivesConfig }
+  | { type: "PROJECT_PREVIEW"; config: ProjectPreviewConfig }
+  | { type: "ROADMAP"; config: RoadmapConfig }
+  | { type: "VISUAL_DIAGRAM"; config: VisualDiagramConfig }
+  | { type: "VISUAL_WALKTHROUGH"; config: VisualWalkthroughConfig };
+
+export type BlockState =
+  | QuizBlockState
+  | PredictBlockState
+  | CodeBlockState
+  | OpenQuestionBlockState
+  | MustReadBlockState
+  | ContentBlockState;
 
 /** Quiz-mode chapter: every question's last answer, for the wizard's initial state. */
 export type QuizChapterState = {

@@ -1,4 +1,3 @@
-import type { PredictBlockState } from "@buildment/shared/api/blocks";
 import { fetchBlockState } from "@/blocks/block-state";
 import type { SanitizedPredictConfig } from "./schema";
 import { PredictClient } from "./PredictClient";
@@ -55,7 +54,7 @@ export async function PredictComponent({
   }
 
   if (id) {
-    const state = await fetchBlockState<PredictBlockState>(id, "PREDICT");
+    const state = await fetchBlockState(id, "PREDICT");
     if (state) return <PredictClient id={id} config={state.config} initialState={state.initialState} />;
   }
 

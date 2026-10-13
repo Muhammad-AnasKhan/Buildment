@@ -1,6 +1,5 @@
-import { prisma } from "@/server/db";
+import { fetchBlockState } from "@/blocks/block-state";
 import { Video } from "@/components/learn/video-embed";
-import { VideoConfigSchema } from "./schema";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
 export async function VideoComponent({
@@ -27,9 +26,8 @@ export async function VideoComponent({
     return null;
   }
 
-  const block = await prisma.block.findUnique({ where: { id } }).catch(() => null);
-  const parsed = block ? VideoConfigSchema.safeParse(block.config) : null;
-  if (!block || block.type !== "VIDEO" || !parsed?.success) {
+  const state = await fetchBlockState(id, "VIDEO");
+  if (!state) {
     return (
       <PendingBlockCard
         typeLabel="Video Walkthrough"
@@ -39,6 +37,6 @@ export async function VideoComponent({
       />
     );
   }
-  return <Video src={parsed.data.sourceUrl} title={parsed.data.title} caption={parsed.data.caption} transcriptUrl={parsed.data.transcriptUrl} />;
+  return <Video src={state.config.sourceUrl} title={state.config.title} caption={state.config.caption} transcriptUrl={state.config.transcriptUrl} />;
 }
 

@@ -1,4 +1,3 @@
-import type { OpenQuestionBlockState } from "@buildment/shared/api/blocks";
 import { fetchBlockState } from "@/blocks/block-state";
 import type { SanitizedOpenQuestionConfig } from "./schema";
 import { OpenQuestionClient } from "./OpenQuestionClient";
@@ -59,7 +58,7 @@ export async function OpenQuestionComponent({
   }
 
   if (id) {
-    const state = await fetchBlockState<OpenQuestionBlockState>(id, "OPEN_QUESTION");
+    const state = await fetchBlockState(id, "OPEN_QUESTION");
     if (state) {
       return (
         <OpenQuestionClient

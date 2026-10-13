@@ -1,4 +1,5 @@
-import type { BlockState } from "@buildment/shared/api/blocks";
+import type { BlockState, ContentBlockState } from "@buildment/shared/api/blocks";
+import { blockDefinitions } from "@buildment/shared/blocks/definitions";
 import { CodeConfigSchema, type SanitizedCodeConfig } from "@buildment/shared/blocks/code/schema";
 import { MustReadConfigSchema } from "@buildment/shared/blocks/must-read/schema";
 import { OpenQuestionConfigSchema, type SanitizedOpenQuestionConfig } from "@buildment/shared/blocks/open-question/schema";
@@ -94,6 +95,16 @@ export async function loadBlockState(blockId: string, user: SessionUser | undefi
         initialRead: Boolean(latest && latest.status !== "DRAFT"),
       };
     }
+    case "STEPS":
+    case "VIDEO":
+    case "CHAPTER_RECAP":
+    case "LEARNING_OBJECTIVES":
+    case "PROJECT_PREVIEW":
+    case "ROADMAP":
+    case "VISUAL_DIAGRAM":
+    case "VISUAL_WALKTHROUGH":
+      // Presentation blocks: the config is the content, nothing in it is secret.
+      return { type: block.type, config: blockDefinitions[block.type].schema.parse(block.config) } as ContentBlockState;
     default:
       throw new NotFoundError(`Block type ${block.type} has no learner state`);
   }

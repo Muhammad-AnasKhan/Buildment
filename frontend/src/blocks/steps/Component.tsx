@@ -1,5 +1,4 @@
-import { prisma } from "@/server/db";
-import { StepsConfigSchema } from "./schema";
+import { fetchBlockState } from "@/blocks/block-state";
 import { StepsClient } from "./StepsClient";
 import { Step } from "./Step";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
@@ -26,15 +25,8 @@ export async function StepsComponent({
   let resolvedTitle = title;
 
   if (id) {
-    try {
-      const block = await prisma.block.findUnique({ where: { id } });
-      const parsed = block ? StepsConfigSchema.safeParse(block.config) : null;
-      if (parsed?.success && parsed.data.title) {
-        resolvedTitle = resolvedTitle || parsed.data.title;
-      }
-    } catch {
-      // Ignore DB lookup error in preview / pending states
-    }
+    const state = await fetchBlockState(id, "STEPS");
+    if (state?.config.title) resolvedTitle = resolvedTitle || state.config.title;
   }
 
   const hasArraySteps = Array.isArray(steps) && steps.length > 0;

@@ -1,4 +1,3 @@
-import type { CodeBlockState } from "@buildment/shared/api/blocks";
 import { fetchBlockState } from "@/blocks/block-state";
 import { sanitizeBlockConfig } from "@/mdx/sanitize";
 import type { SanitizedCodeConfig } from "./schema";
@@ -59,7 +58,7 @@ export async function CodeExerciseComponent({
   }
 
   if (id) {
-    const state = await fetchBlockState<CodeBlockState>(id, "CODE");
+    const state = await fetchBlockState(id, "CODE");
     if (state) return <CodeExerciseClient id={id} config={state.config} initialState={state.initialState} />;
   }
 

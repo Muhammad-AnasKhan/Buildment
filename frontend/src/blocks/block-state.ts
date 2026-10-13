@@ -9,10 +9,13 @@ import { serverApiFetch } from "@/lib/api-server";
  * when the block is unknown, archived or of another type so the caller can show
  * its pending card — the same behaviour the old direct database lookup had.
  */
-export async function fetchBlockState<T extends BlockState>(blockId: string, type: T["type"]): Promise<T | null> {
+export async function fetchBlockState<K extends BlockState["type"]>(
+  blockId: string,
+  type: K
+): Promise<Extract<BlockState, { type: K }> | null> {
   try {
     const state = await serverApiFetch<BlockState>(`/api/v1/blocks/${encodeURIComponent(blockId)}/state`);
-    return state.type === type ? (state as T) : null;
+    return state.type === type ? (state as Extract<BlockState, { type: K }>) : null;
   } catch (error) {
     if (error instanceof ApiError && error.status < 500) return null;
     throw error;

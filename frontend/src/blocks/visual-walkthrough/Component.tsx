@@ -1,6 +1,5 @@
-import { prisma } from "@/server/db";
+import { fetchBlockState } from "@/blocks/block-state";
 import type { VisualWalkthroughConfig } from "./schema";
-import { VisualWalkthroughConfigSchema } from "./schema";
 import { VisualWalkthroughClient } from "./VisualWalkthroughClient";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
@@ -19,9 +18,8 @@ export async function VisualWalkthroughComponent({
 
   if (!id) return null;
 
-  const block = await prisma.block.findUnique({ where: { id } }).catch(() => null);
-  const parsed = block ? VisualWalkthroughConfigSchema.safeParse(block.config) : null;
-  if (!block || block.type !== "VISUAL_WALKTHROUGH" || !parsed?.success) {
+  const state = await fetchBlockState(id, "VISUAL_WALKTHROUGH");
+  if (!state) {
     return (
       <PendingBlockCard
         typeLabel="Visual Walkthrough"
@@ -31,6 +29,6 @@ export async function VisualWalkthroughComponent({
       />
     );
   }
-  return <VisualWalkthroughClient {...parsed.data} />;
+  return <VisualWalkthroughClient {...state.config} />;
 }
 

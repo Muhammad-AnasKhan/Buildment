@@ -1,4 +1,3 @@
-import type { MustReadBlockState } from "@buildment/shared/api/blocks";
 import { fetchBlockState } from "@/blocks/block-state";
 import { MandatoryReadCard } from "@/components/learn/mandatory-read-card";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
@@ -27,7 +26,7 @@ export async function MustReadComponent({
   const directDescription = description ?? summary;
 
   if (directUrl && directTitle && directDescription) {
-    const state = id ? await fetchBlockState<MustReadBlockState>(id, "MUST_READ") : null;
+    const state = id ? await fetchBlockState(id, "MUST_READ") : null;
     return (
       <MandatoryReadCard
         blockId={id}
@@ -45,7 +44,7 @@ export async function MustReadComponent({
     return null;
   }
 
-  const state = await fetchBlockState<MustReadBlockState>(id, "MUST_READ");
+  const state = await fetchBlockState(id, "MUST_READ");
   if (!state) {
     return (
       <PendingBlockCard

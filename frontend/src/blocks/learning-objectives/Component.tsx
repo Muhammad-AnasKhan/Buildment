@@ -1,5 +1,4 @@
-import { prisma } from "@/server/db";
-import { LearningObjectivesConfigSchema } from "./schema";
+import { fetchBlockState } from "@/blocks/block-state";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
 export async function LearningObjectivesComponent({
@@ -14,15 +13,8 @@ export async function LearningObjectivesComponent({
   let list = objectives ?? items;
 
   if ((!list || !Array.isArray(list) || list.length === 0) && id) {
-    try {
-      const block = await prisma.block.findUnique({ where: { id } });
-      const parsed = block ? LearningObjectivesConfigSchema.safeParse(block.config) : null;
-      if (parsed?.success) {
-        list = parsed.data.objectives;
-      }
-    } catch {
-      // Ignore DB lookup error in preview / pending states
-    }
+    const state = await fetchBlockState(id, "LEARNING_OBJECTIVES");
+    if (state) list = state.config.objectives;
   }
 
   if (!list || !Array.isArray(list) || list.length === 0) {

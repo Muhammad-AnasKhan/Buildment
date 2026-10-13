@@ -1,5 +1,4 @@
-import { prisma } from "@/server/db";
-import { ChapterRecapConfigSchema } from "./schema";
+import { fetchBlockState } from "@/blocks/block-state";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
 export async function ChapterRecapComponent({
@@ -14,15 +13,8 @@ export async function ChapterRecapComponent({
   let list = points ?? items;
 
   if ((!list || !Array.isArray(list) || list.length === 0) && id) {
-    try {
-      const block = await prisma.block.findUnique({ where: { id } });
-      const parsed = block ? ChapterRecapConfigSchema.safeParse(block.config) : null;
-      if (parsed?.success) {
-        list = parsed.data.points;
-      }
-    } catch {
-      // Ignore DB lookup error in preview / pending states
-    }
+    const state = await fetchBlockState(id, "CHAPTER_RECAP");
+    if (state) list = state.config.points;
   }
 
   if (!list || !Array.isArray(list) || list.length === 0) {

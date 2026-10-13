@@ -1,5 +1,5 @@
-import { prisma } from "@/server/db";
-import { ProjectPreviewConfigSchema, type ProjectPreviewConfig } from "./schema";
+import { fetchBlockState } from "@/blocks/block-state";
+import type { ProjectPreviewConfig } from "./schema";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
 export async function ProjectPreviewComponent({
@@ -28,15 +28,7 @@ export async function ProjectPreviewComponent({
       imageUrl,
     };
   } else if (id) {
-    try {
-      const block = await prisma.block.findUnique({ where: { id } });
-      const parsed = block ? ProjectPreviewConfigSchema.safeParse(block.config) : null;
-      if (parsed?.success) {
-        config = parsed.data;
-      }
-    } catch {
-      // Ignore DB lookup error in preview / pending states
-    }
+    config = (await fetchBlockState(id, "PROJECT_PREVIEW"))?.config ?? null;
   }
 
   if (!config) {

@@ -1,5 +1,4 @@
-import { prisma } from "@/server/db";
-import { VisualDiagramConfigSchema } from "./schema";
+import { fetchBlockState } from "@/blocks/block-state";
 import { VisualDiagramClient } from "./VisualDiagramClient";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
@@ -35,9 +34,8 @@ export async function VisualDiagramComponent({
 
   if (!id) return null;
 
-  const block = await prisma.block.findUnique({ where: { id } }).catch(() => null);
-  const parsed = block ? VisualDiagramConfigSchema.safeParse(block.config) : null;
-  if (!block || block.type !== "VISUAL_DIAGRAM" || !parsed?.success) {
+  const state = await fetchBlockState(id, "VISUAL_DIAGRAM");
+  if (!state) {
     return (
       <PendingBlockCard
         typeLabel="Visual Diagram"
@@ -47,6 +45,6 @@ export async function VisualDiagramComponent({
       />
     );
   }
-  return <VisualDiagramClient {...parsed.data} />;
+  return <VisualDiagramClient {...state.config} />;
 }
 

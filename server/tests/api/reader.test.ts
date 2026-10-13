@@ -74,6 +74,19 @@ describe("block state", () => {
     expect(read.body.data).toMatchObject({ type: "MUST_READ", initialRead: false, config: { title: "Read me" } });
     expect((await request(app).get("/api/v1/blocks/nope/state").set(auth())).status).toBe(404);
   });
+
+  it("serves presentation blocks as their parsed config", async () => {
+    const recap = await prisma.block.create({
+      data: { id: `blk-recap-${fx.course.id}`, chapterId: fx.chapterA.id, type: "CHAPTER_RECAP", order: 9, required: false, config: { points: ["One", "Two"] } },
+    });
+    try {
+      const res = await request(app).get(`/api/v1/blocks/${recap.id}/state`);
+      expect(res.status).toBe(200);
+      expect(res.body.data).toEqual({ type: "CHAPTER_RECAP", config: { points: ["One", "Two"] } });
+    } finally {
+      await prisma.block.delete({ where: { id: recap.id } });
+    }
+  });
 });
 
 describe("quiz chapter state", () => {

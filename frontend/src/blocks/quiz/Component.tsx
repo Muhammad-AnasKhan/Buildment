@@ -1,4 +1,3 @@
-import type { QuizBlockState } from "@buildment/shared/api/blocks";
 import { fetchBlockState } from "@/blocks/block-state";
 import type { SanitizedQuizConfig } from "./schema";
 import { QuizClient } from "./QuizClient";
@@ -60,7 +59,7 @@ export async function QuizComponent({
   }
 
   if (id) {
-    const state = await fetchBlockState<QuizBlockState>(id, "QUIZ");
+    const state = await fetchBlockState(id, "QUIZ");
     if (state) {
       return (
         <QuizClient
