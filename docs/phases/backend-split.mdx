@@ -1,6 +1,6 @@
 ---
 title: Backend split — Next.js monolith → frontend + Express API
-status: in progress — Phases 1 and 2 complete 2026-10-13, Phase 3 next
+status: in progress — Phases 1–3 complete 2026-10-13, Phase 4 next
 ---
 
 # Backend split
@@ -91,6 +91,30 @@ Server Actions in the frontend call these through `serverApiFetch` and store the
 as the cookie themselves; `next-auth` and `@auth/prisma-adapter` are gone. Browser-facing API
 redirects (dev login, email confirmation, magic-link verify) are relative so they resolve against
 whatever host the web app is served from.
+
+### Phase 3 — learner endpoints
+
+Every learner page now renders from `serverApiFetch` calls; the only Prisma reads left in
+`frontend/src` belong to instructor/admin pages (Phases 4–5) and the mentor-side invite and
+repair-progress actions.
+
+| Endpoint | Serves |
+|---|---|
+| `GET /api/v1/learner/workspace` | sidebar counts + instructor-access state |
+| `GET /api/v1/learner/dashboard`, `/progress`, `/profile` · `PATCH /profile` | dashboard and progress models, profile |
+| `PUT`/`DELETE /api/v1/learner/weekly-goal` · `POST /streak-milestones/:n/acknowledge` | habit settings |
+| `POST /api/v1/learner/instructor-access-requests` | learner asks for instructor tools |
+| `GET /api/v1/catalog`, `/catalog/:slug` | catalog list and detail with the caller's enrollment state |
+| `GET /api/v1/courses/:slug/overview`, `/checkout`, `/continue` | overview with syllabus/lock state, checkout state, next chapter |
+| `GET /api/v1/courses/:slug/chapters/:chapterSlug` | the chapter reader view (content, progress, recap, notes, help thread) |
+| `POST /api/v1/enrollments` · `POST /enrollments/:id/payment-stub` | self-enrolment and the stub payment |
+| `POST /api/v1/chapters/:id/complete` · `PUT /checklist/:item` · `PUT /learning-log` · `PUT /notes/:heading` · `GET /quiz` | chapter progress actions and quiz-chapter state |
+| `GET /api/v1/blocks/:id/state` | client-safe block config + the visitor's latest answer |
+| `GET/POST /api/v1/help/threads` · `GET /:id` · `POST /:id/messages` · `POST /:id/resolve` | learner ⇄ mentor questions |
+| `GET /api/v1/invites/:token` · `POST /:token/accept` | invite landing and acceptance |
+
+Wire types live in `shared/src/api/*`; the Server Actions that components already call became thin
+wrappers that keep their result shapes, so the client components did not change.
 
 ### Phase 2 verification (2026-10-13)
 
