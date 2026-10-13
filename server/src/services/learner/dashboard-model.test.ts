@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildMenteeDashboardViewModel } from "./dashboard-model";
+import { buildMenteeDashboardViewModel } from "./dashboard-model.js";
 import type {
   DashboardEnrollmentInput,
   DashboardHelpInput,
   DashboardResponseInput,
   DashboardSessionInput,
-} from "./dashboard-model";
+} from "./dashboard-model.js";
 
 const now = new Date("2026-09-23T12:00:00.000Z");
 const week = [

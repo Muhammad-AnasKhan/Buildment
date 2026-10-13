@@ -1,9 +1,8 @@
-import "server-only";
 
-import { prisma } from "@/server/db";
-import { utcDateOnly } from "@/server/progress/heartbeat";
-import { loadLearnerHabit } from "@/server/progress/learner-habit";
-import { buildMenteeDashboardViewModel } from "./dashboard-model";
+import { prisma } from "../../db/prisma.js";
+import { utcDateOnly } from "../progress/heartbeat.js";
+import { loadLearnerHabit } from "../progress/learner-habit.js";
+import { buildMenteeDashboardViewModel } from "./dashboard-model.js";
 
 export async function loadMenteeDashboard(args: {
   learnerId: string;

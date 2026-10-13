@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { currentStreak, uncelebratedStreakMilestone } from "./streak";
+import { currentStreak, uncelebratedStreakMilestone } from "./streak.js";
 
 describe("currentStreak", () => {
   const today = "2026-10-05";

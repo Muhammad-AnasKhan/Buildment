@@ -6,7 +6,7 @@ const { enrollmentFindMany, helpFindMany, helpCount } = vi.hoisted(() => ({
   helpCount: vi.fn(),
 }));
 
-vi.mock("@/server/db", () => ({
+vi.mock("../../db/prisma.js", () => ({
   prisma: {
     enrollment: { findMany: enrollmentFindMany },
     helpThread: { findMany: helpFindMany, count: helpCount },
@@ -18,7 +18,7 @@ vi.mock("@/server/db", () => ({
   },
 }));
 
-import { loadMenteeDashboard } from "./load-mentee-dashboard";
+import { loadMenteeDashboard } from "./load-mentee-dashboard.js";
 
 describe("loadMenteeDashboard learner scope", () => {
   beforeEach(() => {

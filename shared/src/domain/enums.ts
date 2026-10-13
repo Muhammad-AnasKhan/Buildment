@@ -48,3 +48,21 @@ export type EnrollmentLifecycle = (typeof ENROLLMENT_LIFECYCLES)[number];
 
 export const STUDY_SESSION_STATUSES = ["RUNNING", "PAUSED", "ENDED"] as const;
 export type StudySessionStatus = (typeof STUDY_SESSION_STATUSES)[number];
+
+export const ENROLL_STATUSES = ["ASSIGNED", "IN_PROGRESS", "COMPLETED", "DROPPED"] as const;
+export type EnrollStatus = (typeof ENROLL_STATUSES)[number];
+
+export const HELP_THREAD_STATUSES = ["OPEN", "RESOLVED"] as const;
+export type HelpThreadStatus = (typeof HELP_THREAD_STATUSES)[number];
+
+export const WEEKLY_GOAL_KINDS = ["SESSIONS", "CHAPTERS"] as const;
+export type WeeklyGoalKind = (typeof WEEKLY_GOAL_KINDS)[number];
+
+export const REVIEW_VERDICTS = ["APPROVED", "NEEDS_REVISION"] as const;
+export type ReviewVerdict = (typeof REVIEW_VERDICTS)[number];
+
+export const COURSE_STATUSES = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
+export type CourseStatus = (typeof COURSE_STATUSES)[number];
+
+export const COURSE_PRICING_TYPES = ["FREE", "PAID"] as const;
+export type CoursePricingType = (typeof COURSE_PRICING_TYPES)[number];
