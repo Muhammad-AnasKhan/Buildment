@@ -1,5 +1,8 @@
 import { randomBytes } from "node:crypto";
+import { AUTH_ERROR_CODES } from "@buildment/shared/api/auth";
 import { prisma } from "../../db/prisma.js";
+import { BadRequestError } from "../../utils/errors.js";
+import type { SessionUser } from "../../types/auth.js";
 import { appBaseUrl, emailConfigured, sendEmail } from "../email/send.js";
 import { linkLearnerProfileToUser } from "../enrollment/link-learner-profile.js";
 import { logger } from "../../utils/logger.js";
@@ -109,4 +112,28 @@ export async function resolveEmailVerifiedForUser(user: {
     return dbUser.emailVerified;
   }
   return null;
+}
+
+/**
+ * Send a fresh verification link. With an explicit email the answer is always
+ * "sent" so the endpoint cannot be used to probe which addresses have accounts;
+ * for the signed-in user it reports when there is nothing to verify.
+ */
+export async function resendVerification(input: { email?: string; user?: SessionUser }): Promise<{ sent: boolean }> {
+  if (input.email) {
+    const account = await prisma.user.findUnique({ where: { email: input.email } });
+    if (account && !isEmailVerified(account.emailVerified)) {
+      await sendVerificationEmail({ email: account.email, name: account.name });
+    }
+    return { sent: true };
+  }
+
+  if (!input.user) throw new BadRequestError("Enter the email you used to sign up.");
+  const account = await prisma.user.findUnique({ where: { id: input.user.id } });
+  if (!account) throw new BadRequestError("Account not found.");
+  if (isEmailVerified(account.emailVerified)) {
+    throw new BadRequestError("Your email is already verified.", AUTH_ERROR_CODES.ALREADY_VERIFIED);
+  }
+  await sendVerificationEmail({ email: account.email, name: account.name });
+  return { sent: true };
 }

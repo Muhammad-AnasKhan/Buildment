@@ -20,7 +20,7 @@ datasource db {
   provider = "postgresql"
 }
 
-// --- Auth.js v5 (@auth/prisma-adapter) models -------------------------------------------------
+// --- Session / verification tables (inherited from Auth.js; now written by the API) -----------
 
 model Account {
   id                String  @id @default(cuid())

@@ -1,12 +1,14 @@
+import { randomBytes } from "node:crypto";
+import { SESSION_COOKIE_NAME, type SessionUser as SessionUserWire } from "@buildment/shared/api/auth";
 import { prisma } from "../../db/prisma.js";
 import type { SessionUser } from "../../types/auth.js";
 
 // Sessions are opaque tokens in the `Session` table — the same rows Auth.js
-// writes today, so the web app's existing cookie keeps working while login moves
-// to the API. Desktop and third-party clients send the token as a Bearer header.
+// wrote, so cookies issued before the API owned login keep working. Desktop and
+// third-party clients send the token as a Bearer header instead.
 
-export const SESSION_COOKIE = "authjs.session-token";
-export const SECURE_SESSION_COOKIE = "__Secure-authjs.session-token";
+export const SESSION_COOKIE = SESSION_COOKIE_NAME;
+export const SECURE_SESSION_COOKIE = `__Secure-${SESSION_COOKIE_NAME}`;
 export const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 export function toSessionUser(user: {
@@ -29,6 +31,11 @@ export function toSessionUser(user: {
   };
 }
 
+/** JSON shape sent to clients. */
+export function serializeSessionUser(user: SessionUser): SessionUserWire {
+  return { ...user, emailVerified: user.emailVerified?.toISOString() ?? null };
+}
+
 /** Resolves a session token to its user, or null when unknown or expired. */
 export async function findSessionUser(sessionToken: string): Promise<SessionUser | null> {
   const session = await prisma.session.findUnique({
@@ -43,8 +50,12 @@ export async function findSessionUser(sessionToken: string): Promise<SessionUser
   return toSessionUser(session.user);
 }
 
-export async function createSession(userId: string, sessionToken: string) {
+export async function createSession(userId: string, sessionToken = randomBytes(32).toString("hex")) {
   const expires = new Date(Date.now() + SESSION_MAX_AGE_MS);
   await prisma.session.create({ data: { sessionToken, userId, expires } });
   return { sessionToken, expires };
+}
+
+export async function deleteSession(sessionToken: string) {
+  await prisma.session.deleteMany({ where: { sessionToken } });
 }

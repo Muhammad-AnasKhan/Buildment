@@ -1,4 +1,3 @@
-import { randomBytes } from "node:crypto";
 import { isSeedTestEmail } from "@buildment/shared/lib/seed-data";
 import { safeRedirectTo } from "@buildment/shared/lib/safe-redirect";
 import { prisma } from "../../db/prisma.js";
@@ -25,7 +24,7 @@ export async function createDevLoginSession(input: { email?: string; redirectTo?
     user = await prisma.user.findUniqueOrThrow({ where: { email: input.email } });
   }
 
-  const session = await createSession(user.id, randomBytes(32).toString("hex"));
+  const session = await createSession(user.id);
   // Invites flow through /login?redirectTo=/invite/<token>; honour the same local-path-only target.
   const redirectTo = safeRedirectTo(input.redirectTo) ?? homeRouteForRole(user.role);
   return { ...session, redirectTo };
