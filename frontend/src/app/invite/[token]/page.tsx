@@ -4,8 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/logo";
+import type { AcceptInviteResult, InvitePublicView } from "@buildment/shared/api/invites";
 import { getSessionUser } from "@/server/auth/guards";
-import { acceptInvite, getPublicInviteView } from "@/server/actions/invites";
+import { ApiError } from "@/lib/api-client";
+import { serverApiFetch } from "@/lib/api-server";
 
 export default async function InviteAcceptPage({
   params,
@@ -13,21 +15,26 @@ export default async function InviteAcceptPage({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
-  const invite = await getPublicInviteView(token);
-
-  if (!invite) {
-    return <InviteShell title="Invite not found" body="This invite link is invalid. Ask your mentor to send a fresh one." />;
+  let invite: InvitePublicView;
+  try {
+    invite = await serverApiFetch<InvitePublicView>(`/api/v1/invites/${encodeURIComponent(token)}`, { token: null });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return <InviteShell title="Invite not found" body="This invite link is invalid. Ask your mentor to send a fresh one." />;
+    }
+    throw error;
   }
-  if (invite.revokedAt) {
+
+  if (invite.state === "revoked") {
     return <InviteShell title="Invite revoked" body="This invite was revoked by the mentor. Ask them to send a new one." />;
   }
-  if (invite.acceptedAt) {
+  if (invite.state === "accepted") {
     return <InviteShell title="Invite already used" body="This invite has already been accepted." />;
   }
-  if (invite.expiresAt && invite.expiresAt <= new Date()) {
+  if (invite.state === "expired") {
     return <InviteShell title="Invite expired" body="This invite has expired. Ask your mentor to send a new one." />;
   }
-  if (invite.course.status !== "PUBLISHED") {
+  if (invite.state === "course-unavailable") {
     return <InviteShell title="Course unavailable" body="This course is not open for enrollment right now." />;
   }
 
@@ -37,7 +44,7 @@ export default async function InviteAcceptPage({
     return (
       <InviteShell
         title="You're invited to join a course"
-        body={`${invite.course.mentor.name ?? "Your mentor"} invited you to “${invite.course.title}” on buildment.`}
+        body={`${invite.course.mentorName ?? "Your mentor"} invited you to “${invite.course.title}” on buildment.`}
         invite={invite}
       >
         <Link
@@ -71,7 +78,7 @@ export default async function InviteAcceptPage({
   return (
     <InviteShell
       title="Accept your invite"
-      body={`${invite.course.mentor.name ?? "Your mentor"} invited you to “${invite.course.title}”. Accept to add it to your dashboard.`}
+      body={`${invite.course.mentorName ?? "Your mentor"} invited you to “${invite.course.title}”. Accept to add it to your dashboard.`}
       invite={invite}
     >
       <form
@@ -79,13 +86,11 @@ export default async function InviteAcceptPage({
         action={async (formData) => {
           "use server";
           const name = String(formData.get("name") ?? "") || undefined;
-          const result = await acceptInvite({ token, name });
-          if (result.ok) {
-            if (result.checkoutRequired) {
-              redirect(`/courses/${result.courseSlug}/checkout`);
-            }
-            redirect(`/courses/${result.courseSlug}`);
-          }
+          const result = await serverApiFetch<AcceptInviteResult>(`/api/v1/invites/${encodeURIComponent(token)}/accept`, {
+            method: "POST",
+            json: { name },
+          });
+          redirect(result.checkoutRequired ? `/courses/${result.courseSlug}/checkout` : `/courses/${result.courseSlug}`);
         }}
       >
         {!user.name && (
@@ -114,7 +119,7 @@ export default async function InviteAcceptPage({
   );
 }
 
-type InviteView = NonNullable<Awaited<ReturnType<typeof getPublicInviteView>>>;
+type InviteView = InvitePublicView;
 
 function InviteShell({
   title,
@@ -140,7 +145,7 @@ function InviteShell({
               </p>
             )}
             <p className="mt-2 text-xs text-neutral-400">
-              {invite.course.mentor.name ? `Mentored by ${invite.course.mentor.name}` : "Mentored course"}
+              {invite.course.mentorName ? `Mentored by ${invite.course.mentorName}` : "Mentored course"}
               {invite.course.estimatedHours ? ` · ~${invite.course.estimatedHours}h` : ""}
             </p>
           </div>
