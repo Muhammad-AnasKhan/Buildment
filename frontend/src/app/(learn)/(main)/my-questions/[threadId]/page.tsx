@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { prisma } from "@/server/db";
-import { requireHelpThreadAccess } from "@/server/auth/guards";
-import { mapHelpMessages } from "@/lib/help-serialize";
+import type { HelpThreadDetail as HelpThreadDetailModel } from "@buildment/shared/api/help";
+import { requireUser } from "@/server/auth/guards";
+import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { HelpThreadDetail } from "@/components/help/help-thread-detail";
 import { LearnerBreadcrumb } from "@/components/learn/learner-breadcrumb";
 import { buttonVariants } from "@/components/ui/button";
@@ -14,41 +13,9 @@ export default async function MenteeHelpThreadPage({
   params: Promise<{ threadId: string }>;
 }) {
   const { threadId } = await params;
-  const { user, thread } = await requireHelpThreadAccess(threadId);
-
-  const full = await prisma.helpThread.findUnique({
-    where: { id: thread.id },
-    include: {
-      messages: {
-        orderBy: { createdAt: "asc" },
-        include: { author: { select: { id: true, name: true, role: true } } },
-      },
-    },
-  });
-  if (!full) notFound();
-
-  if (user.id === full.menteeId) {
-    await prisma.helpThread.update({
-      where: { id: full.id },
-      data: { menteeLastReadAt: new Date() },
-    });
-  }
-
-  const course = await prisma.course.findUnique({
-    where: { id: full.courseId },
-    select: { slug: true, title: true },
-  });
-  if (!course) notFound();
-
-  const chapter =
-    full.chapterId != null
-      ? await prisma.chapter.findUnique({
-          where: { id: full.chapterId },
-          select: { slug: true, title: true },
-        })
-      : null;
-
-  const messages = mapHelpMessages(full.messages);
+  const user = await requireUser();
+  const full = await serverApiFetchOrNotFound<HelpThreadDetailModel>(`/api/v1/help/threads/${encodeURIComponent(threadId)}`);
+  const { course, chapter, messages } = full;
   const title = chapter?.title ?? course.title;
 
   return (

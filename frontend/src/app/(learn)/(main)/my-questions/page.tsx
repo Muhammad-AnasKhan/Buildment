@@ -2,28 +2,15 @@ import Link from "next/link";
 import { ChevronRight, Inbox } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { prisma } from "@/server/db";
+import type { HelpThreadSummary } from "@buildment/shared/api/help";
 import { requireLearnSurface } from "@/server/auth/guards";
+import { serverApiFetch } from "@/lib/api-server";
 import { cn } from "@/lib/utils";
-import { mentorReplyUnread } from "@/server/progress/attention";
 import { helpUiCopy as copy } from "@/lib/help-ui-copy";
 
 export default async function MenteeHelpListPage() {
-  const user = await requireLearnSurface();
-
-  const threads = await prisma.helpThread.findMany({
-    where: { menteeId: user.id },
-    orderBy: { updatedAt: "desc" },
-    include: {
-      course: { select: { slug: true, title: true } },
-      chapter: { select: { slug: true, title: true } },
-      messages: {
-        orderBy: { createdAt: "desc" },
-        take: 1,
-        select: { body: true, createdAt: true, authorId: true },
-      },
-    },
-  });
+  await requireLearnSurface();
+  const { threads } = await serverApiFetch<{ threads: HelpThreadSummary[] }>("/api/v1/help/threads");
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
@@ -49,12 +36,7 @@ export default async function MenteeHelpListPage() {
       ) : (
         <ul className="mt-8 divide-y divide-border overflow-hidden rounded-xl border bg-card">
           {threads.map((thread) => {
-            const preview = thread.messages[0];
-            const unread = mentorReplyUnread({
-              menteeId: user.id,
-              menteeLastReadAt: thread.menteeLastReadAt,
-              latestMessage: preview ? { authorId: preview.authorId, createdAt: preview.createdAt } : null,
-            });
+            const { preview, unread } = thread;
             const lessonHref = thread.chapter
               ? `/courses/${thread.course.slug}/${thread.chapter.slug}`
               : null;

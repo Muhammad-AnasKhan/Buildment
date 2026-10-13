@@ -1,231 +1,41 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { z } from "zod";
-import { prisma } from "@/server/db";
-import { requireEnrolledMentee, requireHelpThreadAccess } from "@/server/auth/guards";
-import { bypassProgressGatingForEmail } from "@/server/dev/seed-access";
-import { ChapterLockedError, assertChapterUnlocked } from "@/server/progress/gate";
-import { canReplyToHelpThread, canResolveHelpThread } from "@/server/help/access";
-import {
-  notifyMenteeHelpReply,
-  notifyMenteeHelpThreadResolved,
-  notifyMentorHelpQuestion,
-} from "@/server/email/event-notifications";
-import { queueEmail } from "@/server/email/queue";
+import { ApiError } from "@/lib/api-client";
+import { serverApiFetch } from "@/lib/api-server";
 
 export type HelpActionResult = { ok: true; threadId: string } | { ok: false; error: string };
 
-const messageBody = z
-  .string()
-  .trim()
-  .min(10, "Please add a bit more detail (at least 10 characters).")
-  .max(4000, "Message is too long (max 4000 characters).");
-
-const askFromChapterInput = z.object({
-  courseId: z.string().min(1),
-  chapterId: z.string().min(1),
-  body: messageBody,
-});
-
-const replyInput = z.object({
-  threadId: z.string().min(1),
-  body: messageBody,
-});
-
-const resolveInput = z.object({
-  threadId: z.string().min(1),
-});
-
-function revalidateHelpPaths(args: {
-  courseSlug: string;
-  chapterSlug?: string | null;
-  threadId: string;
-}) {
+// The thread's pages re-render on the next request; revalidate the ones that
+// show help state so the reply or status change appears immediately.
+function revalidateHelpPaths(threadId: string) {
   revalidatePath("/help");
-  revalidatePath(`/help/${args.threadId}`);
+  revalidatePath(`/help/${threadId}`);
   revalidatePath("/my-questions");
-  revalidatePath(`/my-questions/${args.threadId}`);
-  revalidatePath(`/courses/${args.courseSlug}`);
-  if (args.chapterSlug) {
-    revalidatePath(`/courses/${args.courseSlug}/${args.chapterSlug}`);
+  revalidatePath(`/my-questions/${threadId}`);
+  revalidatePath("/courses/[courseSlug]", "layout");
+}
+
+async function helpCall(path: string, json: unknown): Promise<HelpActionResult> {
+  try {
+    const result = await serverApiFetch<{ threadId: string }>(path, { method: "POST", json });
+    revalidateHelpPaths(result.threadId);
+    return { ok: true, threadId: result.threadId };
+  } catch (error) {
+    if (error instanceof ApiError) return { ok: false, error: error.message };
+    throw error;
   }
 }
 
 /** Mentee asks from a chapter — creates a thread or adds to the open one for this chapter. */
-export async function askMentorFromChapter(input: {
-  courseId: string;
-  chapterId: string;
-  body: string;
-}): Promise<HelpActionResult> {
-  const parsed = askFromChapterInput.safeParse(input);
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
-  }
-
-  const chapter = await prisma.chapter.findUnique({
-    where: { id: parsed.data.chapterId },
-    select: { id: true, slug: true, courseId: true, course: { select: { slug: true } } },
-  });
-  if (!chapter || chapter.courseId !== parsed.data.courseId) {
-    return { ok: false, error: "Chapter not found." };
-  }
-
-  const { enrollment, user } = await requireEnrolledMentee(chapter.courseId);
-  const bypassLocking = bypassProgressGatingForEmail(user.email ?? "");
-
-  const existingOpen = await prisma.helpThread.findFirst({
-    where: {
-      menteeId: user.id,
-      chapterId: chapter.id,
-      status: "OPEN",
-    },
-    select: { id: true },
-  });
-
-  if (!existingOpen) {
-    try {
-      await assertChapterUnlocked({
-        courseId: chapter.courseId,
-        enrollmentId: enrollment.id,
-        chapterId: chapter.id,
-        bypassLocking,
-      });
-    } catch (error) {
-      if (error instanceof ChapterLockedError) {
-        return { ok: false, error: "Finish the previous chapter before asking for help here." };
-      }
-      throw error;
-    }
-  }
-
-  const thread =
-    existingOpen ??
-    (await prisma.helpThread.create({
-      data: {
-        courseId: chapter.courseId,
-        chapterId: chapter.id,
-        menteeId: user.id,
-      },
-      select: { id: true },
-    }));
-
-  await prisma.helpMessage.create({
-    data: {
-      threadId: thread.id,
-      authorId: user.id,
-      body: parsed.data.body,
-    },
-  });
-  await prisma.helpThread.update({
-    where: { id: thread.id },
-    data: { updatedAt: new Date() },
-  });
-
-  revalidateHelpPaths({
-    courseSlug: chapter.course.slug,
-    chapterSlug: chapter.slug,
-    threadId: thread.id,
-  });
-
-  queueEmail(() =>
-    notifyMentorHelpQuestion({
-      threadId: thread.id,
-      body: parsed.data.body,
-      menteeName: user.name ?? null,
-    })
-  );
-
-  return { ok: true, threadId: thread.id };
+export async function askMentorFromChapter(input: { courseId: string; chapterId: string; body: string }) {
+  return helpCall("/api/v1/help/threads", input);
 }
 
-export async function replyToHelpThread(input: {
-  threadId: string;
-  body: string;
-}): Promise<HelpActionResult> {
-  const parsed = replyInput.safeParse(input);
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input." };
-  }
-
-  const { user, thread } = await requireHelpThreadAccess(parsed.data.threadId);
-
-  if (
-    !canReplyToHelpThread(
-      user,
-      { menteeId: thread.menteeId, status: thread.status },
-      thread.course
-    )
-  ) {
-    return { ok: false, error: "This conversation is closed." };
-  }
-
-  await prisma.helpMessage.create({
-    data: {
-      threadId: thread.id,
-      authorId: user.id,
-      body: parsed.data.body,
-    },
-  });
-  await prisma.helpThread.update({
-    where: { id: thread.id },
-    data: { updatedAt: new Date() },
-  });
-
-  revalidateHelpPaths({
-    courseSlug: thread.course.slug,
-    chapterSlug: thread.chapter?.slug,
-    threadId: thread.id,
-  });
-
-  if (user.id === thread.menteeId) {
-    queueEmail(() =>
-      notifyMentorHelpQuestion({
-        threadId: thread.id,
-        body: parsed.data.body,
-        menteeName: user.name ?? null,
-      })
-    );
-  } else {
-    queueEmail(() =>
-      notifyMenteeHelpReply({
-        threadId: thread.id,
-        body: parsed.data.body,
-        mentorName: user.name ?? null,
-      })
-    );
-  }
-
-  return { ok: true, threadId: thread.id };
+export async function replyToHelpThread(input: { threadId: string; body: string }) {
+  return helpCall(`/api/v1/help/threads/${encodeURIComponent(input.threadId)}/messages`, { body: input.body });
 }
 
-export async function resolveHelpThread(input: { threadId: string }): Promise<HelpActionResult> {
-  const parsed = resolveInput.safeParse(input);
-  if (!parsed.success) {
-    return { ok: false, error: "Invalid thread." };
-  }
-
-  const { user, thread } = await requireHelpThreadAccess(parsed.data.threadId);
-
-  if (!canResolveHelpThread(user, thread.course)) {
-    return { ok: false, error: "Only the course mentor can resolve this thread." };
-  }
-  if (thread.status === "RESOLVED") {
-    return { ok: true, threadId: thread.id };
-  }
-
-  await prisma.helpThread.update({
-    where: { id: thread.id },
-    data: { status: "RESOLVED", resolvedAt: new Date() },
-  });
-
-  revalidateHelpPaths({
-    courseSlug: thread.course.slug,
-    chapterSlug: thread.chapter?.slug,
-    threadId: thread.id,
-  });
-
-  queueEmail(() => notifyMenteeHelpThreadResolved(thread.id));
-
-  return { ok: true, threadId: thread.id };
+export async function resolveHelpThread(input: { threadId: string }) {
+  return helpCall(`/api/v1/help/threads/${encodeURIComponent(input.threadId)}/resolve`, {});
 }
