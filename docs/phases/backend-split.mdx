@@ -1,6 +1,6 @@
 ---
 title: Backend split — Next.js monolith → frontend + Express API
-status: in progress — Phases 1–4 complete 2026-10-13, Phase 5 next
+status: in progress — Phases 1–5 complete 2026-10-13, Phase 6 next
 ---
 
 # Backend split
@@ -91,6 +91,35 @@ Server Actions in the frontend call these through `serverApiFetch` and store the
 as the cookie themselves; `next-auth` and `@auth/prisma-adapter` are gone. Browser-facing API
 redirects (dev login, email confirmation, magic-link verify) are relative so they resolve against
 whatever host the web app is served from.
+
+### Phase 5 — admin endpoints
+
+Every admin page renders from `/api/v1/admin` behind an ADMIN-only middleware. With this phase no
+file under `frontend/src` reads the database any more; `src/server/db.ts` is gone and only the
+transitional Prisma generator output remains for the content scripts (Phase 6).
+
+| Endpoint | Serves |
+|---|---|
+| `GET /api/v1/admin/overview` · `GET /courses` | tile counts and shell badges, read-only course catalog |
+| `GET /api/v1/admin/organizations` · `POST /organizations` · `GET /:orgId` | tenants; creation returns the first credential pair (the secret is visible only in that response) |
+| `POST /api/v1/admin/organizations/:orgId/credentials/rotate` · `PUT /:orgId/allocations` | credential rotation, bulk course allocations (422 `COURSE_NOT_PUBLISHED`) |
+| `GET /api/v1/admin/course-requests` · `POST /:id/approve` · `POST /:id/reject` | the organisation course request queue (409 `REQUEST_ALREADY_REVIEWED`) |
+| `GET /api/v1/admin/users` · `PATCH /users/:id/instructor-access` · `POST /instructors` | accounts, instructor capability, grant by email |
+| `POST /api/v1/admin/instructor-access-requests/:id/approve` · `/reject` | learner requests for instructor tools |
+
+The admin Server Actions stay form handlers that throw on failure (the pages have no inline
+error state); they call the API through `src/server/actions/admin/call.ts`.
+
+### Phase 5 verification (2026-10-13)
+
+- `server`: 240 unit + API tests (new admin suite: access, overview, organisations and
+  credentials, allocations, course requests, users and instructor access), `tsc` and eslint clean.
+- `shared`: 67 tests. `frontend`: `tsc` clean, 70 unit tests, Turbopack production build.
+- Playwright (`e2e/admin.spec.ts` + the earlier specs, 22 tests) against `next dev` + API.
+- Learned on the way: a production build leaves a `.next` directory that `next dev` cannot reuse
+  (Turbopack's persistent cache refuses a second writer), so clear `.next` entirely before
+  starting dev; and the chapter editor route takes about a minute to compile cold on this
+  machine, so run the suite once to warm the cache before trusting navigation timeouts.
 
 ### Phase 4 — instructor endpoints
 
