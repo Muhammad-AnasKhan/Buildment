@@ -5,10 +5,15 @@ import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { playFeedback } from "@/lib/sound-feedback";
+import { apiFetch } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 import { QuizSessionContext, type QuizBlockGrade } from "@/components/learn/quiz-session-context";
 
 type QuizResultSummary = { score: number; maxScore: number; questions: number };
+
+type QuizSubmitResponse = QuizResultSummary & {
+  grades: Array<{ blockId: string; isCorrect: boolean | null; score: number | null; maxScore: number | null; selected: string[] }>;
+};
 
 function isPerfectScore(summary: QuizResultSummary | null) {
   return Boolean(summary && summary.maxScore > 0 && summary.score === summary.maxScore);
@@ -118,19 +123,12 @@ export function QuizChapterSessionClient({
     }
 
     try {
-      const response = await fetch(`/api/chapters/${encodeURIComponent(chapterId)}/quiz/submit`, {
+      const body = await apiFetch<QuizSubmitResponse>(`/api/v1/chapters/${encodeURIComponent(chapterId)}/quiz/submit`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers }),
+        json: { answers },
       });
-      const body = await response.json().catch(() => null);
-      if (!response.ok) throw new Error(body?.error ?? `Request failed (${response.status})`);
 
-      const summary = {
-        score: body.score as number,
-        maxScore: body.maxScore as number,
-        questions: body.questions as number,
-      };
+      const summary = { score: body.score, maxScore: body.maxScore, questions: body.questions };
       setScoreSummary(summary);
       setDirtyBlockIds(new Set());
 

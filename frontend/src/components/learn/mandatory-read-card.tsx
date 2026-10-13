@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { readerCard, readerCardHeader, readerEyebrow, readerTitle } from "@/components/learn/reader-theme";
 import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
 import { playFeedback } from "@/lib/sound-feedback";
+import { apiFetch } from "@/lib/api-client";
 
 type MandatoryReadCardProps = {
   title: string;
@@ -35,7 +36,8 @@ export function MandatoryReadCard({
     if (checked) playFeedback("check");
     setRead(checked);
     if (blockId) {
-      void fetch(`/api/blocks/${blockId}/respond`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ complete: checked }) });
+      // Fire-and-forget: the checkbox is optimistic, the server state catches up on refresh.
+      void apiFetch(`/api/v1/blocks/${blockId}/respond`, { method: "POST", json: { complete: checked } }).catch(() => undefined);
     }
   }
 

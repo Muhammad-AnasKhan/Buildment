@@ -12,6 +12,7 @@ import { readerCard, readerCardFooter, readerCardHeader, readerTitle } from "@/c
 import { fireMiniConfetti } from "@/components/learn/mini-confetti";
 import { playFeedback } from "@/lib/sound-feedback";
 import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
+import { ApiError, apiFetch } from "@/lib/api-client";
 import type { SanitizedQuizConfig } from "./schema";
 
 type RespondResult = {
@@ -225,31 +226,23 @@ export function QuizClient({
         return;
       }
 
-      const res = await fetch(`/api/blocks/${id}/respond`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "QUIZ", selected: nextSelected }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        if (res.status === 404 && correctOptionIds && correctOptionIds.length > 0) {
-          const correctSet = new Set(correctOptionIds);
-          const selectedSet = new Set(nextSelected);
-          const isCorrect =
-            correctSet.size === selectedSet.size && [...selectedSet].every((optionId) => correctSet.has(optionId));
-          const data: RespondResult = {
-            isCorrect,
-            score: isCorrect ? 1 : 0,
-            maxScore: 1,
-            explanation: config.explanation,
-          };
-          applyResult(data, nextSelected);
-          router.refresh();
-          return;
-        }
-        throw new Error(body?.error ?? `Request failed (${res.status})`);
+      let data: RespondResult;
+      try {
+        data = await apiFetch<RespondResult>(`/api/v1/blocks/${id}/respond`, {
+          method: "POST",
+          json: { type: "QUIZ", selected: nextSelected },
+        });
+      } catch (err) {
+        // A block the server no longer knows (stale content) still grades locally
+        // when the answer key shipped with the config.
+        const canGradeLocally = err instanceof ApiError && err.status === 404 && correctOptionIds && correctOptionIds.length > 0;
+        if (!canGradeLocally) throw err;
+        const correctSet = new Set(correctOptionIds);
+        const selectedSet = new Set(nextSelected);
+        const isCorrect =
+          correctSet.size === selectedSet.size && [...selectedSet].every((optionId) => correctSet.has(optionId));
+        data = { isCorrect, score: isCorrect ? 1 : 0, maxScore: 1, explanation: config.explanation };
       }
-      const data = (await res.json()) as RespondResult;
       applyResult(data, nextSelected);
       router.refresh();
     } catch (err) {

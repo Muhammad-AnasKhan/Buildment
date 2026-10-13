@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import type { SanitizedCodeConfig } from "./schema";
 import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
 import { playFeedback } from "@/lib/sound-feedback";
+import { apiFetch } from "@/lib/api-client";
 
 type CheckResult = {
   isCorrect: boolean | null;
@@ -202,15 +203,7 @@ export function CodeExerciseClient({
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch(`/api/blocks/${id}/respond`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source }),
-      });
-      const body = await res.json().catch(() => null);
-      if (!res.ok) {
-        throw new Error(body?.error ?? `Request failed (${res.status})`);
-      }
+      const body = await apiFetch<CheckResult>(`/api/v1/blocks/${id}/respond`, { method: "POST", json: { source } });
       setResult(body);
       if (body.isCorrect === true) playFeedback("success");
       else if (body.isCorrect === false) playFeedback("error");

@@ -14,12 +14,21 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  // The web app proxies /api/v1 to the API service, so both must be up.
   webServer: process.env.PLAYWRIGHT_NO_SERVER
     ? undefined
-    : {
-        command: "pnpm dev",
-        url: baseURL,
-        reuseExistingServer: !process.env.CI,
-        timeout: 120_000,
-      },
+    : [
+        {
+          command: "pnpm --filter @buildment/server dev",
+          url: `${process.env.API_URL ?? "http://localhost:4000"}/health`,
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+        },
+        {
+          command: "pnpm dev",
+          url: baseURL,
+          reuseExistingServer: !process.env.CI,
+          timeout: 120_000,
+        },
+      ],
 });

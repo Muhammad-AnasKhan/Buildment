@@ -11,6 +11,7 @@ import { AnswerTextareaWithMic } from "@/components/learn/answer-textarea-with-m
 import { readerBlockGrouped, readerBlockInner } from "@/components/learn/reader-block-styles";
 import { fireMiniConfetti } from "@/components/learn/mini-confetti";
 import { playFeedback } from "@/lib/sound-feedback";
+import { apiFetch } from "@/lib/api-client";
 import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
 import type { OpenQuestionGroupPosition } from "./group-position";
 import type { SanitizedOpenQuestionConfig } from "./schema";
@@ -83,19 +84,10 @@ export function OpenQuestionClient({
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch(`/api/blocks/${id}/respond`, {
+      await apiFetch(`/api/v1/blocks/${id}/respond`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "OPEN_QUESTION",
-          text,
-          url: url.trim() || undefined,
-        }),
+        json: { type: "OPEN_QUESTION", text, url: url.trim() || undefined },
       });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        throw new Error(body?.error ?? `Request failed (${res.status})`);
-      }
       setSubmitted(true);
       setIsSuccessGlow(true);
       if (containerRef.current) fireMiniConfetti(containerRef.current);

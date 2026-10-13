@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ApiError, apiFetch } from "@/lib/api-client";
 
 export type StudyClockStatus = "idle" | "running" | "paused";
 export type StudyPauseReason = "manual" | "inactive" | "hidden" | null;
@@ -28,22 +29,17 @@ async function postSession(
   keepalive = false
 ): Promise<SessionPayload | null> {
   try {
-    const res = await fetch("/api/progress/session", {
+    return await apiFetch<SessionPayload>("/api/v1/progress/session", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+      json: {
         chapterId,
         action,
         ...(deltaSeconds && deltaSeconds > 0 ? { deltaSeconds: Math.min(deltaSeconds, 20) } : {}),
-      }),
+      },
       keepalive,
     });
-    if (!res.ok) {
-      console.error("Study timer request failed", res.status);
-      return null;
-    }
-    return (await res.json()) as SessionPayload;
-  } catch {
+  } catch (error) {
+    if (error instanceof ApiError) console.error("Study timer request failed", error.status);
     return null;
   }
 }
@@ -98,9 +94,8 @@ export function useStudySession(chapterId: string) {
 
     void (async () => {
       try {
-        const res = await fetch(`/api/progress/session?chapterId=${encodeURIComponent(chapterId)}`);
-        if (!res.ok || requestEpoch.current !== epoch) return;
-        const data = (await res.json()) as SessionPayload;
+        const data = await apiFetch<SessionPayload>(`/api/v1/progress/session?chapterId=${encodeURIComponent(chapterId)}`);
+        if (requestEpoch.current !== epoch) return;
         apply(data);
         if ((data.status ?? "idle") === "idle" && tabIsVisible() && requestEpoch.current === epoch) {
           const started = await postSession(chapterId, "start");
@@ -140,17 +135,10 @@ export function useStudySession(chapterId: string) {
       const sent = flushDelta();
       if (sent <= 0) return;
       try {
-        const res = await fetch("/api/progress/heartbeat", {
+        const data = await apiFetch<SessionPayload>("/api/v1/progress/heartbeat", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chapterId: chapterRef.current, deltaSeconds: Math.min(sent, 20) }),
+          json: { chapterId: chapterRef.current, deltaSeconds: Math.min(sent, 20) },
         });
-        if (!res.ok) {
-          pendingRef.current += sent;
-          setPendingSeconds(pendingRef.current);
-          return;
-        }
-        const data = (await res.json()) as SessionPayload;
         if (typeof data.sessionActiveSeconds === "number") {
           setSyncedSession(data.sessionActiveSeconds);
         }

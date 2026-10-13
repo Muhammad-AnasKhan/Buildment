@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { QuizOptions } from "@/components/learn/quiz-options";
 import { LearnPanelShell } from "@/components/learn/content-blocks/learn-panel-shell";
 import { playFeedback } from "@/lib/sound-feedback";
+import { ApiError, apiFetch } from "@/lib/api-client";
 import type { SanitizedPredictConfig } from "./schema";
 
 type RespondResult = {
@@ -89,30 +90,18 @@ export function PredictClient({
         return;
       }
 
-      const res = await fetch(`/api/blocks/${id}/respond`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "PREDICT", selected: optionId }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => null);
-        if (res.status === 404 && correctOptionId) {
-          const isCorrect = optionId === correctOptionId;
-          applyOutcome(
-            {
-              isCorrect,
-              score: isCorrect ? 1 : 0,
-              maxScore: 1,
-              explanation: config.explanation,
-            },
-            optionId
-          );
-          router.refresh();
-          return;
-        }
-        throw new Error(body?.error ?? `Request failed (${res.status})`);
+      let outcome: RespondResult;
+      try {
+        outcome = await apiFetch<RespondResult>(`/api/v1/blocks/${id}/respond`, {
+          method: "POST",
+          json: { type: "PREDICT", selected: optionId },
+        });
+      } catch (err) {
+        // Stale block on the server: grade locally when the answer key is available.
+        if (!(err instanceof ApiError && err.status === 404 && correctOptionId)) throw err;
+        const isCorrect = optionId === correctOptionId;
+        outcome = { isCorrect, score: isCorrect ? 1 : 0, maxScore: 1, explanation: config.explanation };
       }
-      const outcome = (await res.json()) as RespondResult;
       applyOutcome(outcome, optionId);
       router.refresh();
     } catch (err) {

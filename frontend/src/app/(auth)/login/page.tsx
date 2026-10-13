@@ -149,7 +149,7 @@ export default async function LoginPage({
                 {SEED_USERS.map((seedUser) => (
                   <Link
                     key={seedUser.email}
-                    href={`/api/dev-login?email=${encodeURIComponent(seedUser.email)}${
+                    href={`/api/v1/auth/dev-login?email=${encodeURIComponent(seedUser.email)}${
                       redirectTo ? `&redirectTo=${encodeURIComponent(redirectTo)}` : ""
                     }`}
                     className="text-sm text-primary underline-offset-4 hover:underline"

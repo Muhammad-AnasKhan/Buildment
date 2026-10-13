@@ -24,7 +24,7 @@ test.describe("Buildment platform smoke", () => {
 
   test("learner can open catalog after dev login", async ({ page }) => {
     const email = "mentee1@buildment.dev";
-    const login = await page.goto(`/api/dev-login?email=${encodeURIComponent(email)}&redirectTo=/catalog`);
+    const login = await page.goto(`/api/v1/auth/dev-login?email=${encodeURIComponent(email)}&redirectTo=/catalog`);
     expect(login?.ok()).toBeTruthy();
 
     await expect(page.getByRole("heading", { name: /course catalog/i })).toBeVisible({

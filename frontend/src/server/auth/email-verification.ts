@@ -21,7 +21,7 @@ export async function sendVerificationEmail(input: {
   name?: string | null;
 }): Promise<{ sent: boolean; verifyUrl: string }> {
   const token = await createEmailVerificationToken(input.email);
-  const verifyUrl = `${appBaseUrl()}/api/auth/confirm-email?token=${encodeURIComponent(token)}`;
+  const verifyUrl = `${appBaseUrl()}/api/v1/auth/confirm-email?token=${encodeURIComponent(token)}`;
   const subject = "Verify your Buildment email";
   const html = `<p>Hi${input.name ? ` ${input.name}` : ""},</p><p>Confirm your email to start learning on Buildment.</p><p><a href="${verifyUrl}">Verify email</a></p><p>This link expires in 24 hours.</p>`;
   const text = `Verify your Buildment email: ${verifyUrl}`;

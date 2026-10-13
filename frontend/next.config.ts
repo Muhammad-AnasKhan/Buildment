@@ -1,11 +1,18 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 
+// The API runs as a separate service (see docs/phases/backend-split.mdx). Browser
+// code keeps calling same-origin paths; Next.js proxies them to API_URL and forwards
+// cookies, so the session works without CORS or token handling in the browser.
+const apiUrl = (process.env.API_URL ?? "http://localhost:4000").replace(/\/$/, "");
+
 const nextConfig: NextConfig = {
-  // Pin the workspace root — there's an unrelated lockfile in a parent directory that
-  // would otherwise make Next.js guess wrong.
+  // Pin the workspace root to the monorepo so the symlinked @buildment/shared package
+  // compiles (Turbopack refuses files outside the root) and an unrelated lockfile in a
+  // parent directory can't make Next.js guess wrong.
   turbopack: {
-    root: __dirname,
+    root: path.join(__dirname, ".."),
   },
   // Mermaid is loaded as a static script from /vendor/mermaid.min.js — never bundle it.
   serverExternalPackages: ["mermaid"],
@@ -16,6 +23,18 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com",
       },
     ],
+  },
+  async rewrites() {
+    return {
+      beforeFiles: [],
+      afterFiles: [],
+      // `fallback` runs after app routes, so Auth.js's /api/auth/[...nextauth] still wins.
+      fallback: [
+        { source: "/api/v1/:path*", destination: `${apiUrl}/api/v1/:path*` },
+        { source: "/integrations/v1/:path*", destination: `${apiUrl}/integrations/v1/:path*` },
+        { source: "/integrations/v1", destination: `${apiUrl}/integrations/v1` },
+      ],
+    };
   },
 };
 

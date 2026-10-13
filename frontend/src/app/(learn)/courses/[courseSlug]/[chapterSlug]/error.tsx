@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { HandHelping, RotateCcw, SkipForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { apiFetch } from "@/lib/api-client";
 
 // Last line of defense for the "unknown component fails safely" acceptance
 // criterion (docs/phases/m1-content-pipeline.mdx): publish-time validation
@@ -26,10 +27,9 @@ export default function ChapterReaderError({
   useEffect(() => {
     if (!courseSlug) return;
     let cancelled = false;
-    fetch(`/api/learn/courses/${encodeURIComponent(courseSlug)}/continue`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((body: { href?: string | null } | null) => {
-        if (!cancelled && body?.href) setContinueHref(body.href);
+    apiFetch<{ href: string | null }>(`/api/v1/courses/${encodeURIComponent(courseSlug)}/continue`)
+      .then((body) => {
+        if (!cancelled && body.href) setContinueHref(body.href);
       })
       .catch(() => {});
     return () => {
