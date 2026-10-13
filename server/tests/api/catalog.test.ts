@@ -44,6 +44,15 @@ describe("catalog", () => {
     expect(mine).toMatchObject({ instructorName: "Test Mentor", enrollmentLifecycle: "ACTIVE", pricingType: "FREE" });
     const paid = res.body.data.courses.find((c: { slug: string }) => c.slug === paidSlug);
     expect(paid).toMatchObject({ priceCents: 4900, enrollmentLifecycle: null });
+    expect(mine).toMatchObject({ moduleCount: 1, chapterCount: 2 });
+  });
+
+  it("lists the catalog for anonymous visitors without enrollment state", async () => {
+    const res = await request(app).get("/api/v1/catalog");
+    expect(res.status).toBe(200);
+    const mine = res.body.data.courses.find((c: { slug: string }) => c.slug === fx.course.slug);
+    expect(mine).toMatchObject({ enrollmentLifecycle: null, chapterCount: 2 });
+    expect((await request(app).get(`/api/v1/catalog/${fx.course.slug}`)).status).toBe(401);
   });
 
   it("describes one course with curriculum and access", async () => {

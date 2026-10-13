@@ -5,7 +5,8 @@ import {
   ChartNoAxesCombined,
   MessageSquareText,
 } from "lucide-react";
-import { prisma } from "@/server/db";
+import type { CatalogCourseSummary } from "@buildment/shared/api/catalog";
+import { serverApiFetch } from "@/lib/api-server";
 import { Logo } from "@/components/brand/logo";
 import { CourseCard } from "@/components/marketing/course-card";
 import { LandingHeader } from "@/components/marketing/landing-header";
@@ -54,21 +55,8 @@ function courseCatalogDescription(courseCount: number): string {
 }
 
 export default async function MarketingHomePage() {
-  const courses = await prisma.course.findMany({
-    where: { status: "PUBLISHED" },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      description: true,
-      difficulty: true,
-      estimatedHours: true,
-      projectGoal: true,
-      coverUrl: true,
-      _count: { select: { modules: true, chapters: true } },
-    },
-    orderBy: { title: "asc" },
-  });
+  // Public catalog, fetched anonymously so the landing page renders the same for everyone.
+  const { courses } = await serverApiFetch<{ courses: CatalogCourseSummary[] }>("/api/v1/catalog", { token: null });
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
@@ -142,8 +130,8 @@ export default async function MarketingHomePage() {
                       coverUrl: course.coverUrl,
                       difficulty: course.difficulty,
                       estimatedHours: course.estimatedHours,
-                      moduleCount: course._count.modules,
-                      chapterCount: course._count.chapters,
+                      moduleCount: course.moduleCount,
+                      chapterCount: course.chapterCount,
                     }}
                   />
                 ))}

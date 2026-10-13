@@ -14,13 +14,15 @@ export type CatalogCourseSummary = {
   pricingType: CoursePricingType;
   priceCents: number;
   currency: string;
+  projectGoal: string | null;
   instructorName: string | null;
-  /** The caller's enrollment lifecycle in this course, when they have one. */
+  moduleCount: number;
+  chapterCount: number;
+  /** The caller's enrollment lifecycle in this course; null for anonymous visitors. */
   enrollmentLifecycle: EnrollmentLifecycle | null;
 };
 
 export type CatalogCourseDetail = CatalogCourseSummary & {
-  projectGoal: string | null;
   modules: Array<{
     id: string;
     title: string;

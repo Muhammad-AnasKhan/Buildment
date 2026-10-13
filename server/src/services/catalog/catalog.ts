@@ -11,27 +11,34 @@ const summarySelect = {
   coverUrl: true,
   difficulty: true,
   estimatedHours: true,
+  projectGoal: true,
   pricingType: true,
   priceCents: true,
   currency: true,
   mentor: { select: { name: true } },
+  _count: { select: { modules: true, chapters: true } },
 } as const;
 
-export async function listCatalog(userId: string): Promise<CatalogCourseSummary[]> {
+/** Published courses. Anonymous visitors (the landing page) get no enrollment state. */
+export async function listCatalog(userId: string | undefined): Promise<CatalogCourseSummary[]> {
   const courses = await prisma.course.findMany({
     where: { status: "PUBLISHED" },
     orderBy: { title: "asc" },
     select: summarySelect,
   });
-  const enrollments = await prisma.enrollment.findMany({
-    where: { userId, courseId: { in: courses.map((course) => course.id) } },
-    select: { courseId: true, lifecycle: true },
-  });
+  const enrollments = userId
+    ? await prisma.enrollment.findMany({
+        where: { userId, courseId: { in: courses.map((course) => course.id) } },
+        select: { courseId: true, lifecycle: true },
+      })
+    : [];
   const lifecycleByCourse = new Map(enrollments.map((row) => [row.courseId, row.lifecycle]));
 
-  return courses.map(({ mentor, ...course }) => ({
+  return courses.map(({ mentor, _count, ...course }) => ({
     ...course,
     instructorName: mentor.name,
+    moduleCount: _count.modules,
+    chapterCount: _count.chapters,
     enrollmentLifecycle: lifecycleByCourse.get(course.id) ?? null,
   }));
 }
@@ -42,7 +49,6 @@ export async function getCatalogCourse(courseSlug: string, userId: string): Prom
     select: {
       ...summarySelect,
       status: true,
-      projectGoal: true,
       modules: {
         orderBy: { order: "asc" },
         select: {
@@ -64,11 +70,13 @@ export async function getCatalogCourse(courseSlug: string, userId: string): Prom
     where: { courseId_userId: { courseId: course.id, userId } },
     select: { lifecycle: true },
   });
-  const { mentor, status: _status, ...rest } = course;
+  const { mentor, _count, status: _status, ...rest } = course;
 
   return {
     ...rest,
     instructorName: mentor.name,
+    moduleCount: _count.modules,
+    chapterCount: _count.chapters,
     enrollmentLifecycle: enrollment?.lifecycle ?? null,
     access: !enrollment
       ? "none"
