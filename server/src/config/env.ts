@@ -1,0 +1,62 @@
+import "dotenv/config";
+import { z } from "zod";
+
+// Every environment variable the API reads is declared here and validated once at
+// boot. Modules import `env`, never `process.env`, so a missing or malformed value
+// fails fast with a readable message instead of surfacing deep inside a request.
+
+const commaList = z
+  .string()
+  .default("")
+  .transform((value) =>
+    value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean)
+  );
+
+const optionalString = z
+  .string()
+  .optional()
+  .transform((value) => (value && value.trim() ? value.trim() : undefined));
+
+const schema = z.object({
+  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  PORT: z.coerce.number().int().positive().default(4000),
+  LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
+
+  DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+
+  /** Public URL of the web app — redirects and email links point here. */
+  APP_URL: z.string().url().default("http://localhost:3000"),
+  /** Browser origins allowed to call the API directly. */
+  CORS_ORIGINS: commaList,
+
+  AUTH_RESEND_KEY: optionalString,
+  EMAIL_FROM: z.string().default("buildment <onboarding@resend.dev>"),
+  ADMIN_NOTIFY_EMAIL: commaList,
+
+  /** Shared secret an external scheduler presents to the jobs endpoints. */
+  CRON_SECRET: optionalString,
+});
+
+export type Env = z.infer<typeof schema>;
+
+function loadEnv(): Env {
+  const parsed = schema.safeParse(process.env);
+  if (!parsed.success) {
+    const problems = parsed.error.issues
+      .map((issue) => `  ${issue.path.join(".") || "(root)"}: ${issue.message}`)
+      .join("\n");
+    throw new Error(`Invalid environment configuration:\n${problems}`);
+  }
+  return {
+    ...parsed.data,
+    APP_URL: parsed.data.APP_URL.replace(/\/$/, ""),
+  };
+}
+
+export const env = loadEnv();
+
+export const isProduction = env.NODE_ENV === "production";
+export const isTest = env.NODE_ENV === "test";

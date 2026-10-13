@@ -1,0 +1,63 @@
+{
+  "name": "@buildment/server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Buildment API — Express 5 + TypeScript. Owns the database, sessions, email and background jobs.",
+  "type": "module",
+  "main": "dist/index.js",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "build": "tsc -p tsconfig.build.json && cp -R src/generated dist/generated",
+    "start": "node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint src",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prisma:generate": "prisma generate",
+    "db:ready": "prisma migrate deploy && prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "prisma db seed",
+    "db:studio": "prisma studio"
+  },
+  "dependencies": {
+    "@buildment/shared": "workspace:*",
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "pg": "^8.22.0",
+    "pino": "^10.4.0",
+    "pino-http": "^11.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-mdx": "^3.1.1",
+    "remark-parse": "^11.0.0",
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.1.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/mdast": "^4.0.4",
+    "@types/node": "^20",
+    "@types/pg": "^8.20.3",
+    "@types/supertest": "^7.2.1",
+    "eslint": "^9",
+    "pino-pretty": "^13.2.0",
+    "prisma": "^7.9.1",
+    "supertest": "^7.3.1",
+    "tsx": "^4.23.5",
+    "typescript": "^5",
+    "typescript-eslint": "^8",
+    "vitest": "^4.1.10"
+  }
+}
