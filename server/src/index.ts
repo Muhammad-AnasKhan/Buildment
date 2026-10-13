@@ -9,6 +9,11 @@ async function start() {
   logger.info("database connection established");
 
   const server = http.createServer(createApp());
+  // Keep idle connections longer than any client or proxy in front of us does
+  // (Node's fetch drops idle sockets after ~4s), otherwise a request can race a
+  // server-side close and fail with "other side closed".
+  server.keepAliveTimeout = 65_000;
+  server.headersTimeout = 66_000;
   server.listen(env.PORT, () => {
     logger.info({ port: env.PORT, env: env.NODE_ENV }, `API listening on http://localhost:${env.PORT}`);
   });

@@ -1,6 +1,6 @@
 ---
 title: Backend split — Next.js monolith → frontend + Express API
-status: in progress — Phases 1–3 complete 2026-10-13, Phase 4 next
+status: in progress — Phases 1–4 complete 2026-10-13, Phase 5 next
 ---
 
 # Backend split
@@ -91,6 +91,44 @@ Server Actions in the frontend call these through `serverApiFetch` and store the
 as the cookie themselves; `next-auth` and `@auth/prisma-adapter` are gone. Browser-facing API
 redirects (dev login, email confirmation, magic-link verify) are relative so they resolve against
 whatever host the web app is served from.
+
+### Phase 4 — instructor endpoints
+
+Every teach page renders from `/api/v1/teach`; the frontend no longer decides course, thread or
+enrollment ownership (the API answers 403). The only Prisma reads left in `frontend/src` belong
+to the admin pages and actions (Phase 5).
+
+| Endpoint | Serves |
+|---|---|
+| `GET /api/v1/teach/workspace` · `GET /courses` · `POST /courses` | sidebar courses + access state, course list, create |
+| `GET /api/v1/teach/courses/:slug/builder` · `PATCH /:id/settings` · `POST /:id/publish` · `/unpublish` · `/restore` | course builder and lifecycle (422 `COURSE_NOT_PUBLISHABLE` lists the reasons) |
+| `POST /api/v1/teach/courses/:id/modules` · `PATCH /modules/:id` · `POST /modules/:id/move` | modules (409 `ALREADY_AT_EDGE`) |
+| `POST /api/v1/teach/courses/:id/chapters` · `POST /chapters/:id/move` · `GET /chapters/:id/editor` · `PATCH /settings` · `PUT /draft` · `POST /publish` | chapter editor: draft autosave with block sync, publish validation (MDX compile, component allowlist, block configs) |
+| `GET /api/v1/teach/courses/:slug/mentees` · `GET /mentees/:enrollmentId` | roster with attention flags, mentee evaluation |
+| `POST /api/v1/teach/courses/:id/invites/assign` · `POST /invites/link` · `DELETE /invites/:inviteId` | assignment by email, reusable invite link, revoke |
+| `POST /api/v1/teach/enrollments/:id/nudge` · `POST /repair-progress` | check-in email, rollup repair |
+| `GET /api/v1/teach/courses/:slug/reports` · `GET /reports/export` (CSV) · `GET /activity` | course insights |
+| `GET /api/v1/teach/review` · `GET /review/:id` · `POST /review/:id` · `POST /review/:id/ai-draft` | review queue, verdicts, OpenRouter draft (keys live in the server env) |
+| `GET /api/v1/teach/help/threads` | mentor help inbox (thread detail/reply/resolve reuse `/api/v1/help`) |
+
+Also in this phase: presentation blocks (steps, video, recap, objectives, project preview, roadmap,
+visual blocks) get their config from `GET /api/v1/blocks/:id/state`, the landing page reads the
+now-public `GET /api/v1/catalog`, and the MDX block extraction, inline quiz config parsing and
+course publish rules moved to `@buildment/shared` so publish-time validation runs on the API.
+
+### Phase 4 verification (2026-10-13)
+
+- `server`: 231 unit + API tests (new suites: teach courses/modules/chapters, mentees + invites,
+  reports + activity + CSV, review queue + AI draft, help inbox), `tsc` and eslint clean.
+- `shared`: 67 tests (extraction, quiz config, placeholder restoration, publish rules).
+- `frontend`: `tsc` clean, 75 unit tests (the allowlist parity test pins the shared component
+  allowlist to the MDX component map), Turbopack production build.
+- Playwright (`e2e/teach.spec.ts` + the earlier specs, 20 tests) against `next dev` + API:
+  course list and builder, chapter editor, mentees/reports/activity, CSV export through the proxy,
+  review queue and help inbox, learner refused on `/api/v1/teach`.
+- Learned on the way: Node's `fetch` drops idle keep-alive sockets after ~4 s while Express closed
+  them after 5 s, so under parallel page loads a request could race a server-side close
+  ("other side closed"). The API now keeps idle connections for 65 s.
 
 ### Phase 3 — learner endpoints
 
