@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test.describe("Buildment platform smoke", () => {
   test("login page loads", async ({ page }) => {
     await page.goto("/login");
-    await expect(page.getByRole("heading", { name: /welcome back/i })).toBeVisible();
+    await expect(page.getByText("Welcome back")).toBeVisible();
   });
 
   test("integration API catalog is public", async ({ request }) => {
