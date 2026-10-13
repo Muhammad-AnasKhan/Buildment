@@ -1,7 +1,12 @@
 "use server";
 
-import { signOut } from "@/server/auth/auth";
+import { redirect } from "next/navigation";
+import { serverApiFetch } from "@/lib/api-server";
+import { clearSessionCookie } from "@/server/auth/session-cookie";
 
 export async function signOutAction() {
-  await signOut({ redirectTo: "/" });
+  // Best effort: the cookie is cleared even if the API session is already gone.
+  await serverApiFetch("/api/v1/auth/logout", { method: "POST" }).catch(() => undefined);
+  await clearSessionCookie();
+  redirect("/");
 }

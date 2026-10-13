@@ -5,7 +5,6 @@ import { Logo } from "@/components/brand/logo";
 import { ResendVerificationButton } from "@/components/auth/resend-verification-button";
 import { getSessionUser } from "@/server/auth/guards";
 import { homeRouteForRole } from "@/server/auth/access-rules";
-import { resolveEmailVerifiedForUser } from "@/server/auth/email-verification";
 
 export default async function VerifyEmailPage({
   searchParams,
@@ -14,7 +13,7 @@ export default async function VerifyEmailPage({
 }) {
   const { signup } = await searchParams;
   const user = await getSessionUser();
-  if (user && (await resolveEmailVerifiedForUser(user))) {
+  if (user && (user.role === "ADMIN" || user.emailVerified)) {
     redirect(homeRouteForRole(user.role));
   }
   const signedIn = Boolean(user);

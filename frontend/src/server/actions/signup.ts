@@ -1,23 +1,9 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { z } from "zod";
-import { prisma } from "@/server/db";
-import { hashPassword } from "@/server/auth/password";
-import {
-  ensureUserEmailVerified,
-  sendVerificationEmail,
-  shouldAutoVerifyWithoutEmailDelivery,
-} from "@/server/auth/email-verification";
-
-const signupSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(120),
-  email: z.string().trim().email("Enter a valid email"),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(128, "Password is too long"),
-});
+import type { SignupResult } from "@buildment/shared/api/auth";
+import { ApiError } from "@/lib/api-client";
+import { serverApiFetch } from "@/lib/api-server";
 
 export type SignupState = { ok: false; errors: string[] } | { ok: true };
 
@@ -25,46 +11,26 @@ export async function signupAction(
   _prev: SignupState | undefined,
   formData: FormData
 ): Promise<SignupState> {
-  const parsed = signupSchema.safeParse({
-    name: formData.get("name"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
-
-  if (!parsed.success) {
-    return { ok: false, errors: parsed.error.issues.map((i) => i.message) };
-  }
-
-  const email = parsed.data.email.toLowerCase();
-  const existing = await prisma.user.findUnique({ where: { email } });
-  if (existing) {
-    return {
-      ok: false,
-      errors: ["An account with this email already exists. Sign in instead."],
-    };
-  }
-
-  const passwordHash = hashPassword(parsed.data.password);
-  const user = await prisma.user.create({
-    data: {
-      email,
-      name: parsed.data.name,
-      passwordHash,
-      role: "MENTEE",
-      profile: {
-        create: {
-          timezone: "UTC",
-          skills: [],
-        },
+  let result: SignupResult;
+  try {
+    result = await serverApiFetch<SignupResult>("/api/v1/auth/signup", {
+      method: "POST",
+      json: {
+        name: formData.get("name"),
+        email: formData.get("email"),
+        password: formData.get("password"),
       },
-    },
-  });
-
-  if (shouldAutoVerifyWithoutEmailDelivery()) {
-    await ensureUserEmailVerified(user.id);
-    redirect(`/login?verified=1&email=${encodeURIComponent(email)}`);
+      token: null,
+    });
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { ok: false, errors: error.errors.length ? error.errors.map((issue) => issue.message) : [error.message] };
+    }
+    throw error;
   }
 
-  await sendVerificationEmail({ email, name: parsed.data.name });
+  if (result.status === "verified") {
+    redirect(`/login?verified=1&email=${encodeURIComponent(result.email)}`);
+  }
   redirect("/verify-email?signup=1");
 }

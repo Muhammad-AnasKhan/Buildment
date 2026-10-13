@@ -1,9 +1,11 @@
 "use server";
 
-import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
-import { signIn } from "@/server/auth/auth";
+import type { AuthSession } from "@buildment/shared/api/auth";
 import { safeRedirectTo } from "@/lib/safe-redirect";
+import { ApiError } from "@/lib/api-client";
+import { serverApiFetch } from "@/lib/api-server";
+import { setSessionCookie } from "@/server/auth/session-cookie";
 
 export async function signInWithPasswordAction(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -14,16 +16,20 @@ export async function signInWithPasswordAction(formData: FormData) {
     redirect("/login?error=missing");
   }
 
+  let session: AuthSession;
   try {
-    await signIn("credentials", {
-      email,
-      password,
-      redirectTo,
+    session = await serverApiFetch<AuthSession>("/api/v1/auth/login", {
+      method: "POST",
+      json: { email, password },
+      token: null,
     });
   } catch (error) {
-    if (error instanceof AuthError) {
-      redirect(`/login?error=${encodeURIComponent(error.type)}`);
+    if (error instanceof ApiError) {
+      redirect(`/login?error=${encodeURIComponent(error.code)}`);
     }
     throw error;
   }
+
+  await setSessionCookie(session.session);
+  redirect(redirectTo);
 }

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { signIn } from "@/server/auth/auth";
 import { signInWithPasswordAction } from "@/server/actions/sign-in-credentials";
+import { sendMagicLinkAction } from "@/server/actions/magic-link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,7 @@ import { Logo } from "@/components/brand/logo";
 import { LoginBrandPanel } from "@/components/marketing/login-brand-panel";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SEED_USERS, type SeedUserRole } from "@/lib/seed-data";
-import { SEED_DEV_PASSWORD } from "@/server/auth/seed-test-users";
+import { SEED_DEV_PASSWORD } from "@buildment/shared/lib/seed-test-users";
 
 function devLoginRoleLabel(role: SeedUserRole): string {
   switch (role) {
@@ -113,13 +113,7 @@ export default async function LoginPage({
                 <Separator className="flex-1" />
               </div>
 
-              <form
-                action={async (formData) => {
-                  "use server";
-                  await signIn("resend", formData);
-                }}
-                className="space-y-3"
-              >
+              <form action={sendMagicLinkAction} className="space-y-3">
                 {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
                 <div className="space-y-1.5">
                   <Label htmlFor="magic-email">Email for magic link</Label>

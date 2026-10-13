@@ -1,6 +1,7 @@
 // Browser-side client for the Buildment API. Paths are same-origin (`/api/v1/...`)
 // and proxied by next.config.ts to the API service, which keeps the session cookie
-// flowing without any token handling here.
+// flowing without any token handling here. Server Components and Server Actions
+// use `serverApiFetch` from api-server.ts instead, which talks to the API directly.
 //
 // Every first-party endpoint answers with one envelope:
 //   { success: true, data }  |  { success: false, message, code, errors? }
@@ -29,18 +30,16 @@ export type ApiRequestInit = Omit<RequestInit, "body"> & {
   json?: unknown;
 };
 
-export async function apiFetch<T>(path: string, init: ApiRequestInit = {}): Promise<T> {
-  const { json, headers, ...rest } = init;
-  const response = await fetch(path, {
-    ...rest,
-    headers: {
-      Accept: "application/json",
-      ...(json !== undefined ? { "Content-Type": "application/json" } : {}),
-      ...headers,
-    },
-    body: json !== undefined ? JSON.stringify(json) : undefined,
-  });
+export function apiHeaders(init: ApiRequestInit): Record<string, string> {
+  return {
+    Accept: "application/json",
+    ...(init.json !== undefined ? { "Content-Type": "application/json" } : {}),
+    ...(init.headers as Record<string, string> | undefined),
+  };
+}
 
+/** Unwraps the API envelope or throws `ApiError`. */
+export async function parseApiResponse<T>(response: Response): Promise<T> {
   const body = (await response.json().catch(() => null)) as Envelope<T> | null;
   if (!body || !body.success) {
     const message = body && !body.success ? body.message : `Request failed (${response.status})`;
@@ -48,4 +47,14 @@ export async function apiFetch<T>(path: string, init: ApiRequestInit = {}): Prom
     throw new ApiError(message, response.status, code, body && !body.success ? body.errors : undefined);
   }
   return body.data;
+}
+
+export async function apiFetch<T>(path: string, init: ApiRequestInit = {}): Promise<T> {
+  const { json, headers: _headers, ...rest } = init;
+  const response = await fetch(path, {
+    ...rest,
+    headers: apiHeaders(init),
+    body: json !== undefined ? JSON.stringify(json) : undefined,
+  });
+  return parseApiResponse<T>(response);
 }

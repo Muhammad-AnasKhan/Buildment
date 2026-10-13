@@ -1,13 +1,7 @@
 import "server-only";
 import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/server/db";
-import { auth } from "./auth";
-import {
-  ensureUserEmailVerified,
-  isEmailVerified,
-  resolveEmailVerifiedForUser,
-  shouldAutoVerifyWithoutEmailDelivery,
-} from "./email-verification";
+import { getSessionUser } from "./session";
 import {
   canAccessLearnSurface,
   canAccessRole,
@@ -18,13 +12,14 @@ import {
   userCanInstruct,
 } from "./access-rules";
 import { getActiveSurface } from "./surface";
-import { ensureSeedTestUserVerified, shouldAutoVerifySeedTestUser } from "./seed-test-users";
 import { canAccessHelpThread } from "@/server/help/access";
 import {
   LearnAccessError,
   resolveLearnEnrollment,
 } from "@/server/enrollment/resolve-learn-enrollment";
 
+export { getSessionUser } from "./session";
+export type { SessionUser } from "./session";
 export {
   canAccessLearnSurface,
   canAccessRole,
@@ -36,15 +31,10 @@ export {
 } from "./access-rules";
 
 // The single place authorization is decided — see docs/09-security.mdx.
-// Route handlers, server actions, and layouts call these instead of checking
+// Layouts, pages and server actions call these instead of checking
 // session/role/ownership themselves.
 
 export class ForbiddenError extends Error {}
-
-export async function getSessionUser() {
-  const session = await auth();
-  return session?.user ?? null;
-}
 
 /** Redirects to /login if there's no session. Use in layouts/pages/actions that require any signed-in user. */
 export async function requireUser() {
@@ -56,26 +46,8 @@ export async function requireUser() {
 /** Signed-in user with a verified email — required for learner/instructor product surfaces. */
 export async function requireVerifiedUser() {
   const user = await requireUser();
-  if (user.role === "ADMIN") return user;
-  if (!isEmailVerified(user.emailVerified)) {
-    if (shouldAutoVerifySeedTestUser(user.email)) {
-      const verifiedAt = await ensureSeedTestUserVerified(user.email!);
-      if (verifiedAt) {
-        return { ...user, emailVerified: verifiedAt };
-      }
-    }
-    if (shouldAutoVerifyWithoutEmailDelivery()) {
-      const verifiedAt = await ensureUserEmailVerified(user.id);
-      if (verifiedAt) {
-        return { ...user, emailVerified: verifiedAt };
-      }
-    }
-    const verifiedAt = await resolveEmailVerifiedForUser(user);
-    if (verifiedAt) {
-      return { ...user, emailVerified: verifiedAt };
-    }
-    redirect("/verify-email");
-  }
+  // The API already activates seeded / no-email-delivery accounts on /auth/me.
+  if (user.role !== "ADMIN" && !user.emailVerified) redirect("/verify-email");
   return user;
 }
 
