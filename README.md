@@ -13,27 +13,39 @@ Postgres with Mongo — the LMS stays relational; Mongo is what the FreshMarket 
 
 ## Stack
 
-Next.js 16 (App Router) · TypeScript · Tailwind CSS + shadcn/ui (Base UI) · Prisma 7 + PostgreSQL
-· Auth.js v5 · Vitest.
+Two deployables plus a shared package — see [`docs/phases/backend-split.mdx`](docs/phases/backend-split.mdx)
+for the migration status:
+
+| Folder | What | Stack |
+|---|---|---|
+| `frontend/` | Web app | Next.js 16 (App Router) · TypeScript · Tailwind + shadcn/ui · Auth.js v5 (until Phase 2) |
+| `server/` | API | Express 5 · TypeScript · Prisma 7 + PostgreSQL · Zod · Vitest + supertest |
+| `shared/` | `@buildment/shared` | Block schemas + graders, domain enums, learning-log schema, mdx remark plugins |
+
+Browser code calls same-origin `/api/v1/*`; Next.js proxies it to the API (`API_URL`). Pathment and
+other tenants call `/integrations/v1/*` on the API host directly.
 
 ## Prerequisites
 
-- Node.js 20+
-- [pnpm](https://pnpm.io)
+- Node.js 20.19+
+- [pnpm](https://pnpm.io) 10
 - Docker (for local Postgres) — or point `DATABASE_URL` at any Postgres instance instead
 
 ## Setup
 
 ```bash
-pnpm install
-cp .env.example .env        # then fill in AUTH_SECRET at minimum — see below
-docker compose up -d        # starts local Postgres on :5432
-pnpm db:ready               # migrate deploy + prisma generate (use after git pull)
-pnpm db:seed                # creates 1 mentor, 3 mentees, 1 course, 4 preview enrollments
-pnpm content:import         # sync FreshMarket chapters/blocks from content/import
-pnpm db:seed:showcase       # add idempotent activity, progress, reviews, and help conversations
-pnpm dev                    # http://localhost:3000 (predev runs prisma generate)
+pnpm install                          # installs all workspaces, builds shared/, generates Prisma clients
+cp server/.env.example server/.env    # DATABASE_URL, APP_URL, email keys
+cp frontend/.env.example frontend/.env # API_URL, AUTH_SECRET (see below), DATABASE_URL (transitional)
+docker compose up -d                  # starts local Postgres on :5432
+pnpm db:ready                         # migrate deploy + prisma generate (use after git pull)
+pnpm db:seed                          # 1 admin, 1 mentor, 3 mentees, 1 course, 4 preview enrollments
+pnpm --filter @buildment/frontend content:import   # sync FreshMarket chapters/blocks from content/import
+pnpm dev                              # API on :4000, web on :3000, shared/ rebuilding on change
 ```
+
+Run one side on its own with `pnpm --filter @buildment/server dev` or
+`pnpm --filter @buildment/frontend dev`.
 
 Generate `AUTH_SECRET`:
 
@@ -51,7 +63,7 @@ want to test real sign-in. Without them, use the dev login shortcut below.
 ### Local dev login (no OAuth/email keys needed)
 
 After seeding, the [login page](http://localhost:3000/login) lists a "dev only" sign-in link per
-seeded user (mentor + 3 mentees). Clicking one hits `/api/dev-login?email=...`, which mints a real
+seeded user (mentor + 3 mentees). Clicking one hits `/api/v1/auth/dev-login?email=...` on the API, which mints a real
 database session for that user — no Google/Resend credentials required. This route 404s when
 `NODE_ENV=production`, so it can never ship as a production auth bypass.
 
@@ -71,28 +83,33 @@ for the data-sharing boundary.
 
 ## Common commands
 
+Run from the repo root unless noted.
+
 | Command | What it does |
 |---|---|
-| `pnpm dev` | Start the dev server |
-| `pnpm build` / `pnpm start` | Production build / serve |
-| `pnpm lint` | ESLint |
-| `pnpm test` | Vitest unit tests |
-| `pnpm db:migrate` | `prisma migrate dev` |
+| `pnpm dev` | Start API, web app and the shared package watcher together |
+| `pnpm build` | Build shared → server → frontend |
+| `pnpm test` | Vitest in every workspace (server suite needs Postgres) |
+| `pnpm typecheck` / `pnpm lint` | Type-check / lint every workspace |
+| `pnpm db:migrate` | `prisma migrate dev` (server) |
 | `pnpm db:seed` | Re-run the seed script (idempotent — upserts) |
-| `pnpm db:seed:showcase` | Add realistic, repeatable demo history after the course import |
 | `pnpm db:studio` | Prisma Studio, a GUI for the local database |
-| `pnpm content:import` | Import course content from `content/import/` into the database |
-| `pnpm content:validate` | Compile-check every chapter's MDX (needs DB) |
-| `pnpm content:validate:source` | Compile-check from `content/import/` (no DB) |
-| `pnpm content:audit` | Structural audit (gates, learning logs, STYLE heuristics) |
+| `pnpm --filter @buildment/frontend db:seed:showcase` | Add realistic, repeatable demo history after the course import |
+| `pnpm --filter @buildment/frontend content:import` | Import course content from `content/import/` into the database |
+| `pnpm --filter @buildment/frontend content:validate` | Compile-check every chapter's MDX (needs DB) |
+| `pnpm --filter @buildment/frontend content:validate:source` | Compile-check from `content/import/` (no DB) |
+| `pnpm --filter @buildment/frontend content:audit` | Structural audit (gates, learning logs, STYLE heuristics) |
+
+The content scripts still live in `frontend/scripts` and move to the server in the last phase of the
+backend split.
 
 ## 15-minute demo (local)
 
 After setup, import course content and start the app:
 
 ```bash
-pnpm content:import    # FreshMarket course → Postgres (351 chapters)
-pnpm dev               # http://localhost:3000
+pnpm --filter @buildment/frontend content:import   # FreshMarket course → Postgres (351 chapters)
+pnpm dev                                           # http://localhost:3000 (API on :4000)
 ```
 
 1. **Mentee path** — dev-login as a mentee (e.g. `mentee1@example.com` from seed). Open **Dashboard → Continue** into module 1. Complete the **1.11 gate** (checklist + learning log — try the **mic** on a question). Submit the **2.7 quiz** (short answer supports dictation). On **3.10 gate**, submit the **ERD link** open question.
@@ -104,7 +121,7 @@ Full day-by-day checklist: [`docs/phases/demo-10-day.mdx`](docs/phases/demo-10-d
 
 ## Observability (optional)
 
-Sentry and PostHog are both wired to no-op unless their env vars are set — see `.env.example`.
+Sentry and PostHog are both wired to no-op unless their env vars are set — see `frontend/.env.example`.
 Nothing to configure for local development.
 
 ## Project layout

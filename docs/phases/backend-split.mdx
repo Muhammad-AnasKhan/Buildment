@@ -1,0 +1,88 @@
+---
+title: Backend split — Next.js monolith → frontend + Express API
+status: in progress — Phase 1 complete 2026-10-13, Phase 2 next
+---
+
+# Backend split
+
+Buildment currently runs UI and backend in one Next.js process. We are splitting it into two
+deployables so the API can serve the web app, a future desktop app, and third parties (Pathment
+already calls `/integrations/v1`).
+
+```
+buildment/
+├─ frontend/   Next.js app — UI only, talks to the API over HTTP
+├─ server/     Express 5 + TypeScript API — owns Prisma, auth, email, jobs
+├─ shared/     @buildment/shared — contracts both sides import (block schemas + graders,
+│              learning-log schema, seed accounts, mdx remark plugins, enums)
+├─ content/    course source material (imported by server scripts)
+└─ docs/
+```
+
+## Decisions
+
+- **TypeScript on the server.** Every backend module is already TS with Prisma-generated types,
+  and block grading schemas are shared with the UI. A JS rewrite would drop that safety for no
+  gain.
+- **Zod, not Joi, for request validation.** Same pattern as Pathment (`validations/` schemas,
+  `validateBody/Query/Params` in routes), but Zod because it is already the project's validation
+  library, infers TS types, and the block payload schemas live in `shared/`.
+- **Layering:** `routes → validations → controllers → services`. Controllers never touch Prisma.
+  Services throw typed errors from `utils/errors`; the global error handler maps them to one
+  envelope.
+- **Response envelope (first-party API `/api/v1`):**
+  success `{ success: true, data }`, error `{ success: false, message, code, errors? }`.
+  The public organisation API (`/integrations/v1`) keeps its existing snake_case bodies and
+  `{ error }` shape — Pathment depends on it.
+- **Sessions:** opaque token in the existing `Session` table (30 days). Accepted as
+  `Authorization: Bearer <token>` (desktop / third party) or the `authjs.session-token` cookie
+  (web). Phase 1 keeps Auth.js issuing the cookie; Phase 2 moves login to the API.
+- **Web wiring:** Next.js rewrites `/api/v1/*` and `/integrations/v1/*` to `API_URL`. Browser code
+  keeps calling same-origin paths; the proxy forwards cookies, so no CORS or token juggling in
+  the browser. Desktop/third-party clients call the API host directly.
+- **ESM throughout** (`unified`/`remark` are ESM-only). Server and shared compile with `tsc`;
+  dev runs through `tsx`.
+- **Prisma lives in `server/prisma`.** Until the frontend stops reading the database (Phase 6) the
+  schema has a second, clearly-marked generator that emits a client into `frontend/`.
+- **pnpm uses the hoisted linker** (`.npmrc`). Turbopack could not resolve `next` through pnpm's
+  isolated symlink layout on an ntfs3 checkout; a flat `node_modules` with the monorepo as
+  `turbopack.root` builds everywhere. Webpack builds were unaffected either way.
+
+## Phases
+
+| # | Scope | Exit criteria |
+|---|-------|---------------|
+| 1 | Repo restructure, `shared/`, server foundation (config, logger, errors, responses, validate, auth + integration-credential middlewares, rate limits, error handler), port every endpoint the browser/Pathment already calls over HTTP, Next proxy, tests | Both apps build; unit + supertest suites green; chapter reader submits blocks / timers through the API; Pathment endpoints byte-compatible |
+| 2 | Auth owned by the API: signup, login, logout, verify/resend, `me`, dev-login; frontend drops Auth.js, keeps a thin cookie + `apiFetch` | Login/signup/logout work via API; no `next-auth` import left |
+| 3 | Learner domain: dashboard, catalog, course overview, chapter reader data, progress actions, study timers, help threads, learning log, heading notes, weekly goal, enroll/checkout, profile | Learner pages render from API responses only |
+| 4 | Instructor domain: courses/modules/chapters CRUD + block sync, mentees, invites, review queue, AI review draft, reports export, nudges, instructor access | Teach pages render from API only |
+| 5 | Admin domain: organisations, credentials, allocations, users, requests | Admin pages render from API only |
+| 6 | Cleanup & ops: remove Prisma and `src/server` from frontend, delete the transitional generator, move scripts/seeds to server, in-process job scheduler, Docker/deploy files, docs refresh | Frontend has no DB dependency; CI runs both suites; deploy docs updated |
+
+## Phase 1 — endpoint map
+
+| Before (Next route) | After (server) |
+|---|---|
+| `GET /api/auth/confirm-email` | `GET /api/v1/auth/confirm-email` → 302 to `APP_URL/login?...` |
+| `GET /api/dev-login` | `GET /api/v1/auth/dev-login` (non-production only) |
+| — | `GET /api/v1/auth/me` |
+| `POST /api/blocks/:blockId/respond` | `POST /api/v1/blocks/:blockId/respond` |
+| `POST /api/chapters/:chapterId/quiz/submit` | `POST /api/v1/chapters/:chapterId/quiz/submit` |
+| `GET /api/learn/courses/:courseSlug/continue` | `GET /api/v1/courses/:courseSlug/continue` |
+| `POST /api/progress/heartbeat` | `POST /api/v1/progress/heartbeat` |
+| `GET/POST /api/progress/session` | `GET/POST /api/v1/progress/session` |
+| `GET /api/cron/inactivity-nudge` | `POST /api/v1/jobs/inactivity-nudge` (Bearer `CRON_SECRET`) |
+| `/integrations/v1/*` (9 routes) | unchanged paths and bodies |
+
+Auth.js's own handler (`/api/auth/[...nextauth]`) stays in the frontend until Phase 2.
+
+### Phase 1 verification (2026-10-13)
+
+- `shared`: 34 unit tests. `server`: 86 unit + 31 supertest API tests against Postgres, `tsc` and
+  eslint clean, compiled `dist/` boots. `frontend`: 199 unit tests, `tsc` clean, Turbopack
+  production build passes.
+- Manual: dev login through the Next proxy sets the session cookie on the web origin, `/dashboard`
+  renders with that API-minted session, anonymous users still redirect to `/login`,
+  `/integrations/v1` answers through the proxy with its legacy shapes, Auth.js routes untouched.
+- Frontend eslint still reports the repo's pre-existing React-hooks violations (262 errors at
+  `HEAD`); none are in lines this phase touched.

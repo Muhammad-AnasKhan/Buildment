@@ -97,6 +97,11 @@ full config, used everywhere else) — this is a hard requirement on Vercel, not
 
 ## Repository layout
 
+> **2026-10-13:** the backend is moving out of Next.js into `server/` (Express 5 + TypeScript),
+> with `shared/` holding the contracts both sides import. The tree below describes the frontend
+> half; see [`phases/backend-split.mdx`](phases/backend-split.mdx) for the target layout, the
+> endpoint map, and which phases remain.
+
 ```
 buildment/
 ├─ docs/
