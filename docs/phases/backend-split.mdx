@@ -1,6 +1,6 @@
 ---
 title: Backend split — Next.js monolith → frontend + Express API
-status: in progress — Phase 1 complete 2026-10-13, Phase 2 next
+status: in progress — Phases 1 and 2 complete 2026-10-13, Phase 3 next
 ---
 
 # Backend split
@@ -36,7 +36,9 @@ buildment/
   `{ error }` shape — Pathment depends on it.
 - **Sessions:** opaque token in the existing `Session` table (30 days). Accepted as
   `Authorization: Bearer <token>` (desktop / third party) or the `authjs.session-token` cookie
-  (web). Phase 1 keeps Auth.js issuing the cookie; Phase 2 moves login to the API.
+  (web). Since Phase 2 the API issues them: password login, signup, email verification, magic
+  links and logout live under `/api/v1/auth`; the web app holds only the cookie and asks
+  `/auth/me` once per request (React `cache()`).
 - **Web wiring:** Next.js rewrites `/api/v1/*` and `/integrations/v1/*` to `API_URL`. Browser code
   keeps calling same-origin paths; the proxy forwards cookies, so no CORS or token juggling in
   the browser. Desktop/third-party clients call the API host directly.
@@ -74,7 +76,30 @@ buildment/
 | `GET /api/cron/inactivity-nudge` | `POST /api/v1/jobs/inactivity-nudge` (Bearer `CRON_SECRET`) |
 | `/integrations/v1/*` (9 routes) | unchanged paths and bodies |
 
-Auth.js's own handler (`/api/auth/[...nextauth]`) stays in the frontend until Phase 2.
+### Phase 2 — auth endpoints
+
+| Endpoint | Notes |
+|---|---|
+| `POST /api/v1/auth/signup` | 201 `{ email, status: verified \| verification_sent }`; 409 `EMAIL_TAKEN` |
+| `POST /api/v1/auth/login` | sets the cookie and returns `{ user, session: { token, expiresAt } }`; 401 `INVALID_CREDENTIALS`, 403 `EMAIL_UNVERIFIED` |
+| `POST /api/v1/auth/logout` | deletes the session row, clears the cookie |
+| `GET /api/v1/auth/me` | current user; activates seeded / no-email-delivery accounts |
+| `POST /api/v1/auth/resend-verification` | with `email`: always 200; signed in: 400 `ALREADY_VERIFIED` when nothing to do |
+| `POST /api/v1/auth/magic-link` | always 200; `GET /magic-link/verify?token=` signs in (creating the account like Auth.js did) |
+
+Server Actions in the frontend call these through `serverApiFetch` and store the returned token
+as the cookie themselves; `next-auth` and `@auth/prisma-adapter` are gone. Browser-facing API
+redirects (dev login, email confirmation, magic-link verify) are relative so they resolve against
+whatever host the web app is served from.
+
+### Phase 2 verification (2026-10-13)
+
+- `server`: 127 unit + API tests (signup, login, logout, resend, magic-link request/verify/misuse).
+- `frontend`: `tsc` clean, 199 unit tests, Turbopack production build.
+- Playwright (`frontend/e2e/auth.spec.ts` + `platform.spec.ts`, 10 tests) against the production
+  build: wrong-password message, password sign-in → dashboard → sign-out, anonymous redirect,
+  signup without email delivery → immediate sign-in, duplicate-email error, magic-link request →
+  "check your email", dev login → catalog, integrations catalog/401.
 
 ### Phase 1 verification (2026-10-13)
 

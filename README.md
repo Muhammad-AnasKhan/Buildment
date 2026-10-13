@@ -18,8 +18,8 @@ for the migration status:
 
 | Folder | What | Stack |
 |---|---|---|
-| `frontend/` | Web app | Next.js 16 (App Router) · TypeScript · Tailwind + shadcn/ui · Auth.js v5 (until Phase 2) |
-| `server/` | API | Express 5 · TypeScript · Prisma 7 + PostgreSQL · Zod · Vitest + supertest |
+| `frontend/` | Web app | Next.js 16 (App Router) · TypeScript · Tailwind + shadcn/ui |
+| `server/` | API | Express 5 · TypeScript · Prisma 7 + PostgreSQL · Zod · sessions, email, jobs · Vitest + supertest |
 | `shared/` | `@buildment/shared` | Block schemas + graders, domain enums, learning-log schema, mdx remark plugins |
 
 Browser code calls same-origin `/api/v1/*`; Next.js proxies it to the API (`API_URL`). Pathment and
@@ -36,7 +36,7 @@ other tenants call `/integrations/v1/*` on the API host directly.
 ```bash
 pnpm install                          # installs all workspaces, builds shared/, generates Prisma clients
 cp server/.env.example server/.env    # DATABASE_URL, APP_URL, email keys
-cp frontend/.env.example frontend/.env # API_URL, AUTH_SECRET (see below), DATABASE_URL (transitional)
+cp frontend/.env.example frontend/.env # API_URL, DATABASE_URL (transitional)
 docker compose up -d                  # starts local Postgres on :5432
 pnpm db:ready                         # migrate deploy + prisma generate (use after git pull)
 pnpm db:seed                          # 1 admin, 1 mentor, 3 mentees, 1 course, 4 preview enrollments
@@ -47,24 +47,18 @@ pnpm dev                              # API on :4000, web on :3000, shared/ rebu
 Run one side on its own with `pnpm --filter @buildment/server dev` or
 `pnpm --filter @buildment/frontend dev`.
 
-Generate `AUTH_SECRET`:
+### Email delivery (optional for local dev)
 
-```bash
-pnpm dlx auth secret
-```
+Sessions, sign-up, verification emails and magic links are all handled by the API. Set
+`AUTH_RESEND_KEY`/`EMAIL_FROM` in `server/.env` (from [Resend](https://resend.com/api-keys)) to
+send real email. Without a key the API logs the links instead and activates new accounts
+immediately, so the whole flow stays testable offline.
 
-### Google OAuth / email magic link (optional for local dev)
-
-`AUTH_GOOGLE_ID`/`AUTH_GOOGLE_SECRET` (from the
-[Google Cloud console](https://console.cloud.google.com/apis/credentials)) and
-`AUTH_RESEND_KEY`/`EMAIL_FROM` (from [Resend](https://resend.com/api-keys)) are only needed if you
-want to test real sign-in. Without them, use the dev login shortcut below.
-
-### Local dev login (no OAuth/email keys needed)
+### Local dev login (no email keys needed)
 
 After seeding, the [login page](http://localhost:3000/login) lists a "dev only" sign-in link per
 seeded user (mentor + 3 mentees). Clicking one hits `/api/v1/auth/dev-login?email=...` on the API, which mints a real
-database session for that user — no Google/Resend credentials required. This route 404s when
+database session for that user — no email credentials required. This route 404s when
 `NODE_ENV=production`, so it can never ship as a production auth bypass.
 
 ### AI review drafts (optional)
