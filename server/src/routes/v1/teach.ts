@@ -21,6 +21,7 @@ import {
   moduleIdParams,
   moveBody,
   renameModuleBody,
+  reportsQuery,
   unpublishCourseBody,
 } from "../../validations/teach.js";
 
@@ -58,5 +59,9 @@ router.post("/courses/:courseId/invites/link", validateParams(courseIdParams), t
 router.delete("/courses/:courseId/invites/:inviteId", validateParams(inviteParams), teach.revokeInvite);
 router.post("/enrollments/:enrollmentId/nudge", validateParams(enrollmentIdParams), teach.nudgeMentee);
 router.post("/enrollments/:enrollmentId/repair-progress", validateParams(enrollmentIdParams), teach.repairProgress);
+
+router.get("/courses/:courseSlug/reports", validate({ params: courseSlugParams, query: reportsQuery }), teach.getCourseReport);
+router.get("/courses/:courseSlug/reports/export", validateParams(courseSlugParams), teach.exportCourseReport);
+router.get("/courses/:courseSlug/activity", validateParams(courseSlugParams), teach.getCourseActivity);
 
 export default router;

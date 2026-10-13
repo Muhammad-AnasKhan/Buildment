@@ -7,6 +7,7 @@ import * as chapters from "../services/teach/chapters.js";
 import * as mentees from "../services/teach/mentees.js";
 import * as invites from "../services/teach/invites.js";
 import * as enrollments from "../services/teach/enrollments.js";
+import * as reports from "../services/teach/reports.js";
 import type {
   ChapterSettingsBody,
   CourseSettingsBody,
@@ -155,4 +156,21 @@ export async function nudgeMentee(req: Request, res: Response) {
 export async function repairProgress(req: Request, res: Response) {
   await enrollments.repairProgress(req.user!, param(req, "enrollmentId"));
   noContent(res);
+}
+
+// GET /api/v1/teach/courses/:courseSlug/reports?chapterId=
+export async function getCourseReport(req: Request, res: Response) {
+  const { chapterId } = req.query as { chapterId?: string };
+  ok(res, await reports.loadCourseReport(req.user!, param(req, "courseSlug"), chapterId));
+}
+
+// GET /api/v1/teach/courses/:courseSlug/reports/export — CSV download, not the JSON envelope
+export async function exportCourseReport(req: Request, res: Response) {
+  const { filename, csv } = await reports.exportCourseReportCsv(req.user!, param(req, "courseSlug"));
+  res.attachment(filename).type("text/csv; charset=utf-8").send(csv);
+}
+
+// GET /api/v1/teach/courses/:courseSlug/activity
+export async function getCourseActivity(req: Request, res: Response) {
+  ok(res, await reports.loadCourseActivity(req.user!, param(req, "courseSlug")));
 }

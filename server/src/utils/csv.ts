@@ -1,10 +1,7 @@
-// Minimal RFC 4180 escaping for report CSV exports.
+// Minimal RFC 4180 escaping for report exports.
 
 export function csvEscape(value: string): string {
-  if (/[",\n]/.test(value)) {
-    return `"${value.replaceAll('"', '""')}"`;
-  }
-  return value;
+  return /[",\n]/.test(value) ? `"${value.replaceAll('"', '""')}"` : value;
 }
 
 export function toCsv(rows: string[][]): string {

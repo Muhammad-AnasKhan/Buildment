@@ -1,13 +1,12 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { Activity, CalendarDays, Clock3, Users, type LucideIcon } from "lucide-react";
+import type { CourseActivityView } from "@buildment/shared/api/teach";
 import { CourseInsightsTabs } from "@/components/teach/course-insights-tabs";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { prisma } from "@/server/db";
-import { requireMentorOfCourse } from "@/server/auth/guards";
+import { requireTeachSurface } from "@/server/auth/guards";
+import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { formatStudyHours } from "@/lib/format-study-duration";
-import { enrollmentLearnerEmail, enrollmentLearnerLabel } from "@/lib/enrollment-display";
 
 export default async function CourseActivityPage({
   params,
@@ -15,57 +14,10 @@ export default async function CourseActivityPage({
   params: Promise<{ courseSlug: string }>;
 }) {
   const { courseSlug } = await params;
-  const course = await prisma.course.findUnique({
-    where: { slug: courseSlug },
-    select: { id: true, slug: true, title: true },
-  });
-  if (!course) notFound();
-  await requireMentorOfCourse(course.id);
-
-  const since = new Date();
-  since.setUTCDate(since.getUTCDate() - 13);
-  since.setUTCHours(0, 0, 0, 0);
-
-  const days = Array.from({ length: 14 }, (_, i) => {
-    const d = new Date(since);
-    d.setUTCDate(since.getUTCDate() + i);
-    return d.toISOString().slice(0, 10);
-  });
-
-  const [enrollments, activityRows] = await Promise.all([
-    prisma.enrollment.findMany({
-      where: { courseId: course.id },
-      include: {
-        user: { select: { name: true, email: true } },
-        learnerProfile: { select: { email: true } },
-      },
-      orderBy: { createdAt: "asc" },
-    }),
-    prisma.dailyActivity.findMany({
-      where: { enrollment: { courseId: course.id }, date: { gte: since } },
-      select: { enrollmentId: true, date: true, activeSeconds: true },
-    }),
-  ]);
-
-  const grid = new Map<string, number>();
-  for (const row of activityRows) {
-    const key = `${row.enrollmentId}:${row.date.toISOString().slice(0, 10)}`;
-    grid.set(key, (grid.get(key) ?? 0) + row.activeSeconds);
-  }
-
-  const today = days.at(-1) ?? "";
-  const lastSevenDays = new Set(days.slice(-7));
-  const totalSeconds = activityRows.reduce((sum, row) => sum + row.activeSeconds, 0);
-  const todaySeconds = activityRows.reduce(
-    (sum, row) => sum + (row.date.toISOString().slice(0, 10) === today ? row.activeSeconds : 0),
-    0
+  await requireTeachSurface();
+  const { course, days, rows, metrics, hasActivity } = await serverApiFetchOrNotFound<CourseActivityView>(
+    `/api/v1/teach/courses/${encodeURIComponent(courseSlug)}/activity`
   );
-  const activeLearners = new Set(
-    activityRows
-      .filter((row) => lastSevenDays.has(row.date.toISOString().slice(0, 10)) && row.activeSeconds > 0)
-      .map((row) => row.enrollmentId)
-  ).size;
-  const averageSeconds = enrollments.length > 0 ? Math.round(totalSeconds / enrollments.length) : 0;
 
   return (
     <div className="space-y-7 pb-12">
@@ -81,7 +33,7 @@ export default async function CourseActivityPage({
 
       <CourseInsightsTabs courseSlug={course.slug} active="activity" />
 
-      {enrollments.length === 0 ? (
+      {rows.length === 0 ? (
         <div className="flex flex-col items-center rounded-2xl border border-dashed bg-card/50 px-6 py-16 text-center">
           <span className="grid size-12 place-items-center rounded-2xl border bg-background">
             <Activity className="size-5 text-muted-foreground" />
@@ -100,10 +52,10 @@ export default async function CourseActivityPage({
       ) : (
         <>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <ActivityMetric icon={Users} label="Active learners" value={`${activeLearners}/${enrollments.length}`} detail="Active in the last 7 days" />
-            <ActivityMetric icon={Clock3} label="Estimated study time" value={formatStudyHours(totalSeconds)} detail="Across the last 14 days" />
-            <ActivityMetric icon={Activity} label="Estimated average per learner" value={formatStudyHours(averageSeconds)} detail="Across this period" />
-            <ActivityMetric icon={CalendarDays} label="Estimated today" value={formatStudyHours(todaySeconds)} detail="Recorded in UTC" />
+            <ActivityMetric icon={Users} label="Active learners" value={`${metrics.activeLearners}/${metrics.learnerCount}`} detail="Active in the last 7 days" />
+            <ActivityMetric icon={Clock3} label="Estimated study time" value={formatStudyHours(metrics.totalSeconds)} detail="Across the last 14 days" />
+            <ActivityMetric icon={Activity} label="Estimated average per learner" value={formatStudyHours(metrics.averageSeconds)} detail="Across this period" />
+            <ActivityMetric icon={CalendarDays} label="Estimated today" value={formatStudyHours(metrics.todaySeconds)} detail="Recorded in UTC" />
           </div>
 
           <section className="overflow-hidden rounded-2xl border bg-card shadow-sm">
@@ -139,56 +91,48 @@ export default async function CourseActivityPage({
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {enrollments.map((enrollment) => {
-                    const learnerTotal = days.reduce(
-                      (sum, day) => sum + (grid.get(`${enrollment.id}:${day}`) ?? 0),
-                      0
-                    );
-                    return (
-                      <tr key={enrollment.id} className="group transition-colors hover:bg-muted/30">
-                        <td className="sticky left-0 z-10 bg-card px-4 py-3 transition-colors group-hover:bg-muted/30 sm:px-6">
-                          <Link
-                            href={`/courses/${course.slug}/mentees/${enrollment.id}`}
-                            className="block max-w-44 truncate font-medium underline-offset-2 hover:underline"
-                          >
-                            {enrollmentLearnerLabel(enrollment)}
-                          </Link>
-                          {enrollment.user?.name && enrollmentLearnerEmail(enrollment) ? (
-                            <span className="block max-w-44 truncate text-xs text-muted-foreground">
-                              {enrollmentLearnerEmail(enrollment)}
+                  {rows.map((row) => (
+                    <tr key={row.enrollmentId} className="group transition-colors hover:bg-muted/30">
+                      <td className="sticky left-0 z-10 bg-card px-4 py-3 transition-colors group-hover:bg-muted/30 sm:px-6">
+                        <Link
+                          href={`/courses/${course.slug}/mentees/${row.enrollmentId}`}
+                          className="block max-w-44 truncate font-medium underline-offset-2 hover:underline"
+                        >
+                          {row.label}
+                        </Link>
+                        {row.email && row.email !== row.label ? (
+                          <span className="block max-w-44 truncate text-xs text-muted-foreground">{row.email}</span>
+                        ) : null}
+                      </td>
+                      {days.map((day, index) => {
+                        const seconds = row.seconds[index] ?? 0;
+                        const minutes = Math.round(seconds / 60);
+                        return (
+                          <td key={day} className="px-1.5 py-3 text-center">
+                            <span
+                              className={cn(
+                                "inline-grid size-9 place-items-center rounded-lg text-[11px] font-medium tabular-nums",
+                                activityCellClass(seconds)
+                              )}
+                              title={`${day}: ${formatStudyHours(seconds)}`}
+                              aria-label={`${day}, ${formatStudyHours(seconds)}`}
+                            >
+                              {seconds > 0 ? minutes : "—"}
                             </span>
-                          ) : null}
-                        </td>
-                        {days.map((day) => {
-                          const seconds = grid.get(`${enrollment.id}:${day}`) ?? 0;
-                          const minutes = Math.round(seconds / 60);
-                          return (
-                            <td key={day} className="px-1.5 py-3 text-center">
-                              <span
-                                className={cn(
-                                  "inline-grid size-9 place-items-center rounded-lg text-[11px] font-medium tabular-nums",
-                                  activityCellClass(seconds)
-                                )}
-                                title={`${day}: ${formatStudyHours(seconds)}`}
-                                aria-label={`${day}, ${formatStudyHours(seconds)}`}
-                              >
-                                {seconds > 0 ? minutes : "—"}
-                              </span>
-                            </td>
-                          );
-                        })}
-                        <td className="sticky right-0 min-w-20 whitespace-nowrap bg-card px-4 py-3 text-right text-xs font-medium tabular-nums transition-colors group-hover:bg-muted/30">
-                          {formatStudyHours(learnerTotal)}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                          </td>
+                        );
+                      })}
+                      <td className="sticky right-0 min-w-20 whitespace-nowrap bg-card px-4 py-3 text-right text-xs font-medium tabular-nums transition-colors group-hover:bg-muted/30">
+                        {formatStudyHours(row.totalSeconds)}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
           </section>
 
-          {activityRows.length === 0 ? (
+          {!hasActivity ? (
             <div className="rounded-xl border border-dashed bg-muted/20 p-6 text-center text-sm text-muted-foreground">
               No study sessions were recorded in this 14-day window. The enrolled learners remain visible so you can follow up directly.
             </div>
