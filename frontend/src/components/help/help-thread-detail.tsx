@@ -14,8 +14,8 @@ import { HelpNoteComposer } from "./help-note-composer";
 import { helpOutlineButton, helpPanel } from "./help-styles";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/app-toast";
-import type { HelpMessageView } from "./help-types";
-import { helpUiCopy as copy } from "@/lib/help-ui-copy";
+import type { HelpMessageView } from "@buildment/shared/api/help";
+import { helpUiCopy as copy } from "@buildment/shared/lib/help-ui-copy";
 
 type BaseProps = {
   threadId: string | null;

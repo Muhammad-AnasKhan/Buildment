@@ -1,15 +1,15 @@
 import type { MDXComponents } from "next-mdx-remote-client/rsc";
 import { MDXRemote } from "next-mdx-remote-client/rsc";
 import remarkGfm from "remark-gfm";
-import { remarkChecklist } from "./remark-checklist";
-import { remarkLearningLog } from "./remark-learning-log";
-import { remarkMermaid } from "./remark-mermaid";
+import { remarkChecklist } from "@buildment/shared/mdx/remark-checklist";
+import { remarkLearningLog } from "@buildment/shared/mdx/remark-learning-log";
+import { remarkMermaid } from "@buildment/shared/mdx/remark-mermaid";
 import { mdxComponents } from "./components";
-import { collectUnknownComponents } from "./extract";
-import { restoreInteractiveBlockTags } from "./restore-block-tags";
+import { collectUnknownComponents } from "@buildment/shared/mdx/extract";
+import { restoreInteractiveBlockTags } from "@buildment/shared/mdx/restore-block-tags";
 import { transformVisualFences } from "./transform-visual-fences";
 import { rehypePrettyCodePlugins } from "./rehype-pretty-code-config";
-import { chapterBodyForReader } from "@/lib/mdx-frontmatter";
+import { chapterBodyForReader } from "@buildment/shared/lib/mdx-frontmatter";
 
 function UnsupportedBlock({
   name,

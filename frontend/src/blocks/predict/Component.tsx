@@ -1,5 +1,5 @@
 import { fetchBlockState } from "@/blocks/block-state";
-import type { SanitizedPredictConfig } from "./schema";
+import type { SanitizedPredictConfig } from "@buildment/shared/blocks/predict/schema";
 import { PredictClient } from "./PredictClient";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 

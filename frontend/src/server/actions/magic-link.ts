@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { safeRedirectTo } from "@/lib/safe-redirect";
+import { safeRedirectTo } from "@buildment/shared/lib/safe-redirect";
 import { serverApiFetch } from "@/lib/api-server";
 
 /** Emails a one-time sign-in link; the API answers the same way whether or not the address is known. */

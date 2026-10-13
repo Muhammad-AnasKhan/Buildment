@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { assignByEmails, revokeInvite } from "@/server/actions/invites";
 import { InviteLinkManager } from "@/components/teach/invite-link-manager";
-import type { CourseMenteesView } from "@/server/mentor-dashboard/types";
+import type { CourseMenteesView } from "@buildment/shared/api/teach";
 
 export type AssignmentQuery = { enrolled?: string; invited?: string; emailFailed?: string; assignError?: string };
 

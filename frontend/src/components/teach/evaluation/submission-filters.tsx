@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { EvaluationSubmission } from "./types";
+import type { EvaluationSubmission } from "@buildment/shared/api/teach";
 import { SubmissionCard } from "./submission-card";
 
 const filters = ["All", "Needs review", "Needs revision", "Incorrect", "Reviewed", "Quiz", "Predict", "Code", "Open question"] as const;

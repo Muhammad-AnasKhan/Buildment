@@ -1,5 +1,5 @@
 import { fetchBlockState } from "@/blocks/block-state";
-import type { ProjectPreviewConfig } from "./schema";
+import type { ProjectPreviewConfig } from "@buildment/shared/blocks/project-preview/schema";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 
 export async function ProjectPreviewComponent({

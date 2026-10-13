@@ -6,7 +6,7 @@ import { ArrowUp, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { markChapterComplete } from "@/server/actions/progress";
 import { acknowledgeStreakMilestone } from "@/server/actions/weekly-goal";
-import type { StreakMilestone } from "@/server/progress/streak";
+import type { StreakMilestone } from "@buildment/shared/lib/streak";
 import { cn } from "@/lib/utils";
 import { fireMiniConfetti } from "@/components/learn/mini-confetti";
 import { ChapterCompleteCelebrationModal } from "@/components/learn/chapter-complete-celebration-modal";

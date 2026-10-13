@@ -6,7 +6,7 @@ import type { HelpThreadSummary } from "@buildment/shared/api/help";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { cn } from "@/lib/utils";
-import { helpUiCopy as copy } from "@/lib/help-ui-copy";
+import { helpUiCopy as copy } from "@buildment/shared/lib/help-ui-copy";
 
 export default async function MenteeHelpListPage() {
   await requireLearnSurface();

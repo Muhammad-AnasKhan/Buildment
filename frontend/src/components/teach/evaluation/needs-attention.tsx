@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight, CheckCircle2, CircleAlert, CircleHelp, ClockAlert, RotateCcw, XCircle } from "lucide-react";
-import type { EvaluationAttention } from "./types";
+import type { EvaluationAttention } from "@buildment/shared/api/teach";
 
 const iconByKind = { review: CircleAlert, revision: RotateCcw, help: CircleHelp, incorrect: XCircle, stalled: ClockAlert, inactive: ClockAlert } as const;
 

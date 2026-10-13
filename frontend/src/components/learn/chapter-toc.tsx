@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import type { Heading } from "@/lib/mdx-headings";
+import type { Heading } from "@buildment/shared/lib/mdx-headings";
 
 type ChapterTocProps = {
   headings: Heading[];

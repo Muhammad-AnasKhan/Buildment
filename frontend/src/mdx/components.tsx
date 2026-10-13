@@ -40,7 +40,7 @@ import { Checklist } from "@/components/learn/checklist";
 import { LearningLog } from "@/components/learn/learning-log";
 import { GlossaryTerm } from "@/components/learn/glossary-term";
 import { cn } from "@/lib/utils";
-import { slugify } from "@/lib/mdx-headings";
+import { slugify } from "@buildment/shared/lib/mdx-headings";
 import { MdxCodeElement, MdxCodeFigure, MdxCodePre } from "@/mdx/code-block";
 import { HeadingNoteButton } from "@/components/learn/heading-note";
 

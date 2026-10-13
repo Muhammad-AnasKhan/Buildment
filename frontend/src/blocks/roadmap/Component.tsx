@@ -1,5 +1,5 @@
 import { fetchBlockState } from "@/blocks/block-state";
-import type { RoadmapConfig } from "./schema";
+import type { RoadmapConfig } from "@buildment/shared/blocks/roadmap/schema";
 import { RoadmapClient } from "./RoadmapClient";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 

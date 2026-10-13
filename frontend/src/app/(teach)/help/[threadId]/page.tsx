@@ -4,7 +4,7 @@ import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { HelpThreadDetail as HelpThreadDetailPanel } from "@/components/help/help-thread-detail";
 import { MentorMeetAside } from "@/components/help/mentor-meet-aside";
-import { helpUiCopy as copy } from "@/lib/help-ui-copy";
+import { helpUiCopy as copy } from "@buildment/shared/lib/help-ui-copy";
 
 export default async function MentorHelpThreadPage({
   params,

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, CircleAlert } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import type { MenteeRosterItem } from "@/server/mentor-dashboard/types";
+import type { MenteeRosterItem } from "@buildment/shared/api/teach";
 
 export function MenteesNeedingAttention({ mentees }: { mentees: MenteeRosterItem[] }) {
   return <section aria-labelledby="attention-title" className="rounded-2xl border bg-card p-5">

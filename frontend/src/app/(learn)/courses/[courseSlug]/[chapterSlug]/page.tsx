@@ -7,7 +7,7 @@ import { LearnAccessDenied, forbiddenToLearnReason } from "@/components/learn/le
 import { ChapterMdx } from "@/mdx/compile";
 import { QuizChapterWizard } from "@/components/learn/quiz-chapter-wizard";
 import { stripInteractiveBlockTags } from "@/lib/strip-interactive-block-tags";
-import { extractHeadings } from "@/lib/mdx-headings";
+import { extractHeadings } from "@buildment/shared/lib/mdx-headings";
 import { ChapterReaderShell } from "@/components/learn/chapter-reader-shell";
 import { LockedChapterView } from "@/components/learn/locked-chapter";
 import { signOutAction } from "@/server/auth/actions";

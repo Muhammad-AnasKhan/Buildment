@@ -16,7 +16,7 @@ import {
   quizDraftFromJsxProperties,
   quizDraftToJsxProperties,
   type QuizOptionDraft,
-} from "@/blocks/quiz/quiz-editor-utils";
+} from "@buildment/shared/blocks/quiz/editor-utils";
 import { cn } from "@/lib/utils";
 
 function readPropertiesFromMdast(mdastNode: JsxEditorProps["mdastNode"], propNames: string[]) {

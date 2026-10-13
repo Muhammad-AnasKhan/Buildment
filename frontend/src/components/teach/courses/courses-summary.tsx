@@ -1,5 +1,5 @@
 import { BookOpen, CircleHelp, FileText, MessageSquareText, Send, Users } from "lucide-react";
-import type { MentorCoursesView } from "@/server/mentor-dashboard/types";
+import type { MentorCoursesView } from "@buildment/shared/api/teach";
 
 export function CoursesSummary({ summary }: { summary: MentorCoursesView["summary"] }) {
   const metrics = [

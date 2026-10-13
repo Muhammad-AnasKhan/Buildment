@@ -1,6 +1,6 @@
 import { fetchBlockState } from "@/blocks/block-state";
 import { sanitizeBlockConfig } from "@/mdx/sanitize";
-import type { SanitizedCodeConfig } from "./schema";
+import type { SanitizedCodeConfig } from "@buildment/shared/blocks/code/schema";
 import { CodeExerciseClient } from "./CodeExerciseClient";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 

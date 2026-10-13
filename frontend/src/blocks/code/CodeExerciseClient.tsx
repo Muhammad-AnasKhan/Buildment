@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { SanitizedCodeConfig } from "./schema";
+import type { SanitizedCodeConfig } from "@buildment/shared/blocks/code/schema";
 import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
 import { playFeedback } from "@/lib/sound-feedback";
 import { apiFetch } from "@/lib/api-client";

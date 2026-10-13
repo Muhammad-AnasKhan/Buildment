@@ -1,5 +1,5 @@
 import { fetchBlockState } from "@/blocks/block-state";
-import type { SanitizedOpenQuestionConfig } from "./schema";
+import type { SanitizedOpenQuestionConfig } from "@buildment/shared/blocks/open-question/schema";
 import { OpenQuestionClient } from "./OpenQuestionClient";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 

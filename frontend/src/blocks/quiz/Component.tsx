@@ -1,5 +1,5 @@
 import { fetchBlockState } from "@/blocks/block-state";
-import type { SanitizedQuizConfig } from "./schema";
+import type { SanitizedQuizConfig } from "@buildment/shared/blocks/quiz/schema";
 import { QuizClient } from "./QuizClient";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 

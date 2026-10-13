@@ -1,6 +1,6 @@
 import { BookOpenCheck, CircleHelp, Clock3, Gauge, ListChecks, MessageSquareMore, Trophy, Waypoints } from "lucide-react";
 import { formatStudyAmount } from "@/lib/format-study-duration";
-import type { MenteeEvaluation } from "./types";
+import type { MenteeEvaluation } from "@buildment/shared/api/teach";
 
 const icons = [Gauge, BookOpenCheck, Trophy, MessageSquareMore, Clock3, Waypoints, ListChecks, CircleHelp];
 

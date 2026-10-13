@@ -6,16 +6,16 @@ import { CheckCircle2, Clock3, Link2, PenLine, RotateCcw, SendHorizontal } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { parseSafeSubmissionUrl } from "@/lib/safe-submission-url";
+import { parseSafeSubmissionUrl } from "@buildment/shared/lib/safe-submission-url";
 import { AnswerTextareaWithMic } from "@/components/learn/answer-textarea-with-mic";
 import { readerBlockGrouped, readerBlockInner } from "@/components/learn/reader-block-styles";
 import { fireMiniConfetti } from "@/components/learn/mini-confetti";
 import { playFeedback } from "@/lib/sound-feedback";
 import { apiFetch } from "@/lib/api-client";
 import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
-import type { OpenQuestionGroupPosition } from "./group-position";
-import type { SanitizedOpenQuestionConfig } from "./schema";
-import { openQuestionUrlPresentation, validateOpenQuestionPayload } from "./schema";
+import type { OpenQuestionGroupPosition } from "@buildment/shared/blocks/open-question/group-position";
+import type { SanitizedOpenQuestionConfig } from "@buildment/shared/blocks/open-question/schema";
+import { openQuestionUrlPresentation, validateOpenQuestionPayload } from "@buildment/shared/blocks/open-question/schema";
 
 export type OpenQuestionInitialState = {
   status: string;

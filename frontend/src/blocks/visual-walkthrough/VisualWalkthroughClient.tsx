@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Expand, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { VisualWalkthroughConfig } from "./schema";
+import type { VisualWalkthroughConfig } from "@buildment/shared/blocks/visual-walkthrough/schema";
 
 export function VisualWalkthroughClient({ title, steps }: VisualWalkthroughConfig) {
   const [active, setActive] = useState(0);

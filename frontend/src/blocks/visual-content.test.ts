@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { VideoConfigSchema } from "./video/schema";
-import { VisualWalkthroughConfigSchema } from "./visual-walkthrough/schema";
-import { VisualDiagramConfigSchema } from "./visual-diagram/schema";
-import { RoadmapConfigSchema } from "./roadmap/schema";
+import { VideoConfigSchema } from "@buildment/shared/blocks/video/schema";
+import { VisualWalkthroughConfigSchema } from "@buildment/shared/blocks/visual-walkthrough/schema";
+import { VisualDiagramConfigSchema } from "@buildment/shared/blocks/visual-diagram/schema";
+import { RoadmapConfigSchema } from "@buildment/shared/blocks/roadmap/schema";
 
 describe("link-based visual content", () => {
   it("accepts trusted video providers and rejects arbitrary pages", () => {

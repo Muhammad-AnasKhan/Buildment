@@ -4,8 +4,8 @@ import { GraduationCap, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { setActiveSurfaceAction } from "@/server/actions/active-surface";
 import { requestInstructorAccessAction } from "@/server/actions/instructor-access";
-import type { ActiveSurface } from "@/lib/active-surface";
-import type { InstructorAccessView } from "@/lib/instructor-access";
+import type { ActiveSurface } from "@buildment/shared/lib/active-surface";
+import type { InstructorAccessView } from "@buildment/shared/lib/instructor-access";
 
 export function SurfaceSwitcher({
   current,

@@ -16,7 +16,7 @@ import { saveLearningLogAnswers } from "@/server/actions/learning-log";
 import {
   parseLearningLogQuestions,
   type LearningLogAnswers,
-} from "@/lib/learning-log";
+} from "@buildment/shared/lib/learning-log";
 
 export type LearningLogQuestionData = {
   id: string;

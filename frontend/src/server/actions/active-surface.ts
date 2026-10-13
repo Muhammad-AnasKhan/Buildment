@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { type ActiveSurface, isActiveSurface } from "@/lib/active-surface";
+import { type ActiveSurface, isActiveSurface } from "@buildment/shared/lib/active-surface";
 import { requireVerifiedUser, userCanInstruct } from "@/server/auth/guards";
 import { canAccessTeachSurface, surfaceHomeRoute } from "@/server/auth/access-rules";
 import { setActiveSurfaceCookie } from "@/server/auth/surface";

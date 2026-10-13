@@ -1,4 +1,4 @@
-import type { EvaluationReflection } from "./types";
+import type { EvaluationReflection } from "@buildment/shared/api/teach";
 
 export function LearnerReflections({ items }: { items: EvaluationReflection[] }) {
   return (

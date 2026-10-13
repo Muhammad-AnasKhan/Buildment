@@ -8,7 +8,7 @@ import { QuizOptions } from "@/components/learn/quiz-options";
 import { LearnPanelShell } from "@/components/learn/content-blocks/learn-panel-shell";
 import { playFeedback } from "@/lib/sound-feedback";
 import { ApiError, apiFetch } from "@/lib/api-client";
-import type { SanitizedPredictConfig } from "./schema";
+import type { SanitizedPredictConfig } from "@buildment/shared/blocks/predict/schema";
 
 type RespondResult = {
   isCorrect: boolean | null;

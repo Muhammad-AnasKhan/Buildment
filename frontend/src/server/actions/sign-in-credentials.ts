@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import type { AuthSession } from "@buildment/shared/api/auth";
-import { safeRedirectTo } from "@/lib/safe-redirect";
+import { safeRedirectTo } from "@buildment/shared/lib/safe-redirect";
 import { ApiError } from "@/lib/api-client";
 import { serverApiFetch } from "@/lib/api-server";
 import { setSessionCookie } from "@/server/auth/session-cookie";

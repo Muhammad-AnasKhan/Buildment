@@ -3,7 +3,7 @@ import { ArrowUpRight, FileText, GitFork, Globe2, Network, PlaySquare } from "lu
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { ProjectEvidence as ProjectEvidenceItem } from "./types";
+import type { ProjectEvidence as ProjectEvidenceItem } from "@buildment/shared/api/teach";
 
 const iconByType = { Repository: GitFork, "Demo video": PlaySquare, "Deployed application": Globe2, "Architecture / ERD": Network, "Article / document": FileText, "Other evidence": FileText } as const;
 
