@@ -8,7 +8,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const BASE = path.resolve(__dirname, "../content/import/multi-vendor-marketplace");
+const BASE = path.resolve(__dirname, "../../content/import/multi-vendor-marketplace");
 
 /** @type {Record<string, Record<string, { term: string; plainEnglish: string; whyItMatters: string } | null>>} */
 const MODULE_ALERTS = {

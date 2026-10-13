@@ -36,8 +36,8 @@ import { VisualWalkthroughConfigSchema } from "../src/blocks/visual-walkthrough/
 import { VisualDiagramConfigSchema } from "../src/blocks/visual-diagram/schema";
 import { RoadmapConfigSchema } from "../src/blocks/roadmap/schema";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const COURSE_SOURCE_DIR = path.resolve(__dirname, "../content/import/multi-vendor-marketplace");
-const COURSE_OUTPUT_DIR = path.resolve(__dirname, "../content/transformed/multi-vendor-marketplace");
+const COURSE_SOURCE_DIR = path.resolve(__dirname, "../../content/import/multi-vendor-marketplace");
+const COURSE_OUTPUT_DIR = path.resolve(__dirname, "../../content/transformed/multi-vendor-marketplace");
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });

@@ -10,7 +10,7 @@ import { load as loadYaml } from "js-yaml";
 import { readLessonFiles, readModuleDirs } from "./import-course";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const COURSE_DIR = path.resolve(__dirname, "../content/import/multi-vendor-marketplace");
+const COURSE_DIR = path.resolve(__dirname, "../../content/import/multi-vendor-marketplace");
 
 const DEMO_MODULES = new Set([1, 2, 3]);
 const SKIP_DIRS = new Set(["scripts"]);
