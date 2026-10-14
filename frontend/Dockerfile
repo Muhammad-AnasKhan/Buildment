@@ -10,6 +10,8 @@ WORKDIR /app
 ENV npm_config_fetch_retries=5 npm_config_fetch_timeout=60000
 
 FROM base AS build
+ARG API_URL=http://localhost:4000
+ENV API_URL=${API_URL}
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY . .
