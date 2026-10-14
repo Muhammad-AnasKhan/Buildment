@@ -40,6 +40,11 @@ export function apiHeaders(init: ApiRequestInit): Record<string, string> {
 
 /** Unwraps the API envelope or throws `ApiError`. */
 export async function parseApiResponse<T>(response: Response): Promise<T> {
+  // The API deliberately returns 204 for successful mutation endpoints that have
+  // no response payload (for example, marking a chapter complete). There is no
+  // JSON envelope to unwrap in that case.
+  if (response.status === 204) return undefined as T;
+
   const body = (await response.json().catch(() => null)) as Envelope<T> | null;
   if (!body || !body.success) {
     const message = body && !body.success ? body.message : `Request failed (${response.status})`;
