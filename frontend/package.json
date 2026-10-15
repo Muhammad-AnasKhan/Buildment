@@ -2,6 +2,7 @@
   "name": "@buildment/frontend",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@12.11.2",
   "scripts": {
     "predev": "node scripts/copy-mermaid.mjs",
     "dev": "next dev",

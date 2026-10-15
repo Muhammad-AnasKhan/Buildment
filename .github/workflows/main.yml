@@ -17,9 +17,7 @@ jobs:
     runs-on: ubuntu-24.04
     if: github.ref == 'refs/heads/main'
 
-    defaults:
-      run:
-        working-directory: frontend
+    # Run from the repository root. Vercel's project Root Directory is frontend.
 
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
