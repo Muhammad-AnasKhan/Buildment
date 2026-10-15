@@ -1,14 +1,17 @@
 {
   "name": "buildment",
   "private": true,
-  "description": "Convenience scripts for the two independent apps in frontend/ and server/. Each has its own package.json and lockfile; deploy them separately.",
+  "description": "Convenience scripts for the independent frontend and server apps. Root Heroku deploys build the API; deploy the frontend separately.",
+  "packageManager": "pnpm@12.11.2",
   "engines": {
-    "node": ">=20.19"
+    "node": "24.x"
   },
   "scripts": {
     "install:all": "pnpm --dir server install && pnpm --dir frontend install",
     "dev": "concurrently -k -n server,frontend -c magenta,green \"pnpm --dir server dev\" \"pnpm --dir frontend dev\"",
     "build": "pnpm --dir server build && pnpm --dir frontend build",
+    "heroku-postbuild": "pnpm --dir server install --frozen-lockfile --prod=false && pnpm --dir server build",
+    "start": "pnpm --dir server start",
     "test": "pnpm --dir server test && pnpm --dir frontend test",
     "lint": "pnpm --dir server lint && pnpm --dir frontend lint",
     "typecheck": "pnpm --dir server typecheck && pnpm --dir frontend typecheck",
@@ -18,6 +21,7 @@
     "db:seed": "pnpm --dir server db:seed",
     "db:studio": "pnpm --dir server db:studio",
     "content:import": "pnpm --dir server content:import",
+    "run":"pnpm --dir server start",
     "content:validate": "pnpm --dir server content:validate"
   },
   "devDependencies": {
