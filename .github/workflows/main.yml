@@ -1,0 +1,46 @@
+name: Deploy frontend to Vercel
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    env:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install deployment tools
+        run: npm install --global pnpm@12.11.2 vercel@latest
+
+      - name: Pull production configuration
+        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build frontend
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy frontend
+        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
