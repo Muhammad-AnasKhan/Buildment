@@ -76,6 +76,7 @@ export type BlockState =
 
 /** Quiz-mode chapter: every question's last answer, for the wizard's initial state. */
 export type QuizChapterState = {
+  steps: Array<{ id: string; type: "QUIZ" | "OPEN_QUESTION" | "PREDICT" | "CODE" }>;
   blockIds: string[];
   initialAnswers: Record<string, string[]>;
   initialBlockGrades: Record<string, { selected: string[]; isCorrect: boolean | null; explanation?: string }>;

@@ -41,6 +41,7 @@ export default function ChapterReaderError({
     ? `/my-questions?course=${encodeURIComponent(courseSlug)}&chapter=${encodeURIComponent(chapterSlug)}`
     : "/my-questions";
 
+  const connectionFailed = /fetch failed|Cannot reach the API server|API_UNAVAILABLE/i.test(error.message);
   const schemaStale =
     /Unknown field `|PrismaClientValidationError|column .* does not exist/i.test(
       error.message ?? ""
@@ -53,7 +54,9 @@ export default function ChapterReaderError({
           This chapter can&apos;t be displayed right now
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-amber-900/90">
-          {schemaStale ? (
+          {connectionFailed ? (
+            <>The server is temporarily unreachable. Please try again in a moment.</>
+          ) : schemaStale ? (
             <>
               The app database schema is out of date with the code (common after pulling
               updates). An admin should run{" "}
@@ -64,8 +67,8 @@ export default function ChapterReaderError({
             </>
           ) : (
             <>
-              The content failed to render. This usually means the chapter contains a
-              component the platform doesn&apos;t support yet, or the lesson MDX needs a fix.
+              The chapter could not load. The server may be temporarily unavailable,
+              or there may be a problem with the lesson content.
               You can try again, skip to another unlocked lesson, or ask your mentor for help.
             </>
           )}

@@ -12,7 +12,7 @@ export function normalizeQuizOptions(raw: unknown): QuizOptionDraft[] {
       const row = opt as { id?: string; label?: string };
       return {
         id: row.id?.trim() || `opt-${index}`,
-        label: row.label?.trim() ?? "",
+        label: row.label ?? "",
       };
     }
     return { id: `opt-${index}`, label: String(opt) };
@@ -105,9 +105,6 @@ export function quizDraftFromJsxProperties(properties: Record<string, string>) {
           return properties.allowRetry !== "false";
         }
       })();
-  }
-  if (draft.correctOptionIds.length === 0 && draft.options[0]) {
-    draft.correctOptionIds = [draft.options[0].id];
   }
   return draft;
 }

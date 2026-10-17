@@ -1,15 +1,13 @@
 import type { JsxComponentDescriptor } from "@mdxeditor/editor";
-import { GenericJsxEditor } from "@mdxeditor/editor";
+import { StoredBlockEditor } from "@/components/teach/editor/stored-block-editor";
 
-// OpenQuestion config (prompt, minWords, maxWords, submissionMode, allowUrl,
-// urlLabel, urlRequired, urlHint, rubric, sampleAnswer) is stored in the DB
-// only. Complex config cannot be represented as simple MDX attributes.
-// In MDX an OpenQuestion block is referenced by id only.
 export const openQuestionEditorDescriptor: JsxComponentDescriptor = {
   name: "OpenQuestion",
   kind: "flow",
   props: [
     { name: "id", type: "string" },
+    { name: "rubric", type: "string" },
+    { name: "speechPrimary", type: "expression" },
     { name: "prompt", type: "string" },
     { name: "minWords", type: "number" },
     { name: "maxWords", type: "number" },
@@ -22,5 +20,5 @@ export const openQuestionEditorDescriptor: JsxComponentDescriptor = {
     { name: "urlHint", type: "string" },
   ],
   hasChildren: false,
-  Editor: GenericJsxEditor,
+  Editor: StoredBlockEditor,
 };

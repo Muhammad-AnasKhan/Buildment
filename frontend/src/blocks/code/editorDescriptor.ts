@@ -1,10 +1,6 @@
 import type { JsxComponentDescriptor } from "@mdxeditor/editor";
-import { GenericJsxEditor } from "@mdxeditor/editor";
+import { StoredBlockEditor } from "@/components/teach/editor/stored-block-editor";
 
-// CodeExercise config (mode, language, prompt, starterCode, tests[], hints[],
-// explanation, solution, allowRetry) is stored in the DB only. Cannot be
-// represented as simple MDX attributes. In MDX a CodeExercise is referenced
-// by id only.
 export const codeEditorDescriptor: JsxComponentDescriptor = {
   name: "CodeExercise",
   kind: "flow",
@@ -22,5 +18,5 @@ export const codeEditorDescriptor: JsxComponentDescriptor = {
     { name: "allowRetry", type: "expression" },
   ],
   hasChildren: false,
-  Editor: GenericJsxEditor,
+  Editor: StoredBlockEditor,
 };

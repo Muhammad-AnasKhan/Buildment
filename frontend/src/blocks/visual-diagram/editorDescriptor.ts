@@ -13,6 +13,7 @@ export const visualDiagramEditorDescriptor: JsxComponentDescriptor = {
     { name: "imageUrl", type: "string" },
     { name: "alt", type: "string" },
     { name: "caption", type: "string" },
+    { name: "legend", type: "expression" },
     { name: "kind", type: "string" },
   ],
   hasChildren: false,

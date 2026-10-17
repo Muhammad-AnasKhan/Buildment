@@ -1,15 +1,16 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useId } from "react";
+import { ulid } from "ulid";
 import type { MdxJsxAttribute } from "mdast-util-mdx-jsx";
-import { useMdastNodeUpdater, type JsxEditorProps } from "@mdxeditor/editor";
+import { useLexicalNodeRemove, useMdastNodeUpdater, type JsxEditorProps } from "@mdxeditor/editor";
 import { CircleHelp, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useChapterBlockConfig } from "@/components/teach/editor/chapter-block-configs";
+import { useChapterBlockConfig, useQuizEnabled } from "@/components/teach/editor/chapter-block-configs";
 import {
   defaultQuizDraft,
   quizDraftFromConfig,
@@ -17,6 +18,7 @@ import {
   quizDraftToJsxProperties,
   type QuizOptionDraft,
 } from "@/shared/blocks/quiz/editor-utils";
+import { EditorBlockFrame } from "@/components/teach/editor/editor-block-frame";
 import { cn } from "@/lib/utils";
 
 function readPropertiesFromMdast(mdastNode: JsxEditorProps["mdastNode"], propNames: string[]) {
@@ -96,7 +98,10 @@ function trueFalseOptions(): QuizOptionDraft[] {
 }
 
 export function QuizJsxEditor({ mdastNode, descriptor }: JsxEditorProps) {
+  const remove = useLexicalNodeRemove();
+  const quizEnabled = useQuizEnabled();
   const updateMdastNode = useMdastNodeUpdater();
+  const formId = useId();
   const props = readPropertiesFromMdast(mdastNode, ["id"]);
   const blockId = props.id?.trim() || undefined;
   const storedConfig = useChapterBlockConfig(blockId);
@@ -109,7 +114,7 @@ export function QuizJsxEditor({ mdastNode, descriptor }: JsxEditorProps) {
   const commit = useCallback(
     (next: ReturnType<typeof defaultQuizDraft>) => {
       updateMdastNode({
-        attributes: attributesFromDraft(descriptor, next, blockId),
+        attributes: attributesFromDraft(descriptor, next, blockId ?? ulid()),
       });
     },
     [blockId, descriptor, updateMdastNode]
@@ -147,20 +152,13 @@ export function QuizJsxEditor({ mdastNode, descriptor }: JsxEditorProps) {
   };
 
   return (
-    <div className="my-3 rounded-xl border border-violet-200/80 bg-gradient-to-b from-violet-50/50 to-white p-4 shadow-sm dark:border-violet-900/50 dark:from-violet-950/20 dark:to-card">
-      <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-violet-950 dark:text-violet-100">
-        <CircleHelp className="size-4 shrink-0" aria-hidden />
-        Quiz block
-        {blockId ? (
-          <span className="ml-auto truncate font-mono text-xs font-normal text-muted-foreground">{blockId}</span>
-        ) : null}
-      </div>
-
-      <div className="grid gap-4">
+    <EditorBlockFrame title="Quiz" icon={CircleHelp} summary={draft.prompt} detail={`${draft.options.length} options`} onRemove={remove}>
+      {!quizEnabled && <p className="mb-3 rounded-lg border bg-muted p-3 text-sm" role="status">Quiz editing requires Quiz flow. Choose Quiz flow in Chapter settings and save settings to enable this quiz.</p>}
+      <fieldset disabled={!quizEnabled} className="grid min-w-0 gap-4 disabled:opacity-50">
         <div className="space-y-2">
-          <Label htmlFor={`quiz-prompt-${blockId ?? "new"}`}>Question</Label>
+          <Label htmlFor={`quiz-prompt-${formId}`}>Question</Label>
           <Textarea
-            id={`quiz-prompt-${blockId ?? "new"}`}
+            id={`quiz-prompt-${formId}`}
             value={draft.prompt}
             placeholder="Ask the learner something specific…"
             rows={3}
@@ -169,9 +167,9 @@ export function QuizJsxEditor({ mdastNode, descriptor }: JsxEditorProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor={`quiz-type-${blockId ?? "new"}`}>Answer type</Label>
+          <Label htmlFor={`quiz-type-${formId}`}>Answer type</Label>
           <select
-            id={`quiz-type-${blockId ?? "new"}`}
+            id={`quiz-type-${formId}`}
             value={draft.quizType}
             onChange={(event) =>
               setQuizType(event.target.value as typeof draft.quizType)
@@ -193,7 +191,7 @@ export function QuizJsxEditor({ mdastNode, descriptor }: JsxEditorProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  const id = `opt-${draft.options.length}`;
+                  const id = ulid();
                   commit({
                     ...draft,
                     options: [...draft.options, { id, label: "" }],
@@ -209,6 +207,7 @@ export function QuizJsxEditor({ mdastNode, descriptor }: JsxEditorProps) {
                 <li key={option.id} className="flex items-start gap-2">
                   <button
                     type="button"
+                    aria-pressed={draft.correctOptionIds.includes(option.id)}
                     aria-label={
                       draft.correctOptionIds.includes(option.id)
                         ? "Correct answer"
@@ -227,6 +226,7 @@ export function QuizJsxEditor({ mdastNode, descriptor }: JsxEditorProps) {
                     ) : null}
                   </button>
                   <Input
+                    aria-label={`Option ${index + 1}`}
                     value={option.label}
                     placeholder={`Option ${index + 1}`}
                     className="flex-1"
@@ -268,8 +268,7 @@ export function QuizJsxEditor({ mdastNode, descriptor }: JsxEditorProps) {
             </ul>
             <p className="text-xs text-muted-foreground">
               Click the circle to mark correct answer
-              {draft.quizType === "multiple" ? "s" : ""}. Source mode keeps{" "}
-              <code className="text-[11px]">correctOptionIds</code> in sync.
+              {draft.quizType === "multiple" ? "s" : ""}. Changes save with your chapter draft.
             </p>
           </div>
         ) : (
@@ -290,9 +289,9 @@ export function QuizJsxEditor({ mdastNode, descriptor }: JsxEditorProps) {
         )}
 
         <div className="space-y-2">
-          <Label htmlFor={`quiz-explanation-${blockId ?? "new"}`}>Feedback (optional)</Label>
+          <Label htmlFor={`quiz-explanation-${formId}`}>Feedback (optional)</Label>
           <Textarea
-            id={`quiz-explanation-${blockId ?? "new"}`}
+            id={`quiz-explanation-${formId}`}
             value={draft.explanation}
             placeholder="Explain the correct answer after submission…"
             rows={2}
@@ -302,15 +301,16 @@ export function QuizJsxEditor({ mdastNode, descriptor }: JsxEditorProps) {
 
         <div className="flex items-center gap-2">
           <Checkbox
-            id={`quiz-retry-${blockId ?? "new"}`}
+            id={`quiz-retry-${formId}`}
             checked={draft.allowRetry}
             onCheckedChange={(checked) =>
               commit({ ...draft, allowRetry: checked === true })
             }
           />
-          <Label htmlFor={`quiz-retry-${blockId ?? "new"}`}>Allow retry after incorrect answer</Label>
+          <Label htmlFor={`quiz-retry-${formId}`}>Allow retry after incorrect answer</Label>
         </div>
-      </div>
-    </div>
+      </fieldset>
+
+    </EditorBlockFrame>
   );
 }

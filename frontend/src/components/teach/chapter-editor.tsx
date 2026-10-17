@@ -13,6 +13,7 @@ import {
   LoaderCircle,
   Settings2,
 } from "lucide-react";
+import { safelyRunChapterAction } from "./editor/chapter-action-result";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -80,6 +81,7 @@ export function ChapterEditor({
     initialHasUnpublishedChanges
   );
   const [publishing, setPublishing] = useState(false);
+  const [savedReaderMode, setSavedReaderMode] = useState(readerMode);
   const [settings, setSettings] = useState({
     title: chapterTitle,
     summary: chapterSummary ?? "",
@@ -104,7 +106,7 @@ export function ChapterEditor({
       const source = latestSource.current;
       setSaveState({ kind: "saving" });
       const operation = (async () => {
-        const result = await saveChapterDraft({ chapterId, source });
+        const result = await safelyRunChapterAction(() => saveChapterDraft({ chapterId, source }));
         if (result.ok) {
           savedSource.current = source;
           setSaveState({
@@ -150,7 +152,7 @@ export function ChapterEditor({
     }
     setPublishing(true);
     setPublishErrors([]);
-    const result = await publishChapter({ chapterId });
+    const result = await safelyRunChapterAction(() => publishChapter({ chapterId }));
     setPublishing(false);
     if (result.ok) {
       setPublishedAt(new Date().toISOString());
@@ -163,15 +165,16 @@ export function ChapterEditor({
   const handleSettingsSave = useCallback(async () => {
     const minutes = settings.estimatedMinutes.trim();
     setSettingsState({ kind: "saving" });
-    const result = await updateChapterSettings({
+    const result = await safelyRunChapterAction(() => updateChapterSettings({
       chapterId,
       title: settings.title,
       summary: settings.summary.trim() || null,
       estimatedMinutes: minutes ? Number(minutes) : null,
       readerMode: settings.readerMode,
       isMilestone: settings.isMilestone,
-    });
+    }));
     if (result.ok) {
+      setSavedReaderMode(settings.readerMode);
       setSettingsState({
         kind: "saved",
         at: "savedAt" in result ? result.savedAt : new Date().toISOString(),
@@ -213,6 +216,7 @@ export function ChapterEditor({
 
         <div className="flex flex-wrap items-center justify-end gap-2">
           <SaveStatus state={saveState} />
+          {saveState.kind === "error" && <Button variant="outline" onClick={() => void flushDraft()}>Retry save</Button>}
           <Button
             onClick={() => void handlePublish()}
             disabled={publishing}
@@ -315,7 +319,7 @@ export function ChapterEditor({
                 className="h-8 w-full rounded-lg border border-input bg-background px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
               >
                 <option value="DEFAULT">Standard lesson</option>
-                <option value="QUIZ">Quiz flow</option>
+                <option value="QUIZ">Quiz flow (enables quiz blocks)</option>
               </select>
             </div>
             <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-3 md:col-span-2">
@@ -352,11 +356,13 @@ export function ChapterEditor({
       </details>
 
       <div className="mt-5">
+        {savedReaderMode === "QUIZ" && <p className="mb-3 text-sm text-muted-foreground">Quiz flow contains activities only. Use Insert block or / to add a quiz, open question, prediction, or code exercise.</p>}
         <MdxEditorCore
           initialMarkdown={initialSource}
           diffMarkdown={lastPublishedSource ?? undefined}
           onChange={handleChange}
           blockConfigs={blockConfigs}
+          readerMode={savedReaderMode}
         />
       </div>
     </div>

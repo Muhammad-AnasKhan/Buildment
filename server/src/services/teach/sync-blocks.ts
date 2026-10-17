@@ -78,7 +78,8 @@ export async function syncChapterBlocksFromSource(chapterId: string, source: str
         if (extractedBlock) data.order = extractedBlock.order;
         const inlineConfig = extractedBlock && blockConfigFromSource(extractedBlock, configs);
         if (inlineConfig && existingBlock && isRegisteredBlockType(existingBlock.type)) {
-          data.config = asJson(blockDefinitions[existingBlock.type].schema.parse(inlineConfig));
+          const parsed = blockDefinitions[existingBlock.type].schema.safeParse(inlineConfig);
+          if (parsed.success) data.config = asJson(parsed.data);
         }
         await tx.block.update({ where: { id: block.id }, data });
       }

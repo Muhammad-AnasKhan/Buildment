@@ -24,6 +24,8 @@ export function QuizChapterSessionClient({
   chapterId,
   chapterTitle,
   quizBlockIds,
+  stepIds,
+  individualActivityCount = 0,
   draftStoragePrefix,
   initialAnswers,
   initialScoreSummary,
@@ -33,6 +35,8 @@ export function QuizChapterSessionClient({
   chapterId: string;
   chapterTitle: string;
   quizBlockIds: string[];
+  stepIds: string[];
+  individualActivityCount?: number;
   draftStoragePrefix: string;
   initialAnswers: Record<string, string[]>;
   initialScoreSummary: QuizResultSummary | null;
@@ -52,17 +56,19 @@ export function QuizChapterSessionClient({
   const perfectScore = useMemo(() => isPerfectScore(scoreSummary), [scoreSummary]);
   const reviewMode = scoreSummary !== null;
 
-  useEffect(() => {
+  const [lastServerState, setLastServerState] = useState({ summary: initialScoreSummary, grades: initialBlockGrades });
+  if (lastServerState.summary !== initialScoreSummary || lastServerState.grades !== initialBlockGrades) {
+    setLastServerState({ summary: initialScoreSummary, grades: initialBlockGrades });
     setScoreSummary(initialScoreSummary);
     setBlockGrades(initialBlockGrades);
     setDirtyBlockIds(new Set());
-  }, [initialScoreSummary, initialBlockGrades]);
+  }
 
   useEffect(() => {
-    if (isPerfectScore(initialScoreSummary)) {
+    if (isPerfectScore(initialScoreSummary) && individualActivityCount === 0) {
       window.dispatchEvent(new Event("buildment:quiz-perfect"));
     }
-  }, [initialScoreSummary]);
+  }, [initialScoreSummary, individualActivityCount]);
 
   const go = useCallback(
     (next: number) => {
@@ -158,7 +164,7 @@ export function QuizChapterSessionClient({
 
       if (isPerfectScore(summary)) {
         playFeedback("celebration");
-        window.dispatchEvent(new Event("buildment:quiz-perfect"));
+        if (individualActivityCount === 0) window.dispatchEvent(new Event("buildment:quiz-perfect"));
         for (const blockId of quizBlockIds) {
           try {
             window.localStorage.removeItem(`${draftStoragePrefix}:${blockId}`);
@@ -180,7 +186,6 @@ export function QuizChapterSessionClient({
     }
   };
 
-  if (total === 0) return null;
 
   const progressPct = total > 0 ? ((index + 1) / total) * 100 : 0;
 
@@ -195,6 +200,8 @@ export function QuizChapterSessionClient({
     [chapterTitle, total, reviewMode, dirtyBlockIds, blockGrades]
   );
 
+  if (total === 0) return null;
+
   return (
     <QuizSessionContext.Provider value={sessionValue}>
       <section id="quiz-chapter-session" className="not-prose mb-10 scroll-mt-24" aria-label="Quiz session">
@@ -205,9 +212,10 @@ export function QuizChapterSessionClient({
           <p className="mt-3 text-sm font-medium text-muted-foreground">
             Question {index + 1} of {total}
           </p>
+          {individualActivityCount > 0 && <p className="mt-2 text-sm text-muted-foreground">Submit each open question, prediction, or code exercise with its own button. Written answers are reviewed separately; the score below covers multiple-choice questions.</p>}
           {scoreSummary ? (
             <p className="mt-2 text-sm text-foreground">
-              Last score {scoreSummary.score}/{scoreSummary.maxScore}
+              Multiple-choice score {scoreSummary.score}/{scoreSummary.maxScore}
               {perfectScore ? " · all correct" : " · update answers and submit again"}
             </p>
           ) : null}
@@ -229,7 +237,7 @@ export function QuizChapterSessionClient({
         <div className="relative min-h-[12rem]">
           {steps.map((step, stepIndex) => (
             <div
-              key={quizBlockIds[stepIndex] ?? stepIndex}
+              key={stepIds[stepIndex] ?? stepIndex}
               className={cn(stepIndex === index ? "block" : "hidden")}
               aria-hidden={stepIndex !== index}
             >
@@ -249,7 +257,7 @@ export function QuizChapterSessionClient({
             role="status"
           >
             {perfectScore
-              ? `Quiz complete · ${scoreSummary.score}/${scoreSummary.maxScore} correct.`
+              ? `${individualActivityCount > 0 ? "Multiple-choice complete" : "Quiz complete"} · ${scoreSummary.score}/${scoreSummary.maxScore} correct.`
               : `${scoreSummary.score}/${scoreSummary.maxScore} correct so far. Change any answer above, then submit again.`}
           </div>
         ) : null}
@@ -278,13 +286,10 @@ export function QuizChapterSessionClient({
               disabled={submitting || perfectScore}
               onClick={() => void submitQuiz()}
             >
-              {submitting ? "Submitting…" : perfectScore ? "All correct" : scoreSummary ? "Submit again" : "Submit quiz"}
+              {submitting ? "Submitting…" : perfectScore ? "All correct" : scoreSummary ? "Submit again" : individualActivityCount > 0 ? "Submit multiple-choice answers" : "Submit quiz"}
             </Button>
           ) : (
-            <Button type="button" size="sm" disabled={index >= total - 1} onClick={() => go(index + 1)} className="gap-1">
-              Next
-              <ChevronRight className="size-4" aria-hidden />
-            </Button>
+            <p className="text-sm text-muted-foreground">Submit each activity above. Its result or review status appears on the activity.</p>
           )}
         </footer>
         {submitError ? <p className="mt-3 text-sm text-destructive">{submitError}</p> : null}

@@ -1,9 +1,6 @@
 import type { JsxComponentDescriptor } from "@mdxeditor/editor";
-import { GenericJsxEditor } from "@mdxeditor/editor";
+import { StoredBlockEditor } from "@/components/teach/editor/stored-block-editor";
 
-// Predict config (prompt, options[], correctOptionId, explanation, allowRetry,
-// context) is stored in the DB only. Complex nested JSON cannot be represented
-// as simple MDX attributes. In MDX a Predict block is referenced by id only.
 export const predictEditorDescriptor: JsxComponentDescriptor = {
   name: "Predict",
   kind: "flow",
@@ -17,5 +14,5 @@ export const predictEditorDescriptor: JsxComponentDescriptor = {
     { name: "allowRetry", type: "expression" },
   ],
   hasChildren: false,
-  Editor: GenericJsxEditor,
+  Editor: StoredBlockEditor,
 };

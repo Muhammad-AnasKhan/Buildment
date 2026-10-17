@@ -1,6 +1,7 @@
 import { ulid } from "ulid";
 
 export type ContentTemplateId =
+  | "lesson-outline"
   | "section"
   | "callout"
   | "glossary"
@@ -31,12 +32,33 @@ export type ContentTemplateId =
   | "project-preview"
   | "learning-objectives"
   | "chapter-recap"
+  | "predict"
+  | "open-question"
+  | "code-exercise"
   | "quiz";
 
 const withSpacing = (markdown: string) => `\n\n${markdown.trim()}\n\n`;
 
 export function createContentTemplate(templateId: ContentTemplateId): string {
   switch (templateId) {
+    case "lesson-outline":
+      return withSpacing(`## What you will build
+
+Describe the outcome and why it matters.
+
+<LearningObjectives objectives={["Explain the key idea", "Build and verify the feature"]} />
+
+## Learn the idea
+
+Explain the concept with a concrete example.
+
+## Build it
+
+Guide the learner through the implementation.
+
+<Checklist section="Check your work" items={[{"id":"${ulid()}","label":"Verify the expected result"}]} />
+
+<ChapterRecap id="${ulid()}" points={["Summarize what the learner accomplished"]} />`);
     case "section":
       return withSpacing(`
 ## Section title
@@ -133,59 +155,13 @@ Use <GlossaryTerm term="tenant isolation" definition="Keeping one vendor's data 
 />
 `);
     case "video":
-      return withSpacing(`
-\`\`\`video
-title: Short concept walkthrough
-sourceUrl: https://www.youtube.com/watch?v=VIDEO_ID
-caption: Explain what the learner should notice.
-\`\`\`
-`);
+      return withSpacing(`<VideoBlock id="${ulid()}" title="Concept walkthrough" sourceUrl="https://www.youtube.com/watch?v=VIDEO_ID" caption="Explain what to notice." requiredWatch={false} />`);
     case "walkthrough":
-      return withSpacing(`
-\`\`\`walkthrough
-title: Follow the request step by step
-steps:
-  - id: request
-    title: Send the request
-    description: The browser sends the selected items to the API.
-    imageUrl: https://images.example.com/request.png
-    alt: Browser request arrow pointing to the API route
-  - id: response
-    title: Read the response
-    description: The API returns the saved order and its current status.
-    imageUrl: https://images.example.com/response.png
-    alt: API response showing an order confirmation
-\`\`\`
-`);
+      return withSpacing(`<VisualWalkthrough id="${ulid()}" title="Follow the process" steps={[{"id":"start","title":"Start","description":"Explain the first step.","imageUrl":"https://images.example.com/start.png","alt":"The starting state of the process"},{"id":"finish","title":"Finish","description":"Explain the result.","imageUrl":"https://images.example.com/finish.png","alt":"The completed state of the process"}]} />`);
     case "diagram":
-      return withSpacing(`
-\`\`\`diagram
-title: Request boundary
-kind: system
-imageUrl: https://images.example.com/request-boundary.png
-alt: Browser, API and database connected by a request flow
-caption: Every request establishes the vendor boundary before querying data.
-\`\`\`
-`);
+      return withSpacing(`<VisualDiagram id="${ulid()}" title="System diagram" kind="system" imageUrl="https://images.example.com/diagram.png" alt="Overview of the system and its connections" caption="Explain the important relationships." />`);
     case "roadmap":
-      return withSpacing(`
-\`\`\`roadmap
-title: Your path through this project
-milestones:
-  - id: foundation
-    title: Build the foundation
-    description: Set up the project and verify the first request.
-    state: current
-  - id: feature
-    title: Add the core feature
-    description: Build the workflow learners can demonstrate.
-    state: upcoming
-  - id: launch
-    title: Launch the project
-    description: Polish, deploy, and explain your decisions.
-    state: goal
-\`\`\`
-`);
+      return withSpacing(`<Roadmap id="${ulid()}" title="Your project roadmap" milestones={[{"id":"start","title":"Foundation","description":"Set up the project.","state":"current"},{"id":"build","title":"Build","description":"Implement the feature.","state":"upcoming"},{"id":"ship","title":"Launch","description":"Verify and deploy.","state":"goal"}]} />`);
     case "entity-diagram":
       return withSpacing(`
 <EntityDiagram
@@ -196,8 +172,16 @@ milestones:
     case "faq":
       return withSpacing(`
 <FaqGroup title="Common Questions">
-  <FaqItem question="Why do we use this pattern?" answer="Explain the reasoning, trade-offs, and why alternatives were not chosen." />
-  <FaqItem question="What should you check if something fails?" answer="Describe common debugging steps, log messages to check, or configuration traps." />
+  <FaqItem question="Why do we use this pattern?">
+
+Explain the reasoning, trade-offs, and why alternatives were not chosen.
+
+  </FaqItem>
+  <FaqItem question="What should you check if something fails?">
+
+Describe common debugging steps, log messages to check, or configuration traps.
+
+  </FaqItem>
 </FaqGroup>
 `);
     case "big-word":
@@ -304,6 +288,12 @@ milestones:
   ]}
 />
 `);
+    case "predict":
+      return withSpacing(`<Predict id="${ulid()}" prompt="What will happen next?" options={[{"id":"a","label":"First outcome"},{"id":"b","label":"Second outcome"}]} correctOptionId="a" allowRetry={true} />`);
+    case "open-question":
+      return withSpacing(`<OpenQuestion id="${ulid()}" prompt="Explain your approach and the trade-offs." minWords={20} submissionMode="text" />`);
+    case "code-exercise":
+      return withSpacing(`<CodeExercise id="${ulid()}" prompt="Implement an add function." language="javascript" mode="implement" starterCode="function add(a, b) {}" tests={[{"name":"Adds two numbers","code":"if (add(1, 2) !== 3) throw new Error('Expected 3');"}]} allowRetry={true} />`);
     case "quiz": {
       const id = ulid();
       return withSpacing(`

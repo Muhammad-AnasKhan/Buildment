@@ -5,12 +5,14 @@ import { prisma } from "../../db/prisma.js";
 /** Initial state for a quiz-mode chapter's wizard: last answers, grades and the score once every question is attempted. */
 export async function loadQuizChapterState(chapterId: string, userId: string): Promise<QuizChapterState> {
   const blocks = await prisma.block.findMany({
-    where: { chapterId, archivedAt: null, type: "QUIZ" },
+    where: { chapterId, archivedAt: null, type: { in: ["QUIZ", "OPEN_QUESTION", "PREDICT", "CODE"] } },
     orderBy: { order: "asc" },
-    select: { id: true, config: true },
+    select: { id: true, type: true, config: true },
   });
-  const blockIds = blocks.map((block) => block.id);
-  if (blockIds.length === 0) return { blockIds, initialAnswers: {}, initialBlockGrades: {}, initialScoreSummary: null };
+  const steps: QuizChapterState["steps"] = blocks.map(block => ({ id: block.id, type: block.type as QuizChapterState["steps"][number]["type"] }));
+  const quizBlocks = blocks.filter(block => block.type === "QUIZ");
+  const blockIds = quizBlocks.map((block) => block.id);
+  if (blockIds.length === 0) return { steps, blockIds, initialAnswers: {}, initialBlockGrades: {}, initialScoreSummary: null };
 
   const responses = await prisma.response.findMany({
     where: { blockId: { in: blockIds }, userId, status: { not: "DRAFT" } },
@@ -26,7 +28,7 @@ export async function loadQuizChapterState(chapterId: string, userId: string): P
   };
 
   const initialBlockGrades: QuizChapterState["initialBlockGrades"] = {};
-  for (const block of blocks) {
+  for (const block of quizBlocks) {
     const response = latestByBlock.get(block.id);
     if (!response) continue;
     const parsed = QuizConfigSchema.safeParse(block.config);
@@ -39,6 +41,7 @@ export async function loadQuizChapterState(chapterId: string, userId: string): P
 
   const allAttempted = blockIds.every((blockId) => latestByBlock.has(blockId));
   return {
+    steps,
     blockIds,
     initialAnswers: Object.fromEntries(blockIds.map((blockId) => [blockId, selectedFor(blockId)])),
     initialBlockGrades,

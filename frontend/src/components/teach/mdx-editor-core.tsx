@@ -1,7 +1,10 @@
 "use client";
 
 import "@mdxeditor/editor/style.css";
+import { useTheme } from "next-themes";
+import "./editor/editor-theme.css";
 import {
+  GenericJsxEditor,
   BlockTypeSelect,
   BoldItalicUnderlineToggles,
   codeBlockPlugin,
@@ -12,15 +15,10 @@ import {
   frontmatterPlugin,
   headingsPlugin,
   imagePlugin,
-  InsertCodeBlock,
-  InsertImage,
-  InsertTable,
-  InsertThematicBreak,
   jsxPlugin,
   linkDialogPlugin,
   linkPlugin,
   listsPlugin,
-  ListsToggle,
   MDXEditor,
   quotePlugin,
   Separator,
@@ -32,6 +30,7 @@ import {
 
 import { contentBlockDescriptors } from "@/components/learn/content-blocks/editor-descriptors";
 import { authoringComponentDescriptors } from "@/components/teach/editor/authoring-descriptors";
+import { EditorQuickInsert, EditorMoreTools } from "@/components/teach/editor/editor-quick-tools";
 import { InsertContentMenu } from "@/components/teach/editor/insert-content-menu";
 import { normalizeLearningLogQuestionProps } from "@/shared/lib/learning-log";
 // Per-block editor descriptors — each block folder owns its own descriptor.
@@ -49,6 +48,7 @@ import { visualWalkthroughEditorDescriptor } from "@/blocks/visual-walkthrough/e
 import { visualDiagramEditorDescriptor } from "@/blocks/visual-diagram/editorDescriptor";
 import { roadmapEditorDescriptor } from "@/blocks/roadmap/editorDescriptor";
 import { ChapterBlockConfigsProvider } from "@/components/teach/editor/chapter-block-configs";
+import { CollapsibleJsxEditor } from "@/components/teach/editor/collapsible-jsx-editor";
 import { EditorSlashMenu } from "@/components/teach/editor/editor-slash-menu";
 
 // All registered block types, each sourced from its own editorDescriptor.ts.
@@ -72,7 +72,9 @@ const jsxComponentDescriptors = [
   ...contentBlockDescriptors,
   ...authoringComponentDescriptors,
   ...blockRegistryDescriptors,
-];
+].map(descriptor => descriptor.Editor === GenericJsxEditor
+  ? { ...descriptor, Editor: CollapsibleJsxEditor }
+  : descriptor);
 
 // The actual MDXEditor instance, lazy-loaded with ssr:false by
 // chapter-editor.tsx. Plugin set per docs/phases/m1-content-pipeline.mdx:
@@ -86,19 +88,24 @@ export default function MdxEditorCore({
   diffMarkdown,
   onChange,
   blockConfigs = {},
+  readerMode = "DEFAULT",
 }: {
   initialMarkdown: string;
   diffMarkdown?: string;
   onChange: (markdown: string) => void;
+  readerMode?: "DEFAULT" | "QUIZ";
   blockConfigs?: Record<string, unknown>;
 }) {
+  const { resolvedTheme } = useTheme();
   return (
-    <ChapterBlockConfigsProvider configs={blockConfigs}>
+    <ChapterBlockConfigsProvider configs={blockConfigs} quizEnabled={readerMode === "QUIZ"}>
     <div className="chapter-mdx-editor overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
       <MDXEditor
+        className={`buildment-editor ${resolvedTheme === "dark" ? "dark-theme" : ""}`}
+        contentEditableClassName="editor-prose"
         markdown={initialMarkdown}
         onChange={(markdown) => onChange(normalizeLearningLogQuestionProps(markdown))}
-        placeholder="Write the chapter in Markdown…"
+        placeholder={readerMode === "QUIZ" ? "Type / to add a quiz, open question, prediction, or code exercise…" : "Start writing, or type / to add an activity or visual…"}
         plugins={[
           headingsPlugin(),
           listsPlugin(),
@@ -134,18 +141,17 @@ export default function MdxEditorCore({
                 <UndoRedo />
                 <Separator />
                 <InsertContentMenu />
+                <EditorQuickInsert />
                 <EditorSlashMenu />
                 <Separator />
+                {readerMode !== "QUIZ" && <>
                 <BoldItalicUnderlineToggles />
                 <Separator />
                 <BlockTypeSelect />
-                <ListsToggle />
                 <Separator />
                 <CreateLink />
-                <InsertImage />
-                <InsertCodeBlock />
-                <InsertTable />
-                <InsertThematicBreak />
+                <EditorMoreTools />
+                </>}
               </DiffSourceToggleWrapper>
             ),
           }),

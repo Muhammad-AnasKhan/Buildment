@@ -2,7 +2,7 @@ import "server-only";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { SESSION_COOKIE_NAME } from "@/shared/api/auth";
-import { ApiError, apiHeaders, parseApiResponse, type ApiRequestInit } from "@/lib/api-client";
+import { ApiError, apiHeaders, parseApiResponse, fetchApiResponse, type ApiRequestInit } from "@/lib/api-client";
 
 // Server-side counterpart of apiFetch: Server Components and Server Actions call
 // the API host directly and pass the visitor's session along as a Bearer token.
@@ -15,10 +15,10 @@ export type ServerApiRequestInit = ApiRequestInit & {
 };
 
 export async function serverApiFetch<T>(path: string, init: ServerApiRequestInit = {}): Promise<T> {
-  const { json, headers: _headers, token, ...rest } = init;
+  const { json, token, ...rest } = init;
   const sessionToken = token === undefined ? (await cookies()).get(SESSION_COOKIE_NAME)?.value : token;
 
-  const response = await fetch(`${API_URL}${path}`, {
+  const response = await fetchApiResponse(`${API_URL}${path}`, {
     ...rest,
     cache: "no-store",
     headers: {

@@ -93,19 +93,26 @@ export function extractQuizConfigFromElement(element: MdxJsxElement): ReturnType
   return parsed.success ? parsed.data : null;
 }
 
-/** Map block id -> parsed config extracted from MDX source (inline Quiz props). */
+/** Map block id -> config extracted from assessment attributes. */
 export function extractBlockConfigsFromSource(source: string): Map<string, unknown> {
   const tree = parseMdx(source);
   const configs = new Map<string, unknown>();
 
   visit(tree, ["mdxJsxFlowElement", "mdxJsxTextElement"], (node) => {
     const element = node as unknown as MdxJsxElement;
-    if (element.name !== "Quiz") return;
+    if (!["Quiz", "Predict", "OpenQuestion", "CodeExercise", "MustRead", "Steps", "ProjectPreview", "LearningObjectives", "ChapterRecap", "VideoBlock", "VisualWalkthrough", "VisualDiagram", "Roadmap"].includes(element.name ?? "")) return;
     const props = readJsxProperties(element);
     const id = props.id?.trim();
     if (!id) return;
-    const config = extractQuizConfigFromElement(element);
-    if (config) configs.set(id, config);
+    const { id: _id, ...strings } = props;
+    const inline = { ...strings, ...readExpressionProperties(element) };
+    if (Object.keys(inline).length === 0) return;
+    // Preserve incomplete inline edits so publish validation cannot fall back to
+    // an older stored answer. Draft saves keep these edits in chapter.source.
+    const config = element.name === "Quiz"
+      ? extractQuizConfigFromElement(element) ?? inline
+      : inline;
+    configs.set(id, config);
   });
 
   return configs;
@@ -119,4 +126,22 @@ export function blockConfigFromSource(
     return configs.get(block.id);
   }
   return configs.get(block.id);
+}
+
+/** Detect quiz JSX and authoring fences, including blocks without IDs. */
+export function hasQuizBlocks(source: string): boolean {
+  let found = false;
+  visit(parseMdx(source), node => {
+    if ((node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") && (node as unknown as MdxJsxElement).name === "Quiz") found = true;
+    if (node.type === "code" && "lang" in node && node.lang === "quiz") found = true;
+  });
+  return found;
+}
+
+/** Quiz flow is a sequence of activities, without lesson prose or presentation blocks. */
+export function isActivityOnlySource(source: string): boolean {
+  const allowed = new Set(["Quiz", "OpenQuestion", "Predict", "CodeExercise"]);
+  return parseMdx(source).children.every(node =>
+    node.type === "mdxJsxFlowElement" && allowed.has((node as unknown as MdxJsxElement).name ?? "")
+  );
 }

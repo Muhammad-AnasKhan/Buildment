@@ -55,11 +55,32 @@ export async function parseApiResponse<T>(response: Response): Promise<T> {
 }
 
 export async function apiFetch<T>(path: string, init: ApiRequestInit = {}): Promise<T> {
-  const { json, headers: _headers, ...rest } = init;
-  const response = await fetch(path, {
+  const { json, ...rest } = init;
+  const response = await fetchApiResponse(path, {
     ...rest,
     headers: apiHeaders(init),
     body: json !== undefined ? JSON.stringify(json) : undefined,
   });
   return parseApiResponse<T>(response);
+}
+
+/** Retry safe reads once; never replay a potentially successful mutation. */
+export async function fetchApiResponse(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
+  const method = (init?.method ?? (typeof Request !== "undefined" && input instanceof Request ? input.method : "GET")).toUpperCase();
+  const signal = init?.signal ?? (typeof Request !== "undefined" && input instanceof Request ? input.signal : undefined);
+  const attempts = method === "GET" || method === "HEAD" ? 2 : 1;
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fetch(input, init);
+    } catch (error) {
+      if (signal?.aborted || (error instanceof Error && error.name === "AbortError")) throw error;
+      if (attempt + 1 < attempts) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        continue;
+      }
+      const failure = new ApiError("Cannot reach the API server. Check your connection and try again.", 503, "API_UNAVAILABLE");
+      failure.cause = error;
+      throw failure;
+    }
+  }
 }

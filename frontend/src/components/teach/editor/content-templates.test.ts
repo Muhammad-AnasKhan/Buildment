@@ -7,6 +7,7 @@ import {
 } from "./content-templates";
 
 const TEMPLATE_IDS: ContentTemplateId[] = [
+  "lesson-outline",
   "section",
   "callout",
   "glossary",
@@ -36,6 +37,9 @@ const TEMPLATE_IDS: ContentTemplateId[] = [
   "learning-objectives",
   "chapter-recap",
   "quiz",
+  "predict",
+  "open-question",
+  "code-exercise",
 ];
 
 describe("mentor content templates", () => {

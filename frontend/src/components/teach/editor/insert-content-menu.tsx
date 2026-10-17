@@ -1,5 +1,8 @@
 "use client";
 
+import { useQuizEnabled } from "./chapter-block-configs";
+import { useState } from "react";
+import { Input } from "@/components/ui/input";
 import {
   insertMarkdown$,
   usePublisher,
@@ -63,6 +66,7 @@ type InsertableItem = {
 };
 
 const STRUCTURE_ITEMS: InsertableItem[] = [
+  { id: "lesson-outline", label: "Lesson starter", description: "Objectives, teaching sections, checklist, and recap in one click", icon: BookOpenCheck },
   {
     id: "section",
     label: "Section",
@@ -125,15 +129,9 @@ const STRUCTURE_ITEMS: InsertableItem[] = [
   },
   {
     id: "checklist",
-    label: "Task checklist",
+    label: "Checklist",
     description: "A saved, interactive to-do list",
     icon: ListChecks,
-  },
-  {
-    id: "evidence-checklist",
-    label: "Show your work",
-    description: "Evidence you can demonstrate or explain",
-    icon: BookOpenCheck,
   },
   {
     id: "learning-log",
@@ -237,6 +235,9 @@ const VISUAL_ITEMS: InsertableItem[] = [
 ];
 
 const ASSESSED_ITEMS: InsertableItem[] = [
+  { id: "predict", label: "Predict", description: "Predict an outcome and explain the answer", icon: Sparkles },
+  { id: "open-question", label: "Open question", description: "Written response with review criteria", icon: Braces },
+  { id: "code-exercise", label: "Code exercise", description: "Starter code, tests, and feedback", icon: SquareCode },
   {
     id: "quiz",
     label: "Quiz",
@@ -245,11 +246,6 @@ const ASSESSED_ITEMS: InsertableItem[] = [
   },
 ];
 
-const PLANNED_ITEMS = [
-  { label: "Predict", icon: Sparkles },
-  { label: "Open question", icon: Braces },
-  { label: "Code exercise", icon: SquareCode },
-] satisfies Array<{ label: string; icon: LucideIcon }>;
 
 function MenuItem({ item, onInsert }: { item: InsertableItem; onInsert: (id: ContentTemplateId) => void }) {
   const Icon = item.icon;
@@ -267,11 +263,18 @@ function MenuItem({ item, onInsert }: { item: InsertableItem; onInsert: (id: Con
 }
 
 export function InsertContentMenu() {
+  const quizEnabled = useQuizEnabled();
+  const [search, setSearch] = useState("");
+  const matches = (item: InsertableItem) => (item.id !== "quiz" || quizEnabled) && `${item.label} ${item.description}`.toLowerCase().includes(search.toLowerCase());
   const insertMarkdown = usePublisher(insertMarkdown$);
-  const onInsert = (id: ContentTemplateId) => insertMarkdown(createContentTemplate(id));
+  const onInsert = (id: ContentTemplateId) => {
+    if (id === "quiz" && !quizEnabled) return;
+    if (quizEnabled && !["quiz", "open-question", "predict", "code-exercise"].includes(id)) return;
+    insertMarkdown(createContentTemplate(id));
+  };
 
   return (
-    <DropdownMenu>
+    <DropdownMenu onOpenChange={() => setSearch("")}>
       <DropdownMenuTrigger
         render={
           <Button
@@ -284,47 +287,43 @@ export function InsertContentMenu() {
         }
       >
         <Plus className="size-3.5" aria-hidden />
-        Insert
+        Add block
         <ChevronDown className="size-3.5 opacity-60" aria-hidden />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-80 max-h-[85vh] overflow-y-auto">
+        <div className="sticky top-0 z-10 bg-popover p-2">
+          <Input aria-label="Search blocks" placeholder="Search blocks…" value={search} onChange={event => setSearch(event.target.value)} onKeyDown={event => event.stopPropagation()} />
+        </div>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="px-2 py-1.5">Activities</DropdownMenuLabel>
+          {!quizEnabled && <p className="px-2 py-2 text-xs text-muted-foreground">To add quizzes, choose Quiz flow in Chapter settings and save settings.</p>}
+          {ASSESSED_ITEMS.filter(matches).map(item => <MenuItem key={item.id} item={item} onInsert={onInsert} />)}
+        </DropdownMenuGroup>
+        {!quizEnabled && <>
+        <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuLabel className="px-2 py-1.5">Structure and activities</DropdownMenuLabel>
-          {STRUCTURE_ITEMS.map((item) => (
+          {(quizEnabled ? [] : STRUCTURE_ITEMS).filter(matches).map((item) => (
             <MenuItem key={item.id} item={item} onInsert={onInsert} />
           ))}
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuLabel className="px-2 py-1.5">Visual explainers</DropdownMenuLabel>
-          {VISUAL_ITEMS.map((item) => (
+          {(quizEnabled ? [] : VISUAL_ITEMS).filter(matches).map((item) => (
             <MenuItem key={item.id} item={item} onInsert={onInsert} />
           ))}
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuLabel className="px-2 py-1.5">Assessed activities</DropdownMenuLabel>
-          {ASSESSED_ITEMS.map((item) => (
-            <MenuItem key={item.id} item={item} onInsert={onInsert} />
-          ))}
-          {PLANNED_ITEMS.map(({ label, icon: Icon }) => (
-            <DropdownMenuItem key={label} disabled className="gap-2.5 px-2 py-2">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                <Icon className="size-3.5" aria-hidden />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block font-medium">{label}</span>
-                <span className="block text-xs leading-snug">Coming with the secure question builder</span>
-              </span>
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuGroup>
+        </>}
         <DropdownMenuSeparator />
         <div className="flex items-start gap-2 px-2 py-2 text-xs leading-relaxed text-muted-foreground">
           <FileCode2 className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-          Switch to Source for full MDX control. Learners never receive correct answers in the rendered page.
+          Type / on an empty line to add a block without leaving the page.
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
+
+/** Shared by the toolbar and slash command picker. */
+export const INSERTABLE_CONTENT_ITEMS = [...ASSESSED_ITEMS, ...STRUCTURE_ITEMS, ...VISUAL_ITEMS];

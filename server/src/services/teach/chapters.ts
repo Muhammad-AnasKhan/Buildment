@@ -6,7 +6,7 @@ import { blockDefinitions, isRegisteredBlockType } from "../../shared/blocks/def
 import { slugify } from "../../shared/lib/mdx-headings.js";
 import { mdxComponentAllowlist } from "../../shared/mdx/component-allowlist.js";
 import { collectUnknownComponents, diffBlocks, extractBlocksFromSource } from "../../shared/mdx/extract.js";
-import { blockConfigFromSource, extractBlockConfigsFromSource } from "../../shared/mdx/extract-block-config.js";
+import { blockConfigFromSource, extractBlockConfigsFromSource, hasQuizBlocks, isActivityOnlySource } from "../../shared/mdx/extract-block-config.js";
 import { remarkChecklist } from "../../shared/mdx/remark-checklist.js";
 import { remarkLearningLog } from "../../shared/mdx/remark-learning-log.js";
 import { restoreInteractiveBlockTags } from "../../shared/mdx/restore-block-tags.js";
@@ -94,6 +94,9 @@ export async function loadChapterEditor(user: SessionUser, chapterId: string): P
 
 export async function updateChapterSettings(user: SessionUser, chapterId: string, input: ChapterSettingsBody): Promise<SavedAtResult> {
   const { chapter } = await requireChapter(user, chapterId);
+  if (input.readerMode !== "QUIZ" && chapter.compiled && hasQuizBlocks(restoreInteractiveBlockTags(chapter.compiled))) {
+    throw new UnprocessableError("Published quizzes require Quiz flow. Remove the quizzes and publish before changing the reader experience.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE);
+  }
   await prisma.chapter.update({
     where: { id: chapter.id },
     data: {
@@ -121,7 +124,7 @@ export async function saveChapterDraft(user: SessionUser, chapterId: string, sou
 export async function publishChapter(user: SessionUser, chapterId: string): Promise<void> {
   const { chapter } = await requireChapter(user, chapterId);
   const renderable = restoreInteractiveBlockTags(chapter.source);
-  const reasons = await collectPublishProblems(chapter.id, renderable);
+  const reasons = await collectPublishProblems(chapter.id, renderable, chapter.readerMode);
   if (reasons.length > 0) {
     throw new UnprocessableError("The chapter cannot be published yet.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE, reasons);
   }
@@ -134,7 +137,7 @@ export async function publishChapter(user: SessionUser, chapterId: string): Prom
 }
 
 /** Everything that would break the reader: MDX syntax, unknown components, block configs. */
-async function collectPublishProblems(chapterId: string, renderable: string): Promise<string[]> {
+async function collectPublishProblems(chapterId: string, renderable: string, readerMode: string): Promise<string[]> {
   const problems: string[] = [];
 
   try {
@@ -145,6 +148,14 @@ async function collectPublishProblems(chapterId: string, renderable: string): Pr
 
   for (const name of collectUnknownComponents(renderable, mdxComponentAllowlist)) {
     problems.push(`Unknown component <${name}> is not in the allowed component map.`);
+  }
+
+  if (readerMode !== "QUIZ" && hasQuizBlocks(renderable)) {
+    problems.push("Quizzes require Quiz flow. Change the reader experience in Chapter settings before publishing.");
+  }
+
+  if (readerMode === "QUIZ" && !isActivityOnlySource(renderable)) {
+    problems.push("Quiz flow supports activities only: Quiz, Open Question, Predict, and Code Exercise. Move lesson text and visual blocks to a standard lesson.");
   }
 
   const extracted = extractBlocksFromSource(renderable);

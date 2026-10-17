@@ -11,7 +11,8 @@ export type CodeTestResult = {
 
 /**
  * Runs mentor-authored tests against learner JavaScript in an isolated sandbox.
- * Learner code should use CommonJS exports: `module.exports = { fnName }`.
+ * Tests can call top-level learner declarations or use CommonJS exports.
+ * Each submission gets a fresh context; each test keeps its own local scope.
  */
 export function runCodeTests(userSource: string, tests: CodeTest[]): CodeTestResult {
   const moduleExports: Record<string, unknown> = {};
@@ -27,7 +28,7 @@ export function runCodeTests(userSource: string, tests: CodeTest[]): CodeTestRes
 
   try {
     vm.runInNewContext(
-      `(function() {\n${userSource}\n})();`,
+      userSource,
       sandbox,
       { timeout: 3000, filename: "learner-code.js" }
     );
