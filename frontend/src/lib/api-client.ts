@@ -74,6 +74,7 @@ export async function fetchApiResponse(input: RequestInfo | URL, init?: RequestI
       return await fetch(input, init);
     } catch (error) {
       if (signal?.aborted || (error instanceof Error && error.name === "AbortError")) throw error;
+      if (!(error instanceof TypeError)) throw error;
       if (attempt + 1 < attempts) {
         await new Promise(resolve => setTimeout(resolve, 200));
         continue;

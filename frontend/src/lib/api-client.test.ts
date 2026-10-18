@@ -5,6 +5,20 @@ import { safelyRunChapterAction } from "../components/teach/editor/chapter-actio
 afterEach(() => vi.unstubAllGlobals());
 
 describe("API connection failures", () => {
+  it("preserves Next.js dynamic-render bailouts without retrying", async () => {
+    const error = Object.assign(new Error("Dynamic server usage: no-store fetch"), { digest: "DYNAMIC_SERVER_USAGE" });
+    const fetch = vi.fn().mockRejectedValue(error);
+    vi.stubGlobal("fetch", fetch);
+    await expect(fetchApiResponse("/api/v1/catalog", { cache: "no-store" })).rejects.toBe(error);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+  it("does not disguise unexpected errors as connection failures", async () => {
+    const error = new Error("Unexpected failure");
+    const fetch = vi.fn().mockRejectedValue(error);
+    vi.stubGlobal("fetch", fetch);
+    await expect(fetchApiResponse("/api/v1/test")).rejects.toBe(error);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
   it("recovers a read after a transient failure", async () => {
     const fetch = vi.fn().mockRejectedValueOnce(new TypeError("fetch failed")).mockResolvedValueOnce(new Response("ok"));
     vi.stubGlobal("fetch", fetch);
