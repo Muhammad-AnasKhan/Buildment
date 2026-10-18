@@ -11,6 +11,7 @@ import {
   LogOut,
   Menu,
   Plug,
+  Settings,
   Users,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
@@ -80,6 +81,12 @@ export function AdminWorkspaceShell({
       href: "/admin/users",
       icon: Users,
       active: pathname === "/admin/users",
+    },
+    {
+      label: "Profile settings",
+      href: "/admin/settings/profile",
+      icon: Settings,
+      active: pathname.startsWith("/admin/settings"),
     },
   ];
 

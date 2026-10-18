@@ -1,6 +1,8 @@
 import type { Request, Response } from "express";
 import type { AuthSession } from "../shared/api/auth.js";
-import { created, ok } from "../utils/responses.js";
+import { created, noContent, ok } from "../utils/responses.js";
+import { changePassword } from "../services/auth/change-password.js";
+import type { ChangePasswordBody } from "../validations/auth.js";
 import { clearSessionCookie, setSessionCookie } from "../utils/session-cookie.js";
 import { confirmEmailVerificationToken, resendVerification } from "../services/auth/email-verification.js";
 import { createDevLoginSession } from "../services/auth/dev-login.js";
@@ -15,6 +17,12 @@ function authSession(result: Awaited<ReturnType<typeof loginWithPassword>>): Aut
     user: serializeSessionUser(result.user),
     session: { token: result.session.sessionToken, expiresAt: result.session.expires.toISOString() },
   };
+}
+
+// PATCH /api/v1/auth/password
+export async function updatePassword(req: Request, res: Response) {
+  await changePassword(req.user!.id, req.sessionToken!, req.body as ChangePasswordBody);
+  noContent(res);
 }
 
 // POST /api/v1/auth/signup

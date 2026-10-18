@@ -16,6 +16,7 @@ import {
   Menu,
   MessageSquareText,
   Users,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
@@ -113,6 +114,12 @@ export function MentorWorkspaceSidebar({
       icon: LibraryBig,
       active: pathname === "/courses",
       count: courses.length,
+    },
+    {
+      label: "Profile settings",
+      href: "/workspace/settings/profile",
+      icon: Settings,
+      active: pathname === "/workspace/settings/profile",
     },
   ];
   const courseItems: NavItem[] = [

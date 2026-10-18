@@ -1,9 +1,19 @@
 import { z } from "zod";
 import { email, id, params } from "./common.js";
+import { changePasswordBody } from "./auth.js";
 
 export const orgIdParams = params("orgId");
 export const requestIdParams = params("requestId");
 export const userIdParams = params("userId");
+
+export const adminProfileBody = z.object({
+  name: z.string().trim().min(1, "Name is required").max(120),
+  email,
+  currentPassword: z.string().max(128).optional(),
+});
+export type AdminProfileBody = z.infer<typeof adminProfileBody>;
+export const adminPasswordBody = changePasswordBody;
+export type AdminPasswordBody = z.infer<typeof adminPasswordBody>;
 
 export const createOrganizationBody = z.object({
   name: z.string().trim().min(2).max(120),

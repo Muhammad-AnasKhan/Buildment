@@ -36,5 +36,26 @@ export async function updateProfileAction(
   }
 
   revalidatePath("/settings/profile");
+  revalidatePath("/workspace/settings/profile");
+  revalidatePath("/", "layout");
   return { ok: true };
+}
+
+export async function updatePasswordAction(_prev: ProfileUpdateState, formData: FormData): Promise<ProfileUpdateState> {
+  try {
+    await serverApiFetch("/api/v1/auth/password", {
+      method: "PATCH",
+      json: {
+        currentPassword: String(formData.get("currentPassword") ?? ""),
+        newPassword: String(formData.get("newPassword") ?? ""),
+        confirmPassword: String(formData.get("confirmPassword") ?? ""),
+      },
+    });
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { ok: false, errors: error.errors.length ? error.errors.map((issue) => issue.message) : [error.message] };
+    }
+    throw error;
+  }
 }

@@ -4,6 +4,7 @@ import { authenticate, optionalAuth } from "../../middlewares/authenticate.js";
 import { userRateLimit } from "../../middlewares/rate-limit.js";
 import { validateBody, validateQuery } from "../../middlewares/validate.js";
 import {
+  changePasswordBody,
   confirmEmailQuery,
   devLoginQuery,
   loginBody,
@@ -27,6 +28,7 @@ router.post(
 );
 router.post("/logout", optionalAuth, auth.logout);
 router.get("/me", authenticate, auth.me);
+router.patch("/password", authenticate, userRateLimit({ scope: "change-password", max: 10, windowMs: 15 * 60_000 }), validateBody(changePasswordBody), auth.updatePassword);
 
 router.post("/resend-verification", optionalAuth, userRateLimit({ scope: "resend", max: 5 }), validateBody(resendVerificationBody), auth.resend);
 

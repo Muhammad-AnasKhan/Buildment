@@ -4,7 +4,10 @@ import * as overview from "../services/admin/overview.js";
 import * as organizations from "../services/admin/organizations.js";
 import * as courseRequests from "../services/admin/course-requests.js";
 import * as users from "../services/admin/users.js";
+import * as profile from "../services/admin/profile.js";
 import type {
+  AdminProfileBody,
+  AdminPasswordBody,
   AllocationsBody,
   ApproveCourseRequestBody,
   CreateOrganizationBody,
@@ -14,6 +17,18 @@ import type {
 // Platform administration. Every handler runs behind authenticate + requireAdmin.
 
 const param = (req: Request, name: string) => req.params[name] as string;
+
+// PATCH /api/v1/admin/profile
+export async function updateProfile(req: Request, res: Response) {
+  await profile.updateAdminProfile(req.user!.id, req.body as AdminProfileBody);
+  noContent(res);
+}
+
+// PATCH /api/v1/admin/password
+export async function updatePassword(req: Request, res: Response) {
+  await profile.updateAdminPassword(req.user!.id, req.sessionToken!, req.body as AdminPasswordBody);
+  noContent(res);
+}
 
 // GET /api/v1/admin/overview
 export async function getOverview(_req: Request, res: Response) {

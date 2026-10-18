@@ -1,9 +1,12 @@
 import { Router } from "express";
+import { userRateLimit } from "../../middlewares/rate-limit.js";
 import * as admin from "../../controllers/admin.js";
 import { authenticate } from "../../middlewares/authenticate.js";
 import { requireAdmin } from "../../middlewares/require-admin.js";
 import { validate, validateBody, validateParams } from "../../middlewares/validate.js";
 import {
+  adminProfileBody,
+  adminPasswordBody,
   allocationsBody,
   approveCourseRequestBody,
   createOrganizationBody,
@@ -19,6 +22,10 @@ import {
 const router = Router();
 
 router.use(authenticate, requireAdmin);
+
+const profileLimiter = userRateLimit({ scope: "admin-profile", max: 10, windowMs: 15 * 60_000 });
+router.patch("/profile", profileLimiter, validateBody(adminProfileBody), admin.updateProfile);
+router.patch("/password", profileLimiter, validateBody(adminPasswordBody), admin.updatePassword);
 
 router.get("/overview", admin.getOverview);
 router.get("/courses", admin.listCourses);
