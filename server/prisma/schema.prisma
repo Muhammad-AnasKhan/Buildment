@@ -233,6 +233,8 @@ model User {
   instructorAccessReviews       InstructorAccessRequest[] @relation("InstructorAccessReviewer")
   aiCredential                  AiCredential?
   aiInterviewSessions           AiInterviewSession[]
+  appActivity                   UserAppActivity?
+  appActivityDays               AppActivityDay[]
 }
 
 /// A learner's own AI provider key for AI interviews. Only the AES-256-GCM
@@ -647,6 +649,34 @@ model DailyActivity {
 
   @@unique([enrollmentId, date])
   @@index([enrollmentId, date])
+}
+
+/// Estimated active seconds anywhere in the signed-in app, per user per UTC day. Study time is
+/// already inside this number — never add DailyActivity on top. Pruned after the retention window
+/// (services/activity/app-activity.ts); DailyActivity is not.
+model AppActivityDay {
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          DateTime @db.Date
+  activeSeconds Int      @default(0)
+  heartbeats    Int      @default(0)
+  firstActiveAt DateTime
+  lastActiveAt  DateTime
+
+  @@id([userId, date])
+  @@index([date])
+}
+
+/// One row per user. `lastActiveAt` is the end of the last credited app heartbeat: it bounds new
+/// credit to wall-clock time across tabs and devices, and drives future inactivity reminders.
+model UserAppActivity {
+  userId       String   @id
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastActiveAt DateTime
+  /// Client id of the last accepted heartbeat, so an exact retry is not counted twice.
+  lastBeatId   String?
+
+  @@index([lastActiveAt])
 }
 
 /// One explicit study sitting on a chapter. Heartbeats credit time only while RUNNING.

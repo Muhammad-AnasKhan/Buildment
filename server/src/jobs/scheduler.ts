@@ -3,6 +3,7 @@ import { logger } from "../utils/logger.js";
 import { runInactivityNudges } from "../services/jobs/inactivity-nudges.js";
 import { runWeeklyGoalReminders } from "../services/jobs/weekly-goal-reminders.js";
 import { runIntegrityRetention } from "../services/jobs/integrity-retention.js";
+import { pruneAppActivity } from "../services/activity/app-activity.js";
 
 // Background jobs run inside the API process on a fixed daily time, so a
 // deployment needs no external cron. The /api/v1/jobs endpoints stay for
@@ -16,6 +17,12 @@ export type ScheduledJob = {
   hourUtc: number;
   run: () => Promise<unknown>;
 };
+
+/**
+ * Runs right after the UTC day boundary (the reporting timezone), so the rolling app-activity
+ * window drops its oldest day as soon as a new one starts. One indexed DELETE a day.
+ */
+const APP_ACTIVITY_CLEANUP_HOUR_UTC = 0;
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
@@ -33,6 +40,7 @@ export function defaultJobs(): ScheduledJob[] {
     { name: "inactivity-nudges", hourUtc: env.INACTIVITY_NUDGE_HOUR_UTC, run: runInactivityNudges },
     { name: "weekly-goal-reminders", hourUtc: env.WEEKLY_GOAL_REMINDER_HOUR_UTC, run: runWeeklyGoalReminders },
     { name: "integrity-retention", hourUtc: env.INTEGRITY_RETENTION_HOUR_UTC, run: () => runIntegrityRetention() },
+    { name: "app-activity-cleanup", hourUtc: APP_ACTIVITY_CLEANUP_HOUR_UTC, run: () => pruneAppActivity() },
   ];
 }
 

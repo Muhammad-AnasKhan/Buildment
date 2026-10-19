@@ -3,6 +3,7 @@ import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { MentorWorkspaceSidebar } from "@/components/teach/mentor-workspace-sidebar";
 import { signOutAction } from "@/server/auth/actions";
+import { AppActivityTracker } from "@/components/app-activity-tracker";
 
 export default async function TeachLayout({ children }: { children: React.ReactNode }) {
   const user = await requireTeachSurface();
@@ -10,6 +11,7 @@ export default async function TeachLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
+      <AppActivityTracker />
       <MentorWorkspaceSidebar
         courses={courses}
         user={user}

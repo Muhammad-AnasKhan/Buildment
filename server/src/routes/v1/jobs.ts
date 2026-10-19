@@ -9,5 +9,6 @@ router.use(requireCronSecret);
 router.post("/inactivity-nudge", jobs.inactivityNudge);
 router.post("/weekly-goal-reminder", jobs.weeklyGoalReminder);
 router.post("/integrity-retention", jobs.integrityRetention);
+router.post("/app-activity-cleanup", jobs.appActivityCleanup);
 
 export default router;
