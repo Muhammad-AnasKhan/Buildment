@@ -158,7 +158,7 @@ error state); they call the API through `src/server/actions/admin/call.ts`.
 - `server`: 240 unit + API tests (new admin suite: access, overview, organisations and
   credentials, allocations, course requests, users and instructor access), `tsc` and eslint clean.
 - `shared`: 67 tests. `frontend`: `tsc` clean, 70 unit tests, Turbopack production build.
-- Playwright (`e2e/admin.spec.ts` + the earlier specs, 22 tests) against `next dev` + API.
+- Playwright (`frontend/tests/e2e/admin.spec.ts` + the earlier specs, 22 tests) against `next dev` + API.
 - Learned on the way: a production build leaves a `.next` directory that `next dev` cannot reuse
   (Turbopack's persistent cache refuses a second writer), so clear `.next` entirely before
   starting dev; and the chapter editor route takes about a minute to compile cold on this
@@ -195,7 +195,7 @@ course publish rules moved to `@buildment/shared` so publish-time validation run
 - `shared`: 67 tests (extraction, quiz config, placeholder restoration, publish rules).
 - `frontend`: `tsc` clean, 75 unit tests (the allowlist parity test pins the shared component
   allowlist to the MDX component map), Turbopack production build.
-- Playwright (`e2e/teach.spec.ts` + the earlier specs, 20 tests) against `next dev` + API:
+- Playwright (`frontend/tests/e2e/teach.spec.ts` + the earlier specs, 20 tests) against `next dev` + API:
   course list and builder, chapter editor, mentees/reports/activity, CSV export through the proxy,
   review queue and help inbox, learner refused on `/api/v1/teach`.
 - Learned on the way: Node's `fetch` drops idle keep-alive sockets after ~4 s while Express closed
@@ -230,7 +230,7 @@ wrappers that keep their result shapes, so the client components did not change.
 
 - `server`: 127 unit + API tests (signup, login, logout, resend, magic-link request/verify/misuse).
 - `frontend`: `tsc` clean, 199 unit tests, Turbopack production build.
-- Playwright (`frontend/e2e/auth.spec.ts` + `platform.spec.ts`, 10 tests) against both the
+- Playwright (`frontend/tests/e2e/auth.spec.ts` + `platform.spec.ts`, 10 tests) against both the
   production build and `next dev` + API: wrong-password message, password sign-in → dashboard →
   sign-out, anonymous redirect, signup without email delivery → immediate sign-in,
   duplicate-email error, magic-link request → "check your email", dev login → catalog,

@@ -89,6 +89,6 @@ describe("profile and instructor access", () => {
     expect(again.status).toBe(409);
     expect(again.body.code).toBe("REQUEST_PENDING");
     const workspace = await request(app).get("/api/v1/learner/workspace").set(auth());
-    expect(workspace.body.data.instructorAccess).toEqual({ canInstruct: false, requestStatus: "pending", canRequestAccess: false });
+    expect(workspace.body.data.instructorAccess).toEqual({ role: "MENTEE", requestStatus: "pending", canRequestAccess: false });
   });
 });

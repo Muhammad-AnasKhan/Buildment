@@ -116,11 +116,11 @@ export default async function AdminUsersPage() {
                       <input type="hidden" name="userId" value={user.id} />
                       <input
                         type="hidden"
-                        name="canInstruct"
-                        value={user.canInstruct ? "false" : "true"}
+                        name="enabled"
+                        value={user.role === "MENTOR" ? "false" : "true"}
                       />
-                      <Button type="submit" size="sm" variant={user.canInstruct ? "outline" : "default"}>
-                        {user.canInstruct ? "Revoke" : "Grant"}
+                      <Button type="submit" size="sm" variant={user.role === "MENTOR" ? "outline" : "default"}>
+                        {user.role === "MENTOR" ? "Revoke" : "Grant"}
                       </Button>
                     </form>
                   )}

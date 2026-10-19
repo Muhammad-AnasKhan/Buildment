@@ -10,7 +10,7 @@
   },
   "scripts": {
     "dev": "tsx watch --clear-screen=false src/index.ts",
-    "build": "prisma generate && tsc -p tsconfig.build.json && cp -R src/generated dist/generated",
+    "build": "prisma generate && tsc -p tsconfig.build.json && node scripts/copy-generated.mjs",
     "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src",

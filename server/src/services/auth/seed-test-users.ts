@@ -28,13 +28,11 @@ export async function ensureAllSeedTestUsersReady() {
         emailVerified: Date;
         passwordHash: string;
         role: (typeof SEED_USERS)[number]["role"];
-        canInstruct?: boolean;
       } = {
         emailVerified: new Date(),
         passwordHash,
         role: seed.role,
       };
-      if (seed.role === "MENTOR") data.canInstruct = true;
       return prisma.user.upsert({
         where: { email: seed.email },
         update: data,

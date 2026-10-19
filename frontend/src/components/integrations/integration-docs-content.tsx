@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, KeyRound, ListChecks, Rocket, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   INTEGRATION_ACCESS_KEY_HEADER,
   INTEGRATION_API_CATALOG,

@@ -158,15 +158,15 @@ describe("users and instructor access", () => {
     const list = await request(app).get("/api/v1/admin/users").set(admin());
     expect(list.status).toBe(200);
     const learner = list.body.data.users.find((u: { id: string }) => u.id === fx.learner.id);
-    expect(learner).toMatchObject({ role: "MENTEE", canInstruct: false, emailVerified: true, enrollmentCount: 1 });
+    expect(learner).toMatchObject({ role: "MENTEE", emailVerified: true, enrollmentCount: 1 });
 
     const grant = await request(app).patch(`/api/v1/admin/users/${fx.learner.id}/instructor-access`).set(admin()).send({ enabled: true });
     expect(grant.status).toBe(204);
-    expect(await prisma.user.findUniqueOrThrow({ where: { id: fx.learner.id } })).toMatchObject({ role: "MENTOR", canInstruct: true });
+    expect(await prisma.user.findUniqueOrThrow({ where: { id: fx.learner.id } })).toMatchObject({ role: "MENTOR" });
 
     const revoke = await request(app).patch(`/api/v1/admin/users/${fx.learner.id}/instructor-access`).set(admin()).send({ enabled: false });
     expect(revoke.status).toBe(204);
-    expect((await prisma.user.findUniqueOrThrow({ where: { id: fx.learner.id } })).canInstruct).toBe(false);
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: fx.learner.id } })).role).toBe("MENTEE");
     expect((await request(app).patch("/api/v1/admin/users/nope/instructor-access").set(admin()).send({ enabled: true })).status).toBe(404);
   });
 
@@ -176,14 +176,14 @@ describe("users and instructor access", () => {
     expect(res.status).toBe(204);
     const user = await prisma.user.findUniqueOrThrow({ where: { email } });
     createdUserIds.push(user.id);
-    expect(user).toMatchObject({ role: "MENTOR", canInstruct: true, name: "New Instructor" });
+    expect(user).toMatchObject({ role: "MENTOR", name: "New Instructor" });
     expect(user.emailVerified).not.toBeNull();
   });
 
   it("approves and rejects instructor access requests once", async () => {
     // The toggle test left an approved request behind; start from a clean learner.
     await prisma.instructorAccessRequest.deleteMany({ where: { userId: fx.learner.id } });
-    await prisma.user.update({ where: { id: fx.learner.id }, data: { role: "MENTEE", canInstruct: false } });
+    await prisma.user.update({ where: { id: fx.learner.id }, data: { role: "MENTEE" } });
     const asked = await request(app).post("/api/v1/learner/instructor-access-requests").set("Authorization", `Bearer ${fx.learnerToken}`).send({ message: "I teach Go." });
     expect([200, 201]).toContain(asked.status);
     const pending = await prisma.instructorAccessRequest.findUniqueOrThrow({ where: { userId: fx.learner.id } });
@@ -194,7 +194,7 @@ describe("users and instructor access", () => {
     const approve = await request(app).post(`/api/v1/admin/instructor-access-requests/${pending.id}/approve`).set(admin());
     expect(approve.status).toBe(204);
     expect(await prisma.instructorAccessRequest.findUniqueOrThrow({ where: { id: pending.id } })).toMatchObject({ status: "APPROVED", reviewedById: adminId });
-    expect((await prisma.user.findUniqueOrThrow({ where: { id: fx.learner.id } })).canInstruct).toBe(true);
+    expect((await prisma.user.findUniqueOrThrow({ where: { id: fx.learner.id } })).role).toBe("MENTOR");
 
     const reject = await request(app).post(`/api/v1/admin/instructor-access-requests/${pending.id}/reject`).set(admin());
     expect(reject.status).toBe(409);

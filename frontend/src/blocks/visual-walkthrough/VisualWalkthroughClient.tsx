@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, Expand, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,7 +28,7 @@ export function VisualWalkthroughClient({ title, steps }: VisualWalkthroughConfi
         </ol>
         <div className="min-w-0 p-4 sm:p-6">
           <div className="overflow-hidden rounded-xl border border-border bg-muted/30">
-            <img src={step.imageUrl} alt={step.alt} className="block max-h-[34rem] w-full object-contain" loading="lazy" />
+            <Image unoptimized width={1600} height={900} src={step.imageUrl} alt={step.alt} className="block max-h-[34rem] w-full object-contain" loading="lazy" />
           </div>
           <div className="mt-4 flex items-start justify-between gap-4"><div><p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">Step {active + 1} of {steps.length}</p><h4 className="mt-1 text-base font-semibold text-foreground">{step.title}</h4><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{step.description}</p></div><a href={step.imageUrl} target="_blank" rel="noreferrer" className="rounded-md border border-border p-2 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label={`Open ${step.title} image`}><Expand className="size-4" /></a></div>
           <div className="mt-5 flex justify-between border-t border-border pt-4"><Button type="button" variant="outline" size="sm" onClick={previous} disabled={active === 0}><ChevronLeft className="size-4" /> Previous</Button><Button type="button" variant="outline" size="sm" onClick={next} disabled={active === steps.length - 1}>Next <ChevronRight className="size-4" /></Button></div>

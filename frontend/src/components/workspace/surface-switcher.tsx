@@ -14,7 +14,7 @@ export function SurfaceSwitcher({
   current: ActiveSurface;
   instructorAccess: InstructorAccessView;
 }) {
-  if (instructorAccess.canInstruct) {
+  if (instructorAccess.role === "MENTOR" || instructorAccess.role === "ADMIN") {
     const target = current === "learn" ? "teach" : "learn";
     const label =
       current === "learn" ? "Switch to instructor" : "Switch to learning";

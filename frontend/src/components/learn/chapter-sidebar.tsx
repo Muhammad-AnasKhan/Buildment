@@ -162,13 +162,12 @@ export function ChapterSidebar({
     return open;
   });
 
-  useEffect(() => {
-    for (const mod of modules) {
-      if (mod.chapters.some((ch) => ch.slug === activeSlug)) {
-        setOpenModules((prev) => new Set([...prev, mod.id]));
-      }
-    }
-  }, [activeSlug, modules]);
+  const activeModuleId = modules.find((mod) => mod.chapters.some((ch) => ch.slug === activeSlug))?.id;
+  const [previousActiveModuleId, setPreviousActiveModuleId] = useState(activeModuleId);
+  if (activeModuleId !== previousActiveModuleId) {
+    setPreviousActiveModuleId(activeModuleId);
+    if (activeModuleId) setOpenModules((prev) => new Set([...prev, activeModuleId]));
+  }
 
   useEffect(() => {
     if (collapsed) return;

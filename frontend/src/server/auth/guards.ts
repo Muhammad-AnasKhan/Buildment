@@ -7,7 +7,6 @@ import {
   canAccessTeachSurface,
   homeRouteForRole,
   surfaceHomeRoute,
-  userCanInstruct,
 } from "./access-rules";
 import { getActiveSurface } from "./surface";
 
@@ -20,7 +19,6 @@ export {
   homeRouteForRole,
   isMentorOfCourse,
   surfaceHomeRoute,
-  userCanInstruct,
 } from "./access-rules";
 
 // Where the web app decides which surface a visitor may enter — see
@@ -51,14 +49,13 @@ export async function requireRole(...allowed: readonly ["MENTOR" | "MENTEE" | "A
   return user;
 }
 
-/** Learner workspace — any signed-in user except platform admin shell. */
+/** Learner workspace — mentees, mentors, and admins. */
 export async function requireLearnSurface() {
   const user = await requireVerifiedUser();
   if (!canAccessLearnSurface(user)) {
     redirect("/admin");
   }
-  const canInstruct = userCanInstruct(user);
-  const surface = await getActiveSurface(canInstruct);
+  const surface = await getActiveSurface(user.role);
   if (surface !== "learn") {
     redirect(surfaceHomeRoute("teach"));
   }
@@ -71,8 +68,7 @@ export async function requireTeachSurface() {
   if (!canAccessTeachSurface(user)) {
     redirect(surfaceHomeRoute("learn"));
   }
-  const canInstruct = userCanInstruct(user);
-  const surface = await getActiveSurface(canInstruct);
+  const surface = await getActiveSurface(user.role);
   if (surface !== "teach") {
     redirect(surfaceHomeRoute("learn"));
   }

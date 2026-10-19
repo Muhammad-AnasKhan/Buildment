@@ -2,7 +2,7 @@ import type { RequestHandler } from "express";
 import { ForbiddenError, UnauthorizedError } from "../utils/errors.js";
 import { canAccessTeachSurface } from "../services/auth/access-rules.js";
 
-/** Instructor tools: admins and users with the instructor capability. Runs after `authenticate`. */
+/** Instructor tools: MENTOR and ADMIN roles. Runs after `authenticate`. */
 export const requireInstructor: RequestHandler = (req, _res, next) => {
   if (!req.user) return next(new UnauthorizedError("Not signed in"));
   if (!canAccessTeachSurface(req.user)) {

@@ -1,6 +1,6 @@
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { readerCard, readerCardHeader, readerEyebrow } from "@/components/learn/reader-theme";
+import { readerEyebrow } from "@/components/learn/reader-theme";
 
 export type PendingBlockCardProps = {
   typeLabel: string;

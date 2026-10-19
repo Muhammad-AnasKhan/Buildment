@@ -17,7 +17,6 @@ export function toSessionUser(user: {
   name: string | null;
   image: string | null;
   role: SessionUser["role"];
-  canInstruct: boolean;
   emailVerified: Date | null;
 }): SessionUser {
   return {
@@ -26,7 +25,6 @@ export function toSessionUser(user: {
     name: user.name,
     image: user.image,
     role: user.role,
-    canInstruct: user.canInstruct,
     emailVerified: user.emailVerified,
   };
 }

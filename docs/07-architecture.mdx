@@ -159,9 +159,23 @@ buildment/
 │  │  └─ actions/                     # server actions
 │  ├─ components/ui/                  # shadcn
 │  └─ lib/
-├─ e2e/
 └─ tests/
+   ├─ unit/
+   ├─ e2e/
+   └─ stubs/
 ```
+
+## Test locations
+
+All automated tests live in each application’s `tests/` directory:
+
+- `server/tests/unit/` mirrors the backend source folders.
+- `server/tests/api/` contains API integration tests; shared fixtures and setup stay in `server/tests/helpers/` and `server/tests/setup.ts`.
+- `server/tests/scripts/` contains script tests.
+- `frontend/tests/unit/` mirrors the frontend source folders.
+- `frontend/tests/e2e/` contains Playwright tests, and `frontend/tests/stubs/` contains test substitutes.
+
+Run unit and API tests with `pnpm test`. Run browser tests with `pnpm --dir frontend exec playwright test`.
 
 ## Related
 

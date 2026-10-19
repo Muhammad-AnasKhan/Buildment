@@ -52,12 +52,22 @@ export function useStudySession(chapterId: string) {
   const [busy, setBusy] = useState(false);
   const [pauseReason, setPauseReason] = useState<StudyPauseReason>(null);
 
+  const [previousChapterId, setPreviousChapterId] = useState(chapterId);
+  if (chapterId !== previousChapterId) {
+    setPreviousChapterId(chapterId);
+    setStatus("idle");
+    setSyncedSession(0);
+    setSyncedChapter(0);
+    setPendingSeconds(0);
+    setPauseReason(null);
+  }
+
   const statusRef = useRef<StudyClockStatus>("idle");
   const busyRef = useRef(false);
   const pendingRef = useRef(0);
   const chapterRef = useRef(chapterId);
   const requestEpoch = useRef(0);
-  const lastActivityAt = useRef(Date.now());
+  const lastActivityAt = useRef(0);
 
   useEffect(() => {
     statusRef.current = status;
@@ -86,11 +96,8 @@ export function useStudySession(chapterId: string) {
   useEffect(() => {
     chapterRef.current = chapterId;
     const epoch = ++requestEpoch.current;
-    setStatus("idle");
-    setSyncedSession(0);
-    setSyncedChapter(0);
+    statusRef.current = "idle";
     pendingRef.current = 0;
-    setPendingSeconds(0);
 
     void (async () => {
       try {

@@ -32,7 +32,7 @@ export async function createCourseFixture() {
   const tag = randomUUID().slice(0, 8);
 
   const mentor = await prisma.user.create({
-    data: { email: `mentor-${tag}@test.local`, name: "Test Mentor", role: "MENTOR", canInstruct: true, emailVerified: new Date() },
+    data: { email: `mentor-${tag}@test.local`, name: "Test Mentor", role: "MENTOR", emailVerified: new Date() },
   });
   const learner = await prisma.user.create({
     data: { email: `learner-${tag}@test.local`, name: "Test Learner", role: "MENTEE", emailVerified: new Date() },

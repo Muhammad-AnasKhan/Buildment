@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { cn } from "@/lib/utils";
 import { LearnPanelShell } from "./learn-panel-shell";
 
 type CompareColumnProps = {

@@ -47,7 +47,7 @@ export function MenteeWorkspaceShell({
   signOutAction,
 }: {
   children: ReactNode;
-  user: { name?: string | null; email?: string | null };
+  user: { name?: string | null; email?: string | null; role?: string };
   instructorAccess: InstructorAccessView;
   assignedCourses: number;
   openHelpRequests: number;
@@ -186,6 +186,7 @@ export function MenteeWorkspaceShell({
 
         <div className="border-t p-3 space-y-1">
           <SurfaceSwitcher current="learn" instructorAccess={instructorAccess} />
+          {user.role === "ADMIN" && <Link href="/admin" className="block px-2.5 py-2 text-sm">Admin area</Link>}
           <div className="flex items-center gap-2.5 rounded-xl px-2 py-2">
             <span className="min-w-0 flex-1">
               <span className="block truncate text-xs font-medium">{user.name ?? "Learner"}</span>

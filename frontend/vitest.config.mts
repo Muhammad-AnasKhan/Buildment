@@ -9,11 +9,11 @@ export default defineConfig({
     tsconfigPaths: true,
     alias: {
       // "server-only" throws by design outside Next.js's bundler — stub it for tests.
-      "server-only": path.resolve(dirname, "./test/stubs/server-only.ts"),
+      "server-only": path.resolve(dirname, "./tests/stubs/server-only.ts"),
     },
   },
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts"],
+    include: ["tests/**/*.test.ts"],
   },
 });

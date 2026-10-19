@@ -1,26 +1,16 @@
 
 import { prisma } from "../../db/prisma.js";
-import { userCanInstruct } from "../auth/access-rules.js";
+import { canAccessTeachSurface } from "../auth/access-rules.js";
 import type { InstructorAccessView } from "../../shared/lib/instructor-access.js";
 import type { Role } from "../../generated/prisma/index.js";
 
 export async function loadInstructorAccessState(user: {
   id: string;
   role: Role;
-  canInstruct: boolean;
 }): Promise<InstructorAccessView> {
-  const canInstruct = userCanInstruct(user);
-  if (canInstruct) {
+  if (canAccessTeachSurface(user)) {
     return {
-      canInstruct: true,
-      requestStatus: "none",
-      canRequestAccess: false,
-    };
-  }
-
-  if (user.role === "ADMIN") {
-    return {
-      canInstruct: true,
+      role: user.role,
       requestStatus: "none",
       canRequestAccess: false,
     };
@@ -42,7 +32,7 @@ export async function loadInstructorAccessState(user: {
     user.role === "MENTEE" && requestStatus !== "pending";
 
   return {
-    canInstruct: false,
+    role: user.role,
     requestStatus,
     canRequestAccess,
   };

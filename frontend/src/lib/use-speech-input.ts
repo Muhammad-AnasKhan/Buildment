@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useHydrated } from "./use-browser-storage";
+
 type SpeechRecognitionCtor = new () => SpeechRecognition;
 
 function getSpeechRecognition(): SpeechRecognitionCtor | null {
@@ -14,14 +16,11 @@ function getSpeechRecognition(): SpeechRecognitionCtor | null {
 }
 
 export function useSpeechInput(onTranscript: (chunk: string, isFinal: boolean) => void) {
-  const [supported, setSupported] = useState(false);
+  const hydrated = useHydrated();
+  const supported = hydrated && Boolean(getSpeechRecognition());
   const [listening, setListening] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
-
-  useEffect(() => {
-    setSupported(Boolean(getSpeechRecognition()));
-  }, []);
 
   const stop = useCallback(() => {
     recognitionRef.current?.stop();

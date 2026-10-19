@@ -1,12 +1,14 @@
+import type { Role } from "../domain/enums.js";
+
 /** Serializable instructor / learner switch state for workspace sidebars. */
 export type InstructorAccessView = {
-  canInstruct: boolean;
+  role: Role;
   requestStatus: "none" | "pending" | "rejected";
   canRequestAccess: boolean;
 };
 
 export function instructorAccessView(input: {
-  canInstruct: boolean;
+  role: Role;
   requestStatus: InstructorAccessView["requestStatus"];
   canRequestAccess: boolean;
 }): InstructorAccessView {

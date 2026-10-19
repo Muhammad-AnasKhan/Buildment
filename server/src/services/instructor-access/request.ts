@@ -2,13 +2,13 @@ import { INSTRUCTOR_ACCESS_ERROR_CODES } from "../../shared/api/learner.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, ForbiddenError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
-import { userCanInstruct } from "../auth/access-rules.js";
+import { canAccessTeachSurface } from "../auth/access-rules.js";
 import { notifyAdminsInstructorAccessRequest } from "../email/admin-notifications.js";
 import { queueEmail } from "../email/queue.js";
 
 /** A learner asks platform admins for instructor tools. One live request per user. */
 export async function requestInstructorAccess(user: SessionUser, message?: string) {
-  if (userCanInstruct(user)) {
+  if (canAccessTeachSurface(user)) {
     throw new ConflictError("You already have instructor access.", INSTRUCTOR_ACCESS_ERROR_CODES.ALREADY_INSTRUCTOR);
   }
   if (user.role === "ADMIN") throw new ForbiddenError("Platform admins use the admin console.");

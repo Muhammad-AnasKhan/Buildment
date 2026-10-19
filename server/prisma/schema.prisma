@@ -171,8 +171,6 @@ model User {
   image         String?
   role          Role         @default(MENTEE)
   passwordHash  String?
-  /// Udemy-style: same account can switch to instructor tools when true (admin invite or legacy MENTOR).
-  canInstruct   Boolean      @default(false)
   weeklyGoalKind WeeklyGoalKind?
   weeklyGoalTarget Int?
   celebratedStreakMilestones Int[] @default([])

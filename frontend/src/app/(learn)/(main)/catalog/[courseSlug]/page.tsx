@@ -7,7 +7,6 @@ import { CourseCover } from "@/components/learn/course-cover";
 import { formatPriceCents } from "@/lib/format-price";
 import { buttonVariants } from "@/components/ui/button";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
-import { cn } from "@/lib/utils";
 
 export default async function CatalogCoursePage({
   params,

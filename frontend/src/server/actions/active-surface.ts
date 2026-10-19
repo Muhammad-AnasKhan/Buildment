@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { type ActiveSurface, isActiveSurface } from "@/shared/lib/active-surface";
-import { requireVerifiedUser, userCanInstruct } from "@/server/auth/guards";
+import { requireVerifiedUser } from "@/server/auth/guards";
 import { canAccessTeachSurface, surfaceHomeRoute } from "@/server/auth/access-rules";
 import { setActiveSurfaceCookie } from "@/server/auth/surface";
 
@@ -11,7 +11,7 @@ export async function setActiveSurfaceAction(surface: ActiveSurface) {
     throw new Error("Invalid surface");
   }
   const user = await requireVerifiedUser();
-  if (surface === "teach" && !canAccessTeachSurface({ role: user.role, canInstruct: userCanInstruct(user) })) {
+  if (surface === "teach" && !canAccessTeachSurface(user)) {
     redirect(surfaceHomeRoute("learn"));
   }
   await setActiveSurfaceCookie(surface);

@@ -18,14 +18,11 @@ function AnimatedCourseProgressBar({
   const nextCompleted = Math.min(courseTotal, courseCompleted + 1);
   const targetPct = courseTotal > 0 ? Math.round((nextCompleted / courseTotal) * 100) : 0;
   const startPct = courseTotal > 0 ? Math.round((courseCompleted / courseTotal) * 100) : 0;
-  const [widthPct, setWidthPct] = useState(startPct);
+  const [animatedWidthPct, setWidthPct] = useState(startPct);
+  const widthPct = animate ? animatedWidthPct : targetPct;
 
   useEffect(() => {
-    if (!animate) {
-      setWidthPct(targetPct);
-      return;
-    }
-    setWidthPct(startPct);
+    if (!animate) return;
     const start = window.setTimeout(() => setWidthPct(targetPct), 120);
     return () => window.clearTimeout(start);
   }, [animate, startPct, targetPct]);
@@ -73,12 +70,14 @@ export function ChapterCompleteCelebrationModal({
 }) {
   const [contentReady, setContentReady] = useState(false);
 
-  useEffect(() => {
-    if (!open) {
-      setContentReady(false);
-      return;
-    }
+  const [previousOpen, setPreviousOpen] = useState(open);
+  if (open !== previousOpen) {
+    setPreviousOpen(open);
     setContentReady(false);
+  }
+
+  useEffect(() => {
+    if (!open) return;
     const t = window.requestAnimationFrame(() => setContentReady(true));
     return () => cancelAnimationFrame(t);
   }, [open]);

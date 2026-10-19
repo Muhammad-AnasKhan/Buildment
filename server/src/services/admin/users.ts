@@ -27,7 +27,6 @@ export async function listUsers(): Promise<AdminUsersView> {
         email: true,
         name: true,
         role: true,
-        canInstruct: true,
         emailVerified: true,
         createdAt: true,
         _count: { select: { enrollments: true, coursesOwned: true } },
@@ -54,7 +53,7 @@ export async function setInstructorAccess(userId: string, enabled: boolean): Pro
   await prisma.$transaction(async (tx) => {
     await tx.user.update({
       where: { id: userId },
-      data: { canInstruct: enabled, ...(enabled && existing.role !== "ADMIN" ? { role: "MENTOR" } : {}) },
+      data: { role: existing.role === "ADMIN" ? "ADMIN" : enabled ? "MENTOR" : "MENTEE" },
     });
     if (enabled) {
       await tx.instructorAccessRequest.upsert({
@@ -75,10 +74,9 @@ export async function grantInstructorByEmail(input: GrantInstructorBody): Promis
       email: input.email,
       name: input.name ?? input.email.split("@")[0],
       role: "MENTOR",
-      canInstruct: true,
       emailVerified: new Date(),
     },
-    update: { canInstruct: true, ...(existing?.role === "ADMIN" ? {} : { role: "MENTOR" }) },
+    update: { ...(existing?.role === "ADMIN" ? {} : { role: "MENTOR" }) },
     select: { id: true, name: true },
   });
 
@@ -106,7 +104,7 @@ export async function approveInstructorRequest(admin: { id: string }, requestId:
   await prisma.$transaction([
     prisma.user.update({
       where: { id: request.userId },
-      data: { canInstruct: true, ...(request.user.role !== "ADMIN" ? { role: "MENTOR" } : {}) },
+      data: { ...(request.user.role !== "ADMIN" ? { role: "MENTOR" } : {}) },
     }),
     prisma.instructorAccessRequest.update({
       where: { id: request.id },

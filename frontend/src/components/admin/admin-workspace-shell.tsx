@@ -24,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { setActiveSurfaceAction } from "@/server/actions/active-surface";
 import { cn } from "@/lib/utils";
 
 type AdminNavItem = {
@@ -130,6 +131,8 @@ export function AdminWorkspaceShell({
                 );
               })}
             </DropdownMenuGroup>
+            <DropdownMenuItem onClick={() => void setActiveSurfaceAction("learn")}>Learner area</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => void setActiveSurfaceAction("teach")}>Mentor area</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => void signOutAction()} variant="destructive">
               <LogOut className="size-4" />
@@ -198,6 +201,13 @@ export function AdminWorkspaceShell({
         </nav>
 
         <div className="space-y-2 border-t p-3">
+          {(["learn", "teach"] as const).map((surface) => (
+            <form key={surface} action={setActiveSurfaceAction.bind(null, surface)}>
+              <button type="submit" className="w-full rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted">
+                {surface === "learn" ? "Learner area" : "Mentor area"}
+              </button>
+            </form>
+          ))}
           <Link
             href="/integrations"
             className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"

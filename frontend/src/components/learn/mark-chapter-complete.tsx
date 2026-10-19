@@ -93,9 +93,9 @@ function ChapterCompletionMoment({
     const reduced = prefersReducedMotion();
     if (reduced) {
       playFeedback("completion");
-      setCelebrationPhase("modal");
+      const timer = window.setTimeout(() => setCelebrationPhase("modal"), 0);
       if (streakMilestone) void acknowledgeStreakMilestone(streakMilestone);
-      return;
+      return () => window.clearTimeout(timer);
     }
 
     if (celebrationAnchorRef.current) {

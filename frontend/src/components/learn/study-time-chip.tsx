@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useBrowserStorage } from "@/lib/use-browser-storage";
 import { Clock } from "lucide-react";
 import { formatStudyClock, formatStudyDuration } from "@/lib/format-study-duration";
 import type { StudyClockStatus, StudyPauseReason } from "@/lib/use-study-session";
@@ -31,25 +31,9 @@ export function StudyClock({
   onStop: () => void;
   className?: string;
 }) {
-  const [visible, setVisible] = useState(true);
-
-  useEffect(() => {
-    try {
-      setVisible(window.localStorage.getItem("buildment:show-study-clock") !== "false");
-    } catch {
-      // The timer remains usable when browser storage is unavailable.
-    }
-  }, []);
-
-  const toggleVisible = () => {
-    const next = !visible;
-    setVisible(next);
-    try {
-      window.localStorage.setItem("buildment:show-study-clock", String(next));
-    } catch {
-      // This preference is optional and only persists when browser storage allows it.
-    }
-  };
+  const [storedVisibility, setStoredVisibility] = useBrowserStorage("buildment:show-study-clock", "true");
+  const visible = storedVisibility !== "false";
+  const toggleVisible = () => setStoredVisibility(String(!visible));
 
   const chapterLabel =
     chapterTotalSeconds > 0

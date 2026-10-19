@@ -10,24 +10,12 @@ export function canAccessRole(userRole: Role, allowed: readonly Role[]): boolean
   return allowed.includes(userRole);
 }
 
-export function normalizeUserCapabilities(user: { role: Role; canInstruct?: boolean }) {
-  const canInstruct =
-    user.canInstruct === true || user.role === "MENTOR" || user.role === "ADMIN";
-  return { role: user.role, canInstruct };
-}
-
-/** Instructor capability (Buildment instructor tools), independent of Pathment mentor identity. */
-export function userCanInstruct(user: { role: Role; canInstruct?: boolean }): boolean {
-  return normalizeUserCapabilities(user).canInstruct;
-}
-
 export function canAccessLearnSurface(user: { role: Role }): boolean {
-  return user.role !== "ADMIN";
+  return ["MENTEE", "MENTOR", "ADMIN"].includes(user.role);
 }
 
-export function canAccessTeachSurface(user: { role: Role; canInstruct: boolean }): boolean {
-  if (user.role === "ADMIN") return true;
-  return userCanInstruct(user);
+export function canAccessTeachSurface(user: { role: Role }): boolean {
+  return user.role === "MENTOR" || user.role === "ADMIN";
 }
 
 export function surfaceHomeRoute(surface: ActiveSurface): string {
@@ -39,7 +27,7 @@ export function isMentorOfCourse(
   userRole: Role,
   course: { mentorId: string }
 ): boolean {
-  return userRole === "ADMIN" || course.mentorId === userId;
+  return userRole === "ADMIN" || (userRole === "MENTOR" && course.mentorId === userId);
 }
 
 export function homeRouteForRole(role: Role): string {

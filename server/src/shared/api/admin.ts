@@ -89,7 +89,6 @@ export type AdminUserRow = {
   email: string;
   name: string | null;
   role: Role;
-  canInstruct: boolean;
   emailVerified: boolean;
   createdAt: string;
   enrollmentCount: number;

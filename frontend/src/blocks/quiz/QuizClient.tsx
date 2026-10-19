@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Sparkles, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import { playFeedback } from "@/lib/sound-feedback";
 import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
 import { ApiError, apiFetch } from "@/lib/api-client";
 import type { SanitizedQuizConfig } from "@/shared/blocks/quiz/schema";
+
+import { useBrowserStorage } from "@/lib/use-browser-storage";
 
 type RespondResult = {
   isCorrect: boolean | null;
@@ -91,10 +93,9 @@ export function QuizClient({
   const router = useRouter();
   const quizSession = useQuizSession();
   const cardRef = useRef<HTMLDivElement>(null);
-  const wizardStorageHydrated = useRef(false);
   const isMultiple = config.quizType === "multiple";
-  const [selected, setSelected] = useState<string[]>(initialState?.selected ?? []);
-  const [result, setResult] = useState<RespondResult | null>(
+  const [localSelected, setLocalSelected] = useState<string[]>(initialState?.selected ?? []);
+  const [localResult, setResult] = useState<RespondResult | null>(
     initialState
       ? {
           isCorrect: initialState.isCorrect,
@@ -104,12 +105,42 @@ export function QuizClient({
         }
       : null
   );
-  const [wrongSelection, setWrongSelection] = useState<string[]>([]);
+  const [localWrongSelection, setWrongSelection] = useState<string[]>(initialState?.isCorrect === false ? initialState.selected : []);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isShaking, setIsShaking] = useState(false);
   const [isSuccessGlow, setIsSuccessGlow] = useState(false);
-  const [draftLoaded, setDraftLoaded] = useState(presentation !== "wizard");
+  const [draftRaw, setDraftRaw] = useBrowserStorage(
+    presentation === "wizard" ? draftStorageKey : undefined,
+    JSON.stringify(initialState?.selected ?? []),
+  );
+  const draftSelected = useMemo(() => {
+    try {
+      const parsed: unknown = JSON.parse(draftRaw);
+      if (Array.isArray(parsed) && parsed.every((value) => typeof value === "string")) return parsed as string[];
+    } catch { /* Ignore malformed stored selections. */ }
+    return initialState?.selected ?? [];
+  }, [draftRaw, initialState?.selected]);
+  const reviewGrade = presentation === "wizard" && quizSession?.reviewMode && !quizSession.dirtyBlockIds.has(id)
+    ? quizSession.blockGrades[id] : undefined;
+  const selected = reviewGrade?.selected ?? (presentation === "wizard" && draftStorageKey ? draftSelected : localSelected);
+  const result: RespondResult | null = reviewGrade ? {
+    isCorrect: reviewGrade.isCorrect, score: reviewGrade.isCorrect ? 1 : 0, maxScore: 1, explanation: reviewGrade.explanation,
+  } : presentation === "wizard" ? null : localResult;
+  const wrongSelection = reviewGrade?.isCorrect === false ? reviewGrade.selected : localWrongSelection;
+  function setSelected(next: string[]) {
+    setLocalSelected(next);
+    if (presentation === "wizard" && draftStorageKey) setDraftRaw(JSON.stringify(next));
+  }
+  const [previousInitialState, setPreviousInitialState] = useState(initialState);
+  if (initialState !== previousInitialState) {
+    setPreviousInitialState(initialState);
+    if (presentation !== "wizard" && initialState) {
+      setLocalSelected(initialState.selected);
+      setResult(initialState);
+      setWrongSelection(initialState.isCorrect === false ? initialState.selected : []);
+    }
+  }
 
   useEffect(() => {
     if (isShaking) {
@@ -124,85 +155,6 @@ export function QuizClient({
       return () => window.clearTimeout(timer);
     }
   }, [isSuccessGlow]);
-
-  useEffect(() => {
-    if (!initialState) return;
-    if (presentation !== "wizard") {
-      setSelected(initialState.selected);
-      setResult({
-        isCorrect: initialState.isCorrect,
-        score: initialState.score,
-        maxScore: initialState.maxScore,
-        explanation: initialState.explanation,
-      });
-      if (initialState.isCorrect === false) {
-        setWrongSelection(initialState.selected);
-      }
-    }
-  }, [initialState, presentation]);
-
-  useEffect(() => {
-    if (presentation !== "wizard" || !quizSession) return;
-    const grade = quizSession.blockGrades[id];
-    const showReview = quizSession.reviewMode && grade && !quizSession.dirtyBlockIds.has(id);
-    if (!showReview || !grade) return;
-    setSelected(grade.selected);
-    setResult({
-      isCorrect: grade.isCorrect,
-      score: grade.isCorrect ? 1 : 0,
-      maxScore: 1,
-      explanation: grade.explanation,
-    });
-    setWrongSelection(grade.isCorrect === false ? grade.selected : []);
-  }, [presentation, quizSession, id]);
-
-  useEffect(() => {
-    if (presentation !== "wizard" || !draftStorageKey) {
-      setDraftLoaded(true);
-      return;
-    }
-    if (wizardStorageHydrated.current) {
-      setDraftLoaded(true);
-      return;
-    }
-    wizardStorageHydrated.current = true;
-    if (quizSession?.reviewMode) {
-      setDraftLoaded(true);
-      return;
-    }
-    try {
-      const saved = window.localStorage.getItem(draftStorageKey);
-      if (saved !== null) {
-        const parsed: unknown = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.every((value) => typeof value === "string")) {
-          setSelected(parsed);
-        }
-      } else if (initialState?.selected.length) {
-        setSelected(initialState.selected);
-      }
-    } catch {
-      // Draft persistence is best-effort; selections still work in memory.
-    }
-    setDraftLoaded(true);
-  }, [presentation, draftStorageKey, quizSession?.reviewMode, initialState?.selected, id]);
-
-  useEffect(() => {
-    if (!draftStorageKey || !draftLoaded) return;
-    if (presentation === "wizard") {
-      try {
-        window.localStorage.setItem(draftStorageKey, JSON.stringify(selected));
-      } catch {
-        // The quiz remains usable when browser storage is unavailable.
-      }
-      return;
-    }
-    if (result) return;
-    try {
-      window.localStorage.setItem(draftStorageKey, JSON.stringify(selected));
-    } catch {
-      // The quiz remains usable when browser storage is unavailable.
-    }
-  }, [presentation, draftStorageKey, draftLoaded, result, selected]);
 
   async function submitSelection(nextSelected: string[]) {
     setSubmitting(true);

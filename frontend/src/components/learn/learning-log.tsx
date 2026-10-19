@@ -192,18 +192,11 @@ export function LearningLog({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingRef = useRef<LearningLogAnswers>({});
 
-  useEffect(() => {
-    if (!ctx?.initialAnswers) return;
-    setAnswers((prev) => {
-      const next = { ...prev };
-      for (const q of normalizedQuestions) {
-        if (ctx.initialAnswers[q.id] !== undefined) {
-          next[q.id] = ctx.initialAnswers[q.id]!;
-        }
-      }
-      return next;
-    });
-  }, [ctx?.initialAnswers, normalizedQuestions]);
+  const [previousInitialAnswers, setPreviousInitialAnswers] = useState(ctx?.initialAnswers);
+  if (ctx?.initialAnswers !== previousInitialAnswers) {
+    setPreviousInitialAnswers(ctx?.initialAnswers);
+    setAnswers((prev) => ({ ...prev, ...ctx?.initialAnswers }));
+  }
 
   const flushSave = useCallback(async () => {
     if (!chapterId) return;

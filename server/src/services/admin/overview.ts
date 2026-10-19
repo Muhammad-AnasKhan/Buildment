@@ -9,7 +9,7 @@ export async function loadOverview(): Promise<AdminOverview> {
     prisma.organization.count(),
     prisma.organizationCourseRequest.count({ where: { status: "PENDING" } }),
     prisma.course.count({ where: { status: "PUBLISHED" } }),
-    prisma.user.count({ where: { canInstruct: true } }),
+    prisma.user.count({ where: { role: "MENTOR" } }),
   ]);
   return { organizations, pendingCourseRequests, publishedCourses, instructors };
 }

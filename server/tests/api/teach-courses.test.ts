@@ -21,7 +21,7 @@ beforeAll(async () => {
   fx = await createCourseFixture();
   mentorToken = (await createSession(fx.mentor.id)).sessionToken;
   const stranger = await prisma.user.create({
-    data: { email: `other-mentor-${fx.course.id}@test.local`, name: "Other Mentor", role: "MENTOR", canInstruct: true, emailVerified: new Date() },
+    data: { email: `other-mentor-${fx.course.id}@test.local`, name: "Other Mentor", role: "MENTOR", emailVerified: new Date() },
   });
   strangerId = stranger.id;
   strangerToken = (await createSession(stranger.id)).sessionToken;
@@ -49,7 +49,7 @@ describe("/api/v1/teach access", () => {
   it("lists only the caller's courses in the workspace and course list", async () => {
     const ws = await request(app).get("/api/v1/teach/workspace").set(mentor());
     expect(ws.status).toBe(200);
-    expect(ws.body.data.instructorAccess.canInstruct).toBe(true);
+    expect(ws.body.data.instructorAccess.role).toBe("MENTOR");
     expect(ws.body.data.courses.map((c: { id: string }) => c.id)).toContain(fx.course.id);
 
     const list = await request(app).get("/api/v1/teach/courses").set(mentor());
@@ -221,7 +221,7 @@ describe("chapters", () => {
   });
 
   it("publishes a valid draft, snapshots it and archives blocks removed from the source", async () => {
-    const draft = ["# Intro", "", '<Quiz id="q-1" prompt="2 + 2?" options={[{"id":"a","label":"4"},{"id":"b","label":"5"}]} correctOptionIds={["a"]} />'].join("\n");
+    const draft = ['<Quiz id="q-1" prompt="2 + 2?" options={[{"id":"a","label":"4"},{"id":"b","label":"5"}]} correctOptionIds={["a"]} />'].join("\n");
     await request(app).put(`/api/v1/teach/chapters/${chapterId}/draft`).set(mentor()).send({ source: draft });
 
     const publish = await request(app).post(`/api/v1/teach/chapters/${chapterId}/publish`).set(mentor());

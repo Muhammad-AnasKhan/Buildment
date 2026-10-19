@@ -77,8 +77,6 @@ export function TraceRequestClient({ title, steps }: TraceRequestClientProps) {
   if (total === 0) return null;
 
   const current = visibleSteps[active]!;
-  const actor = current.actor ?? "API";
-  const actorStyle = TRACE_ACTOR_STYLES[actor] ?? TRACE_ACTOR_STYLES.API;
 
   return (
     <LearnPanelShell eyebrow="Trace" title={title}>

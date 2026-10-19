@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { BookOpenCheck, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,7 +49,7 @@ export function CourseSettings({ course }: { course: CourseBuilderCourse }) {
               placeholder="https://example.com/cover.jpg"
             />
             {course.coverUrl && (
-              <img
+              <Image unoptimized width={1600} height={900}
                 src={course.coverUrl}
                 alt="Cover preview"
                 className="mt-1.5 aspect-video w-full rounded-md border object-cover"

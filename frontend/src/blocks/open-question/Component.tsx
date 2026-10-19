@@ -8,7 +8,6 @@ export async function OpenQuestionComponent({
   prompt,
   minWords = 0,
   maxWords,
-  sampleAnswer,
   allowSpeechInput = true,
   speechPrimary = false,
   submissionMode = "text",

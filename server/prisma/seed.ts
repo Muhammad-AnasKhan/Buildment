@@ -20,7 +20,6 @@ async function main() {
         emailVerified: new Date(),
         passwordHash,
         role: seed.role,
-        ...(seed.role === "MENTOR" ? { canInstruct: true } : {}),
       };
       return prisma.user.upsert({
         where: { email: seed.email },

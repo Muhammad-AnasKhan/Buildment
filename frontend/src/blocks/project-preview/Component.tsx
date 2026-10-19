@@ -50,7 +50,7 @@ export async function ProjectPreviewComponent({
       <div className="relative overflow-hidden border-b border-border bg-muted px-6 py-8 sm:px-8">
         <div className="relative">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-            What you'll build
+            What you&apos;ll build
           </div>
           <h3 className="mt-3 text-xl font-bold text-foreground sm:text-2xl">{config.title}</h3>
           {config.description ? (

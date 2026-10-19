@@ -12,7 +12,6 @@ export type SessionUser = {
   name: string | null;
   image: string | null;
   role: Role;
-  canInstruct: boolean;
   emailVerified: string | null;
 };
 

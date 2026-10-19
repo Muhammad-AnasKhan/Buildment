@@ -8,7 +8,7 @@ export async function setUserInstructorAccessAction(formData: FormData): Promise
   if (!userId) throw new Error("Missing user.");
   await adminCall<void>(`/api/v1/admin/users/${encodeURIComponent(userId)}/instructor-access`, {
     method: "PATCH",
-    json: { enabled: formData.get("canInstruct") === "true" },
+    json: { enabled: formData.get("enabled") === "true" },
   });
   revalidatePath("/admin/users");
   revalidatePath("/", "layout");

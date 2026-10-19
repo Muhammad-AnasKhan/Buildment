@@ -1,4 +1,6 @@
 // GENERATED from server/src/shared — do not edit here. Run `pnpm sync-shared` in server/.
+import type { Role } from "../domain/enums";
+
 /** Which workspace the user is browsing — learner vs instructor (Udemy-style switch). */
 export type ActiveSurface = "learn" | "teach";
 
@@ -8,6 +10,6 @@ export function isActiveSurface(value: string | undefined): value is ActiveSurfa
   return value === "learn" || value === "teach";
 }
 
-export function defaultSurfaceForUser(canInstruct: boolean): ActiveSurface {
-  return canInstruct ? "teach" : "learn";
+export function defaultSurfaceForUser(role: Role): ActiveSurface {
+  return role === "MENTOR" || role === "ADMIN" ? "teach" : "learn";
 }

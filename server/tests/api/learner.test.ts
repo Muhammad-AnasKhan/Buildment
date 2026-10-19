@@ -28,7 +28,7 @@ describe("/api/v1/learner", () => {
     const res = await request(app).get("/api/v1/learner/workspace").set(auth());
     expect(res.status).toBe(200);
     expect(res.body.data).toEqual({
-      instructorAccess: { canInstruct: false, requestStatus: "none", canRequestAccess: true },
+      instructorAccess: { role: "MENTEE", requestStatus: "none", canRequestAccess: true },
       assignedCourses: 1,
       pendingReviews: 0,
       openHelpRequests: 0,
