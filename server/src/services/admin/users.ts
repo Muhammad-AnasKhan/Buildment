@@ -6,9 +6,11 @@ import type { CsvTable } from "../../utils/csv.js";
 import { pageInfo, resolvePaging } from "./paging.js";
 import { ConflictError, ForbiddenError, NotFoundError, isAppError } from "../../utils/errors.js";
 import type { GrantAdminBody, GrantInstructorBody, ListUsersQuery } from "../../validations/admin.js";
-import { notifyUserGrantedAdminByAdmin } from "../email/admin-notifications.js";
-import { queueEmail } from "../email/queue.js";
-import { notifyUserGrantedInstructorByAdmin, notifyUserInstructorAccessDecision } from "../notifications/events.js";
+import {
+  notifyUserGrantedAdminByAdmin,
+  notifyUserGrantedInstructorByAdmin,
+  notifyUserInstructorAccessDecision,
+} from "../notifications/events.js";
 import { dispatchNotification } from "../notifications/service.js";
 import { ADMIN_AUDIT_ACTIONS, recordAdminAction, type AdminActor } from "./audit.js";
 
@@ -407,7 +409,7 @@ export async function grantAdminByEmail(actor: AdminActor, input: GrantAdminBody
     summary: `Granted platform admin to ${input.email}`,
   });
 
-  queueEmail(() => notifyUserGrantedAdminByAdmin({ email: input.email, name: user.name ?? input.name ?? null }));
+  await dispatchNotification(() => notifyUserGrantedAdminByAdmin({ userId: user.id, grantedAt: new Date() }));
 }
 
 /**

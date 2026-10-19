@@ -2,18 +2,18 @@ import type { Prisma } from "../../generated/prisma/index.js";
 import { prisma } from "../../db/prisma.js";
 import { appBaseUrl } from "../email/send.js";
 import { escapeHtml, formatMessagePreview } from "../email/format.js";
+import { renderEmailTemplate } from "../email/render.js";
 import { listAdminRecipients } from "../email/admin-recipients.js";
 import { notify, type NotificationRecipient } from "./service.js";
 import { loadSuggestableCourses, rankCourseSuggestions } from "./course-suggestions.js";
 
 // Product events → notify(). Each builder loads what the message needs, names the event with a
 // dedupe key, and describes it once for the bell and once for email; channels and preferences are
-// applied centrally. Call sites run these after their own write commits, through
-// dispatchNotification(), so a notification problem never fails the user's action.
+// applied centrally. Email bodies come from the EJS templates in ../email/templates. Call sites run
+// these after their own write commits, through dispatchNotification(), so a notification problem
+// never fails the user's action.
 
 const hi = (name: string | null) => `<p>Hi ${escapeHtml(name ?? "there")},</p>`;
-const quote = (text: string, color = "#6366f1", background = "#f8fafc") =>
-  `<blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid ${color};background:${background};color:#0f172a;">${escapeHtml(text)}</blockquote>`;
 
 function chapterLabel(title: string | null | undefined): string {
   return title?.trim() ? title : "this lesson";
@@ -53,12 +53,16 @@ export async function notifyMentorHelpQuestion(input: {
     body: `${courseTitle} · ${lesson}: ${formatMessagePreview(input.body, 140)}`,
     url: path,
     courseId: thread.courseId,
-    email: ({ name }) => ({
+    email: async ({ name }) => ({
       subject: `${menteeLabel} asked a question · ${courseTitle}`,
-      html: `${hi(name)}
-<p><strong>${escapeHtml(menteeLabel)}</strong> posted a question in <strong>${escapeHtml(courseTitle)}</strong> (${escapeHtml(lesson)}):</p>
-${quote(preview)}
-<p><a href="${appBaseUrl()}${path}">Open the conversation in Buildment</a></p>`,
+      html: await renderEmailTemplate("notify-mentor-help-question", {
+        name: name ?? "there",
+        learnerName: menteeLabel,
+        courseTitle,
+        lesson,
+        preview,
+        url: `${appBaseUrl()}${path}`,
+      }),
       text: `${menteeLabel} asked a question in ${courseTitle} (${lesson}):\n\n${preview}\n\nReply: ${appBaseUrl()}${path}`,
     }),
   });
@@ -97,12 +101,16 @@ export async function notifyMenteeHelpReply(input: {
     body: `${courseTitle} · ${lesson}: ${formatMessagePreview(input.body, 140)}`,
     url: path,
     courseId: thread.courseId,
-    email: ({ name }) => ({
+    email: async ({ name }) => ({
       subject: `${mentorLabel} replied · ${courseTitle}`,
-      html: `${hi(name)}
-<p><strong>${escapeHtml(mentorLabel)}</strong> replied to your question in <strong>${escapeHtml(courseTitle)}</strong> (${escapeHtml(lesson)}):</p>
-${quote(preview, "#10b981", "#f0fdf4")}
-<p><a href="${appBaseUrl()}${path}">Read the full reply in Buildment</a></p>`,
+      html: await renderEmailTemplate("notify-mentee-help-reply", {
+        name: name ?? "there",
+        mentorName: mentorLabel,
+        courseTitle,
+        lesson,
+        preview,
+        url: `${appBaseUrl()}${path}`,
+      }),
       text: `${mentorLabel} replied in ${courseTitle} (${lesson}):\n\n${preview}\n\nView: ${appBaseUrl()}${path}`,
     }),
   });
@@ -132,11 +140,14 @@ export async function notifyMenteeHelpThreadResolved(threadId: string): Promise<
     body: `${thread.course.title} · ${lesson}`,
     url: path,
     courseId: thread.courseId,
-    email: ({ name }) => ({
+    email: async ({ name }) => ({
       subject: `Question resolved · ${thread.course.title}`,
-      html: `${hi(name)}
-<p>Your mentor marked your help question as resolved in <strong>${escapeHtml(thread.course.title)}</strong> (${escapeHtml(lesson)}).</p>
-<p><a href="${appBaseUrl()}${path}">Open the lesson in Buildment</a></p>`,
+      html: await renderEmailTemplate("notify-mentee-help-thread-resolved", {
+        name: name ?? "there",
+        courseTitle: thread.course.title,
+        lesson,
+        url: `${appBaseUrl()}${path}`,
+      }),
       text: `Your help question was resolved in ${thread.course.title} (${lesson}). Open: ${appBaseUrl()}${path}`,
     }),
   });
@@ -175,11 +186,15 @@ export async function notifyMentorPendingReview(responseId: string): Promise<voi
     body: `${learnerLabel} · ${courseTitle} · ${lesson}`,
     url: path,
     courseId: chapter.courseId,
-    email: ({ name }) => ({
+    email: async ({ name }) => ({
       subject: `Submission to review · ${courseTitle}`,
-      html: `${hi(name)}
-<p><strong>${escapeHtml(learnerLabel)}</strong> submitted work for review in <strong>${escapeHtml(courseTitle)}</strong> (${escapeHtml(lesson)}).</p>
-<p><a href="${appBaseUrl()}${path}">Open the review queue</a></p>`,
+      html: await renderEmailTemplate("notify-mentor-pending-review", {
+        name: name ?? "there",
+        learnerName: learnerLabel,
+        courseTitle,
+        lesson,
+        url: `${appBaseUrl()}${path}`,
+      }),
       text: `${learnerLabel} submitted work for review in ${courseTitle} (${lesson}). Review: ${appBaseUrl()}${path}`,
     }),
   });
@@ -220,12 +235,16 @@ export async function notifyMenteeReviewFeedback(input: {
     body: `${courseTitle} · ${lesson}: ${formatMessagePreview(input.feedbackPreview, 140)}`,
     url: path,
     courseId: chapter.courseId,
-    email: ({ name }) => ({
+    email: async ({ name }) => ({
       subject: approved ? `Mentor feedback · ${courseTitle}` : `Revision requested · ${courseTitle}`,
-      html: `${hi(name)}
-<p>Your mentor <strong>${escapeHtml(verdictLabel)}</strong> in <strong>${escapeHtml(courseTitle)}</strong> (${escapeHtml(lesson)}).</p>
-${quote(preview)}
-<p><a href="${appBaseUrl()}${path}">Open the lesson in Buildment</a></p>`,
+      html: await renderEmailTemplate("notify-mentee-review-feedback", {
+        name: name ?? "there",
+        verdict: verdictLabel,
+        courseTitle,
+        lesson,
+        preview,
+        url: `${appBaseUrl()}${path}`,
+      }),
       text: `Your mentor ${verdictLabel} in ${courseTitle} (${lesson}):\n\n${preview}\n\nLesson: ${appBaseUrl()}${path}`,
     }),
   });
@@ -264,11 +283,14 @@ export async function notifyMenteeCourseEnrollment(enrollmentId: string): Promis
     body: `${mentorLabel} added you to this course. Start whenever you're ready.`,
     url: path,
     courseId: enrollment.courseId,
-    email: ({ name }) => ({
+    email: async ({ name }) => ({
       subject: `You're enrolled in ${enrollment.course.title}`,
-      html: `${hi(name)}
-<p><strong>${escapeHtml(mentorLabel)}</strong> added you to <strong>${escapeHtml(enrollment.course.title)}</strong> on Buildment.</p>
-<p><a href="${appBaseUrl()}${path}">Start the course</a></p>`,
+      html: await renderEmailTemplate("notify-mentee-course-enrollment", {
+        name: name ?? "there",
+        mentorName: mentorLabel,
+        courseTitle: enrollment.course.title,
+        url: `${appBaseUrl()}${path}`,
+      }),
       text: `You're enrolled in ${enrollment.course.title}. Start: ${appBaseUrl()}${path}`,
     }),
   });
@@ -298,11 +320,14 @@ export async function notifyMentorNewEnrollment(enrollmentId: string): Promise<v
     body: `${learnerLabel} enrolled in ${enrollment.course.title}.`,
     url: path,
     courseId: enrollment.courseId,
-    email: ({ name }) => ({
+    email: async ({ name }) => ({
       subject: `New learner · ${enrollment.course.title}`,
-      html: `${hi(name)}
-<p><strong>${escapeHtml(learnerLabel)}</strong> is now enrolled in <strong>${escapeHtml(enrollment.course.title)}</strong>.</p>
-<p><a href="${appBaseUrl()}${path}">See your learners</a></p>`,
+      html: await renderEmailTemplate("notify-mentor-new-enrollment", {
+        name: name ?? "there",
+        learnerName: learnerLabel,
+        courseTitle: enrollment.course.title,
+        url: `${appBaseUrl()}${path}`,
+      }),
       text: `${learnerLabel} enrolled in ${enrollment.course.title}. Learners: ${appBaseUrl()}${path}`,
     }),
   });
@@ -449,12 +474,14 @@ export async function notifyAdminsInstructorAccessRequest(requestId: string): Pr
     title: "Instructor access request",
     body: `${applicant} asked for instructor tools.`,
     url: path,
-    email: () => ({
+    email: async () => ({
       subject: `Instructor access request · ${applicant}`,
-      html: `<p>A learner requested instructor access on Buildment.</p>
-<p><strong>${escapeHtml(applicant)}</strong> (${escapeHtml(request.user.email)})</p>
-${preview ? quote(preview) : ""}
-<p><a href="${appBaseUrl()}${path}">Review in the admin console</a></p>`,
+      html: await renderEmailTemplate("notify-admins-instructor-access-request", {
+        applicant,
+        email: request.user.email,
+        preview,
+        url: `${appBaseUrl()}${path}`,
+      }),
       text: `Instructor access request from ${applicant} (${request.user.email}).${preview ? `\n\n${preview}` : ""}\n\nReview: ${appBaseUrl()}${path}`,
     }),
   });
@@ -481,11 +508,14 @@ export async function notifyAdminsOrganizationCourseRequest(requestId: string): 
     body: `${request.organization.name} wants to allocate ${request.course.title}.`,
     url: path,
     courseId: request.courseId,
-    email: () => ({
+    email: async () => ({
       subject: `Org course allocation request · ${request.organization.name}`,
-      html: `<p>An organization requested access to allocate a course.</p>
-<p><strong>${escapeHtml(request.organization.name)}</strong> (${escapeHtml(request.organization.slug)}) wants <strong>${escapeHtml(request.course.title)}</strong>.</p>
-<p><a href="${appBaseUrl()}${path}">Review in the admin console</a></p>`,
+      html: await renderEmailTemplate("notify-admins-organization-course-request", {
+        organizationName: request.organization.name,
+        organizationSlug: request.organization.slug,
+        courseTitle: request.course.title,
+        url: `${appBaseUrl()}${path}`,
+      }),
       text: `${request.organization.name} requested course "${request.course.title}". Review: ${appBaseUrl()}${path}`,
     }),
   });
@@ -508,22 +538,20 @@ export async function notifyUserInstructorAccessDecision(input: { userId: string
       ? "You can now open the mentor workspace and create courses."
       : "Your request was not approved this time. You can keep learning and ask again later.",
     url: path,
-    email: ({ name }) =>
-      input.approved
+    email: async ({ name }) => {
+      const data = { name: name ?? "there", url: `${appBaseUrl()}${path}` };
+      return input.approved
         ? {
             subject: "Instructor access approved · Buildment",
-            html: `${hi(name)}
-<p>Your request to teach on Buildment was <strong>approved</strong>. You can open the mentor workspace and create or manage courses.</p>
-<p><a href="${appBaseUrl()}${path}">Open the teach workspace</a></p>`,
+            html: await renderEmailTemplate("notify-user-instructor-access-decision-approved", data),
             text: `Your instructor access was approved. Open: ${appBaseUrl()}${path}`,
           }
         : {
             subject: "Instructor access update · Buildment",
-            html: `${hi(name)}
-<p>Your request for instructor access was reviewed and was not approved at this time. You can keep learning as a mentee and submit a new request later if your plans change.</p>
-<p><a href="${appBaseUrl()}${path}">Back to your dashboard</a></p>`,
+            html: await renderEmailTemplate("notify-user-instructor-access-decision-declined", data),
             text: `Your instructor access request was not approved. Dashboard: ${appBaseUrl()}${path}`,
-          },
+          };
+    },
   });
 }
 
@@ -536,12 +564,33 @@ export async function notifyUserGrantedInstructorByAdmin(input: { userId: string
     title: "You have instructor access",
     body: "A Buildment admin enabled instructor tools on your account.",
     url: "/workspace",
-    email: ({ name }) => ({
+    email: async ({ name }) => ({
       subject: "You have instructor access · Buildment",
-      html: `${hi(name)}
-<p>A Buildment admin enabled instructor tools on your account. Sign in to open the teach workspace and publish courses.</p>
-<p><a href="${appBaseUrl()}${path}">Sign in to Buildment</a></p>`,
+      html: await renderEmailTemplate("notify-user-granted-instructor-by-admin", {
+        name: name ?? "there",
+        url: `${appBaseUrl()}${path}`,
+      }),
       text: `You have instructor access on Buildment. Sign in: ${appBaseUrl()}${path}`,
+    }),
+  });
+}
+
+export async function notifyUserGrantedAdminByAdmin(input: { userId: string; grantedAt: Date }): Promise<void> {
+  const path = "/admin";
+  await notify({
+    type: "admin.granted",
+    recipients: [{ userId: input.userId }],
+    dedupeKey: `admin-granted:${input.userId}:${input.grantedAt.getTime()}`,
+    title: "You are now a platform admin",
+    body: "A Buildment admin granted your account platform administrator access.",
+    url: path,
+    email: async ({ name }) => ({
+      subject: "You are now a platform admin · Buildment",
+      html: await renderEmailTemplate("notify-user-granted-admin-by-admin", {
+        name: name ?? "there",
+        url: `${appBaseUrl()}${path}`,
+      }),
+      text: `You are now a platform admin on Buildment. Open: ${appBaseUrl()}${path}`,
     }),
   });
 }
@@ -565,11 +614,13 @@ export async function notifyMentorOrganizationCourseApproved(requestId: string):
     body: `${request.organization.name} can now allocate seats for this course.`,
     url: `/courses/${request.course.slug}/mentees`,
     courseId: request.courseId,
-    email: ({ name }) => ({
+    email: async ({ name }) => ({
       subject: `Organization approved for ${request.course.title}`,
-      html: `${hi(name)}
-<p><strong>${escapeHtml(request.organization.name)}</strong> can now allocate seats for your course <strong>${escapeHtml(request.course.title)}</strong>.</p>
-<p>Learners from that organization may enroll through your integration settings.</p>`,
+      html: await renderEmailTemplate("notify-mentor-organization-course-approved", {
+        name: name ?? "there",
+        organizationName: request.organization.name,
+        courseTitle: request.course.title,
+      }),
       text: `${request.organization.name} was approved to allocate "${request.course.title}".`,
     }),
   });

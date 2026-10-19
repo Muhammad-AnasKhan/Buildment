@@ -10,8 +10,8 @@ router.post("/study-reminders", jobs.studyReminders);
 /** Kept so existing external schedulers keep working; same job as /study-reminders. */
 router.post("/inactivity-nudge", jobs.studyReminders);
 router.post("/notification-emails", jobs.notificationEmails);
+router.post("/app-activity-cleanup", jobs.appActivityCleanup);
 router.post("/weekly-goal-reminder", jobs.weeklyGoalReminder);
 router.post("/integrity-retention", jobs.integrityRetention);
-router.post("/app-activity-cleanup", jobs.appActivityCleanup);
 
 export default router;

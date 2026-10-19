@@ -41,7 +41,7 @@ export type NotifyInput = {
   courseId?: string | null;
   data?: Prisma.InputJsonValue;
   /** Rendered once per email recipient. Omit for in-app-only events. */
-  email?: (recipient: { name: string | null; email: string }) => EmailContent;
+  email?: (recipient: { name: string | null; email: string }) => EmailContent | Promise<EmailContent>;
 };
 
 export type NotifyResult = { inApp: number; emails: number };
@@ -101,27 +101,26 @@ export async function notify(input: NotifyInput, options: { tx?: Db } = {}): Pro
       if ("email" in recipient) targets.push({ userId: null, email: recipient.email, name: recipient.name ?? null });
     }
 
-    const rows = targets.flatMap((target) => {
+    const rows: Prisma.EmailOutboxCreateManyInput[] = [];
+    for (const target of targets) {
       const address = target.email.trim().toLowerCase();
-      if (!address.includes("@") || seen.has(address)) return [];
+      if (!address.includes("@") || seen.has(address)) continue;
       seen.add(address);
-      const rendered = input.email!({ name: target.name, email: address });
+      const rendered = await input.email({ name: target.name, email: address });
       const footer = target.userId !== null && NOTIFICATION_CATEGORY_INFO[config.category].optional.email;
       const content = footer ? withPreferencesFooter(rendered) : rendered;
-      return [
-        {
-          userId: target.userId,
-          notificationId: created.find((row) => row.userId === target.userId)?.id ?? null,
-          type: input.type,
-          category: config.category,
-          toEmail: address,
-          subject: content.subject,
-          html: content.html,
-          text: content.text,
-          dedupeKey: `${input.dedupeKey}:${address}`,
-        },
-      ];
-    });
+      rows.push({
+        userId: target.userId,
+        notificationId: created.find((row) => row.userId === target.userId)?.id ?? null,
+        type: input.type,
+        category: config.category,
+        toEmail: address,
+        subject: content.subject,
+        html: content.html,
+        text: content.text,
+        dedupeKey: `${input.dedupeKey}:${address}`,
+      });
+    }
     if (rows.length) emails = (await db.emailOutbox.createMany({ data: rows, skipDuplicates: true })).count;
   }
 

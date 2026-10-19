@@ -36,6 +36,7 @@ export const NOTIFICATION_CHANNELS: Record<NotificationType, ChannelConfig> = {
   // Account
   "instructor.decision": { category: "account", inApp: true, email: true },
   "instructor.granted": { category: "account", inApp: true, email: true },
+  "admin.granted": { category: "account", inApp: true, email: true },
 
   // Platform admin queues
   "instructor.request": { category: "admin", inApp: true, email: true },

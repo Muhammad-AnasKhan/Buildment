@@ -36,6 +36,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { helpUiCopy } from "@/shared/lib/help-ui-copy";
 import type { InstructorAccessView } from "@/shared/lib/instructor-access";
 
@@ -192,6 +193,7 @@ export function MentorWorkspaceSidebar({
       <div className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur lg:hidden">
         <Logo size="sm" />
         <div className="flex items-center gap-1">
+          <NotificationBell />
           <WorkspaceAccountMenu current="teach" user={user} instructorAccess={instructorAccess} signOutAction={signOutAction} compact />
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -237,10 +239,11 @@ export function MentorWorkspaceSidebar({
       </div>
 
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 border-r bg-card lg:flex lg:flex-col">
-        <div className="flex h-16 shrink-0 items-center border-b px-4">
+        <div className="flex h-16 shrink-0 items-center justify-between gap-3 border-b px-4">
           <Link href="/workspace" className="inline-flex outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Logo size="sm" />
           </Link>
+          <NotificationBell />
         </div>
 
         <div className="shrink-0 border-b p-3">

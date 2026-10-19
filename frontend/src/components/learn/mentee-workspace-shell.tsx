@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import { helpUiCopy } from "@/shared/lib/help-ui-copy";
 import type { InstructorAccessView } from "@/shared/lib/instructor-access";
 
@@ -102,6 +103,7 @@ export function MenteeWorkspaceShell({
           <Logo size="sm" />
         </Link>
         <div className="flex items-center gap-1">
+          <NotificationBell />
           <WorkspaceAccountMenu current="learn" user={user} instructorAccess={instructorAccess} signOutAction={signOutAction} compact />
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -125,13 +127,14 @@ export function MenteeWorkspaceShell({
       </div>
 
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 border-r bg-card lg:flex lg:flex-col">
-        <div className="flex h-16 shrink-0 items-center border-b px-4">
+        <div className="flex h-16 shrink-0 items-center justify-between gap-3 border-b px-4">
           <Link
             href="/dashboard"
             className="inline-flex outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Logo size="sm" />
           </Link>
+          <NotificationBell />
         </div>
 
         <nav aria-label="Learner workspace" className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
