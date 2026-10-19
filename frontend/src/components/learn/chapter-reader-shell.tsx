@@ -310,13 +310,18 @@ export function ChapterReaderShell({
                 focusMode ? "px-4 py-10 sm:px-8 lg:px-16" : "px-4 py-8 sm:px-6 lg:px-10"
               )}
             >
-              <div className={cn("mx-auto max-w-3xl", focusMode && "max-w-2xl lg:max-w-3xl")}>
-                <header className={cn("mb-8", readerMode === "QUIZ" && "sr-only")}>
-                  <h1 className="mt-1.5 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              {/* ~70 characters per line at 18px: long chapters stay comfortable to read. */}
+              <div className="mx-auto max-w-[40rem]">
+                <header className={cn("mb-10", readerMode === "QUIZ" && "sr-only")}>
+                  <p className="font-mono text-xs tabular-nums text-muted-foreground">{lessonLabel}</p>
+                  <h1 className="mt-2 text-[1.75rem] font-bold leading-tight tracking-tight text-foreground text-balance sm:text-[2.125rem]">
                     {chapterTitle}
                   </h1>
                   {projectGoal && readerMode !== "QUIZ" ? (
-                    <p className="mt-3 text-sm text-muted-foreground">This lesson is part of {projectGoal}.</p>
+                    <p className="mt-4 border-l-2 border-border pl-3 text-sm leading-6 text-muted-foreground">
+                      <span className="font-medium text-foreground/80">The project: </span>
+                      {projectGoal.trim().replace(/\.+$/, "")}.
+                    </p>
                   ) : null}
                   {isGateChapter && readerMode !== "QUIZ" ? (
                     <p className="mt-3 inline-flex items-center gap-2 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-2 text-sm text-foreground">
@@ -329,7 +334,7 @@ export function ChapterReaderShell({
                     </p>
                   ) : null}
                   {checkpointsTotal > 0 && (
-                    <p className="mt-2 font-mono text-xs tabular-nums text-neutral-500 sm:hidden">
+                    <p className="mt-3 font-mono text-xs tabular-nums text-muted-foreground md:hidden">
                       {chapterComplete
                         ? "All checkpoints complete"
                         : `${checkpointsCompleted}/${checkpointsTotal} checkpoints`}
@@ -342,11 +347,12 @@ export function ChapterReaderShell({
                     <article
                       className={cn(
                         "prose prose-neutral max-w-none",
-                        "prose-headings:scroll-mt-16 prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-foreground",
-                        "prose-h2:mt-12 prose-h2:border-b prose-h2:border-border prose-h2:pb-2 prose-h2:text-xl prose-h2:first:mt-0",
-                        "prose-h3:mt-8 prose-h3:text-lg",
-                        "prose-p:leading-[1.75]",
-                        "prose-li:leading-relaxed",
+                        "prose-headings:scroll-mt-20 prose-headings:font-semibold prose-headings:tracking-tight prose-headings:text-foreground prose-headings:text-balance",
+                        "prose-h2:mt-14 prose-h2:mb-5 prose-h2:border-b prose-h2:border-border prose-h2:pb-2.5 prose-h2:text-[1.5rem] prose-h2:leading-snug prose-h2:first:mt-0",
+                        "prose-h3:mt-10 prose-h3:mb-3 prose-h3:text-[1.25rem] prose-h3:leading-snug",
+                        "prose-p:my-5 prose-p:text-[1.0625rem] prose-p:leading-[1.8] sm:prose-p:text-[1.125rem] sm:prose-p:leading-[1.75]",
+                        "prose-li:my-1.5 prose-li:text-[1.0625rem] prose-li:leading-[1.75] sm:prose-li:text-[1.125rem]",
+                        "prose-a:font-medium prose-a:underline-offset-4 prose-a:decoration-foreground/30 hover:prose-a:decoration-foreground",
                         "prose-strong:font-semibold prose-strong:text-foreground",
                         "prose-code:rounded prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[0.85em] prose-code:font-normal prose-code:before:content-none prose-code:after:content-none",
                         "prose-pre:max-w-none prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0",
