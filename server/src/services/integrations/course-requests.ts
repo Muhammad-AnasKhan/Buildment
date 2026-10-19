@@ -1,8 +1,8 @@
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, NotFoundError } from "../../utils/errors.js";
 import type { AuthenticatedOrganization } from "../../types/auth.js";
-import { notifyAdminsOrganizationCourseRequest } from "../email/admin-notifications.js";
-import { queueEmail } from "../email/queue.js";
+import { notifyAdminsOrganizationCourseRequest } from "../notifications/events.js";
+import { dispatchNotification } from "../notifications/service.js";
 
 type RequestStatus = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -56,7 +56,7 @@ export async function createCourseRequest(
   const created = await prisma.organizationCourseRequest.create({
     data: { organizationId: org.id, courseId: course.id, status: "PENDING" },
   });
-  queueEmail(() => notifyAdminsOrganizationCourseRequest(created.id));
+  await dispatchNotification(() => notifyAdminsOrganizationCourseRequest(created.id));
 
   return { request_id: created.id, course_id: course.id, status: "PENDING", created: true };
 }

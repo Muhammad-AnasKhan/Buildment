@@ -9,6 +9,7 @@ import {
   isCompletableBlock,
 } from "./rules.js";
 import { milestoneReflectionBlocked } from "./reflection.js";
+import { notifyCourseCompleted } from "../notifications/events.js";
 
 // Recomputes denormalized rollups after a new Response is written — see
 // docs/04-progress-and-gating.mdx and the append-only-Response invariant in
@@ -174,6 +175,11 @@ export async function recomputeEnrollmentRollup(
       completedAt: allChaptersComplete ? (enrollment.completedAt ?? new Date()) : null,
     },
   });
+
+  // Written in this transaction so it commits with the completion; once per enrollment (dedupe).
+  if (percentComplete >= 100 && enrollment.status !== "COMPLETED") {
+    await notifyCourseCompleted(tx, enrollmentId);
+  }
 }
 
 export async function ensureChapterStarted(

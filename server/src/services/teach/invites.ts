@@ -6,8 +6,8 @@ import { TEACH_ERROR_CODES } from "../../shared/api/teach.js";
 import { prisma } from "../../db/prisma.js";
 import { UnprocessableError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
-import { notifyMenteeCourseEnrollment, notifyMentorNewEnrollment } from "../email/event-notifications.js";
-import { queueEmail } from "../email/queue.js";
+import { notifyMenteeCourseEnrollment, notifyMentorNewEnrollment } from "../notifications/events.js";
+import { dispatchNotification } from "../notifications/service.js";
 import { assignmentForNewEnrollment } from "../courses/variant-assignment.js";
 import { inviteAcceptUrl, sendEmail } from "../email/send.js";
 import { requireCourseById, type OwnedCourse } from "./access.js";
@@ -80,8 +80,8 @@ export async function assignByEmails(user: SessionUser, courseId: string, emails
           select: { id: true },
         });
       });
-      queueEmail(() => notifyMenteeCourseEnrollment(enrollment.id));
-      queueEmail(() => notifyMentorNewEnrollment(enrollment.id));
+      await dispatchNotification(() => notifyMenteeCourseEnrollment(enrollment.id));
+      await dispatchNotification(() => notifyMentorNewEnrollment(enrollment.id));
       enrolledEmails.push(email);
       continue;
     }

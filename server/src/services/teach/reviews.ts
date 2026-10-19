@@ -6,8 +6,8 @@ import { parseSafeSubmissionUrl } from "../../shared/lib/safe-submission-url.js"
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, NotFoundError, UnprocessableError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
-import { notifyMenteeReviewFeedback } from "../email/event-notifications.js";
-import { queueEmail } from "../email/queue.js";
+import { notifyMenteeReviewFeedback } from "../notifications/events.js";
+import { dispatchNotification } from "../notifications/service.js";
 import { adjustEnrollmentPendingReviews, recomputeChapterProgress, resolvePendingBlockReview } from "../progress/compute.js";
 import type { SubmitReviewBody } from "../../validations/teach.js";
 import { mentoredCoursesWhere, requireCourseById } from "./access.js";
@@ -151,7 +151,7 @@ export async function submitReview(user: SessionUser, responseId: string, input:
     await recomputeChapterProgress(tx, response.enrollmentId, response.block.chapter.id);
   });
 
-  queueEmail(() => notifyMenteeReviewFeedback({ responseId: response.id, verdict: input.verdict, feedbackPreview: input.feedback }));
+  await dispatchNotification(() => notifyMenteeReviewFeedback({ responseId: response.id, verdict: input.verdict, feedbackPreview: input.feedback }));
 }
 
 /** Advisory AI draft for an open-question answer; the mentor edits and submits it. */

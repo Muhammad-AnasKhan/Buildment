@@ -4,6 +4,8 @@ import { logger } from "./utils/logger.js";
 import { prisma } from "./db/prisma.js";
 import { createApp } from "./app.js";
 import { startScheduler } from "./jobs/scheduler.js";
+import { startNotificationWorker } from "./jobs/notification-worker.js";
+import { startRealtime } from "./realtime/sse.js";
 
 async function start() {
   await prisma.$connect();
@@ -18,11 +20,16 @@ async function start() {
   server.listen(env.PORT, () => {
     logger.info({ port: env.PORT, env: env.NODE_ENV }, `API listening on http://localhost:${env.PORT}`);
   });
+  const stopRealtime = startRealtime();
   const stopScheduler = startScheduler();
+  const stopNotificationWorker = startNotificationWorker();
 
   const shutdown = (signal: string) => {
     logger.info({ signal }, "shutting down");
     stopScheduler();
+    stopNotificationWorker();
+    // Ends the open notification streams first: server.close() waits for every open response.
+    stopRealtime();
     server.close(async () => {
       await prisma.$disconnect();
       process.exit(0);

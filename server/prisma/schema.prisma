@@ -235,6 +235,10 @@ model User {
   aiInterviewSessions           AiInterviewSession[]
   appActivity                   UserAppActivity?
   appActivityDays               AppActivityDay[]
+  notifications                 Notification[]
+  notificationPreference        NotificationPreference?
+  emailOutbox                   EmailOutbox[]
+  studyReminders                StudyReminderLog[]
 }
 
 /// A learner's own AI provider key for AI interviews. Only the AES-256-GCM
@@ -677,6 +681,99 @@ model UserAppActivity {
   lastBeatId   String?
 
   @@index([lastActiveAt])
+}
+
+// --- Notifications — written only through services/notifications (see docs/12-notifications.mdx) --
+
+/// One in-app notification for one user: the bell feed and its read state. `type`/`category` are
+/// the strings in shared/api/notifications.ts.
+model Notification {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  category  String
+  title     String
+  body      String        @db.Text
+  /// App-relative link, e.g. /my-questions/abc.
+  url       String?
+  courseId  String?
+  data      Json?
+  /// Identity of the event, so a repeated event or a retried request never adds a second row.
+  dedupeKey String
+  readAt    DateTime?
+
+  pushedAt  DateTime?
+  createdAt DateTime      @default(now())
+  emails    EmailOutbox[]
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@index([pushedAt, createdAt])
+}
+
+/// Channels a person switched off, by notification category. No row means everything is on.
+model NotificationPreference {
+  userId      String   @id
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailOptOut String[] @default([])
+  inAppOptOut String[] @default([])
+  updatedAt   DateTime @updatedAt
+}
+
+enum EmailOutboxStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+/// Email waiting for (or done with) the background worker. Rendered when the event happens, sent
+/// with retries and backoff, never from inside the API request that caused it.
+model EmailOutbox {
+  id             String            @id @default(cuid())
+  /// Null for inboxes that are not accounts (ADMIN_NOTIFY_EMAIL).
+  userId         String?
+  user           User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notificationId String?
+  notification   Notification?     @relation(fields: [notificationId], references: [id], onDelete: SetNull)
+  type           String
+  category       String
+  toEmail        String
+  subject        String
+  html           String            @db.Text
+  text           String            @db.Text
+  /// Event identity plus recipient; also sent to Resend as the idempotency key's scope.
+  dedupeKey      String            @unique
+  status         EmailOutboxStatus @default(PENDING)
+  attempts       Int               @default(0)
+  nextAttemptAt  DateTime          @default(now())
+  /// Set while a worker owns the row; a stale lock is reclaimed after a few minutes.
+  lockedAt       DateTime?
+  lastError      String?           @db.Text
+  providerId     String?
+  sentAt         DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([status, nextAttemptAt])
+  @@index([userId])
+}
+
+/// One row per routine study reminder, whatever channel it used. Drives the reminder cadence and
+/// the per-user daily limit; `slot` (UTC date + hour) makes a repeated job run a no-op.
+model StudyReminderLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slot      String
+  courseIds String[]
+  sentAt    DateTime @default(now())
+
+  @@unique([userId, slot])
+  @@index([userId, sentAt])
 }
 
 /// One explicit study sitting on a chapter. Heartbeats credit time only while RUNNING.

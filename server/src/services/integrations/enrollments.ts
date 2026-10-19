@@ -2,8 +2,8 @@ import { prisma } from "../../db/prisma.js";
 import { NotFoundError } from "../../utils/errors.js";
 import type { AuthenticatedOrganization } from "../../types/auth.js";
 import type { CancelEnrollmentBody, CreateEnrollmentBody, EnrollmentLookupQuery } from "../../validations/integrations.js";
-import { notifyMenteeCourseEnrollment, notifyMentorNewEnrollment } from "../email/event-notifications.js";
-import { queueEmail } from "../email/queue.js";
+import { notifyMenteeCourseEnrollment, notifyMentorNewEnrollment } from "../notifications/events.js";
+import { dispatchNotification } from "../notifications/service.js";
 import { findOrganizationEnrollment, serializeIntegrationEnrollment } from "./enrollment-lookup.js";
 import { createPathmentEnrollment } from "./pathment/create-pathment-enrollment.js";
 import { cancelPathmentEnrollment } from "./pathment/cancel-pathment-enrollment.js";
@@ -29,8 +29,8 @@ export async function createEnrollment(org: AuthenticatedOrganization, body: Cre
   });
 
   if (created) {
-    queueEmail(() => notifyMenteeCourseEnrollment(enrollment.id));
-    queueEmail(() => notifyMentorNewEnrollment(enrollment.id));
+    await dispatchNotification(() => notifyMenteeCourseEnrollment(enrollment.id));
+    await dispatchNotification(() => notifyMentorNewEnrollment(enrollment.id));
   }
 
   return {

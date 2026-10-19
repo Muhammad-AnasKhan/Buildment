@@ -3,11 +3,12 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
 import { pinoHttp } from "pino-http";
-import { env, isTest } from "./config/env.js";
+import { env, isTest, realtimeOrigins } from "./config/env.js";
 import { logger } from "./utils/logger.js";
 import { apiLimiter } from "./middlewares/rate-limit.js";
 import { errorHandler, notFoundHandler } from "./middlewares/error-handler.js";
 import routes from "./routes/index.js";
+import { NOTIFICATION_STREAM_PATH } from "./shared/api/notifications.js";
 
 /** Builds the Express app without listening, so tests can drive it with supertest. */
 export function createApp() {
@@ -22,14 +23,18 @@ export function createApp() {
   app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false, hsts: false }));
 
   // Same-origin traffic arrives through the frontend proxy (no Origin check needed).
-  // CORS_ORIGINS is for clients that call the API host directly.
+  // CORS_ORIGINS is for clients that call the API host directly. The notification stream may also
+  // be opened straight from the web app (APP_URL); it authenticates with a ticket, not a cookie.
   app.use(
-    cors({
-      origin: (origin, callback) => {
-        if (!origin || env.CORS_ORIGINS.includes(origin)) return callback(null, true);
-        callback(new Error(`Origin ${origin} is not allowed`));
-      },
-      credentials: true,
+    cors((req, callback) => {
+      const allowed = req.path === NOTIFICATION_STREAM_PATH ? realtimeOrigins : env.CORS_ORIGINS;
+      callback(null, {
+        origin: (origin, done) => {
+          if (!origin || allowed.includes(origin)) return done(null, true);
+          done(new Error(`Origin ${origin} is not allowed`));
+        },
+        credentials: true,
+      });
     })
   );
 
@@ -37,7 +42,13 @@ export function createApp() {
   app.use(cookieParser());
 
   if (!isTest) {
-    app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url === "/health" } }));
+    // The notification stream is skipped: it stays open for hours and its URL carries a ticket.
+    app.use(
+      pinoHttp({
+        logger,
+        autoLogging: { ignore: (req) => req.url === "/health" || !!req.url?.startsWith(NOTIFICATION_STREAM_PATH) },
+      })
+    );
   }
 
   app.use(apiLimiter);

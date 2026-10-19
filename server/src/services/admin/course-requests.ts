@@ -3,8 +3,8 @@ import { ADMIN_ERROR_CODES } from "../../shared/api/admin.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, NotFoundError, isAppError } from "../../utils/errors.js";
 import type { ApproveCourseRequestBody, ListRequestsQuery } from "../../validations/admin.js";
-import { notifyMentorOrganizationCourseApproved } from "../email/admin-notifications.js";
-import { queueEmail } from "../email/queue.js";
+import { notifyMentorOrganizationCourseApproved } from "../notifications/events.js";
+import { dispatchNotification } from "../notifications/service.js";
 import { parseExpiresAt, upsertAllocation } from "./organizations.js";
 import { ADMIN_AUDIT_ACTIONS, recordAdminAction, type AdminActor } from "./audit.js";
 import { pageInfo, resolvePaging } from "./paging.js";
@@ -103,7 +103,7 @@ export async function approveCourseRequest(actor: AdminActor, requestId: string,
     });
   });
 
-  queueEmail(() => notifyMentorOrganizationCourseApproved(request.id));
+  await dispatchNotification(() => notifyMentorOrganizationCourseApproved(request.id));
 }
 
 export async function rejectCourseRequest(actor: AdminActor, requestId: string): Promise<void> {
