@@ -1,0 +1,190 @@
+---
+title: Notifications
+status: implemented 2026-10-18
+---
+
+# Notifications
+
+**Reads:** [`09-security.mdx`](09-security.mdx) (session auth), [`04-progress-and-gating.mdx`](04-progress-and-gating.mdx)
+(what "active" means).
+
+Web in-app notifications (the bell) and email. No mobile push, Web Push or SMS — see
+[`10-deferred-v2.mdx`](10-deferred-v2.mdx).
+
+## The flow
+
+```
+product event ──► events.ts builder ──► notify()            ← services/notifications/service.ts
+                                           │  config.ts: { inApp, email } per type
+                                           │  recipient preferences (per category)
+                                           ├─► Notification row ──► SSE push to the user's open streams
+                                           └─► EmailOutbox row  ──► worker ──► Resend (retries)
+```
+
+- **One entry point.** Every product event calls a builder in `services/notifications/events.ts`,
+  which calls `notify()`. Call sites wrap it in `dispatchNotification()` *after* their own write
+  commits, so a notification failure is logged and never fails the user's action.
+- **Central channel table.** `services/notifications/config.ts` maps each type to a category and
+  `{ inApp, email }`. Preferences can switch an optional channel off per category; they never add
+  one. `account` notices are always on.
+- **Duplicate protection.** Each event has a `dedupeKey` (e.g. `help-message:<messageId>`,
+  `review-feedback:<responseId>`, `course-completed:<enrollmentId>`). `Notification` is unique per
+  `(userId, dedupeKey)`, `EmailOutbox` per `dedupeKey:<address>`, and both are inserted with
+  `ON CONFLICT DO NOTHING` — a retried request, double click or re-run job never notifies twice,
+  and the insert is safe inside a caller's transaction.
+- **Inside a transaction.** `notify(input, { tx })` writes with the caller's transaction (used for
+  course completion, written in the same transaction that marks the enrollment `COMPLETED`). Those
+  rows start with `pushedAt = null`; the worker pushes them after commit.
+
+## Events
+
+| Type | Who | Channels | When |
+|---|---|---|---|
+| `help.question` | course mentor | in-app + email | learner posts on a help thread |
+| `help.reply` | learner | in-app + email | mentor replies |
+| `help.resolved` | learner | in-app + email | mentor resolves the thread |
+| `review.pending` | course mentor | in-app + email | a submission lands in `PENDING_REVIEW` |
+| `review.feedback` | learner | in-app + email | mentor approves or asks for a revision |
+| `enrollment.created` | learner | in-app + email (email only without an account) | enrolled by invite, mentor or organization |
+| `enrollment.new_learner` | course mentor | in-app + email | any new enrollment |
+| `course.completed` | learner | in-app + email | enrollment reaches 100% (once); links to what's next |
+| `course.learner_completed` | course mentor | in-app | same moment |
+| `study.reminder` | learner | in-app + email | hourly reminder job (below) |
+| `course.suggestion` | learner with no course in progress | in-app + email | hourly reminder job (below) |
+| `instructor.request` | admins (+ `ADMIN_NOTIFY_EMAIL` by email) | in-app + email | learner asks to teach |
+| `instructor.decision` / `instructor.granted` | user | in-app + email (always on) | admin decides / grants |
+| `organization.course_request` | admins (+ `ADMIN_NOTIFY_EMAIL`) | in-app + email | an org requests a course |
+| `organization.course_approved` | course mentor | in-app + email | admin approves it |
+
+Auth email (verification, magic links, course invites to people without an account) and the
+mentor's manual "nudge" button still call `sendEmail` directly: the caller needs the result
+synchronously.
+
+## Email outbox and worker
+
+`EmailOutbox` rows are rendered when the event happens and sent by `jobs/notification-worker.ts`,
+which runs inside the API process (`NOTIFICATION_WORKER_ENABLED`, default on; disabled in tests).
+
+- **Claiming** — a compare-and-set `UPDATE … WHERE status = 'PENDING' AND nextAttemptAt <= now`
+  per row. Postgres re-checks the `WHERE` under the row lock, so with several workers or replicas
+  each row is sent once. A `SENDING` row older than 5 minutes (dead worker) is reclaimed.
+- **Retries** — network errors, timeouts, 408/409/429 and 5xx retry after 1 min, 5 min, 30 min,
+  2 h, up to 5 attempts; other 4xx fail immediately. The row id is sent as Resend's
+  `Idempotency-Key`, so a retry after a lost response is not a second email.
+- **Preferences** are checked when the row is queued and again before sending.
+- **No `AUTH_RESEND_KEY`** (local dev): rows become `SKIPPED` and the payload is logged.
+- `notify()` wakes the worker immediately; the `NOTIFICATION_WORKER_INTERVAL_MS` tick (default 5 s)
+  picks up retries and rows written inside transactions.
+- External trigger: `POST /api/v1/jobs/notification-emails` (Bearer `CRON_SECRET`).
+
+## Realtime (Server-Sent Events)
+
+`realtime/sse.ts` serves `GET /api/v1/notifications/stream` (`text/event-stream`). Each browser tab
+keeps one response open and the API writes frames to it. Push is one-way. Reading, marking read
+and preferences stay plain REST, so a two-way socket is not needed.
+
+- **Authentication** follows the HTTP API: the session cookie (same origin) or
+  `Authorization: Bearer <session>` (API clients). A browser `EventSource` cannot send headers, so
+  the web app first calls `POST /api/v1/notifications/realtime-ticket` (cookie-authenticated
+  through the proxy) and opens the stream with `?ticket=<two-minute HMAC ticket>`. The ticket names
+  the session and opens only the stream. The session is checked on connect and every 5 minutes, so
+  signing out closes the stream.
+- **Isolation:** connections are kept per user in memory, and an event is written only to that
+  user's streams. At most 10 streams per user; the oldest is closed beyond that.
+- **Frames:** `event: notification:new` with `data: { notification, unreadCount }`, and
+  `event: notification:read` with `data: { ids | "all", unreadCount }` (keeps other tabs in step).
+  The first frame sets `retry: 5000`. A `: ping` comment every 20 s keeps the connection inside the
+  Next.js proxy's 30 s idle timeout and typical load-balancer timeouts.
+- **Proxies:** `Cache-Control: no-cache, no-transform` stops compression from buffering the stream,
+  and `X-Accel-Buffering: no` does the same for nginx. The request is not access-logged, because it
+  stays open and its URL carries a ticket.
+- **CORS:** the stream path also accepts `APP_URL` as an origin (see `realtimeOrigins`), so the web
+  app can open it straight on the API host. Every other route keeps `CORS_ORIGINS`.
+- **Shutdown:** `startRealtime()` returns a stop function that ends every stream before
+  `server.close()`, which would otherwise wait for them.
+
+## Web app
+
+- `lib/notifications/notification-store.ts` — one feed and one `EventSource` per tab, shared by
+  every mounted component (reference-counted like the app-activity tracker). It fetches the feed on
+  mount and after every stream (re)connect, never on a timer, and merges pushes by id. Reconnects
+  are its own (backoff 2 s → 60 s), because each attempt needs a fresh ticket. A 401 on the ticket
+  means the user signed out, so it stops.
+- `NotificationCenter` (mounted in the learn, teach and admin layouts and on `/notifications`) runs
+  the store and turns pushes into toasts. Toasts are de-duplicated by id, skipped for hidden tabs,
+  and skipped for pushes older than a minute.
+- `NotificationBell` sits in each workspace shell (desktop sidebar header and mobile top bar).
+- `/notifications` — full feed, unread filter, load older, and per-category channel settings. Email
+  footers link here.
+- `NEXT_PUBLIC_REALTIME_URL` set → the stream opens straight on the API host. Unset → it goes through
+  the existing `/api/v1` rewrite in `next.config.ts`. Both use the ticket.
+
+## Study reminders
+
+`services/notifications/reminders.ts`, run every hour at :05 by the scheduler (or
+`POST /api/v1/jobs/study-reminders`, alias `/inactivity-nudge`, hourly from an external cron).
+
+- **Per user, not per course.** All of a learner's active enrollments (`ASSIGNED`/`IN_PROGRESS`,
+  lifecycle `ACTIVE`, course `PUBLISHED`) become one message about the best course to continue —
+  most recently studied first, then the newest unstarted — with "also waiting: …" for the rest.
+- **When.** Last activity = the latest of `UserAppActivity.lastActiveAt` and each
+  `Enrollment.lastActiveAt` (or the newest enrollment if never active).
+  - Fewer than 3 active days in 4 weeks: the first hourly run at or after the time of day they were
+    last here — about 24 hours later.
+  - Otherwise: 30 minutes before the median `AppActivityDay.firstActiveAt` time of day.
+  - Times are UTC instants, so no timezone is needed.
+- **Cadence.** A reminder goes out when the user has been away 1, 3, 7, 14 and 30 days (each step
+  due up to 3 h early so the user's hour can land on it); after the fifth, nothing until they return.
+- **Limit.** At most `REMINDER_DAILY_LIMIT` (default 1, `0` disables) in any 24 hours.
+- **Idempotent.** `StudyReminderLog` is unique per `(userId, "YYYY-MM-DDTHH")`, so re-running an
+  hour sends nothing. Also stamps `Enrollment.lastNudgeSentAt`.
+
+### Course suggestions
+
+`services/notifications/course-suggestions.ts`. The same hourly pass also covers learners with
+**no course in progress**: verified `MENTEE` accounts (not instructors) with no active
+`ASSIGNED`/`IN_PROGRESS` enrollment in a published course and no `PAYMENT_REQUIRED` enrollment.
+
+- **Never enrolled:** "Find your first course". **Finished everything:** "Ready for your next
+  course?", naming the course they finished.
+- **Which course:** published courses they have no enrollment in. The course's instructor ranks
+  first, then the most enrolled, then the newest; up to 3 are listed, and the link opens
+  `/catalog/<slug>`. Nothing is sent when there is nothing left to suggest.
+- **When:** the same timing, 1/3/7/14/30-day cadence, daily limit and log as study reminders. The
+  anchor is the latest of app activity, enrollment activity and completion, or sign-up if there is
+  none. Only users seen in the last 32 days are scanned, so long-dormant accounts are not woken up.
+- **Muting:** the type sits in the `reminder` category, so the "Study reminders" switch covers it.
+
+`course.completed` uses the same logic for its "what's next" line: another course the learner is
+already taking (most recently studied first), otherwise the top catalog suggestion.
+
+## Operations
+
+| Variable | App | Default | Purpose |
+|---|---|---|---|
+| `NOTIFICATION_WORKER_ENABLED` | API | `true` | Run the email/push worker in this process |
+| `NOTIFICATION_WORKER_INTERVAL_MS` | API | `5000` | Worker fallback tick |
+| `REMINDER_DAILY_LIMIT` | API | `1` | Routine reminders per user per 24 h; `0` turns them off |
+| `REALTIME_TOKEN_SECRET` | API | random at boot | Signs stream tickets; **set the same value on every replica** |
+| `NEXT_PUBLIC_REALTIME_URL` | web (build time) | unset | Public API URL to open the stream directly; the web origin must be `APP_URL` or in `CORS_ORIGINS` |
+
+Removed: `INACTIVITY_NUDGE_HOUR_UTC` (reminders now run hourly per user).
+
+- **Migration:** `20261018120000_notifications` adds `Notification`, `NotificationPreference`,
+  `EmailOutbox`, `StudyReminderLog`. Applied by `prisma migrate deploy` (Heroku release phase,
+  Docker `migrate` service, `pnpm db:ready`).
+- **Retention** (daily cleanup at 00:00 UTC): read notifications after 90 days, all after 180;
+  finished outbox rows after 30; reminder logs after 60.
+- **More than one API replica.** Email and reminders are safe (row claims, unique slots). Live push
+  reaches only streams on the replica that emitted it. Before scaling out, fan events out through
+  Postgres `LISTEN/NOTIFY` or Redis pub/sub. SSE needs no sticky sessions. Until then clients still
+  catch up on reconnect and page load.
+
+## Tests
+
+`src/services/notifications/*.test.ts` (reminder timing, tickets, channel rules, retry policy),
+`tests/api/notifications.test.ts` (feed, ownership, dedupe, preferences, completion outbox),
+`tests/api/notification-email.test.ts` (worker retries, concurrency, stale locks),
+`tests/api/realtime.test.ts` (SSE auth by ticket/cookie/Bearer, isolation, read sync, cleanup, shutdown, CORS),
+`tests/api/study-reminders.test.ts` (grouping, cadence, idempotency, mute),
+`tests/api/course-suggestions.test.ts` (first/next course, exclusions, completion "what's next").
