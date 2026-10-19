@@ -261,8 +261,10 @@ export function ChapterReaderShell({
                   viewerId={user.id}
                   thread={helpThread}
                 />
-                <ThemeToggle />
-                <FocusModeToggle active={focusMode} onClick={toggleFocusMode} />
+                <div className="hidden items-center gap-1.5 sm:flex">
+                  <ThemeToggle />
+                  <FocusModeToggle active={focusMode} onClick={toggleFocusMode} />
+                </div>
                 <TocToggle
                   collapsed={rightCollapsed}
                   onClick={() => setRightCollapsed(!rightCollapsed)}

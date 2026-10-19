@@ -79,7 +79,7 @@ export function StudyClock({
       >
         <Clock
           className={cn(
-            "size-3.5 shrink-0",
+            "hidden size-3.5 shrink-0 sm:block",
             status === "running" ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
           )}
           aria-hidden
@@ -100,7 +100,7 @@ export function StudyClock({
           <ClockIconButton disabled={busy} onClick={onPause} label="Pause study timer">
             <Pause className="size-3.5" aria-hidden />
           </ClockIconButton>
-          <ClockIconButton disabled={busy} onClick={onStop} label="Stop study timer">
+          <ClockIconButton disabled={busy} onClick={onStop} label="Stop study timer" className="hidden sm:inline-flex">
             <Square className="size-3" aria-hidden />
           </ClockIconButton>
         </>
@@ -116,7 +116,7 @@ export function StudyClock({
           <ClockIconButton disabled={busy} onClick={onResume} label="Resume study timer" emphasis>
             <Play className="size-3.5" aria-hidden />
           </ClockIconButton>
-          <ClockIconButton disabled={busy} onClick={onStop} label="Stop study timer">
+          <ClockIconButton disabled={busy} onClick={onStop} label="Stop study timer" className="hidden sm:inline-flex">
             <Square className="size-3" aria-hidden />
           </ClockIconButton>
         </>
@@ -135,6 +135,7 @@ export function StudyClock({
         onClick={toggleVisible}
         label="Hide study timer"
         title="Hide the study-time display. Tracking rules and course progress are unchanged."
+        className="hidden sm:inline-flex"
         quiet
       >
         <EyeOff className="size-3.5" aria-hidden />
@@ -151,6 +152,7 @@ function ClockIconButton({
   disabled = false,
   emphasis = false,
   quiet = false,
+  className,
 }: {
   children: React.ReactNode;
   onClick: () => void;
@@ -159,6 +161,7 @@ function ClockIconButton({
   disabled?: boolean;
   emphasis?: boolean;
   quiet?: boolean;
+  className?: string;
 }) {
   return (
     <button
@@ -173,7 +176,8 @@ function ClockIconButton({
           ? "bg-foreground text-background hover:opacity-90"
           : quiet
             ? "text-muted-foreground hover:bg-muted hover:text-foreground"
-            : "border border-border bg-card text-foreground hover:bg-muted"
+            : "border border-border bg-card text-foreground hover:bg-muted",
+        className
       )}
     >
       {children}
