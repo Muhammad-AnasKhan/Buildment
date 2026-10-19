@@ -218,11 +218,14 @@ export function ChapterReaderShell({
                 collapsed={leftCollapsed}
                 onClick={() => setLeftCollapsed(!leftCollapsed)}
               />
-              <nav aria-label="Breadcrumb" className="flex min-w-0 flex-1 items-center gap-1.5 text-xs text-muted-foreground">
-                <Link href="/dashboard" className="shrink-0 transition-colors hover:text-foreground">
+              <nav
+                aria-label="Breadcrumb"
+                className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-xs text-muted-foreground"
+              >
+                <Link href="/dashboard" className="hidden shrink-0 transition-colors hover:text-foreground lg:inline">
                   Dashboard
                 </Link>
-                <span aria-hidden className="shrink-0 text-border">/</span>
+                <span aria-hidden className="hidden shrink-0 text-border lg:inline">/</span>
                 <Link
                   href={`/courses/${courseSlug}`}
                   className="truncate transition-colors hover:text-foreground"
@@ -231,9 +234,6 @@ export function ChapterReaderShell({
                 </Link>
                 <span aria-hidden className="hidden shrink-0 text-border sm:inline">/</span>
                 <span className="hidden truncate text-foreground sm:inline">{chapterTitle}</span>
-                <span className="shrink-0 font-mono tabular-nums text-muted-foreground sm:hidden">
-                  {lessonLabel}
-                </span>
               </nav>
               <CheckpointHeaderLabel
                 completed={checkpointsCompleted}
