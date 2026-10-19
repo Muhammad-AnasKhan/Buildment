@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChapterSidebar, SidebarToggle } from "@/components/learn/chapter-sidebar";
 import { ChapterToc, TocToggle } from "@/components/learn/chapter-toc";
 import { ChapterNav } from "@/components/learn/chapter-nav";
@@ -24,6 +25,14 @@ import type { HelpThreadView } from "@/shared/api/help";
 import type { StreakMilestone } from "@/shared/lib/streak";
 import { HeadingNotesProvider } from "@/components/learn/heading-note";
 import { PredictRevealProvider } from "@/components/learn/predict-reveal";
+
+function Kbd({ children }: { children: React.ReactNode }) {
+  return (
+    <kbd className="mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-muted px-1 font-mono text-[11px] text-foreground">
+      {children}
+    </kbd>
+  );
+}
 
 function FocusProgressBar({ scrollRef }: { scrollRef: React.RefObject<HTMLElement | null> }) {
   const { progress } = useReadingProgress(scrollRef);
@@ -114,6 +123,7 @@ export function ChapterReaderShell({
     skipSkeleton,
   } = useReaderLayout(courseSlug);
   const scrollRef = useRef<HTMLElement>(null);
+  const router = useRouter();
 
   const [showSkeleton, setShowSkeleton] = useState(!skipSkeleton);
   const [focusMode, setFocusMode] = useState(false);
@@ -176,6 +186,24 @@ export function ChapterReaderShell({
   useEffect(() => {
     scrollRef.current?.scrollTo(0, 0);
   }, [chapterSlug]);
+
+  // `[` / `]` move between chapters. Arrow keys are left alone: code blocks scroll
+  // sideways with them and some interactive blocks use them for their own steps.
+  const prevHref = prev ? `/courses/${courseSlug}/${prev.slug}` : null;
+  const nextHref = next && !nextLocked ? `/courses/${courseSlug}/${next.slug}` : null;
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable=''], [contenteditable='true'], dialog[open]")) {
+        return;
+      }
+      if (event.key === "]" && nextHref) router.push(nextHref);
+      else if (event.key === "[" && prevHref) router.push(prevHref);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [router, prevHref, nextHref]);
 
   useEffect(() => {
     if (readerMode !== "QUIZ") return;
@@ -309,7 +337,7 @@ export function ChapterReaderShell({
               ref={scrollRef}
               className={cn(
                 "flex-1 overflow-y-auto",
-                focusMode ? "px-4 py-10 sm:px-8 lg:px-16" : "px-4 py-8 sm:px-6 lg:px-10"
+                focusMode ? "px-4 pt-10 pb-24 sm:px-8 lg:px-16" : "px-4 pt-8 pb-24 sm:px-6 lg:px-10"
               )}
             >
               {/* ~70 characters per line at 18px: long chapters stay comfortable to read. */}
@@ -397,6 +425,25 @@ export function ChapterReaderShell({
                       readerMode === "QUIZ" && checkpointsCompleted < checkpointsTotal
                     }
                   />
+                ) : null}
+
+                {prevHref || nextHref ? (
+                  <p className="mt-4 hidden text-center text-xs text-muted-foreground md:block">
+                    Tip: press{" "}
+                    {prevHref ? (
+                      <>
+                        <Kbd>[</Kbd> for the previous chapter
+                      </>
+                    ) : null}
+                    {prevHref && nextHref ? " and " : null}
+                    {nextHref ? (
+                      <>
+                        <Kbd>]</Kbd> for the next
+                        {prevHref ? null : " chapter"}
+                      </>
+                    ) : null}
+                    .
+                  </p>
                 ) : null}
               </div>
             </main>
