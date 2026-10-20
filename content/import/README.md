@@ -33,7 +33,7 @@ pnpm content:import --course decision-making
 A new course needs a `course.yaml` with its catalog metadata and the planned modules and lessons;
 the audit fails when the lesson files and the plan disagree. FreshMarket has no `course.yaml` and
 keeps its metadata in `server/src/shared/lib/seed-data.ts`. The full process for building a course
-(plan, write, verify, PR) is in [`docs/course-authoring/`](../../docs/course-authoring/README.mdx).
+(brief, roadmap, writing, critique, publish) is the course factory in [`agent-ip/`](../../agent-ip/README.md).
 
 ## What the import does
 
