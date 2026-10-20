@@ -42,7 +42,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       # The web app's src/shared must be the committed copy of server/src/shared.
       - run: pnpm sync-shared:check
-      - run: pnpm exec prisma migrate deploy
+      - run: pnpm db:ready
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test
