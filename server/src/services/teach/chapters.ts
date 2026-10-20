@@ -6,6 +6,7 @@ import { blockDefinitions, isRegisteredBlockType } from "../../shared/blocks/def
 import { slugify } from "../../shared/lib/mdx-headings.js";
 import { mdxComponentAllowlist } from "../../shared/mdx/component-allowlist.js";
 import { collectUnknownComponents, diffBlocks, extractBlocksFromSource } from "../../shared/mdx/extract.js";
+import { collectCanvasProblems } from "../../shared/mdx/canvas-tags.js";
 import { blockConfigFromSource, extractBlockConfigsFromSource, hasQuizBlocks, isActivityOnlySource } from "../../shared/mdx/extract-block-config.js";
 import { remarkChecklist } from "../../shared/mdx/remark-checklist.js";
 import { remarkLearningLog } from "../../shared/mdx/remark-learning-log.js";
@@ -149,6 +150,8 @@ async function collectPublishProblems(chapterId: string, renderable: string, rea
   for (const name of collectUnknownComponents(renderable, mdxComponentAllowlist)) {
     problems.push(`Unknown component <${name}> is not in the allowed component map.`);
   }
+
+  problems.push(...collectCanvasProblems(renderable));
 
   if (readerMode !== "QUIZ" && hasQuizBlocks(renderable)) {
     problems.push("Quizzes require Quiz flow. Change the reader experience in Chapter settings before publishing.");
