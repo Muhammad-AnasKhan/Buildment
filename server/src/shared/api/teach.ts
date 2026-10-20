@@ -50,6 +50,7 @@ export type MentorCourseCard = {
 };
 
 export type MentorCoursesView = {
+  zipImportEnabled: boolean;
   courses: MentorCourseCard[];
   summary: {
     totalCourses: number;

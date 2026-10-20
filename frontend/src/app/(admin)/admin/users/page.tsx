@@ -8,6 +8,7 @@ import {
   grantAdminByEmailAction,
   grantInstructorByEmailAction,
   setUserInstructorAccessAction,
+  setUserZipImportAccessAction,
 } from "@/server/actions/admin/users";
 import {
   approveInstructorAccessRequestAction,
@@ -84,6 +85,7 @@ export default async function AdminUsersPage() {
               <AdminTableHeaderCell align="right">Enrollments</AdminTableHeaderCell>
               <AdminTableHeaderCell align="right">Courses</AdminTableHeaderCell>
               <AdminTableHeaderCell>Instructor</AdminTableHeaderCell>
+              <AdminTableHeaderCell>ZIP import</AdminTableHeaderCell>
             </tr>
           </AdminTableHead>
           <AdminTableBody>
@@ -125,6 +127,15 @@ export default async function AdminUsersPage() {
                       </Button>
                     </form>
                   )}
+                </AdminTableCell>
+                <AdminTableCell>
+                  <form action={setUserZipImportAccessAction}>
+                    <input type="hidden" name="userId" value={user.id} />
+                    <input type="hidden" name="enabled" value={String(!user.zipImportEnabled)} />
+                    <Button type="submit" size="sm" variant="outline" aria-label={`${user.zipImportEnabled ? "Disable" : "Enable"} ZIP import for ${user.email}`}>
+                      {user.zipImportEnabled ? "Disable" : "Enable"}
+                    </Button>
+                  </form>
                 </AdminTableCell>
               </AdminTableRow>
             ))}

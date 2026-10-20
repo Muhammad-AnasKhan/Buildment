@@ -41,6 +41,7 @@ export async function loadTeachWorkspace(user: SessionUser): Promise<TeachWorksp
 
 /** The "My courses" page: per-course cohort signals and totals across them. */
 export async function loadMentorCourses(user: SessionUser): Promise<MentorCoursesView> {
+  const account = await prisma.user.findUniqueOrThrow({ where: { id: user.id }, select: { zipImportEnabled: true } });
   const now = Date.now();
   const rows = await prisma.course.findMany({
     where: mentoredCoursesWhere(user),
@@ -80,6 +81,7 @@ export async function loadMentorCourses(user: SessionUser): Promise<MentorCourse
 
   return {
     courses,
+    zipImportEnabled: account.zipImportEnabled,
     summary: {
       totalCourses: courses.length,
       publishedCourses: courses.filter((course) => course.status === "PUBLISHED").length,

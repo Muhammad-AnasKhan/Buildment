@@ -1,0 +1,1 @@
+ALTER TABLE "User" ADD COLUMN "zipImportEnabled" BOOLEAN NOT NULL DEFAULT false;

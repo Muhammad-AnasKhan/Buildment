@@ -171,6 +171,7 @@ model User {
   image         String?
   role          Role         @default(MENTEE)
   passwordHash  String?
+  zipImportEnabled Boolean @default(false)
   weeklyGoalKind WeeklyGoalKind?
   weeklyGoalTarget Int?
   celebratedStreakMilestones Int[] @default([])

@@ -28,12 +28,13 @@ function asJson(config: unknown): Prisma.InputJsonValue {
   return config as Prisma.InputJsonValue;
 }
 
-export async function syncChapterBlocksFromSource(chapterId: string, source: string): Promise<void> {
+export async function syncChapterBlocksFromSource(chapterId: string, source: string, transaction?: Prisma.TransactionClient): Promise<void> {
   const renderable = restoreInteractiveBlockTags(source);
   const extracted = extractBlocksFromSource(renderable);
   const configs = extractBlockConfigsFromSource(renderable);
 
-  const existing = await prisma.block.findMany({
+  const db = transaction ?? prisma;
+  const existing = await db.block.findMany({
     where: { chapterId, archivedAt: null },
     select: { id: true, type: true, config: true, sourceHash: true },
   });
@@ -41,7 +42,7 @@ export async function syncChapterBlocksFromSource(chapterId: string, source: str
   const extractedById = new Map(extracted.map((row) => [row.id, row]));
   const diff = diffBlocks(extracted, existing);
 
-  await prisma.$transaction(async (tx) => {
+  const sync = async (tx: Prisma.TransactionClient) => {
     if (diff.create.length > 0) {
       await tx.block.createMany({
         data: diff.create.map((block) => {
@@ -96,5 +97,7 @@ export async function syncChapterBlocksFromSource(chapterId: string, source: str
       if (!parsed.success) continue;
       await tx.block.update({ where: { id: block.id }, data: { config: asJson(parsed.data), order: block.order } });
     }
-  });
+  };
+  if (transaction) await sync(transaction);
+  else await prisma.$transaction(sync);
 }
