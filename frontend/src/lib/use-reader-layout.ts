@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useSyncExternalStore, type SetStateAction } from "react";
+import { useCallback, useEffect, useSyncExternalStore, type SetStateAction } from "react";
 import { useBrowserStorage, useHydrated } from "./use-browser-storage";
 
 const MOBILE_QUERY = "(max-width: 767px)";
@@ -45,14 +45,6 @@ function useIsRoomy() {
   );
 }
 
-function readerAlreadyReady() {
-  try {
-    return typeof window !== "undefined" && sessionStorage.getItem(READY_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
-
 /** Sidebar preferences are stored separately for each course. */
 export function useReaderLayout(courseSlug: string) {
   const isMobile = useIsMobile();
@@ -72,7 +64,10 @@ export function useReaderLayout(courseSlug: string) {
   } catch { /* Use device defaults. */ }
   const leftCollapsed = prefs.left ?? (hydrated && isMobile);
   const rightCollapsed = prefs.right ?? (hydrated && (isMobile || !isRoomy));
-  const [skipSkeleton] = useState(() => readerAlreadyReady());
+  // Read through useBrowserStorage so hydration sees the server value; reading sessionStorage
+  // in a useState initializer made reloads render a different tree than the server did.
+  const [readyFlag] = useBrowserStorage(READY_KEY, "", "sessionStorage");
+  const skipSkeleton = readyFlag === "1";
   useEffect(() => {
     try { sessionStorage.setItem(READY_KEY, "1"); } catch { /* Optional preference. */ }
   }, []);

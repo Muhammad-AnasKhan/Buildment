@@ -586,8 +586,9 @@ function transformPredictFences(body: string, pushBlock: (b: PendingBlock) => st
  * reason per option, in option order, so every choice (right or wrong) gets its own feedback.
  */
 function quizExplanation(options: string[], explanation?: string, explanations?: string[]): string | undefined {
-  const perOption = (explanations ?? []).map((why, i) => (options[i] ? `${options[i]}: ${why}` : why));
-  const text = [explanation, ...perOption].filter((part) => part?.trim()).join(" ");
+  // One line per option ("Option" reason) so the quiz feedback reads as a list, not one paragraph.
+  const perOption = (explanations ?? []).map((why, i) => (options[i] ? `"${options[i]}" ${why}` : why));
+  const text = [explanation, ...perOption].filter((part) => part?.trim()).join("\n");
   return text || undefined;
 }
 
