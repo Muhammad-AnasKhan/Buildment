@@ -28,6 +28,23 @@ export function useIsMobile() {
   return useSyncExternalStore(subscribeMobile, getMobileSnapshot, getMobileServerSnapshot);
 }
 
+/** Below this width both side panels leave too little room for the text, so the outline starts closed. */
+const ROOMY_QUERY = "(min-width: 1280px)";
+
+function subscribeRoomy(callback: () => void) {
+  const mq = window.matchMedia(ROOMY_QUERY);
+  mq.addEventListener("change", callback);
+  return () => mq.removeEventListener("change", callback);
+}
+
+function useIsRoomy() {
+  return useSyncExternalStore(
+    subscribeRoomy,
+    () => window.matchMedia(ROOMY_QUERY).matches,
+    () => true
+  );
+}
+
 function readerAlreadyReady() {
   try {
     return typeof window !== "undefined" && sessionStorage.getItem(READY_KEY) === "1";
@@ -39,6 +56,7 @@ function readerAlreadyReady() {
 /** Sidebar preferences are stored separately for each course. */
 export function useReaderLayout(courseSlug: string) {
   const isMobile = useIsMobile();
+  const isRoomy = useIsRoomy();
   const hydrated = useHydrated();
   const [raw, setRaw] = useBrowserStorage(sidebarStorageKey(courseSlug), "", "sessionStorage");
   let prefs: { left?: boolean; right?: boolean } = {};
@@ -53,7 +71,7 @@ export function useReaderLayout(courseSlug: string) {
     }
   } catch { /* Use device defaults. */ }
   const leftCollapsed = prefs.left ?? (hydrated && isMobile);
-  const rightCollapsed = prefs.right ?? (hydrated && isMobile);
+  const rightCollapsed = prefs.right ?? (hydrated && (isMobile || !isRoomy));
   const [skipSkeleton] = useState(() => readerAlreadyReady());
   useEffect(() => {
     try { sessionStorage.setItem(READY_KEY, "1"); } catch { /* Optional preference. */ }
