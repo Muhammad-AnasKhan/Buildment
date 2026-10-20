@@ -31,7 +31,7 @@ export function ResendVerificationButton({ signedIn = false }: { signedIn?: bool
           className="h-10"
         />
       )}
-      <Button type="submit" variant="outline" className="w-full" disabled={pending}>
+      <Button type="submit" variant="outline" className="w-full" loading={pending} disabled={pending}>
         {pending ? "Sending…" : "Resend verification email"}
       </Button>
       {message ? <p className="text-sm text-muted-foreground">{message}</p> : null}

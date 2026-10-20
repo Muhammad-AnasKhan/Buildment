@@ -109,6 +109,7 @@ export function MentorHelpThread({
                 size="sm"
                 className="h-9 rounded-lg bg-neutral-900 px-5 text-white hover:bg-neutral-800"
                 disabled={pending || body.trim().length < 10}
+                loading={pending}
                 onClick={sendReply}
               >
                 {pending ? "Sending…" : "Send reply"}

@@ -60,7 +60,7 @@ function DeleteDraftButton({ course }: { course: MentorCourseCard }) {
   }
 
   return <>
-    <Button type="button" variant="ghost" size="sm" onClick={handleDelete} disabled={pending} className="text-destructive hover:text-destructive">
+    <Button type="button" variant="ghost" size="sm" onClick={handleDelete} loading={pending} disabled={pending} className="text-destructive hover:text-destructive">
       <Trash2 /> {pending ? "Deleting…" : "Delete"}
     </Button>
     {error ? <span role="alert" className="basis-full text-xs text-destructive">{error}</span> : null}

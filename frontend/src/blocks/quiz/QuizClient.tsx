@@ -298,6 +298,7 @@ export function QuizClient({
           type="button"
           size="sm"
           onClick={() => void submit()}
+          loading={submitting}
           disabled={selected.length === 0 || submitting}
           className="h-9 rounded-md px-5 shadow-none transition-all active:scale-[0.98]"
         >

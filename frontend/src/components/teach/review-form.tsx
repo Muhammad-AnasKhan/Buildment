@@ -57,6 +57,7 @@ export function ReviewForm({ responseId, maxScore, action }: ReviewFormProps) {
           variant="outline"
           size="sm"
           onClick={generateDraft}
+          loading={isGenerating}
           disabled={isGenerating}
         >
           {draft ? <RefreshCw className={isGenerating ? "animate-spin" : ""} /> : <Sparkles />}

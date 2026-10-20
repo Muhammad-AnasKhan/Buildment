@@ -1,7 +1,7 @@
 "use client";
 
 import { useBrowserStorage } from "@/lib/use-browser-storage";
-import { Clock, EyeOff, Pause, Play, Square } from "lucide-react";
+import { Clock, EyeOff, Loader2, Pause, Play, Square } from "lucide-react";
 import { formatStudyClock, formatStudyDuration } from "@/lib/format-study-duration";
 import type { StudyClockStatus, StudyPauseReason } from "@/lib/use-study-session";
 import { cn } from "@/lib/utils";
@@ -65,7 +65,7 @@ export function StudyClock({
         : "Paused";
 
   return (
-    <div className={cn("flex shrink-0 items-center gap-1", className)}>
+    <div aria-busy={busy || undefined} className={cn("flex shrink-0 items-center gap-1", className)}>
       <div
         className={cn(
           "flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-foreground",
@@ -77,13 +77,13 @@ export function StudyClock({
             : "Estimated study time. Counts while this lesson is visible and you are active. Pauses after two minutes without activity."
         }
       >
-        <Clock
+        {busy ? <Loader2 className="size-3.5 shrink-0 animate-spin motion-reduce:animate-none" aria-label="Updating study timer" /> : <Clock
           className={cn(
             "hidden size-3.5 shrink-0 sm:block",
             status === "running" ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
           )}
           aria-hidden
-        />
+        />}
         <span className="font-mono text-[13px] tabular-nums" aria-label="Session time">
           {formatStudyClock(sessionSeconds)}
         </span>
