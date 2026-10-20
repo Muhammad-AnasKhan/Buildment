@@ -17,15 +17,13 @@ By the end of Chapter 4, your marketplace API will:
 3. **Report database status** on the `/health` endpoint
 4. **Show database status** on your React Home page
 
-<ProjectPreview id="01M4THGCKYG5BGK2FJ9S6RVWXB" />
+<ProjectPreview id="01M5CM5J6M20SJB2EYGA0BWC24" />
 
 ## Why this matters
 
 Without this blueprint, it's easy to connect MongoDB inline in `server.js` and forget health reporting, fail-fast validation, or `.env.example`. Each row in the deliverables table maps to one build sub-chapter — finish the list, pass the gate.
 
-<Callout type="info">
 **This is your checklist.** Before moving to Chapter 5, every item should be done. Use it to self-check your progress.
-</Callout>
 
 ## Deliverables checklist
 
@@ -69,7 +67,7 @@ If you `listen` first, health checks may report `status: ok` while DB is down �
 | `PORT` | no (default 5000) | `5000` |
 | `NODE_ENV` | no | `development` |
 
-<MustRead id="01M4THGCKZ3J72RX9FJWYCZVYE" />
+<MustRead id="01M5CM5J6MS70KWSKC7WK5RW7Z" />
 
 <RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />
 
@@ -127,11 +125,8 @@ No — and this is an important separation to internalise. The React app never t
 | client env/UI | 4.14 |
 | failure tests | 4.15 |
 
-<ChapterRecap id="01M4THGCKZJ5DJWM0DGEBAHFF2" />
+<ChapterRecap id="01M5CM5J6MC7TTWY5B4VXTFVT8" />
+
+**Why this matters now.** Teams routinely leak production credentials by committing `.env` files or logging connection strings. FreshMarket teaches config early because every later chapter — Stripe, Cloudinary, Redis — adds another secret that must stay out of Git and client bundles.
 
 **Next:** Environment variables vs hardcoded values — why `.env.example` is documentation.
-<InterestingRead title="The `.env` leak that took down a startup demo" hook="One committed secret becomes everyone's secret." readMinutes={3}>
-
-Teams routinely leak production credentials by committing `.env` files or logging connection strings. FreshMarket teaches config early because every later chapter — Stripe, Cloudinary, Redis — adds another secret that must stay out of Git and client bundles.
-
-</InterestingRead>
