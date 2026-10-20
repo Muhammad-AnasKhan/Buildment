@@ -8,12 +8,11 @@ import {
   CircleHelp,
   Gauge,
   GraduationCap,
-  LogOut,
   Menu,
-  Settings,
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
+import { WorkspaceAccountMenu } from "@/components/workspace/workspace-account-menu";
 import { Logo } from "@/components/brand/logo";
 import {
   DropdownMenu,
@@ -26,7 +25,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { helpUiCopy } from "@/shared/lib/help-ui-copy";
-import { SurfaceSwitcher } from "@/components/workspace/surface-switcher";
 import type { InstructorAccessView } from "@/shared/lib/instructor-access";
 
 type LearnerNavItem = {
@@ -89,12 +87,6 @@ export function MenteeWorkspaceShell({
   ];
   const supportItems: LearnerNavItem[] = [
     {
-      label: "Profile",
-      href: "/settings/profile",
-      icon: Settings,
-      active: pathname === "/settings/profile",
-    },
-    {
       label: helpUiCopy.learnerNav,
       href: "/my-questions",
       icon: CircleHelp,
@@ -109,102 +101,55 @@ export function MenteeWorkspaceShell({
         <Link href="/dashboard" aria-label="Learner dashboard">
           <Logo size="sm" />
         </Link>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                className="grid size-9 place-items-center rounded-lg border bg-card outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label="Open learner workspace navigation"
-              />
-            }
-          >
-            <Menu className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[min(21rem,calc(100vw-2rem))] p-1.5">
-            <MobileItems label="Learning" items={mainItems} onNavigate={router.push} />
-            <DropdownMenuSeparator />
-            <MobileItems label="Support" items={supportItems} onNavigate={router.push} />
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuLabel className="font-normal">
-                <span className="block truncate text-sm font-medium text-foreground">
-                  {user.name ?? "Learner"}
-                </span>
-                <span className="block truncate text-xs text-muted-foreground">{user.email}</span>
-              </DropdownMenuLabel>
-              <DropdownMenuItem variant="destructive" onClick={() => void signOutAction()}>
-                <LogOut className="size-4" />
-                Sign out
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-1">
+          <WorkspaceAccountMenu current="learn" user={user} instructorAccess={instructorAccess} signOutAction={signOutAction} compact />
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button
+                  type="button"
+                  className="grid size-9 place-items-center rounded-lg border bg-card outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Open learner workspace navigation"
+                />
+              }
+            >
+              <Menu className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[min(21rem,calc(100vw-2rem))] p-1.5">
+              <MobileItems label="Learning" items={mainItems} onNavigate={router.push} />
+              <DropdownMenuSeparator />
+              <MobileItems label="Support" items={supportItems} onNavigate={router.push} />
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 border-r bg-card lg:flex lg:flex-col">
-        <div className="border-b px-5 py-5">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 border-r bg-card lg:flex lg:flex-col">
+        <div className="flex h-16 shrink-0 items-center border-b px-4">
           <Link
             href="/dashboard"
             className="inline-flex outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <Logo size="md" />
+            <Logo size="sm" />
           </Link>
-          <p className="mt-1 pl-[2.625rem] text-xs text-muted-foreground">Learner workspace</p>
         </div>
 
-        <div className="border-b p-3">
-          <div className="flex items-center gap-3 rounded-xl bg-muted/45 px-3 py-3">
-            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-background text-muted-foreground shadow-sm ring-1 ring-border">
-              <GraduationCap className="size-4" />
-            </span>
-            <span className="min-w-0">
-              <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Learning space
-              </span>
-              <span className="mt-0.5 block text-sm font-semibold">
-                {assignedCourses === 0
-                  ? "No assigned courses"
-                  : `${assignedCourses} assigned course${assignedCourses === 1 ? "" : "s"}`}
-              </span>
-            </span>
-          </div>
-        </div>
-
-        <nav aria-label="Learner workspace" className="flex-1 space-y-5 overflow-y-auto p-3">
+        <nav aria-label="Learner workspace" className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
           <SidebarGroup label="Learning" items={mainItems} />
           <SidebarGroup label="Support" items={supportItems} />
           {pendingReviews > 0 ? (
-            <div className="rounded-xl border bg-muted/30 p-3">
-              <p className="text-xs font-medium">Mentor review</p>
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                {pendingReviews} submission{pendingReviews === 1 ? " is" : "s are"} waiting for feedback.
-              </p>
-            </div>
+            <p className="px-2 text-xs leading-5 text-muted-foreground">
+              {pendingReviews} submission{pendingReviews === 1 ? "" : "s"} awaiting review
+            </p>
           ) : null}
         </nav>
 
-        <div className="border-t p-3 space-y-1">
-          <SurfaceSwitcher current="learn" instructorAccess={instructorAccess} />
-          {user.role === "ADMIN" && <Link href="/admin" className="block px-2.5 py-2 text-sm">Admin area</Link>}
-          <div className="flex items-center gap-2.5 rounded-xl px-2 py-2">
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-xs font-medium">{user.name ?? "Learner"}</span>
-              <span className="block truncate text-[11px] text-muted-foreground">{user.email}</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => void signOutAction()}
-              className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Sign out"
-            >
-              <LogOut className="size-4" />
-            </button>
-          </div>
+        <div className="shrink-0 border-t p-2">
+          <WorkspaceAccountMenu current="learn" user={user} instructorAccess={instructorAccess} signOutAction={signOutAction} />
         </div>
       </aside>
 
-      <main className="min-h-dvh lg:pl-72">{children}</main>
+      <main className="min-h-dvh lg:pl-60">{children}</main>
     </div>
   );
 }

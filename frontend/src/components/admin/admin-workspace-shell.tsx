@@ -8,12 +8,10 @@ import {
   Building2,
   ClipboardList,
   LayoutDashboard,
-  LogOut,
   Menu,
-  Plug,
-  Settings,
   Users,
 } from "lucide-react";
+import { WorkspaceAccountMenu } from "@/components/workspace/workspace-account-menu";
 import { Logo } from "@/components/brand/logo";
 import {
   DropdownMenu,
@@ -21,10 +19,8 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { setActiveSurfaceAction } from "@/server/actions/active-surface";
 import { cn } from "@/lib/utils";
 
 type AdminNavItem = {
@@ -63,6 +59,7 @@ export function AdminWorkspaceShell({
       href: "/admin/organizations",
       icon: Building2,
       active: pathname.startsWith("/admin/organizations"),
+      badge: organizationCount,
     },
     {
       label: "Requests",
@@ -83,12 +80,6 @@ export function AdminWorkspaceShell({
       icon: Users,
       active: pathname === "/admin/users",
     },
-    {
-      label: "Profile settings",
-      href: "/admin/settings/profile",
-      icon: Settings,
-      active: pathname.startsWith("/admin/settings"),
-    },
   ];
 
   return (
@@ -97,75 +88,52 @@ export function AdminWorkspaceShell({
         <Link href="/admin" aria-label="Platform admin">
           <Logo size="sm" />
         </Link>
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <button
-                type="button"
-                className="grid size-9 place-items-center rounded-lg border bg-card outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label="Open admin navigation"
-              />
-            }
-          >
-            <Menu className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[min(20rem,calc(100vw-2rem))] p-1.5">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>Platform admin</DropdownMenuLabel>
-              {navItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <DropdownMenuItem
-                    key={item.href}
-                    className={cn(item.active && "bg-accent font-medium")}
-                    onClick={() => router.push(item.href)}
-                  >
-                    <Icon className="size-4" />
-                    <span className="flex-1">{item.label}</span>
-                    {item.badge != null && item.badge > 0 ? (
-                      <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
-                        {item.badge}
-                      </span>
-                    ) : null}
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuGroup>
-            <DropdownMenuItem onClick={() => void setActiveSurfaceAction("learn")}>Learner area</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => void setActiveSurfaceAction("teach")}>Mentor area</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => void signOutAction()} variant="destructive">
-              <LogOut className="size-4" />
-              Sign out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-1">
+          <WorkspaceAccountMenu current="admin" user={{ ...user, role: "ADMIN" }} signOutAction={signOutAction} compact />
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <button
+                  type="button"
+                  className="grid size-9 place-items-center rounded-lg border bg-card outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Open admin navigation"
+                />
+              }
+            >
+              <Menu className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[min(20rem,calc(100vw-2rem))] p-1.5">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Platform admin</DropdownMenuLabel>
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <DropdownMenuItem
+                      key={item.href}
+                      className={cn(item.active && "bg-accent font-medium")}
+                      onClick={() => router.push(item.href)}
+                    >
+                      <Icon className="size-4" />
+                      <span className="flex-1">{item.label}</span>
+                      {item.badge != null && item.badge > 0 ? (
+                        <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                          {item.badge}
+                        </span>
+                      ) : null}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-72 flex-col border-r bg-card lg:flex">
-        <div className="border-b px-5 py-5">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r bg-card lg:flex">
+        <div className="flex h-16 shrink-0 items-center border-b px-4">
           <Link href="/admin" className="inline-flex outline-none focus-visible:ring-2 focus-visible:ring-ring">
-            <Logo size="md" />
+            <Logo size="sm" />
           </Link>
-          <p className="mt-1 pl-[2.625rem] text-xs text-muted-foreground">Platform admin</p>
-        </div>
-
-        <div className="border-b p-3">
-          <div className="flex items-center gap-3 rounded-xl bg-muted/45 px-3 py-3">
-            <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-background text-muted-foreground shadow-sm ring-1 ring-border">
-              <Building2 className="size-4" />
-            </span>
-            <span className="min-w-0">
-              <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Tenants
-              </span>
-              <span className="mt-0.5 block text-sm font-semibold">
-                {organizationCount === 0
-                  ? "No organizations yet"
-                  : `${organizationCount} organization${organizationCount === 1 ? "" : "s"}`}
-              </span>
-            </span>
-          </div>
         </div>
 
         <nav aria-label="Platform admin" className="flex-1 space-y-1 overflow-y-auto p-3">
@@ -200,39 +168,12 @@ export function AdminWorkspaceShell({
           })}
         </nav>
 
-        <div className="space-y-2 border-t p-3">
-          {(["learn", "teach"] as const).map((surface) => (
-            <form key={surface} action={setActiveSurfaceAction.bind(null, surface)}>
-              <button type="submit" className="w-full rounded-lg px-2.5 py-2 text-left text-sm hover:bg-muted">
-                {surface === "learn" ? "Learner area" : "Mentor area"}
-              </button>
-            </form>
-          ))}
-          <Link
-            href="/integrations"
-            className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            <Plug className="size-4" />
-            Integration API
-          </Link>
-          <div className="flex items-center gap-2.5 rounded-xl px-2 py-2">
-            <span className="min-w-0 flex-1">
-              <span className="block truncate text-xs font-medium">{user.name ?? "Admin"}</span>
-              <span className="block truncate text-[11px] text-muted-foreground">{user.email}</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => void signOutAction()}
-              className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Sign out"
-            >
-              <LogOut className="size-4" />
-            </button>
-          </div>
+        <div className="shrink-0 border-t p-2">
+          <WorkspaceAccountMenu current="admin" user={{ ...user, role: "ADMIN" }} signOutAction={signOutAction} />
         </div>
       </aside>
 
-      <main className="min-h-dvh lg:pl-72">
+      <main className="min-h-dvh lg:pl-60">
         <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">{children}</div>
       </main>
     </div>
