@@ -1,6 +1,6 @@
 /**
  * Compile every imported chapter the same way the reader does, from source
- * files — no database required. Run: pnpm content:validate:source
+ * files, with no database required. Run: pnpm content:validate:source [--course <slug>]
  */
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,6 +13,7 @@ import { remarkChecklist } from "../src/shared/mdx/remark-checklist.js";
 import { remarkLearningLog } from "../src/shared/mdx/remark-learning-log.js";
 import { remarkMermaid } from "../src/shared/mdx/remark-mermaid.js";
 import { restoreInteractiveBlockTags } from "../src/shared/mdx/restore-block-tags.js";
+import { COURSE_SLUG, loadCourseManifest } from "./course-source.js";
 import { parseLesson, readLessonFiles, readModuleDirs } from "./import-course.js";
 
 const componentNames = [
@@ -71,6 +72,12 @@ export function findBrokenChapters(): { total: number; failed: ChapterMdxFailure
     .use(remarkMermaid);
   const allowed = new Set<string>(componentNames);
 
+  try {
+    loadCourseManifest();
+  } catch (err) {
+    failed.push({ file: "course.yaml", error: err instanceof Error ? err.message : String(err) });
+  }
+
   for (const { dirName, moduleNum } of readModuleDirs()) {
     for (const { fileName, lessonNum, slugPart } of readLessonFiles(dirName)) {
       total += 1;
@@ -98,7 +105,8 @@ const invokedDirectly =
 
 if (invokedDirectly) {
   const { total, failed } = findBrokenChapters();
-  console.log(`Validated ${total} chapters — ${total - failed.length} OK, ${failed.length} failed`);
+  const chapterFailures = failed.filter((failure) => failure.file !== "course.yaml").length;
+  console.log(`[${COURSE_SLUG}] Validated ${total} chapters: ${total - chapterFailures} OK, ${chapterFailures} failed`);
   for (const failure of failed) console.log(`  ${failure.file}: ${failure.error}`);
   if (failed.length > 0) process.exitCode = 1;
 }
