@@ -132,6 +132,7 @@ function WeightControl({
               value={level.value}
               checked={value === level.value}
               onChange={() => onChange(level.value)}
+              aria-label={`${level.value}, ${level.label}`}
               className="peer sr-only"
             />
             <span

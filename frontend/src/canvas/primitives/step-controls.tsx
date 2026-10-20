@@ -13,11 +13,9 @@ type StepControlsProps = {
 };
 
 // 44px touch targets on phones, the app's compact size from sm up.
-const control = cn(
-  buttonVariants({ variant: "outline" }),
-  "h-11 min-w-11 gap-1.5 px-3 sm:h-8 sm:min-w-8",
-  FOCUS_RING
-);
+const size = "h-11 min-w-11 gap-1.5 px-3 sm:h-8 sm:min-w-8";
+const control = cn(buttonVariants({ variant: "outline" }), size, FOCUS_RING);
+const primary = cn(buttonVariants({ variant: "default" }), size, FOCUS_RING);
 
 /** Previous, Next, Play and Start over, then one numbered button per step. */
 export function StepControls({ stepper, titles }: StepControlsProps) {
@@ -31,7 +29,7 @@ export function StepControls({ stepper, titles }: StepControlsProps) {
         </button>
         <button
           type="button"
-          className={cn(control, buttonVariants({ variant: "default" }), "h-11 sm:h-8")}
+          className={primary}
           onClick={stepper.next}
           disabled={isLast}
         >
