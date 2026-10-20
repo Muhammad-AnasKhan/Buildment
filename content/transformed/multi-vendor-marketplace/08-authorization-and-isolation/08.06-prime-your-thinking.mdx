@@ -9,7 +9,7 @@ Before writing middleware, read OWASP guidance on object-level authorization —
 <BigWordAlert term="Defense in depth" plainEnglish="Multiple layers of checks — middleware, service logic, database query filters — not one gate only." whyItMatters="FreshMarket filters products by owner in the query even if middleware is bypassed by a bug." />
 
 
-<Predict id="01M4THGD6WE6K0YQ5EJDEQ4AW5" />
+<Predict id="01M5CM5JGMP6NYP57VS78TV3MM" />
 
 
 ## Why read before you code
@@ -34,9 +34,12 @@ Each resource below covers a different slice of the same idea — the OWASP docs
 
 | Resource | Focus |
 |---|---|
-| [OWASP API Security Top 10 — BOLA](https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/) | Object id manipulation |
-| [OWASP IDOR Prevention](https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html) | Server-side checks |
+| [OWASP API Security Top 10 — BOLA][owasp-bola] | Object id manipulation |
+| [OWASP IDOR Prevention][owasp-idor] | Server-side checks |
 | Your `docs/erd.md` ownership chain | Field names for lookups |
+
+[owasp-bola]: https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/
+[owasp-idor]: https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html
 
 ## Key takeaways to apply
 

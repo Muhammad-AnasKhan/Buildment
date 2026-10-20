@@ -42,7 +42,7 @@ Module 01 includes `01.11-checklist.md` (introduction gate). Module 99-closing i
 
 ## Gate lessons (canonical layout)
 
-Follow `03-why-mongodb/03.10-checklist.md`:
+Follow `03-why-mongodb/03.11-checklist.md`:
 
 - `## Chapter N checklist` with task list under a gate heading
 - `## Learning log` with numbered questions

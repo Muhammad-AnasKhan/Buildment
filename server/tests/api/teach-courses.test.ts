@@ -257,3 +257,37 @@ describe("chapters", () => {
     expect(res.body.code).toBe("ENROLLMENTS_CONFIRMATION_REQUIRED");
   });
 });
+
+describe("deletion", () => {
+  it("removes a chapter and its content", async () => {
+    const created = await request(app)
+      .post(`/api/v1/teach/courses/${createdCourseId}/chapters`)
+      .set(mentor())
+      .send({ title: "Temporary" });
+    expect(created.status).toBe(201);
+    const temporaryId = created.body.data.chapterId;
+
+    expect((await request(app).delete(`/api/v1/teach/chapters/${temporaryId}`).set(stranger()).send({})).status).toBe(403);
+    expect((await request(app).delete(`/api/v1/teach/chapters/${temporaryId}`).set(mentor()).send({})).status).toBe(204);
+    expect(await prisma.chapter.findUnique({ where: { id: temporaryId } })).toBeNull();
+  });
+
+  it("requires explicit confirmation and enrollment acknowledgement to delete a course", async () => {
+    // The schema requires `confirm: true`, so a bare call is rejected.
+    expect((await request(app).delete(`/api/v1/teach/courses/${createdCourseId}`).set(mentor()).send({})).status).toBe(400);
+
+    const noAck = await request(app).delete(`/api/v1/teach/courses/${fx.course.id}`).set(mentor()).send({ confirm: true });
+    expect(noAck.status).toBe(409);
+    expect(noAck.body.code).toBe("ENROLLMENTS_CONFIRMATION_REQUIRED");
+
+    expect((await request(app).delete(`/api/v1/teach/courses/${fx.course.id}`).set(stranger()).send({ confirm: true, confirmedWithEnrollments: true })).status).toBe(403);
+  });
+
+  it("deletes a draft course after confirmation", async () => {
+    const res = await request(app).delete(`/api/v1/teach/courses/${createdCourseId}`).set(mentor()).send({ confirm: true });
+    expect(res.status).toBe(200);
+    expect(res.body.data.courseSlug).toBe(createdCourseSlug);
+    expect(await prisma.course.findUnique({ where: { id: createdCourseId } })).toBeNull();
+    createdCourseId = "";
+  });
+});

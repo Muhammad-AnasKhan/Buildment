@@ -193,3 +193,27 @@ export async function restoreCourseToDraft(user: SessionUser, courseId: string):
   await prisma.course.update({ where: { id: owned.id }, data: { status: "DRAFT", publishedAt: null } });
   return { courseSlug: owned.slug };
 }
+
+/**
+ * Permanently deletes a course and everything under it (modules, chapters,
+ * blocks, enrollments and learner history). Courses with learners need an
+ * explicit confirmation flag.
+ */
+export async function deleteCourse(
+  user: SessionUser,
+  courseId: string,
+  options: { confirmedWithEnrollments?: boolean }
+): Promise<CourseSlugResult> {
+  const owned = await requireCourseById(user, courseId);
+
+  const enrollments = await prisma.enrollment.count({ where: { courseId: owned.id } });
+  if (enrollments > 0 && !options.confirmedWithEnrollments) {
+    throw new ConflictError(
+      `${enrollments} learner(s) are enrolled. Deleting this course permanently removes their progress. Confirm you want to delete it.`,
+      TEACH_ERROR_CODES.ENROLLMENTS_CONFIRMATION_REQUIRED
+    );
+  }
+
+  await prisma.course.delete({ where: { id: owned.id } });
+  return { courseSlug: owned.slug };
+}

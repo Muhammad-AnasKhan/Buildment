@@ -2,8 +2,12 @@ import type { AdminUsersView } from "../../shared/api/admin.js";
 import { ADMIN_ERROR_CODES } from "../../shared/api/admin.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, NotFoundError } from "../../utils/errors.js";
-import type { GrantInstructorBody } from "../../validations/admin.js";
-import { notifyUserGrantedInstructorByAdmin, notifyUserInstructorAccessDecision } from "../email/admin-notifications.js";
+import type { GrantAdminBody, GrantInstructorBody } from "../../validations/admin.js";
+import {
+  notifyUserGrantedAdminByAdmin,
+  notifyUserGrantedInstructorByAdmin,
+  notifyUserInstructorAccessDecision,
+} from "../email/admin-notifications.js";
 import { queueEmail } from "../email/queue.js";
 
 // Accounts and the instructor capability. Granting instructor tools promotes a
@@ -87,6 +91,23 @@ export async function grantInstructorByEmail(input: GrantInstructorBody): Promis
   });
 
   queueEmail(() => notifyUserGrantedInstructorByAdmin({ email: input.email, name: user.name ?? input.name ?? null }));
+}
+
+/** Adds a platform admin by email, creating a verified account when the address is new. */
+export async function grantAdminByEmail(input: GrantAdminBody): Promise<void> {
+  const user = await prisma.user.upsert({
+    where: { email: input.email },
+    create: {
+      email: input.email,
+      name: input.name ?? input.email.split("@")[0],
+      role: "ADMIN",
+      emailVerified: new Date(),
+    },
+    update: { role: "ADMIN", ...(input.name ? { name: input.name } : {}) },
+    select: { id: true, name: true },
+  });
+
+  queueEmail(() => notifyUserGrantedAdminByAdmin({ email: input.email, name: user.name ?? input.name ?? null }));
 }
 
 async function requirePendingInstructorRequest(requestId: string) {

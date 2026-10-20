@@ -28,7 +28,7 @@ Verify `package.json` lists `mongoose` in dependencies.
 
 | Function | Contract |
 |---|---|
-| `connectDB()` | Async. Uses `mongoUri` from `./config.js`. Calls Mongoose connect. Resolves when connection established. On failure: throw or reject with useful error — do not swallow. |
+| `connectDB()` | Async. Connects Mongoose with `mongoUri`; resolves on success and rejects with a useful error. |
 | `disconnectDB()` | Async. Closes Mongoose connection. Optional for gate; recommended for graceful shutdown. |
 
 **Implementation notes — you write the code:**
@@ -36,6 +36,7 @@ Verify `package.json` lists `mongoose` in dependencies.
 - Import `mongoose` and your config object  
 - Import config from `./config.js` (same `shared/` folder)  
 - Log success once — e.g. `"MongoDB connected"` without printing password  
+- Do not swallow connection errors; log the failure and exit  
 - Do not call `connectDB()` at module top level (import side effect) — **`server.js` calls it** in 4.12  
 
 Reference Mongoose docs from 4.6 — use Promise/async pattern, not deprecated callbacks.

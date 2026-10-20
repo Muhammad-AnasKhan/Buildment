@@ -51,3 +51,18 @@ export async function moveChapter(input: { chapterId: string; direction: "up" | 
   revalidatePath("/courses/[courseSlug]/edit", "page");
   return { ok: true };
 }
+
+/** Permanently deletes a chapter after the instructor confirms in the UI. */
+export async function removeChapter(input: {
+  chapterId: string;
+  /** Required when the chapter already has learner progress or submissions. */
+  confirmedWithProgress?: boolean;
+}): Promise<ActionResult> {
+  const result = await teachCall<void>(chapterPath(input.chapterId), {
+    method: "DELETE",
+    json: { confirmedWithProgress: input.confirmedWithProgress ?? false },
+  });
+  if (!result.ok) return result;
+  revalidatePath("/courses/[courseSlug]/edit", "page");
+  return { ok: true };
+}

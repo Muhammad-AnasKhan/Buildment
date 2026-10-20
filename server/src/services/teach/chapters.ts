@@ -136,6 +136,32 @@ export async function publishChapter(user: SessionUser, chapterId: string): Prom
   });
 }
 
+/**
+ * Permanently deletes a chapter with its blocks and learner history. Chapters
+ * with progress or submissions need an explicit confirmation flag. Ordering
+ * gaps are harmless — new chapters use the highest order + 1.
+ */
+export async function removeChapter(
+  user: SessionUser,
+  chapterId: string,
+  options: { confirmedWithProgress?: boolean }
+): Promise<void> {
+  const { chapter } = await requireChapter(user, chapterId);
+
+  const [progress, responses] = await Promise.all([
+    prisma.chapterProgress.count({ where: { chapterId: chapter.id } }),
+    prisma.response.count({ where: { block: { chapterId: chapter.id } } }),
+  ]);
+  if ((progress > 0 || responses > 0) && !options.confirmedWithProgress) {
+    throw new ConflictError(
+      "This chapter has learner progress or submissions. Confirm you want to remove it and their history.",
+      TEACH_ERROR_CODES.CHAPTER_PROGRESS_CONFIRMATION_REQUIRED
+    );
+  }
+
+  await prisma.chapter.delete({ where: { id: chapter.id } });
+}
+
 /** Everything that would break the reader: MDX syntax, unknown components, block configs. */
 async function collectPublishProblems(chapterId: string, renderable: string, readerMode: string): Promise<string[]> {
   const problems: string[] = [];

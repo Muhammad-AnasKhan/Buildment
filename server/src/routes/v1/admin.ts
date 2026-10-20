@@ -10,6 +10,7 @@ import {
   allocationsBody,
   approveCourseRequestBody,
   createOrganizationBody,
+  grantAdminBody,
   grantInstructorBody,
   instructorAccessBody,
   orgIdParams,
@@ -43,6 +44,7 @@ router.post("/course-requests/:requestId/reject", validateParams(requestIdParams
 router.get("/users", admin.listUsers);
 router.patch("/users/:userId/instructor-access", validate({ params: userIdParams, body: instructorAccessBody }), admin.setInstructorAccess);
 router.post("/instructors", validateBody(grantInstructorBody), admin.grantInstructor);
+router.post("/admins", validateBody(grantAdminBody), admin.grantAdmin);
 router.post("/instructor-access-requests/:requestId/approve", validateParams(requestIdParams), admin.approveInstructorRequest);
 router.post("/instructor-access-requests/:requestId/reject", validateParams(requestIdParams), admin.rejectInstructorRequest);
 
