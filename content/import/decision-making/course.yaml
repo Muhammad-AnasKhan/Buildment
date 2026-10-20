@@ -1,0 +1,143 @@
+slug: decision-making
+title: "Decision-Making & Professional Judgment"
+description: "Learn to make clear, defensible decisions at work: name the trade-off, weigh risk, decide when information is missing, prioritize, catch your own biases, and handle ethical grey areas. Every module is practice with real scenarios from remote teams, freelance clients, startups and NGOs."
+projectGoal: "Write a decision memo for a real choice in your own work or study, using a framework from this course, and defend it to a mentor."
+difficulty: Beginner
+estimatedHours: 10
+modules:
+  - dir: 01-what-a-good-decision-is
+    title: "What a good decision is"
+    summary: "Separate the quality of a decision from luck, and match effort to how reversible a decision is."
+    lessons:
+      - file: 01.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show why judgment matters in remote and freelance work, and what the course practices."
+      - file: 01.02-decisions-are-not-outcomes.md
+        title: "Decisions are not outcomes"
+        goal: "Judge a decision by the information and reasoning at the time, not only by how it turned out."
+      - file: 01.03-one-way-and-two-way-doors.md
+        title: "One-way and two-way doors"
+        goal: "Spend time on decisions that are hard to undo, and decide fast on the ones that are easy to undo."
+      - file: 01.04-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: reflect on a recent decision using outcome vs quality and reversibility."
+  - dir: 02-trade-offs-and-competing-options
+    title: "Trade-offs and competing options"
+    summary: "Name what you give up, and compare options with clear criteria instead of gut feeling."
+    lessons:
+      - file: 02.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce trade-offs through a freelancer choosing between two client projects."
+      - file: 02.02-name-the-trade-off.md
+        title: "Name the trade-off"
+        goal: "State every choice as 'more of X, less of Y' so the real cost is visible."
+      - file: 02.03-compare-options-with-criteria.md
+        title: "Compare options with criteria"
+        goal: "Build a simple weighted decision matrix and know its limits."
+      - file: 02.04-choosing-between-two-solutions.md
+        title: "Choosing between two solutions"
+        goal: "Practice picking between two technical or business solutions for a small team."
+      - file: 02.05-quiz.md
+        title: "Quiz: trade-offs"
+        goal: "Graded scenarios on spotting trade-offs and using criteria."
+      - file: 02.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a written comparison of two real options the learner faces."
+  - dir: 03-risk-and-uncertainty
+    title: "Risk and deciding under uncertainty"
+    summary: "Find what could go wrong, size it, and decide when you cannot know everything."
+    lessons:
+      - file: 03.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce risk through a deadline promised during unreliable power and internet."
+      - file: 03.02-likelihood-and-impact.md
+        title: "Likelihood and impact"
+        goal: "Rate risks by how likely and how harmful they are, and act on the biggest first."
+      - file: 03.03-the-pre-mortem.md
+        title: "The pre-mortem"
+        goal: "Imagine the plan has failed and list why, to find risks before they happen."
+      - file: 03.04-deciding-with-missing-information.md
+        title: "Deciding with missing information"
+        goal: "Decide with enough information, set a review point, and say what would change your mind."
+      - file: 03.05-quiz.md
+        title: "Quiz: risk"
+        goal: "Graded scenarios on likelihood, impact and acting under uncertainty."
+      - file: 03.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a short risk list and pre-mortem for a real plan."
+  - dir: 04-prioritization
+    title: "Prioritization"
+    summary: "Choose what to do first when everything feels urgent, and say no or renegotiate clearly."
+    lessons:
+      - file: 04.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce prioritization through a fellow juggling study, a part-time job and a team project."
+      - file: 04.02-urgent-and-important.md
+        title: "Urgent and important"
+        goal: "Sort tasks with the urgent and important grid and protect important work."
+      - file: 04.03-impact-and-effort.md
+        title: "Impact and effort"
+        goal: "Find quick wins and avoid big efforts with small impact."
+      - file: 04.04-saying-no-and-renegotiating.md
+        title: "Saying no and renegotiating"
+        goal: "Turn down or reshape requests politely and early, with a clear alternative."
+      - file: 04.05-quiz.md
+        title: "Quiz: prioritization"
+        goal: "Graded scenarios on ordering work and handling competing requests."
+      - file: 04.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: prioritize the learner's own task list for the coming week."
+  - dir: 05-cognitive-biases
+    title: "Cognitive biases"
+    summary: "Spot the common thinking traps that bend good people's decisions, and use simple checks against them."
+    lessons:
+      - file: 05.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Explain what a bias is and why smart people are not immune."
+      - file: 05.02-confirmation-bias.md
+        title: "Confirmation bias"
+        goal: "Notice when you only look for evidence that agrees with you, and look for the opposite."
+      - file: 05.03-sunk-cost.md
+        title: "The sunk cost trap"
+        goal: "Decide on future value, not on what you have already spent."
+      - file: 05.04-anchoring-and-overconfidence.md
+        title: "Anchoring and overconfidence"
+        goal: "Avoid sticking to the first number you hear, and give estimates as ranges."
+      - file: 05.05-quiz.md
+        title: "Quiz: spot the bias"
+        goal: "Graded scenarios where the learner names the bias at work."
+      - file: 05.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: find one bias in a past decision of the learner's own."
+  - dir: 06-ethics-and-judgment
+    title: "Ethics and professional judgment"
+    summary: "Handle grey areas: requests that feel wrong, unclear rules, and when to raise a concern."
+    lessons:
+      - file: 06.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce professional ethics through a client who asks for something that feels wrong."
+      - file: 06.02-three-tests-for-grey-areas.md
+        title: "Three tests for grey areas"
+        goal: "Use the newspaper, the mentor and the rules tests to check a choice."
+      - file: 06.03-raising-a-concern.md
+        title: "Raising a concern"
+        goal: "Say no or escalate respectfully, with facts and an alternative."
+      - file: 06.04-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a written response to an ethical scenario, reviewed by a mentor."
+  - dir: 07-capstone
+    title: "Capstone: your decision memo"
+    summary: "Apply the course to a real decision in your own work or study and defend it."
+    lessons:
+      - file: 07.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Explain the capstone and help the learner pick a real decision worth writing about."
+      - file: 07.02-the-decision-memo.md
+        title: "The decision memo"
+        goal: "Teach the memo shape: options, criteria, trade-off, risks, decision, what would change your mind."
+      - file: 07.03-write-and-submit-your-memo.md
+        title: "Write and submit your memo"
+        goal: "The learner writes and submits their memo, or a recorded explanation, for mentor review."
+      - file: 07.04-checklist.md
+        title: "Checklist and learning log"
+        goal: "Final gate: look back at the course and plan how to keep using it."
