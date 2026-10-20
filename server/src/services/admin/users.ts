@@ -32,6 +32,7 @@ export async function listUsers(): Promise<AdminUsersView> {
         name: true,
         role: true,
         emailVerified: true,
+        zipImportEnabled: true,
         createdAt: true,
         _count: { select: { enrollments: true, coursesOwned: true } },
       },
@@ -67,6 +68,12 @@ export async function setInstructorAccess(userId: string, enabled: boolean): Pro
       });
     }
   });
+}
+
+export async function setZipImportAccess(userId: string, enabled: boolean): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  if (!user) throw new NotFoundError("User not found");
+  await prisma.user.update({ where: { id: userId }, data: { zipImportEnabled: enabled } });
 }
 
 /** Grants instructor tools by email, creating a verified account when the address is new. */

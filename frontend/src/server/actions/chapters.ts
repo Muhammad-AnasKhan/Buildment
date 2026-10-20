@@ -66,3 +66,13 @@ export async function removeChapter(input: {
   revalidatePath("/courses/[courseSlug]/edit", "page");
   return { ok: true };
 }
+
+export async function publishChapters(input: { courseId: string } | { moduleId: string }): Promise<ActionResult> {
+  const scope = "courseId" in input ? `courses/${encodeURIComponent(input.courseId)}` : `modules/${encodeURIComponent(input.moduleId)}`;
+  const result = await teachCall<void>(`/api/v1/teach/${scope}/chapters/publish`, { method: "POST" });
+  if (!result.ok) return result;
+  revalidatePath("/courses/[courseSlug]/edit", "page");
+  revalidatePath("/courses/[courseSlug]/chapters/[chapterId]/edit", "page");
+  revalidatePath("/learn", "layout");
+  return { ok: true };
+}

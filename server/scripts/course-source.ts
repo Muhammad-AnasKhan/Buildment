@@ -28,7 +28,8 @@ function courseSlugFromArgs(argv: string[]): string {
 }
 
 export const COURSE_SLUG = courseSlugFromArgs(process.argv);
-export const COURSE_SOURCE_DIR = path.resolve(__dirname, "../../content/import", COURSE_SLUG);
+// ZIP validation runs the same scripts against an isolated temporary folder.
+export const COURSE_SOURCE_DIR = process.env.COURSE_IMPORT_SOURCE ?? path.resolve(__dirname, "../../content/import", COURSE_SLUG);
 export const COURSE_OUTPUT_DIR = path.resolve(__dirname, "../../content/transformed", COURSE_SLUG);
 export const COURSE_MANIFEST_PATH = path.join(COURSE_SOURCE_DIR, "course.yaml");
 

@@ -11,7 +11,7 @@ export default async function MentorCourseListPage() {
   const view = await serverApiFetch<MentorCoursesView>("/api/v1/teach/courses");
 
   return <div className="mx-auto max-w-7xl space-y-8">
-    <CoursesHeader courseCount={view.summary.totalCourses} pendingReviews={view.summary.pendingReviews} />
+    <CoursesHeader courseCount={view.summary.totalCourses} pendingReviews={view.summary.pendingReviews} zipImportEnabled={view.zipImportEnabled} />
     {view.courses.length ? <><CoursesSummary summary={view.summary} /><CourseBrowser courses={view.courses} /></> : <CoursesEmptyState />}
   </div>;
 }

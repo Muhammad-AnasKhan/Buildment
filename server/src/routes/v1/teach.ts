@@ -1,8 +1,9 @@
-import { Router } from "express";
+import { raw, Router } from "express";
 import * as teach from "../../controllers/teach.js";
 import { authenticate } from "../../middlewares/authenticate.js";
 import { requireInstructor } from "../../middlewares/require-instructor.js";
 import { requireVerified } from "../../middlewares/require-verified.js";
+import { requireZipImport } from "../../middlewares/require-zip-import.js";
 import { validate, validateBody, validateParams } from "../../middlewares/validate.js";
 import {
   assignByEmailsBody,
@@ -40,9 +41,12 @@ router.use(authenticate, requireVerified, requireInstructor);
 router.get("/workspace", teach.getWorkspace);
 
 router.get("/courses", teach.listCourses);
+router.post("/courses/import", requireZipImport, raw({ type: "application/zip", limit: "5mb" }), teach.importCourseZip);
 router.post("/courses", validateBody(createCourseBody), teach.createCourse);
 router.get("/courses/:courseSlug/builder", validateParams(courseSlugParams), teach.getCourseBuilder);
 router.patch("/courses/:courseId/settings", validate({ params: courseIdParams, body: courseSettingsBody }), teach.updateCourseSettings);
+router.post("/courses/:courseId/chapters/publish", validateParams(courseIdParams), teach.publishCourseChapters);
+router.post("/modules/:moduleId/chapters/publish", validateParams(moduleIdParams), teach.publishModuleChapters);
 router.post("/courses/:courseId/publish", validateParams(courseIdParams), teach.publishCourse);
 router.post("/courses/:courseId/unpublish", validate({ params: courseIdParams, body: unpublishCourseBody }), teach.unpublishCourse);
 router.post("/courses/:courseId/restore", validateParams(courseIdParams), teach.restoreCourse);

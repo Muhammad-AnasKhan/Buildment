@@ -3,6 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { adminCall } from "./call";
 
+export async function setUserZipImportAccessAction(formData: FormData): Promise<void> {
+  const userId = String(formData.get("userId") ?? "");
+  if (!userId) throw new Error("Missing user.");
+  await adminCall<void>(`/api/v1/admin/users/${encodeURIComponent(userId)}/zip-import`, {
+    method: "PATCH", json: { enabled: formData.get("enabled") === "true" },
+  });
+  revalidatePath("/admin/users");
+  revalidatePath("/courses");
+}
+
 export async function setUserInstructorAccessAction(formData: FormData): Promise<void> {
   const userId = String(formData.get("userId") ?? "");
   if (!userId) throw new Error("Missing user.");

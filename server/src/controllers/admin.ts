@@ -96,6 +96,11 @@ export async function setInstructorAccess(req: Request, res: Response) {
   noContent(res);
 }
 
+export async function setZipImportAccess(req: Request, res: Response) {
+  await users.setZipImportAccess(param(req, "userId"), req.body.enabled);
+  noContent(res);
+}
+
 // POST /api/v1/admin/instructors
 export async function grantInstructor(req: Request, res: Response) {
   await users.grantInstructorByEmail(req.body as GrantInstructorBody);

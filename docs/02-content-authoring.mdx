@@ -8,8 +8,148 @@ status: draft v1 — editor decision resolved 2026-08-03
 **Reads:** [`01-domain-model.mdx`](01-domain-model.mdx), [`03-blocks-registry.mdx`](03-blocks-registry.mdx)
 
 **Format:** MDX — Markdown with our custom React components.
-**Where it lives:** in Postgres (`Chapter.source` holds the raw MDX string). Not in git. Mentors
-are not expected to know git.
+**Where it lives:** published and draft chapters live in Postgres (`Chapter.source` holds the
+MDX string). Mentors can use the in-app editor or import a course ZIP without knowing git.
+Bulk authors can also maintain Markdown sources under `content/import/<course-slug>/`.
+
+## Quiz authoring and learner flow
+
+Quiz chapters use the `QUIZ` reader mode. For Markdown imports, a `*-quiz.md` filename or
+`stepType: Quiz` selects that mode; `stepType: Check` by itself on another filename does not.
+Gate chapters use the standard reader with their checklists and learning logs.
+
+After import removes frontmatter and the author-facing title/banner, a quiz body must contain
+only top-level **Quiz, OpenQuestion, Predict, or CodeExercise** activities. Author imported
+activities using their YAML fences. Introductions, paragraphs, headings, lists, separators,
+recaps, checklists, learning logs, visual blocks, and other presentation content belong in a
+standard lesson. Put scenario context and instructions inside the activity's question or prompt.
+Source validation and ZIP validation reject non-activity quiz bodies before database writes;
+chapter publishing checks the same rule.
+
+The learner sees one activity at a time, with question progress and **Back / Next** controls.
+Multiple-choice answers are submitted together from the final activity. The learner receives
+their score and feedback, can edit answers, and can **Submit again** until all MCQs are correct.
+Open questions, predictions, and code exercises have their own submit buttons. Written answers
+are reviewed separately; the multiple-choice score does not include those activities and does
+not imply mentor approval of a written submission.
+
+For example, a quiz source lesson can contain this activity after its frontmatter/title:
+
+````markdown
+```quiz
+type: mcq
+question: What preserves the price agreed at checkout?
+options:
+  - Store the checkout price on each order line
+  - Read the latest product price when showing receipts
+correct: 0
+explanations:
+  - The order line retains the price agreed when the order was placed.
+  - Later product price changes would alter the historical receipt.
+```
+````
+
+`correct` is a zero-based index. Manifest-backed courses require one nonempty `explanations`
+entry per option, in the same order as `options`. Keep distractors plausible and comparable in
+length. Short-answer quiz fences use `type: short`, `question`, and `modelAnswer`; mentor rubrics
+and answer keys belong in activity configuration, never visible lesson prose. Although the
+reader supports Predict in quiz mode, the course-authoring teaching convention places predictions
+inline in standard lessons before a decision.
+
+## Import a course from ZIP
+
+An admin enables access for each account in **Admin → Users → ZIP import**. Access is disabled
+by default, stored on the user, and checked by the API on every upload. There is no environment
+flag. The existing signed-in, verified instructor requirements still apply.
+
+An enabled instructor opens **Your courses → Import course ZIP**, selects an archive, and submits
+it. Validation errors appear in the form. A successful import opens the draft course editor.
+The new course belongs to the uploader and its chapters remain unpublished. Review the chapters,
+publish them, then publish the course through the normal publishing flow.
+
+### Archive layout and manifest
+
+Put the course at the ZIP root or inside one wrapper folder:
+
+```text
+example-course/
+  course.yaml
+  COURSE-OUTLINE.md
+  01-introduction/
+    01.01-set-the-scene.md
+    01.02-quiz.md
+    01.03-checklist.md
+```
+
+`course.yaml` is required. `COURSE-OUTLINE.md` is optional for upload, but useful for author review.
+The manifest lists the metadata and every planned module and lesson:
+
+```yaml
+slug: example-course
+title: Example course
+description: Practice a clear decision process.
+projectGoal: Write and defend a decision memo.
+difficulty: Beginner
+estimatedHours: 10
+modules:
+  - dir: 01-introduction
+    title: Introduction
+    lessons:
+      - file: 01.01-set-the-scene.md
+        title: Set the scene
+        goal: Explain the problem and course outcome.
+      - file: 01.02-quiz.md
+        title: Quiz
+        goal: Check understanding through scenarios.
+      - file: 01.03-checklist.md
+        title: Checklist and learning log
+        goal: Verify the work and reflect on the decision.
+```
+
+Required metadata: kebab-case `slug`, nonempty `title`, `description`, and `projectGoal`,
+`difficulty` of `Beginner`, `Medium`, or `Advanced`, and positive integer `estimatedHours`.
+At least one module and one lesson per module are required. Each module needs `dir` and `title`;
+each lesson needs `file`, `title`, and `goal`. Optional fields include `coverUrl` (an absolute URL)
+and module `summary`. All planned files must exist, and every numbered source file/module must
+be listed. The manifest example is only a plan; the lesson bodies must also pass validation.
+
+### Upload validation and limits
+
+- Maximum **5 MB compressed**, **20 MB expanded**, and **1,000 archive entries**, including directories.
+- Exactly one `course.yaml`, at the root or inside one wrapper folder. When a wrapper is used,
+  every file must be inside it.
+- Accepted files are `course.yaml`, optional `COURSE-OUTLINE.md`, and numbered Markdown paths
+  such as `01-introduction/01.02-quiz.md`. Exclude images, scripts, generated files, `.git`,
+  `node_modules`, `.DS_Store`, and `__MACOSX`. Reference media through remote URLs.
+- Archive paths must use forward slashes. Absolute paths, backslashes, parent traversal, and
+  drive-style paths are rejected.
+- The importer validates manifest/plan consistency, transforms lessons, parses MDX, checks the
+  component allowlist and activity-only quiz rule, and runs the structure audit in strict mode.
+  The audit checks gates, learning logs, quiz/Predict YAML, per-option explanations, and rejects
+  em/en dashes in manifest-backed courses. Review warnings, but warnings alone do not reject an upload.
+- Validation has a 15-second process limit. A validation failure returns reasons without creating
+  a course. Validated course data is written in one transaction.
+- An existing course slug is rejected. ZIP import creates a new course; it does not update one.
+  Choose a new manifest slug when creating another course.
+
+### Prepare and validate on Windows
+
+From the repository root, validate the source before creating the archive:
+
+```powershell
+pnpm --dir server content:validate:source --course example-course
+pnpm --dir server content:audit --course example-course --strict
+Compress-Archive -Path 'content/import/example-course/*' -DestinationPath 'content/import/example-course.zip' -Force
+```
+
+The source checks need no database. Keep the ZIP outside the source folder and inspect its
+contents for extra files. If upload validation fails, fix the original source, rerun the checks,
+rebuild the ZIP, and retry. Do not bypass validation to make an invalid quiz import.
+
+The bulk CLI alternative is `pnpm --dir server content:import --course example-course`.
+Unlike ZIP import, the CLI uses the first MENTOR account and creates published content; verify
+database and ownership before running it. Re-import can replace block rows, so do not use the CLI
+to overwrite live learner assessments without a block migration plan.
 
 ## Why MDX and not a JSON block editor (Notion-style)
 

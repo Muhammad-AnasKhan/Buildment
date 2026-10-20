@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync } from "node:fs";
+import { zipSync, strToU8 } from "fflate";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import request from "supertest";
 import { createApp } from "../../src/app.js";
@@ -290,4 +292,112 @@ describe("deletion", () => {
     expect(await prisma.course.findUnique({ where: { id: createdCourseId } })).toBeNull();
     createdCourseId = "";
   });
+});
+
+
+describe("course ZIP import", () => {
+  beforeAll(async () => { await prisma.user.update({ where: { id: fx.mentor.id }, data: { zipImportEnabled: true } }); });
+  afterAll(async () => { await prisma.user.updateMany({ where: { id: fx.mentor.id }, data: { zipImportEnabled: false } }); });
+  const endpoint = "/api/v1/teach/courses/import";
+  it("blocks an instructor whose ZIP import flag is disabled", async () => {
+    const response = await request(app).post(endpoint).set(stranger())
+      .set("Content-Type", "application/zip").send(Buffer.from("zip"));
+    expect(response.status).toBe(403);
+    expect(response.body.code).toBe("ZIP_IMPORT_DISABLED");
+    const courses = await request(app).get("/api/v1/teach/courses").set(stranger());
+    expect(courses.body.data.zipImportEnabled).toBe(false);
+  });
+  it("requires a verified instructor", async () => {
+    expect((await request(app).post(endpoint).set("Content-Type", "application/zip").send(Buffer.from("zip"))).status).toBe(401);
+    expect((await request(app).post(endpoint).set(learner()).set("Content-Type", "application/zip").send(Buffer.from("zip"))).status).toBe(403);
+  });
+  it("returns validation errors without creating a course", async () => {
+    const slug = `invalid-zip-${fx.course.id.toLowerCase()}`;
+    const archive = Buffer.from(zipSync({ "course.yaml": strToU8(`slug: ${slug}`) }));
+    const response = await request(app).post(endpoint).set(mentor()).set("Content-Type", "application/zip").send(archive);
+    expect(response.status).toBe(422);
+    expect(response.body.code).toBe("COURSE_IMPORT_INVALID");
+    expect(await prisma.course.findUnique({ where: { slug } })).toBeNull();
+  }, 20000);
+  it("imports validated lessons and blocks as an owned draft, refusing duplicate slugs", async () => {
+    const source = new URL("../../../content/import/decision-making/", import.meta.url);
+    const slug = `zip-import-${fx.course.id.toLowerCase()}`;
+    const files: Record<string, Uint8Array> = {};
+    for (const entry of readdirSync(source, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        for (const file of readdirSync(new URL(`${entry.name}/`, source))) {
+          const lessonSource = readFileSync(new URL(`${entry.name}/${file}`, source), "utf8");
+          // Quiz imports use activity-only bodies; prose stays in standard lessons.
+          const frontmatter = lessonSource.match(/^---[\s\S]*?\n---/)?.[0] ?? "";
+          const activities = [...lessonSource.matchAll(/```(?:quiz|openquestion|predict|codeexercise)\r?\n[\s\S]*?```/g)].map(match => match[0]);
+          files[`${entry.name}/${file}`] = strToU8(file.endsWith("-quiz.md") ? `${frontmatter}\n\n${activities.join("\n\n")}` : lessonSource);
+        }
+      } else if (entry.name === "course.yaml") {
+        files[entry.name] = strToU8(readFileSync(new URL(entry.name, source), "utf8").replace("slug: decision-making", `slug: ${slug}`));
+      }
+    }
+    const archive = Buffer.from(zipSync(files));
+    try {
+      const brokenMdx = { ...files, "01-what-a-good-decision-is/01.01-set-the-scene.md": strToU8("<Callout><UnknownComponent /></Callout>") };
+      const invalidMdx = await request(app).post(endpoint).set(mentor()).set("Content-Type", "application/zip").send(Buffer.from(zipSync(brokenMdx)));
+      expect(invalidMdx.status).toBe(422);
+      expect(JSON.stringify(invalidMdx.body)).toContain("Unknown components");
+      const brokenStructure = { ...files };
+      delete brokenStructure["01-what-a-good-decision-is/01.04-checklist.md"];
+      const invalidStructure = await request(app).post(endpoint).set(mentor()).set("Content-Type", "application/zip").send(Buffer.from(zipSync(brokenStructure)));
+      expect(invalidStructure.status).toBe(422);
+      expect(JSON.stringify(invalidStructure.body)).toContain("Missing gate checklist");
+      expect(await prisma.course.findUnique({ where: { slug } })).toBeNull();
+      const response = await request(app).post(endpoint).set(mentor()).set("Content-Type", "application/zip").send(archive);
+      expect(response.status, JSON.stringify(response.body)).toBe(201);
+      expect(response.body.data.courseSlug).toBe(slug);
+      const course = await prisma.course.findUniqueOrThrow({ where: { slug }, include: { modules: true, chapters: { include: { blocks: true } } } });
+      expect(course.mentorId).toBe(fx.mentor.id);
+      expect(course.status).toBe("DRAFT");
+      expect(course.publishedAt).toBeNull();
+      expect(course.modules).toHaveLength(7);
+      expect(course.chapters).toHaveLength(36);
+      expect(course.chapters.every(chapter => chapter.publishedAt === null)).toBe(true);
+      expect(course.chapters.some(chapter => chapter.isMilestone)).toBe(true);
+      expect(course.chapters.flatMap(chapter => chapter.blocks).length).toBeGreaterThan(0);
+      expect((await request(app).post(endpoint).set(stranger()).set("Content-Type", "application/zip").send(archive)).status).toBe(409);
+    } finally {
+      await prisma.course.deleteMany({ where: { slug } });
+    }
+  }, 60000);
+});
+
+
+describe("bulk chapter publishing", () => {
+  it("validates atomically, scopes modules, publishes loose chapters and checks ownership", async () => {
+    const course = await prisma.course.create({ data: {
+      title: "Bulk publish", slug: `bulk-${fx.course.id.toLowerCase()}`, mentorId: fx.mentor.id,
+    } });
+    try {
+      const module = await prisma.module.create({ data: { courseId: course.id, title: "First", order: 1 } });
+      const first = await prisma.chapter.create({ data: { courseId: course.id, moduleId: module.id, title: "First", slug: "first", order: 1, source: "# First" } });
+      const second = await prisma.chapter.create({ data: { courseId: course.id, moduleId: module.id, title: "Broken", slug: "second", order: 2, source: "<Callout>" } });
+      const loose = await prisma.chapter.create({ data: { courseId: course.id, title: "Loose", slug: "loose", order: 3, source: "# Loose" } });
+      const coursePath = `/api/v1/teach/courses/${course.id}/chapters/publish`;
+      const modulePath = `/api/v1/teach/modules/${module.id}/chapters/publish`;
+      expect((await request(app).post(coursePath)).status).toBe(401);
+      expect((await request(app).post(modulePath).set(stranger())).status).toBe(403);
+      expect((await request(app).post(coursePath).set(stranger())).status).toBe(403);
+      expect((await request(app).post("/api/v1/teach/modules/nope/chapters/publish").set(mentor())).status).toBe(404);
+      const rejected = await request(app).post(coursePath).set(mentor());
+      expect(rejected.status).toBe(422);
+      expect(JSON.stringify(rejected.body)).toContain("Broken:");
+      expect(await prisma.chapter.count({ where: { courseId: course.id, publishedAt: { not: null } } })).toBe(0);
+      await prisma.chapter.update({ where: { id: second.id }, data: { source: "# Fixed" } });
+      expect((await request(app).post(modulePath).set(mentor())).status).toBe(204);
+      expect((await prisma.chapter.findUniqueOrThrow({ where: { id: loose.id } })).publishedAt).toBeNull();
+      expect((await prisma.chapter.findUniqueOrThrow({ where: { id: first.id } })).compiled).toBe("# First");
+      expect((await request(app).post(coursePath).set(mentor())).status).toBe(204);
+      expect(await prisma.chapter.count({ where: { courseId: course.id, publishedAt: { not: null } } })).toBe(3);
+      await prisma.chapter.update({ where: { id: loose.id }, data: { source: "# Updated" } });
+      expect((await request(app).post(coursePath).set(mentor())).status).toBe(204);
+      expect((await prisma.chapter.findUniqueOrThrow({ where: { id: loose.id } })).compiled).toBe("# Updated");
+      expect((await prisma.course.findUniqueOrThrow({ where: { id: course.id } })).status).toBe("DRAFT");
+    } finally { await prisma.course.delete({ where: { id: course.id } }); }
+  }, 20000);
 });
