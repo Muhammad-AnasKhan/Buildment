@@ -1,6 +1,7 @@
 /**
- * Imports content/import/multi-vendor-marketplace/ into the real Course /
- * Module / Chapter / Block tables.
+ * Imports one course folder under content/import/ into the real Course /
+ * Module / Chapter / Block tables. Pick it with `--course <slug>`; the default
+ * is multi-vendor-marketplace (see course-source.ts).
  *
  * This is a *structural* import, not a rewrite (see the chat decision this
  * script implements): the mentor's prose is kept close to verbatim. The two
@@ -20,7 +21,7 @@
  * mentees start answering, block replacement needs the "keep vs invalidate"
  * flow from docs/02-content-authoring.mdx instead.
  *
- * Run: pnpm content:import
+ * Run: pnpm content:import [--course <slug>]
  */
 import "dotenv/config";
 import fs from "node:fs";
@@ -35,13 +36,12 @@ import { VideoConfigSchema } from "../src/shared/blocks/video/schema.js";
 import { VisualWalkthroughConfigSchema } from "../src/shared/blocks/visual-walkthrough/schema.js";
 import { VisualDiagramConfigSchema } from "../src/shared/blocks/visual-diagram/schema.js";
 import { RoadmapConfigSchema } from "../src/shared/blocks/roadmap/schema.js";
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const COURSE_SOURCE_DIR = path.resolve(__dirname, "../../content/import/multi-vendor-marketplace");
-const COURSE_OUTPUT_DIR = path.resolve(__dirname, "../../content/transformed/multi-vendor-marketplace");
+import { COURSE_OUTPUT_DIR, COURSE_SOURCE_DIR, loadCourseManifest, type CourseManifest } from "./course-source.js";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
+/** FreshMarket module titles. Courses with a course.yaml take titles from it instead. */
 const CHAPTER_NAMES: Record<number, string> = {
   1: "Introduction",
   2: "Project skeleton",
@@ -581,6 +581,16 @@ function transformPredictFences(body: string, pushBlock: (b: PendingBlock) => st
   });
 }
 
+/**
+ * One explanation string for the learner, shown after they answer. `explanations` holds one
+ * reason per option, in option order, so every choice (right or wrong) gets its own feedback.
+ */
+function quizExplanation(options: string[], explanation?: string, explanations?: string[]): string | undefined {
+  const perOption = (explanations ?? []).map((why, i) => (options[i] ? `${options[i]}: ${why}` : why));
+  const text = [explanation, ...perOption].filter((part) => part?.trim()).join(" ");
+  return text || undefined;
+}
+
 /** ```quiz``` fenced YAML -> real Quiz/OpenQuestion blocks + placeholder tags. */
 function transformQuizFences(body: string, pushBlock: (b: PendingBlock) => string): string {
   return body.replace(/```quiz\n([\s\S]*?)```/g, (match, yamlText: string) => {
@@ -589,6 +599,8 @@ function transformQuizFences(body: string, pushBlock: (b: PendingBlock) => strin
       question: string;
       options?: string[];
       correct?: number;
+      explanation?: string;
+      explanations?: string[];
       modelAnswer?: string;
       allowSpeechInput?: boolean;
       allowUrl?: boolean;
@@ -616,6 +628,7 @@ function transformQuizFences(body: string, pushBlock: (b: PendingBlock) => strin
           prompt: parsed.question,
           options,
           correctOptionIds: [`opt-${parsed.correct}`],
+          explanation: quizExplanation(parsed.options, parsed.explanation, parsed.explanations),
           allowRetry: true,
         },
       });
@@ -744,7 +757,7 @@ export function parseLesson(moduleNum: number, moduleDir: string, fileName: stri
   };
 }
 
-async function upsertCourse() {
+async function upsertCourse(manifest: CourseManifest | null) {
   const mentor = await prisma.user.findFirst({ where: { role: "MENTOR" } });
   if (!mentor) {
     throw new Error(
@@ -752,24 +765,22 @@ async function upsertCourse() {
     );
   }
 
+  const meta = manifest ?? SEED_COURSE;
+  const fields = {
+    title: meta.title,
+    description: meta.description,
+    projectGoal: meta.projectGoal,
+    difficulty: meta.difficulty,
+    estimatedHours: meta.estimatedHours,
+    coverUrl: meta.coverUrl ?? null,
+  };
+
   return prisma.course.upsert({
-    where: { slug: SEED_COURSE.slug },
-    update: {
-      title: SEED_COURSE.title,
-      description: SEED_COURSE.description,
-      projectGoal: SEED_COURSE.projectGoal,
-      difficulty: SEED_COURSE.difficulty,
-      estimatedHours: SEED_COURSE.estimatedHours,
-      coverUrl: SEED_COURSE.coverUrl,
-    },
+    where: { slug: meta.slug },
+    update: fields,
     create: {
-      slug: SEED_COURSE.slug,
-      title: SEED_COURSE.title,
-      description: SEED_COURSE.description,
-      projectGoal: SEED_COURSE.projectGoal,
-      difficulty: SEED_COURSE.difficulty,
-      estimatedHours: SEED_COURSE.estimatedHours,
-      coverUrl: SEED_COURSE.coverUrl,
+      slug: meta.slug,
+      ...fields,
       status: "PUBLISHED",
       mentorId: mentor.id,
       publishedAt: new Date(),
@@ -787,7 +798,9 @@ async function main() {
   }
   console.log(`MDX ok: ${total} chapters`);
 
-  const course = await upsertCourse();
+  const manifest = loadCourseManifest();
+  const moduleTitles = new Map(manifest?.modules.map((m) => [m.dir, m.title]) ?? []);
+  const course = await upsertCourse(manifest);
   fs.rmSync(COURSE_OUTPUT_DIR, { recursive: true, force: true });
 
   let moduleCount = 0;
@@ -803,7 +816,7 @@ async function main() {
     const displayOrder = index + 1;
     importedModuleOrders.push(displayOrder);
 
-    const title = CHAPTER_NAMES[moduleNum] ?? `Module ${displayOrder}`;
+    const title = moduleTitles.get(dirName) ?? CHAPTER_NAMES[moduleNum] ?? `Module ${displayOrder}`;
     const mod = await prisma.module.upsert({
       where: { courseId_order: { courseId: course.id, order: displayOrder } },
       update: { title },

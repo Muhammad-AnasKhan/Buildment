@@ -1,24 +1,29 @@
 /**
- * Structural audit for content/import/multi-vendor-marketplace/.
- * Run: pnpm content:audit
- * Exit 1 if demo modules (01–03) have errors; warnings only elsewhere unless --strict.
+ * Structural audit for one course folder under content/import/.
+ * Run: pnpm content:audit [--course <slug>] [--strict]
+ * FreshMarket: exit 1 if demo modules (01-03) have errors; warnings only elsewhere unless --strict.
+ * Courses with a course.yaml: every module is held to the demo-module bar, and the lesson files
+ * must match the plan in course.yaml.
  */
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { load as loadYaml } from "js-yaml";
+import { COURSE_SLUG, COURSE_SOURCE_DIR as COURSE_DIR, loadCourseManifest, type CourseManifest } from "./course-source.js";
 import { readLessonFiles, readModuleDirs } from "./import-course.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const COURSE_DIR = path.resolve(__dirname, "../../content/import/multi-vendor-marketplace");
-
+const manifest = loadCourseManifest();
 const DEMO_MODULES = new Set([1, 2, 3]);
+
+/** Modules whose structural problems are errors rather than warnings. */
+function isStrictModule(moduleNum: number): boolean {
+  return manifest !== null || DEMO_MODULES.has(moduleNum);
+}
 const SKIP_DIRS = new Set(["scripts"]);
 
 type Issue = { level: "error" | "warn"; module: number; file?: string; message: string };
 
 function readBody(filePath: string): string {
-  return fs.readFileSync(filePath, "utf8");
+  return fs.readFileSync(filePath, "utf8").replace(/\r\n/g, "\n");
 }
 
 function frontmatterStepType(body: string): string | null {
@@ -95,6 +100,7 @@ function auditInteractiveFences(moduleNum: number, fileName: string, body: strin
         question?: unknown;
         options?: unknown[];
         correct?: unknown;
+        explanations?: unknown;
         modelAnswer?: unknown;
       } | null;
       const validQuestion = typeof config?.question === "string" && config.question.trim().length > 0;
@@ -116,6 +122,32 @@ function auditInteractiveFences(moduleNum: number, fileName: string, body: strin
           module: moduleNum,
           file: fileName,
           message: "Quiz fence must be a valid mcq or short question supported by the importer",
+        });
+      }
+      const explainsEveryOption =
+        Array.isArray(config?.explanations) &&
+        Array.isArray(config?.options) &&
+        config.explanations.length === config.options.length &&
+        config.explanations.every((why) => typeof why === "string" && why.trim().length > 0);
+      if (manifest !== null && validMcq) {
+        const labels = (config.options as unknown[]).map((option) => String(option));
+        const correctLength = labels[config.correct as number]!.length;
+        const longestWrong = Math.max(...labels.filter((_, i) => i !== config.correct).map((label) => label.length));
+        if (correctLength > longestWrong * 1.25) {
+          issues.push({
+            level: "warn",
+            module: moduleNum,
+            file: fileName,
+            message: "Correct quiz option is much longer than the others, which gives the answer away",
+          });
+        }
+      }
+      if (manifest !== null && validMcq && !explainsEveryOption) {
+        issues.push({
+          level: "error",
+          module: moduleNum,
+          file: fileName,
+          message: "Multiple-choice quiz needs an explanations list with one reason per option",
         });
       }
     } catch {
@@ -172,21 +204,21 @@ function auditModule(moduleNum: number, dirName: string): Issue[] {
   );
   if (!setScene && moduleNum !== 99) {
     issues.push({
-      level: moduleNum <= 3 ? "error" : "warn",
+      level: isStrictModule(moduleNum) ? "error" : "warn",
       module: moduleNum,
       message: "Missing set-the-scene lesson",
     });
   }
 
   const checklist = files.find((f) => f.endsWith("-checklist.md"));
-  if (!checklist && moduleNum !== 99 && moduleNum !== 1) {
+  if (!checklist && moduleNum !== 99 && (manifest !== null || moduleNum !== 1)) {
     issues.push({
       level: "error",
       module: moduleNum,
       message: "Missing gate checklist file (*-checklist.md)",
     });
   }
-  if (moduleNum === 1 && !files.some((f) => f.match(/01\.11-checklist\.md$/))) {
+  if (manifest === null && moduleNum === 1 && !files.some((f) => f.match(/01\.11-checklist\.md$/))) {
     issues.push({
       level: "error",
       module: 1,
@@ -221,7 +253,7 @@ function auditModule(moduleNum: number, dirName: string): Issue[] {
     const body = readBody(path.join(modulePath, checklist));
     if (!/## Learning log/i.test(body)) {
       issues.push({
-        level: moduleNum <= 3 ? "error" : "warn",
+        level: isStrictModule(moduleNum) ? "error" : "warn",
         module: moduleNum,
         file: checklist,
         message: "Gate checklist missing ## Learning log section",
@@ -230,7 +262,7 @@ function auditModule(moduleNum: number, dirName: string): Issue[] {
     const numbered = body.match(/^\d+\.\s+/gm);
     if (!numbered || numbered.length < 3) {
       issues.push({
-        level: moduleNum <= 3 ? "error" : "warn",
+        level: isStrictModule(moduleNum) ? "error" : "warn",
         module: moduleNum,
         file: checklist,
         message: "Gate learning log should have at least 3 numbered questions",
@@ -268,6 +300,16 @@ function auditModule(moduleNum: number, dirName: string): Issue[] {
       });
     }
 
+    // New courses are written for second-language readers without em or en dashes.
+    if (manifest !== null && /[–—]/.test(body)) {
+      issues.push({
+        level: "error",
+        module: moduleNum,
+        file: fileName,
+        message: "Contains an em or en dash; use a colon, a comma or two sentences",
+      });
+    }
+
     // Prose heuristics (warn)
     const tableCellLong = body.match(/\|[^|\n]{121,}\|/g);
     if (tableCellLong?.length) {
@@ -283,9 +325,44 @@ function auditModule(moduleNum: number, dirName: string): Issue[] {
   return issues;
 }
 
+/** Every planned module and lesson exists on disk, and nothing on disk is missing from the plan. */
+function auditPlan(plan: CourseManifest): Issue[] {
+  const issues: Issue[] = [];
+  const moduleDirs = readModuleDirs();
+  const plannedDirs = new Set(plan.modules.map((m) => m.dir));
+
+  for (const { dirName, moduleNum } of moduleDirs) {
+    if (!plannedDirs.has(dirName)) {
+      issues.push({ level: "error", module: moduleNum, message: `Folder ${dirName}/ is not planned in course.yaml` });
+    }
+  }
+
+  for (const planned of plan.modules) {
+    const moduleNum = Number(planned.dir.match(/^(\d+)-/)![1]);
+    if (!moduleDirs.some((m) => m.dirName === planned.dir)) {
+      issues.push({ level: "error", module: moduleNum, message: `Planned module folder ${planned.dir}/ does not exist` });
+      continue;
+    }
+    const onDisk = new Set(readLessonFiles(planned.dir).map((f) => f.fileName));
+    const plannedFiles = new Set(planned.lessons.map((l) => l.file));
+    for (const file of plannedFiles) {
+      if (!onDisk.has(file)) {
+        issues.push({ level: "error", module: moduleNum, file, message: "Planned lesson file does not exist" });
+      }
+    }
+    for (const file of onDisk) {
+      if (!plannedFiles.has(file)) {
+        issues.push({ level: "error", module: moduleNum, file, message: "Lesson file is not planned in course.yaml" });
+      }
+    }
+  }
+
+  return issues;
+}
+
 function main() {
   const strict = process.argv.includes("--strict");
-  const all: Issue[] = [];
+  const all: Issue[] = manifest ? auditPlan(manifest) : [];
 
   for (const { dirName, moduleNum } of readModuleDirs()) {
     if (SKIP_DIRS.has(dirName)) continue;
@@ -302,10 +379,10 @@ function main() {
   }
 
   console.log(
-    `\nAudit complete: ${errors.length} error(s), ${warns.length} warning(s) across ${readModuleDirs().length} module dirs.`
+    `\n[${COURSE_SLUG}] Audit complete: ${errors.length} error(s), ${warns.length} warning(s) across ${readModuleDirs().length} module dirs.`
   );
 
-  const demoErrors = errors.filter((e) => DEMO_MODULES.has(e.module));
+  const demoErrors = errors.filter((e) => isStrictModule(e.module));
   if (demoErrors.length > 0) {
     process.exitCode = 1;
   } else if (strict && errors.length > 0) {
