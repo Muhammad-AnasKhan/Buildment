@@ -11,6 +11,7 @@ import type {
   AllocationsBody,
   ApproveCourseRequestBody,
   CreateOrganizationBody,
+  GrantAdminBody,
   GrantInstructorBody,
 } from "../validations/admin.js";
 
@@ -98,6 +99,12 @@ export async function setInstructorAccess(req: Request, res: Response) {
 // POST /api/v1/admin/instructors
 export async function grantInstructor(req: Request, res: Response) {
   await users.grantInstructorByEmail(req.body as GrantInstructorBody);
+  noContent(res);
+}
+
+// POST /api/v1/admin/admins
+export async function grantAdmin(req: Request, res: Response) {
+  await users.grantAdminByEmail(req.body as GrantAdminBody);
   noContent(res);
 }
 

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  grantAdminByEmailAction,
   grantInstructorByEmailAction,
   setUserInstructorAccessAction,
 } from "@/server/actions/admin/users";
@@ -130,25 +131,48 @@ export default async function AdminUsersPage() {
           </AdminTableBody>
         </AdminTable>
 
-        <AdminPanel>
-          <h2 className="text-sm font-semibold">Grant instructor by email</h2>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Creates a verified account if the email is new. Existing users gain instructor access.
-          </p>
-          <form action={grantInstructorByEmailAction} className="mt-5 space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" name="email" type="email" required placeholder="instructor@example.com" />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="name">Display name (optional)</Label>
-              <Input id="name" name="name" placeholder="Alex Instructor" />
-            </div>
-            <Button type="submit" className="w-full">
-              Grant instructor access
-            </Button>
-          </form>
-        </AdminPanel>
+        <div className="space-y-6">
+          <AdminPanel>
+            <h2 className="text-sm font-semibold">Grant instructor by email</h2>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Creates a verified account if the email is new. Existing users gain instructor access.
+            </p>
+            <form action={grantInstructorByEmailAction} className="mt-5 space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" name="email" type="email" required placeholder="instructor@example.com" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="name">Display name (optional)</Label>
+                <Input id="name" name="name" placeholder="Alex Instructor" />
+              </div>
+              <Button type="submit" className="w-full">
+                Grant instructor access
+              </Button>
+            </form>
+          </AdminPanel>
+
+          <AdminPanel>
+            <h2 className="text-sm font-semibold">Add platform admin</h2>
+            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+              Admins manage organizations, course requests, courses and user access. Creates a
+              verified account if the email is new.
+            </p>
+            <form action={grantAdminByEmailAction} className="mt-5 space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="admin-email">Email</Label>
+                <Input id="admin-email" name="email" type="email" required placeholder="admin@example.com" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="admin-name">Display name (optional)</Label>
+                <Input id="admin-name" name="name" placeholder="Alex Admin" />
+              </div>
+              <Button type="submit" variant="outline" className="w-full">
+                Add platform admin
+              </Button>
+            </form>
+          </AdminPanel>
+        </div>
       </div>
     </div>
   );

@@ -23,3 +23,13 @@ export async function grantInstructorByEmailAction(formData: FormData): Promise<
   revalidatePath("/admin/users");
   revalidatePath("/", "layout");
 }
+
+/** Add a platform admin by email; the API creates a verified account when the address is new. */
+export async function grantAdminByEmailAction(formData: FormData): Promise<void> {
+  await adminCall<void>("/api/v1/admin/admins", {
+    method: "POST",
+    json: { email: String(formData.get("email") ?? ""), name: String(formData.get("name") ?? "").trim() || undefined },
+  });
+  revalidatePath("/admin/users");
+  revalidatePath("/", "layout");
+}

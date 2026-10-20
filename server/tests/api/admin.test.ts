@@ -180,6 +180,20 @@ describe("users and instructor access", () => {
     expect(user.emailVerified).not.toBeNull();
   });
 
+  it("adds another platform admin by email", async () => {
+    const email = `new-admin-${fx.tag}@test.local`;
+    const res = await request(app).post("/api/v1/admin/admins").set(admin()).send({ email: email.toUpperCase(), name: "New Admin" });
+    expect(res.status).toBe(204);
+    const user = await prisma.user.findUniqueOrThrow({ where: { email } });
+    createdUserIds.push(user.id);
+    expect(user).toMatchObject({ role: "ADMIN", name: "New Admin" });
+    expect(user.emailVerified).not.toBeNull();
+
+    const forbidden = await request(app).post("/api/v1/admin/admins").set(await mentor()).send({ email: "mentor-created@test.local" });
+    expect(forbidden.status).toBe(403);
+    expect(forbidden.body.code).toBe("ADMIN_REQUIRED");
+  });
+
   it("approves and rejects instructor access requests once", async () => {
     // The toggle test left an approved request behind; start from a clean learner.
     await prisma.instructorAccessRequest.deleteMany({ where: { userId: fx.learner.id } });

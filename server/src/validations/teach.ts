@@ -18,6 +18,18 @@ export type CreateCourseBody = z.infer<typeof createCourseBody>;
 
 export const unpublishCourseBody = z.object({ confirmedWithEnrollments: z.boolean().optional() });
 
+export const deleteCourseBody = z.object({
+  /** Deletion is always explicit — the UI collects a typed confirmation first. */
+  confirm: z.literal(true),
+  confirmedWithEnrollments: z.boolean().optional(),
+});
+export type DeleteCourseBody = z.infer<typeof deleteCourseBody>;
+
+export const removeChapterBody = z.object({
+  confirmedWithProgress: z.boolean().optional(),
+});
+export type RemoveChapterBody = z.infer<typeof removeChapterBody>;
+
 // The settings form posts strings; the service turns "" into null and dollars into cents.
 export const courseSettingsBody = z.object({
   title: z.string().trim().min(3).max(120),
