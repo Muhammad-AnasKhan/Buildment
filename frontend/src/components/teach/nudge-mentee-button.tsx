@@ -13,6 +13,7 @@ export function NudgeMenteeButton({ enrollmentId }: { enrollmentId: string }) {
       type="button"
       variant="outline"
       size="sm"
+      loading={pending}
       disabled={pending}
       className="h-8 gap-1 text-xs"
       onClick={() => {

@@ -38,7 +38,7 @@ modules:
         title: "Choosing between two solutions"
         goal: "Practice picking between two technical or business solutions for a small team."
       - file: 02.05-quiz.md
-        title: "Quiz: trade-offs"
+        title: "Trade-offs"
         goal: "Graded scenarios on spotting trade-offs and using criteria."
       - file: 02.06-checklist.md
         title: "Checklist and learning log"
@@ -60,7 +60,7 @@ modules:
         title: "Deciding with missing information"
         goal: "Decide with enough information, set a review point, and say what would change your mind."
       - file: 03.05-quiz.md
-        title: "Quiz: risk"
+        title: "Risk"
         goal: "Graded scenarios on likelihood, impact and acting under uncertainty."
       - file: 03.06-checklist.md
         title: "Checklist and learning log"
@@ -82,7 +82,7 @@ modules:
         title: "Saying no and renegotiating"
         goal: "Turn down or reshape requests politely and early, with a clear alternative."
       - file: 04.05-quiz.md
-        title: "Quiz: prioritization"
+        title: "Prioritization"
         goal: "Graded scenarios on ordering work and handling competing requests."
       - file: 04.06-checklist.md
         title: "Checklist and learning log"
@@ -104,7 +104,7 @@ modules:
         title: "Anchoring and overconfidence"
         goal: "Avoid sticking to the first number you hear, and give estimates as ranges."
       - file: 05.05-quiz.md
-        title: "Quiz: spot the bias"
+        title: "Spot the bias"
         goal: "Graded scenarios where the learner names the bias at work."
       - file: 05.06-checklist.md
         title: "Checklist and learning log"

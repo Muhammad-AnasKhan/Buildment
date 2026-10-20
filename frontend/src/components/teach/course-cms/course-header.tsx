@@ -4,13 +4,14 @@ import {
   AlertTriangle,
   ArrowLeft,
   BarChart3,
+  Trash2,
   Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatPriceDisplay } from "@/shared/lib/course-publish-rules";
-import { publishCourse, restoreCourseToDraft, unpublishCourse } from "@/server/actions/courses";
+import { deleteCourse, publishCourse, restoreCourseToDraft, unpublishCourse } from "@/server/actions/courses";
 import type { CourseBuilderCourse } from "@/shared/api/teach";
 
 export function CourseHeader({
@@ -208,6 +209,60 @@ export function CourseHeader({
           </details>
         </div>
       ) : null}
+
+      <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+        <details>
+          <summary className="flex w-fit cursor-pointer items-center gap-1.5 text-xs font-medium text-destructive hover:underline">
+            <Trash2 className="size-3.5" aria-hidden="true" />
+            Delete course…
+          </summary>
+          <form
+            className="mt-3 flex flex-col items-start gap-3"
+            action={async (formData) => {
+              "use server";
+              const result = await deleteCourse({
+                courseId: course.id,
+                confirmedWithEnrollments: formData.get("confirmEnrollments") === "on",
+              });
+              if (!result.ok) {
+                redirect(
+                  `/courses/${course.slug}/edit?publishError=${encodeURIComponent(result.errors.join(" "))}`
+                );
+              }
+              redirect("/courses");
+            }}
+          >
+            <p className="max-w-2xl text-xs leading-5 text-muted-foreground">
+              Permanently deletes this course, its {chapterCount} chapter
+              {chapterCount === 1 ? "" : "s"}, and all learner progress, submissions and reviews.
+              This cannot be undone.
+            </p>
+            {course.enrollmentCount > 0 ? (
+              <label className="flex items-start gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  name="confirmEnrollments"
+                  required
+                  className="mt-0.5 size-4 rounded border-input accent-primary"
+                />
+                Delete despite {course.enrollmentCount} enrolled learner
+                {course.enrollmentCount === 1 ? "" : "s"} — their progress will be removed.
+              </label>
+            ) : null}
+            <label className="flex items-start gap-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                required
+                className="mt-0.5 size-4 rounded border-input accent-primary"
+              />
+              I understand this permanently deletes the course and its content.
+            </label>
+            <Button type="submit" variant="destructive" size="sm">
+              <Trash2 /> Delete course
+            </Button>
+          </form>
+        </details>
+      </div>
 
       {publishError ? (
         <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">

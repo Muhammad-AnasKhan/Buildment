@@ -45,3 +45,9 @@ export const grantInstructorBody = z.object({
   name: z.string().trim().min(1).max(120).optional(),
 });
 export type GrantInstructorBody = z.infer<typeof grantInstructorBody>;
+
+export const grantAdminBody = z.object({
+  email,
+  name: z.string().trim().min(1).max(120).optional(),
+});
+export type GrantAdminBody = z.infer<typeof grantAdminBody>;

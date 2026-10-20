@@ -14,13 +14,14 @@ import {
   Pencil,
   Plus,
   ScrollText,
+  Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { createChapter, moveChapter } from "@/server/actions/chapters";
+import { createChapter, moveChapter, removeChapter } from "@/server/actions/chapters";
 import { createModule, moveModule, renameModule } from "@/server/actions/modules";
 import type {
   CourseBuilderChapter,
@@ -90,7 +91,7 @@ export function CurriculumBuilder({
         ))}
 
         {looseChapters.length > 0 ? (
-          <section className="overflow-hidden rounded-xl border border-dashed bg-card">
+          <section className="rounded-xl border border-dashed bg-card">
             <div className="border-b bg-muted/35 px-4 py-3">
               <h3 className="text-sm font-medium">Unsectioned chapters</h3>
               <p className="mt-0.5 text-xs text-muted-foreground">
@@ -314,6 +315,41 @@ function ChapterList({
               >
                 Edit <ChevronRight />
               </Link>
+              <details className="relative">
+                <summary
+                  aria-label={`Remove ${chapter.title}`}
+                  title={`Remove ${chapter.title}`}
+                  className={cn(
+                    buttonVariants({ variant: "ghost", size: "icon-sm" }),
+                    "cursor-pointer list-none text-muted-foreground hover:text-destructive [&::-webkit-details-marker]:hidden"
+                  )}
+                >
+                  <Trash2 />
+                </summary>
+                <form
+                  className="absolute right-0 z-20 mt-2 w-72 space-y-3 rounded-xl border bg-popover p-4 text-popover-foreground shadow-lg"
+                  action={async () => {
+                    "use server";
+                    const result = await removeChapter({ chapterId: chapter.id, confirmedWithProgress: true });
+                    if (!result.ok) {
+                      redirect(
+                        `/courses/${courseSlug}/edit?publishError=${encodeURIComponent(result.errors.join(" "))}`
+                      );
+                    }
+                  }}
+                >
+                  <div>
+                    <p className="text-sm font-medium">Remove chapter?</p>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      “{chapter.title}” and its content will be permanently deleted, along with any
+                      learner progress and submissions.
+                    </p>
+                  </div>
+                  <Button type="submit" variant="destructive" size="sm" className="w-full">
+                    <Trash2 /> Remove chapter
+                  </Button>
+                </form>
+              </details>
             </div>
           </li>
         );

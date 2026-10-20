@@ -16,7 +16,7 @@ export default async function TeachLayout({ children }: { children: React.ReactN
         instructorAccess={instructorAccess}
         signOutAction={signOutAction}
       />
-      <main className="min-h-dvh lg:pl-72">
+      <main className="min-h-dvh lg:pl-60">
         <div className="mx-auto w-full max-w-[96rem] px-6 py-8 sm:px-10">{children}</div>
       </main>
     </div>

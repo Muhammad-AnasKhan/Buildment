@@ -1,3 +1,4 @@
+import * as courseImport from "../services/teach/course-import.js";
 import type { Request, Response } from "express";
 import { created, noContent, ok } from "../utils/responses.js";
 import * as workspace from "../services/teach/workspace.js";
@@ -67,6 +68,12 @@ export async function restoreCourse(req: Request, res: Response) {
   ok(res, await courses.restoreCourseToDraft(req.user!, param(req, "courseId")));
 }
 
+// DELETE /api/v1/teach/courses/:courseId
+export async function deleteCourse(req: Request, res: Response) {
+  const body = req.body as { confirmedWithEnrollments?: boolean };
+  ok(res, await courses.deleteCourse(req.user!, param(req, "courseId"), body));
+}
+
 // POST /api/v1/teach/courses/:courseId/modules
 export async function createModule(req: Request, res: Response) {
   const { title } = req.body as { title: string };
@@ -118,6 +125,13 @@ export async function saveChapterDraft(req: Request, res: Response) {
 // POST /api/v1/teach/chapters/:chapterId/publish
 export async function publishChapter(req: Request, res: Response) {
   await chapters.publishChapter(req.user!, param(req, "chapterId"));
+  noContent(res);
+}
+
+// DELETE /api/v1/teach/chapters/:chapterId
+export async function removeChapter(req: Request, res: Response) {
+  const body = req.body as { confirmedWithProgress?: boolean };
+  await chapters.removeChapter(req.user!, param(req, "chapterId"), body);
   noContent(res);
 }
 
@@ -204,4 +218,18 @@ export async function generateAiReviewDraft(req: Request, res: Response) {
 // GET /api/v1/teach/help/threads?courseId=&status=
 export async function getHelpInbox(req: Request, res: Response) {
   ok(res, await helpInbox.loadMentorHelpInbox(req.user!, req.query as HelpInboxQuery));
+}
+
+export async function importCourseZip(req: Request, res: Response) {
+  created(res, await courseImport.importCourseZip(req.user!, req.body));
+}
+
+export async function publishCourseChapters(req: Request, res: Response) {
+  await chapters.publishChapters(req.user!, { courseId: param(req, "courseId") });
+  noContent(res);
+}
+
+export async function publishModuleChapters(req: Request, res: Response) {
+  await chapters.publishChapters(req.user!, { moduleId: param(req, "moduleId") });
+  noContent(res);
 }

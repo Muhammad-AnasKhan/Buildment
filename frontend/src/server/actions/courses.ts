@@ -40,3 +40,22 @@ export async function unpublishCourse(input: {
 export async function restoreCourseToDraft(input: { courseId: string }): Promise<CourseActionResult> {
   return courseCall(`/api/v1/teach/courses/${encodeURIComponent(input.courseId)}/restore`);
 }
+
+export type CourseDeleteResult = { ok: true } | { ok: false; errors: string[] };
+
+/** Permanently deletes a course after the instructor confirms in the UI. */
+export async function deleteCourse(input: {
+  courseId: string;
+  /** Required when learners are enrolled — deleting removes their progress too. */
+  confirmedWithEnrollments?: boolean;
+}): Promise<CourseDeleteResult> {
+  const result = await teachCall<CourseSlugResult>(`/api/v1/teach/courses/${encodeURIComponent(input.courseId)}`, {
+    method: "DELETE",
+    json: { confirm: true, confirmedWithEnrollments: input.confirmedWithEnrollments ?? false },
+  });
+  if (!result.ok) return result;
+  revalidatePath("/courses");
+  revalidatePath("/courses/[courseSlug]/edit", "page");
+  revalidatePath("/", "layout");
+  return { ok: true };
+}

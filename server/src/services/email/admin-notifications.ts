@@ -112,6 +112,22 @@ export async function notifyUserGrantedInstructorByAdmin(input: {
   });
 }
 
+export async function notifyUserGrantedAdminByAdmin(input: {
+  email: string;
+  name: string | null;
+}): Promise<void> {
+  const url = `${appBaseUrl()}/admin`;
+
+  await sendEmail({
+    to: input.email,
+    subject: "You are now a platform admin · Buildment",
+    html: `<p>Hi ${escapeHtml(input.name ?? "there")},</p>
+<p>A Buildment admin granted your account platform administrator access. You can now manage organizations, course requests and user access from the admin console.</p>
+<p><a href="${url}">Open the admin console</a></p>`,
+    text: `You are now a platform admin on Buildment. Open: ${url}`,
+  });
+}
+
 export async function notifyMentorOrganizationCourseApproved(requestId: string): Promise<void> {
   const request = await prisma.organizationCourseRequest.findUnique({
     where: { id: requestId },

@@ -343,6 +343,7 @@ export function CodeExerciseClient({
               <Button
                 size="sm"
                 onClick={submit}
+                loading={submitting}
                 disabled={!source.trim() || submitting}
                 className="h-9 gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background shadow-sm hover:bg-foreground/90"
               >

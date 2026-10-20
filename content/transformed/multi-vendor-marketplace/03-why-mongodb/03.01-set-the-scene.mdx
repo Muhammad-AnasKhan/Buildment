@@ -22,7 +22,7 @@ Before you install Mongoose or paste a connection string (Chapter 4), you'll dec
 
 This is a **design chapter**. There's no new API endpoint to demo yet. The deliverable is understanding + a design file: `docs/erd-draft.md`.
 
-<ProjectPreview id="01M4THGCF7SQM455GWXESHP337" />
+<ProjectPreview id="01M5CM5J3M9ZA9V41G990HJ1YD" />
 
 ## Why this chapter matters
 
@@ -63,13 +63,15 @@ decide → connect → implement. Chapter 3 decides. Chapter 4 connects. Chapter
 
 **Planning shelf labels before the warehouse opens.** Chapter 2 built the building (skeleton). This chapter decides what goes on each shelf — users here, stores there, products with grocery units, carts, orders with frozen receipt lines. You're not moving stock in yet; you're drawing the layout so Chapter 4 can connect the warehouse and Chapter 5 can fill shelves without guessing.
 
+## Embedding vs referencing: the grocery catalog decision
+
 In a grocery marketplace, a product belongs to a store, and a store belongs to a vendor. You can embed store details inside each product document for fast reads, or store IDs and fetch related documents when needed.
 
 Embedding makes catalogue pages fast — one query returns product plus store name. Referencing keeps updates clean — change a store name once, not on thousands of products.
 
 FreshMarket uses a hybrid: embed small, stable snapshots (like store display name) where read performance matters, and reference IDs where ownership and updates matter. You will feel this trade-off again in checkout when order snapshots must not change if a vendor renames their shop later.
 
-<MustRead id="01M4THGCF70PSHG5GQJ7ZN6BH3" />
+<MustRead id="01M5CM5J3NDT3MP3YX8KMC9FHT" />
 
 <RealWorldEvent title="Walmart's polyglot data strategy" when="2010s–present" summary="Large retailers run multiple database technologies — relational systems for transactions and accounting, document or search stores for catalogs and recommendations." lesson="Choosing MongoDB for FreshMarket is a domain-driven decision. Document the trade-off so future you can defend it in an interview." />
 
@@ -118,11 +120,9 @@ This chapter names **what documents** live in each module before code arrives.
 | 3.1–3.3 | Problem framing — why grocery data is special |
 | 3.4–3.7 | Compare models, decide, learn embed vs reference |
 | 3.8–3.9 | **Your ERD** — the design file in your repo |
-| 3.10 | Checklist gate before Chapter 4 |
+| 3.11 | Checklist gate before Chapter 4 |
 
-<Callout type="tip" title="Pace yourself">
 This chapter is less typing than Chapter 2, more thinking. Estimated time: half a day to one day. There's no shame in re-reading a section.
-</Callout>
 
 ## Self-check before continuing
 
@@ -130,11 +130,8 @@ This chapter is less typing than Chapter 2, more thinking. Estimated time: half 
 - [ ] You can name the two actors (vendor and customer)
 - [ ] `docs/` folder exists in your repo
 
-<ChapterRecap id="01M4THGCF86TGA1QD0DCZTZ4CG" />
+<ChapterRecap id="01M5CM5J3N98J73WMZ9V1HEY9V" />
+
+**When SQL still wins.** Financial ledger entries, strict inventory reconciliation across warehouses, and complex reporting joins often favour PostgreSQL. FreshMarket picks MongoDB because product catalogs are document-shaped and read-heavy — but knowing when relational models win makes you a stronger engineer.
 
 **Next:** Why grocery data is different from generic products — and why that matters for your database choice.
-<InterestingRead title="When SQL still wins" hook="MongoDB is a choice, not a religion." readMinutes={4}>
-
-Financial ledger entries, strict inventory reconciliation across warehouses, and complex reporting joins often favour PostgreSQL. FreshMarket picks MongoDB because product catalogs are document-shaped and read-heavy — but knowing when relational models win makes you a stronger engineer.
-
-</InterestingRead>

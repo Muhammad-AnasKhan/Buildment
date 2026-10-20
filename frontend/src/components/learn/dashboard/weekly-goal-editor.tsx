@@ -66,11 +66,11 @@ export function WeeklyGoalEditor({ goal }: { goal: LearnerHabit["weeklyGoal"] })
           onChange={(event) => setTarget(event.target.value)}
           className="h-8 w-16 rounded-lg border bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         />
-        <Button type="submit" size="sm" disabled={pending}>
+        <Button type="submit" size="sm" loading={pending} disabled={pending}>
           {pending ? "Saving…" : "Save"}
         </Button>
         {goal ? (
-          <Button type="button" size="sm" variant="ghost" disabled={pending} onClick={onClear}>
+          <Button type="button" size="sm" variant="ghost" loading={pending} disabled={pending} onClick={onClear}>
             Clear
           </Button>
         ) : null}

@@ -159,7 +159,8 @@ Concept chapters run shorter on *Build it* but still include applied repo work â
 | `03.07-prime-your-thinking.md` | Learn | Mandatory read: MongoDB data modelling introduction |
 | `03.08-audit-your-planned-schema.md` | Build | Sketch ERD on paper; list collections you'll need |
 | `03.09-map-actors-to-collections.md` | Build | User, Store, Product, CartItem, Order â€” one paragraph each |
-| `03.10-checklist.md` | Wrap | Key takeaways + learning log questions |
+| `03.10-quiz.md` | Check | Three application questions on MongoDB modelling decisions |
+| `03.11-checklist.md` | Wrap | Key takeaways + learning log questions |
 
 **Gate:** Can explain why MongoDB fits; ERD sketch committed to repo (`docs/erd-draft.md`).
 
@@ -336,7 +337,8 @@ Concept chapters run shorter on *Build it* but still include applied repo work â
 | `10.09-onboarding-redirect.md` | Build | No store â†’ `/vendor/open-shop` before dashboard |
 | `10.10-verify-onboarding-flow.md` | Build | New vendor forced through setup |
 | `10.11-recap-and-whats-next.md` | Wrap | |
-| `10.12-checklist.md` | Wrap | Definition of Done gate |
+| `10.12-quiz.md` | Check | Three application questions on vendor onboarding |
+| `10.13-checklist.md` | Wrap | Definition of Done gate |
 
 **Gate:** Vendor opens shop in UI; storeless vendor cannot reach product pages.
 
@@ -381,7 +383,8 @@ Concept chapters run shorter on *Build it* but still include applied repo work â
 | `12.09-publish-toggle.md` | Build | Status field or isPublished toggle |
 | `12.10-verify-vendor-flow.md` | Build | Create draft â†’ edit â†’ publish in UI |
 | `12.11-recap-and-whats-next.md` | Wrap | |
-| `12.12-checklist.md` | Wrap | Definition of Done gate |
+| `12.12-quiz.md` | Check | Three application questions on vendor dashboard flows |
+| `12.13-checklist.md` | Wrap | Definition of Done gate |
 
 **Gate:** Vendor manages products entirely in browser.
 
@@ -451,7 +454,8 @@ Concept chapters run shorter on *Build it* but still include applied repo work â
 | `15.09-product-detail-page.md` | Build | Single product view + add to cart button stub |
 | `15.10-verify-browse-ui.md` | Build | Browse across two vendors' products |
 | `15.11-recap-and-whats-next.md` | Wrap | |
-| `15.12-checklist.md` | Wrap | Definition of Done gate |
+| `15.12-quiz.md` | Check | Three application questions on browsing and filtering |
+| `15.13-checklist.md` | Wrap | Definition of Done gate |
 
 **Gate:** Customer browses marketplace in browser with filters.
 
@@ -496,7 +500,8 @@ Concept chapters run shorter on *Build it* but still include applied repo work â
 | `17.09-cart-icon-and-count.md` | Build | Header badge |
 | `17.10-verify-cart-persists.md` | Build | Reload page â€” cart still there |
 | `17.11-recap-and-whats-next.md` | Wrap | |
-| `17.12-checklist.md` | Wrap | Definition of Done gate |
+| `17.12-quiz.md` | Check | Three application questions on cart state and persistence |
+| `17.13-checklist.md` | Wrap | Definition of Done gate |
 
 **Gate:** Cart UI works; items from two stores visible.
 
@@ -570,7 +575,8 @@ Concept chapters run shorter on *Build it* but still include applied repo work â
 | `20.10-vendor-update-status.md` | Build | PATCH fulfilment status |
 | `20.11-full-commerce-demo.md` | Build | **Week 3 demo:** browse â†’ cart â†’ Stripe test pay â†’ both sides see orders |
 | `20.12-recap-and-whats-next.md` | Wrap | |
-| `20.13-checklist.md` | Wrap | Definition of Done gate |
+| `20.13-quiz.md` | Check | Three application questions on order tracking and status |
+| `20.14-checklist.md` | Wrap | Definition of Done gate |
 
 **Gate:** End-to-end commerce flow with real Stripe test payment demoable in browser.
 

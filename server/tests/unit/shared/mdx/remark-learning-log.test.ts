@@ -50,10 +50,10 @@ function jsxElements(source: string): Array<{ name: string; attrs: Record<string
 }
 
 describe("remarkLearningLog on gate chapters", () => {
-  it("transforms ## Learning log on 3-10 checklist", () => {
+  it("transforms ## Learning log on 3-11 checklist", () => {
     const file = path.join(
       REPO_ROOT,
-      "content/transformed/multi-vendor-marketplace/03-why-mongodb/03.10-checklist.mdx"
+      "content/transformed/multi-vendor-marketplace/03-why-mongodb/03.11-checklist.mdx"
     );
     const body = fs.readFileSync(file, "utf8").replace(/^---[\s\S]*?---\n/, "");
     expect(jsxElements(body).some((e) => e.name === "LearningLog")).toBe(true);
@@ -61,7 +61,7 @@ describe("remarkLearningLog on gate chapters", () => {
 
   it("uses default learning-log styling on gate checklist chapters", () => {
     for (const rel of [
-      "content/transformed/multi-vendor-marketplace/03-why-mongodb/03.10-checklist.mdx",
+      "content/transformed/multi-vendor-marketplace/03-why-mongodb/03.11-checklist.mdx",
       "content/transformed/multi-vendor-marketplace/04-config-and-database/04.17-checklist.mdx",
     ]) {
       const body = fs.readFileSync(path.join(REPO_ROOT, rel), "utf8").replace(/^---[\s\S]*?---\n/, "");

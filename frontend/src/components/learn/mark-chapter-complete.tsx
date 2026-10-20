@@ -198,6 +198,7 @@ function ChapterCompletionMoment({
               type="button"
               size="sm"
               onClick={onMark}
+              loading={pending}
               disabled={pending}
               className="h-10 w-full min-w-[11rem] rounded-lg px-5 text-sm font-medium sm:w-auto"
             >

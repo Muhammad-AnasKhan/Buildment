@@ -2,7 +2,9 @@
 
 import { createContext, useContext, useState, useTransition } from "react";
 import { saveHeadingNote } from "@/server/actions/heading-note";
+import { StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const HeadingNotesContext = createContext<{
   chapterId: string;
@@ -45,14 +47,21 @@ export function HeadingNoteButton({ headingId }: { headingId: string }) {
   }
 
   return (
-    <div className="not-prose mb-4">
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        className="text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-      >
-        {saved ? "Your note" : "Add a private note"}
-      </button>
+    <div className="not-prose -mt-3 mb-4">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => setOpen((value) => !value)}
+          aria-expanded={open}
+          className={cn(
+            "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs transition-colors hover:bg-muted hover:text-foreground",
+            saved ? "font-medium text-amber-700 dark:text-amber-300" : "text-muted-foreground/80"
+          )}
+        >
+          <StickyNote className="size-3.5" aria-hidden />
+          {saved ? "Your note" : "Add a note"}
+        </button>
+      </div>
       {open ? (
         <div className="mt-2 rounded-xl border border-border bg-card p-3">
           <label className="text-xs text-muted-foreground" htmlFor={`note-${headingId}`}>
@@ -67,7 +76,7 @@ export function HeadingNoteButton({ headingId }: { headingId: string }) {
             className="mt-2 w-full resize-y rounded-lg border bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
           />
           <div className="mt-2 flex items-center gap-2">
-            <Button type="button" size="sm" disabled={pending} onClick={onSave}>
+            <Button type="button" size="sm" loading={pending} disabled={pending} onClick={onSave}>
               {pending ? "Saving…" : "Save note"}
             </Button>
             <Button type="button" size="sm" variant="ghost" disabled={pending} onClick={() => setOpen(false)}>

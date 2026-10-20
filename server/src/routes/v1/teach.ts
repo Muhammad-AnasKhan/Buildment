@@ -1,8 +1,9 @@
-import { Router } from "express";
+import { raw, Router } from "express";
 import * as teach from "../../controllers/teach.js";
 import { authenticate } from "../../middlewares/authenticate.js";
 import { requireInstructor } from "../../middlewares/require-instructor.js";
 import { requireVerified } from "../../middlewares/require-verified.js";
+import { requireZipImport } from "../../middlewares/require-zip-import.js";
 import { validate, validateBody, validateParams } from "../../middlewares/validate.js";
 import {
   assignByEmailsBody,
@@ -15,6 +16,7 @@ import {
   createChapterBody,
   createCourseBody,
   createModuleBody,
+  deleteCourseBody,
   enrollmentIdParams,
   helpInboxQuery,
   inviteParams,
@@ -22,6 +24,7 @@ import {
   moduleIdParams,
   moveBody,
   renameModuleBody,
+  removeChapterBody,
   reportsQuery,
   responseIdParams,
   reviewQueueQuery,
@@ -38,12 +41,16 @@ router.use(authenticate, requireVerified, requireInstructor);
 router.get("/workspace", teach.getWorkspace);
 
 router.get("/courses", teach.listCourses);
+router.post("/courses/import", requireZipImport, raw({ type: "application/zip", limit: "5mb" }), teach.importCourseZip);
 router.post("/courses", validateBody(createCourseBody), teach.createCourse);
 router.get("/courses/:courseSlug/builder", validateParams(courseSlugParams), teach.getCourseBuilder);
 router.patch("/courses/:courseId/settings", validate({ params: courseIdParams, body: courseSettingsBody }), teach.updateCourseSettings);
+router.post("/courses/:courseId/chapters/publish", validateParams(courseIdParams), teach.publishCourseChapters);
+router.post("/modules/:moduleId/chapters/publish", validateParams(moduleIdParams), teach.publishModuleChapters);
 router.post("/courses/:courseId/publish", validateParams(courseIdParams), teach.publishCourse);
 router.post("/courses/:courseId/unpublish", validate({ params: courseIdParams, body: unpublishCourseBody }), teach.unpublishCourse);
 router.post("/courses/:courseId/restore", validateParams(courseIdParams), teach.restoreCourse);
+router.delete("/courses/:courseId", validate({ params: courseIdParams, body: deleteCourseBody }), teach.deleteCourse);
 
 router.post("/courses/:courseId/modules", validate({ params: courseIdParams, body: createModuleBody }), teach.createModule);
 router.patch("/modules/:moduleId", validate({ params: moduleIdParams, body: renameModuleBody }), teach.renameModule);
@@ -55,6 +62,7 @@ router.get("/chapters/:chapterId/editor", validateParams(chapterIdParams), teach
 router.patch("/chapters/:chapterId/settings", validate({ params: chapterIdParams, body: chapterSettingsBody }), teach.updateChapterSettings);
 router.put("/chapters/:chapterId/draft", validate({ params: chapterIdParams, body: chapterDraftBody }), teach.saveChapterDraft);
 router.post("/chapters/:chapterId/publish", validateParams(chapterIdParams), teach.publishChapter);
+router.delete("/chapters/:chapterId", validate({ params: chapterIdParams, body: removeChapterBody }), teach.removeChapter);
 
 router.get("/courses/:courseSlug/mentees", validateParams(courseSlugParams), teach.listMentees);
 router.get("/courses/:courseSlug/mentees/:enrollmentId", validateParams(menteeParams), teach.getMenteeEvaluation);

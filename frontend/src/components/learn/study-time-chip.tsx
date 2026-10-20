@@ -1,7 +1,7 @@
 "use client";
 
 import { useBrowserStorage } from "@/lib/use-browser-storage";
-import { Clock } from "lucide-react";
+import { Clock, EyeOff, Loader2, Pause, Play, Square } from "lucide-react";
 import { formatStudyClock, formatStudyDuration } from "@/lib/format-study-duration";
 import type { StudyClockStatus, StudyPauseReason } from "@/lib/use-study-session";
 import { cn } from "@/lib/utils";
@@ -47,42 +47,62 @@ export function StudyClock({
       <button
         type="button"
         onClick={toggleVisible}
-        className={cn("h-9 rounded-lg border border-border bg-card px-2.5 text-xs text-muted-foreground hover:text-foreground", className)}
+        className={cn("inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-xs text-muted-foreground hover:text-foreground", className)}
         title="Show estimated study-time controls"
       >
-        Show timer
+        <Clock className="size-3.5" aria-hidden />
+        <span className="hidden sm:inline">Show timer</span>
+        <span className="sr-only sm:hidden">Show study timer</span>
       </button>
     );
   }
 
+  const pausedLabel =
+    pauseReason === "inactive"
+      ? "Paused after 2 min idle"
+      : pauseReason === "hidden"
+        ? "Paused while away"
+        : "Paused";
+
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div aria-busy={busy || undefined} className={cn("flex shrink-0 items-center gap-1", className)}>
       <div
-        className="flex h-9 items-center gap-2 rounded-lg border border-border bg-card px-3 text-foreground"
+        className={cn(
+          "flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-foreground",
+          status === "running" && "border-emerald-500/40"
+        )}
         title={
           chapterLabel
             ? `Estimated study time. This session; ${chapterLabel}. Counts while this lesson is visible and you are active. Pauses after two minutes without activity.`
             : "Estimated study time. Counts while this lesson is visible and you are active. Pauses after two minutes without activity."
         }
       >
-        <Clock className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-        <span className="font-mono text-sm tabular-nums" aria-label="Session time">
+        {busy ? <Loader2 className="size-3.5 shrink-0 animate-spin motion-reduce:animate-none" aria-label="Updating study timer" /> : <Clock
+          className={cn(
+            "hidden size-3.5 shrink-0 sm:block",
+            status === "running" ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
+          )}
+          aria-hidden
+        />}
+        <span className="font-mono text-[13px] tabular-nums" aria-label="Session time">
           {formatStudyClock(sessionSeconds)}
         </span>
-        <span className="text-[10px] text-muted-foreground">est.</span>
         {chapterLabel ? (
-          <span className="hidden text-xs text-muted-foreground sm:inline">{chapterLabel}</span>
+          <span className="hidden text-xs text-muted-foreground 2xl:inline">{chapterLabel}</span>
+        ) : null}
+        {status === "paused" ? (
+          <span className="hidden text-xs text-muted-foreground xl:inline">{pausedLabel}</span>
         ) : null}
       </div>
 
       {status === "running" ? (
         <>
-          <ClockButton disabled={busy} onClick={onPause}>
-            Pause
-          </ClockButton>
-          <ClockButton disabled={busy} onClick={onStop}>
-            Stop
-          </ClockButton>
+          <ClockIconButton disabled={busy} onClick={onPause} label="Pause study timer">
+            <Pause className="size-3.5" aria-hidden />
+          </ClockIconButton>
+          <ClockIconButton disabled={busy} onClick={onStop} label="Stop study timer" className="hidden sm:inline-flex">
+            <Square className="size-3" aria-hidden />
+          </ClockIconButton>
         </>
       ) : status === "paused" ? (
         <>
@@ -93,60 +113,71 @@ export function StudyClock({
                 ? "Study time paused because this lesson was hidden."
                 : "Study time paused."}
           </span>
-          <ClockButton disabled={busy} onClick={onResume}>
-            Resume
-          </ClockButton>
-          <ClockButton disabled={busy} onClick={onStop}>
-            Stop
-          </ClockButton>
+          <ClockIconButton disabled={busy} onClick={onResume} label="Resume study timer" emphasis>
+            <Play className="size-3.5" aria-hidden />
+          </ClockIconButton>
+          <ClockIconButton disabled={busy} onClick={onStop} label="Stop study timer" className="hidden sm:inline-flex">
+            <Square className="size-3" aria-hidden />
+          </ClockIconButton>
         </>
       ) : (
-        <ClockButton disabled={busy} onClick={onStart} emphasis>
+        <button
+          type="button"
+          onClick={onStart}
+          disabled={busy}
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-foreground px-2.5 text-xs font-medium text-background transition-opacity hover:opacity-90 disabled:opacity-50"
+        >
+          <Play className="size-3" aria-hidden />
           Start
-        </ClockButton>
+        </button>
       )}
-      {status === "paused" ? (
-        <span className="hidden text-xs text-muted-foreground lg:inline">
-          {pauseReason === "inactive"
-            ? "Paused after 2 min idle"
-            : pauseReason === "hidden"
-              ? "Paused while away"
-              : "Paused"}
-        </span>
-      ) : null}
-      <button
-        type="button"
+      <ClockIconButton
         onClick={toggleVisible}
-        className="rounded-md px-1.5 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+        label="Hide study timer"
         title="Hide the study-time display. Tracking rules and course progress are unchanged."
+        className="hidden sm:inline-flex"
+        quiet
       >
-        Hide
-      </button>
+        <EyeOff className="size-3.5" aria-hidden />
+      </ClockIconButton>
     </div>
   );
 }
 
-function ClockButton({
+function ClockIconButton({
   children,
   onClick,
-  disabled,
+  label,
+  title,
+  disabled = false,
   emphasis = false,
+  quiet = false,
+  className,
 }: {
-  children: string;
+  children: React.ReactNode;
   onClick: () => void;
-  disabled: boolean;
+  label: string;
+  title?: string;
+  disabled?: boolean;
   emphasis?: boolean;
+  quiet?: boolean;
+  className?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
+      aria-label={label}
+      title={title ?? label}
       className={cn(
-        "inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium transition-colors disabled:opacity-50",
+        "inline-flex size-8 items-center justify-center rounded-lg transition-colors disabled:opacity-50",
         emphasis
           ? "bg-foreground text-background hover:opacity-90"
-          : "border border-border bg-card text-foreground hover:bg-muted"
+          : quiet
+            ? "text-muted-foreground hover:bg-muted hover:text-foreground"
+            : "border border-border bg-card text-foreground hover:bg-muted",
+        className
       )}
     >
       {children}

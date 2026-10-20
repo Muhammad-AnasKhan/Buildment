@@ -1,3 +1,4 @@
+import type { Prisma } from "../../generated/prisma/index.js";
 import { compile } from "@mdx-js/mdx";
 import remarkGfm from "remark-gfm";
 import type { ChapterEditorView, ChapterIdResult, SavedAtResult } from "../../shared/api/teach.js";
@@ -137,14 +138,41 @@ export async function publishChapter(user: SessionUser, chapterId: string): Prom
   });
 }
 
+/**
+ * Permanently deletes a chapter with its blocks and learner history. Chapters
+ * with progress or submissions need an explicit confirmation flag. Ordering
+ * gaps are harmless — new chapters use the highest order + 1.
+ */
+export async function removeChapter(
+  user: SessionUser,
+  chapterId: string,
+  options: { confirmedWithProgress?: boolean }
+): Promise<void> {
+  const { chapter } = await requireChapter(user, chapterId);
+
+  const [progress, responses] = await Promise.all([
+    prisma.chapterProgress.count({ where: { chapterId: chapter.id } }),
+    prisma.response.count({ where: { block: { chapterId: chapter.id } } }),
+  ]);
+  if ((progress > 0 || responses > 0) && !options.confirmedWithProgress) {
+    throw new ConflictError(
+      "This chapter has learner progress or submissions. Confirm you want to remove it and their history.",
+      TEACH_ERROR_CODES.CHAPTER_PROGRESS_CONFIRMATION_REQUIRED
+    );
+  }
+
+  await prisma.chapter.delete({ where: { id: chapter.id } });
+}
+
 /** Everything that would break the reader: MDX syntax, unknown components, block configs. */
-async function collectPublishProblems(chapterId: string, renderable: string, readerMode: string): Promise<string[]> {
+async function collectPublishProblems(chapterId: string, renderable: string, readerMode: string, db: Prisma.TransactionClient = prisma): Promise<string[]> {
   const problems: string[] = [];
 
   try {
     await compile(renderable, { remarkPlugins: [remarkGfm, remarkChecklist, remarkLearningLog], outputFormat: "function-body" });
   } catch (error) {
     problems.push(`MDX failed to compile: ${error instanceof Error ? error.message : String(error)}`);
+    return problems;
   }
 
   for (const name of collectUnknownComponents(renderable, mdxComponentAllowlist)) {
@@ -163,7 +191,7 @@ async function collectPublishProblems(chapterId: string, renderable: string, rea
 
   const extracted = extractBlocksFromSource(renderable);
   const configs = extractBlockConfigsFromSource(renderable);
-  const existing = await prisma.block.findMany({
+  const existing = await db.block.findMany({
     where: { chapterId, archivedAt: null },
     select: { id: true, type: true, config: true, sourceHash: true },
   });
@@ -196,4 +224,39 @@ async function collectPublishProblems(chapterId: string, renderable: string, rea
   }
 
   return problems;
+}
+
+
+/** Validate the complete selection before atomically syncing and publishing its drafts. */
+export async function publishChapters(user: SessionUser, scope: { courseId: string } | { moduleId: string }): Promise<void> {
+  let courseId: string;
+  let moduleId: string | undefined;
+  if ("moduleId" in scope) {
+    const module = await prisma.module.findUnique({ where: { id: scope.moduleId }, select: { courseId: true } });
+    if (!module) throw new NotFoundError("Module not found");
+    courseId = module.courseId;
+    moduleId = scope.moduleId;
+  } else courseId = scope.courseId;
+  await requireCourseById(user, courseId);
+
+  await prisma.$transaction(async tx => {
+    const chapters = await tx.chapter.findMany({ where: { courseId, ...(moduleId ? { moduleId } : {}) }, orderBy: [{ order: "asc" }, { id: "asc" }] });
+    if (!chapters.length) throw new UnprocessableError("There are no chapters to publish.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE);
+    const pending = chapters.filter(chapter => !chapter.publishedAt || chapter.compiled !== chapter.source);
+    const problems: string[] = [];
+    for (const chapter of pending) {
+      const reasons = await collectPublishProblems(chapter.id, restoreInteractiveBlockTags(chapter.source), chapter.readerMode, tx);
+      problems.push(...reasons.map(reason => `${chapter.title}: ${reason}`));
+    }
+    if (problems.length) throw new UnprocessableError("Some chapters cannot be published yet. No chapters were published.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE, problems);
+    const publishedAt = new Date();
+    for (const chapter of pending) {
+      await syncChapterBlocksFromSource(chapter.id, chapter.source, tx);
+      const updated = await tx.chapter.updateMany({
+        where: { id: chapter.id, source: chapter.source, readerMode: chapter.readerMode, compiled: chapter.compiled, publishedAt: chapter.publishedAt },
+        data: { compiled: chapter.source, publishedAt },
+      });
+      if (updated.count !== 1) throw new ConflictError("A chapter changed during publishing. Please try again.");
+    }
+  }, { timeout: 20000 });
 }

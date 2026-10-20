@@ -14,6 +14,7 @@ export function RepairEnrollmentProgressButton({ enrollmentId }: { enrollmentId:
       size="sm"
       variant="ghost"
       className="h-8 gap-1.5 text-xs text-neutral-600"
+      loading={pending}
       disabled={pending}
       onClick={() => {
         startTransition(async () => {

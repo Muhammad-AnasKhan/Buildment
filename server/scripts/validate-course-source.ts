@@ -9,6 +9,7 @@ import remarkParse from "remark-parse";
 import { unified } from "unified";
 import remarkGfm from "remark-gfm";
 import { collectCanvasProblems } from "../src/shared/mdx/canvas-tags.js";
+import { isActivityOnlySource } from "../src/shared/mdx/extract-block-config.js";
 import { collectUnknownComponents } from "../src/shared/mdx/extract.js";
 import { remarkChecklist } from "../src/shared/mdx/remark-checklist.js";
 import { remarkLearningLog } from "../src/shared/mdx/remark-learning-log.js";
@@ -87,6 +88,9 @@ export function findBrokenChapters(): { total: number; failed: ChapterMdxFailure
       try {
         const lesson = parseLesson(moduleNum, dirName, fileName, lessonNum, slugPart);
         const source = restoreInteractiveBlockTags(lesson.source);
+        if (lesson.readerMode === "QUIZ" && !isActivityOnlySource(source)) {
+          throw new Error("Quiz flow supports activities only: Quiz, OpenQuestion, Predict, and CodeExercise. Move lesson text, headings, recaps, checklists, learning logs, and visual blocks to a standard lesson. Put activity instructions in the activity prompt.");
+        }
         const unknown = collectUnknownComponents(source, allowed);
         if (unknown.length > 0) {
           throw new Error(`Unknown components: ${unknown.join(", ")}`);

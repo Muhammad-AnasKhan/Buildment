@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowRight, BarChart3, BookOpen, CircleHelp, Clock3, MessageSquareText, Pencil, Search, Users } from "lucide-react";
+import { ArrowRight, BarChart3, BookOpen, CircleHelp, Clock3, MessageSquareText, Pencil, Search, Trash2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { deleteCourse } from "@/server/actions/courses";
 import type { MentorCourseCard } from "@/shared/api/teach";
 
 type StatusFilter = "all" | "PUBLISHED" | "DRAFT" | "attention";
@@ -42,8 +43,28 @@ function CourseCard({ course }: { course: MentorCourseCard }) {
     <div className="flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-sm font-semibold">{course.title.slice(0, 2).toUpperCase()}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="truncate font-semibold">{course.title}</h3><Badge variant={course.status === "PUBLISHED" ? "secondary" : "outline"} className="capitalize">{course.status.toLowerCase()}</Badge></div><p className="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-muted-foreground">{course.description || "No course description yet."}</p></div></div>
     <div className="mt-4 grid grid-cols-3 gap-3 border-y py-3 text-xs"><Metric icon={Users} value={String(course.learnerCount)} label="learners" /><Metric icon={BookOpen} value={`${course.averageProgress}%`} label="avg progress" /><Metric icon={MessageSquareText} value={String(course.pendingReviews)} label="to review" /></div>
     {attention > 0 ? <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">{course.pendingReviews > 0 ? <span className="inline-flex items-center gap-1.5"><MessageSquareText className="size-3.5" />{course.pendingReviews} waiting</span> : null}{course.openHelpRequests > 0 ? <span className="inline-flex items-center gap-1.5"><CircleHelp className="size-3.5" />{course.openHelpRequests} open help</span> : null}{course.inactiveLearners > 0 ? <span className="inline-flex items-center gap-1.5"><Clock3 className="size-3.5" />{course.inactiveLearners} inactive 7+ days</span> : null}</div> : <p className="mt-3 text-xs text-muted-foreground">No current mentor actions.</p>}
-    <div className="mt-auto flex flex-wrap items-center gap-2 pt-5"><Link href={`/courses/${course.slug}/mentees`} className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}>Open course <ArrowRight /></Link><Link href={`/courses/${course.slug}/edit`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><Pencil /> Edit</Link><Link href={`/courses/${course.slug}/reports`} className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}><BarChart3 /> Reports</Link><span className="ml-auto text-[11px] text-muted-foreground">Updated {new Date(course.updatedAt).toLocaleDateString()}</span></div>
+    <div className="mt-auto flex flex-wrap items-center gap-2 pt-5"><Link href={`/courses/${course.slug}/mentees`} className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}>Open course <ArrowRight /></Link><Link href={`/courses/${course.slug}/edit`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><Pencil /> Edit</Link><Link href={`/courses/${course.slug}/reports`} className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}><BarChart3 /> Reports</Link>{course.status === "DRAFT" ? <DeleteDraftButton course={course} /> : null}<span className="ml-auto text-[11px] text-muted-foreground">Updated {new Date(course.updatedAt).toLocaleDateString()}</span></div>
   </article>;
+}
+
+function DeleteDraftButton({ course }: { course: MentorCourseCard }) {
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function handleDelete() {
+    if (!window.confirm(`Delete the draft “${course.title}”? Its modules, chapters and content will be permanently removed.`)) return;
+    startTransition(async () => {
+      const result = await deleteCourse({ courseId: course.id });
+      setError(result.ok ? null : result.errors.join(" "));
+    });
+  }
+
+  return <>
+    <Button type="button" variant="ghost" size="sm" onClick={handleDelete} loading={pending} disabled={pending} className="text-destructive hover:text-destructive">
+      <Trash2 /> {pending ? "Deleting…" : "Delete"}
+    </Button>
+    {error ? <span role="alert" className="basis-full text-xs text-destructive">{error}</span> : null}
+  </>;
 }
 
 function Metric({ icon: Icon, value, label }: { icon: typeof Users; value: string; label: string }) { return <div className="min-w-0"><span className="flex items-center gap-1.5 text-muted-foreground"><Icon className="size-3.5" />{label}</span><span className="mt-1 block text-sm font-semibold tabular-nums text-foreground">{value}</span></div>; }

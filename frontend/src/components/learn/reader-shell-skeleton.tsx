@@ -7,7 +7,7 @@ function ShimmerBar({ className }: { className?: string }) {
     <div
       className={cn(
         "relative overflow-hidden rounded-md bg-muted",
-        "after:absolute after:inset-0 after:-translate-x-full after:animate-[reader-shimmer_1.4s_ease-in-out_infinite] after:bg-gradient-to-r after:from-transparent after:via-background/50 after:to-transparent dark:after:via-foreground/10",
+        "motion-reduce:after:animate-none after:absolute after:inset-0 after:-translate-x-full after:animate-[reader-shimmer_1.4s_ease-in-out_infinite] after:bg-gradient-to-r after:from-transparent after:via-background/50 after:to-transparent dark:after:via-foreground/10",
         className
       )}
     />
@@ -23,6 +23,7 @@ export function ReaderShellSkeleton({ visible }: { visible?: boolean }) {
       )}
       aria-busy="true"
       aria-label="Loading chapter"
+      role="status"
     >
       <div className="shrink-0 border-b border-border px-3 py-2.5 sm:px-4">
         <div className="flex items-center gap-3">

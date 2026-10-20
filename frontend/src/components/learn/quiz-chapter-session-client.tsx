@@ -284,6 +284,7 @@ export function QuizChapterSessionClient({
               type="button"
               size="sm"
               disabled={submitting || perfectScore}
+              loading={submitting}
               onClick={() => void submitQuiz()}
             >
               {submitting ? "Submitting…" : perfectScore ? "All correct" : scoreSummary ? "Submit again" : individualActivityCount > 0 ? "Submit multiple-choice answers" : "Submit quiz"}

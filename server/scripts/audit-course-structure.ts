@@ -41,6 +41,29 @@ function auditInteractiveFences(moduleNum: number, fileName: string, body: strin
   const issues: Issue[] = [];
   const predictFences = [...body.matchAll(/```predict\n([\s\S]*?)```/g)];
   const quizFences = [...body.matchAll(/```quiz\n([\s\S]*?)```/g)];
+  let predictCount = 0;
+  let predictLongestCorrect = 0;
+  let mcqCount = 0;
+  let mcqLongestCorrect = 0;
+
+  /**
+   * Option length is a common test-wiseness leak: if the correct option is the
+   * longest, a learner can pass without understanding the concept. "leaks"
+   * requires a meaningful margin; "isLongest" feeds the set-level check so a
+   * small but repeated bias is still caught.
+   */
+  function optionLengths(labels: string[], correctIndex: number) {
+    const correctLength = labels[correctIndex]?.trim().length ?? 0;
+    const wrongLengths = labels
+      .filter((_, index) => index !== correctIndex)
+      .map((label) => label.trim().length);
+    const longestWrong = wrongLengths.length > 0 ? Math.max(...wrongLengths) : 0;
+    return {
+      correctLength,
+      isLongest: correctLength > longestWrong,
+      leaks: correctLength > longestWrong && correctLength >= longestWrong * 1.1,
+    };
+  }
 
   if (/quiz (?:is )?reserved|quiz placeholder|reserved\s+—\s+excluded/i.test(body)) {
     issues.push({
@@ -75,6 +98,28 @@ function auditInteractiveFences(moduleNum: number, fileName: string, body: strin
             "Predict must have a prompt, exactly two options, and a correctOptionId matching an option",
         });
       }
+
+      const correctIndex = options.findIndex((option) => option.id === correctOptionId);
+      if (correctIndex >= 0) {
+        const lengths = optionLengths(
+          options.map((option) => (typeof option.label === "string" ? option.label : "")),
+          correctIndex
+        );
+        if (lengths.correctLength > 0) {
+          predictCount += 1;
+          if (lengths.isLongest) predictLongestCorrect += 1;
+          if (lengths.leaks) {
+            issues.push({
+              level: "warn",
+              module: moduleNum,
+              file: fileName,
+              message:
+                "Correct prediction option is the longest — write both options at a comparable length so length cannot reveal the answer",
+            });
+          }
+        }
+      }
+
       if (/single riskiest assumption in this module/i.test(prompt)) {
         issues.push({
           level: "error",
@@ -129,17 +174,21 @@ function auditInteractiveFences(moduleNum: number, fileName: string, body: strin
         Array.isArray(config?.options) &&
         config.explanations.length === config.options.length &&
         config.explanations.every((why) => typeof why === "string" && why.trim().length > 0);
-      if (manifest !== null && validMcq) {
+      if (validMcq) {
         const labels = (config.options as unknown[]).map((option) => String(option));
-        const correctLength = labels[config.correct as number]!.length;
-        const longestWrong = Math.max(...labels.filter((_, i) => i !== config.correct).map((label) => label.length));
-        if (correctLength > longestWrong * 1.25) {
-          issues.push({
-            level: "warn",
-            module: moduleNum,
-            file: fileName,
-            message: "Correct quiz option is much longer than the others, which gives the answer away",
-          });
+        const lengths = optionLengths(labels, config.correct as number);
+        if (lengths.correctLength > 0) {
+          mcqCount += 1;
+          if (lengths.isLongest) mcqLongestCorrect += 1;
+          if (lengths.leaks) {
+            issues.push({
+              level: "warn",
+              module: moduleNum,
+              file: fileName,
+              message:
+                "Correct quiz option is the longest — write distractors at a comparable length so length cannot reveal the answer",
+            });
+          }
         }
       }
       if (manifest !== null && validMcq && !explainsEveryOption) {
@@ -158,6 +207,24 @@ function auditInteractiveFences(moduleNum: number, fileName: string, body: strin
         message: "Quiz fence contains invalid YAML",
       });
     }
+  }
+
+  if (mcqCount >= 3 && mcqLongestCorrect / mcqCount >= 0.5) {
+    issues.push({
+      level: "warn",
+      module: moduleNum,
+      file: fileName,
+      message: `Correct quiz option is the longest in ${mcqLongestCorrect}/${mcqCount} questions — the set leaks the answer by length`,
+    });
+  }
+
+  if (predictCount >= 2 && predictLongestCorrect / predictCount >= 0.5) {
+    issues.push({
+      level: "warn",
+      module: moduleNum,
+      file: fileName,
+      message: `Correct prediction option is the longest in ${predictLongestCorrect}/${predictCount} prompts — the set leaks the answer by length`,
+    });
   }
 
   if (fileName.endsWith("-quiz.md")) {

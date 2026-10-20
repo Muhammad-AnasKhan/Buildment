@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useSyncExternalStore, type SetStateAction } from "react";
+import { useCallback, useEffect, useSyncExternalStore, type SetStateAction } from "react";
 import { useBrowserStorage, useHydrated } from "./use-browser-storage";
 
 const MOBILE_QUERY = "(max-width: 767px)";
@@ -28,17 +28,27 @@ export function useIsMobile() {
   return useSyncExternalStore(subscribeMobile, getMobileSnapshot, getMobileServerSnapshot);
 }
 
-function readerAlreadyReady() {
-  try {
-    return typeof window !== "undefined" && sessionStorage.getItem(READY_KEY) === "1";
-  } catch {
-    return false;
-  }
+/** Below this width both side panels leave too little room for the text, so the outline starts closed. */
+const ROOMY_QUERY = "(min-width: 1280px)";
+
+function subscribeRoomy(callback: () => void) {
+  const mq = window.matchMedia(ROOMY_QUERY);
+  mq.addEventListener("change", callback);
+  return () => mq.removeEventListener("change", callback);
+}
+
+function useIsRoomy() {
+  return useSyncExternalStore(
+    subscribeRoomy,
+    () => window.matchMedia(ROOMY_QUERY).matches,
+    () => true
+  );
 }
 
 /** Sidebar preferences are stored separately for each course. */
 export function useReaderLayout(courseSlug: string) {
   const isMobile = useIsMobile();
+  const isRoomy = useIsRoomy();
   const hydrated = useHydrated();
   const [raw, setRaw] = useBrowserStorage(sidebarStorageKey(courseSlug), "", "sessionStorage");
   let prefs: { left?: boolean; right?: boolean } = {};
@@ -53,8 +63,11 @@ export function useReaderLayout(courseSlug: string) {
     }
   } catch { /* Use device defaults. */ }
   const leftCollapsed = prefs.left ?? (hydrated && isMobile);
-  const rightCollapsed = prefs.right ?? (hydrated && isMobile);
-  const [skipSkeleton] = useState(() => readerAlreadyReady());
+  const rightCollapsed = prefs.right ?? (hydrated && (isMobile || !isRoomy));
+  // Read through useBrowserStorage so hydration sees the server value; reading sessionStorage
+  // in a useState initializer made reloads render a different tree than the server did.
+  const [readyFlag] = useBrowserStorage(READY_KEY, "", "sessionStorage");
+  const skipSkeleton = readyFlag === "1";
   useEffect(() => {
     try { sessionStorage.setItem(READY_KEY, "1"); } catch { /* Optional preference. */ }
   }, []);

@@ -27,6 +27,8 @@ Chapter 7 completed the **browser identity layer**. You should be able to demo: 
 Two vendors both log in successfully. Without ownership checks, either vendor's token can `PATCH /stores/:id` for **any** MongoDB id they guess. Chapter 8 closes that hole before Chapter 9 adds real store CRUD.
 </Callout>
 
+## The FreshMarket trust boundary
+
 The UI can hide buttons from unauthorized users, but only the server enforces truth. A curious shopper can always call your API directly.
 
 FreshMarket uses three layers: authentication (valid token), role checks (vendor vs customer vs admin), and ownership checks (does this store belong to this user?).
@@ -123,7 +125,7 @@ Chapter 8 is the **gate** before vendor features ship.
 - **Not** product isolation — same pattern in Chapter 11  
 - **Not** customer cart scoping — Chapter 16 — but matrix documents it  
 
-<MustRead id="01M4THGD4ZYENJ5RVTJC4M3P9D" />
+<MustRead id="01M5CM5JFX0WW4KYTEWWWMFKP6" />
 
 ## Reading pace
 
@@ -154,4 +156,4 @@ Insecure Direct Object Reference bugs happen when the server checks login but no
 
 Identity established — permission boundaries next.
 
-<ChapterRecap id="01M4THGD50XCEVCXYJ43Y05WPV" />
+<ChapterRecap id="01M5CM5JFXZ4PZQ5J4311DH9YP" />

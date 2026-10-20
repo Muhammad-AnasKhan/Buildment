@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { EditorSkeleton } from "@/components/teach/editor-skeleton";
 import Link from "next/link";
 import {
   BookOpen,
@@ -33,11 +34,7 @@ import {
 
 const MdxEditorCore = dynamic(() => import("./mdx-editor-core"), {
   ssr: false,
-  loading: () => (
-    <div className="rounded-xl border bg-card p-6 text-sm text-muted-foreground">
-      Loading editor…
-    </div>
-  ),
+  loading: () => <EditorSkeleton />,
 });
 
 type SaveState =
@@ -216,9 +213,10 @@ export function ChapterEditor({
 
         <div className="flex flex-wrap items-center justify-end gap-2">
           <SaveStatus state={saveState} />
-          {saveState.kind === "error" && <Button variant="outline" onClick={() => void flushDraft()}>Retry save</Button>}
+          {saveState.kind === "error" && <Button variant="outline" onClick={() => flushDraft()}>Retry save</Button>}
           <Button
             onClick={() => void handlePublish()}
+            loading={publishing}
             disabled={publishing}
             className="rounded-full"
           >
@@ -346,6 +344,7 @@ export function ChapterEditor({
               type="button"
               variant="outline"
               onClick={() => void handleSettingsSave()}
+              loading={settingsState.kind === "saving"}
               disabled={settingsState.kind === "saving"}
             >
               {settingsState.kind === "saving" ? <LoaderCircle className="animate-spin" /> : <Check />}

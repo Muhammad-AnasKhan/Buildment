@@ -280,6 +280,7 @@ export function OpenQuestionClient({
                       size="sm"
                       className="gap-1.5"
                       onClick={submit}
+                      loading={submitting}
                       disabled={!canSubmit}
                     >
                       {submitting ? (

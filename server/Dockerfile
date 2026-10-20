@@ -26,6 +26,8 @@ RUN pnpm install --frozen-lockfile --prod \
 COPY --from=build /app/dist dist
 # The generated client under src/ serves the tsx-run seed and scripts; dist/ has its own copy.
 COPY --from=build /app/src/generated src/generated
+# Content scripts and the ZIP worker share the source MDX validators and block schemas.
+COPY --from=build /app/src/shared src/shared
 COPY prisma prisma
 COPY prisma.config.ts ./
 COPY scripts scripts
