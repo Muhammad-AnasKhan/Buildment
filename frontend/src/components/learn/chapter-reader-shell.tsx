@@ -232,7 +232,7 @@ export function ChapterReaderShell({
       data-reader-mode={readerMode}
       className={cn("relative h-[100dvh] bg-background text-foreground", focusMode && "bg-background")}
     >
-      {showSkeleton ? (
+      {showSkeleton && !skipSkeleton ? (
         <div className="pointer-events-none absolute inset-0 z-10" aria-hidden>
           <ReaderShellSkeleton visible />
         </div>
