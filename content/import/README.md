@@ -19,6 +19,22 @@ Transformed MDX output is written to `content/transformed/multi-vendor-marketpla
 review — do not edit that folder manually; change files under `content/import/` and re-run
 `content:import`.
 
+## More than one course
+
+Each folder here is one course. The content scripts take `--course <slug>` (the folder name) and
+default to `multi-vendor-marketplace`. Run them from `server/`:
+
+```bash
+pnpm content:validate:source --course decision-making
+pnpm content:audit --course decision-making
+pnpm content:import --course decision-making
+```
+
+A new course needs a `course.yaml` with its catalog metadata and the planned modules and lessons;
+the audit fails when the lesson files and the plan disagree. FreshMarket has no `course.yaml` and
+keeps its metadata in `server/src/shared/lib/seed-data.ts`. The full process for building a course
+(plan, write, verify, PR) is in [`docs/course-authoring/`](../../docs/course-authoring/README.mdx).
+
 ## What the import does
 
 - **Course** → `Course` record (title, slug, description, …)
