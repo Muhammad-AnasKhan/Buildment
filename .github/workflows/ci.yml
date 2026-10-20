@@ -43,6 +43,8 @@ jobs:
       # The web app's src/shared must be the committed copy of server/src/shared.
       - run: pnpm sync-shared:check
       - run: pnpm db:ready
+      # The dev-login tests sign in as the seeded test accounts.
+      - run: pnpm db:seed
       - run: pnpm typecheck
       - run: pnpm lint
       - run: pnpm test

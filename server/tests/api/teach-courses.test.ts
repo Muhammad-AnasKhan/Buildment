@@ -360,8 +360,11 @@ describe("course ZIP import", () => {
       expect(course.chapters.every(chapter => chapter.publishedAt === null)).toBe(true);
       expect(course.chapters.some(chapter => chapter.isMilestone)).toBe(true);
       expect(course.chapters.flatMap(chapter => chapter.blocks).length).toBeGreaterThan(0);
+      // Another instructor with ZIP import turned on still cannot reuse the slug.
+      await prisma.user.update({ where: { id: strangerId }, data: { zipImportEnabled: true } });
       expect((await request(app).post(endpoint).set(stranger()).set("Content-Type", "application/zip").send(archive)).status).toBe(409);
     } finally {
+      await prisma.user.update({ where: { id: strangerId }, data: { zipImportEnabled: false } });
       await prisma.course.deleteMany({ where: { slug } });
     }
   }, 60000);

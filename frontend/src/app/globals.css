@@ -401,6 +401,29 @@
   }
 }
 
+/* Interactive canvases: a short segment travelling along the active arrow
+   (src/canvas/primitives/flow-pulse.tsx). The path has pathLength 100, so the
+   dash pattern is in percent of the arrow. Hidden when motion is reduced. */
+.canvas-flow-pulse {
+  stroke-dasharray: 8 92;
+  animation: canvas-flow 1.6s linear infinite;
+}
+
+@keyframes canvas-flow {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas-flow-pulse {
+    animation: none;
+  }
+}
+
 /* Mermaid erDiagram — fallback when inline SVG fills ignore themeVariables */
 .dark .mermaid-svg-dark svg .entityBox,
 .dark .mermaid-svg-dark svg .er.entityBox {

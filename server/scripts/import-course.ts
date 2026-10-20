@@ -458,7 +458,7 @@ function escapeMdxProse(body: string): string {
       return `\x00BLOCK${blockTags.length - 1}\x00`;
     });
   }
-  withMarkers = withMarkers.replace(/<(DiffBlock|MermaidDiagram)[\s\S]*?\/>/g, (tag) => {
+  withMarkers = withMarkers.replace(/<(DiffBlock|MermaidDiagram|InteractiveCanvas)[\s\S]*?\/>/g, (tag) => {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });

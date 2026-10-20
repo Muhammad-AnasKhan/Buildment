@@ -4,9 +4,11 @@ import {
   Database,
   FileDiff,
   FolderTree,
+  Footprints,
   GitBranch,
   Layers,
   Route,
+  SlidersHorizontal,
   Terminal,
 } from "lucide-react";
 
@@ -19,7 +21,9 @@ export type ContentBlockEyebrow =
   | "Data model"
   | "Diff"
   | "Trace"
-  | "Predict";
+  | "Predict"
+  | "Walkthrough"
+  | "Explore";
 
 export const EYEBROW_ICONS: Record<ContentBlockEyebrow, LucideIcon> = {
   Repo: FolderTree,
@@ -31,6 +35,8 @@ export const EYEBROW_ICONS: Record<ContentBlockEyebrow, LucideIcon> = {
   Diff: FileDiff,
   Trace: Route,
   Predict: Route,
+  Walkthrough: Footprints,
+  Explore: SlidersHorizontal,
 };
 
 export type TraceActor = "Client" | "React" | "API" | "Server" | "DB" | "Worker";

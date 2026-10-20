@@ -8,6 +8,7 @@ import remarkMdx from "remark-mdx";
 import remarkParse from "remark-parse";
 import { unified } from "unified";
 import remarkGfm from "remark-gfm";
+import { collectCanvasProblems } from "../src/shared/mdx/canvas-tags.js";
 import { isActivityOnlySource } from "../src/shared/mdx/extract-block-config.js";
 import { collectUnknownComponents } from "../src/shared/mdx/extract.js";
 import { remarkChecklist } from "../src/shared/mdx/remark-checklist.js";
@@ -56,6 +57,7 @@ const componentNames = [
   "EntityDiagram",
   "TraceRequest",
   "TraceStep",
+  "InteractiveCanvas",
 ] as const;
 
 export type ChapterMdxFailure = { file: string; error: string };
@@ -93,6 +95,8 @@ export function findBrokenChapters(): { total: number; failed: ChapterMdxFailure
         if (unknown.length > 0) {
           throw new Error(`Unknown components: ${unknown.join(", ")}`);
         }
+        const canvasProblems = collectCanvasProblems(source);
+        if (canvasProblems.length > 0) throw new Error(canvasProblems.join(" "));
         processor.runSync(processor.parse(source));
       } catch (err) {
         const message = err instanceof Error ? err.message.split("\n")[0] : String(err);

@@ -18,6 +18,11 @@ describe("restoreInteractiveBlockTags", () => {
     );
   });
 
+  it("restores an escaped InteractiveCanvas tag", () => {
+    const source = '&lt;InteractiveCanvas slug="weighted-matrix-two-offers" />';
+    expect(restoreInteractiveBlockTags(source)).toBe('<InteractiveCanvas slug="weighted-matrix-two-offers" />');
+  });
+
   it("restores escaped presentation block placeholders by id", () => {
     const source = '&lt;ChapterRecap id="abc123" />';
     expect(restoreInteractiveBlockTags(source)).toBe('<ChapterRecap id="abc123" />');
