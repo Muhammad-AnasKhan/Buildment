@@ -43,6 +43,7 @@ export const contentBlockDescriptors: JsxComponentDescriptor[] = [
   createFlowDescriptor("ArchitectureDiagram", [{ name: "title" }], false),
   createFlowDescriptor("ArchNode", [{ name: "layer", required: true }, { name: "label" }], false),
   createFlowDescriptor("TraceRequest", [{ name: "title" }], false),
+  createFlowDescriptor("InteractiveCanvas", [{ name: "slug", required: true }]),
   createFlowDescriptor(
     "TraceStep",
     [
