@@ -211,6 +211,21 @@ lists, and Mermaid diagrams. No grader, no report projector, no `Response` rows 
 `src/blocks/presentation/` and skip most of the registry contract (no `schema`/`grade`/`report`
 needed, just `Component` + `editorDescriptor`). Cheap to build, big effect on how a course *feels*.
 
+## `<InteractiveCanvas>`: registered step-throughs and simulators
+
+```mdx
+<InteractiveCanvas slug="weighted-matrix-two-offers" />
+```
+
+A presentation component, not a block type: no `id`, no grader, no `Response` rows, and using it
+never counts toward completion. The slug must be one of `CANVAS_SLUGS` in
+`server/src/shared/canvas/slugs.ts`; publishing rejects anything else. The frontend registry
+(`frontend/src/canvas/registry.ts`) maps each slug to data for one of three renderers: a sequence
+(lanes and numbered arrows), a state machine, or a factor explorer (change a weight, see the totals
+move). HTML owns the controls and text, inline SVG owns the picture, and colours come from theme
+tokens. Mentors can preview every canvas at `/workspace/canvases`. Rules for when a canvas earns its
+place are in `agent-ip/10-interactive-canvases.md`.
+
 ## Response payload shapes
 
 See [`08-data-model.mdx`](08-data-model.mdx) for the `ResponsePayload` union type — one variant per
