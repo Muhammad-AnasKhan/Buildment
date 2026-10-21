@@ -1,3 +1,4 @@
+import { renderEmailTemplate } from "../email/render.js";
 import { randomBytes } from "node:crypto";
 import { safeRedirectTo } from "../../shared/lib/safe-redirect.js";
 import { prisma } from "../../db/prisma.js";
@@ -31,7 +32,7 @@ export async function requestMagicLink(input: { email: string; redirectTo?: stri
   const result = await sendEmail({
     to: input.email,
     subject: "Your Buildment sign-in link",
-    html: `<p>Click to sign in to Buildment:</p><p><a href="${url}">Sign in</a></p><p>This link expires in 15 minutes. If you did not request it, ignore this email.</p>`,
+    html: await renderEmailTemplate("request-magic-link", { url: url }),
     text: `Sign in to Buildment: ${url}\n\nThis link expires in 15 minutes.`,
   });
   if (!result.sent) {

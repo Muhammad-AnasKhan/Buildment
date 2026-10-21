@@ -1,7 +1,8 @@
+import { renderEmailTemplate } from "./render.js";
 
 import { prisma } from "../../db/prisma.js";
 import { appBaseUrl, sendEmail } from "./send.js";
-import { escapeHtml, formatMessagePreview } from "./format.js";
+import { formatMessagePreview } from "./format.js";
 
 function chapterLabel(title: string | null | undefined): string {
   return title?.trim() ? title : "this lesson";
@@ -38,10 +39,7 @@ export async function notifyMentorHelpQuestion(input: {
   await sendEmail({
     to: mentorEmail,
     subject: `${menteeLabel} asked a question · ${courseTitle}`,
-    html: `<p>Hi ${escapeHtml(thread.course.mentor.name ?? "there")},</p>
-<p><strong>${escapeHtml(menteeLabel)}</strong> posted a question in <strong>${escapeHtml(courseTitle)}</strong> (${escapeHtml(lesson)}):</p>
-<blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #6366f1;background:#f8fafc;color:#0f172a;">${escapeHtml(preview)}</blockquote>
-<p><a href="${url}">Open the conversation in Buildment</a></p>`,
+    html: await renderEmailTemplate("notify-mentor-help-question", { name: thread.course.mentor.name ?? "there", learnerName: menteeLabel, courseTitle: courseTitle, lesson: lesson, preview: preview, url: url }),
     text: `${menteeLabel} asked a question in ${courseTitle} (${lesson}):\n\n${preview}\n\nReply: ${url}`,
   });
 }
@@ -73,10 +71,7 @@ export async function notifyMenteeHelpReply(input: {
   await sendEmail({
     to: menteeEmail,
     subject: `${mentorLabel} replied · ${courseTitle}`,
-    html: `<p>Hi ${escapeHtml(thread.mentee.name ?? "there")},</p>
-<p><strong>${escapeHtml(mentorLabel)}</strong> replied to your question in <strong>${escapeHtml(courseTitle)}</strong> (${escapeHtml(lesson)}):</p>
-<blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #10b981;background:#f0fdf4;color:#0f172a;">${escapeHtml(preview)}</blockquote>
-<p><a href="${url}">Read the full reply in Buildment</a></p>`,
+    html: await renderEmailTemplate("notify-mentee-help-reply", { name: thread.mentee.name ?? "there", mentorName: mentorLabel, courseTitle: courseTitle, lesson: lesson, preview: preview, url: url }),
     text: `${mentorLabel} replied in ${courseTitle} (${lesson}):\n\n${preview}\n\nView: ${url}`,
   });
 }
@@ -119,9 +114,7 @@ export async function notifyMentorPendingReview(responseId: string): Promise<voi
   await sendEmail({
     to: mentorEmail,
     subject: `Submission to review · ${courseTitle}`,
-    html: `<p>Hi ${escapeHtml(response.block.chapter.course.mentor.name ?? "there")},</p>
-<p><strong>${escapeHtml(learnerLabel)}</strong> submitted work for review in <strong>${escapeHtml(courseTitle)}</strong> (${escapeHtml(lesson)}).</p>
-<p><a href="${url}">Open the review queue</a></p>`,
+    html: await renderEmailTemplate("notify-mentor-pending-review", { name: response.block.chapter.course.mentor.name ?? "there", learnerName: learnerLabel, courseTitle: courseTitle, lesson: lesson, url: url }),
     text: `${learnerLabel} submitted work for review in ${courseTitle} (${lesson}). Review: ${url}`,
   });
 }
@@ -167,10 +160,7 @@ export async function notifyMenteeReviewFeedback(input: {
       input.verdict === "APPROVED"
         ? `Mentor feedback · ${courseTitle}`
         : `Revision requested · ${courseTitle}`,
-    html: `<p>Hi ${escapeHtml(response.user.name ?? "there")},</p>
-<p>Your mentor <strong>${escapeHtml(verdictLabel)}</strong> in <strong>${escapeHtml(courseTitle)}</strong> (${escapeHtml(lesson)}).</p>
-<blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #6366f1;background:#f8fafc;color:#0f172a;">${escapeHtml(preview)}</blockquote>
-<p><a href="${url}">Open the lesson in Buildment</a></p>`,
+    html: await renderEmailTemplate("notify-mentee-review-feedback", { name: response.user.name ?? "there", verdict: verdictLabel, courseTitle: courseTitle, lesson: lesson, preview: preview, url: url }),
     text: `Your mentor ${verdictLabel} in ${courseTitle} (${lesson}):\n\n${preview}\n\nLesson: ${url}`,
   });
 }
@@ -196,9 +186,7 @@ export async function notifyMenteeHelpThreadResolved(threadId: string): Promise<
   await sendEmail({
     to: menteeEmail,
     subject: `Question resolved · ${thread.course.title}`,
-    html: `<p>Hi ${escapeHtml(thread.mentee.name ?? "there")},</p>
-<p>Your mentor marked your help question as resolved in <strong>${escapeHtml(thread.course.title)}</strong> (${escapeHtml(lesson)}).</p>
-<p><a href="${chapterUrl}">Open the lesson in Buildment</a></p>`,
+    html: await renderEmailTemplate("notify-mentee-help-thread-resolved", { name: thread.mentee.name ?? "there", courseTitle: thread.course.title, lesson: lesson, url: chapterUrl }),
     text: `Your help question was resolved in ${thread.course.title} (${lesson}). Open: ${chapterUrl}`,
   });
 }
@@ -223,9 +211,7 @@ export async function notifyMenteeCourseEnrollment(enrollmentId: string): Promis
   await sendEmail({
     to: email,
     subject: `You're enrolled in ${enrollment.course.title}`,
-    html: `<p>Hi ${escapeHtml(enrollment.user?.name ?? "there")},</p>
-<p><strong>${escapeHtml(mentorLabel)}</strong> added you to <strong>${escapeHtml(enrollment.course.title)}</strong> on Buildment.</p>
-<p><a href="${url}">Start the course</a></p>`,
+    html: await renderEmailTemplate("notify-mentee-course-enrollment", { name: enrollment.user?.name ?? "there", mentorName: mentorLabel, courseTitle: enrollment.course.title, url: url }),
     text: `You're enrolled in ${enrollment.course.title}. Start: ${url}`,
   });
 }
@@ -257,9 +243,7 @@ export async function notifyMentorNewEnrollment(enrollmentId: string): Promise<v
   await sendEmail({
     to: mentorEmail,
     subject: `New learner · ${enrollment.course.title}`,
-    html: `<p>Hi ${escapeHtml(enrollment.course.mentor.name ?? "there")},</p>
-<p><strong>${escapeHtml(learnerLabel)}</strong> is now enrolled in <strong>${escapeHtml(enrollment.course.title)}</strong>.</p>
-<p><a href="${url}">Open your teach workspace</a></p>`,
+    html: await renderEmailTemplate("notify-mentor-new-enrollment", { name: enrollment.course.mentor.name ?? "there", learnerName: learnerLabel, courseTitle: enrollment.course.title, url: url }),
     text: `${learnerLabel} enrolled in ${enrollment.course.title}. Teach workspace: ${url}`,
   });
 }

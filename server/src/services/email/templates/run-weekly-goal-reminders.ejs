@@ -1,0 +1,5 @@
+<p>Hi <%= name %>,</p>
+<p>You have completed <strong><%= progress %> of <%= target %> <%= unit %></strong> in the last 7 days. <%= remaining %> to go.</p>
+<% if (note) { %><p><strong>Your focus:</strong> <%= note %></p><% } %>
+<%- include('button', { url: url, label: "Continue learning" }) %>
+<p>You can turn off daily reminders from your weekly goal on the dashboard.</p>

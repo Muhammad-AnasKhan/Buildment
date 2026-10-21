@@ -1,3 +1,4 @@
+import { renderEmailTemplate } from "../email/render.js";
 import { prisma } from "../../db/prisma.js";
 import { sendEmail } from "../email/send.js";
 
@@ -43,10 +44,7 @@ export async function sendInactivityNudgesForCourse(courseId: string) {
     const result = await sendEmail({
       to: email,
       subject: `We miss you on ${course.title}`,
-      html: `<p>Hi ${enrollment.user?.name ?? "there"},</p>
-<p>Your mentor noticed you have not studied <strong>${course.title}</strong> in a few days.</p>
-<p>Log in when you can — even 20 minutes keeps momentum.</p>
-<p>— buildment</p>`,
+      html: await renderEmailTemplate("send-inactivity-nudges-for-course", { name: enrollment.user?.name ?? "there", courseTitle: course.title }),
       text: `Hi ${enrollment.user?.name ?? "there"}, we miss you on ${course.title}. Log in when you can.`,
     });
 

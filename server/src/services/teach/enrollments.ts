@@ -1,3 +1,4 @@
+import { renderEmailTemplate } from "../email/render.js";
 import { TEACH_ERROR_CODES } from "../../shared/api/teach.js";
 import { prisma } from "../../db/prisma.js";
 import { NotFoundError, UnprocessableError } from "../../utils/errors.js";
@@ -31,9 +32,7 @@ export async function nudgeMentee(user: SessionUser, enrollmentId: string): Prom
   const result = await sendEmail({
     to: email,
     subject: `Quick nudge — ${enrollment.course.title}`,
-    html: `<p>Hi ${enrollment.user?.name ?? "there"},</p>
-<p>Your mentor checked in on your progress in <strong>${enrollment.course.title}</strong>.</p>
-<p>Pick up where you left off when you have a few minutes today.</p>`,
+    html: await renderEmailTemplate("nudge-mentee", { name: enrollment.user?.name ?? "there", courseTitle: enrollment.course.title }),
     text: `Your mentor nudged you about ${enrollment.course.title}.`,
   });
 

@@ -1,5 +1,6 @@
 import { env } from "../../config/env.js";
 import { logger } from "../../utils/logger.js";
+import { renderEmailLayout } from "./render.js";
 
 // Transactional email via the Resend HTTP API. Deliberately no SDK dependency:
 // one POST, one auth header. When no key is configured (typical in local dev)
@@ -46,7 +47,7 @@ export async function sendEmail(input: SendEmailInput): Promise<SendEmailResult>
       from: env.EMAIL_FROM,
       to: [input.to],
       subject: input.subject,
-      html: input.html,
+      html: await renderEmailLayout(input, appBaseUrl()),
       text: input.text,
     }),
   });
