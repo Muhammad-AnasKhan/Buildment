@@ -249,6 +249,8 @@ model Course {
   priceCents     Int          @default(0)
   currency       String       @default("USD")
   sequential     Boolean      @default(true)
+  /// Quiz camera snapshots are opt-in per course; quiz integrity signals are always on.
+  integritySnapshots Boolean  @default(false)
   mentorId       String
   mentor         User         @relation("CourseMentor", fields: [mentorId], references: [id])
   instructors    CourseInstructor[]
@@ -335,6 +337,7 @@ model Chapter {
   helpThreads       HelpThread[]
   studySessions     StudySession[]
   headingNotes      HeadingNote[]
+  integrityAttempts IntegrityAttempt[]
 
   @@unique([courseId, slug])
   @@index([courseId, order])
@@ -389,6 +392,7 @@ model Enrollment {
   chapterProgress   ChapterProgress[]
   dailyActivity     DailyActivity[]
   studySessions     StudySession[]
+  integrityAttempts IntegrityAttempt[]
   payment           Payment?
 
   @@unique([courseId, userId])
@@ -637,4 +641,84 @@ model BlockStats {
   correctCount    Int       @default(0)
   pendingReviews  Int       @default(0)
   lastSubmittedAt DateTime?
+}
+
+// --- Quiz integrity signals ------------------------------------------------------------------
+// Flags for mentors to judge, never an automatic verdict. Events are append-only rows (no
+// read-modify-write log), each attempt has a hard cap, and camera stills are opt-in per course
+// and deleted by the daily retention job after 30 days while the flags stay.
+
+enum IntegrityEventType {
+  TAB_HIDDEN
+  WINDOW_BLUR
+  FULLSCREEN_EXIT
+  COPY_BLOCKED
+  PASTE_BLOCKED
+  CONTEXT_MENU_BLOCKED
+  SCREENSHOT_KEY
+  MOUSE_LEFT
+  SECOND_SCREEN
+  FAST_ANSWER
+  CAMERA_OFF
+  CAMERA_ON
+}
+
+enum IntegrityCameraStatus {
+  NOT_REQUESTED
+  ON
+  DECLINED
+  UNAVAILABLE
+}
+
+/// One proctored try at a quiz chapter. `attempt` is 1 + the learner's highest submitted
+/// attempt in the chapter when the sitting opened, so reloads resume the same row.
+model IntegrityAttempt {
+  id            String                @id @default(cuid())
+  enrollmentId  String
+  enrollment    Enrollment            @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  chapterId     String
+  chapter       Chapter               @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  attempt       Int
+  cameraStatus  IntegrityCameraStatus @default(NOT_REQUESTED)
+  eventCount    Int                   @default(0)
+  droppedEvents Int                   @default(0)
+  snapshotCount Int                   @default(0)
+  startedAt     DateTime              @default(now())
+  lastSeenAt    DateTime              @default(now())
+  events        IntegrityEvent[]
+  snapshots     IntegritySnapshot[]
+
+  @@unique([enrollmentId, chapterId, attempt])
+  @@index([chapterId])
+}
+
+model IntegrityEvent {
+  id         String             @id @default(cuid())
+  attemptId  String
+  attempt    IntegrityAttempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  /// Browser-generated key, so a batch retried after a lost response is stored once.
+  clientId   String             @db.VarChar(40)
+  type       IntegrityEventType
+  at         DateTime
+  /// Question on screen when it happened, if known.
+  blockId    String?
+  meta       Json?
+  receivedAt DateTime           @default(now())
+
+  @@unique([attemptId, clientId])
+  @@index([attemptId, at])
+}
+
+model IntegritySnapshot {
+  id         String           @id @default(cuid())
+  attemptId  String
+  attempt    IntegrityAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  storageKey String           @unique
+  bytes      Int
+  takenAt    DateTime         @default(now())
+  /// Set when the retention job deletes the image; the row stays as a record.
+  deletedAt  DateTime?
+
+  @@index([attemptId, takenAt])
+  @@index([deletedAt, takenAt])
 }
