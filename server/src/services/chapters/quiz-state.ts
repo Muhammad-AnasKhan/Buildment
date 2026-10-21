@@ -1,5 +1,6 @@
 import type { QuizChapterState } from "../../shared/api/blocks.js";
 import { QuizConfigSchema } from "../../shared/blocks/quiz/schema.js";
+import { applyTokens, contentTokenValues, hasContentTokens } from "../../shared/lib/content-tokens.js";
 import { prisma } from "../../db/prisma.js";
 
 /** Initial state for a quiz-mode chapter's wizard: last answers, grades and the score once every question is attempted. */
@@ -27,15 +28,18 @@ export async function loadQuizChapterState(chapterId: string, userId: string): P
     return Array.isArray(payload?.selected) ? payload.selected.filter((item): item is string => typeof item === "string") : [];
   };
 
+  const tokens = quizBlocks.some((block) => hasContentTokens(JSON.stringify(block.config))) ? await learnerTokenValues(chapterId, userId) : null;
+
   const initialBlockGrades: QuizChapterState["initialBlockGrades"] = {};
   for (const block of quizBlocks) {
     const response = latestByBlock.get(block.id);
     if (!response) continue;
     const parsed = QuizConfigSchema.safeParse(block.config);
+    const explanation = parsed.success ? parsed.data.explanation : undefined;
     initialBlockGrades[block.id] = {
       selected: selectedFor(block.id),
       isCorrect: response.isCorrect,
-      explanation: parsed.success ? parsed.data.explanation : undefined,
+      explanation: explanation && tokens ? applyTokens(explanation, tokens) : explanation,
     };
   }
 
@@ -53,4 +57,13 @@ export async function loadQuizChapterState(chapterId: string, userId: string): P
         }
       : null,
   };
+}
+
+/** The learner's placeholder values, looked up only when a quiz actually uses a placeholder. */
+async function learnerTokenValues(chapterId: string, userId: string) {
+  const chapter = await prisma.chapter.findUnique({ where: { id: chapterId }, select: { courseId: true, course: { select: { familySlug: true } } } });
+  const enrollment = chapter?.course.familySlug
+    ? await prisma.enrollment.findUnique({ where: { courseId_userId: { courseId: chapter.courseId, userId } }, select: { variantSlug: true } })
+    : null;
+  return contentTokenValues(chapter?.course.familySlug, enrollment?.variantSlug);
 }
