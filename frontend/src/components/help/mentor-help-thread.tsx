@@ -59,8 +59,8 @@ export function MentorHelpThread({
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_240px]">
       <div className="min-w-0 space-y-6">
         <section>
-          <h2 className="text-sm font-semibold text-neutral-900">{copy.mentorThreadTitle}</h2>
-          <div className="mt-4 rounded-xl border border-neutral-200 bg-white p-5">
+          <h2 className="text-sm font-semibold text-foreground">{copy.mentorThreadTitle}</h2>
+          <div className="mt-4 rounded-xl border border-border bg-card p-5">
             <HelpNoteTimeline messages={messages} viewerId={mentorId} />
           </div>
         </section>
@@ -72,11 +72,11 @@ export function MentorHelpThread({
         )}
 
         {isOpen ? (
-          <section className="rounded-xl border border-neutral-200 bg-white p-5">
-            <label htmlFor="mentor-reply" className="text-sm font-semibold text-neutral-900">
+          <section className="rounded-xl border border-border bg-card p-5">
+            <label htmlFor="mentor-reply" className="text-sm font-semibold text-foreground">
               Write a reply
             </label>
-            <p className="mt-1 text-xs text-neutral-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               {copy.mentorComposerHint}
             </p>
             <Textarea
@@ -84,7 +84,7 @@ export function MentorHelpThread({
               value={body}
               onChange={(event) => setBody(event.target.value)}
               rows={5}
-              className="mt-3 min-h-[120px] border-neutral-200 text-[15px] leading-relaxed"
+              className="mt-3 min-h-[120px] border-border text-[15px] leading-relaxed"
               placeholder="Point them to the step, concept, or file to check…"
               disabled={pending}
             />
@@ -93,7 +93,7 @@ export function MentorHelpThread({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-9 rounded-lg border-neutral-200"
+                className="h-9 rounded-lg border-border"
                 disabled={pending}
                 onClick={markResolved}
               >
@@ -117,23 +117,23 @@ export function MentorHelpThread({
             </div>
           </section>
         ) : (
-          <p className="rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm text-neutral-600">
+          <p className="rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
             {copy.resolvedMentorSide}
           </p>
         )}
       </div>
 
       <aside className="space-y-4 lg:sticky lg:top-8 lg:self-start">
-        <div className="rounded-xl border border-neutral-200 bg-white p-4">
+        <div className="rounded-xl border border-border bg-card p-4">
           <p className="text-xs font-medium uppercase tracking-wide text-neutral-400">Mentee</p>
-          <p className="mt-1 text-sm font-semibold text-neutral-900">{menteeName}</p>
+          <p className="mt-1 text-sm font-semibold text-foreground">{menteeName}</p>
         </div>
-        <div className="rounded-xl border border-dashed border-neutral-200 bg-neutral-50/80 p-4">
-          <div className="flex items-center gap-2 text-sm font-medium text-neutral-700">
+        <div className="rounded-xl border border-dashed border-border bg-neutral-50/80 p-4">
+          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <Phone className="size-4 text-neutral-400" aria-hidden />
             Meet with mentee
           </div>
-          <p className="mt-2 text-xs leading-relaxed text-neutral-500">
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
             Live call and screen share will live here — for now, use written replies above.
           </p>
           <Button
@@ -141,7 +141,7 @@ export function MentorHelpThread({
             variant="outline"
             size="sm"
             disabled
-            className="mt-3 h-9 w-full rounded-lg border-neutral-200 text-neutral-400"
+            className="mt-3 h-9 w-full rounded-lg border-border text-neutral-400"
           >
             Start call (coming soon)
           </Button>

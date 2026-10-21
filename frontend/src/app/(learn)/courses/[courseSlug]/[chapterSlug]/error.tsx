@@ -88,7 +88,7 @@ export default function ChapterReaderError({
           {continueHref && continueHref !== `/courses/${courseSlug}/${chapterSlug}` ? (
             <Link
               href={continueHref}
-              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-neutral-100 px-3 text-sm font-medium text-neutral-900 hover:bg-neutral-200"
+              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-muted px-3 text-sm font-medium text-foreground hover:bg-neutral-200"
             >
               <SkipForward className="size-3.5" aria-hidden />
               Go to next unlocked lesson
@@ -96,7 +96,7 @@ export default function ChapterReaderError({
           ) : courseSlug ? (
             <Link
               href={`/courses/${courseSlug}`}
-              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-neutral-100 px-3 text-sm font-medium text-neutral-900 hover:bg-neutral-200"
+              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-muted px-3 text-sm font-medium text-foreground hover:bg-neutral-200"
             >
               <SkipForward className="size-3.5" aria-hidden />
               Back to course overview
@@ -104,7 +104,7 @@ export default function ChapterReaderError({
           ) : null}
           <Link
             href={askHelpHref}
-            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-amber-300 bg-white px-3 text-sm font-medium text-neutral-900 hover:bg-amber-50"
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-amber-300 bg-card px-3 text-sm font-medium text-foreground hover:bg-amber-50"
           >
             <HandHelping className="size-3.5" aria-hidden />
             Ask mentor

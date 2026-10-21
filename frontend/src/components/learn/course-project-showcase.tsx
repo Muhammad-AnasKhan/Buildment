@@ -80,7 +80,7 @@ export function CourseProjectShowcase({ courseSlug }: { courseSlug: string }) {
       </div>
 
       <div className="grid sm:grid-cols-[minmax(0,1.5fr)_minmax(14rem,0.5fr)]">
-        <div className="relative aspect-[1586/992] overflow-hidden bg-white sm:aspect-auto sm:min-h-[19rem] lg:min-h-[25rem]">
+        <div className="relative aspect-[1586/992] overflow-hidden bg-card sm:aspect-auto sm:min-h-[19rem] lg:min-h-[25rem]">
           <Image
             key={active.src}
             src={active.src}
