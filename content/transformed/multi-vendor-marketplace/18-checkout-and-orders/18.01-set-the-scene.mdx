@@ -18,6 +18,8 @@ Think in states: cart locked → orders created → payment initiated → paymen
 
 Never assume the client saw the Stripe success page. Webhooks in module 19 confirm payment — checkout routes prepare orders; webhooks finalize them.
 
+<LearningObjectives id="01M5EB395MY1JCPGZ0ZG6S9VGN" />
+
 ## Bridge from last chapter
 
 Chapter 17 gave customers a **visible cart** — grouped by store, quantity controls, header badge, add-to-cart from product detail, persistence after refresh. "Proceed to checkout" is still a stub.
@@ -56,7 +58,7 @@ The customer stands at **one checkout counter** with one basket (cart). The cash
 
 The customer walks away with one confirmation ("I ordered"). Each vendor sees **only their receipt** in their dashboard later.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -182,12 +184,6 @@ Estimated time: **two full days** — transaction logic deserves care.
 - [ ] Chapter 17 gate cleared
 - [ ] `docs/erd-draft.md` or `docs/erd.md` shows Order with embedded snapshot lines
 - [ ] You understand cart lines carry `storeId`
-
-<InterestingRead title="Stripe idempotency keys" hook="Networks retry; without idempotency, customers pay twice." readMinutes={5}>
-
-If a checkout request times out, clients and webhooks may retry. Idempotency keys tell Stripe to treat duplicates as the same charge. FreshMarket introduces this pattern where money first enters the system.
-
-</InterestingRead>
 
 ## Next
 

@@ -90,12 +90,6 @@ MongoDB may show an **empty database** in Compass — correct until seed runs.
 
 Phase 1 foundations are **halfway** through persistence — connection wire done; data model next.
 
-<InterestingRead title="The `.env` leak that took down a startup demo" hook="One committed secret becomes everyone's secret." readMinutes={3}>
-
-Teams routinely leak production credentials by committing `.env` files or logging connection strings. FreshMarket teaches config early because every later chapter — Stripe, Cloudinary, Redis — adds another secret that must stay out of Git and client bundles.
-
-</InterestingRead>
-
 ## Next chapter — Data model & seed (Chapter 5)
 
 Chapter 5 implements what Chapter 3 sketched:
@@ -164,4 +158,3 @@ Sparse history is fine if each step is explainable in viva.
 **Do not open Chapter 5 until 4.17 is fully ticked.**
 
 Your skeleton has a memory — Chapter 5 fills it with grocery data.
-<RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />

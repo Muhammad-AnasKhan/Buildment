@@ -5,6 +5,8 @@ import type { SequenceSpec } from "./renderers/sequence/types";
 import type { StateMachineSpec } from "./renderers/state-machine/types";
 import { freshmarketMarkPacked } from "./freshmarket-mark-packed/data";
 import { freshmarketOrderStatus } from "./freshmarket-order-status/data";
+import { freshmarketCartSplit } from "./freshmarket-cart-split/data";
+import { freshmarketStockHolds } from "./freshmarket-stock-holds/data";
 import { weightedMatrixTwoOffers } from "./weighted-matrix-two-offers/data";
 import { ticketlineSeatHoldRace } from "./ticketline-seat-hold-race/data";
 
@@ -27,6 +29,8 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "weighted-matrix-two-offers": weightedMatrixTwoOffers,
   "freshmarket-order-status": freshmarketOrderStatus,
   "freshmarket-mark-packed": freshmarketMarkPacked,
+  "freshmarket-cart-split": freshmarketCartSplit,
+  "freshmarket-stock-holds": freshmarketStockHolds,
   "ticketline-seat-hold-race": ticketlineSeatHoldRace,
 };
 

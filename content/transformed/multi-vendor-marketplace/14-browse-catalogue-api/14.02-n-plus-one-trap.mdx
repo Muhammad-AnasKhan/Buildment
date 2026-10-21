@@ -12,12 +12,15 @@ This sub-chapter explains **N+1** in the context of `GET /products` with store n
 
 ## In plain English
 
-| Term | Simple meaning |
-|---|---|
-| **Query** | One trip from your server to MongoDB to fetch data |
-| **N+1** | 1 query for the list + **1 extra query per row** — the "+1" repeats N times |
-| **Round trip** | Server asks MongoDB → waits → gets answer. Many round trips = slow page |
-| **Populate** | Mongoose shortcut to fetch related docs (store names) without a manual loop |
+A **query** is one request from the API to MongoDB. The N+1 problem starts with one product-list query, then adds one store query for every product. With 20 products, that is 21 database trips. Mongoose `populate` can fetch the related stores in a bounded number of queries instead of one query per row.
+
+<MermaidDiagram title="Why one store lookup per product gets slow" chart={`flowchart LR
+  Page[20 product cards] --> List[1 product query]
+  List --> Loop[20 separate store lookups]
+  List --> Populate[Populate store names in a bounded batch]
+  Loop --> Slow[21 database trips]
+  Populate --> Fast[About 2 database trips]
+`} legend="The list query is shared; a lookup inside a loop adds one database trip per product." />
 
 **Beginner intuition:** If your shop page shows 20 products and each product triggers its own "what store is this?" question to the database, you asked **21 questions** when **2** would do.
 
@@ -34,10 +37,7 @@ for (const p of products) {
 return products
 ```
 
-| Products returned | Queries |
-|---|---|
-| 20 | 1 + 20 = **21** |
-| 100 | **101** |
+For 20 products, the loop makes 21 queries. For 100, it makes 101. A bounded populate or aggregation avoids this growth; measure the query count in the build step rather than assuming a helper is efficient.
 
 Customer shop loads page 1 with limit 20 → **21 round trips** to MongoDB per request. Multiply by concurrent users.
 
@@ -78,8 +78,6 @@ Product.find(filter)
 Mongoose issues **at most 2 queries** for populate on homogeneous refs (products + stores batch) — not N+1.
 
 **Alternative:** `$lookup` in aggregation pipeline — one query total. Harder to read; valid for gate if query count is 1.
-
-<RealWorldEvent title="Amazon search index separate from catalog DB" when="2000s–present" summary="Large marketplaces eventually split transactional catalog storage from search-optimized indexes — your module 21 preview." lesson="Build a correct catalogue API first; optimize with cache and search once the happy path works." />
 
 ## How you will verify (14.14)
 

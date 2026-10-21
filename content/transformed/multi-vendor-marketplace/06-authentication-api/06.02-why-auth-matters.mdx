@@ -10,7 +10,7 @@ Authentication failures make headlines. For a marketplace handling vendor invent
 
 This sub-chapter motivates bcrypt, JWT discipline, and verification gates — not to scare, but to make lazy shortcuts feel unacceptable.
 
-## Why this matters for absolute beginners
+## Why this matters
 
 Auth is where beginners most often cut corners — plain text passwords in tutorials, tokens in localStorage, skipping email verification "for now." Each shortcut becomes a **real vulnerability** at scale. You are building habits: hash passwords, never log secrets, verify before trusting. Chapter 8 assumes every request can carry a trusted user id — that assumption starts here.
 
@@ -18,7 +18,7 @@ Auth is where beginners most often cut corners — plain text passwords in tutor
 
 **Bank account opening vs walking into a shop.** Anyone can browse produce (public catalogue later). To run a stall or place orders tied to your name, you prove identity — ID check (register + verify), secret PIN (password), daily wristband (JWT). No wristband, no access to someone else's cart.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -42,8 +42,6 @@ No — think of them as two separate doors. Authentication (Chapter 6) checks yo
 
 </FaqGroup>
 
-
-<RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
 
 ## The LinkedIn lesson (pattern, not year-specific)
 

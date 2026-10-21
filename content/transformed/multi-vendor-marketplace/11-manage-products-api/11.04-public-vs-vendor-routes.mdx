@@ -37,6 +37,17 @@ Express gives you two ways to organize the same code, and the choice is about fu
 
 Every vendor route runs the full security stack from Chapter 8 — the middleware does not care whether the resource is a store or a product, which is exactly why it is reusable. Notice that `GET /vendor/products` and the write routes carry the same auth layers; the only new check is ownership on routes that touch a specific product id.
 
+<MermaidDiagram title="Product requests take two different paths" chart={`flowchart LR
+  Public[Public GET products] --> Published[Filter published products]
+  Published --> Products[(Product collection)]
+  Vendor[Vendor request] --> Auth[Check token and role]
+  Auth --> Store[Load Store by userId]
+  Store --> Owned[Scope Product by storeId]
+  Owned --> Products
+`} legend="Public reads see published listings. Vendor reads and writes use the signed-in vendor's Store to scope products." />
+
+The two paths may share one router file, but they must not share an unscoped query. For a vendor write, load the product's Store and compare `Store.userId` with the signed-in user's id before changing anything.
+
 | Route | Middleware |
 |---|---|
 | POST /products | requireAuth → requireRole('vendor') → validate → handler |
@@ -48,12 +59,12 @@ Customer calling vendor routes → **403**.
 
 ## Ownership check strategies
 
-A product is owned *through* its store. There are two ways to check that chain, and the difference is where the `vendorId` lives — on the store document (the ERD's single source of truth) or copied onto the product. Duplicating it is faster but invites drift; the store chain keeps one source of truth.
+A product is owned *through* its store. There are two ways to check that chain, and the difference is where the `userId` lives — on the store document (the ERD's single source of truth) or copied onto the product. Duplicating it is faster but invites drift; the store chain keeps one source of truth.
 
 | Strategy | How |
 |---|---|
-| **Store chain** | Load product → compare `product.storeId` → store.vendorId === userId |
-| **Denormalized vendorId** | If product has vendorId field — compare directly |
+| **Store chain** | Load product → compare `product.storeId` → `store.userId === req.user.id` |
+| **Denormalized userId** | If product has userId field — compare directly |
 
 Prefer **store chain** — matches ERD; one source of truth.
 
@@ -66,7 +77,7 @@ A naive POST /products lets the client dictate *whose* store the product belongs
 | Field | Rule |
 |---|---|
 | `storeId` | Strip from POST/PATCH body — set on create from vendor's store |
-| `vendorId` | Never on product — reject if sent |
+| `userId` | Never on product — reject if sent |
 | `price` | Vendor can set — validate positive number |
 
 ## Response shapes
@@ -110,8 +121,6 @@ These four rows are the chapter's contract — the same shape as Chapter 8, now 
 - [ ] I can explain why `/vendor/products` and `/products` are separate route prefixes
 - [ ] I can say where the vendor scope comes from (JWT, not the request body)
 - [ ] I know why `/vendor/products` must mount before a `/products/:id` pattern
-
-<RealWorldEvent title="DoorDash menu sync failures" when="2020s" summary="Delivery platforms struggled when restaurant menus changed faster than sync pipelines, showing unavailable items to hungry customers." lesson="Product APIs should reflect live stock and publish state — stale catalogue data directly loses sales." />
 
 ## Next
 

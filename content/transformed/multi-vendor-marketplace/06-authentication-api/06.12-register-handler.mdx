@@ -53,7 +53,7 @@ summary: "**Why this step matters:** Register is the front door — it creates U
 2. `User.findOne({ email })` — if exists throw 409  
 3. `passwordHash = await bcrypt.hash(password, 10)`  
 4. Create User: email, passwordHash, role, isVerified: false  
-5. Create Profile: userId, displayName  
+5. Create Profile: userId, displayName
 6. Generate 6-digit OTP + expiry (e.g. 10 minutes) — store on User  
 7. Log OTP in dev  
 8. Return userId (no passwordHash)
@@ -110,8 +110,6 @@ git commit -m "feat(auth): implement register with bcrypt and OTP generation"
 - [ ] Invalid role 400
 - [ ] OTP logged or returned in dev
 - [ ] isVerified false after register
-
-<RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
 
 ## Next
 

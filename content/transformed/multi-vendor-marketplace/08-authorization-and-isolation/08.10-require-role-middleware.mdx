@@ -48,7 +48,7 @@ sequenceDiagram
   Note over Client,Handler: Vendor A token on own store — full chain
   Client->>Auth: PATCH /stores/STORE_A + Bearer vendor A
   Auth->>Role: req.user role vendor
-  Role->>Owner: check store.vendorId
+  Role->>Owner: check store.userId
   Owner->>Handler: owner match
   Handler-->>Client: 200 updated store
 ```
@@ -203,8 +203,6 @@ git commit -m "feat(auth): add requireRole middleware"
 - [ ] Customer role fails requireRole('vendor') with 403
 - [ ] Missing req.user returns 401
 - [ ] Documented in AUTHORIZATION.md
-
-<RealWorldEvent title="Facebook Graph API permission scandals" when="2010s" summary="Platforms exposed user data when apps could request broader permissions than users understood — driving industry focus on least-privilege access." lesson="Centralize authorization in middleware and guards. Ad-hoc checks in individual routes drift and get missed during code review." />
 
 ## Next
 

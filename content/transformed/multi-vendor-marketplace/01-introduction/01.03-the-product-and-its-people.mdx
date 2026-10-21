@@ -40,30 +40,22 @@ Admin panels are **out of scope**. The course focuses on vendor isolation and cu
 
 ### Flow 1 — Vendor onboarding
 
-```mermaid
-flowchart TD
-  A[Register as vendor] --> B[Verify email OTP]
-  B --> C[Log in]
-  C --> D{Store exists?}
-  D -->|No| E[Open your shop]
-  D -->|Yes| F[Manage products]
-  E --> F
-  F --> G[Publish listings]
-  G --> H[Receive orders]
-```
+A vendor registers, verifies their email, opens one shop, and publishes products. Once customers pay, that vendor sees only the orders for their own store.
 
 ### Flow 2 — Customer purchase
 
-```mermaid
-flowchart TD
-  A[Register as customer] --> B[Log in]
-  B --> C[Browse catalogue]
-  C --> D[Add items from multiple stores]
-  D --> E[Review cart grouped by store]
-  E --> F[Checkout once]
-  F --> G[Platform splits into per-vendor orders]
-  G --> H[Customer history + vendor dashboards]
-```
+The customer follows one visible checkout path. The split happens behind that path, so the shopper has one basket and payment attempt while each shop gets its own order.
+
+<MermaidDiagram title="One checkout, separate store orders" chart={`flowchart LR
+  Shopper[Customer] --> Cart[One cart with items from Store A and Store B]
+  Cart --> Checkout[One checkout attempt]
+  Checkout --> A[Order for Store A]
+  Checkout --> B[Order for Store B]
+  A --> History[Customer order history]
+  B --> History
+`} legend="The platform splits the checked cart by store. The customer sees both orders together; each vendor manages only their own order." />
+
+The two outgoing arrows from checkout are the key marketplace rule. The server, not the browser, decides which store owns each order.
 
 ### Flow 3 — Price change after purchase
 
@@ -91,15 +83,7 @@ The permission split below is the seed of everything you'll build — who can do
 
 ## The ownership chain — preview
 
-```mermaid
-flowchart TD
-  V[User vendor] --> S[Store]
-  S --> P[Product]
-  P --> C[CartItem]
-  P --> O[OrderItem snapshot at checkout]
-  CU[User customer] --> C
-  CU --> OR[Order per vendor]
-```
+A vendor owns one Store, and a Product belongs to that Store. A customer owns a cart and orders. Chapter 5 draws and tests the full ownership model before you build the protected routes.
 
 ## Grocery-specific product shape — preview
 
@@ -122,8 +106,6 @@ Not a delivery tracker, review site, chat app, or admin SaaS. Those exclusions k
 **Minute one — vendor:** Log in → create product with photo → see it in the table.
 
 **Minute two — customer:** Browse → add from two vendors → checkout → two orders → change vendor price → customer history unchanged.
-
-<RealWorldEvent title="Instacart scales local grocery delivery" when="2012–present" summary="Instacart connected independent grocery stores to shoppers through a single app, handling inventory sync, delivery logistics, and multi-store baskets at national scale." lesson="Your FreshMarket build starts smaller, but the same pattern applies: one customer experience, many vendor backends, and careful data ownership." />
 
 ## Key ideas from this page
 

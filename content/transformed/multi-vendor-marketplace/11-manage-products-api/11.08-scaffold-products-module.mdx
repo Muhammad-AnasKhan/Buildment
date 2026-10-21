@@ -53,10 +53,10 @@ Document exact paths in README.
 
 | Function | Purpose |
 |---|---|
-| `createProduct(vendorId, data)` | Resolve store; insert |
-| `listVendorProducts(vendorId)` | By storeId |
-| `updateProduct(productId, vendorId, data)` | Ownership + patch |
-| `deleteProduct(productId, vendorId)` | Ownership + remove |
+| `createProduct(userId, data)` | Resolve store; insert |
+| `listVendorProducts(userId)` | By storeId |
+| `updateProduct(productId, userId, data)` | Ownership + patch |
+| `deleteProduct(productId, userId)` | Ownership + remove |
 
 ## Schema exports
 
@@ -71,7 +71,7 @@ Include grocery fields validation rules — positive price, non-negative stock, 
 
 Add to `shared/ownership.js`:
 
-- `assertProductOwner(productId, vendorId)`  
+- `assertProductOwner(productId, userId)`
 
 Or inline store-chain check in service — prefer shared helper.
 
@@ -94,8 +94,6 @@ git commit -m "feat(products): scaffold products module routes service validatio
 
 - [ ] Server starts  
 - [ ] POST with vendor token not 404 route missing  
-
-<RealWorldEvent title="DoorDash menu sync failures" when="2020s" summary="Delivery platforms struggled when restaurant menus changed faster than sync pipelines, showing unavailable items to hungry customers." lesson="Product APIs should reflect live stock and publish state — stale catalogue data directly loses sales." />
 
 ## Next
 

@@ -12,13 +12,14 @@ A single field `stockQty: 4` on a MongoDB product document feels like inventory 
 
 Imagine two tabs, one customer, or two customers one second apart:
 
-```
-Tab A reads stockQty = 1
-Tab B reads stockQty = 1
-Tab A checkout succeeds → order created
-Tab B checkout succeeds → order created
-Both paid → you owe two units, shelf has one
-```
+<MermaidDiagram title="Two checkouts read the same last unit" chart={`flowchart LR
+  Shelf[Stock is 1] --> ReadA[Tab A reads 1]
+  Shelf --> ReadB[Tab B reads 1]
+  ReadA --> OrderA[Tab A creates an order]
+  ReadB --> OrderB[Tab B creates an order]
+  OrderA --> Oversold[Two orders for one unit]
+  OrderB --> Oversold
+`} legend="The two reads happen before either write. Without one atomic guard, both checkouts can claim the last unit." />
 
 No bug in Stripe caused this. **Read-modify-write without a guard** did.
 

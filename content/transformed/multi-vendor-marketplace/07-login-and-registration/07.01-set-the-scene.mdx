@@ -12,6 +12,8 @@ summary: "**Where the project is now:** Chapter 6 complete — auth API works vi
 
 Backend/frontend pair to Chapter 6 — same API contracts, no new server endpoints required unless cookie refresh added.
 
+<LearningObjectives id="01M5EB36XXWKYRZ8W0348H1M55" />
+
 ## Bridge from last chapter
 
 Chapter 6 proved authentication **works on the server** — register, verify OTP, login, refresh, and `GET /api/auth/me` with Bearer token all pass curl tests. User documents in MongoDB have real bcrypt hashes. Yet your React app still only shows the health check; humans cannot register or sign in through the browser.
@@ -59,7 +61,7 @@ Finish **Chapter 6.20 checklist** first. Chapter 7 on a broken auth API means de
 
 <MustRead id="01M5CM5JDX76X6FS26CJD8Y19R" />
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -145,12 +147,6 @@ Estimated: **1–2 days**
 - [ ] CORS allows Vite origin on server
 - [ ] Test credentials documented in README
 - [ ] You can name which Chapter 6 endpoint each page will call (register, verify, login, refresh)
-
-<InterestingRead title="Why login forms fail in weird ways" hook="The API works in curl but not in the browser." readMinutes={4}>
-
-CORS, missing Authorization headers, and tokens stored where JavaScript cannot read them cause most beginner auth bugs. FreshMarket's verify step proves the full browser path — form submit, token storage, protected fetch — not just isolated API tests.
-
-</InterestingRead>
 
 ## Next
 

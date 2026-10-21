@@ -45,7 +45,7 @@ server/src/modules/cart/
 
 Verify documents collection name and fields:
 
-- userId, productId, storeId, quantity  
+- userId, productId, storeId, quantity
 - Timestamps optional  
 
 No cart routes yet — collection may be empty.
@@ -88,8 +88,6 @@ Chapter 17 wires UI. Optional: leave add-to-cart stub untouched until API tested
 - [ ] Customer login returns JWT  
 - [ ] CartItem schema has storeId  
 - [ ] Two products from different stores available
-
-<RealWorldEvent title="Target cart persistence across channels" when="2010s–present" summary="Retailers invested in unified carts so web, app, and in-store pickup saw the same basket — reducing abandoned purchases." lesson="Treat cart mutations as concurrent — two tabs updating quantity should not corrupt totals." />
 
 ## Next
 

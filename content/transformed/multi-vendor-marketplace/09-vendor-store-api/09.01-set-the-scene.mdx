@@ -12,6 +12,8 @@ summary: "**Where the project is now:** Chapters 6–8 gave you identity and iso
 
 This is a **build chapter**. Every sub-chapter from 9.7 onward adds routes and service logic to your repo. The gate is **runnable proof**: a vendor can create a store, fetch it, update it, and a second vendor cannot PATCH the first vendor's store.
 
+<LearningObjectives id="01M5EB37D5P95202YDGT8VRKZA" />
+
 ## Bridge from last chapter
 
 Chapter 8 installed **server-side permission rules** — `requireRole('vendor')`, `assertStoreOwner`, and a stub `PATCH /stores/:id` that returns **403** when Vendor B attacks Vendor A's store. You proved isolation with curl; you committed `docs/AUTHORIZATION.md`. But a new vendor still has **no store document** — only a user row with `role: vendor`. Chapter 9 is the first **vendor feature** that uses those guards for real: create shop, fetch mine, update mine. Authorization before features — not the other way around.
@@ -26,7 +28,7 @@ Chapter 8 installed **server-side permission rules** — `requireRole('vendor')`
 | **One store per vendor** | Each seller gets exactly one shop; duplicates rejected at create |
 | **`POST /stores`** | API call that opens a new shop (once per vendor) |
 | **`GET /stores/me`** | Fetch **my** shop without guessing MongoDB ids |
-| **`vendorId`** | Field linking a store document to the User who owns it |
+| **`userId`** | Field linking a store document to the User who owns it |
 | **Service layer** | Business logic separate from HTTP routes — finds store by vendor |
 | **404 on GET /stores/me** | No shop yet — Chapter 10 turns this into an onboarding redirect |
 
@@ -34,7 +36,7 @@ Chapter 8 installed **server-side permission rules** — `requireRole('vendor')`
 
 Chapter 8 made sure vendors cannot rearrange each other's stalls. Chapter 9 hands out the **license to open a stall** — one license per vendor, registered with the market office (your API). Until that license exists, the vendor is authenticated but not yet a seller. Customers will browse stalls in Week 3; vendors cannot stock shelves without a stall name on the map.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -52,7 +54,7 @@ Not in this course. One vendor, one store — that's the marketplace's trust mod
 
 <FaqItem question={"Why `GET /stores/me` instead of `GET /stores/:id`?"}>
 
-Because "me" removes the need to know your own MongoDB `_id`. A vendor shouldn't have to open Compass, copy a 24-character id, and paste it into a URL — they should just ask for their own store. The route resolves the store from the authenticated user in the JWT (`req.user.id`), finds it by `vendorId`, and returns it. It's also safer by construction: with `:id`, a naive route risks IDOR (guess an id, read someone else's store), while "me" is scoped to the caller, so there's nothing to guess.
+Because "me" removes the need to know your own MongoDB `_id`. A vendor shouldn't have to open Compass, copy a 24-character id, and paste it into a URL — they should just ask for their own store. The route resolves the store from the authenticated user in the JWT (`req.user.id`), finds it by `userId`, and returns it. It's also safer by construction: with `:id`, a naive route risks IDOR (guess an id, read someone else's store), while "me" is scoped to the caller, so there's nothing to guess.
 
 </FaqItem>
 
@@ -100,7 +102,7 @@ Chapter 9 assumes:
 
 - **`docs/AUTHORIZATION.md`** committed from Chapter 8
 - **`requireRole`** and **`assertStoreOwner`** exist in `shared/` or `auth/`
-- **Store model** exists from Chapter 5 with `vendorId` (or equivalent owner ref)
+- **Store model** exists from Chapter 5 with `userId` as its owner ref
 - You tested **Vendor B → 403 on Vendor A's store** with a stub route
 
 If Chapter 8 gate is incomplete, finish the IDOR test first — store routes inherit the same checks.
@@ -177,12 +179,6 @@ Estimated time: **one full day** — less conceptual than Chapter 8, more API wi
 - [ ] Chapter 5 Store model exists with vendor ownership field  
 - [ ] Two test vendor accounts available (seed or register fresh)  
 - [ ] `curl` or HTTP client ready with Bearer token workflow from Chapter 6  
-
-<InterestingRead title="Slug collisions in multi-vendor marketplaces" hook="Two shops cannot both be `/store/fresh-produce`." readMinutes={3}>
-
-Human-readable URLs help SEO and sharing, but slugs must be unique per platform. FreshMarket generates or validates slugs on create so vendors get friendly links without breaking routing.
-
-</InterestingRead>
 
 ## Next
 

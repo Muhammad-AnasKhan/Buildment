@@ -18,6 +18,8 @@ A User becomes a vendor by opening a store. Products belong to exactly one store
 
 Draw this chain before you write handlers. Authorization bugs — a vendor editing another vendor's tomatoes — almost always trace back to a missing link in this chain.
 
+<LearningObjectives id="01M5EB3618322GDMQVY5JHXGH1" />
+
 ## Bridge from last chapter
 
 Chapter 4 connected MongoDB — `shared/config.js`, `shared/db.js`, boot order correct, `GET /health` reporting `db: connected`. Your database is **reachable but empty** (or nearly so). Chapter 3's ERD describes vendors, stores, products, carts, and orders; Chapter 2's module folders wait for files.
@@ -45,7 +47,7 @@ The hat you wear now is **domain modeller**. You translate paper design into sch
 
 **Stocking the market stalls with real labels and inventory sheets.** The hall has power (Chapter 4) and a floor plan (Chapter 3). Now each vendor gets a named stall (Store), product tags with units and perishability (Product), empty shopping baskets waiting for customers (CartItem schema), and receipt books that freeze prices at sale time (embedded orderItems). Seed data is sample merchandise so you can walk the aisles in Compass before customers arrive.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -175,12 +177,6 @@ Estimated time: **1–2 days** — more files than Chapter 4, but each model is 
 - [ ] `docs/erd-draft.md` open beside you
 - [ ] Compass connected to same URI as `server/.env`
 - [ ] Module folders exist under `server/src/modules/`
-
-<InterestingRead title="Why orders store prices, not live product lookups" hook="A receipt is a photograph, not a live feed." readMinutes={4}>
-
-If an order stored only a product ID, a vendor price change would rewrite history. FreshMarket copies name, unit price, and weight into order items at checkout so customers and vendors always see what was agreed at purchase time.
-
-</InterestingRead>
 
 ## Next
 

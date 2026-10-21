@@ -63,7 +63,7 @@ Authorization: Bearer <vendor-token>
 Body: { name, description?, address, logoUrl? }
 ```
 
-**Never send:** `vendorId`, `_id` — server sets owner from JWT.
+**Never send:** `userId`, `_id` — server sets owner from JWT.
 
 ---
 
@@ -111,7 +111,7 @@ Also test: customer role cannot access this page.
 |---|---|---|
 | Form clears on 400 | User re-types everything | Keep state on error |
 | No refetch after 201 | Redirect loop | getMyStore before navigate |
-| Send vendorId in body | Security smell | JWT only |
+| Send userId in body | Security smell | JWT only |
 | Double submit | 409 conflict | Disable button while loading |
 
 ---
@@ -129,8 +129,6 @@ git commit -m "feat(client): add open shop form with POST stores"
 - [ ] Store visible in Compass with correct owner
 - [ ] Empty name blocked (client + server)
 - [ ] Customer cannot reach form
-
-<RealWorldEvent title="Stripe Connect seller onboarding" when="2010s–present" summary="Payment platforms built multi-step seller verification flows because compliance and payout details cannot be optional after money moves." lesson="Collect required vendor data before they reach the dashboard — fixing incomplete profiles later is expensive support work." />
 
 ## Next
 

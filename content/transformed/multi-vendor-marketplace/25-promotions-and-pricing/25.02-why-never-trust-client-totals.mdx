@@ -45,16 +45,27 @@ Server → reload and recompute → reserve stock → create PI for server amoun
 Webhook → confirm payment + write one idempotent redemption
 ```
 
+<MermaidDiagram title="The server owns the charge amount" chart={`flowchart LR
+  Browser[Browser sends coupon code] --> API[Pricing API]
+  API --> Cart[(Saved cart)]
+  API --> Product[(Current product prices)]
+  API --> Coupon[(Coupon rules)]
+  Cart --> Total[Server total in cents]
+  Product --> Total
+  Coupon --> Total
+  Total --> Stripe[Stripe Payment Intent]
+  Total --> Preview[Price shown in browser]
+`} legend="The browser supplies a coupon code as input. The server computes both the preview and the amount sent to Stripe." />
+
+If the price changes between preview and checkout, recompute and ask the customer to review the new total before creating a Payment Intent.
+
 Recompute **again** at checkout start because applying a coupon is a preview, not a promise. Prices can change, eligibility can disappear, a global redemption cap can be reached, or the coupon can expire between apply and pay. If the saved code is no longer valid, stop before Stripe and ask the customer to review the refreshed cart.
 
 ## Multi-vendor twist
 
 One checkout may split into **one order per vendor** (Chapter 18). A platform coupon might fund $10 across all stores; a store coupon applies only to lines from its `storeId`. Your engine must allocate discount cents to eligible lines before it groups those lines into orders. Otherwise, two separately rounded order discounts may not add up to the PaymentIntent amount.
 
-| Coupon scope | Applies to |
-|---|---|
-| `platform` | Eligible lines marketplace-wide |
-| `store` | Lines where `line.storeId === coupon.storeId` |
+A `platform` coupon can cover eligible lines from every store. A `store` coupon covers only lines whose `storeId` matches the coupon's store. The server makes that decision before it splits the checkout into vendor orders.
 
 A redemption belongs to the overall `checkoutId`, not to each vendor order. The vendor orders keep their own discount snapshots, while one checkout-level redemption consumes the coupon once.
 

@@ -71,7 +71,7 @@ Chapter 11 **sets** publish field via create/PATCH; Chapter 12 toggles in UI; Ch
 | Vendor-scoped list | `GET /vendor/products` | Obvious auth + scope in AUTHORIZATION.md |
 | Public list | `GET /products` | Clean customer API |
 
-**❌ Don't:** Use `GET /products?vendorId=me` — client tampering risk. Vendor list derives scope from JWT.
+**❌ Don't:** Use `GET /products?userId=me` — client tampering risk. Vendor list derives scope from JWT.
 
 ## Grocery fields reminder
 
@@ -100,8 +100,6 @@ Vendor API returns all — public catalogue may shape response in Ch 14.
 - [ ] I can describe the two different views of the same products collection
 - [ ] I can say why the vendor list derives scope from the JWT, not a query param
 - [ ] I can explain why `isPublished` exists before the public view is built
-
-<RealWorldEvent title="DoorDash menu sync failures" when="2020s" summary="Delivery platforms struggled when restaurant menus changed faster than sync pipelines, showing unavailable items to hungry customers." lesson="Product APIs should reflect live stock and publish state — stale catalogue data directly loses sales." />
 
 ## Next
 

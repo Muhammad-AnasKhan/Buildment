@@ -7,6 +7,8 @@ export const CANVAS_SLUGS = [
   "weighted-matrix-two-offers",
   "freshmarket-order-status",
   "freshmarket-mark-packed",
+  "freshmarket-cart-split",
+  "freshmarket-stock-holds",
   "ticketline-seat-hold-race",
 ] as const;
 

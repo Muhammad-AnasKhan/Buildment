@@ -24,6 +24,10 @@ summary: "**Why this step matters:** One shared badge component keeps status lab
 
 Use customer-facing labels such as “Order received,” “Packed,” and “Dispatched” while keeping the raw enum in code. Map an unknown value to “Status unavailable” and log it; showing an arbitrary server string can expose internal vocabulary and hide a schema mismatch.
 
+Before you write the badge, walk through the allowed moves. Try skipping from `pending` to `dispatched`, then try a stale second tab. The badge must show the state the server actually saved, even when a request is refused.
+
+<InteractiveCanvas slug="freshmarket-order-status" />
+
 This component displays **fulfilment** status only. If payment state appears on an internal vendor view, render it separately as `paymentStatus`; `paid` is not a step between `pending` and `packed`.
 
 ## Schema alignment

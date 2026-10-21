@@ -10,9 +10,7 @@ Before you write `shared/queue.js` and `worker.js`, read how **BullMQ** expects 
 
 Chapter 21 taught cache-aside. This read covers **producer/consumer job flow** — so your checkout enqueue in 22.11 matches official patterns.
 
-
 <Predict id="01M5CM5KAS0M6JMYKZBNS4GDWC" />
-
 
 ## Mandatory read
 
@@ -89,8 +87,6 @@ If you can't answer #1, re-read Quick Start "Producers" and "Consumers".
 Production runs **two processes** from one repo: API + worker. PM2 ecosystem file or platform second service — preview only; implement in deploy chapter.
 
 Worker needs same env: `REDIS_URL`, `MONGODB_URI` (if processor loads User/Order), `NODE_ENV`.
-
-<RealWorldEvent title="Shopify flash sale queue architecture" when="2010s–present" summary="Commerce platforms moved heavy work to background jobs during traffic spikes so checkout stayed available." lesson="Design jobs to be idempotent — retries will happen, and duplicate emails beat lost orders." />
 
 ## Time box
 

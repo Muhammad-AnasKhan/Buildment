@@ -2,15 +2,17 @@
 title: "Set the scene"
 module: 11
 lesson: 1
-summary: "**Where the project is now:** Vendors have shops — API and UI from Chapters 9–10. A store document exists with `vendorId`. The Product model from Chapter 5 waits in `modules/products/` with grocery fields, but there is no **vendor product API** — no way to stock the shelves progr"
+summary: "**Where the project is now:** Vendors have shops — API and UI from Chapters 9–10. A store document exists with `userId`. The Product model from Chapter 5 waits in `modules/products/` with grocery fields, but there is no **vendor product API** — no way to stock the shelves progr"
 ---
-**Where the project is now:** Vendors have shops — API and UI from Chapters 9–10. A store document exists with `vendorId`. The Product model from Chapter 5 waits in `modules/products/` with grocery fields, but there is no **vendor product API** — no way to stock the shelves programmatically.
+**Where the project is now:** Vendors have shops — API and UI from Chapters 9–10. A store document exists with `userId`. The Product model from Chapter 5 waits in `modules/products/` with grocery fields, but there is no **vendor product API** — no way to stock the shelves programmatically.
 
 <BigWordAlert term="Product inventory API" plainEnglish="Server routes for vendors to create, list, update, and delete their catalogue items." whyItMatters="FreshMarket's marketplace is empty without product APIs — browse and cart depend on this layer." />
 
 **Where this chapter goes:** Vendors **CRUD their own products** through protected routes — create, list mine, update, delete — with **store ownership** enforced and **cross-vendor PATCH → 403**.
 
 This is a **build chapter**. Sub-chapters 11.7 onward add routes and service logic. The gate is curl-proof vendor product lifecycle plus isolation test.
+
+<LearningObjectives id="01M5EB37S4P8G89R2XX0AARYWS" />
 
 ## Bridge from last chapter
 
@@ -34,7 +36,7 @@ Chapters 9–10 gave vendors a **shop** — API and browser forms, with an onboa
 
 The vendor signed the lease (Ch 10) and has an empty stall with a nameplate. Chapter 11 is **filling the shelves via the stockroom door** — API only, no shop window yet. Each crate (product) is tagged with which stall it belongs to. Another vendor cannot relabel your crates because the warehouse checks the ownership chain on every move.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -155,12 +157,6 @@ Estimated time: **1–1.5 days** — similar scope to Chapter 9 plus delete verb
 - [ ] Ch 10 gate cleared — vendor has store in UI  
 - [ ] Product model reviewed — `storeId`, grocery fields, `isPublished` or status  
 - [ ] Two vendor accounts with stores for 403 test  
-
-<InterestingRead title="Grocery SKUs vs marketplace listings" hook="The same barcode can mean different things to different shops." readMinutes={4}>
-
-Central warehouses use global SKUs; local vendors may sell loose produce by weight with no barcode at all. FreshMarket models unit, weight, and stock per store so APIs stay honest about what is actually for sale.
-
-</InterestingRead>
 
 ## Next
 

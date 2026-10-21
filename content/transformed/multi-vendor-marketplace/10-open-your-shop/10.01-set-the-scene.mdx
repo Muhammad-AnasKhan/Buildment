@@ -12,6 +12,8 @@ summary: "**Where the project is now:** Chapter 9 gave vendors a **store API** �
 
 This is a **build chapter**. Every sub-chapter from 10.5 onward adds client routes and pages. The gate is **runnable proof**: new vendor registers → forced to open shop → can edit settings → cannot reach product routes until store exists.
 
+<LearningObjectives id="01M5EB37KR8HED6W37HEJMVSFY" />
+
 ## Bridge from last chapter
 
 Chapter 9 gave vendors a **store API** — `POST /stores`, `GET /stores/me`, `PATCH /stores/:id` — all proven with curl and protected by Chapter 8 middleware. A developer can open a shop; a **human vendor** still sees the same generic React app as everyone else. Chapter 7 taught the login UI pattern; Chapter 10 applies it to **vendor onboarding**: forms, settings, and a redirect gate that sends storeless vendors to "Open your shop" before they reach inventory routes.
@@ -33,7 +35,7 @@ Chapter 9 gave vendors a **store API** — `POST /stores`, `GET /stores/me`, `PA
 
 Chapter 9 built the **registry office** where stall applications are filed. Chapter 10 is the **counter where the vendor actually signs** — a form in the browser, not a curl command. If they try to walk into the stockroom (`/vendor/products`) before signing, security sends them back to the lease desk. Same API underneath; humans get screens.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -155,12 +157,6 @@ Estimated time: **one full day** — mostly React routing and forms.
 - [ ] You know your 404 contract for `GET /stores/me`  
 
 <MustRead id="01M5CM5JKY4DK7BJFF83G1ESDA" />
-
-<InterestingRead title="Empty states that convert" hook="A blank dashboard is where vendors quit." readMinutes={4}>
-
-Good onboarding explains the next single step — name your shop, add hours, upload a logo — instead of dropping users into a grid of zeros. FreshMarket's open-your-shop flow is the product moment where supply enters the marketplace.
-
-</InterestingRead>
 
 ## Next
 

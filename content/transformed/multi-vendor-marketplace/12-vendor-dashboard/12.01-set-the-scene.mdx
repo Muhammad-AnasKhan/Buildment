@@ -18,6 +18,8 @@ That is half of a marketplace. Supply exists. What is missing is demand — publ
 
 Before jumping to customer features, demo the vendor flow end to end. If authorization leaks or product ownership is wrong, fixing it now prevents catastrophic bugs when money is involved.
 
+<LearningObjectives id="01M5EB37ZR07BH87WHB790MJCN" />
+
 ## Bridge from last chapter
 
 Chapter 11 gave vendors a **product API** — create, list mine, update, delete, publish flag — curl-tested with cross-vendor 403 proof. Developers can stock shelves; **Maya the vendor** still has no product table or forms in the browser. Chapter 10 taught the vendor shell and store gate; Chapter 12 completes the **back office**: list inventory, add a product, edit price, flip publish — all wired to Chapter 11 endpoints.
@@ -39,7 +41,7 @@ Chapter 11 gave vendors a **product API** — create, list mine, update, delete,
 
 Chapter 11 built the **warehouse computer system** for inventory. Chapter 12 puts a **clipboard on the stall wall** — a table the vendor actually reads, forms they actually fill in. curl was the developer's tool; React is the vendor's tool. Same data, human interface.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -152,12 +154,6 @@ Estimated time: **1–1.5 days**.
 - [ ] Ch 11 gate — product API + 403 tests pass  
 - [ ] Ch 10 gate — vendor layout + store gate work  
 - [ ] Know JSON shape from GET /vendor/products  
-
-<InterestingRead title="Tables that scale for small vendors" hook="Most FreshMarket shops have dozens of products, not millions." readMinutes={3}>
-
-Enterprise data grids with virtual scrolling are overkill early on. A clear paginated table with search and status badges matches real vendor needs and keeps your first dashboard shippable.
-
-</InterestingRead>
 
 ## Next
 
