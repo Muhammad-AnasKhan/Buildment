@@ -1,5 +1,6 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import { env } from "../../config/env.js";
+import { env, isProduction } from "../../config/env.js";
+import { logger } from "../../utils/logger.js";
 
 // Mentors view snapshots through links that expire after a few minutes. The link
 // is the credential, so it is signed with a server secret and checked before any
@@ -7,9 +8,18 @@ import { env } from "../../config/env.js";
 
 export const SNAPSHOT_URL_TTL_SECONDS = 10 * 60;
 
-const secret = env.INTEGRITY_MEDIA_SECRET ?? randomBytes(32).toString("hex");
+// Production needs a fixed secret so links survive restarts and work across replicas.
+// Without one, camera photos are simply not offered (see cameraPhotosAvailable).
+// Development and tests use a per-process secret.
+const secret = env.INTEGRITY_MEDIA_SECRET ?? (isProduction ? null : randomBytes(32).toString("hex"));
+if (!secret) logger.warn("[integrity] INTEGRITY_MEDIA_SECRET is not set; quiz camera photos are turned off");
+
+export function snapshotSigningAvailable(): boolean {
+  return secret !== null;
+}
 
 function signature(snapshotId: string, expiresAt: number): string {
+  if (!secret) throw new Error("INTEGRITY_MEDIA_SECRET is not set");
   return createHmac("sha256", secret).update(`${snapshotId}.${expiresAt}`).digest("base64url");
 }
 
@@ -22,6 +32,7 @@ export function signedSnapshotUrl(snapshotId: string, now = Date.now()): { url: 
 }
 
 export function verifySnapshotSignature(snapshotId: string, exp: unknown, sig: unknown, now = Date.now()): boolean {
+  if (!secret) return false;
   if (typeof exp !== "string" || typeof sig !== "string" || !/^\d{1,12}$/.test(exp)) return false;
   const expiresAt = Number(exp);
   const nowSeconds = Math.floor(now / 1000);
