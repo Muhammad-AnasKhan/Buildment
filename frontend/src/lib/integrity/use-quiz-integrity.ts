@@ -100,6 +100,9 @@ export function useQuizIntegrity({
   const [notice, setNotice] = useState<IntegrityNotice | null>(null);
   const [fullscreenPrompt, setFullscreenPrompt] = useState(false);
   const [cameraStatus, setCameraStatus] = useState<IntegrityCameraStatus>("NOT_REQUESTED");
+  const [cameraStarting, setCameraStarting] = useState(false);
+  /** Why the camera is off, so the pause screen can say what to do. */
+  const [cameraIssue, setCameraIssue] = useState<string | null>(null);
   /** "intro" is the start-of-attempt notice and camera choice; "info" reopens it from the badge. */
   const [dialog, setDialog] = useState<"intro" | "info" | null>(null);
 
@@ -307,12 +310,12 @@ export function useQuizIntegrity({
 
   const cameraUnavailable = useCallback((reason: string) => {
     stopStream();
+    setCameraIssue(reason);
     if (cameraStatusRef.current === "UNAVAILABLE") return;
     setCamera("UNAVAILABLE");
     void putCamera("UNAVAILABLE");
     record("CAMERA_OFF", { reason }, { quiet: true });
-    showNotice("Your camera is off. You can keep going with the quiz.");
-  }, [putCamera, record, setCamera, showNotice, stopStream]);
+  }, [putCamera, record, setCamera, stopStream]);
 
   const uploadSnapshot = useCallback(async () => {
     const attemptId = attemptIdRef.current;
@@ -366,6 +369,7 @@ export function useQuizIntegrity({
       return;
     }
     let stream: MediaStream;
+    setCameraStarting(true);
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         video: { width: { ideal: 320 }, height: { ideal: 240 }, frameRate: { ideal: 5, max: 10 }, facingMode: "user" },
@@ -375,7 +379,10 @@ export function useQuizIntegrity({
       const name = error instanceof Error ? error.name : "";
       cameraUnavailable(name === "NotAllowedError" ? "denied" : name === "NotFoundError" ? "no-camera" : "error");
       return;
+    } finally {
+      setCameraStarting(false);
     }
+    setCameraIssue(null);
     stopStream();
     streamRef.current = stream;
     if (videoRef.current) {
@@ -389,25 +396,18 @@ export function useQuizIntegrity({
     scheduleSnapshots();
   }, [cameraUnavailable, putCamera, record, scheduleSnapshots, session?.camera.enabled, setCamera, stopStream]);
 
-  const declineCamera = useCallback((reason: "declined" | "learner") => {
-    stopStream();
-    if (!session?.camera.enabled) return;
-    setCamera("DECLINED");
-    void putCamera("DECLINED");
-    record("CAMERA_OFF", { reason }, { quiet: true });
-  }, [putCamera, record, session?.camera.enabled, setCamera, stopStream]);
-
-  // Resume the camera after a reload when the learner had already said yes.
+  // The course requires the camera: after a reload (or a new attempt) start it again
+  // without waiting for a click. Browsers that remember the permission allow this.
   useEffect(() => {
-    if (!session || dialog === "intro" || streamRef.current || finishedRef.current) return;
-    if (session.camera.enabled && cameraStatusRef.current === "ON") void startCamera();
+    if (!session?.camera.enabled || dialog === "intro" || streamRef.current || finishedRef.current) return;
+    void startCamera();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.attemptId, dialog]);
 
   useEffect(() => () => stopStream(), [stopStream]);
 
-  /** Closes the intro. `withCamera` is the learner's consent choice. */
-  const begin = useCallback((withCamera: boolean) => {
+  /** Closes the intro. When the course requires the camera, this is also the consent click that starts it. */
+  const begin = useCallback(() => {
     const attemptId = attemptIdRef.current;
     if (attemptId) {
       try {
@@ -418,10 +418,8 @@ export function useQuizIntegrity({
     }
     setDialog(null);
     if (fullscreenSupported() && !document.fullscreenElement) requestQuizFullscreen();
-    if (!session?.camera.enabled) return;
-    if (withCamera) void startCamera();
-    else if (cameraStatusRef.current !== "DECLINED") declineCamera("declined");
-  }, [declineCamera, session?.camera.enabled, startCamera]);
+    if (session?.camera.enabled) void startCamera();
+  }, [session?.camera.enabled, startCamera]);
 
   // --- Browser signals ----------------------------------------------------------------------
 
@@ -666,9 +664,12 @@ export function useQuizIntegrity({
       camera: {
         enabled: Boolean(session?.camera.enabled),
         status: cameraStatus,
+        starting: cameraStarting,
+        issue: cameraIssue,
+        /** The course requires the camera and it is not on: the quiz is paused. */
+        blocked: Boolean(session?.camera.enabled) && enabled && cameraStatus !== "ON",
         attachVideo,
         start: startCamera,
-        turnOff: () => declineCamera("learner"),
       },
       dialog,
       openInfo: () => setDialog("info"),
@@ -679,7 +680,7 @@ export function useQuizIntegrity({
       nextAttempt,
       finish,
     }),
-    [attachVideo, begin, cameraStatus, checkPace, declineCamera, dismissFullscreenPrompt, enabled, finish, fullscreenPrompt, dialog, nextAttempt, notice, pendingFlags, returnToFullscreen, serverFlags, session, startCamera, withoutFlags],
+    [attachVideo, begin, cameraIssue, cameraStarting, cameraStatus, checkPace, dismissFullscreenPrompt, enabled, finish, fullscreenPrompt, dialog, nextAttempt, notice, pendingFlags, returnToFullscreen, serverFlags, session, startCamera, withoutFlags],
   );
 }
 

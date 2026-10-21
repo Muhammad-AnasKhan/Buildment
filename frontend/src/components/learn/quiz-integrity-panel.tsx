@@ -34,8 +34,11 @@ function IntegrityDialog({ integrity }: { integrity: QuizIntegrity }) {
     if (!open && element.open) element.close();
   }, [open]);
 
+  // With a required camera there is no way past the intro except turning it on.
+  const closable = !(intro && camera.enabled);
   const close = () => {
-    if (intro) integrity.begin(false);
+    if (!closable) return;
+    if (intro) integrity.begin();
     else integrity.closeInfo();
   };
 
@@ -51,14 +54,16 @@ function IntegrityDialog({ integrity }: { integrity: QuizIntegrity }) {
     >
       {open ? (
         <div className="relative max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border bg-card p-5 text-card-foreground shadow-xl sm:p-6">
-          <button
-            type="button"
-            onClick={close}
-            aria-label={intro ? "Start without camera" : "Close"}
-            className="absolute right-3 top-3 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-          >
-            <X className="size-4" aria-hidden />
-          </button>
+          {closable ? (
+            <button
+              type="button"
+              onClick={close}
+              aria-label={intro ? "Start quiz" : "Close"}
+              className="absolute right-3 top-3 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            >
+              <X className="size-4" aria-hidden />
+            </button>
+          ) : null}
           <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
             <ShieldCheck className="size-5" aria-hidden />
             <p className="text-xs font-semibold uppercase tracking-wider">Proctored quiz</p>
@@ -84,7 +89,7 @@ function IntegrityDialog({ integrity }: { integrity: QuizIntegrity }) {
             <section aria-labelledby="quiz-camera-title" className="mt-4 rounded-xl border bg-muted/40 p-4">
               <h3 id="quiz-camera-title" className="flex items-center gap-2 text-sm font-semibold">
                 <Camera className="size-4" aria-hidden />
-                Camera photos: your choice
+                Camera photos: needed for this course
               </h3>
               <dl className="mt-2 grid gap-1.5 text-sm leading-6">
                 <div>
@@ -109,7 +114,7 @@ function IntegrityDialog({ integrity }: { integrity: QuizIntegrity }) {
                 </div>
               </dl>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                No camera, or it stops? The quiz still works. Your mentor sees &quot;camera off&quot;.
+                If your camera stops, the quiz pauses until it is back on. Your answers are kept. No camera on this device? Ask your mentor before you start.
               </p>
             </section>
           ) : null}
@@ -117,28 +122,18 @@ function IntegrityDialog({ integrity }: { integrity: QuizIntegrity }) {
           <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             {intro ? (
               camera.enabled ? (
-                <>
-                  <Button type="button" variant="outline" onClick={() => integrity.begin(false)}>
-                    Start without camera
-                  </Button>
-                  <Button type="button" onClick={() => integrity.begin(true)} className="gap-1.5">
-                    <Camera className="size-4" aria-hidden />
-                    Turn on camera and start
-                  </Button>
-                </>
+                <Button type="button" onClick={integrity.begin} className="gap-1.5">
+                  <Camera className="size-4" aria-hidden />
+                  Turn on camera and start
+                </Button>
               ) : (
-                <Button type="button" onClick={() => integrity.begin(false)}>
+                <Button type="button" onClick={integrity.begin}>
                   Start quiz
                 </Button>
               )
             ) : (
               <>
-                {camera.enabled && camera.status === "ON" ? (
-                  <Button type="button" variant="outline" onClick={() => { camera.turnOff(); integrity.closeInfo(); }} className="gap-1.5">
-                    <CameraOff className="size-4" aria-hidden />
-                    Turn camera off
-                  </Button>
-                ) : camera.enabled ? (
+                {camera.enabled && camera.status !== "ON" ? (
                   <Button type="button" variant="outline" onClick={() => { void camera.start(); integrity.closeInfo(); }} className="gap-1.5">
                     <Camera className="size-4" aria-hidden />
                     Turn camera on
@@ -153,6 +148,43 @@ function IntegrityDialog({ integrity }: { integrity: QuizIntegrity }) {
         </div>
       ) : null}
     </dialog>
+  );
+}
+
+const CAMERA_HELP: Record<string, string> = {
+  denied: "Your browser blocked the camera. Allow camera access for this site (the camera icon in the address bar), then press Try again.",
+  "no-camera": "We could not find a camera on this device. Connect one, or ask your mentor for help.",
+  stopped: "Your camera stopped. Check that no other app is using it, then press Try again.",
+  unsupported: "This browser cannot use a camera. Open the quiz in Chrome, Edge, Firefox or Safari.",
+  error: "The camera did not start. Close other apps that use it, then press Try again.",
+};
+
+/** Covers the quiz while a required camera is off. Answers stay where they are underneath. */
+export function QuizCameraGate({ integrity }: { integrity: QuizIntegrity }) {
+  const { camera } = integrity;
+  if (!camera.blocked || integrity.dialog === "intro") return null;
+  return (
+    <div className="absolute inset-0 z-10 flex items-start justify-center px-2 pt-10">
+      <div role="alertdialog" aria-labelledby="quiz-camera-gate-title" aria-describedby="quiz-camera-gate-text" className="w-full max-w-md rounded-2xl border bg-card p-5 text-card-foreground shadow-lg">
+        <div className="flex items-center gap-2">
+          {camera.starting ? <Camera className="size-5 text-muted-foreground" aria-hidden /> : <CameraOff className="size-5 text-amber-600 dark:text-amber-300" aria-hidden />}
+          <h2 id="quiz-camera-gate-title" className="text-base font-semibold">
+            {camera.starting ? "Starting your camera…" : "Turn on your camera to continue"}
+          </h2>
+        </div>
+        <p id="quiz-camera-gate-text" className="mt-2 text-sm leading-6 text-muted-foreground">
+          {camera.starting
+            ? "If your browser asks, choose Allow."
+            : `This course needs the camera during quizzes, so the quiz is paused. Your answers are kept. ${camera.issue ? (CAMERA_HELP[camera.issue] ?? CAMERA_HELP.error) : ""}`}
+        </p>
+        {camera.starting ? null : (
+          <Button type="button" className="mt-4 gap-1.5" onClick={() => void camera.start()}>
+            <Camera className="size-4" aria-hidden />
+            {camera.issue ? "Try camera again" : "Turn on camera"}
+          </Button>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -217,15 +249,6 @@ export function QuizIntegrityPanel({ integrity }: { integrity: QuizIntegrity }) 
             </div>
           ) : null}
 
-          {camera.enabled && camera.status === "UNAVAILABLE" ? (
-            <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2 text-sm">
-              <CameraOff className="size-4 text-muted-foreground" aria-hidden />
-              <span className="mr-auto text-muted-foreground">Camera is off. You can keep going.</span>
-              <Button type="button" size="sm" variant="outline" onClick={() => void camera.start()}>
-                Try camera again
-              </Button>
-            </div>
-          ) : null}
         </div>
       ) : null}
       <IntegrityDialog integrity={integrity} />

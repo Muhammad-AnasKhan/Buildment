@@ -5,8 +5,8 @@ import { Camera, ShieldCheck } from "lucide-react";
 import { updateCourseIntegrity } from "@/server/actions/modules";
 import { INTEGRITY_LIMITS } from "@/shared/api/integrity";
 
-// Quiz integrity signals are always on in quiz chapters. Camera photos are the
-// one part an instructor opts into, per course, and they stay off by default.
+// Quiz integrity signals are always on in quiz chapters. The camera is the one
+// part an instructor opts into, per course; once on it is required, and it stays off by default.
 
 export function CourseIntegritySettings({ courseId, integritySnapshots }: { courseId: string; integritySnapshots: boolean }) {
   const [enabled, setEnabled] = useState(integritySnapshots);
@@ -51,9 +51,9 @@ export function CourseIntegritySettings({ courseId, integritySnapshots }: { cour
             className="mt-1 size-4 accent-primary"
           />
           <span>
-            <span className="flex items-center gap-1.5 text-sm font-medium"><Camera className="size-4" aria-hidden />Ask learners for camera photos during quizzes</span>
+            <span className="flex items-center gap-1.5 text-sm font-medium"><Camera className="size-4" aria-hidden />Require the camera during quizzes</span>
             <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-              Learners choose yes or no on a consent screen before each quiz. A small {INTEGRITY_LIMITS.snapshotWidth} x {INTEGRITY_LIMITS.snapshotHeight} still is taken about once a minute (around 10 KB, fine on weak connections). Only this course&apos;s mentors and admins can see the photos, and they are deleted after {INTEGRITY_LIMITS.retentionDays} days. No camera, or saying no, never blocks the quiz.
+              Learners see a consent screen before each quiz and must turn the camera on to take it. If the camera is off or stops, the quiz pauses until it is back, and answers are kept. A small {INTEGRITY_LIMITS.snapshotWidth} x {INTEGRITY_LIMITS.snapshotHeight} still is taken about once a minute (around 10 KB, fine on weak connections). Only this course&apos;s mentors and admins can see the photos, and they are deleted after {INTEGRITY_LIMITS.retentionDays} days. Learners without a working camera cannot finish quizzes in this course, so check with your cohort before turning this on.
             </span>
           </span>
         </label>
