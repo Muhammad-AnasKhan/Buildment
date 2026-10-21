@@ -68,6 +68,11 @@ enum CourseStatus {
   ARCHIVED
 }
 
+enum CourseCategory {
+  TECH
+  SOFT_SKILLS
+}
+
 enum CourseInstructorRole {
   COURSE_CREATOR
   SUBMISSION_EVALUATOR
@@ -244,6 +249,7 @@ model Course {
   projectGoal    String? // "Build a multi-vendor marketplace"
   difficulty     String?
   estimatedHours Int?
+  category       CourseCategory @default(TECH)
   status         CourseStatus @default(DRAFT)
   pricingType    CoursePricingType @default(FREE)
   priceCents     Int          @default(0)

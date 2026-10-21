@@ -11,6 +11,7 @@ const summarySelect = {
   coverUrl: true,
   difficulty: true,
   estimatedHours: true,
+  category: true,
   projectGoal: true,
   pricingType: true,
   priceCents: true,

@@ -2,30 +2,34 @@
 
 import { redirect } from "next/navigation";
 import type { AuthSession } from "@/shared/api/auth";
+import { loginSchema } from "@/shared/lib/auth-validation";
 import { safeRedirectTo } from "@/shared/lib/safe-redirect";
 import { ApiError } from "@/lib/api-client";
 import { serverApiFetch } from "@/lib/api-server";
+import { loginErrorMessage } from "@/lib/auth-errors";
+import { apiAuthErrors, zodAuthErrors, type AuthFormState } from "@/lib/auth-form-state";
 import { setSessionCookie } from "@/server/auth/session-cookie";
 
-export async function signInWithPasswordAction(formData: FormData) {
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const password = String(formData.get("password") ?? "");
-  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? "")) ?? "/dashboard";
+export type LoginState = AuthFormState;
 
-  if (!email || !password) {
-    redirect("/login?error=missing");
-  }
+export async function signInWithPasswordAction(_prev: LoginState, formData: FormData): Promise<LoginState> {
+  const parsed = loginSchema.safeParse({ email: formData.get("email"), password: formData.get("password") });
+  if (!parsed.success) return { fieldErrors: zodAuthErrors(parsed.error), formError: null };
+  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? "")) ?? "/dashboard";
 
   let session: AuthSession;
   try {
     session = await serverApiFetch<AuthSession>("/api/v1/auth/login", {
       method: "POST",
-      json: { email, password },
+      json: parsed.data,
       token: null,
     });
   } catch (error) {
     if (error instanceof ApiError) {
-      redirect(`/login?error=${encodeURIComponent(error.code)}`);
+      return {
+        fieldErrors: apiAuthErrors(error.errors),
+        formError: error.errors.length ? null : error.code === "API_UNAVAILABLE" ? error.message : loginErrorMessage(error.code) ?? error.message,
+      };
     }
     throw error;
   }

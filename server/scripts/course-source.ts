@@ -57,6 +57,8 @@ export const CourseManifestSchema = z.object({
   projectGoal: z.string().min(1),
   difficulty: z.enum(["Beginner", "Medium", "Advanced"]),
   estimatedHours: z.number().int().positive(),
+  /** Catalog grouping: "tech" (default) or "soft-skills". */
+  category: z.enum(["tech", "soft-skills"]).default("tech"),
   coverUrl: z.string().url().optional(),
   modules: z.array(PlannedModuleSchema).min(1),
 });

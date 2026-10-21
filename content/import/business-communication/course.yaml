@@ -1,0 +1,136 @@
+# track: soft-skills
+slug: business-communication
+title: "Professional & Business Communication"
+description: "Learn the English and the habits of professional work with international teams and clients: clear emails, status updates, stakeholder and client communication, meetings, networking and interviews. You practice with mock client emails, standup updates, outreach drafts and interview answers."
+projectGoal: "Produce a client communication pack: a project kickoff email, a weekly status update, a message delivering bad news, and an interview answer, reviewed by a mentor."
+difficulty: Beginner
+estimatedHours: 12
+category: soft-skills
+modules:
+  - dir: 01-workplace-english
+    title: "Workplace English"
+    summary: "Write and speak clear, polite English, and understand common business terms."
+    lessons:
+      - file: 01.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show how clear, polite English builds trust with international teams, and what the course practices."
+      - file: 01.02-clear-and-polite.md
+        title: "Clear and polite"
+        goal: "Use short sentences, simple words and polite forms, and avoid sounding rude by accident."
+      - file: 01.03-common-business-terms.md
+        title: "Common business terms"
+        goal: "Understand terms like scope, deliverable, ETA, blocker, follow up and stakeholder."
+      - file: 01.04-quiz.md
+        title: "Workplace English"
+        goal: "Graded scenarios on tone and business terms."
+      - file: 01.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: rewrite one of your messages to be clearer and more polite."
+  - dir: 02-writing-at-work
+    title: "Writing at work"
+    summary: "Write emails, status updates and chat messages that people read and answer."
+    lessons:
+      - file: 02.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show how most remote work happens in writing."
+      - file: 02.02-emails-that-get-answered.md
+        title: "Emails that get answered"
+        goal: "Write a clear subject, the request first, and a specific next step."
+      - file: 02.03-status-updates-and-standups.md
+        title: "Status updates and standups"
+        goal: "Report done, next and blockers in a short, scannable update."
+      - file: 02.04-chat-etiquette.md
+        title: "Chat etiquette"
+        goal: "Write complete chat messages, use threads, and respect other people's time zones."
+      - file: 02.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a standup update and an email for mentor review."
+  - dir: 03-stakeholders-and-clients
+    title: "Stakeholders and clients"
+    summary: "Know who cares about your work, manage expectations, and deliver bad news well."
+    lessons:
+      - file: 03.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce stakeholders through a freelance project with a client, a designer and an end user."
+      - file: 03.02-who-are-your-stakeholders.md
+        title: "Who are your stakeholders"
+        goal: "List the people affected by your work and what each one needs to hear."
+      - file: 03.03-managing-expectations.md
+        title: "Managing expectations"
+        goal: "Agree scope, timing and communication at the start, and update early when things change."
+      - file: 03.04-delivering-bad-news.md
+        title: "Delivering bad news"
+        goal: "Share a delay or problem early, with facts, impact, options and a recommendation."
+      - file: 03.05-quiz.md
+        title: "Stakeholders and clients"
+        goal: "Graded scenarios on client and stakeholder communication."
+      - file: 03.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a message delivering bad news to a client."
+  - dir: 04-meetings-and-remote-work
+    title: "Meetings and remote collaboration"
+    summary: "Run short, useful meetings and work well asynchronously."
+    lessons:
+      - file: 04.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show the cost of bad meetings and the value of good async habits."
+      - file: 04.02-short-useful-meetings.md
+        title: "Short, useful meetings"
+        goal: "Use an agenda, a goal and written notes with owners and dates."
+      - file: 04.03-async-communication.md
+        title: "Async communication"
+        goal: "Decide what needs a meeting and what works better in writing."
+      - file: 04.04-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: an agenda and meeting notes for a real or practice meeting."
+  - dir: 05-networking
+    title: "Networking and LinkedIn"
+    summary: "Present yourself professionally and reach out to people in a respectful, useful way."
+    lessons:
+      - file: 05.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Explain how networking opens remote opportunities, and that it is about helping, not begging."
+      - file: 05.02-your-linkedin-profile.md
+        title: "Your LinkedIn profile"
+        goal: "Write a clear headline and about section that show what you do and for whom."
+      - file: 05.03-outreach-messages.md
+        title: "Outreach messages"
+        goal: "Write short, specific outreach messages with a clear, small request."
+      - file: 05.04-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: an outreach message draft and your profile headline for review."
+  - dir: 06-interviews
+    title: "Interviews"
+    summary: "Prepare answers that show your skills, and ask good questions back."
+    lessons:
+      - file: 06.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Explain what remote employers look for in interviews."
+      - file: 06.02-tell-me-about-yourself.md
+        title: "Tell me about yourself"
+        goal: "Prepare a short answer: present, past, and why this role."
+      - file: 06.03-behavioral-questions.md
+        title: "Behavioral questions"
+        goal: "Answer with situation, task, action and result, using real examples."
+      - file: 06.04-questions-to-ask.md
+        title: "Questions to ask"
+        goal: "Ask thoughtful questions about the role, the team and how work is done."
+      - file: 06.05-quiz.md
+        title: "Interviews"
+        goal: "Graded scenarios on interview answers and questions."
+      - file: 06.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a written or recorded interview answer for mentor review."
+  - dir: 07-capstone
+    title: "Capstone: your client communication pack"
+    summary: "Bring the course together in a set of real messages for one project."
+    lessons:
+      - file: 07.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Explain the capstone and help the learner pick a real or realistic project."
+      - file: 07.02-build-your-pack.md
+        title: "Build your communication pack"
+        goal: "Write the kickoff email, a weekly status update, a bad-news message and an interview answer, and submit them."
+      - file: 07.03-checklist.md
+        title: "Checklist and learning log"
+        goal: "Final gate: reflect on the course and choose the habits you will keep."

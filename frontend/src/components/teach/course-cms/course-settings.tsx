@@ -24,6 +24,7 @@ function settingsFromCourse(course: CourseSettingsView): CourseSettingsInput {
     projectGoal: course.projectGoal ?? "",
     difficulty: course.difficulty ?? "",
     estimatedHours: course.estimatedHours == null ? "" : String(course.estimatedHours),
+    category: course.category,
     sequential: course.sequential,
     pricingType: course.pricingType,
     priceDollars: course.pricingType === "PAID" && course.priceCents > 0 ? (course.priceCents / 100).toFixed(2) : "",
@@ -40,6 +41,7 @@ function settingsFromForm(form: HTMLFormElement): CourseSettingsInput {
     projectGoal: String(data.get("projectGoal") ?? ""),
     difficulty: String(data.get("difficulty") ?? ""),
     estimatedHours: String(data.get("estimatedHours") ?? ""),
+    category: String(data.get("category") ?? "TECH"),
     sequential: data.get("sequential") === "on",
     pricingType: String(data.get("pricingType") ?? "FREE"),
     priceDollars: String(data.get("priceDollars") ?? ""),
@@ -49,13 +51,13 @@ function settingsFromForm(form: HTMLFormElement): CourseSettingsInput {
 
 function sectionChanged(current: CourseSettingsInput, saved: CourseSettingsInput, section: SettingsSection): boolean {
   if (section === "details") return current.title !== saved.title || current.description !== saved.description || current.coverUrl !== saved.coverUrl;
-  if (section === "learning") return current.projectGoal !== saved.projectGoal || current.difficulty !== saved.difficulty || current.estimatedHours !== saved.estimatedHours || current.sequential !== saved.sequential;
+  if (section === "learning") return current.projectGoal !== saved.projectGoal || current.difficulty !== saved.difficulty || current.estimatedHours !== saved.estimatedHours || current.category !== saved.category || current.sequential !== saved.sequential;
   return current.pricingType !== saved.pricingType || current.priceDollars !== saved.priceDollars || current.currency !== saved.currency;
 }
 
 function mergeSection(saved: CourseSettingsInput, current: CourseSettingsInput, section: SettingsSection): CourseSettingsInput {
   if (section === "details") return { ...saved, title: current.title, description: current.description, coverUrl: current.coverUrl };
-  if (section === "learning") return { ...saved, projectGoal: current.projectGoal, difficulty: current.difficulty, estimatedHours: current.estimatedHours, sequential: current.sequential };
+  if (section === "learning") return { ...saved, projectGoal: current.projectGoal, difficulty: current.difficulty, estimatedHours: current.estimatedHours, category: current.category, sequential: current.sequential };
   return { ...saved, pricingType: current.pricingType, priceDollars: current.priceDollars, currency: current.currency };
 }
 
@@ -197,13 +199,18 @@ export function CourseSettings({ course }: { course: CourseSettingsView }) {
           <div className="grid gap-5 sm:grid-cols-2">
             <Field label="Difficulty" htmlFor="course-difficulty">
               <select id="course-difficulty" name="difficulty" defaultValue={course.difficulty ?? ""} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30">
-                <option value="">Not set</option><option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Hard">Hard</option>
+                <option value="">Not set</option><option value="Beginner">Beginner</option><option value="Easy">Easy</option><option value="Medium">Medium</option><option value="Advanced">Advanced</option><option value="Hard">Hard</option>
               </select>
             </Field>
             <Field label="Estimated hours" htmlFor="course-hours">
               <Input id="course-hours" name="estimatedHours" type="number" min={1} max={1000} defaultValue={course.estimatedHours ?? ""} placeholder="12" className="h-10" />
             </Field>
           </div>
+          <Field label="Catalog category" htmlFor="course-category" hint="Learners can filter the catalog by category.">
+            <select id="course-category" name="category" defaultValue={course.category} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30">
+              <option value="TECH">Tech</option><option value="SOFT_SKILLS">Soft skills</option>
+            </select>
+          </Field>
           <label className="flex items-start gap-3 rounded-xl border bg-muted/25 p-4">
             <input type="checkbox" name="sequential" defaultChecked={course.sequential} className="mt-1 size-4 accent-primary" />
             <span><span className="block text-sm font-medium">Require chapters in order</span><span className="mt-1 block text-xs leading-5 text-muted-foreground">Learners finish the previous chapter before opening the next one.</span></span>

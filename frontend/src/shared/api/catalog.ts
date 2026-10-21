@@ -1,5 +1,5 @@
 // GENERATED from server/src/shared — do not edit here. Run `pnpm sync-shared` in server/.
-import type { CoursePricingType, CourseStatus, EnrollmentLifecycle } from "../domain/enums";
+import type { CourseCategory, CoursePricingType, CourseStatus, EnrollmentLifecycle } from "../domain/enums";
 import type { SyllabusModule } from "./syllabus";
 
 // Wire contract for the public catalog, course overview, checkout and self-enrolment.
@@ -12,6 +12,8 @@ export type CatalogCourseSummary = {
   coverUrl: string | null;
   difficulty: string | null;
   estimatedHours: number | null;
+  /** Catalog grouping shown as tiles: technical courses and soft-skills courses. */
+  category: CourseCategory;
   pricingType: CoursePricingType;
   priceCents: number;
   currency: string;

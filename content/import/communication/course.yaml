@@ -1,0 +1,120 @@
+# track: soft-skills
+slug: communication
+title: "Communication & Articulating Ideas"
+description: "Learn to organize your thinking, explain ideas so others understand them, listen well, ask good questions, and give short talks and demos with confidence. Every module is practice: you write, record and present, and a mentor gives feedback."
+projectGoal: "Give a clear five-minute talk or project demo, recorded or written as a script, that a mentor reviews."
+difficulty: Beginner
+estimatedHours: 10
+category: soft-skills
+modules:
+  - dir: 01-structured-thinking
+    title: "Structured thinking"
+    summary: "Put the main point first and organize the rest so a busy reader follows you."
+    lessons:
+      - file: 01.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show how unclear messages cost time in remote teams, and what this course practices."
+      - file: 01.02-start-with-the-point.md
+        title: "Start with the point"
+        goal: "Lead with the answer or request, then give the reasons, so a reader gets it in the first line."
+      - file: 01.03-group-and-order-your-ideas.md
+        title: "Group and order your ideas"
+        goal: "Group supporting points into two to four clear groups and put them in a sensible order."
+      - file: 01.04-quiz.md
+        title: "Structured thinking"
+        goal: "Graded scenarios on picking the main point and ordering a message."
+      - file: 01.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: rewrite one of your own messages with the point first."
+  - dir: 02-explaining-ideas-clearly
+    title: "Explaining ideas clearly"
+    summary: "Match the explanation to the listener, and use examples to make abstract ideas concrete."
+    lessons:
+      - file: 02.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce the curse of knowledge through a developer explaining a bug to a client."
+      - file: 02.02-know-your-listener.md
+        title: "Know your listener"
+        goal: "Decide what the listener already knows and what they need, before you explain."
+      - file: 02.03-examples-and-analogies.md
+        title: "Examples and analogies"
+        goal: "Use a concrete example or a familiar comparison, and know when an analogy misleads."
+      - file: 02.04-explain-a-technical-idea-simply.md
+        title: "Explain a technical idea simply"
+        goal: "Practice explaining one technical idea to a non-technical person in a few sentences."
+      - file: 02.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a written or recorded explanation of a technical idea for a non-technical listener."
+  - dir: 03-listening-and-asking-questions
+    title: "Listening and asking good questions"
+    summary: "Listen to understand, check what you heard, and ask questions that get useful answers."
+    lessons:
+      - file: 03.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show how a misunderstood requirement wastes a week, and why listening is a skill."
+      - file: 03.02-active-listening.md
+        title: "Active listening"
+        goal: "Listen without planning your reply, then summarize back what you heard."
+      - file: 03.03-asking-clarifying-questions.md
+        title: "Asking clarifying questions"
+        goal: "Ask open, specific questions early, and avoid questions that only get yes or no."
+      - file: 03.04-quiz.md
+        title: "Listening and questions"
+        goal: "Graded scenarios on summarizing and choosing the most useful question."
+      - file: 03.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a guide for a group discussion and a reflection on how you listened."
+  - dir: 04-talks-and-demos
+    title: "Short talks and project demos"
+    summary: "Plan a five-minute talk, demo a project well, and handle questions calmly."
+    lessons:
+      - file: 04.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Explain why short talks and demos matter for remote jobs and freelance clients."
+      - file: 04.02-plan-a-five-minute-talk.md
+        title: "Plan a five-minute talk"
+        goal: "Use a simple structure: the point, three supporting parts, and a clear ending."
+      - file: 04.03-demo-a-project.md
+        title: "Demo a project"
+        goal: "Show the problem, the result and one key decision, and prepare for things going wrong."
+      - file: 04.04-handling-questions.md
+        title: "Handling questions"
+        goal: "Listen to the whole question, answer briefly, and say 'I will find out' when you do not know."
+      - file: 04.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: an outline for a five-minute talk on your own project."
+  - dir: 05-storytelling
+    title: "Storytelling at work"
+    summary: "Use short stories to make a point memorable in updates, interviews and demos."
+    lessons:
+      - file: 05.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show why people remember stories better than lists of facts."
+      - file: 05.02-the-shape-of-a-story.md
+        title: "The shape of a story"
+        goal: "Use a simple shape: situation, problem, what you did, result, lesson."
+      - file: 05.03-stories-at-work.md
+        title: "Stories at work"
+        goal: "Pick the right story for an update, a pitch or an interview, and keep it short."
+      - file: 05.04-quiz.md
+        title: "Storytelling"
+        goal: "Graded scenarios on story shape and choosing the right story."
+      - file: 05.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: write one short work story of your own."
+  - dir: 06-capstone
+    title: "Capstone: your five-minute talk"
+    summary: "Prepare and deliver a five-minute talk or demo about your own work."
+    lessons:
+      - file: 06.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Explain the capstone and help the learner choose a topic from their own work or study."
+      - file: 06.02-prepare-your-talk.md
+        title: "Prepare your talk"
+        goal: "Turn the course tools into a script, practice it, and check it against a short list."
+      - file: 06.03-submit-your-talk.md
+        title: "Submit your talk"
+        goal: "Submit a recorded talk link or the full written script for mentor review."
+      - file: 06.04-checklist.md
+        title: "Checklist and learning log"
+        goal: "Final gate: reflect on the course and plan the next talk you will give."

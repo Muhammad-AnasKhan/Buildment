@@ -801,6 +801,7 @@ async function upsertCourse(manifest: CourseManifest | null) {
     projectGoal: meta.projectGoal,
     difficulty: meta.difficulty,
     estimatedHours: meta.estimatedHours,
+    category: manifest?.category === "soft-skills" ? ("SOFT_SKILLS" as const) : ("TECH" as const),
     coverUrl: meta.coverUrl ?? null,
   };
 
