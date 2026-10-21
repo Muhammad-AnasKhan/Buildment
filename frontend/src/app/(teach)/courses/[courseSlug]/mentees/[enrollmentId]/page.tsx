@@ -10,6 +10,7 @@ import { SubmissionFilters } from "@/components/teach/evaluation/submission-filt
 import { FeedbackTimeline } from "@/components/teach/evaluation/feedback-timeline";
 import { ActivitySummary } from "@/components/teach/evaluation/activity-summary";
 import { LearnerReflections } from "@/components/teach/evaluation/learner-reflections";
+import { QuizIntegrity } from "@/components/teach/evaluation/quiz-integrity";
 
 export default async function MenteeEvaluationPage({ params }: { params: Promise<{ courseSlug: string; enrollmentId: string }> }) {
   const { courseSlug, enrollmentId } = await params;
@@ -27,7 +28,8 @@ export default async function MenteeEvaluationPage({ params }: { params: Promise
         <ProjectEvidence items={evaluation.evidence} />
         <ActivitySummary help={evaluation.help} sessions={evaluation.sessions} />
       </div>
-      <CourseProgressMap modules={evaluation.modules} />
+      <CourseProgressMap modules={evaluation.modules} integrity={evaluation.integrity} />
+      <QuizIntegrity attempts={evaluation.integrity} />
       <LearnerReflections items={evaluation.reflections} />
       <SubmissionFilters items={evaluation.submissions} />
       <FeedbackTimeline items={evaluation.timeline} />
