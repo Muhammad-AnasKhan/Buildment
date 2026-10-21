@@ -70,6 +70,7 @@ export function ChapterReaderShell({
   nextLocked,
   reflectionPending = false,
   projectGoal = null,
+  variant = null,
   recap,
   streakMilestone = null,
   headingNotes = {},
@@ -99,6 +100,8 @@ export function ChapterReaderShell({
   nextLocked: boolean;
   reflectionPending?: boolean;
   projectGoal?: string | null;
+  /** The learner's variant in a course family; the shell is already themed by it. */
+  variant?: { productName: string; label: string } | null;
   recap?: { checks: string; open: string; next: string };
   streakMilestone?: StreakMilestone | null;
   headingNotes?: Record<string, string>;
@@ -364,8 +367,14 @@ export function ChapterReaderShell({
                   </h1>
                   {projectGoal && readerMode !== "QUIZ" ? (
                     <p className="mt-4 border-l-2 border-border pl-3 text-sm leading-6 text-muted-foreground">
-                      <span className="font-medium text-foreground/80">The project: </span>
+                      <span className="font-medium text-foreground">The project: </span>
                       {projectGoal.trim().replace(/\.+$/, "")}.
+                    </p>
+                  ) : null}
+                  {variant && readerMode !== "QUIZ" ? (
+                    <p className="mt-2 border-l-2 border-primary pl-3 text-sm leading-6 text-muted-foreground">
+                      <span className="font-medium text-foreground/80">You are building: </span>
+                      {variant.productName} ({variant.label.toLowerCase()} variant)
                     </p>
                   ) : null}
                   {isGateChapter && readerMode !== "QUIZ" ? (

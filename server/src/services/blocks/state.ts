@@ -6,7 +6,10 @@ import { OpenQuestionConfigSchema, type SanitizedOpenQuestionConfig } from "../.
 import { getOpenQuestionGroupPosition } from "../../shared/blocks/open-question/group-position.js";
 import { PredictConfigSchema, type SanitizedPredictConfig } from "../../shared/blocks/predict/schema.js";
 import { QuizConfigSchema, type SanitizedQuizConfig } from "../../shared/blocks/quiz/schema.js";
+import { applyTokens, applyTokensDeep, contentTokenValues, type ContentTokenValues } from "../../shared/lib/content-tokens.js";
 import { prisma } from "../../db/prisma.js";
+import type { Block } from "../../generated/prisma/index.js";
+import { findEnrollmentForBlockState } from "../enrollment/api-learn-access.js";
 import { NotFoundError } from "../../utils/errors.js";
 import { sanitizeBlockConfig } from "../../utils/sanitize-block-config.js";
 import type { SessionUser } from "../../types/auth.js";
@@ -22,8 +25,29 @@ const strings = (value: unknown) => (Array.isArray(value) ? value.filter((item):
  * hidden tests and solutions are stripped before the config is returned.
  */
 export async function loadBlockState(blockId: string, user: SessionUser | undefined): Promise<BlockState> {
-  const block = await prisma.block.findUnique({ where: { id: blockId } });
+  const block = await prisma.block.findUnique({ where: { id: blockId }, include: { chapter: { select: { course: { select: { id: true, familySlug: true } } } } } });
   if (!block || block.archivedAt) throw new NotFoundError("Block not found");
+
+  // Prompts and options read in the caller's variant; anonymous previews get the fallbacks.
+  const { course } = block.chapter;
+  const enrollment = user && course.familySlug ? await findEnrollmentForBlockState(course.id, user.id) : null;
+  return withTokens(await blockStateFor(block, user), contentTokenValues(course.familySlug, enrollment?.variantSlug));
+}
+
+/** Resolve placeholders in what the author wrote (config and explanations), never in the learner's own answer. */
+function withTokens(state: BlockState, values: ContentTokenValues): BlockState {
+  const config = applyTokensDeep(state.config, values);
+  if (!("initialState" in state) || !state.initialState || !("explanation" in state.initialState)) return { ...state, config } as BlockState;
+  const { explanation } = state.initialState;
+  return {
+    ...state,
+    config,
+    initialState: { ...state.initialState, explanation: typeof explanation === "string" ? applyTokens(explanation, values) : explanation },
+  } as BlockState;
+}
+
+async function blockStateFor(block: Block, user: SessionUser | undefined): Promise<BlockState> {
+  const blockId = block.id;
 
   const latest = user
     ? await prisma.response.findFirst({

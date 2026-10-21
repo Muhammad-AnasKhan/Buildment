@@ -1,5 +1,6 @@
 // GENERATED from server/src/shared — do not edit here. Run `pnpm sync-shared` in server/.
 import type { ChapterReaderMode } from "../domain/enums";
+import type { CourseTrack } from "../lib/course-tracks";
 import type { StreakMilestone } from "../lib/streak";
 import type { HelpThreadView } from "./help";
 import type { SyllabusModule } from "./syllabus";
@@ -43,6 +44,8 @@ export type ChapterReaderView = {
   prev: ReaderChapterLink | null;
   next: ReaderChapterLink | null;
   modules: SyllabusModule[];
+  /** The learner's variant (for the reader theme); null for a course without a family. */
+  track: CourseTrack | null;
   /** Sequential course and the previous chapter is not finished yet. */
   locked: boolean;
   /** The chapter to finish first when locked. */

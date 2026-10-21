@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { buttonVariants } from "@/components/ui/button";
 import { NudgeMenteeButton } from "@/components/teach/nudge-mentee-button";
+import { LearnerTrackBadges } from "@/components/teach/learner-track-badges";
 import { RepairEnrollmentProgressButton } from "@/components/teach/repair-enrollment-progress-button";
 import { formatStudyAmount } from "@/lib/format-study-duration";
 import { cn } from "@/lib/utils";
@@ -117,7 +118,7 @@ function DesktopRow({ mentee }: { mentee: MenteeRosterItem }) { return <tr class
 
 function MobileCard({ mentee }: { mentee: MenteeRosterItem }) { return <article className="rounded-2xl border bg-card p-4"><div className="flex items-start justify-between gap-3"><Identity mentee={mentee} /><Badge variant="outline" className="capitalize">{mentee.status.toLowerCase().replaceAll("_", " ")}</Badge></div><div className="mt-4"><Progress mentee={mentee} /></div><div className="mt-4 grid grid-cols-2 gap-3 border-y py-3 text-xs"><div><p className="text-muted-foreground">Current chapter</p><p className="mt-1 line-clamp-2 font-medium">{mentee.currentChapter ?? "Not started"}</p></div><div><p className="text-muted-foreground">Last activity</p><p className="mt-1 font-medium">{mentee.lastActiveLabel}</p></div></div><div className="mt-3"><Attention mentee={mentee} /></div><div className="mt-4 flex flex-wrap items-center gap-2"><Link href={mentee.evaluationHref} className={cn(buttonVariants({ size: "sm" }), "gap-1")}>Evaluate learner <ArrowRight /></Link><NudgeMenteeButton enrollmentId={mentee.id} /></div></article>; }
 
-function Identity({ mentee }: { mentee: MenteeRosterItem }) { return <div className="flex min-w-0 items-center gap-3"><Avatar size="lg"><AvatarImage src={mentee.image ?? undefined} alt="" /><AvatarFallback>{mentee.name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar><div className="min-w-0"><Link href={mentee.evaluationHref} className="block truncate text-sm font-semibold hover:underline">{mentee.name}</Link><p className="truncate text-xs text-muted-foreground">{mentee.email ?? "No email"}</p></div></div>; }
+function Identity({ mentee }: { mentee: MenteeRosterItem }) { return <div className="flex min-w-0 items-center gap-3"><Avatar size="lg"><AvatarImage src={mentee.image ?? undefined} alt="" /><AvatarFallback>{mentee.name.slice(0, 2).toUpperCase()}</AvatarFallback></Avatar><div className="min-w-0"><Link href={mentee.evaluationHref} className="block truncate text-sm font-semibold hover:underline">{mentee.name}</Link><p className="truncate text-xs text-muted-foreground">{mentee.email ?? "No email"}</p><LearnerTrackBadges track={mentee.track} className="mt-1" /></div></div>; }
 
 function Progress({ mentee }: { mentee: MenteeRosterItem }) { return <div><div className="flex items-center justify-between gap-2 text-xs"><span className="font-medium tabular-nums">{mentee.percentComplete}%</span><span className="text-muted-foreground">{mentee.chaptersCompleted}/{mentee.chapterCount} chapters</span></div><div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, Math.max(0, mentee.percentComplete))}%` }} /></div></div>; }
 

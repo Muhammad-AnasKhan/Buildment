@@ -36,7 +36,7 @@ async function main() {
 
   const course = await prisma.course.upsert({
     where: { slug: SEED_COURSE.slug },
-    update: { sequential: true, status: "PUBLISHED", publishedAt: new Date() },
+    update: { sequential: true, status: "PUBLISHED", publishedAt: new Date(), familySlug: SEED_COURSE.family },
     create: {
       slug: SEED_COURSE.slug,
       title: SEED_COURSE.title,
@@ -44,6 +44,7 @@ async function main() {
       projectGoal: SEED_COURSE.projectGoal,
       difficulty: SEED_COURSE.difficulty,
       estimatedHours: SEED_COURSE.estimatedHours,
+      familySlug: SEED_COURSE.family,
       status: "PUBLISHED",
       sequential: true,
       mentorId: mentor.id,

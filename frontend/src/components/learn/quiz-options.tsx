@@ -104,7 +104,7 @@ export function QuizOptions({
                 className={cn(
                   "min-w-0 flex-1 leading-relaxed",
                   isSelected && "font-medium text-foreground",
-                  !isSelected && "text-foreground/90",
+                  !isSelected && "text-foreground",
                   disabled && !isSelected && !isIncorrect && "text-muted-foreground"
                 )}
               >

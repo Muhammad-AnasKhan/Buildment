@@ -49,7 +49,7 @@ export async function LearningObjectivesComponent({
             <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 font-mono text-xs font-semibold tabular-nums text-muted-foreground">
               {String(index + 1).padStart(2, "0")}
             </span>
-            <span className="min-w-0 pt-0.5 text-[15px] leading-relaxed text-foreground/90">{objective}</span>
+            <span className="min-w-0 pt-0.5 text-[15px] leading-relaxed text-foreground">{objective}</span>
           </li>
         ))}
       </ol>

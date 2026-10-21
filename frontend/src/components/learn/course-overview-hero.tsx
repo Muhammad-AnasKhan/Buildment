@@ -118,7 +118,7 @@ export function CourseOverviewHero({
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 <Target className="size-4" /> What you&apos;ll build
               </div>
-              <p className="mt-3 text-sm leading-6 text-foreground/90">{projectGoal}</p>
+              <p className="mt-3 text-sm leading-6 text-foreground">{projectGoal}</p>
             </div>
           ) : (
             <p className="text-sm leading-6 text-muted-foreground">

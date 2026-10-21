@@ -25,8 +25,8 @@ export function RealWorldEvent({ title, when, summary, lesson }: RealWorldEventP
           <h3 className="text-[15px] font-semibold leading-snug text-foreground sm:text-base">{title}</h3>
           <span className="text-xs font-medium text-muted-foreground">{when}</span>
         </div>
-        <p className="mt-3 text-[15px] leading-relaxed text-muted-foreground">{summary}</p>
-        <p className="mt-4 rounded-lg border border-border bg-muted/45 px-4 py-3 text-sm leading-relaxed text-foreground/90">
+        <p className="mt-3 text-[15px] leading-relaxed text-foreground">{summary}</p>
+        <p className="mt-4 rounded-lg border border-border bg-muted/45 px-4 py-3 text-sm leading-relaxed text-foreground">
           <span className="font-semibold text-foreground">Takeaway for your build: </span>
           {lesson}
         </p>

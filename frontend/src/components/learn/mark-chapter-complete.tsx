@@ -184,7 +184,7 @@ function ChapterCompletionMoment({
             {statusLine}
           </p>
           {hasCheckpoints && !chapterComplete ? (
-            <p className="mt-1 font-mono text-xs tabular-nums text-muted-foreground/75">
+            <p className="mt-1 font-mono text-xs tabular-nums text-muted-foreground">
               {checkpointsCompleted}/{checkpointsTotal} checkpoints
             </p>
           ) : null}

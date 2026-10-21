@@ -57,7 +57,7 @@ export async function ProjectPreviewComponent({
         </div>
         <h3 className="mt-3 text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl">{config.title}</h3>
         {config.description ? (
-          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{config.description}</p>
+          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-foreground">{config.description}</p>
         ) : null}
       </header>
 
@@ -74,7 +74,7 @@ export async function ProjectPreviewComponent({
             {config.features.map((feature, index) => (
               <li key={index} className="flex items-start gap-3 px-4 py-3.5">
                 <span className="mt-0.5 shrink-0 font-mono text-xs font-semibold tabular-nums text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
-                <span className="text-sm leading-relaxed text-foreground/90">{feature}</span>
+                <span className="text-sm leading-relaxed text-foreground">{feature}</span>
               </li>
             ))}
           </ol>
