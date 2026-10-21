@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isSafeAssetUrl } from "../shared/lib/asset-url.js";
 import { id, params } from "./common.js";
 
 export const courseIdParams = params("courseId");
@@ -9,6 +10,10 @@ export const enrollmentIdParams = params("enrollmentId");
 export const responseIdParams = params("responseId");
 export const menteeParams = z.object({ courseSlug: id, enrollmentId: id });
 export const inviteParams = z.object({ courseId: id, inviteId: id });
+export const courseInstructorInviteParams = params("token");
+export const courseInstructorMemberParams = z.object({ courseId: id, userId: id });
+export const courseInstructorPendingInviteParams = z.object({ courseId: id, inviteId: id });
+export const courseInstructorInviteBody = z.object({ email: z.string().trim().email().max(254), role: z.enum(["COURSE_CREATOR", "SUBMISSION_EVALUATOR"]) });
 
 export const createCourseBody = z.object({
   title: z.string().trim().min(3).max(120),
@@ -34,7 +39,7 @@ export type RemoveChapterBody = z.infer<typeof removeChapterBody>;
 export const courseSettingsBody = z.object({
   title: z.string().trim().min(3).max(120),
   description: z.string().trim().max(500),
-  coverUrl: z.string().trim().max(2048),
+  coverUrl: z.string().trim().max(2048).refine(value => !value || isSafeAssetUrl(value), "Use a same-origin image path or HTTPS URL."),
   projectGoal: z.string().trim().max(240),
   difficulty: z.enum(["", "Easy", "Medium", "Hard"]),
   estimatedHours: z.union([z.literal(""), z.coerce.number().int().min(1).max(1000)]),

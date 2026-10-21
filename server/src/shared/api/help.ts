@@ -21,10 +21,12 @@ export type HelpThreadView = {
 export type HelpThreadSummary = {
   id: string;
   status: HelpThreadStatus;
+  createdAt: string;
   updatedAt: string;
   course: { slug: string; title: string };
   chapter: { slug: string; title: string } | null;
-  preview: { body: string; createdAt: string } | null;
+  question: string | null;
+  preview: { body: string; createdAt: string; fromMentor: boolean } | null;
   /** The mentor replied after the learner last opened the thread. */
   unread: boolean;
 };

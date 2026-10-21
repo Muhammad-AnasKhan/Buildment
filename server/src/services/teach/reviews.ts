@@ -20,7 +20,7 @@ import { generateReviewDraft } from "./ai/review-draft.js";
 /** Open answers across the caller's courses. Resubmissions jump the queue, then oldest first. */
 export async function loadReviewQueue(user: SessionUser, courseFilter?: string): Promise<ReviewQueueView> {
   const courses = await prisma.course.findMany({
-    where: mentoredCoursesWhere(user),
+    where: mentoredCoursesWhere(user, "SUBMISSION_EVALUATOR"),
     orderBy: { title: "asc" },
     select: { id: true, title: true },
   });
@@ -71,7 +71,7 @@ async function requireReviewableResponse(user: SessionUser, responseId: string) 
     },
   });
   if (!response) throw new NotFoundError("Submission not found");
-  await requireCourseById(user, response.block.chapter.course.id);
+  await requireCourseById(user, response.block.chapter.course.id, "SUBMISSION_EVALUATOR");
   return response;
 }
 

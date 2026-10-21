@@ -50,6 +50,7 @@ import { roadmapEditorDescriptor } from "@/blocks/roadmap/editorDescriptor";
 import { ChapterBlockConfigsProvider } from "@/components/teach/editor/chapter-block-configs";
 import { CollapsibleJsxEditor } from "@/components/teach/editor/collapsible-jsx-editor";
 import { EditorSlashMenu } from "@/components/teach/editor/editor-slash-menu";
+import { uploadCourseImage } from "@/lib/course-media-upload";
 
 // All registered block types, each sourced from its own editorDescriptor.ts.
 const blockRegistryDescriptors = [
@@ -84,12 +85,14 @@ const jsxComponentDescriptors = [
 // (src/blocks/<type>/editorDescriptor.ts).
 
 export default function MdxEditorCore({
+  courseId,
   initialMarkdown,
   diffMarkdown,
   onChange,
   blockConfigs = {},
   readerMode = "DEFAULT",
 }: {
+  courseId: string;
   initialMarkdown: string;
   diffMarkdown?: string;
   onChange: (markdown: string) => void;
@@ -98,7 +101,7 @@ export default function MdxEditorCore({
 }) {
   const { resolvedTheme } = useTheme();
   return (
-    <ChapterBlockConfigsProvider configs={blockConfigs} quizEnabled={readerMode === "QUIZ"}>
+    <ChapterBlockConfigsProvider configs={blockConfigs} quizEnabled={readerMode === "QUIZ"} courseId={courseId}>
     <div className="chapter-mdx-editor overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
       <MDXEditor
         className={`buildment-editor ${resolvedTheme === "dark" ? "dark-theme" : ""}`}
@@ -115,7 +118,7 @@ export default function MdxEditorCore({
           tablePlugin(),
           thematicBreakPlugin(),
           frontmatterPlugin(),
-          imagePlugin(),
+          imagePlugin({ imageUploadHandler: (file) => uploadCourseImage(courseId, "content", file) }),
           codeBlockPlugin({ defaultCodeBlockLanguage: "js" }),
           codeMirrorPlugin({
             codeBlockLanguages: {

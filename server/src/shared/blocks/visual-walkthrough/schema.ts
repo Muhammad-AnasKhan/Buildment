@@ -1,12 +1,9 @@
 import { z } from "zod";
+import { isSafeAssetUrl } from "../../lib/asset-url.js";
 
-const imageUrl = z.string().url().refine(
-  (value) => {
-    const url = new URL(value);
-    return url.protocol === "https:" || (process.env.NODE_ENV !== "production" && url.protocol === "http:");
-  },
-  "Use an HTTPS image URL."
-);
+const imageUrl = z.string().min(1).refine(isSafeAssetUrl, {
+  message: "Use a local asset path or an HTTPS image URL.",
+});
 
 export const VisualWalkthroughConfigSchema = z.object({
   title: z.string().min(1).max(140),

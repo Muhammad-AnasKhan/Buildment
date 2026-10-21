@@ -5,7 +5,7 @@ Paste your existing course here — any layout is fine for now (folders, `.md`, 
 ## Current import
 
 The **FreshMarket — Multi-Vendor Grocery Marketplace** course lives in
-`multi-vendor-marketplace/` (347 lessons across 24 modules).
+`multi-vendor-marketplace/` (385 lessons across 26 modules).
 
 To load or refresh it in the database after editing source files:
 

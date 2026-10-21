@@ -29,12 +29,14 @@ export const SEED_COURSE = {
   description:
     "Build a local grocery marketplace where multiple vendors sell through one shared platform: " +
     "vendor onboarding with photo uploads, a searchable customer catalogue, a cart that splits " +
-    "into per-vendor orders at checkout, Stripe test-mode payments, Redis-backed caching, " +
-    "background jobs, and a live HTTPS deploy. MERN stack (MongoDB, Express, React, Node) plus " +
+    "into per-vendor orders at checkout, inventory reservations, server-priced promotions, " +
+    "Stripe test-mode payments, Redis-backed caching, background jobs, and a live HTTPS deploy. " +
+    "MERN stack (MongoDB, Express, React, Node) plus " +
     "Redis, BullMQ, Cloudinary, and Stripe.",
   projectGoal:
     "Ship a live, deployed multi-vendor marketplace with vendor onboarding, a multi-vendor cart, " +
-    "split checkout with price snapshots, and Stripe test-mode payments.",
+    "split checkout with price snapshots, inventory reservations that prevent overselling, " +
+    "server-priced promotions, and Stripe test-mode payments.",
   difficulty: "Medium",
   estimatedHours: 240,
   coverUrl:

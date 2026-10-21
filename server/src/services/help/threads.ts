@@ -27,15 +27,27 @@ export async function listMenteeThreads(user: SessionUser): Promise<HelpThreadSu
     },
   });
 
+  const firstMessages = threads.length
+    ? await prisma.helpMessage.findMany({
+        where: { threadId: { in: threads.map((thread) => thread.id) } },
+        orderBy: { createdAt: "asc" },
+        distinct: ["threadId"],
+        select: { threadId: true, body: true },
+      })
+    : [];
+  const questionsByThread = new Map(firstMessages.map((message) => [message.threadId, message.body]));
+
   return threads.map((thread) => {
     const preview = thread.messages[0] ?? null;
     return {
       id: thread.id,
       status: thread.status,
+      createdAt: thread.createdAt.toISOString(),
       updatedAt: thread.updatedAt.toISOString(),
       course: thread.course,
       chapter: thread.chapter,
-      preview: preview ? { body: preview.body, createdAt: preview.createdAt.toISOString() } : null,
+      question: questionsByThread.get(thread.id) ?? null,
+      preview: preview ? { body: preview.body, createdAt: preview.createdAt.toISOString(), fromMentor: preview.authorId !== user.id } : null,
       unread: mentorReplyUnread({
         menteeId: user.id,
         menteeLastReadAt: thread.menteeLastReadAt,

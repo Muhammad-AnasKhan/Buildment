@@ -86,7 +86,6 @@ export function PredictClient({
           },
           optionId
         );
-        router.refresh();
         return;
       }
 

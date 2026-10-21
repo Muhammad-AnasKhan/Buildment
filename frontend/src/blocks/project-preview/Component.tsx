@@ -1,6 +1,9 @@
+import Image from "next/image";
+import { Layers3 } from "lucide-react";
 import { fetchBlockState } from "@/blocks/block-state";
 import type { ProjectPreviewConfig } from "@/shared/blocks/project-preview/schema";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { readerCardLg, readerEyebrow } from "@/components/learn/reader-theme";
 
 export async function ProjectPreviewComponent({
   id,
@@ -46,54 +49,48 @@ export async function ProjectPreviewComponent({
   }
 
   return (
-    <div className="not-prose my-8 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
-      <div className="relative overflow-hidden border-b border-border bg-muted px-6 py-8 sm:px-8">
-        <div className="relative">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
-            What you&apos;ll build
-          </div>
-          <h3 className="mt-3 text-xl font-bold text-foreground sm:text-2xl">{config.title}</h3>
-          {config.description ? (
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              {config.description}
-            </p>
-          ) : null}
+    <section className={`not-prose my-8 ${readerCardLg}`} aria-label={config.title} data-project-preview>
+      <header className="border-b border-border bg-muted/25 px-5 py-5 sm:px-6 sm:py-6">
+        <div className="flex items-center gap-2">
+          <Layers3 className="size-4 text-muted-foreground" aria-hidden />
+          <p className={readerEyebrow}>Project preview</p>
         </div>
-      </div>
-
-      <div className="px-6 py-5 sm:px-8">
-        {config.features && config.features.length > 0 ? (
-          <>
-            <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Key features</h4>
-            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-              {config.features.map((feature, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-foreground/90">
-                  <svg className="mt-0.5 size-4 shrink-0 text-muted-foreground" viewBox="0 0 16 16" fill="none">
-                    <path d="M3 8l3 3 7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </>
+        <h3 className="mt-3 text-xl font-semibold leading-tight tracking-tight text-foreground sm:text-2xl">{config.title}</h3>
+        {config.description ? (
+          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted-foreground">{config.description}</p>
         ) : null}
+      </header>
 
-        {config.techStack && config.techStack.length > 0 ? (
-          <>
-            <h4 className="mt-5 text-xs font-semibold uppercase tracking-widest text-muted-foreground">Tech stack</h4>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {config.techStack.map((tech) => (
-                <span
-                  key={tech}
-                  className="inline-flex items-center rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-foreground"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </>
-        ) : null}
-      </div>
-    </div>
+      {config.imageUrl ? (
+        <div className="border-b border-border bg-muted/20 p-4 sm:p-5">
+          <Image unoptimized src={config.imageUrl} alt={config.title} width={1200} height={675} className="block h-auto w-full rounded-lg border border-border object-contain" />
+        </div>
+      ) : null}
+
+      {config.features.length > 0 ? (
+        <div className="px-5 py-5 sm:px-6">
+          <h4 className={readerEyebrow}>What you&apos;ll build</h4>
+          <ol className="mt-3 overflow-hidden rounded-xl border border-border divide-y divide-border">
+            {config.features.map((feature, index) => (
+              <li key={index} className="flex items-start gap-3 px-4 py-3.5">
+                <span className="mt-0.5 shrink-0 font-mono text-xs font-semibold tabular-nums text-muted-foreground">{String(index + 1).padStart(2, "0")}</span>
+                <span className="text-sm leading-relaxed text-foreground/90">{feature}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ) : null}
+
+      {(config.techStack?.length ?? 0) > 0 ? (
+        <footer className="flex flex-wrap items-start gap-x-4 gap-y-2 border-t border-border bg-muted/20 px-5 py-4 sm:px-6">
+          <span className={`${readerEyebrow} pt-1`}>Built with</span>
+          <ul className="flex flex-wrap gap-1.5">
+            {config.techStack?.map((tech) => (
+              <li key={tech} className="rounded-md border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground/80">{tech}</li>
+            ))}
+          </ul>
+        </footer>
+      ) : null}
+    </section>
   );
 }

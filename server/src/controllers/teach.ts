@@ -11,6 +11,7 @@ import * as enrollments from "../services/teach/enrollments.js";
 import * as reports from "../services/teach/reports.js";
 import * as reviews from "../services/teach/reviews.js";
 import * as helpInbox from "../services/teach/help-inbox.js";
+import * as courseTeam from "../services/teach/course-team.js";
 import type {
   ChapterSettingsBody,
   CourseSettingsBody,
@@ -19,6 +20,7 @@ import type {
   HelpInboxQuery,
   MoveDirection,
   SubmitReviewBody,
+  courseInstructorInviteBody,
 } from "../validations/teach.js";
 
 // Instructor workspace. Every handler runs behind authenticate + requireVerified +
@@ -44,6 +46,36 @@ export async function createCourse(req: Request, res: Response) {
 // GET /api/v1/teach/courses/:courseSlug/builder
 export async function getCourseBuilder(req: Request, res: Response) {
   ok(res, await courses.loadCourseBuilder(req.user!, param(req, "courseSlug")));
+}
+
+export async function getCourseSettings(req: Request, res: Response) {
+  ok(res, await courses.loadCourseSettings(req.user!, param(req, "courseSlug")));
+}
+
+export async function getCourseDraftPreview(req: Request, res: Response) {
+  ok(res, await courses.loadCourseDraftPreview(req.user!, param(req, "courseSlug")));
+}
+
+export async function getCourseTeam(req: Request, res: Response) {
+  ok(res, await courseTeam.loadCourseTeam(req.user!, param(req, "courseSlug")));
+}
+
+export async function inviteCourseInstructor(req: Request, res: Response) {
+  created(res, await courseTeam.inviteCourseInstructor(req.user!, param(req, "courseId"), req.body as typeof courseInstructorInviteBody._output));
+}
+
+export async function acceptCourseInstructorInvite(req: Request, res: Response) {
+  ok(res, await courseTeam.acceptCourseInstructorInvite(req.user!, param(req, "token")));
+}
+
+export async function removeCourseInstructor(req: Request, res: Response) {
+  await courseTeam.removeCourseInstructor(req.user!, param(req, "courseId"), param(req, "userId"));
+  noContent(res);
+}
+
+export async function revokeCourseInstructorInvite(req: Request, res: Response) {
+  await courseTeam.revokeCourseInstructorInvite(req.user!, param(req, "courseId"), param(req, "inviteId"));
+  noContent(res);
 }
 
 // PATCH /api/v1/teach/courses/:courseId/settings

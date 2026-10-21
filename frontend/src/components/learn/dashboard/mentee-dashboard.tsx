@@ -8,6 +8,8 @@ import {
   Inbox,
   MessageSquareText,
   RotateCcw,
+  Target,
+  Mail,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -53,14 +55,17 @@ function statusDetails(state: DashboardCourse["state"]) {
 
 function DashboardHeader({ model }: { model: MenteeDashboardViewModel }) {
   return (
-    <header className="border-b border-border pb-6">
-      <p className="text-sm font-medium text-muted-foreground">My learning</p>
-      <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
-        Welcome back, {model.learner.name}
-      </h1>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-        Continue your current work and handle anything that needs your attention.
-      </p>
+    <header className="flex flex-col gap-4 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p className="text-sm font-medium text-muted-foreground">My learning</p>
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
+          Welcome back, {model.learner.name}
+        </h1>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+          Continue your current work and handle anything that needs your attention.
+        </p>
+      </div>
+      <WeeklyGoalEditor goal={model.habit.weeklyGoal} />
     </header>
   );
 }
@@ -160,7 +165,7 @@ function WeeklySnapshot({ model }: { model: MenteeDashboardViewModel }) {
   ];
 
   return (
-    <section aria-labelledby="snapshot-heading" className="rounded-2xl border bg-card p-5">
+    <section aria-labelledby="snapshot-heading" className="self-start rounded-2xl border bg-card p-5">
       <div className="flex items-center gap-2">
         <Clock3 className="size-4 text-muted-foreground" aria-hidden />
         <h2 id="snapshot-heading" className="text-sm font-semibold">This week</h2>
@@ -180,7 +185,22 @@ function WeeklySnapshot({ model }: { model: MenteeDashboardViewModel }) {
           </div>
         ))}
       </dl>
-      <WeeklyGoalEditor goal={model.habit.weeklyGoal} />
+      {model.habit.weeklyGoal ? (
+        <div className="mt-5 rounded-xl border bg-muted/20 p-4">
+          <div className="flex items-center justify-between gap-2">
+            <span className="inline-flex items-center gap-2 text-sm font-semibold"><Target className="size-4" aria-hidden /> Weekly goal</span>
+            <span className="text-xs font-medium tabular-nums text-muted-foreground">{Math.min(model.habit.weeklyGoal.progress, model.habit.weeklyGoal.target)} / {model.habit.weeklyGoal.target}</span>
+          </div>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {model.habit.weeklyGoal.progress >= model.habit.weeklyGoal.target ? "Goal reached this week" : `${model.habit.weeklyGoal.target - model.habit.weeklyGoal.progress} ${model.habit.weeklyGoal.kind === "CHAPTERS" ? "chapters" : "sessions"} to go this week`}
+          </p>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Weekly goal progress" aria-valuenow={Math.min(model.habit.weeklyGoal.progress, model.habit.weeklyGoal.target)} aria-valuemin={0} aria-valuemax={model.habit.weeklyGoal.target}>
+            <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, Math.round((model.habit.weeklyGoal.progress / model.habit.weeklyGoal.target) * 100))}%` }} />
+          </div>
+          {model.habit.weeklyGoal.note ? <p className="mt-3 text-xs leading-5 text-muted-foreground">Focus: {model.habit.weeklyGoal.note}</p> : null}
+          {model.habit.weeklyGoal.dailyReminder ? <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground"><Mail className="size-3.5" aria-hidden /> Daily email reminder on</p> : null}
+        </div>
+      ) : null}
       <Link href="/progress" className="mt-4 inline-flex items-center gap-1 text-sm font-medium hover:underline">
         View progress details <ArrowRight className="size-3.5" aria-hidden />
       </Link>
@@ -417,7 +437,7 @@ export function MenteeDashboard({ model }: { model: MenteeDashboardViewModel }) 
       ) : (
         <div className="mt-8 space-y-9">
           {model.activity.runningSession ? <ResumeBanner session={model.activity.runningSession} /> : null}
-          <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
             {model.primaryCourse ? <ContinueLearning course={model.primaryCourse} /> : null}
             <WeeklySnapshot model={model} />
           </div>

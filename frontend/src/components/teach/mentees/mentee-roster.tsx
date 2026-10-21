@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import Link from "next/link";
 import { ArrowRight, Search, Users } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -41,8 +42,75 @@ export function MenteeRoster({ mentees }: { mentees: MenteeRosterItem[] }) {
       <Filter label="Mentor attention" value={attention} setValue={setAttention} options={[["all", "All learners"], ["any", "Needs attention"], ["pending", "Pending reviews"], ["help", "Open help"]]} />
       <Filter label="Recent activity" value={activity} setValue={setActivity} options={[["all", "Any activity"], ["recent", "Active 7 days"], ["inactive", "Inactive 7+ days"], ["never", "Not started"]]} />
     </div></div>
-    {visible.length ? <><div className="mt-4 hidden overflow-hidden rounded-2xl border bg-card md:block"><table className="w-full table-fixed text-sm"><thead><tr className="border-b bg-muted/25 text-left text-[11px] font-medium text-muted-foreground"><th className="w-[27%] px-4 py-3">Learner</th><th className="w-[17%] px-4 py-3">Progress</th><th className="w-[18%] px-4 py-3">Current work</th><th className="w-[15%] px-4 py-3">Attention</th><th className="w-[11%] px-4 py-3">Activity</th><th className="w-[12%] px-4 py-3 text-right">Action</th></tr></thead><tbody className="divide-y">{visible.map((mentee) => <DesktopRow key={mentee.id} mentee={mentee} />)}</tbody></table></div><div className="mt-4 grid gap-3 md:hidden">{visible.map((mentee) => <MobileCard key={mentee.id} mentee={mentee} />)}</div></> : <div className="mt-4 flex flex-col items-center rounded-2xl border border-dashed p-12 text-center"><Users className="size-7 text-muted-foreground" /><p className="mt-3 text-sm font-medium">No learners match these filters</p><p className="mt-1 text-sm text-muted-foreground">Adjust the search, status, progress, attention, or activity filter.</p></div>}
+    {visible.length ? visible.length > 60 ? <WindowedRoster key={`${query}:${status}:${progress}:${attention}:${activity}`} mentees={visible} /> : <><div className="mt-4 hidden overflow-hidden rounded-2xl border bg-card md:block"><table className="w-full table-fixed text-sm"><thead><tr className="border-b bg-muted/25 text-left text-[11px] font-medium text-muted-foreground"><th className="w-[27%] px-4 py-3">Learner</th><th className="w-[17%] px-4 py-3">Progress</th><th className="w-[18%] px-4 py-3">Current work</th><th className="w-[15%] px-4 py-3">Attention</th><th className="w-[11%] px-4 py-3">Activity</th><th className="w-[12%] px-4 py-3 text-right">Action</th></tr></thead><tbody className="divide-y">{visible.map((mentee) => <DesktopRow key={mentee.id} mentee={mentee} />)}</tbody></table></div><div className="mt-4 grid gap-3 md:hidden">{visible.map((mentee) => <MobileCard key={mentee.id} mentee={mentee} />)}</div></> : <div className="mt-4 flex flex-col items-center rounded-2xl border border-dashed p-12 text-center"><Users className="size-7 text-muted-foreground" /><p className="mt-3 font-medium">No learners match these filters</p><p className="mt-1 text-sm text-muted-foreground">Adjust the search, status, progress, attention, or activity filter.</p></div>}
   </section>;
+}
+
+function WindowedRoster({ mentees }: { mentees: MenteeRosterItem[] }) {
+  return <>
+    <WindowedDesktopRoster mentees={mentees} />
+    <WindowedMobileRoster mentees={mentees} />
+  </>;
+}
+
+function WindowedDesktopRoster({ mentees }: { mentees: MenteeRosterItem[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // TanStack Virtual manages scroll measurements inside this leaf component.
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const virtualizer = useVirtualizer({
+    count: mentees.length,
+    getScrollElement: () => scrollRef.current,
+    getItemKey: (index) => mentees[index]?.id ?? index,
+    estimateSize: () => 94,
+    overscan: 5,
+    useFlushSync: false,
+    initialRect: { width: 1100, height: 650 },
+  });
+
+  return <div className="mt-4 hidden overflow-hidden rounded-2xl border bg-card md:block" role="table" aria-label="Learner roster" aria-rowcount={mentees.length + 1}>
+    <div role="row" aria-rowindex={1} className="grid grid-cols-[27%_17%_18%_15%_11%_12%] border-b bg-muted/25 text-left text-[11px] font-medium text-muted-foreground">
+      {["Learner", "Progress", "Current work", "Attention", "Activity", "Action"].map((label) => <span role="columnheader" key={label} className="px-4 py-3 last:text-right">{label}</span>)}
+    </div>
+    <div ref={scrollRef} className="max-h-[70vh] overflow-y-auto" role="region" aria-label="Learner roster" tabIndex={0}>
+      <div className="relative" style={{ height: virtualizer.getTotalSize() }}>
+        {virtualizer.getVirtualItems().map((item) => <div role="row" aria-rowindex={item.index + 2} key={item.key} data-index={item.index} ref={virtualizer.measureElement} className="absolute left-0 top-0 grid w-full grid-cols-[27%_17%_18%_15%_11%_12%] border-b text-sm transition-colors hover:bg-muted/20" style={{ transform: `translateY(${item.start}px)` }}>
+          <VirtualDesktopRow mentee={mentees[item.index]} />
+        </div>)}
+      </div>
+    </div>
+  </div>;
+}
+
+function VirtualDesktopRow({ mentee }: { mentee: MenteeRosterItem }) {
+  return <>
+    <div role="cell" className="min-w-0 px-4 py-3"><Identity mentee={mentee} /></div>
+    <div role="cell" className="min-w-0 px-4 py-3"><Progress mentee={mentee} /></div>
+    <div role="cell" className="min-w-0 px-4 py-3"><p className="truncate text-xs font-medium">{mentee.currentChapter ?? "No chapter opened"}</p><p className="mt-1 text-[11px] text-muted-foreground">{mentee.maxScore ? `${mentee.score}/${mentee.maxScore} score` : "No score yet"} · {formatStudyAmount(mentee.studySeconds)}</p></div>
+    <div role="cell" className="min-w-0 px-4 py-3"><Attention mentee={mentee} /></div>
+    <div role="cell" className="min-w-0 px-4 py-3"><p className="text-xs font-medium">{mentee.lastActiveLabel}</p><p className="mt-1 text-[11px] capitalize text-muted-foreground">{mentee.status.toLowerCase().replaceAll("_", " ")}</p></div>
+    <div role="cell" className="min-w-0 px-4 py-3"><div className="flex flex-col items-end gap-1"><Link href={mentee.evaluationHref} className={cn(buttonVariants({ size: "sm" }), "gap-1")}>Evaluate <ArrowRight /></Link><details className="relative"><summary className="cursor-pointer list-none text-[11px] text-muted-foreground hover:text-foreground">More tools</summary><div className="absolute right-0 z-10 mt-1 flex w-52 flex-col gap-1 rounded-xl border bg-popover p-2 shadow-md"><NudgeMenteeButton enrollmentId={mentee.id} /><RepairEnrollmentProgressButton enrollmentId={mentee.id} /></div></details></div></div>
+  </>;
+}
+
+function WindowedMobileRoster({ mentees }: { mentees: MenteeRosterItem[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // TanStack Virtual manages scroll measurements inside this leaf component.
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const virtualizer = useVirtualizer({
+    count: mentees.length,
+    getScrollElement: () => scrollRef.current,
+    getItemKey: (index) => mentees[index]?.id ?? index,
+    estimateSize: () => 275,
+    overscan: 3,
+    useFlushSync: false,
+    initialRect: { width: 390, height: 650 },
+  });
+
+  return <div ref={scrollRef} className="mt-4 max-h-[70vh] overflow-y-auto md:hidden" role="region" aria-label="Learner roster" tabIndex={0}>
+    <div className="relative" style={{ height: virtualizer.getTotalSize() }}>
+      {virtualizer.getVirtualItems().map((item) => <div key={item.key} data-index={item.index} ref={virtualizer.measureElement} className="absolute left-0 top-0 w-full pb-3" style={{ transform: `translateY(${item.start}px)` }}><MobileCard mentee={mentees[item.index]} /></div>)}
+    </div>
+  </div>;
 }
 
 function DesktopRow({ mentee }: { mentee: MenteeRosterItem }) { return <tr className="align-top transition-colors hover:bg-muted/20"><td className="px-4 py-3"><Identity mentee={mentee} /></td><td className="px-4 py-3"><Progress mentee={mentee} /></td><td className="px-4 py-3"><p className="truncate text-xs font-medium">{mentee.currentChapter ?? "No chapter opened"}</p><p className="mt-1 text-[11px] text-muted-foreground">{mentee.maxScore ? `${mentee.score}/${mentee.maxScore} score` : "No score yet"} · {formatStudyAmount(mentee.studySeconds)}</p></td><td className="px-4 py-3"><Attention mentee={mentee} /></td><td className="px-4 py-3"><p className="text-xs font-medium">{mentee.lastActiveLabel}</p><p className="mt-1 text-[11px] capitalize text-muted-foreground">{mentee.status.toLowerCase().replaceAll("_", " ")}</p></td><td className="px-4 py-3"><div className="flex flex-col items-end gap-1"><Link href={mentee.evaluationHref} className={cn(buttonVariants({ size: "sm" }), "gap-1")}>Evaluate <ArrowRight /></Link><details className="relative"><summary className="cursor-pointer list-none text-[11px] text-muted-foreground hover:text-foreground">More tools</summary><div className="absolute right-0 z-10 mt-1 flex w-52 flex-col gap-1 rounded-xl border bg-popover p-2 shadow-md"><NudgeMenteeButton enrollmentId={mentee.id} /><RepairEnrollmentProgressButton enrollmentId={mentee.id} /></div></details></div></td></tr>; }

@@ -24,6 +24,10 @@ export function CanvasForSpec({ spec }: { spec: CanvasSpec }) {
       return <StateMachineCanvas spec={spec} />;
     case "factor":
       return <FactorCanvas spec={spec} />;
+    case "custom": {
+      const Component = spec.component;
+      return <Component title={spec.title} purpose={spec.purpose} limits={spec.limits} />;
+    }
   }
 }
 

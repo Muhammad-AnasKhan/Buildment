@@ -4,6 +4,8 @@ import { STREAK_MILESTONES } from "../shared/lib/streak.js";
 export const weeklyGoalBody = z.object({
   kind: z.enum(["SESSIONS", "CHAPTERS"]),
   target: z.number().int().min(1).max(50),
+  note: z.string().trim().max(240).optional(),
+  dailyReminder: z.boolean().optional(),
 });
 
 export const streakMilestoneParams = z.object({

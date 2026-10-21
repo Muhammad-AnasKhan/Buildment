@@ -6,7 +6,7 @@ export type LearnerHabit = {
   streakCount: number;
   graceUsed: boolean;
   streakMilestone: StreakMilestone | null;
-  weeklyGoal: { kind: "SESSIONS" | "CHAPTERS"; target: number; progress: number } | null;
+  weeklyGoal: { kind: "SESSIONS" | "CHAPTERS"; target: number; progress: number; note: string | null; dailyReminder: boolean } | null;
 };
 
 export function shiftUtcDate(isoDate: string, days: number): string {

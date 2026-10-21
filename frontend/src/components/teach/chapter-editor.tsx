@@ -46,6 +46,7 @@ type SaveState =
 
 export function ChapterEditor({
   chapterId,
+  courseId,
   courseSlug,
   chapterTitle,
   chapterSummary,
@@ -59,6 +60,7 @@ export function ChapterEditor({
   blockConfigs = {},
 }: {
   chapterId: string;
+  courseId: string;
   courseSlug: string;
   chapterTitle: string;
   chapterSummary: string | null;
@@ -357,6 +359,7 @@ export function ChapterEditor({
       <div className="mt-5">
         {savedReaderMode === "QUIZ" && <p className="mb-3 text-sm text-muted-foreground">Quiz flow contains activities only. Use Insert block or / to add a quiz, open question, prediction, or code exercise.</p>}
         <MdxEditorCore
+          courseId={courseId}
           initialMarkdown={initialSource}
           diffMarkdown={lastPublishedSource ?? undefined}
           onChange={handleChange}

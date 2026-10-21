@@ -26,8 +26,10 @@ export async function loadLearnerProgress(input: { userId: string; bypassLocking
 
   const enrollmentIds = enrollments.map((enrollment) => enrollment.id);
   const since = new Date();
-  since.setUTCDate(since.getUTCDate() - 6);
+  since.setUTCDate(since.getUTCDate() - 89);
   since.setUTCHours(0, 0, 0, 0);
+  const weekStart = new Date(since);
+  weekStart.setUTCDate(weekStart.getUTCDate() + 83);
 
   const [missedResponses, dailyRows] = await Promise.all([
     enrollmentIds.length === 0
@@ -91,7 +93,8 @@ export async function loadLearnerProgress(input: { userId: string; bypassLocking
           maxScore: rows.reduce((sum, row) => sum + (row?.maxScore ?? 0), 0),
         };
       });
-      const week = dailyRows.filter((row) => row.enrollmentId === enrollment.id);
+      const activity = dailyRows.filter((row) => row.enrollmentId === enrollment.id);
+      const activityByDate = new Map(activity.map((row) => [row.date.toISOString().slice(0, 10), row.activeSeconds]));
 
       return {
         course: enrollment.course,
@@ -102,8 +105,14 @@ export async function loadLearnerProgress(input: { userId: string; bypassLocking
         maxScore: enrollment.maxScore,
         pendingReviews: enrollment.pendingReviews,
         lastActiveAt: enrollment.lastActiveAt?.toISOString() ?? null,
-        activeDays: new Set(week.filter((row) => row.activeSeconds > 0).map((row) => row.date.toISOString().slice(0, 10))).size,
-        weekSeconds: week.reduce((sum, row) => sum + row.activeSeconds, 0),
+        activeDays: new Set(activity.filter((row) => row.activeSeconds > 0 && row.date >= weekStart).map((row) => row.date.toISOString().slice(0, 10))).size,
+        weekSeconds: activity.filter((row) => row.date >= weekStart).reduce((sum, row) => sum + row.activeSeconds, 0),
+        dailyActivity: Array.from({ length: 90 }, (_, index) => {
+          const date = new Date(since);
+          date.setUTCDate(since.getUTCDate() + index);
+          const day = date.toISOString().slice(0, 10);
+          return { day, seconds: activityByDate.get(day) ?? 0 };
+        }),
         totalStudySeconds: enrollment.chapterProgress.reduce((sum, row) => sum + row.timeSpentSeconds, 0),
         continueHref: syllabus ? resolveContinueChapterPath(enrollment.course.slug, syllabus.flatChapters) : null,
         modules,

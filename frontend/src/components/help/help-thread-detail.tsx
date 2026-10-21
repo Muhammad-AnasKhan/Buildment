@@ -113,7 +113,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
       {props.messages.length > 0 && (
         <HelpNoteTimeline messages={props.messages} viewerId={props.viewerId} />
       )}
-      {isResolved && props.variant === "mentee" && (
+      {isResolved && props.variant === "mentee" && props.layout === "modal" && (
         <p
           className={cn(
             "text-xs text-muted-foreground",
@@ -216,10 +216,10 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
 
   if (props.variant === "mentee") {
     return (
-      <div className="space-y-6">
-        <section className={helpPanel}>{timelineBlock}</section>
+      <div className="space-y-4">
+        <section className={cn(helpPanel, "rounded-2xl p-4 sm:p-6")}>{timelineBlock}</section>
         {isOpen || !hasThread ? (
-          <section className={helpPanel}>{menteeComposer}</section>
+          <section className={cn(helpPanel, "rounded-2xl p-4 sm:p-6")}>{menteeComposer}</section>
         ) : (
           <p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
             Resolved — use <strong className="font-medium">{copy.resolvedAskAgain}</strong> on the

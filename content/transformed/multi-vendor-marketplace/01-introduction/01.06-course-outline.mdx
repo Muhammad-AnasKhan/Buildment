@@ -112,27 +112,18 @@ Catalogue (see products)
 
 **End of Week 3 question:** Cart with items from two stores → checkout → two orders in DB → change a price → old order unchanged in UI? If yes, Week 4.
 
-## Week 4 — Polish & ship
+## Week 4 — Polish, harden & ship
 
-**Week demo target:** Cached catalogue invalidates on product update. Search uses index. Live HTTPS URL.
+**Week demo target:** Cached catalogue invalidates on product update; search uses an index; the marketplace runs on HTTPS; concurrent checkouts cannot oversell the last unit; server-calculated promotions match the Stripe test payment.
 
 | # | Chapter | Done when… |
 |---|---|---|
 | 21 | **Cache & search** | Redis cache; bust on save; text index; fallback if Redis down |
 | 22 | **Async jobs & queues** | BullMQ on Redis; checkout enqueues notify jobs; worker process |
 | 23 | **Deploy** | Public HTTPS; client + API + worker; secrets in env; survives restart |
-| 24 | **Inventory reservations** | Checkout holds; confirm on payment; ATP; no overselling |
-| 25 | **Promotions & pricing** | Server-side coupons; Stripe amount = server total |
+| 24 | **Inventory reservations** | Checkout holds; confirm on payment; ATP; concurrency evidence proves no overselling |
+| 25 | **Promotions & pricing** | Server-side coupons; order snapshots; Stripe amount matches server total |
 | 99 | **Closing** | Docs, demo video, case study, bar-raiser |
-
-## Week 5 — Production hardening
-
-**Week demo target:** Last unit cannot double-sell under parallel checkout; coupon discount matches Stripe charge.
-
-| # | Chapter | Done when… |
-|---|---|---|
-| 24 | **Inventory reservations** | Reservations + webhook confirm + expiry worker; concurrency test logged |
-| 25 | **Promotions & pricing** | Apply coupon on cart; order snapshots; rate-limited validation |
 
 ## Full chapter list — quick reference
 
@@ -161,8 +152,8 @@ Catalogue (see products)
 | 21 | `21-cache-and-search/` | 4 |
 | 22 | `22-async-jobs-and-queues/` | 4 |
 | 23 | `23-deploy/` | 4 |
-| 24 | `24-inventory-reservations/` | 5 |
-| 25 | `25-promotions-and-pricing/` | 5 |
+| 24 | `24-inventory-reservations/` | 4 |
+| 25 | `25-promotions-and-pricing/` | 4 |
 | 99 | `99-closing/` | Ship |
 
 ## Complexity ladder — what gets harder when

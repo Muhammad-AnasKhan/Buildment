@@ -58,6 +58,7 @@ const componentNames = [
   "TraceRequest",
   "TraceStep",
   "InteractiveCanvas",
+  "EcosystemGallery",
 ] as const;
 
 export type ChapterMdxFailure = { file: string; error: string };

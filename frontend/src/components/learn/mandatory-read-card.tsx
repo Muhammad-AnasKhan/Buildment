@@ -1,11 +1,11 @@
 "use client";
 
 import { useId, useState } from "react";
-import { BookOpen, ExternalLink } from "lucide-react";
+import { BookOpen, Check, Clock3, ExternalLink } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { readerCard, readerCardHeader, readerEyebrow, readerTitle } from "@/components/learn/reader-theme";
+import { readerCardLg, readerEyebrow } from "@/components/learn/reader-theme";
 import { checkpointAttrs } from "@/components/learn/checkpoint-marker";
 import { playFeedback } from "@/lib/sound-feedback";
 import { apiFetch } from "@/lib/api-client";
@@ -44,61 +44,34 @@ export function MandatoryReadCard({
   return (
     <div
       {...(blockId ? checkpointAttrs(blockId, read) : {})}
-      className={cn("not-prose my-8 scroll-mt-24", readerCard)}
+      className={cn("not-prose my-8 scroll-mt-24", readerCardLg)}
+      data-must-read
     >
-      <div className={cn(readerCardHeader, "py-3")}>
-        <p className={readerEyebrow}>
-          Mandatory read
-        </p>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/25 px-5 py-4 sm:px-6">
+        <div className="flex items-center gap-2.5">
+          <span className="flex size-8 items-center justify-center rounded-lg border border-border bg-card text-foreground"><BookOpen className="size-4" aria-hidden /></span>
+          <p className={readerEyebrow}>Required reading</p>
+        </div>
+        {readMinutes ? <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><Clock3 className="size-3.5" aria-hidden /> About {readMinutes} min</span> : null}
       </div>
 
       <div className="px-5 py-5 sm:px-6 sm:py-6">
-        <div className="flex items-start gap-4">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground">
-            <BookOpen className="size-4" aria-hidden />
-          </span>
+        {source ? <p className={`${readerEyebrow} mb-2 normal-case tracking-normal`}>{source}</p> : null}
+        <h3 className="text-lg font-semibold leading-snug tracking-tight text-foreground">{title}</h3>
+        <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{summary}</p>
+        <a href={href} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-opacity hover:opacity-85">
+          Open reading <ExternalLink className="size-3.5" aria-hidden />
+        </a>
+      </div>
 
-          <div className="min-w-0 flex-1">
-            <h3 className={readerTitle}>
-              {title}
-            </h3>
-
-            <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{summary}</p>
-
-            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-              <a
-                href={href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-              >
-                Open article
-                <ExternalLink className="size-3.5" aria-hidden />
-              </a>
-              {source ? (
-                <span className="text-xs text-muted-foreground">{source}</span>
-              ) : null}
-              {readMinutes ? (
-                <span className="text-xs text-muted-foreground/75">~{readMinutes} min read</span>
-              ) : null}
-            </div>
-          </div>
-        </div>
-
-        <div
-          className={cn(
-            "mt-5 flex items-start gap-3 rounded-lg border px-4 py-3 transition-colors",
-            read ? "border-emerald-500/30 bg-emerald-500/10" : "border-border bg-muted/40"
-          )}
-        >
-          <Checkbox
-            id={checkboxId}
-            checked={read}
-            onCheckedChange={(value) => toggle(value === true)}
-          />
-          <Label htmlFor={checkboxId} className="cursor-pointer text-sm leading-relaxed text-foreground/90">
-            I have read this article
+      <div className={cn("flex items-start gap-3 border-t border-border px-5 py-4 sm:px-6", read ? "bg-emerald-500/[0.07]" : "bg-muted/20")}>
+        <Checkbox id={checkboxId} checked={read} onCheckedChange={(value) => toggle(value === true)} />
+        <div className="min-w-0">
+          <Label htmlFor={checkboxId} className="flex cursor-pointer items-center gap-1.5 text-sm font-medium leading-none text-foreground">
+            {read ? "Marked as read" : "Mark as read after opening"}
+            {read ? <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden /> : null}
           </Label>
+          <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{read ? "You can revisit this resource anytime." : blockId ? "Your progress is saved when you check this box." : "Check this box when you finish the reading."}</p>
         </div>
       </div>
     </div>

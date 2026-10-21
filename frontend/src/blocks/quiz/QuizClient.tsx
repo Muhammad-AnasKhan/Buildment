@@ -178,7 +178,6 @@ export function QuizClient({
           explanation: config.explanation,
         };
         applyResult(data, nextSelected);
-        router.refresh();
         return;
       }
 
@@ -324,7 +323,7 @@ export function QuizClient({
     return (
       <div
         ref={cardRef}
-        {...checkpointAttrs(id, settled)}
+        {...(id.startsWith("preview-") ? {} : checkpointAttrs(id, settled))}
         className={cn(
           "not-prose scroll-mt-24 space-y-8 transition-all duration-300",
           isShaking && "animate-feedback-shake",
@@ -341,7 +340,7 @@ export function QuizClient({
   return (
     <div
       ref={cardRef}
-      {...checkpointAttrs(id, settled)}
+      {...(id.startsWith("preview-") ? {} : checkpointAttrs(id, settled))}
       className={cn(
         "not-prose my-8 scroll-mt-24 transition-all duration-300",
         readerCard,

@@ -80,6 +80,7 @@ export async function loadChapterEditor(user: SessionUser, chapterId: string): P
   const blocks = await prisma.block.findMany({ where: { chapterId: chapter.id, archivedAt: null }, select: { id: true, config: true } });
   return {
     chapterId: chapter.id,
+    courseId: course.id,
     courseSlug: course.slug,
     title: chapter.title,
     summary: chapter.summary,

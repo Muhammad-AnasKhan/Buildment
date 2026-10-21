@@ -10,11 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { EditorFields } from "./editor-fields";
 import { EditorBlockFrame } from "./editor-block-frame";
-import { useChapterBlockConfig } from "./chapter-block-configs";
+import { useChapterBlockConfig, useCourseMediaId } from "./chapter-block-configs";
 import { PredictConfigSchema } from "@/shared/blocks/predict/schema";
 import { OpenQuestionConfigSchema } from "@/shared/blocks/open-question/schema";
 import { CodeConfigSchema } from "@/shared/blocks/code/schema";
 import { parseJsxExpressionValue } from "@/shared/mdx/jsx-attribute-value";
+import { uploadCourseImage } from "@/lib/course-media-upload";
 
 const schemas = { Predict: PredictConfigSchema, OpenQuestion: OpenQuestionConfigSchema, CodeExercise: CodeConfigSchema };
 const label = (name: string) => name.replace(/([A-Z])/g, " $1").replace(/^./, c => c.toUpperCase());
@@ -95,6 +96,9 @@ function StoredBlockForm({ mdastNode, descriptor }: JsxEditorProps) {
 
 const defaults: Record<string, unknown> = { options: [], tests: [], hints: [], context: { method: "", url: "", responseHint: "" }, allowRetry: true, allowSpeechInput: false, speechPrimary: false, allowUrl: false, urlRequired: false };
 export function StructuredField({ name, value, onChange, allowCustomFields = false }: { name: string; value: unknown; onChange: (value: unknown) => void; allowCustomFields?: boolean }) {
+  const courseId = useCourseMediaId();
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   if (typeof value === "boolean") return <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={value} onChange={e => onChange(e.target.checked)} />{name}</label>;
   if (Array.isArray(value)) return <div className="space-y-2">
     {value.map((item, index) => <div key={typeof item?.id === "string" ? item.id : index} className="flex items-start gap-2 rounded-lg border bg-muted/10 p-2">
@@ -108,6 +112,22 @@ export function StructuredField({ name, value, onChange, allowCustomFields = fal
   </div>;
   if (value && typeof value === "object") return <ObjectFields allowCustomFields={allowCustomFields} name={name} value={value as Record<string, unknown>} onChange={onChange} />;
   if (typeof value === "number") return <Input aria-label={name} type="number" value={value} onChange={e => onChange(Number(e.target.value))} />;
+  if (/image url$/i.test(name) && courseId) return <div className="space-y-1.5">
+    <Input aria-label={name} value={String(value ?? "")} onChange={e => onChange(e.target.value)} />
+    <label className="inline-flex cursor-pointer items-center rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-muted">
+      {uploading ? "Uploading…" : "Upload image"}
+      <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" className="sr-only" disabled={uploading} onChange={async event => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        setUploading(true);
+        setUploadError("");
+        try { onChange(await uploadCourseImage(courseId, "content", file)); }
+        catch (cause) { setUploadError(cause instanceof Error ? cause.message : "Could not upload the image."); }
+        finally { setUploading(false); event.target.value = ""; }
+      }} />
+    </label>
+    {uploadError && <p role="alert" className="text-xs text-destructive">{uploadError}</p>}
+  </div>;
   if (/\b(label|title|name|url|alt|method|state)$/i.test(name)) return <Input aria-label={name} value={String(value ?? "")} onChange={e => onChange(e.target.value)} />;
   return <Textarea aria-label={name} value={String(value ?? "")} rows={/\bcode$/i.test(name) ? 5 : 2} className={/\bcode$/i.test(name) ? "font-mono text-sm" : undefined} onChange={e => onChange(e.target.value)} />;
 }

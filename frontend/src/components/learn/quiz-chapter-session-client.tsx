@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { playFeedback } from "@/lib/sound-feedback";
 import { apiFetch } from "@/lib/api-client";
+import { markChapterComplete } from "@/server/actions/progress";
 import { cn } from "@/lib/utils";
 import { QuizSessionContext, type QuizBlockGrade } from "@/components/learn/quiz-session-context";
 
@@ -30,6 +31,9 @@ export function QuizChapterSessionClient({
   initialAnswers,
   initialScoreSummary,
   initialBlockGrades,
+  nextHref,
+  canMarkComplete,
+  chapterComplete,
 }: {
   children: React.ReactNode;
   chapterId: string;
@@ -41,12 +45,16 @@ export function QuizChapterSessionClient({
   initialAnswers: Record<string, string[]>;
   initialScoreSummary: QuizResultSummary | null;
   initialBlockGrades: Record<string, QuizBlockGrade>;
+  nextHref?: string;
+  canMarkComplete: boolean;
+  chapterComplete: boolean;
 }) {
   const router = useRouter();
   const steps = React.Children.toArray(children).filter(Boolean);
   const total = steps.length;
   const [index, setIndex] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [movingNext, setMovingNext] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [scoreSummary, setScoreSummary] = useState<QuizResultSummary | null>(initialScoreSummary);
   const [blockGrades, setBlockGrades] = useState<Record<string, QuizBlockGrade>>(initialBlockGrades);
@@ -186,6 +194,29 @@ export function QuizChapterSessionClient({
     }
   };
 
+  const moveToNextChapter = async () => {
+    if (!nextHref || movingNext || !perfectScore) return;
+    if (chapterComplete) {
+      router.push(nextHref);
+      return;
+    }
+    if (!canMarkComplete) return;
+    setMovingNext(true);
+    setSubmitError(null);
+    try {
+      const result = await markChapterComplete({ chapterId });
+      if (!result.ok) {
+        setSubmitError(result.error);
+        return;
+      }
+      router.push(nextHref);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : "Could not open the next chapter.");
+    } finally {
+      setMovingNext(false);
+    }
+  };
+
 
   const progressPct = total > 0 ? ((index + 1) / total) * 100 : 0;
 
@@ -279,6 +310,18 @@ export function QuizChapterSessionClient({
               Next
               <ChevronRight className="size-4" aria-hidden />
             </Button>
+          ) : perfectScore && nextHref ? (
+            <Button
+              type="button"
+              size="sm"
+              disabled={movingNext || (!chapterComplete && !canMarkComplete)}
+              loading={movingNext}
+              onClick={() => void moveToNextChapter()}
+              className="gap-1.5"
+            >
+              {movingNext ? "Opening next chapter…" : !chapterComplete && !canMarkComplete ? "Finish remaining activities" : "Next chapter"}
+              {!movingNext && (chapterComplete || canMarkComplete) ? <ChevronRight className="size-4" aria-hidden /> : null}
+            </Button>
           ) : quizBlockIds.length > 0 ? (
             <Button
               type="button"
@@ -287,7 +330,7 @@ export function QuizChapterSessionClient({
               loading={submitting}
               onClick={() => void submitQuiz()}
             >
-              {submitting ? "Submitting…" : perfectScore ? "All correct" : scoreSummary ? "Submit again" : individualActivityCount > 0 ? "Submit multiple-choice answers" : "Submit quiz"}
+              {submitting ? "Submitting…" : perfectScore ? "Quiz complete" : scoreSummary ? "Submit again" : individualActivityCount > 0 ? "Submit multiple-choice answers" : "Submit quiz"}
             </Button>
           ) : (
             <p className="text-sm text-muted-foreground">Submit each activity above. Its result or review status appears on the activity.</p>

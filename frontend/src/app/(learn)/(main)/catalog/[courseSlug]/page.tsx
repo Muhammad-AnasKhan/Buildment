@@ -7,6 +7,8 @@ import { CourseCover } from "@/components/learn/course-cover";
 import { formatPriceCents } from "@/lib/format-price";
 import { buttonVariants } from "@/components/ui/button";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
+import { CourseProjectShowcase } from "@/components/learn/course-project-showcase";
+import { CourseRoadmap } from "@/components/learn/course-roadmap";
 
 export default async function CatalogCoursePage({
   params,
@@ -20,14 +22,14 @@ export default async function CatalogCoursePage({
   const needsPayment = course.access === "payment_required";
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-7 sm:px-6 sm:py-10">
+    <div className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10">
       <Link href="/catalog" className="text-sm text-muted-foreground hover:text-foreground">
         ← Catalog
       </Link>
 
       <div className="mt-6 overflow-hidden rounded-2xl border bg-card shadow-sm">
         <CourseCover coverUrl={course.coverUrl} title={course.title} aspect="banner" className="rounded-none" />
-        <header className="border-b border-border p-6 sm:p-8">
+        <header className="border-b border-border p-6 sm:p-8 lg:p-10">
         <p className="text-sm text-muted-foreground">
           {course.instructorName ? `Instructor · ${course.instructorName}` : "Instructor-led course"}
         </p>
@@ -60,34 +62,32 @@ export default async function CatalogCoursePage({
       </header>
       </div>
 
-      {course.modules.some((module) => module.chapters.length > 0) ? (
-        <section className="mt-6 rounded-xl border bg-card p-5">
-          <h2 className="text-sm font-semibold">Curriculum</h2>
-          <ol className="mt-4 space-y-5">
-            {course.modules.map((module) =>
-              module.chapters.length === 0 ? null : (
-                <li key={module.id}>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {String(module.order).padStart(2, "0")} · {module.title}
-                  </p>
-                  <ol className="mt-2 space-y-1.5">
-                    {module.chapters.map((chapter) => (
-                      <li key={chapter.id} className="flex items-baseline justify-between gap-3 text-sm">
-                        <span>
-                          {String(chapter.order).padStart(2, "0")} {chapter.title}
-                        </span>
-                        {chapter.estimatedMinutes ? (
-                          <span className="shrink-0 text-xs text-muted-foreground">
-                            {chapter.estimatedMinutes} min
-                          </span>
-                        ) : null}
-                      </li>
-                    ))}
-                  </ol>
-                </li>
-              )
-            )}
-          </ol>
+      <div className="mt-6">
+        <CourseProjectShowcase courseSlug={course.slug} />
+      </div>
+
+      {course.slug === "multi-vendor-marketplace" ? <div className="mt-6"><CourseRoadmap modules={course.modules} /></div> : null}
+
+      {course.slug !== "multi-vendor-marketplace" && course.modules.some((module) => module.chapters.length > 0) ? (
+        <section className="mt-6 overflow-hidden rounded-2xl border bg-card">
+          <div className="p-5 sm:p-7">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Explore the syllabus</p>
+            <h2 className="mt-1 text-xl font-semibold tracking-tight">Course curriculum</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{course.moduleCount} modules · {course.chapterCount} lessons. Open a module to see its lesson list.</p>
+          </div>
+          <div className="border-t">
+            {course.modules.map((module) => module.chapters.length === 0 ? null : (
+              <details key={module.id} className="group border-b last:border-b-0">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 hover:bg-muted/25 sm:px-7 [&::-webkit-details-marker]:hidden">
+                  <span className="flex min-w-0 items-center gap-3"><span className="grid size-8 shrink-0 place-items-center rounded-lg border bg-muted/30 font-mono text-xs text-muted-foreground">{String(module.order).padStart(2, "0")}</span><span className="min-w-0"><span className="block truncate text-sm font-semibold">{module.title}</span><span className="mt-0.5 block text-xs text-muted-foreground">{module.chapters.length} lessons</span></span></span>
+                  <span className="text-xs text-muted-foreground group-open:hidden">View lessons</span><span className="hidden text-xs text-muted-foreground group-open:inline">Hide lessons</span>
+                </summary>
+                <ol className="divide-y border-t bg-muted/10 px-5 sm:px-7">
+                  {module.chapters.map((chapter) => <li key={chapter.id} className="flex items-center justify-between gap-3 py-3 text-sm"><span className="min-w-0"><span className="mr-2 font-mono text-xs text-muted-foreground">{String(module.order).padStart(2, "0")}.{String(chapter.order).padStart(2, "0")}</span>{chapter.title}</span>{chapter.estimatedMinutes ? <span className="shrink-0 text-xs text-muted-foreground">{chapter.estimatedMinutes} min</span> : null}</li>)}
+                </ol>
+              </details>
+            ))}
+          </div>
         </section>
       ) : null}
 
@@ -98,7 +98,7 @@ export default async function CatalogCoursePage({
         </section>
       ) : null}
 
-      <div className="mt-8 flex flex-wrap gap-3">
+      <div className="sticky bottom-3 z-10 mt-8 flex flex-wrap items-center gap-3 rounded-xl border bg-background/95 p-3 shadow-lg backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
         {hasAccess ? (
           <Link href={`/courses/${course.slug}`} className={buttonVariants({ size: "lg" })}>
             Go to course

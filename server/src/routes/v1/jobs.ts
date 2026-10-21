@@ -7,5 +7,6 @@ const router = Router();
 router.use(requireCronSecret);
 
 router.post("/inactivity-nudge", jobs.inactivityNudge);
+router.post("/weekly-goal-reminder", jobs.weeklyGoalReminder);
 
 export default router;

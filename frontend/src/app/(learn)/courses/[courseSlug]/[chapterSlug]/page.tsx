@@ -95,7 +95,13 @@ export default async function ChapterReaderPage({
       next={next ?? undefined}
     >
       {chapter.readerMode === "QUIZ" ? (
-        <QuizChapterWizard chapterId={chapter.id} chapterTitle={chapter.title} />
+        <QuizChapterWizard
+          chapterId={chapter.id}
+          chapterTitle={chapter.title}
+          nextHref={next ? `/courses/${course.slug}/${next.slug}` : undefined}
+          canMarkComplete={content.canMarkComplete}
+          chapterComplete={content.chapterComplete}
+        />
       ) : (
         <ChapterMdx source={source} />
       )}

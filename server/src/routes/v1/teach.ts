@@ -1,5 +1,6 @@
 import { raw, Router } from "express";
 import * as teach from "../../controllers/teach.js";
+import * as media from "../../controllers/course-media.js";
 import { authenticate } from "../../middlewares/authenticate.js";
 import { requireInstructor } from "../../middlewares/require-instructor.js";
 import { requireVerified } from "../../middlewares/require-verified.js";
@@ -9,6 +10,10 @@ import {
   assignByEmailsBody,
   chapterDraftBody,
   chapterIdParams,
+  courseInstructorInviteBody,
+  courseInstructorInviteParams,
+  courseInstructorMemberParams,
+  courseInstructorPendingInviteParams,
   chapterSettingsBody,
   courseIdParams,
   courseSettingsBody,
@@ -44,6 +49,14 @@ router.get("/courses", teach.listCourses);
 router.post("/courses/import", requireZipImport, raw({ type: "application/zip", limit: "5mb" }), teach.importCourseZip);
 router.post("/courses", validateBody(createCourseBody), teach.createCourse);
 router.get("/courses/:courseSlug/builder", validateParams(courseSlugParams), teach.getCourseBuilder);
+router.get("/courses/:courseSlug/settings", validateParams(courseSlugParams), teach.getCourseSettings);
+router.get("/courses/:courseSlug/preview", validateParams(courseSlugParams), teach.getCourseDraftPreview);
+router.get("/courses/:courseSlug/team", validateParams(courseSlugParams), teach.getCourseTeam);
+router.post("/courses/:courseId/media/:purpose", raw({ type: "image/*", limit: "8mb" }), media.upload);
+router.post("/courses/:courseId/instructor-invites", validate({ params: courseIdParams, body: courseInstructorInviteBody }), teach.inviteCourseInstructor);
+router.post("/instructor-invites/:token/accept", validateParams(courseInstructorInviteParams), teach.acceptCourseInstructorInvite);
+router.delete("/courses/:courseId/instructors/:userId", validateParams(courseInstructorMemberParams), teach.removeCourseInstructor);
+router.delete("/courses/:courseId/instructor-invites/:inviteId", validateParams(courseInstructorPendingInviteParams), teach.revokeCourseInstructorInvite);
 router.patch("/courses/:courseId/settings", validate({ params: courseIdParams, body: courseSettingsBody }), teach.updateCourseSettings);
 router.post("/courses/:courseId/chapters/publish", validateParams(courseIdParams), teach.publishCourseChapters);
 router.post("/modules/:moduleId/chapters/publish", validateParams(moduleIdParams), teach.publishModuleChapters);

@@ -9,12 +9,13 @@ import { EditorFields } from "./editor-fields";
 import { isVisibleBlockField, blockContentLabels } from "./block-editor-fields";
 import { nestedBlockContent, updateNestedBlockContent } from "./nested-block-content";
 import { EditorBlockFrame } from "./editor-block-frame";
-import { useChapterBlockConfig } from "./chapter-block-configs";
+import { useChapterBlockConfig, useCourseMediaId } from "./chapter-block-configs";
 import { StructuredField } from "./stored-block-editor";
 import { parseJsxExpressionValue } from "@/shared/mdx/jsx-attribute-value";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { uploadCourseImage } from "@/lib/course-media-upload";
 
 const humanize = (name: string) => name.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, c => c.toUpperCase());
 const containers = new Set(["Callout", "ComparePanel", "CompareColumn", "FileTree", "TerminalBlock", "TerminalLine", "ArchitectureDiagram", "ArchNode", "TraceRequest", "FaqGroup", "FaqItem", "CheckpointIntro", "InterestingRead", "ApiRequestPanel", "Steps", "Step"]);
@@ -31,6 +32,7 @@ export function CollapsibleJsxEditor(props: JsxEditorProps) {
 }
 
 function BlockFields({ mdastNode, descriptor }: JsxEditorProps) {
+  const courseId = useCourseMediaId();
   const update = useMdastNodeUpdater<JsxEditorProps["mdastNode"]>();
   const remove = useLexicalNodeRemove();
   const formId = useId();
@@ -43,6 +45,7 @@ function BlockFields({ mdastNode, descriptor }: JsxEditorProps) {
   const [values, setValues] = useState(initial);
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState("");
+  const [uploadingField, setUploadingField] = useState<string | null>(null);
   const set = (name: string, value: unknown) => { setValues(v => ({ ...v, [name]: value })); setDirty(true); };
   const apply = () => {
     const invalidChoice = descriptor.props.find(prop => {
@@ -83,7 +86,19 @@ function BlockFields({ mdastNode, descriptor }: JsxEditorProps) {
             {choices.map(choice => <option key={choice} value={choice}>{humanize(choice)}</option>)}
           </select> : prop.type === "expression" ? <StructuredField allowCustomFields={["headers", "requestBody", "responseBody"].includes(prop.name)} name={prop.name === "isGate" ? "Require completion to continue" : humanize(prop.name)} value={values[prop.name] ?? (arrayFields.has(prop.name) ? [] : boolean ? false : prop.name === "status" ? 200 : {})} onChange={value => set(prop.name, value)} /> : multiline ?
             <Textarea id={formId + prop.name} rows={/before|after|chart/.test(prop.name) ? 7 : 3} className={/before|after|chart/.test(prop.name) ? "font-mono text-sm" : ""} value={String(values[prop.name] ?? "")} onChange={e => set(prop.name, e.target.value)} /> :
-            <Input id={formId + prop.name} type={prop.type === "number" ? "number" : "text"} value={String(values[prop.name] ?? "")} onChange={e => set(prop.name, prop.type === "number" ? (e.target.value === "" ? undefined : Number(e.target.value)) : e.target.value)} />}
+            <><Input id={formId + prop.name} type={prop.type === "number" ? "number" : "text"} value={String(values[prop.name] ?? "")} onChange={e => set(prop.name, prop.type === "number" ? (e.target.value === "" ? undefined : Number(e.target.value)) : e.target.value)} />
+            {prop.name === "imageUrl" && courseId && <label className="inline-flex cursor-pointer items-center rounded-lg border px-3 py-1.5 text-xs font-medium hover:bg-muted">
+              {uploadingField === prop.name ? "Uploading…" : "Upload image"}
+              <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" className="sr-only" disabled={uploadingField !== null} onChange={async event => {
+                const file = event.target.files?.[0];
+                if (!file) return;
+                setUploadingField(prop.name);
+                setError("");
+                try { set(prop.name, await uploadCourseImage(courseId, "content", file)); }
+                catch (cause) { setError(cause instanceof Error ? cause.message : "Could not upload the image."); }
+                finally { setUploadingField(null); event.target.value = ""; }
+              }} />
+            </label>}</>}
         </div>;
       })}
     </EditorFields>

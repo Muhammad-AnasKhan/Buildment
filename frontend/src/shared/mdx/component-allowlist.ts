@@ -48,6 +48,7 @@ export const MDX_COMPONENT_NAMES = [
   "TraceRequest",
   "TraceStep",
   "InteractiveCanvas",
+  "EcosystemGallery",
 ] as const;
 
 export const mdxComponentAllowlist: ReadonlySet<string> = new Set(MDX_COMPONENT_NAMES);

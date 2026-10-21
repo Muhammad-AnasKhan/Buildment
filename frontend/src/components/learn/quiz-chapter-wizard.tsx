@@ -7,7 +7,7 @@ import { getSessionUser } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { QuizChapterSessionClient } from "./quiz-chapter-session-client";
 
-export async function QuizChapterWizard({ chapterId, chapterTitle }: { chapterId: string; chapterTitle: string }) {
+export async function QuizChapterWizard({ chapterId, chapterTitle, nextHref, canMarkComplete, chapterComplete }: { chapterId: string; chapterTitle: string; nextHref?: string; canMarkComplete: boolean; chapterComplete: boolean }) {
   const user = await getSessionUser();
   if (!user) return null;
 
@@ -27,6 +27,9 @@ export async function QuizChapterWizard({ chapterId, chapterTitle }: { chapterId
       initialAnswers={state.initialAnswers}
       initialScoreSummary={state.initialScoreSummary}
       initialBlockGrades={state.initialBlockGrades}
+      nextHref={nextHref}
+      canMarkComplete={canMarkComplete}
+      chapterComplete={chapterComplete}
     >
       {state.steps.map(step => step.type === "OPEN_QUESTION"
         ? <OpenQuestionComponent key={step.id} id={step.id} />

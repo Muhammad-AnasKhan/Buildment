@@ -37,6 +37,7 @@ import {
   TraceStep,
 } from "@/components/learn/content-blocks";
 import { InteractiveCanvas } from "@/canvas/InteractiveCanvas";
+import { EcosystemGallery } from "@/components/learn/ecosystem-gallery";
 import { Checklist } from "@/components/learn/checklist";
 import { LearningLog } from "@/components/learn/learning-log";
 import { GlossaryTerm } from "@/components/learn/glossary-term";
@@ -96,6 +97,7 @@ export const mdxComponents: MDXComponents = {
   TraceRequest,
   TraceStep,
   InteractiveCanvas,
+  EcosystemGallery,
   h2: ({ children, ...props }: React.ComponentProps<"h2">) => {
     const text = typeof children === "string" ? children : undefined;
     const id = text ? slugify(text) : undefined;
