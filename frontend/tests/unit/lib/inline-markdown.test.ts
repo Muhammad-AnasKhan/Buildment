@@ -1,7 +1,7 @@
 import { createElement, Fragment } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { parseInlineMarkdown } from "@/lib/inline-markdown";
+import { inlineMarkdownToText, parseInlineMarkdown } from "@/lib/inline-markdown";
 
 const html = (text: string) => renderToStaticMarkup(createElement(Fragment, null, ...parseInlineMarkdown(text)));
 
@@ -50,5 +50,15 @@ describe("parseInlineMarkdown", () => {
 
   it("escapes HTML instead of injecting it", () => {
     expect(html("**<img src=x>**")).toBe(`${STRONG}&lt;img src=x&gt;</strong>`);
+  });
+});
+
+describe("inlineMarkdownToText", () => {
+  it("strips bold and code markers for aria labels", () => {
+    expect(inlineMarkdownToText("Why does **`findOne`** return null?")).toBe("Why does findOne return null?");
+  });
+
+  it("drops stray markers but keeps code span content exact", () => {
+    expect(inlineMarkdownToText("**dangling and `a ** b`")).toBe("dangling and a ** b");
   });
 });

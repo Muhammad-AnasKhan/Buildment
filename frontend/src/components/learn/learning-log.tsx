@@ -11,7 +11,7 @@ import {
 } from "react";
 import { CheckCircle2, CloudOff, Loader2, NotebookPen, Save } from "lucide-react";
 import { AnswerTextareaWithMic } from "@/components/learn/answer-textarea-with-mic";
-import { parseInlineMarkdown } from "@/lib/inline-markdown";
+import { inlineMarkdownToText, parseInlineMarkdown } from "@/lib/inline-markdown";
 import { cn } from "@/lib/utils";
 import { saveLearningLogAnswers } from "@/server/actions/learning-log";
 import {
@@ -124,7 +124,7 @@ function LearningLogQuestion({
             enableSpeech
             placeholder="Write what you learned…"
             rows={4}
-            ariaLabel={question.title}
+            ariaLabel={inlineMarkdownToText(question.title)}
             className={cn(
               "placeholder:text-muted-foreground/70",
               styles.questionBorder,
