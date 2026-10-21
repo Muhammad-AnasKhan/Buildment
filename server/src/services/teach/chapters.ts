@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import type { ChapterEditorView, ChapterIdResult, SavedAtResult } from "../../shared/api/teach.js";
 import { TEACH_ERROR_CODES } from "../../shared/api/teach.js";
 import { blockDefinitions, isRegisteredBlockType } from "../../shared/blocks/definitions.js";
+import { collectContentTokenProblems, tokenInFieldProblem } from "../../shared/lib/content-tokens.js";
 import { slugify } from "../../shared/lib/mdx-headings.js";
 import { mdxComponentAllowlist } from "../../shared/mdx/component-allowlist.js";
 import { collectUnknownComponents, diffBlocks, extractBlocksFromSource } from "../../shared/mdx/extract.js";
@@ -14,6 +15,7 @@ import { remarkLearningLog } from "../../shared/mdx/remark-learning-log.js";
 import { restoreInteractiveBlockTags } from "../../shared/mdx/restore-block-tags.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, NotFoundError, UnprocessableError } from "../../utils/errors.js";
+import { secretFieldsWithTokens } from "../../utils/sanitize-block-config.js";
 import type { SessionUser } from "../../types/auth.js";
 import type { ChapterSettingsBody, CreateChapterBody, MoveDirection } from "../../validations/teach.js";
 import { requireCourseById } from "./access.js";
@@ -29,8 +31,15 @@ async function requireChapter(user: SessionUser, chapterId: string) {
   return { chapter, course };
 }
 
+/** Titles and summaries show in navigation, the catalogue and emails, where placeholders never resolve. */
+function rejectTokensInChapterFields(fields: { title: string; summary?: string | null }) {
+  const problems = [tokenInFieldProblem("chapter title", fields.title), tokenInFieldProblem("chapter summary", fields.summary)].filter((p): p is string => p !== null);
+  if (problems.length) throw new UnprocessableError(problems[0]!, undefined, problems);
+}
+
 export async function createChapter(user: SessionUser, courseId: string, input: CreateChapterBody): Promise<ChapterIdResult> {
   await requireCourseById(user, courseId);
+  rejectTokensInChapterFields(input);
   const moduleId = input.moduleId ?? null;
   if (moduleId) {
     const owner = await prisma.module.findFirst({ where: { id: moduleId, courseId }, select: { id: true } });
@@ -97,6 +106,7 @@ export async function loadChapterEditor(user: SessionUser, chapterId: string): P
 
 export async function updateChapterSettings(user: SessionUser, chapterId: string, input: ChapterSettingsBody): Promise<SavedAtResult> {
   const { chapter } = await requireChapter(user, chapterId);
+  rejectTokensInChapterFields(input);
   if (input.readerMode !== "QUIZ" && chapter.compiled && hasQuizBlocks(restoreInteractiveBlockTags(chapter.compiled))) {
     throw new UnprocessableError("Published quizzes require Quiz flow. Remove the quizzes and publish before changing the reader experience.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE);
   }
@@ -127,7 +137,7 @@ export async function saveChapterDraft(user: SessionUser, chapterId: string, sou
 export async function publishChapter(user: SessionUser, chapterId: string): Promise<void> {
   const { chapter } = await requireChapter(user, chapterId);
   const renderable = restoreInteractiveBlockTags(chapter.source);
-  const reasons = await collectPublishProblems(chapter.id, renderable, chapter.readerMode);
+  const reasons = await collectPublishProblems(chapter, renderable);
   if (reasons.length > 0) {
     throw new UnprocessableError("The chapter cannot be published yet.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE, reasons);
   }
@@ -165,9 +175,16 @@ export async function removeChapter(
   await prisma.chapter.delete({ where: { id: chapter.id } });
 }
 
-/** Everything that would break the reader: MDX syntax, unknown components, block configs. */
-async function collectPublishProblems(chapterId: string, renderable: string, readerMode: string, db: Prisma.TransactionClient = prisma): Promise<string[]> {
+type PublishableChapter = { id: string; title: string; summary: string | null; readerMode: string };
+
+/** Everything that would break the reader: MDX syntax, unknown components, block configs, misplaced placeholders. */
+async function collectPublishProblems(chapter: PublishableChapter, renderable: string, db: Prisma.TransactionClient = prisma): Promise<string[]> {
+  const { id: chapterId, readerMode } = chapter;
   const problems: string[] = [];
+
+  for (const problem of [tokenInFieldProblem("chapter title", chapter.title), tokenInFieldProblem("chapter summary", chapter.summary)]) {
+    if (problem) problems.push(problem);
+  }
 
   try {
     await compile(renderable, { remarkPlugins: [remarkGfm, remarkChecklist, remarkLearningLog], outputFormat: "function-body" });
@@ -181,6 +198,7 @@ async function collectPublishProblems(chapterId: string, renderable: string, rea
   }
 
   problems.push(...collectCanvasProblems(renderable));
+  problems.push(...collectContentTokenProblems(renderable));
 
   if (readerMode !== "QUIZ" && hasQuizBlocks(renderable)) {
     problems.push("Quizzes require Quiz flow. Change the reader experience in Chapter settings before publishing.");
@@ -217,6 +235,9 @@ async function collectPublishProblems(chapterId: string, renderable: string, rea
       if (persisted) problems.push(`${block.tagName} block "${block.id}" has no configuration yet. Publish blocked.`);
       continue;
     }
+    for (const field of secretFieldsWithTokens(config)) {
+      problems.push(`${block.tagName} block "${block.id}" uses a placeholder in "${field}". Answer keys, rubrics, tests and solutions must be the same for every learner.`);
+    }
     const result = schema.safeParse(config);
     if (!result.success) {
       const details = result.error.issues.map((issue) => issue.path.join(".") || "configuration").join(", ");
@@ -246,7 +267,7 @@ export async function publishChapters(user: SessionUser, scope: { courseId: stri
     const pending = chapters.filter(chapter => !chapter.publishedAt || chapter.compiled !== chapter.source);
     const problems: string[] = [];
     for (const chapter of pending) {
-      const reasons = await collectPublishProblems(chapter.id, restoreInteractiveBlockTags(chapter.source), chapter.readerMode, tx);
+      const reasons = await collectPublishProblems(chapter, restoreInteractiveBlockTags(chapter.source), tx);
       problems.push(...reasons.map(reason => `${chapter.title}: ${reason}`));
     }
     if (problems.length) throw new UnprocessableError("Some chapters cannot be published yet. No chapters were published.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE, problems);
