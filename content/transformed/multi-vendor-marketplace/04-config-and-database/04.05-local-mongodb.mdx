@@ -10,11 +10,11 @@ Before sub-chapter 4.9 asks you to paste `MONGODB_URI` into `.env`, you need a *
 
 This course supports **either** local MongoDB **or** MongoDB Atlas (cloud free tier). Pick one for development; stick with it through Week 1 unless you hit a blocker.
 
-## Why this matters for absolute beginners
+## Why this matters
 
 Nothing in the build cluster works until **mongosh or Compass** connects with the same URI you will paste into `.env`. Debugging Node before the database runs wastes hours blaming Mongoose for network problems. Verify the wire with official tools first; wire Express second.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -176,8 +176,6 @@ Learning goal: **the app must not pretend DB is fine when it isn't** — exact m
 - [ ] I have a working `MONGODB_URI` ready to paste  
 - [ ] I can open Compass and see the database (empty is fine)  
 - [ ] I chose local **or** Atlas and know how to test "DB down" for 4.15  
-
-<RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />
 
 ## Next
 

@@ -82,16 +82,16 @@ Record itemId from step 1 for steps 4–5.
 
 CartItem documents:
 
-- All lines for Customer A have `userId: A`  
-- No query in code uses `find({})` without userId filter on cart  
+- All lines for Customer A have `userId: A`
+- No query in code uses `find({})` without userId filter on cart
 
 ## Implementation audit checklist
 
 Review cart.service.js for:
 
-- [ ] `find({ userId })` on GET  
-- [ ] `findOne({ _id: itemId, userId })` on PATCH/DELETE  
-- [ ] POST sets userId from JWT only  
+- [ ] `find({ userId })` on GET
+- [ ] `findOne({ _id: itemId, userId })` on PATCH/DELETE
+- [ ] POST sets userId from JWT only
 - [ ] No admin bypass accidentally mounted  
 
 ## Multi-vendor cart proof
@@ -136,10 +136,8 @@ Fix any isolation bugs found before commit.
 
 - [ ] Full test matrix passed  
 - [ ] Multi-vendor two storeIds in one cart  
-- [ ] Code audit confirms userId in every write query  
+- [ ] Code audit confirms userId in every write query
 - [ ] README cart section added
-
-<RealWorldEvent title="Target cart persistence across channels" when="2010s–present" summary="Retailers invested in unified carts so web, app, and in-store pickup saw the same basket — reducing abandoned purchases." lesson="Treat cart mutations as concurrent — two tabs updating quantity should not corrupt totals." />
 
 ## Next
 

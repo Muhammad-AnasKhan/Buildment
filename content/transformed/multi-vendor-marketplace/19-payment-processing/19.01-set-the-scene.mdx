@@ -12,6 +12,8 @@ summary: "Chapter 18 can create split orders, but it cannot prove a customer pai
 
 This is a **backend build chapter**. It pairs with Chapter 20 the way Chapter 18 paired with Chapter 17's cart UI. The gate is **payment-gated checkout**: no order without a succeeded Payment Intent.
 
+<LearningObjectives id="01M5EB39DEP8EFF1TQ0603PXGF" />
+
 ## Bridge from last chapter
 
 Chapter 18 was deliberate: you built **order logic first** — split by store, snapshots, stock, fail-all semantics — without a payment gateway in the way. That ordering matters.
@@ -87,7 +89,7 @@ Chapter 20 wires Stripe.js in the browser. This chapter proves the **server** re
 
 <MustRead id="01M5CM5K4GZ0G4V12RRDT06KJ4" />
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -158,12 +160,6 @@ Estimated time: **two full days** — payment bugs are expensive; go carefully.
 - [ ] Chapter 18 gate cleared (`18.18`)
 - [ ] `POST /checkout` creates split orders without payment today
 - [ ] You understand why server must verify Payment Intent status
-
-<InterestingRead title="Test mode vs live mode" hook="Real cards fail in test mode on purpose." readMinutes={4}>
-
-Stripe test keys let you simulate success, decline, and 3D Secure without moving money. FreshMarket stays in test mode until deploy — but your code paths should mirror production exactly.
-
-</InterestingRead>
 
 ## Next
 

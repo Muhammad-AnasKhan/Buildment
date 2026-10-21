@@ -8,7 +8,7 @@ Every authenticated API must answer: **how does the server remember who sent thi
 
 <BigWordAlert term="Stateless JWT" plainEnglish="A signed token the client sends on each request — server validates signature without storing session in memory." whyItMatters="FreshMarket uses JWTs so the API scales without a central session store — good fit for a Node + React split." />
 
-## Why this matters for absolute beginners
+## Why this matters
 
 Sessions and JWT are not interchangeable labels — they change **where state lives** (server store vs signed token), how logout works, and how SPAs send credentials. Picking one without understanding the other leads to "why doesn't logout kill access instantly?" confusion. This course picks JWT + hashed refresh — know what you traded vs Redis sessions.
 
@@ -25,7 +25,7 @@ Sessions and JWT are not interchangeable labels — they change **where state li
   </CompareColumn>
 </ComparePanel>
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -127,7 +127,7 @@ Redis in Chapter 21 is for **catalogue cache**, not sessions.
 
 **Include:**
 
-- `sub` or `userId` — MongoDB User _id  
+- `sub` or `userId` — MongoDB User _id
 - `role` — vendor | customer  
 - `iat`, `exp` — issued/expiry  
 
@@ -178,8 +178,6 @@ Document in learning log:
 **❌ Don't:** Put JWT_SECRET in git or client.
 
 **❌ Don't:** Store access token in localStorage if avoidable — Ch 7 uses memory.
-
-<RealWorldEvent title="Auth0 breach response reshapes token hygiene" when="2023" summary="High-profile auth incidents pushed teams to shorten token lifetimes, rotate secrets, and treat refresh flows as first-class security surfaces." lesson="Build OTP verification and refresh rotation now so auth is production-shaped before real customer data exists." />
 
 ## Reflect
 

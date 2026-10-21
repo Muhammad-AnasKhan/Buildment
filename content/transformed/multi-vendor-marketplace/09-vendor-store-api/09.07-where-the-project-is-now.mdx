@@ -42,7 +42,7 @@ your-marketplace/
 | Vendor register + login | UI or curl from Ch 6–7 |
 | JWT on protected routes | 401 without token |
 | `requireRole('vendor')` | Customer gets 403 on vendor routes |
-| Store Mongoose model | Compass or seed — document with `vendorId` |
+| Store Mongoose model | Compass or seed — document with `userId` |
 | IDOR stub | Vendor B → 403 PATCH Vendor A store (Ch 8) |
 
 ## What is missing (Chapter 9 fills)
@@ -61,8 +61,8 @@ your-marketplace/
 
 Open `stores.model.js` and confirm:
 
-- [ ] `vendorId` refs User — required, indexed  
-- [ ] Unique index on `vendorId` (or equivalent one-store enforcement)  
+- [ ] `userId` refs User — required, indexed
+- [ ] Unique index on `userId` (or equivalent one-store enforcement)
 - [ ] Fields: `name`, `description`, `address`, `logoUrl` per 9.4  
 - [ ] `timestamps: true` or manual dates  
 
@@ -107,8 +107,6 @@ Chapter 9 is **API-only**. Home page still shows health — no store UI. Chapter
 - [ ] Can obtain vendor JWT via login  
 - [ ] `docs/AUTHORIZATION.md` open for updates  
 - [ ] Store model reviewed  
-
-<RealWorldEvent title="Etsy shop URLs and seller identity" when="2005–present" summary="Marketplace sellers receive branded storefront URLs while the platform enforces global uniqueness and policy compliance behind the scenes." lesson="Store creation is more than a form — it is the moment a user becomes a vendor with isolated data and public presence." />
 
 ## Next
 

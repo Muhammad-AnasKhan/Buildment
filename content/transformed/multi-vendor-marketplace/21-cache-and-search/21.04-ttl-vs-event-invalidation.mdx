@@ -12,25 +12,13 @@ Beginners often pick one and wonder why production still breaks. This sub-chapte
 
 ## TTL only
 
-If your only tool is an expiry time, here is what you buy and what it costs — cheap and simple, but at the mercy of the clock.
-
-| Pro | Con |
-|---|---|
-| Simple — set expiry, forget | Stale until expiry |
-| No invalidation code paths | Wrong price visible for entire TTL window |
-| Good for rarely changing data | Bad for vendor-edited catalogue |
+An expiry time is easy to set, but a cached product can stay stale until the clock runs out. That is acceptable for rarely changing data. It is a poor rule by itself for a catalogue where vendors edit prices and availability.
 
 **Example failure:** TTL = 15 minutes. Vendor fixes a typo price at 10:00. Customers see wrong price until 10:15.
 
 ## Event invalidation only
 
-The flip side: freshness on every write, but every write path must remember to invalidate — miss one and the stale data never leaves.
-
-| Pro | Con |
-|---|---|
-| Fresh immediately after writes | Miss one code path → stale **forever** |
-| Correct for price changes | Orphan keys if key pattern wrong |
-| Professional default for catalogues | More code to maintain |
+Deleting affected cache keys after a product write makes the next read fresh. But every write path must remember to do it. If a `DELETE` route forgets, the old entry can stay until something else removes it.
 
 **Example failure:** You invalidate on `PATCH` but forget `DELETE` — deleted products appear in cache until manual flush.
 
@@ -41,10 +29,18 @@ On GET:  try cache → on miss, query DB → set with TTL
 On POST/PATCH/DELETE product:  delete cache keys for catalogue
 ```
 
-| Layer | Role |
-|---|---|
-| **Event invalidation** | Correctness — user sees new price immediately |
-| **TTL** | Safety net — orphaned keys expire; catches bugs in invalidation |
+<MermaidDiagram title="Catalogue cache read and product update" chart={`flowchart LR
+  GET[GET catalogue] --> Cache{Redis key exists?}
+  Cache -->|yes| Reply[Return cached page]
+  Cache -->|no| DB[(MongoDB products)]
+  DB --> Save[Cache page with TTL]
+  Save --> Reply
+  Write[Vendor saves product] --> DB
+  Write --> Delete[Delete affected catalogue keys]
+  Delete --> Cache
+`} legend="A read uses cache when available. A product write invalidates keys; TTL is a backup if an invalidation is missed." />
+
+Event invalidation is the normal freshness path: delete keys when a vendor changes a product. TTL is the backup: even a missed key eventually expires. Neither rule replaces the other.
 
 TTL catches bugs in invalidation — keys expire eventually. Invalidation catches user-visible errors — prices fix now.
 

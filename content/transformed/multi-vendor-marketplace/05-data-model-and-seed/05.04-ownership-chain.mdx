@@ -4,206 +4,65 @@ module: 5
 lesson: 4
 summary: "Multi-vendor marketplaces fail in production when **object-level ownership** is unclear. Authentication answers *who are you?* Ownership answers *may you touch this document?*"
 ---
-Multi-vendor marketplaces fail in production when **object-level ownership** is unclear. Authentication answers *who are you?* Ownership answers *may you touch this document?*
+A role tells the API what kind of user is signed in. It does not tell the API **which** shop that user owns. Two vendors have the same role, but Vendor B must not edit Vendor A's product. Your data model needs an ownership path the API can check on every private request.
 
-<BigWordAlert term="Resource ownership" plainEnglish="The chain linking data to the user who may edit it — vendor owns store, store owns products." whyItMatters="Authorization in Chapter 8 checks this chain — a vendor must not edit another vendor's products." />
+<BigWordAlert term="Object ownership" plainEnglish="A link from a document back to the user who is allowed to change it." whyItMatters="A vendor token is not enough. The API must prove that this particular product belongs to the signed-in vendor." />
 
-This sub-chapter maps the **ownership chain** — the reference path every isolation check in Chapter 8 will walk.
+## Follow the ownership path
 
-## Why this matters for absolute beginners
+Start with the signed-in user's id, not an id supplied in the request body. A vendor owns a Store through `Store.userId`. The Store owns Products through `Product.storeId`. A customer owns CartItems through `CartItem.userId` and Orders through `Order.customerId`. A vendor can read an Order only when `Order.storeId` points to their Store.
 
-Roles alone are not enough — "vendor" does not tell you **which** store. The chain User → Store → Product tells every handler which documents to load and compare against `req.user.id`. If Product stored `vendorId` directly, you could skip the store — but this course enforces **one store per vendor** through Store as the hub. Learn the chain now; Chapter 8 walks it with middleware.
+<MermaidDiagram title="FreshMarket ownership paths" chart={`flowchart LR
+  Vendor[Signed-in vendor] -->|Store.userId| Store[Store]
+  Store -->|Product.storeId| Product[Product]
+  Store -->|Order.storeId| Order[Vendor order view]
+  Customer[Signed-in customer] -->|CartItem.userId| Cart[CartItem]
+  Customer -->|Order.customerId| Order
+  Cart -->|CartItem.productId| Product
+  Cart -->|CartItem.storeId| Store
+`} legend="Arrows name the field that connects the two documents. An Order has both a customerId and a storeId." />
 
-## Think of it like…
+Read the two paths separately. A vendor follows Vendor → Store → Product before changing a listing. A customer follows Customer → CartItem before changing a cart line. The Order has both a buyer and a fulfilling store, so each side gets a different, scoped view of the same purchase.
 
-**Nested keys in a hotel.** Guest key opens their room (customer cart). Staff key opens their floor's supply closet (vendor products in their store). Security checks not just "are you staff?" but **which floor you belong to** — same role, different scope.
+## Try one unsafe request
 
-## Common beginner questions
+Suppose Vendor B sends `PATCH /products/PRODUCT_A_ID`, where that product belongs to Vendor A. Checking `req.user.role === 'vendor'` lets the request through: both users are vendors. The handler must also load the product and compare its `storeId` with the store owned by `req.user.id`.
 
-<FaqGroup>
-
-<FaqItem question={"What's the difference between authentication and ownership?"}>
-
-Authentication answers "who are you?" — ownership answers "may you touch this document?" After login you have `req.user.id` and `req.user.role`, and that identity is your authentication (Chapter 6). But the role "vendor" doesn't tell you *which* store. Ownership is walking the chain: load the product, check its `storeId` matches a store, then check that store's `userId` matches your `req.user.id`. Two vendors share the same role, yet only one may edit a given product. That "which one is allowed?" question is ownership, and Chapter 8 enforces it with middleware.
-
-</FaqItem>
-
-<FaqItem question={"Why `customerId` on Order but `userId` on Store?"}>
-
-Because both fields reference the same User collection but describe different roles, and the field name should say which role. On Store, `userId` means "the vendor who owns this store"; on Order, `customerId` means "the buyer who placed this order". It's the same User document either way — a person could even be both — but `customerId` reads clearly as buyer and `userId` as owner. Consistent, semantic ref names make grep, code review, and viva explanations far easier than a vague `owner` or `user` scattered everywhere.
-
-</FaqItem>
-
-<FaqItem question={"Why `storeId` on CartItem when the product already has a storeId?"}>
-
-So checkout can group your cart by store in a single pass, without looking up every product again. At checkout the server splits the cart by store and creates one Order per store. If CartItem didn't carry `storeId`, the server would have to query each product just to learn which store it belongs to — an extra query per line. Carrying the reference on the cart line also keeps the store context even if the product is later deleted or moved. It's a deliberate, justified duplication, and it's still a reference, not a copy of the store name.
-
-</FaqItem>
-
-<FaqItem question={"Why not put `vendorId` directly on Product?"}>
-
-Because going through Store is what enforces "one store per vendor", a rule your security depends on. If Product stored `vendorId` directly, a vendor could edit a product by matching ids and the one-store-per-vendor invariant would live nowhere. With Store as the hub, every check walks the chain: product → `store.userId` → `req.user.id`. Vendor B can't create a product inside Vendor A's store because the API first verifies the store belongs to them. That extra hop through the chain is exactly what makes isolation checkable in Chapter 8.
-
-</FaqItem>
-
-<FaqItem question={"What is IDOR?"}>
-
-Insecure Direct Object Reference — a bug where changing an id in a URL lets you read or edit someone else's resource. Imagine `PATCH /products/:id`: an attacker swaps in another vendor's product id while logged in as a different vendor. If the handler loads the product and mutates it without checking ownership, they've just edited a product that isn't theirs. The fix is to always verify before acting: load the resource, then compare its owner against `req.user.id`. Your schemas make this possible by naming ownership fields consistently — `userId`, `storeId`, `customerId` — so the checks are easy to write in Chapter 8.
-
-</FaqItem>
-
-</FaqGroup>
-
-
-## The chain in one diagram
-
-```
-User (role: vendor)
-  └── owns → Store (userId)
-              └── owns → Product (storeId)
-                          └── referenced by → CartItem (productId, storeId)
-                                              └── checkout → Order (storeId, customerId)
-                                                              └── embeds → orderItems[]
+```javascript
+const myStore = await Store.findOne({ userId: req.user.id });
+const product = await Product.findById(req.params.id);
+if (!myStore || !product || !product.storeId.equals(myStore._id)) {
+  return res.sendStatus(404);
+}
+// Only now may this vendor change the product.
 ```
 
-**Customer chain:**
+Returning `404` for a product outside this vendor's store avoids revealing whether another vendor's id exists. The important rule is the query scope, not the exact error wording. Chapter 8 adds this check to routes and tests it with two seeded vendors.
 
-```
-User (role: customer)
-  └── owns → CartItem (userId)
-  └── owns → Order (customerId)
-```
+The **one store per vendor** rule also needs a unique index on `Store.userId` and a guarded create route. Walking through Store makes ownership easy to check; the walk alone does not prevent a vendor from creating a second Store.
 
-Vendor never owns CartItem or customer Order directly — they see orders **scoped by storeId**.
+## Why the cart line carries three ids
 
-## Each link — what it enforces
+A CartItem points to the customer (`userId`), the product (`productId`), and the product's store (`storeId`). The server verifies that the line's `storeId` matches the product when the item is added and again at checkout. It never trusts the store id merely because the browser sent it.
 
-Each hop in the chain carries the exact field name, the lookup pattern, and the isolation rule your Chapter 8 middleware will check:
+Keeping `storeId` on the cart line makes grouping at checkout simple: all lines for Store A become one Order for Store A, and lines for Store B become another. The order also stores `customerId` for the buyer's history. Each Order embeds the product name, unit, and price **as they were at purchase**, so an old receipt does not change when a vendor edits a listing.
 
-### User → Store
+## Name the references clearly
 
-| Field | On Store | Rule |
-|---|---|---|
-| `userId` | ObjectId ref User | Exactly one store per vendor (enforced in Ch 9 API) |
-| Lookup | `Store.findOne({ userId })` | Vendor dashboard entry point |
+Use `userId` on Store, `storeId` on Product, and `customerId` on Order. These names say what each link means. In Mongoose, a `ref` string must match the registered model name exactly: `ref: 'Store'` points to `mongoose.model('Store', storeSchema)`. A different case can break population.
 
-**Isolation:** Vendor B cannot create a product with Vendor A's `storeId` if API checks store ownership first.
+Index fields used to scope frequent queries, such as `Product.storeId` and `CartItem.userId`. A vendor product list starts from the vendor's Store, then queries `Product.find({ storeId: myStore._id })`. A customer cart starts from `CartItem.find({ userId: req.user.id })`. A global product or cart query followed by a UI filter is not an ownership check.
 
-### Store → Product
+## Check your model before continuing
 
-Every product belongs to exactly one store, and every vendor product list queries through that store:
+In `docs/erd-draft.md`, draw the two ownership paths and label each arrow with the actual field name. Then answer these questions without looking back:
 
-| Field | On Product | Rule |
-|---|---|---|
-| `storeId` | ObjectId ref Store | Every product belongs to exactly one store |
-| Query | `{ storeId: vendorStore._id }` | Vendor product list — never global find |
+1. Which two documents must the API compare before Vendor B can edit a product?
+2. Why does a CartItem carry `storeId` when Product already has it?
+3. Which fields let a customer and a vendor see only their own orders?
 
-**Isolation:** PATCH `/products/:id` must verify `product.storeId` matches caller's store.
-
-### Product → CartItem
-
-The cart line is the first place three references meet — the customer, the product, and its store:
-
-| Field | On CartItem | Rule |
-|---|---|---|
-| `productId` | ObjectId ref Product | What the customer wants |
-| `storeId` | ObjectId ref Store | **Duplicated on line** — enables checkout split without re-query |
-| `userId` | ObjectId ref User | Cart is per-customer |
-
-**Why storeId on CartItem when product has storeId?** Checkout groups by store in one pass. Cart line carries store context even if product is deleted later.
-
-### CartItem → Order
-
-This is where the cart stops being a wish-list and becomes a committed purchase:
-
-| Transition | Behaviour |
-|---|---|
-| Checkout | Group cartitems by `storeId` |
-| Per group | One Order document with `customerId`, `storeId`, embedded `orderItems` |
-| Snapshots | Copy price, name, unit at purchase into embed |
-
-**Vendor view:** `Order.find({ storeId: myStore._id })` — not by customerId.
-
-## Reference table — collection ownership
-
-One row per collection, showing who owns it and who may write to it — the seed of Chapter 8's authorization matrix:
-
-| Collection | Owner field | Who can write |
-|---|---|---|
-| users | self | self (register); admin out of scope |
-| profiles | userId | owning user |
-| stores | userId | owning vendor |
-| products | storeId → userId | owning vendor via store |
-| cartitems | userId | owning customer |
-| orders | customerId + storeId | customer creates; vendor updates status |
-
-## IDOR preview (Chapter 8)
-
-**Insecure direct object reference** — attacker changes `:id` in URL to another user's resource.
-
-| Attack | Missing check | Fix |
-|---|---|---|
-| PATCH `/stores/other-vendor-store-id` | No userId match | `assertStoreOwner(storeId, req.user.id)` |
-| PATCH `/products/other-product-id` | No storeId chain | Load product → verify store.userId |
-| GET `/cart` as User A with User B token | No userId filter | Always `{ userId: req.user.id }` |
-
-Your schemas must **support** these lookups — fields named consistently (`userId`, `storeId`, `customerId`).
-
-## Mongoose ref naming convention
-
-Use **consistent ref strings** matching model names:
-
-| Model file | `mongoose.model()` name | ref in other schemas |
-|---|---|---|
-| user.model.js | `'User'` | `ref: 'User'` |
-| store.model.js | `'Store'` | `ref: 'Store'` |
-| product.model.js | `'Product'` | `ref: 'Product'` |
-
-Mismatch (`ref: 'store'` vs model `'Store'`) breaks populate silently.
-
-## Query patterns you'll implement later
-
-**Vendor products (Ch 11):**
-
-```
-1. req.user.id from JWT
-2. store = Store.findOne({ userId: req.user.id })
-3. Product.find({ storeId: store._id })
-```
-
-**Never:** `Product.findById(id)` then return without store ownership check.
-
-**Customer cart (Ch 16):**
-
-```
-CartItem.find({ userId: req.user.id }).populate('productId')
-```
-
-## ERD annotation exercise
-
-Before 5.10, add to `docs/erd-draft.md` or a scratch note:
-
-- Arrow labels on every relationship: `userId`, `storeId`, `productId`, `customerId`
-- Mark which checks are **role** vs **ownership** (Chapter 8 matrix)
-
-## ✅ Do / ❌ Don't
-
-**✅ Do:** Use `userId` on Store (vendor owner), `customerId` on Order (buyer) — distinct semantics.
-
-**✅ Do:** Index foreign keys you query often (`storeId` on Product, `userId` on CartItem).
-
-**❌ Don't:** Store vendor id directly on Product — always go through Store for one-store-per-vendor rule.
-
-**❌ Don't:** Use ambiguous field names like `owner` without role context.
-
-<RealWorldEvent title="Amazon's item-level order snapshots" when="Marketplace era" summary="Marketplace order systems persist item details at purchase time so disputes, refunds, and tax reporting reflect the transaction as it happened." lesson="Model for auditability early. Your seed data and ERD should show which fields are live references and which are immutable snapshots." />
-
-## Reflect
-
-Draw the chain from memory on paper. Can you trace Vendor B trying to edit Vendor A's product — which two documents get loaded?
+If you can answer those, the models in Chapter 5 will support the authorization checks in Chapter 8.
 
 ## Next
 
-**Sub-chapter 5.5:** Grocery domain fields — unit, weight, stock, perishability on Product.
-
-Ownership is the spine — grocery fields are the domain flesh.
+**Sub-chapter 5.5:** Add grocery fields such as unit, stock, and perishability to Product.

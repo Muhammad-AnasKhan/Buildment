@@ -8,9 +8,7 @@ summary: "Before you create your ERD, read MongoDB's official data modelling gui
 
 <BigWordAlert term="Read vs write trade-off" plainEnglish="Optimizing for fast reads often means duplicating data; optimizing for easy updates often means more lookups." whyItMatters="Order line snapshots favor read speed (receipts never change); live product prices favor references until checkout." />
 
-
 <Predict id="01M5CM5J53EJWD0AP0SV7PWMTQ" />
-
 
 ## What you'll do
 
@@ -52,12 +50,6 @@ Skim only — Chapter 5 implements:
 
 **Do not** implement schemas yet — just know what a Mongoose schema will look like.
 
-<InterestingRead title="When SQL still wins" hook="MongoDB is a choice, not a religion." readMinutes={4}>
-
-Financial ledger entries, strict inventory reconciliation across warehouses, and complex reporting joins often favour PostgreSQL. FreshMarket picks MongoDB because product catalogs are document-shaped and read-heavy — but knowing when relational models win makes you a stronger engineer.
-
-</InterestingRead>
-
 ## Reflect — embed vs ref per entity
 
 After your reading, fill this in your learning log:
@@ -71,8 +63,6 @@ After your reading, fill this in your learning log:
 
 If any cell is blank, re-read 3.6 before 3.8.
 
-<RealWorldEvent title="Walmart's polyglot data strategy" when="2010s–present" summary="Large retailers run multiple database technologies — relational systems for transactions and accounting, document or search stores for catalogs and recommendations." lesson="Choosing MongoDB for FreshMarket is a domain-driven decision. Document the trade-off so future you can defend it in an interview." />
-
 ## What not to read yet
 
 - Redis caching docs — Chapter 21
@@ -80,7 +70,5 @@ If any cell is blank, re-read 3.6 before 3.8.
 - JWT / bcrypt — Chapter 6
 
 Stay on **modelling** this week.
-
-<ChapterRecap id="01M5CM5J53QM72TXKM38CTN5NH" />
 
 **Next:** Create your ERD — `docs/erd-draft.md` with diagram + collection list.

@@ -12,14 +12,7 @@ Blueprint for 16.6–16.13. Specs only.
 
 ## Before you scaffold — what "cart API" means
 
-You are **not** building a checkout yet. You are building **saved intent**:
-
-| Action | HTTP | Plain English |
-|---|---|---|
-| Add item | POST /cart | "Put this in my basket" |
-| View cart | GET /cart | "What's in my basket?" |
-| Change qty | PATCH /cart/:itemId | "I want 3 not 2" |
-| Remove | DELETE /cart/:itemId | "Remove this line" |
+You are **not** building checkout yet. You are building a saved basket. A customer can add a product, read the basket, change a quantity, and remove a line. The API contract below gives the exact methods and paths; there is no need to memorize them twice.
 
 Every route requires **login** — the server knows **which user** owns the cart from the JWT, never from the request body.
 
@@ -111,10 +104,6 @@ All routes scope by **`req.user.userId`** (or your JWT payload field) — never 
 
 **Populate** productId and storeId — avoid N+1 (same discipline as Ch 14). Subtotal optional for gate — sum price * quantity if included.
 
-<MustRead id="01M5CM5JYYS170GY7QV0MWRGW5" />
-
-<RealWorldEvent title="Target cart persistence across channels" when="2010s–present" summary="Retailers invested in unified carts so web, app, and in-store pickup saw the same basket — reducing abandoned purchases." lesson="Treat cart mutations as concurrent — two tabs updating quantity should not corrupt totals." />
-
 ## PATCH /cart/:itemId
 
 Body:
@@ -198,8 +187,3 @@ Decrement stock at **checkout** Ch 18 — not on add to cart.
 **Sub-chapter 16.4:** Prime your thinking — cart merge on login.
 
 Optional read before build cluster.
-<InterestingRead title="Cart merge on login" hook="Guest cart + user cart = one headache if you plan late." readMinutes={5}>
-
-Shoppers browse before signing in. When they log in, anonymous cart items must merge without duplicating quantities or dropping selections. FreshMarket handles merge in the API so every client behaves consistently.
-
-</InterestingRead>

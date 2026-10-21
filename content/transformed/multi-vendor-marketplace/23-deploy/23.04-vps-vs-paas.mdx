@@ -24,6 +24,17 @@ This decision affects how you set env vars, run the worker, inspect logs, roll b
 
 **Mandate:** HTTPS on both client and API. HTTP-only gate fails.
 
+<MermaidDiagram title="A deployed FreshMarket has three running parts" chart={`flowchart LR
+  Browser[Customer browser] -->|HTTPS| Client[Static React client]
+  Browser -->|HTTPS API calls| API[Express API]
+  API --> Mongo[(MongoDB)]
+  API --> Redis[(Redis queue)]
+  Redis --> Worker[Worker process]
+  Worker --> Mongo
+`} legend="The API and worker are separate processes. The browser never connects to MongoDB or Redis directly." />
+
+Whatever host you choose, verify the API and worker both start, use the right environment variables, and can reach the database and queue. A deployed React page alone is not the whole product.
+
 ## Worker deployment per path
 
 | Path | How worker runs |
@@ -44,7 +55,7 @@ Browser login fails with cryptic CORS errors if this still points at local dev.
 
 ## MongoDB Atlas
 
-Allow deploy host IP or use `0.0.0.0/0` with strong password for PaaS (IPs change). Document security tradeoff in learning log.
+Prefer [Atlas private networking](https://www.mongodb.com/docs/atlas/security-configure-private-endpoints/) where your cluster supports it, or add your deployment provider's known outbound IPs to the [Atlas IP access list](https://www.mongodb.com/docs/atlas/security/ip-access-list/). If a changing PaaS IP forces a broad allowlist in a test environment, make it temporary, use a strong credential with narrow permissions, and record when the rule will be removed. Atlas warns that `0.0.0.0/0` allows connections from anywhere; do not use it as the production default.
 
 Worker and API **both** need `MONGODB_URI` if processor loads User/Order documents.
 
@@ -73,7 +84,7 @@ In learning log 23.16, state:
 - Worker host choice (same platform or VPS process)
 - Monthly cost estimate optional
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 

@@ -22,7 +22,7 @@ summary: "**Why this step matters:** DELETE completes CRUD — customers must re
 
 ## Handler sequence
 
-1. `findOneAndDelete({ _id: itemId, userId: currentUser })`  
+1. `findOneAndDelete({ _id: itemId, userId: currentUser })`
 2. If null → 404  
 3. Else → 204 or 200 `{ message: "Removed" }`  
 
@@ -84,8 +84,6 @@ git commit -m "feat(cart): add DELETE /cart/:itemId"
 - [ ] Delete own item → gone from GET /cart  
 - [ ] Delete other user's item → 404/403  
 - [ ] Delete random id → 404
-
-<RealWorldEvent title="Target cart persistence across channels" when="2010s–present" summary="Retailers invested in unified carts so web, app, and in-store pickup saw the same basket — reducing abandoned purchases." lesson="Treat cart mutations as concurrent — two tabs updating quantity should not corrupt totals." />
 
 ## Next
 

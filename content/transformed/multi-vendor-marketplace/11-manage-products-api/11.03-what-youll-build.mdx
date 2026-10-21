@@ -41,7 +41,7 @@ Prefix `/api` per your convention.
 
 This is the route where the ownership pattern from Chapter 8 becomes a data-model decision. The client must never say whose store the product belongs to — the server resolves it from the token. Read each rule as "who decides this?" and the answer is always the server.
 
-- Resolve vendor's store via `getStoreByVendorId` — no store → 404 or 403  
+- Resolve vendor's store via `getStoreByUserId` — no store → 404 or 403
 - Set `storeId` server-side — reject `storeId` in body from client  
 - Validate grocery + price fields  
 - Default `isPublished: false` if applicable  
@@ -58,7 +58,7 @@ The vendor list is scoped to the caller's own inventory — never to an id the c
 
 Both write routes run the same ownership check before touching the database. This is Chapter 8's `assertProductOwner` applied to a second resource — if you built the helper well in Chapter 8, this is just a new call site.
 
-- `assertProductOwner(productId, vendorId)` or store-chain check  
+- `assertProductOwner(productId, userId)` or store-chain check
 - Vendor B on Vendor A product → **403**  
 - Invalid id → 404  
 
@@ -84,10 +84,6 @@ The order below is deliberate: prove the happy path with Vendor A first, then pr
 4. Vendor B PATCH same id → 403  
 5. Vendor A DELETE → success  
 6. Vendor B DELETE → 403  
-
-<MustRead id="01M5CM5JNTD8HJMZT09812FCBV" />
-
-<RealWorldEvent title="DoorDash menu sync failures" when="2020s" summary="Delivery platforms struggled when restaurant menus changed faster than sync pipelines, showing unavailable items to hungry customers." lesson="Product APIs should reflect live stock and publish state — stale catalogue data directly loses sales." />
 
 ## Chapter gate
 

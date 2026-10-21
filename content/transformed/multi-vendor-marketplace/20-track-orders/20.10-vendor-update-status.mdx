@@ -16,21 +16,13 @@ Status updates are **vendor-only, store-scoped writes**. Customer reads through 
 
 ## Prerequisites
 
-| Gate | Verify |
-|---|---|
-| Status enum in README | `pending` → `packed` → `dispatched` (Order schema Ch 5) |
-| `OrderStatusBadge` | Same labels on vendor + customer pages (20.9) |
-| Vendor GET isolation | Ch 18.14 cross-vendor test passed |
+Check that your README names the `pending → packed → dispatched` order states, the shared badge from 20.9 renders them on both pages, and the cross-vendor read test from 18.14 passes. These checks matter because the new PATCH route must follow the same ownership and status rules.
 
 Implement PATCH on server **in this step** if Ch 18 did not include it.
 
 ## Target files
 
-| File | Purpose |
-|---|---|
-| `server/src/modules/orders/` | PATCH handler if missing |
-| `client/src/pages/vendor/VendorOrders.jsx` | Status action per row |
-| `client/src/api/client.js` | `updateOrderStatus(orderId, status)` |
+You will add the PATCH handler under `server/src/modules/orders/`, a status action in `client/src/pages/vendor/VendorOrders.jsx`, and an `updateOrderStatus(orderId, status)` API helper in `client/src/api/client.js`.
 
 ## Step 1 — PATCH API contract
 
@@ -50,6 +42,10 @@ Content-Type: application/json
 4. Return the saved order as the authoritative response.
 
 Include the expected current status in the conditional update. Two tabs may both read `pending`; after one changes it to `packed`, the second stale action must not overwrite the newer state. If the order exists for this store but its state changed, return `409 Conflict` and let the client refetch.
+
+Follow the same PATCH from the current tab and then from a stale tab. Pause before the final step and predict why the second update matches no order.
+
+<InteractiveCanvas slug="freshmarket-mark-packed" />
 
 | From | To |
 |---|---|
@@ -71,11 +67,7 @@ Reject backwards transitions unless documented. **❌ Don't** accept client `sto
 
 Per row, **one next action** by current status:
 
-| Status | Control | Body |
-|---|---|---|
-| `pending` | "Mark packed" | `{ status: "packed" }` |
-| `packed` | "Mark dispatched" | `{ status: "dispatched" }` |
-| `dispatched` | — | No action |
+For a `pending` order, show **Mark packed** and send `{ status: "packed" }`. For a `packed` order, show **Mark dispatched** and send `{ status: "dispatched" }`. A `dispatched` order has no next action. The transition table above is the server rule; this UI must follow it.
 
 1. Click → disable while PATCH in flight.
 2. Success → replace that order with the response returned by the API.

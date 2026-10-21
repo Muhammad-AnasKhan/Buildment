@@ -22,6 +22,19 @@ Every status your API can return should have one predictable response on screen.
 | **5xx** | Server error | Generic retry message |
 | **Network** | fetch failed | "Could not reach server" + retry |
 
+When the vendor submits a product form, the response decides what happens next. The same error handler can serve create and edit forms.
+
+<MermaidDiagram title="Product form response path" chart={`flowchart LR
+  Submit[Vendor submits form] --> API[Product API request]
+  API -->|200 or 201| Saved[Show saved product]
+  API -->|400| Fields[Show errors beside fields]
+  API -->|401| Login[Return to login]
+  API -->|403 or 404| Access[Show safe page message]
+  API -->|5xx or network failure| Retry[Show retry action]
+`} legend="A field error stays with its input. An unavailable server gives a retry path; a successful save gives the next page." />
+
+The branch matters because an empty list is a valid result, while a failed request needs a retry action.
+
 ## 400 field errors
 
 API shape (align with Ch 6/11):
@@ -90,8 +103,6 @@ Distinguish:
 
 - [ ] I know my API 400 body shape  
 - [ ] Interceptor handles 401 on product routes  
-
-<RealWorldEvent title="Square Dashboard for sellers" when="2010s–present" summary="Square gave small merchants inventory, orders, and payouts in one place — proving simple dashboards drive daily engagement." lesson="Vendor tools should answer: what do I sell, what is low stock, and what changed since yesterday?" />
 
 ## Next
 

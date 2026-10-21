@@ -12,6 +12,8 @@ summary: "**Where the project is now:** Week 2 vendor experience is complete —
 
 This is a **build chapter**. Sub-chapters 14.8 onward add routes and query logic. The gate is **runnable proof**: curl returns paginated catalogue; query count stays flat when listing many products.
 
+<LearningObjectives id="01M5EB38BNHFH07J9X1JJBDM58" />
+
 ## Bridge from last chapter
 
 You finished **Week 2 — the vendor experience** (Chapters 9–13). Vendors can register, open a shop, add products with photos, and see them in the dashboard. Sub-chapter **13.14 — Bridge to Week 3** spelled out the biggest **role change** in the course: you stop thinking like a shop owner and start thinking like a shopper.
@@ -48,7 +50,7 @@ Week 2 you built **individual stalls** — each vendor's store and shelves. Chap
 
 Customers walk the aisle (Chapter 15 UI). Vendors still manage their stall from the back (vendor dashboard unchanged).
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -164,12 +166,6 @@ Estimated time: **one to two days** — query tuning and N+1 verification take t
 - [ ] Seed has ≥2 stores with published products  
 - [ ] You understand difference between `/vendor/products` and `/products`  
 - [ ] Mongoose populate docs skimmed (14.4)
-
-<InterestingRead title="Public read routes still need discipline" hook="No login does not mean no limits." readMinutes={4}>
-
-Catalogue APIs are public, but they still need rate limits, input validation on query params, and careful projection so internal fields never leak. FreshMarket exposes only what shoppers need to decide and add to cart.
-
-</InterestingRead>
 
 ## Next
 

@@ -96,8 +96,6 @@ Handlers return 501 until 16.8 — or implement POST immediately in next step.
 - [ ] GET /cart without token → 401  
 - [ ] GET /cart with customer token → 200 empty items (after 16.9) or 501 temporarily
 
-<RealWorldEvent title="Target cart persistence across channels" when="2010s–present" summary="Retailers invested in unified carts so web, app, and in-store pickup saw the same basket — reducing abandoned purchases." lesson="Treat cart mutations as concurrent — two tabs updating quantity should not corrupt totals." />
-
 ## Next
 
 **Sub-chapter 16.8:** Add to cart route — POST /cart.

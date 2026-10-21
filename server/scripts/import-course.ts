@@ -15,11 +15,9 @@
  * The importer never invents learner interactions. A reflection, quiz, or
  * mentor-reviewed answer must be authored intentionally in the source lesson.
  *
- * Idempotent: re-running upserts Modules/Chapters by (courseId, order) /
- * (courseId, slug) and replaces each chapter's Block rows from scratch. Safe
- * before there are any real learner Responses against this course; once
- * mentees start answering, block replacement needs the "keep vs invalidate"
- * flow from docs/02-content-authoring.mdx instead.
+ * Re-running upserts Modules/Chapters by (courseId, order) / (courseId, slug).
+ * Identical blocks keep their ids and learner responses. A changed answered
+ * block is archived; a changed unanswered block is removed.
  *
  * Run: pnpm content:import [--course <slug>]
  */
@@ -77,6 +75,36 @@ type PendingBlock = {
   config: Prisma.InputJsonValue;
   required: boolean;
 };
+
+function stableConfig(value: unknown): string {
+  return JSON.stringify(value, (_key, item) => {
+    if (item && typeof item === "object" && !Array.isArray(item)) {
+      return Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b)));
+    }
+    return item;
+  });
+}
+
+/** Preserve an existing block id when the learner-facing activity is identical. */
+async function reconcileBlockIds(chapterId: string, lesson: ParsedLesson) {
+  const existing = await prisma.block.findMany({
+    where: { chapterId, archivedAt: null },
+    select: { id: true, type: true, config: true, _count: { select: { responses: true } } },
+  });
+  const unmatched = new Set(existing.map((block) => block.id));
+
+  for (const block of lesson.blocks) {
+    const match = existing.find((old) =>
+      unmatched.has(old.id) && old.type === block.type && stableConfig(old.config) === stableConfig(block.config)
+    );
+    if (!match) continue;
+    lesson.source = lesson.source.replaceAll(block.id, match.id);
+    block.id = match.id;
+    unmatched.delete(match.id);
+  }
+
+  return existing.filter((block) => unmatched.has(block.id));
+}
 
 function blockPlaceholderTag(block: PendingBlock): string {
   const tag =
@@ -458,7 +486,7 @@ function escapeMdxProse(body: string): string {
       return `\x00BLOCK${blockTags.length - 1}\x00`;
     });
   }
-  withMarkers = withMarkers.replace(/<(DiffBlock|MermaidDiagram|InteractiveCanvas|EcosystemGallery)[\s\S]*?\/>/g, (tag) => {
+  withMarkers = withMarkers.replace(/<(DiffBlock|MermaidDiagram|InteractiveCanvas|EcosystemGallery|Roadmap)[\s\S]*?\/>/g, (tag) => {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });
@@ -833,6 +861,12 @@ async function main() {
       const slug = `${displayOrder}-${lessonNum}-${slugPart}`;
       importedChapterSlugs.push(slug);
 
+      const priorChapter = await prisma.chapter.findUnique({
+        where: { courseId_slug: { courseId: course.id, slug } },
+        select: { id: true },
+      });
+      const unmatchedBlocks = priorChapter ? await reconcileBlockIds(priorChapter.id, lesson) : [];
+
       const chapter = await prisma.chapter.upsert({
         where: { courseId_slug: { courseId: course.id, slug } },
         update: {
@@ -864,10 +898,11 @@ async function main() {
       });
       chapterCount += 1;
 
-      await prisma.block.deleteMany({ where: { chapterId: chapter.id } });
-      if (lesson.blocks.length > 0) {
-        await prisma.block.createMany({
-          data: lesson.blocks.map((block, index) => ({
+      for (const [index, block] of lesson.blocks.entries()) {
+        await prisma.block.upsert({
+          where: { id: block.id },
+          update: { order: index + 1, required: block.required, config: block.config, archivedAt: null },
+          create: {
             id: block.id,
             chapterId: chapter.id,
             type: block.type,
@@ -877,10 +912,17 @@ async function main() {
             points: 1,
             config: block.config,
             tags: [],
-          })),
+          },
         });
-        blockCount += lesson.blocks.length;
       }
+      for (const old of unmatchedBlocks) {
+        if (old._count.responses > 0) {
+          await prisma.block.update({ where: { id: old.id }, data: { archivedAt: new Date() } });
+        } else {
+          await prisma.block.delete({ where: { id: old.id } });
+        }
+      }
+      blockCount += lesson.blocks.length;
 
       const frontmatter = [
         `title: ${JSON.stringify(lesson.title)}`,

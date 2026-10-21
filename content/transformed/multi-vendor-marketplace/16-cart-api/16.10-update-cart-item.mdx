@@ -23,7 +23,7 @@ summary: "**Why this step matters:** Quantity changes are the most common cart m
 ## Handler sequence
 
 1. Validate quantity integer ≥ 1  
-2. Find CartItem `{ _id: itemId, userId: currentUser }` — 404 if not found (includes other user's item)  
+2. Find CartItem `{ _id: itemId, userId: currentUser }` — 404 if not found (includes other user's item)
 3. Load product for stock check  
 4. If quantity > product.stockQty → 400  
 5. Update quantity; save  
@@ -99,8 +99,6 @@ git commit -m "feat(cart): add PATCH /cart/:itemId for quantity updates"
 - [ ] quantity > stock → 400  
 - [ ] Other user's itemId → 404/403  
 - [ ] quantity 0 → 400
-
-<RealWorldEvent title="Target cart persistence across channels" when="2010s–present" summary="Retailers invested in unified carts so web, app, and in-store pickup saw the same basket — reducing abandoned purchases." lesson="Treat cart mutations as concurrent — two tabs updating quantity should not corrupt totals." />
 
 ## Next
 

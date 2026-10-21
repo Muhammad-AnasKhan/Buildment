@@ -8,6 +8,8 @@ summary: "Your marketplace skeleton is running — Express API, React client, he
 
 <BigWordAlert term="Schema flexibility" plainEnglish="Document databases let you evolve field shapes without migrations every time product requirements change." whyItMatters="Grocery products gain fields (organic, allergens, unit) faster than relational ALTER TABLE cycles allow." />
 
+<LearningObjectives id="01M5EB353NCN8KP2RGWTZKT3EF" />
+
 ## Where we are now
 
 Chapter 2 left you with a running skeleton — Express API, React client, `GET /health` working in curl and in the browser. You can start the server and see "ok" in the browser. But here's the problem: **restart the server and every vendor, product, cart, and order disappears.** Your app has no memory yet.
@@ -129,8 +131,6 @@ This chapter is less typing than Chapter 2, more thinking. Estimated time: half 
 - [ ] Chapter 2 gate cleared (health demo works)
 - [ ] You can name the two actors (vendor and customer)
 - [ ] `docs/` folder exists in your repo
-
-<ChapterRecap id="01M5CM5J3N98J73WMZ9V1HEY9V" />
 
 **When SQL still wins.** Financial ledger entries, strict inventory reconciliation across warehouses, and complex reporting joins often favour PostgreSQL. FreshMarket picks MongoDB because product catalogs are document-shaped and read-heavy — but knowing when relational models win makes you a stronger engineer.
 

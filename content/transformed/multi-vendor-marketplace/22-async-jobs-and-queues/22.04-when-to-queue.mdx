@@ -48,6 +48,18 @@ POST /checkout
 
 Stock and orders are **consistency-critical**. Email is **eventual**.
 
+<MermaidDiagram title="Checkout returns before email is sent" chart={`flowchart LR
+  Client[Customer] -->|POST checkout| API[API]
+  API -->|validate and save| DB[(Orders and stock)]
+  DB -->|commit succeeds| API
+  API -->|enqueue notification| Queue[(Redis queue)]
+  API -->|return order result| Client
+  Queue --> Worker[Worker]
+  Worker --> Email[Send email, retry on failure]
+`} legend="Orders and stock finish in the request. The notification runs later in a worker and must be safe to retry." />
+
+The arrow to the queue must happen **after** the order write succeeds. In a production design, also decide what happens if the database commits but enqueueing fails; a transactional outbox is one way to close that gap. The Week 4 build records the failure and retries rather than pretending the email was sent.
+
 ## Status update path — annotated
 
 ```

@@ -12,6 +12,8 @@ summary: "**Where the project is now:** Chapter 16 gave you a **persisted cart A
 
 This is a **frontend build chapter**. It pairs with Chapter 16 the way Chapter 7 paired with Chapter 6. The gate is **browser proof**: items from two stores visible, quantities update, cart persists after refresh.
 
+<LearningObjectives id="01M5EB38ZBJ8T8DHN7APT6W40B" />
+
 ## Bridge from last chapter
 
 Chapter 16 gave you a **persisted cart API** — add, list, update quantity, remove — scoped to the logged-in user, with **`storeId` on every line** and stock checks on write. You proved it with curl: User A cannot touch User B's items; one cart can hold products from two stores.
@@ -49,7 +51,7 @@ Chapter 16 put items **in the basket** (database). Chapter 17 lets the customer 
 
 If the cart UI groups by store now, checkout (Chapter 20 UI) will not surprise the customer with "wait, this becomes two orders?" They already saw the split.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -180,12 +182,6 @@ Estimated time: **one full day** — mostly React wiring against existing API.
 - [ ] Chapter 16 gate cleared — cart API user-scoped, multi-vendor add works
 - [ ] Logged-in customer can browse two vendors' products
 - [ ] `GET /cart` returns populated product and store fields
-
-<InterestingRead title="Multi-vendor cart grouping" hook="One basket, several shops, one checkout later." readMinutes={4}>
-
-Showing which items come from which vendor sets expectations before checkout splits orders and delivery fees. FreshMarket groups cart UI by store so shoppers are not surprised at payment.
-
-</InterestingRead>
 
 ## Next
 

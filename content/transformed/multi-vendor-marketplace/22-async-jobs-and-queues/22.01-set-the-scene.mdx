@@ -12,6 +12,8 @@ summary: "**Where the project is now:** Week 4 polish underway — catalogue cac
 
 Same Redis instance from Chapter 21 — different keys than cache. Separate **worker process** (`npm run worker`).
 
+<LearningObjectives id="01M5EB3A38AVRN0Q1FNBMRPJ57" />
+
 ## Bridge from last chapter
 
 Chapter 21 made browsing **fast**. Chapter 22 makes checkout **reliable under side effects** — the emails, SMS, and push notifications every real marketplace sends **after** an order exists.
@@ -72,7 +74,7 @@ POST /checkout
 
 Customer waits for SMTP. One slow vendor notification fails the whole checkout. Chapter 22 moves notifications **off the request path**.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -153,12 +155,6 @@ When you demo checkout live, add a development-only delay inside the processor a
 - [ ] `POST /checkout` creates split orders (Chapter 18)
 - [ ] `PATCH /vendor/orders/:orderId` updates status (Chapter 20)
 - [ ] Redis running locally or via cloud URL
-
-<InterestingRead title="Why checkout should not send email inline" hook="SMTP is slow and flaky compared to HTTP." readMinutes={4}>
-
-Sending vendor notification emails inside the payment request adds failure modes where money succeeded but the user sees an error. Queue the email; return success when the order is saved and payment confirmed.
-
-</InterestingRead>
 
 ## Next
 

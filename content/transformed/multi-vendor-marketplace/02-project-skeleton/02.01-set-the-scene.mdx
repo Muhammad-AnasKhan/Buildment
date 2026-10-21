@@ -16,6 +16,8 @@ Your skeleton chapter exists to prove that wiring works. When the home page show
 
 Every later chapter plugs into this same pattern. Auth adds protected routes. The catalogue adds public read routes. Checkout adds payment routes. The skeleton is boring on purpose — boring infrastructure is what lets exciting features ship safely.
 
+<LearningObjectives id="01M5EB34HXNT7F8D62HJK11JHM" />
+
 ## Bridge from last chapter
 
 Chapter 1 was about **clarity before code**. You named your product (or picked a placeholder), read what FreshMarket is for, checked prerequisites, and learned how this course gates progress — finish one chapter's checklist before opening the next. You should have completed the Chapter 1 gate and learning log on the platform. None of that required a running app; it required you to understand *what* you are building and *how* the course expects you to work.
@@ -44,7 +46,7 @@ The hat you wear now is **builder of the skeleton**. You are not designing the d
 
 <MustRead id="01M5CM5J0NCESD5VB1DBQW3STC" />
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -173,12 +175,6 @@ After 2.11 the API will answer on a port.
 After 2.13 the client will render in the browser.  
 After 2.15 the client will talk to the API.  
 After 2.16 you'll have your **first screenshot** for the portfolio.
-
-<InterestingRead title="Colocate by feature vs organise by type" hook="Folders named `controllers/` age badly when products multiply." readMinutes={5}>
-
-Many teams start with layer-first folders (all routes together, all models together). Feature-first layouts group everything for one capability — auth, cart, checkout — in one place. FreshMarket uses module folders on the server so each capability stays findable as the codebase grows.
-
-</InterestingRead>
 
 ## Before you continue
 

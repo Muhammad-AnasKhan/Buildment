@@ -12,6 +12,8 @@ summary: "**Where the project is now:** Customers browse the marketplace in the 
 
 This is a **build chapter**. Sub-chapters 16.6 onward scaffold the cart module and routes. Gate: cart CRUD works via API; User A cannot read User B's cart; items from two stores can coexist.
 
+<LearningObjectives id="01M5EB38RMKKRMN9MB2A46ZX6N" />
+
 ## Bridge from last chapter
 
 Chapter 15 gave customers a **shop in the browser** — grid, filters, product detail, photos from two vendors. The "Add to cart" button is a stub: it might show a toast, but nothing **persists**. Refresh the page and intent vanishes.
@@ -56,7 +58,7 @@ Your one cart
 
 At checkout (Chapter 18), the system splits into **two orders** — one per stall — but the customer still clicked **one** "Place order" button. That split only works if each cart line already knows its **`storeId`**. Chapter 16 stores that key when the customer adds an item.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -124,7 +126,7 @@ Chapter 17 builds cart page and wires add-to-cart button. **Chapter 16 is API on
 
 Chapter 16 assumes:
 
-- Customer auth works (JWT with userId)  
+- Customer auth works (JWT with userId)
 - CartItem model from Chapter 5 (or equivalent)  
 - Products publicly readable; stock on product doc  
 
@@ -154,12 +156,6 @@ Estimated time: **one to two days**.
 - [ ] Two customer test accounts or one customer + curl tokens  
 - [ ] CartItem schema reviewed in Compass  
 - [ ] `requireAuth` middleware from Chapter 6 works
-
-<InterestingRead title="Cart merge on login" hook="Guest cart + user cart = one headache if you plan late." readMinutes={5}>
-
-Shoppers browse before signing in. When they log in, anonymous cart items must merge without duplicating quantities or dropping selections. FreshMarket handles merge in the API so every client behaves consistently.
-
-</InterestingRead>
 
 ## Next
 

@@ -23,10 +23,6 @@ Six deliverables, and they split cleanly into two kinds: **design artifacts** (t
 | PATCH /api/stores/:id | requireAuth + requireRole('vendor') + ownership |
 | IDOR test procedure | 8.13 — curl with two tokens |
 
-<MustRead id="01M5CM5JG8A7THZ8KW3RYVDE61" />
-
-<RealWorldEvent title="Facebook Graph API permission scandals" when="2010s" summary="Platforms exposed user data when apps could request broader permissions than users understood — driving industry focus on least-privilege access." lesson="Centralize authorization in middleware and guards. Ad-hoc checks in individual routes drift and get missed during code review." />
-
 ## Stub route scope
 
 This chapter proves the *checks*, not the CRUD. You build just enough of the store route to demonstrate that the ownership check fires before any data changes — the full store API arrives in Chapter 9.

@@ -8,11 +8,11 @@ By the end of Chapter 5, your repo contains **six Mongoose models**, a **runnabl
 
 <BigWordAlert term="Domain model layer" plainEnglish="The set of Mongoose schemas representing FreshMarket entities — users, stores, products, carts, orders." whyItMatters="Every API chapter from auth to checkout reads and writes through these models." />
 
-## Why this matters for absolute beginners
+## Why this matters
 
 Chapter 5 is where FreshMarket becomes **real in the database** — not health checks, not empty folders, but vendors, stores, and products you can click in Compass. The deliverables table is your gate checklist. Weak models here mean every auth, cart, and checkout chapter fights the same schema mistakes. Strong models mean you mostly **wire routes** to shapes that already exist.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -49,19 +49,9 @@ Yes — keep it as the "before" picture, because the diff between draft and fina
 </FaqGroup>
 
 
-## Deliverables checklist
+## What to hand in
 
-| Deliverable | Location | Gate proof |
-|---|---|---|
-| User model | `server/src/modules/users/user.model.js` | Seed creates vendor + customer users |
-| Profile model | `server/src/modules/users/profile.model.js` | Linked to User via userId |
-| Store model | `server/src/modules/stores/store.model.js` | One store per vendor in seed |
-| Product model | `server/src/modules/products/product.model.js` | Grocery fields present |
-| CartItem model | `server/src/modules/cart/cartItem.model.js` | Schema ready for Ch 16 |
-| Order model | `server/src/modules/orders/order.model.js` | Embedded orderItems with snapshot fields |
-| Seed script | `server/scripts/seed.js` | `npm run seed` populates DB |
-| Final ERD | `docs/erd.md` | Matches implemented schemas |
-| npm script | `server/package.json` `"seed"` | Documented in README |
+Commit six models: User and Profile in `users/`, then Store, Product, CartItem, and Order in their feature folders. The seed script at `server/scripts/seed.js` should create the users, stores, and products listed below when you run `npm run seed`. The final `docs/erd.md` must match the fields in those models. Add the seed command to `server/package.json` and explain it in the README. The folder tree below shows where the files go.
 
 ## Target folder tree after Chapter 5
 
@@ -92,10 +82,6 @@ docs/
 ├── erd-draft.md              ← Ch 3 — keep for history
 └── erd.md                    ← NEW — final
 ```
-
-<MustRead id="01M5CM5J9B8BX5XX4719Z1KQMP" />
-
-<RealWorldEvent title="Amazon's item-level order snapshots" when="Marketplace era" summary="Marketplace order systems persist item details at purchase time so disputes, refunds, and tax reporting reflect the transaction as it happened." lesson="Model for auditability early. Your seed data and ERD should show which fields are live references and which are immutable snapshots." />
 
 ## Seed data specification
 
@@ -180,8 +166,3 @@ Diff draft vs final in learning log. Explain any change (e.g. added `isPublished
 **Sub-chapter 5.4:** Ownership chain — User → Store → Product → CartItem → Order as a security and data model story.
 
 Blueprint is set — next you learn why the chain order matters.
-<InterestingRead title="Why orders store prices, not live product lookups" hook="A receipt is a photograph, not a live feed." readMinutes={4}>
-
-If an order stored only a product ID, a vendor price change would rewrite history. FreshMarket copies name, unit price, and weight into order items at checkout so customers and vendors always see what was agreed at purchase time.
-
-</InterestingRead>

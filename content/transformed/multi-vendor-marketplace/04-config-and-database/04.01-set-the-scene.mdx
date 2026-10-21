@@ -20,6 +20,8 @@ The hat you wear now is **platform engineer**. You are wiring infrastructure eve
 
 <RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />
 
+<LearningObjectives id="01M5EB35GPX8TK5KN2DX5QYWBZ" />
+
 ## In plain English
 
 | Term | Meaning |
@@ -37,7 +39,7 @@ The hat you wear now is **platform engineer**. You are wiring infrastructure eve
 
 **Hooking up electricity to the market hall.** Chapter 2 built the structure; Chapter 3 drew the floor plan. This chapter runs the main cable from the grid (MongoDB) into the building through a breaker box (`config.js` + `db.js`) that refuses to power lights if the wiring is wrong. You still have empty stalls — no stock, no vendors — but the building can now support refrigerators (schemas) in the next chapter.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -167,12 +169,6 @@ Estimated time: **one full day** — less conceptual than Chapter 3, more termin
 - [ ] Chapter 2 gate still true — `curl /health` returns 200  
 - [ ] You have **MongoDB available** — local install or Atlas cluster (decide in 4.5)  
 - [ ] Root `.gitignore` includes `.env` (from Chapter 2 — re-verify in 4.9)
-
-<InterestingRead title="The `.env` leak that took down a startup demo" hook="One committed secret becomes everyone's secret." readMinutes={3}>
-
-Teams routinely leak production credentials by committing `.env` files or logging connection strings. FreshMarket teaches config early because every later chapter — Stripe, Cloudinary, Redis — adds another secret that must stay out of Git and client bundles.
-
-</InterestingRead>
 
 ## Next
 

@@ -2,9 +2,9 @@
 title: "Create store route"
 module: 9
 lesson: 9
-summary: "Opening a shop is the vendor's first irreversible action on the platform. `POST /stores` must enforce one-store-per-vendor, bind `vendorId` from the JWT (never the body), and reject customers. Chapter 10's onboarding form calls this endpoint."
+summary: "Opening a shop is the vendor's first irreversible action on the platform. `POST /stores` must enforce one-store-per-vendor, bind `userId` from the JWT (never the body), and reject customers. Chapter 10's onboarding form calls this endpoint."
 ---
-**Why this step matters:** Opening a shop is the vendor's first irreversible action on the platform. `POST /stores` must enforce one-store-per-vendor, bind `vendorId` from the JWT (never the body), and reject customers. Chapter 10's onboarding form calls this endpoint.
+**Why this step matters:** Opening a shop is the vendor's first irreversible action on the platform. `POST /stores` must enforce one-store-per-vendor, bind `userId` from the JWT (never the body), and reject customers. Chapter 10's onboarding form calls this endpoint.
 
 <BigWordAlert term="POST /stores" plainEnglish="Endpoint to create a new store document linked to the authenticated vendor user." whyItMatters="FreshMarket onboarding completes when this route succeeds — vendor can then add products." />
 
@@ -23,15 +23,15 @@ POST /api/stores
   5. 201 + JSON store
 ```
 
-`userId` from JWT — never `req.body.vendorId`.
+`userId` from JWT — never `req.body.userId`.
 
-## Service: `createStore(vendorId, data)`
+## Service: `createStore(userId, data)`
 
 | Step | Action |
 |---|---|
-| 1 | Query Store by `vendorId` |
+| 1 | Query Store by `{ userId }` |
 | 2 | If exists → throw ConflictError (409) |
-| 3 | Create document with `vendorId` + validated fields |
+| 3 | Create document with `userId` + validated fields |
 | 4 | Return saved document |
 
 Catch MongoDB duplicate key error (E11000) as backup → 409 if race between two POSTs.
@@ -51,7 +51,7 @@ Reject empty `name` after trim → 400.
 
 ## Response 201
 
-JSON body: full store object including `_id`, `vendorId`, `createdAt`.
+JSON body: full store object including `_id`, `userId`, `createdAt`.
 
 `Location` header optional: `/api/stores/{id}` — not required for gate.
 
@@ -78,7 +78,7 @@ Replace token and URL with yours:
   bearer="TOKEN"
   body='{"name":"Test Shop","description":"Local greens","address":"1 Market St"}'
   responseStatus={201}
-  responseBody='{"_id":"...","name":"Test Shop","vendorId":"...","description":"Local greens","address":"1 Market St"}'
+  responseBody='{"_id":"...","name":"Test Shop","userId":"...","description":"Local greens","address":"1 Market St"}'
 />
 
 </ApiRequestPanel>
@@ -91,7 +91,7 @@ Second identical POST → 409.
 
 After successful create, document appears in `stores` collection:
 
-- `vendorId` matches User `_id` from token  
+- `userId` matches User `_id` from token
 - No second document for same vendor after 409 test  
 
 ## README / API docs
@@ -110,7 +110,7 @@ git commit -m "feat(stores): add POST create store with one-store enforcement"
 
 ## ✅ Do / ❌ Don't
 
-**✅ Do:** Set `vendorId` in service at insert only.
+**✅ Do:** Set `userId` in service at insert only.
 
 **✅ Do:** Return 409 with clear message for duplicate.
 
@@ -125,8 +125,6 @@ git commit -m "feat(stores): add POST create store with one-store enforcement"
 - [ ] Customer token POST → 403  
 - [ ] No token → 401  
 - [ ] Missing `name` → 400  
-
-<RealWorldEvent title="Etsy shop URLs and seller identity" when="2005–present" summary="Marketplace sellers receive branded storefront URLs while the platform enforces global uniqueness and policy compliance behind the scenes." lesson="Store creation is more than a form — it is the moment a user becomes a vendor with isolated data and public presence." />
 
 ## Next
 

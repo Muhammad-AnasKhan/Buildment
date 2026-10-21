@@ -10,15 +10,13 @@ Before you write `shared/db.js`, read how **Mongoose** expects connections to wo
 
 You already decided *why* MongoDB (Chapter 3). This read covers *how* the driver connects — so your boot sequence in 4.11–4.12 matches official patterns.
 
-
 <Predict id="01M5CM5J7BH5WWN59GGKJ7KFTE" />
 
-
-## Why this matters for absolute beginners
+## Why this matters
 
 Connection bugs feel mystical — "Mongoose buffering timed out" with no context. Twenty minutes on the Connections page tells you **await connect before listen**, what `readyState` means, and why `db.js` should be shared with the Chapter 5 seed script. You are not memorizing API surface — you are preventing the most common Week 1 backend stall.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -94,8 +92,6 @@ Mongoose tracks `connection.readyState`:
 
 Health endpoint in 4.13 may use this — or a boolean you set after successful `connectDB()`. Either is valid if accurate.
 
-<RealWorldEvent title="Uber's configuration management at scale" when="2014–present" summary="Large platforms inject config and secrets through environment-specific systems so developers never embed production credentials in source code." lesson="Treat `process.env` as the contract between your app and deployment — local `.env` today, hosted secrets when you deploy in module 23." />
-
 ## Common beginner mistakes (read before coding)
 
 1. **Calling `listen` before `connect` completes** — race: first request hits DB before ready.  
@@ -112,12 +108,6 @@ Chapter 4 build steps explicitly order: load env → validate config → connect
 - **Server selection timeout:** Tuning Atlas vs local failure messages.  
 
 One paragraph in learning log if you tune timeouts — optional.
-
-<InterestingRead title="The `.env` leak that took down a startup demo" hook="One committed secret becomes everyone's secret." readMinutes={3}>
-
-Teams routinely leak production credentials by committing `.env` files or logging connection strings. FreshMarket teaches config early because every later chapter — Stripe, Cloudinary, Redis — adds another secret that must stay out of Git and client bundles.
-
-</InterestingRead>
 
 ## Reflect — write in notebook or learning log draft
 

@@ -6,15 +6,11 @@ summary: "Reservations gate sellability during payment; decrements happen once m
 ---
 # 24.04 — Reserve vs decrement
 
-Inventory math fails when teams pick **one** moment to subtract stock. FreshMarket uses **two** moments on purpose.
+Inventory math fails when teams treat a shopper starting payment as a completed sale. FreshMarket uses a **temporary hold** while payment is pending. It reduces what the next shopper can buy without claiming that anything has sold yet.
 
 ## Two clocks
 
-| Moment | Action | Updates `stockQty`? | Updates ATP? |
-|---|---|---|---|
-| Customer clicks **Pay** / checkout starts | Create `active` reservations | No | Yes (lower) |
-| Stripe webhook **payment succeeded** | Confirm reservations | Yes (decrement) | Already reflected |
-| TTL or cancel | Release reservations | No | Yes (restore) |
+When checkout starts, create an `active` reservation. `stockQty` stays the same, but available-to-promise (ATP) falls. When Stripe confirms payment, subtract the sold quantity from both `stockQty` and `reservedQty`. ATP stays the same because those units were already unavailable to other shoppers. If payment fails or the hold expires, remove only the reservation; ATP rises again.
 
 Decrementing `stockQty` at checkout **start** would strand inventory when payments fail. Decrementing only at **display** time would still oversell under concurrency.
 
@@ -35,6 +31,12 @@ P.reservedQty -= q
 
 Confirmed rows are terminal audit records. Their quantity has left both on-hand stock and the
 active reservation counter.
+
+Try the model before reading the database code. Set **already held** close to **on the shelf**, then ask for more units than remain. Notice that a refused request changes neither counter.
+
+<InteractiveCanvas slug="freshmarket-stock-holds" />
+
+The canvas shows one request. Your implementation must make the hold a guarded write because two requests can arrive at the same time. The next section shows that guard.
 
 ## MongoDB pattern: conditional reserve
 

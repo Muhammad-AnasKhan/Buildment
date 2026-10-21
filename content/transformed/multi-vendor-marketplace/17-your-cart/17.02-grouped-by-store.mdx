@@ -21,23 +21,16 @@ A cart with ten lines from three vendors is not one list — it is **three fulfi
 
 ## One cart, many vendors — the customer mental model
 
-```
-┌─────────────────────────────────────┐
-│  Your cart                          │
-├─────────────────────────────────────┤
-│  Green Valley Grocers               │
-│    Basmati Rice  2 kg    ₹240       │
-│    Milk  1 litre         ₹65        │
-│  Subtotal: ₹305                       │
-├─────────────────────────────────────┤
-│  Spice Corner                       │
-│    Turmeric  200 g       ₹40        │
-│  Subtotal: ₹40                        │
-├─────────────────────────────────────┤
-│  Estimated total: ₹345                │
-│  [Proceed to checkout]  (Ch 20)     │
-└─────────────────────────────────────┘
-```
+<MermaidDiagram title="One cart becomes store sections" chart={`flowchart LR
+  Cart[One customer cart] --> A1[Rice, Store A]
+  Cart --> A2[Milk, Store A]
+  Cart --> B1[Turmeric, Store B]
+  A1 --> GroupA[Store A section and subtotal]
+  A2 --> GroupA
+  B1 --> GroupB[Store B section and subtotal]
+  GroupA --> Total[Estimated cart total]
+  GroupB --> Total
+`} legend="The client groups cart lines by storeId for display. Checkout later rechecks prices and creates one order per store." />
 
 The customer understands: *Green Valley packs one bag; Spice Corner packs another.* That matches how vendors fulfil in the real world.
 
@@ -45,12 +38,7 @@ The customer understands: *Green Valley packs one bag; Spice Corner packs anothe
 
 A single flat list of cart items feels fine until checkout — here's what breaks, and the grouped fix for each:
 
-| Flat list problem | Grouped fix |
-|---|---|
-| "Who delivers this?" unclear | Store header on each section |
-| Subtotal meaningless | Per-store subtotal before checkout |
-| Checkout surprise | Customer already saw the split |
-| Vendor isolation invisible | Reinforces marketplace model |
+A store heading answers who will pack each item. A subtotal shows the cost of that store's items. The combined estimate stays visible, so the shopper understands the split before checkout.
 
 ## Grouping contract — client responsibility
 
@@ -94,8 +82,6 @@ Mismatch — flat cart UI then split checkout — confuses customers and mentors
 - [ ] I can explain why cart UI grouping matches checkout order split
 - [ ] I know which field keys the group: `storeId`
 - [ ] I understand cart uses live prices; orders use snapshots (Chapter 18)
-
-<RealWorldEvent title="Amazon multi-seller cart checkout" when="Marketplace era" summary="Customers add items from many sellers but expect a single checkout flow with transparent split fulfilment." lesson="Cart UI should preview the split-order model early — it reduces support questions at checkout." />
 
 ## Next
 

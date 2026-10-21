@@ -10,7 +10,7 @@ Where you store JWT in the browser determines **XSS resilience** and **session p
 
 This sub-chapter motivates Chapter 7's pattern: **access in memory**, **refresh in httpOnly cookie**.
 
-## Why this matters for absolute beginners
+## Why this matters
 
 localStorage survives refresh and is one line for any XSS script to read. Memory-only access hurts convenience slightly — page reload needs silent refresh — but theft window shrinks. This is a **deliberate trade** you explain in README and viva, not a framework default you accept blindly.
 
@@ -18,7 +18,7 @@ localStorage survives refresh and is one line for any XSS script to read. Memory
 
 **Cash in pocket vs safe deposit box.** Access token in pocket — handy, gone when you leave (tab close/reload). Refresh in bank safe (httpOnly cookie) — JS pickpockets cannot reach it; bank clerk (browser) sends it only to your API.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -76,8 +76,6 @@ localStorage.setItem('accessToken', token)
 ```
 
 Survives refresh — convenient but **any script on page reads it**.
-
-<RealWorldEvent title="GitHub's session and token evolution" when="2010s–present" summary="Developer platforms refined PATs, OAuth apps, and session handling as users demanded security without constant re-authentication." lesson="Treat the client auth layer as part of security design, not a UI afterthought — refresh logic belongs in one place, not scattered across pages." />
 
 ## Course pattern
 

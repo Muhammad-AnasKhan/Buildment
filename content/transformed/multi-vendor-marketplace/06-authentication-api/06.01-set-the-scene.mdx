@@ -12,6 +12,8 @@ summary: "**Where the project is now:** Week 1 complete — models and seed data
 
 This is a **backend-only chapter**. No React screens until Chapter 7.
 
+<LearningObjectives id="01M5EB36GKD4RJK3WQY48973JE" />
+
 ## Bridge from last chapter
 
 Chapter 5 completed Week 1 foundations. Compass shows users, stores, products — seeded with two vendors and grocery fields. Your ownership chain is real: User → Store → Product, with CartItem and Order schemas ready for later chapters. Every HTTP request is still **anonymous**; anyone who could reach your API could theoretically mutate any document because nothing checks *who* is calling.
@@ -41,7 +43,7 @@ The hat you wear now is **security-minded API builder**. You test every step wit
 
 **Issuing market ID badges after the tenant roster exists.** Chapter 5 wrote the roster (User documents with roles). This chapter builds the security desk: register new vendors and customers, verify their email, issue a day pass (access token) and a longer membership card (refresh token), and check badges at the door (`requireAuth`). No badge, no entry — but the roster must exist before the desk can stamp anyone in.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -151,12 +153,6 @@ Estimated time: **2 days** — security-sensitive; test every step with curl.
 - [ ] You understand difference between authentication and authorization
 
 <MustRead id="01M5CM5JBD31CWA620JA08WR01" />
-
-<InterestingRead title="Refresh tokens: why one token is not enough" hook="Short access tokens limit damage; refresh tokens limit annoyance." readMinutes={5}>
-
-If access tokens lived for weeks, a stolen token would stay valid for weeks. If they expired every minute, users would log in constantly. FreshMarket uses brief access tokens plus longer refresh tokens — a pattern you will wire on both server and client.
-
-</InterestingRead>
 
 ## Next
 

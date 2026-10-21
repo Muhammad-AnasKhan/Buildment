@@ -8,7 +8,7 @@ Full-stack beginners often mix **what runs in the browser** with **what runs on 
 
 <BigWordAlert term="Client-server boundary" plainEnglish="The browser runs UI code; the server runs secrets, database access, and business rules — never the reverse." whyItMatters="Stripe keys and MongoDB URLs live only on the server; the React app calls HTTP APIs for everything sensitive." />
 
-## Why this matters for absolute beginners
+## Why this matters
 
 If you think React "talks to MongoDB," you will put connection strings in the client — a serious security mistake. The browser runs **untrusted code** anyone can inspect in DevTools. The server runs **trusted code** on your machine (later, a host) and holds secrets. Every marketplace feature follows the same loop: click in React → HTTP request → Express → database → JSON response → React updates the screen. Memorize that loop now; every chapter extends it with new routes, not new architecture.
 
@@ -16,7 +16,7 @@ If you think React "talks to MongoDB," you will put connection strings in the cl
 
 **A restaurant dining room vs the kitchen.** Customers (browser) see the menu and place orders — they never walk into the walk-in freezer. The kitchen (server) holds ingredients, recipes, and keys to suppliers (MongoDB, Cloudinary). Waiters carry plates through a pass (HTTP/JSON). You would not put the freezer in the dining room; you do not put `MONGODB_URI` in React.
 
-## Common beginner questions
+## Common questions
 
 <FaqGroup>
 
@@ -193,8 +193,6 @@ Optional advanced: Vite `proxy` in `vite.config.js` instead of CORS — this cou
 **❌ Don't:** Call Cloudinary upload secret from React — server uploads in Chapter 13.
 
 **❌ Don't:** Store refresh tokens in `localStorage` — Chapter 7 covers safer patterns.
-
-<RealWorldEvent title="Shopify's modular commerce platform" when="2006–present" summary="Shopify grew from a single-product store builder into a platform with separate admin, storefront, and API surfaces — all coordinated through clear project boundaries." lesson="Starting with a deliberate folder skeleton prevents painful renames later when vendor, cart, and payment code all need room to grow." />
 
 ## Key ideas
 

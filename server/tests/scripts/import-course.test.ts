@@ -30,4 +30,17 @@ describe("course importer interaction intent", () => {
     expect(lesson.source).toContain("## Reflect");
     expect(lesson.source).not.toContain("<OpenQuestion");
   });
+
+  it("keeps an inline course roadmap as MDX instead of escaping its props", () => {
+    const lesson = parseLesson(
+      1,
+      "01-introduction",
+      "01.06-course-outline.md",
+      6,
+      "course-outline"
+    );
+
+    expect(lesson.source).toContain('<Roadmap title="FreshMarket build path"');
+    expect(lesson.source).not.toContain("&lt;Roadmap");
+  });
 });

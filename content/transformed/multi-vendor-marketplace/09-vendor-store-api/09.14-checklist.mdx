@@ -13,7 +13,7 @@ Do **not** open Chapter 10 until every box is ticked and learning log answers ar
 ### Stores module
 
 - [ ] `server/src/modules/stores/stores.routes.js` exists and exports router
-- [ ] `server/src/modules/stores/stores.service.js` — create, getByVendorId, update
+- [ ] `server/src/modules/stores/stores.service.js` — create, getByUserId, update
 - [ ] `server/src/modules/stores/stores.schema.js` — POST and PATCH validation
 - [ ] Router mounted at `/api/stores` (or documented equivalent prefix)
 - [ ] `GET /me` registered before `/:id` routes
@@ -22,7 +22,7 @@ Do **not** open Chapter 10 until every box is ticked and learning log answers ar
 
 - [ ] Requires authentication — 401 without token
 - [ ] Requires vendor role — 403 for customer
-- [ ] Creates store with `vendorId` from JWT — not from body
+- [ ] Creates store with `userId` from JWT — not from body
 - [ ] Returns 201 with store document on first create
 - [ ] Second create same vendor → **409 Conflict**
 - [ ] Invalid body → 400 with field errors
@@ -39,14 +39,14 @@ Do **not** open Chapter 10 until every box is ticked and learning log answers ar
 - [ ] Owner can update mutable fields → 200
 - [ ] Vendor B patching Vendor A store → **403**
 - [ ] Invalid id or missing store → 404
-- [ ] `vendorId` cannot be changed via PATCH
+- [ ] `userId` cannot be changed via PATCH
 - [ ] Uses `assertStoreOwner` or equivalent from Ch 8
 
 ### Testing & docs
 
 - [ ] Full curl lifecycle completed (9.12)
 - [ ] `docs/AUTHORIZATION.md` updated with store routes
-- [ ] Unique index on `vendorId` verified in Store model
+- [ ] Unique index on `userId` verified in Store model
 - [ ] No secrets or full JWTs committed
 
 ### Prior chapter gates still true
@@ -64,19 +64,19 @@ Do **not** open Chapter 10 until every box is ticked and learning log answers ar
 
 Answer **in your own words** in the fields below:
 
-1. **Create flow:** Walk through `POST /stores` from HTTP request to MongoDB document. Where is `vendorId` set? What happens on duplicate create?
+1. **Create flow:** Walk through `POST /stores` from HTTP request to MongoDB document. Where is `userId` set? What happens on duplicate create?
 
 2. **GET /stores/me:** What status do you return when a vendor has no store? Why did you choose that contract for Chapter 10 onboarding?
 
 3. **PATCH ownership:** How does `assertStoreOwner` (or your equivalent) prevent IDOR? Describe your Vendor B → Vendor A PATCH test result.
 
-4. **Validation:** Which fields are required on create vs optional on PATCH? How do you reject `vendorId` in the body?
+4. **Validation:** Which fields are required on create vs optional on PATCH? How do you reject `userId` in the body?
 
 5. **Route design:** Why is `/me` registered before `/:id`? Did you use ObjectId or slug in PATCH URLs?
 
 6. **Error mapping:** List the status codes your store routes return (401, 403, 404, 409, 400, 201, 200) and one scenario for each.
 
-7. **Database:** How does the unique index on `vendorId` help? What happens if two POST requests race?
+7. **Database:** How does the unique index on `userId` help? What happens if two POST requests race?
 
 8. **Chapter 10 preview:** What three API calls will the open-shop and settings pages make? What UI happens on 404 from GET me?
 
@@ -100,7 +100,7 @@ Mark this chapter complete in the platform, then continue to **Open your shop** 
 | Blocker | Where to look |
 |---|---|
 | 409 not returned | 9.9 service check + unique index |
-| GET me returns wrong store | 9.10 vendorId filter |
+| GET me returns wrong store | 9.10 userId filter |
 | PATCH 200 for wrong vendor | 9.11 assertStoreOwner |
 | 500 on invalid id | ObjectId validation before query |
 | Route 404 | 9.8 mount path; server restart |
