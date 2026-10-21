@@ -8,6 +8,7 @@ export type StudyPauseReason = "manual" | "inactive" | "hidden" | null;
 
 const HEARTBEAT_MS = 15_000;
 const INACTIVITY_MS = 2 * 60_000;
+const MAX_RECONNECT_DELAY_MS = 15_000;
 
 type SessionPayload = {
   status?: StudyClockStatus;
@@ -27,21 +28,21 @@ async function postSession(
   action: "start" | "pause" | "resume" | "end",
   deltaSeconds?: number,
   keepalive = false
-): Promise<SessionPayload | null> {
-  try {
-    return await apiFetch<SessionPayload>("/api/v1/progress/session", {
-      method: "POST",
-      json: {
-        chapterId,
-        action,
-        ...(deltaSeconds && deltaSeconds > 0 ? { deltaSeconds: Math.min(deltaSeconds, 20) } : {}),
-      },
-      keepalive,
-    });
-  } catch (error) {
-    if (error instanceof ApiError) console.error("Study timer request failed", error.status);
-    return null;
-  }
+): Promise<SessionPayload> {
+  return apiFetch<SessionPayload>("/api/v1/progress/session", {
+    method: "POST",
+    json: {
+      chapterId,
+      action,
+      ...(deltaSeconds && deltaSeconds > 0 ? { deltaSeconds: Math.min(deltaSeconds, 20) } : {}),
+    },
+    keepalive,
+  });
+}
+
+function isTemporaryFailure(error: unknown): boolean {
+  return error instanceof ApiError &&
+    (error.code === "API_UNAVAILABLE" || [502, 503, 504].includes(error.status));
 }
 
 export function useStudySession(chapterId: string) {
@@ -75,7 +76,10 @@ export function useStudySession(chapterId: string) {
 
   const apply = useCallback((data: SessionPayload | null, keepPending = false) => {
     if (!data) return;
-    if (data.status) setStatus(data.status);
+    if (data.status) {
+      statusRef.current = data.status;
+      setStatus(data.status);
+    }
     if (typeof data.activeSeconds === "number") setSyncedSession(data.activeSeconds);
     if (typeof data.chapterTimeSpentSeconds === "number") {
       setSyncedChapter(data.chapterTimeSpentSeconds);
@@ -98,29 +102,43 @@ export function useStudySession(chapterId: string) {
     const epoch = ++requestEpoch.current;
     statusRef.current = "idle";
     pendingRef.current = 0;
+    let cancelled = false;
+    let retryTimer: number | undefined;
+    let failures = 0;
 
-    void (async () => {
+    const load = async () => {
       try {
         const data = await apiFetch<SessionPayload>(`/api/v1/progress/session?chapterId=${encodeURIComponent(chapterId)}`);
-        if (requestEpoch.current !== epoch) return;
+        if (cancelled || requestEpoch.current !== epoch) return;
         apply(data);
-        if ((data.status ?? "idle") === "idle" && tabIsVisible() && requestEpoch.current === epoch) {
+        if ((data.status ?? "idle") === "idle" && tabIsVisible()) {
           const started = await postSession(chapterId, "start");
-          if (requestEpoch.current !== epoch) return;
+          if (cancelled || requestEpoch.current !== epoch) return;
           apply(started);
         }
-      } catch {
-        /* leave the clock idle */
+        failures = 0;
+      } catch (error) {
+        if (cancelled || requestEpoch.current !== epoch) return;
+        if (!isTemporaryFailure(error)) {
+          console.warn("Study timer could not start", error);
+          return;
+        }
+        // A dev API restart or short proxy outage should not strand the clock at 00:00.
+        const delay = Math.min(1000 * 2 ** Math.min(failures++, 4), MAX_RECONNECT_DELAY_MS);
+        retryTimer = window.setTimeout(() => void load(), delay);
       }
-    })();
+    };
+    void load();
 
     return () => {
+      cancelled = true;
+      if (retryTimer !== undefined) window.clearTimeout(retryTimer);
       const leaving = chapterRef.current;
       const current = statusRef.current;
       if (current === "idle") return;
       const delta = current === "running" ? pendingRef.current : 0;
       pendingRef.current = 0;
-      void postSession(leaving, "end", delta, true);
+      void postSession(leaving, "end", delta, true).catch(() => {});
     };
   }, [chapterId, apply]);
 
@@ -171,7 +189,7 @@ export function useStudySession(chapterId: string) {
       setPendingSeconds(0);
       setStatus("paused");
       statusRef.current = "paused";
-      void postSession(chapterRef.current, "pause", sent, true);
+      void postSession(chapterRef.current, "pause", sent, true).catch(() => {});
     };
     const onVisibilityChange = () => {
       if (document.visibilityState === "hidden") onHide();
@@ -189,20 +207,30 @@ export function useStudySession(chapterId: string) {
       if (busyRef.current) return;
       busyRef.current = true;
       setBusy(true);
-      requestEpoch.current += 1;
+      // An explicit Start can race a reconnect. Both starts are safe and the
+      // reconnect must remain active if this click also loses its connection.
+      if (action !== "start" || statusRef.current !== "idle") requestEpoch.current += 1;
       const delta = action === "pause" || action === "end" ? flushDelta() : 0;
-      const data = await postSession(chapterRef.current, action, delta);
-      apply(data);
-      if (action === "start" || action === "resume") {
-        lastActivityAt.current = Date.now();
-        setPauseReason(null);
-      } else if (action === "pause") {
-        setPauseReason(reason ?? "manual");
-      } else if (action === "end") {
-        setPauseReason(null);
+      try {
+        const data = await postSession(chapterRef.current, action, delta);
+        apply(data);
+        if (action === "start" || action === "resume") {
+          lastActivityAt.current = Date.now();
+          setPauseReason(null);
+        } else if (action === "pause") {
+          setPauseReason(reason ?? "manual");
+        } else if (action === "end") {
+          setPauseReason(null);
+        }
+      } catch (error) {
+        // Mutations that carry elapsed time must not be replayed blindly: the API
+        // might have committed them before the connection was interrupted.
+        if (isTemporaryFailure(error)) console.warn("Study timer temporarily unavailable; try again.");
+        else console.warn("Study timer request failed", error);
+      } finally {
+        busyRef.current = false;
+        setBusy(false);
       }
-      busyRef.current = false;
-      setBusy(false);
     },
     [apply, flushDelta]
   );
