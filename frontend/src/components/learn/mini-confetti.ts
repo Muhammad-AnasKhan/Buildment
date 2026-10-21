@@ -1,19 +1,19 @@
-/** Tiny burst of confetti — fires once when a checklist is fully completed. */
+/** A small celebration using the current theme. */
 export function fireMiniConfetti(anchor: HTMLElement) {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   const rect = anchor.getBoundingClientRect();
   const originX = rect.left + rect.width / 2;
   const originY = rect.top + rect.height * 0.35;
 
-  const colors = ["#6366f1", "#10b981", "#f59e0b", "#ec4899", "#0ea5e9"];
+  const colors = ["var(--primary)", "var(--muted-foreground)", "var(--accent-foreground)"];
   const container = document.createElement("div");
   container.setAttribute("aria-hidden", "true");
   container.style.cssText =
     "pointer-events:none;position:fixed;inset:0;z-index:9999;overflow:hidden;";
   document.body.appendChild(container);
 
-  const particleCount = 34;
+  const particleCount = 12;
 
   for (let i = 0; i < particleCount; i++) {
     const el = document.createElement("span");
@@ -35,7 +35,7 @@ export function fireMiniConfetti(anchor: HTMLElement) {
       "border-radius:1px",
       "opacity:0.95",
       "transform:translate(-50%,-50%)",
-      "animation:buildment-confetti 720ms cubic-bezier(0.22,1,0.36,1) forwards",
+      "animation:buildment-confetti 200ms cubic-bezier(0.22,1,0.36,1) forwards",
       `--dx:${dx}px`,
       `--dy:${dy}px`,
       `--rot:${rotate}deg`,
@@ -44,5 +44,5 @@ export function fireMiniConfetti(anchor: HTMLElement) {
     container.appendChild(el);
   }
 
-  window.setTimeout(() => container.remove(), 800);
+  window.setTimeout(() => container.remove(), 250);
 }
