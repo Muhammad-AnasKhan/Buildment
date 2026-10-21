@@ -32,12 +32,12 @@ export function HelpInboxList({ rows }: { rows: HelpInboxRow[] }) {
   if (rows.length === 0) return null;
 
   return (
-    <ul className="mt-6 divide-y divide-neutral-100 overflow-hidden rounded-xl border border-border bg-card">
+    <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
       {rows.map((row) => (
         <li key={row.id}>
           <Link
             href={row.href}
-            className="flex items-center gap-4 px-4 py-4 transition-colors hover:bg-neutral-50/80 sm:px-5"
+            className="flex items-center gap-4 px-4 py-4 transition-colors hover:bg-muted/50 sm:px-5"
           >
             {row.avatarInitials && (
               <div
@@ -56,7 +56,7 @@ export function HelpInboxList({ rows }: { rows: HelpInboxRow[] }) {
                     className={cn(
                       "text-[10px] font-semibold uppercase tracking-wide",
                       badge.tone === "waiting" &&
-                        "rounded-md bg-amber-50 px-2 py-0.5 text-amber-800",
+                        "rounded-md bg-amber-500/10 px-2 py-0.5 text-amber-800 dark:text-amber-300",
                       badge.tone === "muted" && "text-neutral-400",
                       badge.tone === "status" &&
                         "rounded-md bg-muted px-2 py-0.5 text-foreground",
