@@ -1,0 +1,116 @@
+# track: soft-skills
+slug: collaboration
+title: "Collaboration, Feedback & Conflict Resolution"
+description: "Learn to work well in a team: give and receive feedback, disagree without damage, understand other people's views, and negotiate fair outcomes. Scenarios come from remote teams, freelance work and NGOs, and some practice is done in mentor or cohort sessions."
+projectGoal: "Lead a scripted feedback or conflict role-play in a cohort or mentor session, and submit a reflection on what you did and what you would change."
+difficulty: Beginner
+estimatedHours: 10
+modules:
+  - dir: 01-how-good-teams-work
+    title: "How good teams work"
+    summary: "Clear roles, shared expectations, and habits that make remote teamwork run smoothly."
+    lessons:
+      - file: 01.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show what makes a team work or fail, and what this course practices."
+      - file: 01.02-roles-and-expectations.md
+        title: "Roles and expectations"
+        goal: "Agree who does what, by when, and how the team will communicate."
+      - file: 01.03-working-across-time-zones.md
+        title: "Working across time zones"
+        goal: "Use written updates, overlap hours and clear handoffs in a distributed team."
+      - file: 01.04-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: describe the roles and expectations in a team you are part of."
+  - dir: 02-giving-feedback
+    title: "Giving feedback"
+    summary: "Give feedback that is specific, kind and useful, on behavior and on work."
+    lessons:
+      - file: 02.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show why vague feedback fails and why silence is also feedback."
+      - file: 02.02-situation-behavior-impact.md
+        title: "Situation, behavior, impact"
+        goal: "Use the situation, behavior, impact pattern to make feedback specific and fair."
+      - file: 02.03-reviewing-someones-work.md
+        title: "Reviewing someone's work"
+        goal: "Give peer review on code or documents that is clear about what must change and what is optional."
+      - file: 02.04-quiz.md
+        title: "Quiz: giving feedback"
+        goal: "Graded scenarios on choosing specific, useful feedback."
+      - file: 02.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: write feedback for a real or practice situation using the pattern."
+  - dir: 03-receiving-feedback
+    title: "Receiving feedback and criticism"
+    summary: "Notice defensiveness, listen to the useful part, and follow up."
+    lessons:
+      - file: 03.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show how the first reaction to criticism shapes the whole conversation."
+      - file: 03.02-noticing-defensiveness.md
+        title: "Noticing defensiveness"
+        goal: "Recognize the signs of a defensive reaction in yourself and pause before replying."
+      - file: 03.03-respond-and-follow-up.md
+        title: "Respond and follow up"
+        goal: "Thank, ask a clarifying question, decide what to act on, and show the change."
+      - file: 03.04-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: reflect on a time you received criticism and how you would respond now."
+  - dir: 04-disagreement-and-conflict
+    title: "Disagreement and conflict"
+    summary: "Disagree about ideas without damaging relationships, and help resolve conflict."
+    lessons:
+      - file: 04.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Separate healthy disagreement about ideas from conflict between people."
+      - file: 04.02-disagree-constructively.md
+        title: "Disagree constructively"
+        goal: "Disagree with the idea, not the person, using questions, evidence and a proposal."
+      - file: 04.03-empathy-and-other-views.md
+        title: "Empathy and other views"
+        goal: "Understand what the other person needs and why their view makes sense to them."
+      - file: 04.04-resolving-a-conflict.md
+        title: "Resolving a conflict"
+        goal: "Use simple steps to move a conflict toward an agreement, and know when to ask for help."
+      - file: 04.05-quiz.md
+        title: "Quiz: disagreement and conflict"
+        goal: "Graded scenarios on constructive responses to disagreement."
+      - file: 04.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: plan how you would handle a disagreement scenario."
+  - dir: 05-negotiation-basics
+    title: "Negotiation basics"
+    summary: "Look for interests behind positions and negotiate scope, deadlines and rates fairly."
+    lessons:
+      - file: 05.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show that everyday work is full of small negotiations."
+      - file: 05.02-interests-not-positions.md
+        title: "Interests, not positions"
+        goal: "Find what each side really needs, and look for options that serve both."
+      - file: 05.03-negotiating-scope-and-deadlines.md
+        title: "Negotiating scope and deadlines"
+        goal: "Trade scope, time and cost openly with a client or team lead."
+      - file: 05.04-quiz.md
+        title: "Quiz: negotiation"
+        goal: "Graded scenarios on interests, options and fair trades."
+      - file: 05.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: prepare for a real or practice negotiation."
+  - dir: 06-capstone
+    title: "Capstone: a feedback or conflict role-play"
+    summary: "Run a scripted role-play in a cohort or mentor session and reflect on it."
+    lessons:
+      - file: 06.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Explain the capstone and how the role-play session works."
+      - file: 06.02-role-play-scripts.md
+        title: "Role-play scripts"
+        goal: "Provide two short scripts with roles, goals and observer notes for a cohort or mentor session."
+      - file: 06.03-reflect-and-submit.md
+        title: "Reflect and submit"
+        goal: "Submit a reflection on the role-play, or a recording link, for mentor review."
+      - file: 06.04-checklist.md
+        title: "Checklist and learning log"
+        goal: "Final gate: look back at the course and plan one team habit to keep."
