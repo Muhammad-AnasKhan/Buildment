@@ -138,8 +138,9 @@ export async function recomputeEnrollmentRollup(
 
   const enrollment = await tx.enrollment.findUniqueOrThrow({ where: { id: enrollmentId } });
   const totalChapters = await tx.chapter.count({ where: { courseId: enrollment.courseId } });
-  const percentComplete =
-    totalChapters > 0 ? Math.round((chaptersCompleted / totalChapters) * 100) : 0;
+  const allChaptersComplete = totalChapters > 0 && chaptersCompleted >= totalChapters;
+  const roundedPercent = totalChapters > 0 ? Math.round((chaptersCompleted / totalChapters) * 100) : 0;
+  const percentComplete = allChaptersComplete ? 100 : Math.min(99, roundedPercent);
 
   await tx.enrollment.update({
     where: { id: enrollmentId },
@@ -150,8 +151,8 @@ export async function recomputeEnrollmentRollup(
       percentComplete,
       lastActiveAt: new Date(),
       startedAt: enrollment.startedAt ?? new Date(),
-      status: percentComplete >= 100 ? "COMPLETED" : "IN_PROGRESS",
-      completedAt: percentComplete >= 100 ? (enrollment.completedAt ?? new Date()) : enrollment.completedAt,
+      status: allChaptersComplete ? "COMPLETED" : "IN_PROGRESS",
+      completedAt: allChaptersComplete ? (enrollment.completedAt ?? new Date()) : null,
     },
   });
 }

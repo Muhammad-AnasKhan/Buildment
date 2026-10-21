@@ -1,3 +1,4 @@
+import { summarizeLearnerTrack } from "../../../shared/lib/course-tracks.js";
 import { prisma } from "../../../db/prisma.js";
 import { OpenQuestionConfigSchema, openQuestionUrlPresentation } from "../../../shared/blocks/open-question/schema.js";
 import { submissionPreview } from "../../progress/submission-preview.js";
@@ -36,6 +37,7 @@ export async function loadMenteeEvaluation(args: {
         where: { id: args.course.id },
         select: {
           sequential: true,
+          familySlug: true,
           modules: {
             orderBy: { order: "asc" },
             select: {
@@ -279,6 +281,7 @@ export async function loadMenteeEvaluation(args: {
       name: enrollment.user.name ?? enrollment.user.email ?? "Mentee",
       email: enrollment.user.email,
     },
+    track: summarizeLearnerTrack(courseStructure?.familySlug, enrollment),
     enrollment: {
       id: enrollment.id,
       status: enrollment.status,

@@ -40,4 +40,6 @@ export const SEED_COURSE = {
   estimatedHours: 240,
   coverUrl:
     "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80",
+  // FreshMarket is the general course of this family; see shared/lib/course-tracks.ts.
+  family: "multi-vendor-marketplace",
 };

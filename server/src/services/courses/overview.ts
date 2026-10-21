@@ -1,4 +1,5 @@
 import type { CourseOverview } from "../../shared/api/catalog.js";
+import { buildCourseTrack } from "../../shared/lib/course-tracks.js";
 import { prisma } from "../../db/prisma.js";
 import { NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
@@ -20,6 +21,7 @@ export async function getCourseOverview(courseSlug: string, user: SessionUser): 
       difficulty: true,
       estimatedHours: true,
       sequential: true,
+      familySlug: true,
       status: true,
       mentor: { select: { name: true } },
       modules: {
@@ -45,13 +47,13 @@ export async function getCourseOverview(courseSlug: string, user: SessionUser): 
   });
   if (!course) throw new NotFoundError("Course not found");
 
-  const { mentor, modules: courseModules, sequential, ...courseFields } = course;
+  const { mentor, modules: courseModules, sequential, familySlug, ...courseFields } = course;
   const base = { course: { ...courseFields, instructorName: mentor.name } };
 
   const enrollment = await prisma.enrollment.findUnique({
     where: { courseId_userId: { courseId: course.id, userId: user.id } },
   });
-  if (!enrollment) return { ...base, access: "none", enrollment: null, syllabus: null };
+  if (!enrollment) return { ...base, access: "none", enrollment: null, track: null, syllabus: null };
 
   const summary = {
     percentComplete: enrollment.percentComplete,
@@ -59,7 +61,7 @@ export async function getCourseOverview(courseSlug: string, user: SessionUser): 
     pendingReviews: enrollment.pendingReviews,
   };
   if (!enrollmentGrantsContentAccess(enrollment.lifecycle)) {
-    return { ...base, access: "payment_required", enrollment: summary, syllabus: null };
+    return { ...base, access: "payment_required", enrollment: summary, track: null, syllabus: null };
   }
 
   const { modules, flatChapters } = await syllabusForEnrollment(
@@ -72,6 +74,7 @@ export async function getCourseOverview(courseSlug: string, user: SessionUser): 
     ...base,
     access: "active",
     enrollment: summary,
+    track: buildCourseTrack(familySlug, enrollment),
     syllabus: {
       modules,
       chapterCount: flatChapters.length,

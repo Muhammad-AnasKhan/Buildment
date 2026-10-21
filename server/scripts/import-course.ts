@@ -803,6 +803,7 @@ async function upsertCourse(manifest: CourseManifest | null) {
     estimatedHours: meta.estimatedHours,
     category: manifest?.category === "soft-skills" ? ("SOFT_SKILLS" as const) : ("TECH" as const),
     coverUrl: meta.coverUrl ?? null,
+    familySlug: meta.family ?? null,
   };
 
   return prisma.course.upsert({

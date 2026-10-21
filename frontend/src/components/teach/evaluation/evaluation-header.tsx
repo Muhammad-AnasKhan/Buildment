@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, CircleUserRound } from "lucide-react";
+import { LearnerTrackBadges } from "@/components/teach/learner-track-badges";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ export function EvaluationHeader({ evaluation }: { evaluation: MenteeEvaluation 
                 <Badge variant="outline" className="capitalize">{enrollment.status.toLowerCase().replaceAll("_", " ")}</Badge>
               </div>
               <p className="mt-0.5 truncate text-sm text-muted-foreground">{mentee.email ?? "No email"} · {course.title}</p>
+              <LearnerTrackBadges track={evaluation.track} className="mt-2" />
             </div>
           </div>
         </div>

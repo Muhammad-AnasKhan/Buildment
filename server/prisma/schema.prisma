@@ -255,6 +255,7 @@ model Course {
   priceCents     Int          @default(0)
   currency       String       @default("USD")
   sequential     Boolean      @default(true)
+  familySlug     String? // course family in src/shared/lib/course-tracks.ts; null = no variants
   mentorId       String
   mentor         User         @relation("CourseMentor", fields: [mentorId], references: [id])
   instructors    CourseInstructor[]
@@ -391,6 +392,10 @@ model Enrollment {
   lastNudgeSentAt   DateTime?
   startedAt         DateTime?
   completedAt       DateTime?
+  variantSlug       String? // learner's variant in the course family; null = not picked yet
+  variantChosenAt   DateTime?
+  specialisationSlug     String? // follow-up track picked once the course is complete
+  specialisationChosenAt DateTime?
   createdAt         DateTime          @default(now())
   chapterProgress   ChapterProgress[]
   dailyActivity     DailyActivity[]

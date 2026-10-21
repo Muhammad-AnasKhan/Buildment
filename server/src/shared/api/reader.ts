@@ -1,4 +1,5 @@
 import type { ChapterReaderMode } from "../domain/enums.js";
+import type { CourseTrack } from "../lib/course-tracks.js";
 import type { StreakMilestone } from "../lib/streak.js";
 import type { HelpThreadView } from "./help.js";
 import type { SyllabusModule } from "./syllabus.js";
@@ -42,6 +43,8 @@ export type ChapterReaderView = {
   prev: ReaderChapterLink | null;
   next: ReaderChapterLink | null;
   modules: SyllabusModule[];
+  /** The learner's variant (for the reader theme); null for a course without a family. */
+  track: CourseTrack | null;
   /** Sequential course and the previous chapter is not finished yet. */
   locked: boolean;
   /** The chapter to finish first when locked. */

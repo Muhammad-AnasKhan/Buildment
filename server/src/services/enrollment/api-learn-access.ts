@@ -45,11 +45,11 @@ export async function requireBlockSubmissionAccess(courseId: string, user: Sessi
   }
 }
 
-/** Read-only enrollment lookup for block state (initial response state). */
+/** Read-only enrollment lookup for block state (initial response state and the learner's variant). */
 export async function findEnrollmentForBlockState(courseId: string, userId: string) {
   const enrollment = await prisma.enrollment.findUnique({
     where: { courseId_userId: { courseId, userId } },
-    select: { id: true, lifecycle: true, userId: true },
+    select: { id: true, lifecycle: true, userId: true, variantSlug: true },
   });
   if (learnAccessDenial(enrollment)) return null;
   return enrollment;

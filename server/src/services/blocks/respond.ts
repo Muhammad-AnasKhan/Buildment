@@ -9,6 +9,7 @@ import { gradeCodeDetails } from "../../shared/blocks/code/grade.js";
 import { prisma } from "../../db/prisma.js";
 import { BadRequestError, ForbiddenError, NotFoundError, NotImplementedError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
+import { applyTokens, contentTokenValues } from "../../shared/lib/content-tokens.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
 import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
 import { ChapterLockedError, assertChapterUnlocked } from "../progress/gate.js";
@@ -77,7 +78,7 @@ export async function submitBlockResponse(input: {
 
   const block = await prisma.block.findUnique({
     where: { id: blockId },
-    include: { chapter: { select: { id: true, courseId: true, readerMode: true } } },
+    include: { chapter: { select: { id: true, courseId: true, readerMode: true, course: { select: { familySlug: true } } } } },
   });
   if (!block || block.archivedAt) throw new NotFoundError("Block not found");
   if (!isRegisteredBlockType(block.type)) {
@@ -139,7 +140,7 @@ export async function submitBlockResponse(input: {
     maxScore: response.maxScore,
     isCorrect: response.isCorrect,
     status: response.status,
-    explanation: graded.explanation,
+    explanation: graded.explanation && applyTokens(graded.explanation, contentTokenValues(block.chapter.course.familySlug, enrollment.variantSlug)),
     solution: graded.solution,
     failedTestName: graded.failedTestName,
     errorMessage: graded.errorMessage,
