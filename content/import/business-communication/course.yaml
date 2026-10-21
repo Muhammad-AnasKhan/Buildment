@@ -5,6 +5,7 @@ description: "Learn the English and the habits of professional work with interna
 projectGoal: "Produce a client communication pack: a project kickoff email, a weekly status update, a message delivering bad news, and an interview answer, reviewed by a mentor."
 difficulty: Beginner
 estimatedHours: 12
+category: soft-skills
 modules:
   - dir: 01-workplace-english
     title: "Workplace English"
@@ -20,7 +21,7 @@ modules:
         title: "Common business terms"
         goal: "Understand terms like scope, deliverable, ETA, blocker, follow up and stakeholder."
       - file: 01.04-quiz.md
-        title: "Quiz: workplace English"
+        title: "Workplace English"
         goal: "Graded scenarios on tone and business terms."
       - file: 01.05-checklist.md
         title: "Checklist and learning log"
@@ -61,7 +62,7 @@ modules:
         title: "Delivering bad news"
         goal: "Share a delay or problem early, with facts, impact, options and a recommendation."
       - file: 03.05-quiz.md
-        title: "Quiz: stakeholders and clients"
+        title: "Stakeholders and clients"
         goal: "Graded scenarios on client and stakeholder communication."
       - file: 03.06-checklist.md
         title: "Checklist and learning log"
@@ -115,7 +116,7 @@ modules:
         title: "Questions to ask"
         goal: "Ask thoughtful questions about the role, the team and how work is done."
       - file: 06.05-quiz.md
-        title: "Quiz: interviews"
+        title: "Interviews"
         goal: "Graded scenarios on interview answers and questions."
       - file: 06.06-checklist.md
         title: "Checklist and learning log"
