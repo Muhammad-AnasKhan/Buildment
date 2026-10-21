@@ -31,6 +31,7 @@ export async function MustReadComponent({
       <MandatoryReadCard
         blockId={id}
         initialRead={state?.initialRead ?? false}
+        required={state?.required ?? true}
         title={directTitle}
         href={directUrl}
         source={source}
@@ -59,6 +60,7 @@ export async function MustReadComponent({
     <MandatoryReadCard
       blockId={id}
       initialRead={state.initialRead}
+      required={state.required}
       title={state.config.title}
       href={state.config.url}
       source={state.config.source}

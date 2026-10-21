@@ -116,6 +116,8 @@ async function blockStateFor(block: Block, user: SessionUser | undefined): Promi
       return {
         type: "MUST_READ",
         config: { title: config.title, url: config.url, description: config.description, source: config.source, readMinutes: config.readMinutes },
+        // Progress reads Block.required (see progress/rules.ts), so the card follows the same flag.
+        required: block.required,
         initialRead: Boolean(latest && latest.status !== "DRAFT"),
       };
     }

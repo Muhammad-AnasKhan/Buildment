@@ -18,6 +18,8 @@ type MandatoryReadCardProps = {
   readMinutes?: number;
   blockId?: string;
   initialRead?: boolean;
+  /** Optional reads do not gate the chapter, so they are not checkpoints either. */
+  required?: boolean;
 };
 
 export function MandatoryReadCard({
@@ -28,6 +30,7 @@ export function MandatoryReadCard({
   readMinutes,
   blockId,
   initialRead = false,
+  required = true,
 }: MandatoryReadCardProps) {
   const checkboxId = useId();
   const [read, setRead] = useState(initialRead);
@@ -43,14 +46,14 @@ export function MandatoryReadCard({
 
   return (
     <div
-      {...(blockId ? checkpointAttrs(blockId, read) : {})}
+      {...(blockId && required ? checkpointAttrs(blockId, read) : {})}
       className={cn("not-prose my-8 scroll-mt-24", readerCardLg)}
       data-must-read
     >
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/25 px-5 py-4 sm:px-6">
         <div className="flex items-center gap-2.5">
           <span className="flex size-8 items-center justify-center rounded-lg border border-border bg-card text-foreground"><BookOpen className="size-4" aria-hidden /></span>
-          <p className={readerEyebrow}>Required reading</p>
+          <p className={readerEyebrow}>{required ? "Required reading" : "Optional reading"}</p>
         </div>
         {readMinutes ? <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground"><Clock3 className="size-3.5" aria-hidden /> About {readMinutes} min</span> : null}
       </div>

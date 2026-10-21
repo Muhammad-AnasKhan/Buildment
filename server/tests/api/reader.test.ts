@@ -71,7 +71,7 @@ describe("block state", () => {
 
   it("reports must-read completion and 404s unknown blocks", async () => {
     const read = await request(app).get(`/api/v1/blocks/${fx.mustReadBlock.id}/state`).set(auth());
-    expect(read.body.data).toMatchObject({ type: "MUST_READ", initialRead: false, config: { title: "Read me" } });
+    expect(read.body.data).toMatchObject({ type: "MUST_READ", required: true, initialRead: false, config: { title: "Read me" } });
     expect((await request(app).get("/api/v1/blocks/nope/state").set(auth())).status).toBe(404);
   });
 
