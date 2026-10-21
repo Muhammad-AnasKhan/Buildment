@@ -41,8 +41,11 @@ export const courseSettingsBody = z.object({
   description: z.string().trim().max(500),
   coverUrl: z.string().trim().max(2048).refine(value => !value || isSafeAssetUrl(value), "Use a same-origin image path or HTTPS URL."),
   projectGoal: z.string().trim().max(240),
-  difficulty: z.enum(["", "Easy", "Medium", "Hard"]),
+  // Beginner and Advanced match course.yaml; Easy and Hard stay valid for older courses.
+  difficulty: z.enum(["", "Beginner", "Easy", "Medium", "Advanced", "Hard"]),
   estimatedHours: z.union([z.literal(""), z.coerce.number().int().min(1).max(1000)]),
+  // Optional so older clients keep working; omitted means "leave the category as it is".
+  category: z.enum(["TECH", "SOFT_SKILLS"]).optional(),
   sequential: z.boolean(),
   pricingType: z.enum(["FREE", "PAID"]),
   priceDollars: z.union([z.literal(""), z.coerce.number().min(0).max(99999)]),
