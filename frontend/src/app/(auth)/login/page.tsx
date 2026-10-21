@@ -1,10 +1,5 @@
 import Link from "next/link";
-import { signInWithPasswordAction } from "@/server/actions/sign-in-credentials";
-import { sendMagicLinkAction } from "@/server/actions/magic-link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PasswordInput } from "@/components/ui/password-input";
+import { MagicLinkForm, PasswordLoginForm } from "@/components/auth/login-forms";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Logo } from "@/components/brand/logo";
@@ -71,34 +66,7 @@ export default async function LoginPage({
                 </p>
               ) : null}
 
-              <form action={signInWithPasswordAction} className="space-y-3">
-                {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
-                <div className="space-y-1.5">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    required
-                    className="h-10"
-                    defaultValue={params.email ?? ""}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="password">Password</Label>
-                  <PasswordInput
-                    id="password"
-                    name="password"
-                    required
-                    autoComplete="current-password"
-                    className="h-10"
-                  />
-                </div>
-                <Button type="submit" className="h-10 w-full">
-                  Sign in
-                </Button>
-              </form>
+              <PasswordLoginForm redirectTo={redirectTo} defaultEmail={params.email} />
 
               <p className="text-center text-sm text-muted-foreground">
                 No account?{" "}
@@ -113,23 +81,7 @@ export default async function LoginPage({
                 <Separator className="flex-1" />
               </div>
 
-              <form action={sendMagicLinkAction} className="space-y-3">
-                {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
-                <div className="space-y-1.5">
-                  <Label htmlFor="magic-email">Email for magic link</Label>
-                  <Input
-                    id="magic-email"
-                    name="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    required
-                    className="h-10"
-                  />
-                </div>
-                <Button type="submit" variant="outline" className="h-10 w-full">
-                  Send magic link
-                </Button>
-              </form>
+              <MagicLinkForm redirectTo={redirectTo} />
             </CardContent>
           </Card>
 
