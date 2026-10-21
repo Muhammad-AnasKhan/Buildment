@@ -67,7 +67,7 @@ function ResultBanner({ result }: { result: RespondResult }) {
             ) : null}
           </div>
           {result.explanation ? (
-            <div className="mt-1.5 space-y-1.5 leading-relaxed opacity-90">
+            <div className="mt-1.5 space-y-1.5 leading-relaxed">
               {result.explanation.split("\n").filter((line) => line.trim()).map((line, index) => (
                 <p key={index}>{line}</p>
               ))}

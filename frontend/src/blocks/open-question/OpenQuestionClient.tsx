@@ -168,7 +168,7 @@ export function OpenQuestionClient({
                     Your mentor asked for a revision (attempt {initialState.attempt})
                   </p>
                 </div>
-                <p className="whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-foreground/90">
+                <p className="whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-foreground">
                   {initialState.feedback}
                 </p>
               </div>
@@ -187,7 +187,7 @@ export function OpenQuestionClient({
                   </span>
                 </div>
                 {(text || initialState?.text) && (
-                  <p className="whitespace-pre-wrap px-4 py-3 text-[15px] leading-relaxed text-foreground/90">
+                  <p className="whitespace-pre-wrap px-4 py-3 text-[15px] leading-relaxed text-foreground">
                     {text || initialState?.text}
                   </p>
                 )}
@@ -205,12 +205,12 @@ export function OpenQuestionClient({
                   </p>
                 )}
                 {initialState?.verdict !== "APPROVED" ? (
-                  <p className="border-t border-emerald-200/60 px-4 py-3 text-sm leading-relaxed text-muted-foreground dark:border-emerald-400/20">
+                  <p className="border-t border-emerald-200/60 px-4 py-3 text-sm leading-relaxed text-foreground dark:border-emerald-400/20">
                     Submitted. You can continue to the next lesson. Your mentor will still reply.
                   </p>
                 ) : null}
                 {initialState?.verdict === "APPROVED" && initialState.feedback && (
-                  <p className="border-t border-emerald-200/60 whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-muted-foreground dark:border-emerald-400/20">
+                  <p className="border-t border-emerald-200/60 whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-foreground dark:border-emerald-400/20">
                     <span className="font-medium text-emerald-800 dark:text-emerald-100">Mentor feedback: </span>
                     {initialState.feedback}
                   </p>

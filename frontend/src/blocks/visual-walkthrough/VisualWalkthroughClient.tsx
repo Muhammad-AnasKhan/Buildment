@@ -50,7 +50,7 @@ export function VisualWalkthroughClient({ title, steps }: VisualWalkthroughConfi
             <div className="max-w-2xl">
               <p className={readerEyebrow}>Step {active + 1} of {steps.length}</p>
               <h4 className="mt-1 text-base font-semibold text-foreground">{step.title}</h4>
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{step.description}</p>
+              <p className="mt-1 text-sm leading-relaxed text-foreground">{step.description}</p>
             </div>
             <div className="flex shrink-0 gap-2">
               <button type="button" onClick={() => setActive((index) => Math.max(0, index - 1))} disabled={active === 0} className="inline-flex items-center gap-1 rounded-md border border-border px-3 py-2 text-xs font-medium text-foreground hover:bg-muted disabled:opacity-40"><ChevronLeft className="size-3.5" aria-hidden /> Previous</button>

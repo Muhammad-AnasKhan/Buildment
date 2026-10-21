@@ -70,7 +70,7 @@ export function Callout({ type = "info", title, content, children }: CalloutProp
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold tracking-tight text-foreground">{heading}</p>
-          <div className="mt-2 text-sm leading-relaxed text-foreground/85 [&_p]:mt-0 [&_p+p]:mt-3 [&_strong]:font-semibold [&_strong]:text-foreground">
+          <div className="mt-2 text-sm leading-relaxed text-foreground [&_p]:mt-0 [&_p+p]:mt-3 [&_strong]:font-semibold [&_strong]:text-foreground">
             {children ?? content}
           </div>
         </div>

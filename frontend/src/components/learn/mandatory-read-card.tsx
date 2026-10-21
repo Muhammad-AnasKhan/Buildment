@@ -58,7 +58,7 @@ export function MandatoryReadCard({
       <div className="px-5 py-5 sm:px-6 sm:py-6">
         {source ? <p className={`${readerEyebrow} mb-2 normal-case tracking-normal`}>{source}</p> : null}
         <h3 className="text-lg font-semibold leading-snug tracking-tight text-foreground">{title}</h3>
-        <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{summary}</p>
+        <p className="mt-2 text-[15px] leading-relaxed text-foreground">{summary}</p>
         <a href={href} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-opacity hover:opacity-85">
           Open reading <ExternalLink className="size-3.5" aria-hidden />
         </a>

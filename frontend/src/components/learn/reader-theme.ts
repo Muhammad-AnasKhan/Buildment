@@ -13,7 +13,7 @@ export const readerCardHeader = cn("border-b border-border bg-muted/35 px-5 py-4
 
 export const readerCardFooter = cn("border-t border-border bg-muted/30 px-5 py-4 sm:px-6");
 
-export const readerBodyText = "text-[15px] leading-relaxed text-foreground/90";
+export const readerBodyText = "text-[15px] leading-relaxed text-foreground";
 
 export const readerTitle = "text-[15px] font-medium leading-snug text-foreground sm:text-base";
 

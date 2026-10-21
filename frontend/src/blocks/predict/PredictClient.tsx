@@ -214,7 +214,7 @@ export function PredictClient({
                     : "Review your prediction"}
               </p>
               {result.explanation ? (
-                <p className="mt-1 leading-relaxed opacity-90">{result.explanation}</p>
+                <p className="mt-1 leading-relaxed">{result.explanation}</p>
               ) : null}
             </div>
           </div>

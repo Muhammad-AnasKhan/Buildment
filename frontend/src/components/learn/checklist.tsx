@@ -101,7 +101,7 @@ function ChecklistItemRow({
         />
         <span
           className={cn(
-            "min-w-0 flex-1 text-[15px] leading-relaxed text-foreground/90",
+            "min-w-0 flex-1 text-[15px] leading-relaxed text-foreground",
             checked && "text-muted-foreground line-through decoration-muted-foreground/80"
           )}
         >
