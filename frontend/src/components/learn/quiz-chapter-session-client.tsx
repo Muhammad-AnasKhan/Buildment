@@ -20,6 +20,17 @@ function isPerfectScore(summary: QuizResultSummary | null) {
   return Boolean(summary && summary.maxScore > 0 && summary.score === summary.maxScore);
 }
 
+function missedQuestionIndices(
+  stepIds: string[],
+  quizBlockIds: string[],
+  grades: Record<string, QuizBlockGrade>
+) {
+  const quizIds = new Set(quizBlockIds);
+  return stepIds.flatMap((id, index) =>
+    quizIds.has(id) && grades[id]?.isCorrect !== true ? [index] : []
+  );
+}
+
 export function QuizChapterSessionClient({
   children,
   chapterId,
@@ -54,7 +65,20 @@ export function QuizChapterSessionClient({
   const router = useRouter();
   const steps = React.Children.toArray(children).filter(Boolean);
   const total = steps.length;
-  const [index, setIndex] = useState(0);
+  const [index, setIndex] = useState(() =>
+    isPerfectScore(initialScoreSummary)
+      ? Math.max(0, total - 1)
+      : initialScoreSummary
+        ? (missedQuestionIndices(stepIds, quizBlockIds, initialBlockGrades)[0] ?? 0)
+        : 0
+  );
+  const [retryMissed, setRetryMissed] = useState(() =>
+    Boolean(
+      initialScoreSummary &&
+      !isPerfectScore(initialScoreSummary) &&
+      missedQuestionIndices(stepIds, quizBlockIds, initialBlockGrades).length > 0
+    )
+  );
   const [submitting, setSubmitting] = useState(false);
   const [movingNext, setMovingNext] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -65,6 +89,18 @@ export function QuizChapterSessionClient({
 
   const perfectScore = useMemo(() => isPerfectScore(scoreSummary), [scoreSummary]);
   const reviewMode = scoreSummary !== null;
+  const missedIndices = useMemo(
+    () => missedQuestionIndices(stepIds, quizBlockIds, blockGrades),
+    [stepIds, quizBlockIds, blockGrades]
+  );
+  const visibleIndices = useMemo(
+    () => retryMissed && !perfectScore && missedIndices.length > 0
+      ? missedIndices
+      : Array.from({ length: total }, (_, stepIndex) => stepIndex),
+    [retryMissed, perfectScore, missedIndices, total]
+  );
+  const position = Math.max(0, visibleIndices.indexOf(index));
+  const activeIndex = visibleIndices[position] ?? 0;
 
   const [lastServerState, setLastServerState] = useState({ summary: initialScoreSummary, grades: initialBlockGrades });
   if (lastServerState.summary !== initialScoreSummary || lastServerState.grades !== initialBlockGrades) {
@@ -72,6 +108,13 @@ export function QuizChapterSessionClient({
     setScoreSummary(initialScoreSummary);
     setBlockGrades(initialBlockGrades);
     setDirtyBlockIds(new Set());
+    const firstMissed = missedQuestionIndices(stepIds, quizBlockIds, initialBlockGrades)[0];
+    setRetryMissed(Boolean(initialScoreSummary && !isPerfectScore(initialScoreSummary) && firstMissed !== undefined));
+    if (initialScoreSummary && !isPerfectScore(initialScoreSummary) && firstMissed !== undefined) {
+      setIndex(firstMissed);
+    } else if (isPerfectScore(initialScoreSummary)) {
+      setIndex(Math.max(0, total - 1));
+    }
   }
 
   useEffect(() => {
@@ -81,10 +124,11 @@ export function QuizChapterSessionClient({
   }, [initialScoreSummary, individualActivityCount]);
 
   const go = useCallback(
-    (next: number) => {
-      setIndex(Math.max(0, Math.min(total - 1, next)));
+    (nextPosition: number) => {
+      const boundedPosition = Math.max(0, Math.min(visibleIndices.length - 1, nextPosition));
+      setIndex(visibleIndices[boundedPosition] ?? 0);
     },
-    [total]
+    [visibleIndices]
   );
 
   useEffect(() => {
@@ -97,7 +141,6 @@ export function QuizChapterSessionClient({
         next.add(detail.blockId);
         return next;
       });
-      setScoreSummary((previous) => (isPerfectScore(previous) ? previous : null));
       setSubmitError(null);
     };
     window.addEventListener("buildment:quiz-answer-change", onAnswerChange);
@@ -111,8 +154,11 @@ export function QuizChapterSessionClient({
     setSubmitting(true);
     setSubmitError(null);
     const answers = quizBlockIds.map((blockId) => {
-      let selected = draftAnswers[blockId] ?? initialAnswers[blockId] ?? [];
-      if (!Object.prototype.hasOwnProperty.call(draftAnswers, blockId)) {
+      const savedCorrectAnswer = blockGrades[blockId]?.isCorrect === true
+        ? blockGrades[blockId].selected
+        : null;
+      let selected = savedCorrectAnswer ?? draftAnswers[blockId] ?? initialAnswers[blockId] ?? [];
+      if (!savedCorrectAnswer && !Object.prototype.hasOwnProperty.call(draftAnswers, blockId)) {
         try {
           const saved = window.localStorage.getItem(`${draftStoragePrefix}:${blockId}`);
           if (saved !== null) {
@@ -172,6 +218,15 @@ export function QuizChapterSessionClient({
         });
       }
 
+      const nextMissed = missedQuestionIndices(
+        stepIds,
+        quizBlockIds,
+        Object.fromEntries(gradesFromApi.map((grade) => [grade.blockId, { selected: grade.selected ?? [], isCorrect: grade.isCorrect }]))
+      );
+      setRetryMissed(!isPerfectScore(summary) && nextMissed.length > 0);
+      if (isPerfectScore(summary)) setIndex(Math.max(0, total - 1));
+      else if (nextMissed.length > 0) setIndex(nextMissed[0]);
+
       if (isPerfectScore(summary)) {
         playFeedback("celebration");
         if (individualActivityCount === 0) window.dispatchEvent(new Event("buildment:quiz-perfect"));
@@ -220,7 +275,7 @@ export function QuizChapterSessionClient({
   };
 
 
-  const progressPct = total > 0 ? ((index + 1) / total) * 100 : 0;
+  const progressPct = visibleIndices.length > 0 ? ((position + 1) / visibleIndices.length) * 100 : 0;
 
   const sessionValue = useMemo(
     () => ({
@@ -243,21 +298,21 @@ export function QuizChapterSessionClient({
             Quiz: {chapterTitle}
           </h1>
           <p className="mt-3 text-sm font-medium text-muted-foreground">
-            Question {index + 1} of {total}
+            Question {position + 1} of {visibleIndices.length}{retryMissed && !perfectScore ? " to retry" : ""}
           </p>
           {individualActivityCount > 0 && <p className="mt-2 text-sm text-muted-foreground">Submit each open question, prediction, or code exercise with its own button. Written answers are reviewed separately; the score below covers multiple-choice questions.</p>}
           {scoreSummary ? (
             <p className="mt-2 text-sm text-foreground">
               Multiple-choice score {scoreSummary.score}/{scoreSummary.maxScore}
-              {perfectScore ? " · all correct" : " · update answers and submit again"}
+              {perfectScore ? " · all correct" : ` · ${missedIndices.length} to retry`}
             </p>
           ) : null}
           <div
             className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted"
             role="progressbar"
-            aria-valuenow={index + 1}
+            aria-valuenow={position + 1}
             aria-valuemin={1}
-            aria-valuemax={total}
+            aria-valuemax={visibleIndices.length}
             aria-label="Quiz progress"
           >
             <div
@@ -271,8 +326,8 @@ export function QuizChapterSessionClient({
           {steps.map((step, stepIndex) => (
             <div
               key={stepIds[stepIndex] ?? stepIndex}
-              className={cn(stepIndex === index ? "block" : "hidden")}
-              aria-hidden={stepIndex !== index}
+              className={cn(stepIndex === activeIndex ? "block" : "hidden")}
+              aria-hidden={stepIndex !== activeIndex}
             >
               {step}
             </div>
@@ -291,7 +346,22 @@ export function QuizChapterSessionClient({
           >
             {perfectScore
               ? `${individualActivityCount > 0 ? "Multiple-choice complete" : "Quiz complete"} · ${scoreSummary.score}/${scoreSummary.maxScore} correct.`
-              : `${scoreSummary.score}/${scoreSummary.maxScore} correct so far. Change any answer above, then submit again.`}
+              : `${scoreSummary.score}/${scoreSummary.maxScore} correct so far. Retry the ${missedIndices.length} missed question${missedIndices.length === 1 ? "" : "s"}, then submit again.`}
+            {!perfectScore && missedIndices.length > 0 ? (
+              <div className="mt-3">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setRetryMissed(!retryMissed);
+                    setIndex(retryMissed ? 0 : missedIndices[0]);
+                  }}
+                >
+                  {retryMissed ? "Review all questions" : `Retry ${missedIndices.length} missed question${missedIndices.length === 1 ? "" : "s"}`}
+                </Button>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -300,16 +370,16 @@ export function QuizChapterSessionClient({
             type="button"
             variant="outline"
             size="sm"
-            disabled={index === 0}
-            onClick={() => go(index - 1)}
+            disabled={position === 0}
+            onClick={() => go(position - 1)}
             className="gap-1"
           >
             <ChevronLeft className="size-4" aria-hidden />
             Back
           </Button>
-          {index < total - 1 ? (
-            <Button type="button" size="sm" onClick={() => go(index + 1)} className="gap-1">
-              Next
+          {position < visibleIndices.length - 1 ? (
+            <Button type="button" size="sm" onClick={() => go(position + 1)} className="gap-1">
+              {retryMissed && !perfectScore ? "Next missed question" : "Next"}
               <ChevronRight className="size-4" aria-hidden />
             </Button>
           ) : perfectScore && nextHref ? (
