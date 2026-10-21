@@ -1,5 +1,6 @@
 // GENERATED from server/src/shared — do not edit here. Run `pnpm sync-shared` in server/.
 import type { CoursePricingType, CourseStatus, EnrollmentLifecycle } from "../domain/enums";
+import type { CourseTrack } from "../lib/course-tracks";
 import type { SyllabusModule } from "./syllabus";
 
 // Wire contract for the public catalog, course overview, checkout and self-enrolment.
@@ -49,6 +50,8 @@ export type CourseOverview = {
   };
   access: "active" | "payment_required" | "none";
   enrollment: { percentComplete: number; chaptersCompleted: number; pendingReviews: number } | null;
+  /** Variant and specialisation for a course in a family; null otherwise or without access. */
+  track: CourseTrack | null;
   /** Present only when access is active. */
   syllabus: {
     modules: SyllabusModule[];
@@ -75,4 +78,13 @@ export const ENROLLMENT_ERROR_CODES = {
   ALREADY_ENROLLED: "ALREADY_ENROLLED",
   PAYMENT_PENDING: "PAYMENT_PENDING",
   NOT_PUBLISHED: "NOT_PUBLISHED",
+} as const;
+
+/** PUT /api/v1/courses/:courseSlug/track/variant and /track/specialisation */
+export type UpdateCourseTrackResult = { courseSlug: string; track: CourseTrack };
+
+export const COURSE_TRACK_ERROR_CODES = {
+  NO_FAMILY: "COURSE_HAS_NO_VARIANTS",
+  COURSE_FINISHED: "VARIANT_LOCKED_AFTER_COMPLETION",
+  NOT_FINISHED: "SPECIALISATION_NOT_OPEN",
 } as const;
