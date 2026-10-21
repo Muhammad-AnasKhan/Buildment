@@ -15,6 +15,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     if: github.ref == 'refs/heads/main'
 
     # Run from the repository root. Vercel's project Root Directory is frontend.
@@ -41,4 +42,4 @@ jobs:
         run: vercel build --prod --token="$VERCEL_TOKEN"
 
       - name: Deploy frontend
-        run: vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+        run: vercel deploy --prebuilt --prod --archive=tgz --yes --token="$VERCEL_TOKEN"
