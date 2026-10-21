@@ -5,6 +5,7 @@ import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { submitReview } from "@/server/actions/reviews";
 import { ReviewForm } from "@/components/teach/review-form";
+import { QuizIntegrity } from "@/components/teach/evaluation/quiz-integrity";
 
 export default async function ReviewDetailPage({
   params,
@@ -144,6 +145,12 @@ export default async function ReviewDetailPage({
           )}
         </section>
       </div>
+
+      {response.integrity.length > 0 ? (
+        <div className="mt-6">
+          <QuizIntegrity attempts={response.integrity} showChapter={false} />
+        </div>
+      ) : null}
     </div>
   );
 }

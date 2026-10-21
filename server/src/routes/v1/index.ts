@@ -13,6 +13,7 @@ import inviteRoutes from "./invites.js";
 import teachRoutes from "./teach.js";
 import mediaRoutes from "./media.js";
 import adminRoutes from "./admin.js";
+import integrityRoutes from "./integrity.js";
 
 // First-party API, versioned. JSON routes use the { success, data } envelope;
 // the media route streams image bytes.
@@ -32,5 +33,6 @@ router.use("/invites", inviteRoutes);
 router.use("/teach", teachRoutes);
 router.use("/media", mediaRoutes);
 router.use("/admin", adminRoutes);
+router.use("/integrity", integrityRoutes);
 
 export default router;

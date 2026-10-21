@@ -11,6 +11,7 @@ import type {
 } from "../domain/enums.js";
 import type { LearnerTrackSummary } from "../lib/course-tracks.js";
 import type { InstructorAccessView } from "../lib/instructor-access.js";
+import type { IntegrityAttemptSummary } from "./integrity.js";
 
 // Wire contract for /api/v1/teach — the instructor workspace. Every date is an
 // ISO string; labels that need "now" (e.g. "3d ago") are computed on the server
@@ -116,7 +117,7 @@ export type CourseSettingsView = Pick<CourseBuilderCourse,
   "id" | "slug" | "title" | "description" | "projectGoal" | "difficulty" |
   "estimatedHours" | "category" | "sequential" | "coverUrl" | "status" | "pricingType" |
   "priceCents" | "currency"
-> & { enrollmentCount: number; chapterCount: number };
+> & { enrollmentCount: number; chapterCount: number; integritySnapshots: boolean };
 
 export type CourseDraftPreview = {
   course: Pick<CourseBuilderCourse, "id" | "slug" | "title" | "description" | "projectGoal" | "coverUrl" | "status">;
@@ -385,6 +386,8 @@ export type MenteeEvaluation = {
   help: HelpRequest[];
   sessions: StudySessionItem[];
   reflections: EvaluationReflection[];
+  /** Quiz integrity attempts, newest first. Mentor-only. */
+  integrity: IntegrityAttemptSummary[];
 };
 
 // ---------------------------------------------------------------------------
@@ -489,6 +492,8 @@ export type ReviewDetailView = {
   answerUrl: string | null;
   review: { score: number | null; verdict: ReviewVerdict } | null;
   history: Array<{ id: string; attempt: number; verdict: ReviewVerdict; feedback: string; reviewerName: string | null }>;
+  /** Quiz integrity attempts on this chapter by this learner, newest first. */
+  integrity: IntegrityAttemptSummary[];
 };
 
 export type AiReviewDraft = {

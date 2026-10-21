@@ -45,6 +45,8 @@ const schema = z.object({
     .transform((value) => value !== "false"),
   INACTIVITY_NUDGE_HOUR_UTC: z.coerce.number().int().min(0).max(23).default(9),
   WEEKLY_GOAL_REMINDER_HOUR_UTC: z.coerce.number().int().min(0).max(23).default(9),
+  /** Daily job that deletes quiz camera stills older than 30 days. */
+  INTEGRITY_RETENTION_HOUR_UTC: z.coerce.number().int().min(0).max(23).default(3),
 
   /** OpenRouter access for AI review drafts; drafting is disabled without a key. */
   OPENROUTER_API_KEY: optionalString,
@@ -55,6 +57,11 @@ const schema = z.object({
   R2_BUCKET: optionalString,
   R2_ACCESS_KEY_ID: optionalString,
   R2_SECRET_ACCESS_KEY: optionalString,
+  /**
+   * Signs the short-lived links mentors use to view quiz snapshots. Set it when more
+   * than one API replica runs; otherwise each process makes its own at boot.
+   */
+  INTEGRITY_MEDIA_SECRET: optionalString,
 
   /** Local testing only: e2e suites sign up repeatedly from one IP. Never set in production. */
   DISABLE_RATE_LIMITS: z

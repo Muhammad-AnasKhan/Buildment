@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { apiFetch } from "@/lib/api-client";
 import { markChapterComplete } from "@/server/actions/progress";
 import { cn } from "@/lib/utils";
 import { QuizSessionContext, type QuizBlockGrade } from "@/components/learn/quiz-session-context";
+import { QuizCameraGate, QuizIntegrityPanel } from "@/components/learn/quiz-integrity-panel";
+import { useQuizIntegrity } from "@/lib/integrity/use-quiz-integrity";
 
 type QuizResultSummary = { score: number; maxScore: number; questions: number };
 
@@ -19,6 +21,9 @@ type QuizSubmitResponse = QuizResultSummary & {
 function isPerfectScore(summary: QuizResultSummary | null) {
   return Boolean(summary && summary.maxScore > 0 && summary.score === summary.maxScore);
 }
+
+const FULLSCREEN_REQUIRED_MESSAGE = "Return to full screen before submitting your quiz. Your selected answers are still saved.";
+const FULLSCREEN_UNAVAILABLE_MESSAGE = "This browser does not support the full-screen mode required to submit this quiz. Open it in a browser that supports full screen.";
 
 function missedQuestionIndices(
   stepIds: string[],
@@ -102,6 +107,22 @@ export function QuizChapterSessionClient({
   const position = Math.max(0, visibleIndices.indexOf(index));
   const activeIndex = visibleIndices[position] ?? 0;
 
+  // Integrity signals run while the quiz is still open; a finished quiz is not watched.
+  const sectionRef = useRef<HTMLElement>(null);
+  const integrity = useQuizIntegrity({
+    chapterId,
+    enabled: total > 0 && !chapterComplete && !(isPerfectScore(initialScoreSummary) && individualActivityCount === 0),
+    rootRef: sectionRef,
+    currentBlockId: stepIds[activeIndex] ?? null,
+  });
+  useEffect(() => {
+    if (integrity.isFullscreen) {
+      setSubmitError((current) =>
+        current === FULLSCREEN_REQUIRED_MESSAGE || current === FULLSCREEN_UNAVAILABLE_MESSAGE ? null : current
+      );
+    }
+  }, [integrity.isFullscreen]);
+
   const [lastServerState, setLastServerState] = useState({ summary: initialScoreSummary, grades: initialBlockGrades });
   if (lastServerState.summary !== initialScoreSummary || lastServerState.grades !== initialBlockGrades) {
     setLastServerState({ summary: initialScoreSummary, grades: initialBlockGrades });
@@ -151,6 +172,12 @@ export function QuizChapterSessionClient({
 
   const submitQuiz = async () => {
     if (submitting || perfectScore || quizBlockIds.length === 0) return;
+    const canSubmitInFullscreen = () => {
+      if (!integrity.requiresFullscreen || document.fullscreenElement) return true;
+      setSubmitError(integrity.fullscreenSupported ? FULLSCREEN_REQUIRED_MESSAGE : FULLSCREEN_UNAVAILABLE_MESSAGE);
+      return false;
+    };
+    if (!canSubmitInFullscreen()) return;
     setSubmitting(true);
     setSubmitError(null);
     const answers = quizBlockIds.map((blockId) => {
@@ -176,13 +203,21 @@ export function QuizChapterSessionClient({
     const unanswered = answers.filter((answer) => answer.selected.length === 0).length;
     if (
       unanswered > 0 &&
-      !window.confirm(
-        `${unanswered} question${unanswered === 1 ? " is" : "s are"} unanswered. Submit anyway? Unanswered questions will be marked incorrect.`
+      !integrity.withoutFlags(() =>
+        window.confirm(
+          `${unanswered} question${unanswered === 1 ? " is" : "s are"} unanswered. Submit anyway? Unanswered questions will be marked incorrect.`
+        )
       )
     ) {
       setSubmitting(false);
       return;
     }
+    // Native confirmation dialogs can leave full-screen mode. Recheck before the API call.
+    if (!canSubmitInFullscreen()) {
+      setSubmitting(false);
+      return;
+    }
+    integrity.checkPace(reviewMode ? quizBlockIds.filter((blockId) => dirtyBlockIds.has(blockId)) : quizBlockIds);
 
     try {
       const body = await apiFetch<QuizSubmitResponse>(`/api/v1/chapters/${encodeURIComponent(chapterId)}/quiz/submit`, {
@@ -229,7 +264,10 @@ export function QuizChapterSessionClient({
 
       if (isPerfectScore(summary)) {
         playFeedback("celebration");
-        if (individualActivityCount === 0) window.dispatchEvent(new Event("buildment:quiz-perfect"));
+        if (individualActivityCount === 0) {
+          integrity.finish();
+          window.dispatchEvent(new Event("buildment:quiz-perfect"));
+        }
         for (const blockId of quizBlockIds) {
           try {
             window.localStorage.removeItem(`${draftStoragePrefix}:${blockId}`);
@@ -240,6 +278,7 @@ export function QuizChapterSessionClient({
       } else if (summary.score <= 0) {
         playFeedback("error");
       }
+      if (!isPerfectScore(summary)) void integrity.nextAttempt();
 
       setDraftAnswers({});
       router.refresh();
@@ -292,7 +331,7 @@ export function QuizChapterSessionClient({
 
   return (
     <QuizSessionContext.Provider value={sessionValue}>
-      <section id="quiz-chapter-session" className="not-prose mb-10 scroll-mt-24" aria-label="Quiz session">
+      <section ref={sectionRef} id="quiz-chapter-session" className="not-prose mb-10 scroll-mt-24" aria-label="Quiz session">
         <header className="mb-8 border-b border-border pb-6">
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Quiz: {chapterTitle}
@@ -300,6 +339,7 @@ export function QuizChapterSessionClient({
           <p className="mt-3 text-sm font-medium text-muted-foreground">
             Question {position + 1} of {visibleIndices.length}{retryMissed && !perfectScore ? " to retry" : ""}
           </p>
+          <QuizIntegrityPanel integrity={integrity} />
           {individualActivityCount > 0 && <p className="mt-2 text-sm text-muted-foreground">Submit each open question, prediction, or code exercise with its own button. Written answers are reviewed separately; the score below covers multiple-choice questions.</p>}
           {scoreSummary ? (
             <p className="mt-2 text-sm text-foreground">
@@ -322,107 +362,114 @@ export function QuizChapterSessionClient({
           </div>
         </header>
 
-        <div className="relative min-h-[12rem]">
-          {steps.map((step, stepIndex) => (
-            <div
-              key={stepIds[stepIndex] ?? stepIndex}
-              className={cn(stepIndex === activeIndex ? "block" : "hidden")}
-              aria-hidden={stepIndex !== activeIndex}
-            >
-              {step}
+        <div className="relative">
+          {/* A required camera that is off pauses the quiz; the answers stay underneath. */}
+          <div inert={integrity.camera.blocked} className={cn(integrity.camera.blocked && "pointer-events-none select-none opacity-30 blur-[2px]")}>
+            <div className="relative min-h-[12rem]">
+              {steps.map((step, stepIndex) => (
+                <div
+                  key={stepIds[stepIndex] ?? stepIndex}
+                  className={cn(stepIndex === activeIndex ? "block" : "hidden")}
+                  aria-hidden={stepIndex !== activeIndex}
+                  data-integrity-step={stepIds[stepIndex]}
+                >
+                  {step}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
 
-        {scoreSummary ? (
-          <div
-            className={cn(
-              "mt-8 rounded-xl border px-4 py-3 text-sm",
-              perfectScore
-                ? "border-emerald-500/30 bg-emerald-500/10 text-foreground"
-                : "border-border bg-muted/40 text-foreground"
-            )}
-            role="status"
-          >
-            {perfectScore
-              ? `${individualActivityCount > 0 ? "Multiple-choice complete" : "Quiz complete"} · ${scoreSummary.score}/${scoreSummary.maxScore} correct.`
-              : `${scoreSummary.score}/${scoreSummary.maxScore} correct so far. Retry the ${missedIndices.length} missed question${missedIndices.length === 1 ? "" : "s"}, then submit again.`}
-            {!perfectScore && missedIndices.length > 0 ? (
-              <div className="mt-3">
+            {scoreSummary ? (
+              <div
+                className={cn(
+                  "mt-8 rounded-xl border px-4 py-3 text-sm",
+                  perfectScore
+                    ? "border-emerald-500/30 bg-emerald-500/10 text-foreground"
+                    : "border-border bg-muted/40 text-foreground"
+                )}
+                role="status"
+              >
+                {perfectScore
+                  ? `${individualActivityCount > 0 ? "Multiple-choice complete" : "Quiz complete"} · ${scoreSummary.score}/${scoreSummary.maxScore} correct.`
+                  : `${scoreSummary.score}/${scoreSummary.maxScore} correct so far. Retry the ${missedIndices.length} missed question${missedIndices.length === 1 ? "" : "s"}, then submit again.`}
+                {!perfectScore && missedIndices.length > 0 ? (
+                  <div className="mt-3">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setRetryMissed(!retryMissed);
+                        setIndex(retryMissed ? 0 : missedIndices[0]);
+                      }}
+                    >
+                      {retryMissed ? "Review all questions" : `Retry ${missedIndices.length} missed question${missedIndices.length === 1 ? "" : "s"}`}
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
+            <footer className="mt-10 flex items-center justify-between gap-3 border-t border-border pt-6">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={position === 0}
+                onClick={() => go(position - 1)}
+                className="gap-1"
+              >
+                <ChevronLeft className="size-4" aria-hidden />
+                Back
+              </Button>
+              {position < visibleIndices.length - 1 ? (
+                <Button type="button" size="sm" onClick={() => go(position + 1)} className="gap-1">
+                  {retryMissed && !perfectScore ? "Next missed question" : "Next"}
+                  <ChevronRight className="size-4" aria-hidden />
+                </Button>
+              ) : perfectScore && nextHref ? (
                 <Button
                   type="button"
                   size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setRetryMissed(!retryMissed);
-                    setIndex(retryMissed ? 0 : missedIndices[0]);
-                  }}
+                  disabled={movingNext || (nextLocked && !chapterComplete && !canMarkComplete)}
+                  loading={movingNext}
+                  onClick={() => void moveToNextChapter()}
+                  className="gap-1.5"
                 >
-                  {retryMissed ? "Review all questions" : `Retry ${missedIndices.length} missed question${missedIndices.length === 1 ? "" : "s"}`}
+                  {movingNext ? "Opening next chapter…" : nextLocked && !chapterComplete && !canMarkComplete ? "Finish remaining activities" : "Next chapter"}
+                  {!movingNext && (!nextLocked || chapterComplete || canMarkComplete) ? <ChevronRight className="size-4" aria-hidden /> : null}
                 </Button>
-              </div>
-            ) : null}
+              ) : quizBlockIds.length > 0 ? (
+                <div className="flex flex-wrap justify-end gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={submitting || perfectScore}
+                    loading={submitting}
+                    onClick={() => void submitQuiz()}
+                  >
+                    {submitting ? "Submitting…" : perfectScore ? "Quiz complete" : scoreSummary ? "Submit again" : individualActivityCount > 0 ? "Submit multiple-choice answers" : "Submit quiz"}
+                  </Button>
+                  {!nextLocked && nextHref ? (
+                    <Button type="button" size="sm" variant="outline" disabled={submitting} onClick={() => void moveToNextChapter()} className="gap-1.5">
+                      Next chapter <ChevronRight className="size-4" aria-hidden />
+                    </Button>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  <p className="text-sm text-muted-foreground">Submit each activity above. Its result or review status appears on the activity.</p>
+                  {!nextLocked && nextHref ? (
+                    <Button type="button" size="sm" variant="outline" onClick={() => void moveToNextChapter()} className="gap-1.5">
+                      Next chapter <ChevronRight className="size-4" aria-hidden />
+                    </Button>
+                  ) : null}
+                </div>
+              )}
+            </footer>
           </div>
-        ) : null}
-
-        <footer className="mt-10 flex items-center justify-between gap-3 border-t border-border pt-6">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={position === 0}
-            onClick={() => go(position - 1)}
-            className="gap-1"
-          >
-            <ChevronLeft className="size-4" aria-hidden />
-            Back
-          </Button>
-          {position < visibleIndices.length - 1 ? (
-            <Button type="button" size="sm" onClick={() => go(position + 1)} className="gap-1">
-              {retryMissed && !perfectScore ? "Next missed question" : "Next"}
-              <ChevronRight className="size-4" aria-hidden />
-            </Button>
-          ) : perfectScore && nextHref ? (
-            <Button
-              type="button"
-              size="sm"
-              disabled={movingNext || (nextLocked && !chapterComplete && !canMarkComplete)}
-              loading={movingNext}
-              onClick={() => void moveToNextChapter()}
-              className="gap-1.5"
-            >
-              {movingNext ? "Opening next chapter…" : nextLocked && !chapterComplete && !canMarkComplete ? "Finish remaining activities" : "Next chapter"}
-              {!movingNext && (!nextLocked || chapterComplete || canMarkComplete) ? <ChevronRight className="size-4" aria-hidden /> : null}
-            </Button>
-          ) : quizBlockIds.length > 0 ? (
-            <div className="flex flex-wrap justify-end gap-2">
-              <Button
-                type="button"
-                size="sm"
-                disabled={submitting || perfectScore}
-                loading={submitting}
-                onClick={() => void submitQuiz()}
-              >
-                {submitting ? "Submitting…" : perfectScore ? "Quiz complete" : scoreSummary ? "Submit again" : individualActivityCount > 0 ? "Submit multiple-choice answers" : "Submit quiz"}
-              </Button>
-              {!nextLocked && nextHref ? (
-                <Button type="button" size="sm" variant="outline" disabled={submitting} onClick={() => void moveToNextChapter()} className="gap-1.5">
-                  Next chapter <ChevronRight className="size-4" aria-hidden />
-                </Button>
-              ) : null}
-            </div>
-          ) : (
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <p className="text-sm text-muted-foreground">Submit each activity above. Its result or review status appears on the activity.</p>
-              {!nextLocked && nextHref ? (
-                <Button type="button" size="sm" variant="outline" onClick={() => void moveToNextChapter()} className="gap-1.5">
-                  Next chapter <ChevronRight className="size-4" aria-hidden />
-                </Button>
-              ) : null}
-            </div>
-          )}
-        </footer>
-        {submitError ? <p className="mt-3 text-sm text-destructive">{submitError}</p> : null}
+          <QuizCameraGate integrity={integrity} />
+        </div>
+        {submitError ? <p className="mt-3 text-sm text-destructive" role="alert">{submitError}</p> : null}
       </section>
     </QuizSessionContext.Provider>
   );

@@ -1,6 +1,7 @@
 import { raw, Router } from "express";
 import * as teach from "../../controllers/teach.js";
 import * as media from "../../controllers/course-media.js";
+import * as integrity from "../../controllers/integrity.js";
 import { authenticate } from "../../middlewares/authenticate.js";
 import { requireInstructor } from "../../middlewares/require-instructor.js";
 import { requireVerified } from "../../middlewares/require-verified.js";
@@ -36,6 +37,7 @@ import {
   submitReviewBody,
   unpublishCourseBody,
 } from "../../validations/teach.js";
+import { attemptParams, courseIntegrityBody } from "../../validations/integrity.js";
 
 // Instructor workspace. Ownership of each course is checked in the services;
 // this router only guarantees a verified instructor is calling.
@@ -58,6 +60,7 @@ router.post("/instructor-invites/:token/accept", validateParams(courseInstructor
 router.delete("/courses/:courseId/instructors/:userId", validateParams(courseInstructorMemberParams), teach.removeCourseInstructor);
 router.delete("/courses/:courseId/instructor-invites/:inviteId", validateParams(courseInstructorPendingInviteParams), teach.revokeCourseInstructorInvite);
 router.patch("/courses/:courseId/settings", validate({ params: courseIdParams, body: courseSettingsBody }), teach.updateCourseSettings);
+router.put("/courses/:courseId/integrity", validate({ params: courseIdParams, body: courseIntegrityBody }), integrity.updateCourseSettings);
 router.post("/courses/:courseId/chapters/publish", validateParams(courseIdParams), teach.publishCourseChapters);
 router.post("/modules/:moduleId/chapters/publish", validateParams(moduleIdParams), teach.publishModuleChapters);
 router.post("/courses/:courseId/publish", validateParams(courseIdParams), teach.publishCourse);
@@ -93,6 +96,8 @@ router.get("/review", validate({ query: reviewQueueQuery }), teach.getReviewQueu
 router.get("/review/:responseId", validateParams(responseIdParams), teach.getReviewDetail);
 router.post("/review/:responseId", validate({ params: responseIdParams, body: submitReviewBody }), teach.submitReview);
 router.post("/review/:responseId/ai-draft", validateParams(responseIdParams), teach.generateAiReviewDraft);
+
+router.get("/integrity/attempts/:attemptId", validateParams(attemptParams), integrity.attemptDetail);
 
 router.get("/help/threads", validate({ query: helpInboxQuery }), teach.getHelpInbox);
 

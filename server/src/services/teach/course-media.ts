@@ -1,29 +1,19 @@
 import { randomUUID } from "node:crypto";
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { env } from "../../config/env.js";
+import { GetObjectCommand, PutObjectCommand, type S3Client } from "@aws-sdk/client-s3";
 import { prisma } from "../../db/prisma.js";
 import { enrollmentGrantsContentAccess } from "../enrollment/lifecycle.js";
 import type { SessionUser } from "../../types/auth.js";
 import { AppError, BadRequestError, ForbiddenError, NotFoundError, UnauthorizedError } from "../../utils/errors.js";
+import { isMissingObjectError, r2Storage } from "../storage/r2.js";
 import { requireCourseById } from "./access.js";
 
 export type CourseMediaPurpose = "cover" | "content";
 export const MAX_COURSE_IMAGE_BYTES = 8 * 1024 * 1024;
 
-let client: S3Client | undefined;
-
 function storage(): { client: S3Client; bucket: string } {
-  if (!env.R2_ENDPOINT || !env.R2_BUCKET || !env.R2_ACCESS_KEY_ID || !env.R2_SECRET_ACCESS_KEY) {
-    throw new AppError("Course image storage is not configured yet.", 503, "MEDIA_STORAGE_UNAVAILABLE");
-  }
-  client ??= new S3Client({
-    region: "auto",
-    endpoint: env.R2_ENDPOINT,
-    forcePathStyle: true,
-    requestChecksumCalculation: "WHEN_REQUIRED",
-    credentials: { accessKeyId: env.R2_ACCESS_KEY_ID, secretAccessKey: env.R2_SECRET_ACCESS_KEY },
-  });
-  return { client, bucket: env.R2_BUCKET };
+  const r2 = r2Storage();
+  if (!r2) throw new AppError("Course image storage is not configured yet.", 503, "MEDIA_STORAGE_UNAVAILABLE");
+  return r2;
 }
 
 function imageFormat(bytes: Buffer): { extension: string; contentType: string } | null {
@@ -81,7 +71,7 @@ export async function getCourseImage(
     return { bytes: await object.Body.transformToByteArray(), contentType: object.ContentType ?? "application/octet-stream" };
   } catch (error) {
     if (error instanceof NotFoundError) throw error;
-    if (error instanceof Error && ["NoSuchKey", "NotFound"].includes(error.name)) throw new NotFoundError("Image not found");
+    if (isMissingObjectError(error)) throw new NotFoundError("Image not found");
     throw error;
   }
 }

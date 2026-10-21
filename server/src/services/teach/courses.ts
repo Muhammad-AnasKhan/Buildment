@@ -112,7 +112,7 @@ export async function loadCourseSettings(user: SessionUser, courseSlug: string):
     select: {
       id: true, slug: true, title: true, description: true, projectGoal: true,
       difficulty: true, estimatedHours: true, category: true, sequential: true, coverUrl: true,
-      status: true, pricingType: true, priceCents: true, currency: true,
+      status: true, pricingType: true, priceCents: true, currency: true, integritySnapshots: true,
       _count: { select: { enrollments: true, chapters: true } },
     },
   });

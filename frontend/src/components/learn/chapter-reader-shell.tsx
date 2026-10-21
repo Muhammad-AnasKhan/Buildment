@@ -224,6 +224,21 @@ export function ChapterReaderShell({
     return () => window.removeEventListener("buildment:quiz-perfect", onQuizPerfect);
   }, [readerMode, exitFocusMode]);
 
+  // The quiz asks for focus mode again from a click ("Start quiz", "Return to full
+  // screen"), which is the user gesture full screen needs.
+  useEffect(() => {
+    if (readerMode !== "QUIZ") return;
+    const onQuizFocus = () => {
+      if (!focusMode) {
+        void enterFocusMode();
+        return;
+      }
+      if (!document.fullscreenElement) void document.documentElement.requestFullscreen?.().catch(() => undefined);
+    };
+    window.addEventListener("buildment:quiz-focus", onQuizFocus);
+    return () => window.removeEventListener("buildment:quiz-focus", onQuizFocus);
+  }, [readerMode, focusMode, enterFocusMode]);
+
   useEffect(() => {
     if (!showSkeleton) return;
     const timer = window.setTimeout(() => setShowSkeleton(false), 280);

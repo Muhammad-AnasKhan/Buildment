@@ -1,4 +1,5 @@
 import type { AiReviewDraftResult, ReviewDetailView, ReviewQueueView } from "../../shared/api/teach.js";
+import { loadIntegritySummaries } from "../integrity/review.js";
 import { TEACH_ERROR_CODES } from "../../shared/api/teach.js";
 import { OpenQuestionConfigSchema, OpenQuestionPayloadSchema } from "../../shared/blocks/open-question/schema.js";
 import { parseSafeSubmissionUrl } from "../../shared/lib/safe-submission-url.js";
@@ -79,11 +80,14 @@ async function requireReviewableResponse(user: SessionUser, responseId: string) 
 export async function loadReviewDetail(user: SessionUser, responseId: string): Promise<ReviewDetailView> {
   const response = await requireReviewableResponse(user, responseId);
 
-  const history = await prisma.response.findMany({
-    where: { blockId: response.blockId, userId: response.userId, review: { isNot: null } },
-    orderBy: { attempt: "asc" },
-    select: { id: true, attempt: true, review: { select: { verdict: true, feedback: true, reviewer: { select: { name: true } } } } },
-  });
+  const [history, integrity] = await Promise.all([
+    prisma.response.findMany({
+      where: { blockId: response.blockId, userId: response.userId, review: { isNot: null } },
+      orderBy: { attempt: "asc" },
+      select: { id: true, attempt: true, review: { select: { verdict: true, feedback: true, reviewer: { select: { name: true } } } } },
+    }),
+    loadIntegritySummaries(response.enrollmentId, response.block.chapter.id),
+  ]);
 
   const config = OpenQuestionConfigSchema.safeParse(response.block.config);
   const payload = response.payload as { text?: string; url?: string } | null;
@@ -121,6 +125,7 @@ export async function loadReviewDetail(user: SessionUser, responseId: string): P
         ? [{ id: item.id, attempt: item.attempt, verdict: item.review.verdict, feedback: item.review.feedback, reviewerName: item.review.reviewer.name }]
         : []
     ),
+    integrity,
   };
 }
 

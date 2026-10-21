@@ -300,6 +300,49 @@ model BlockStats {
   pendingReviews  Int       @default(0)
   lastSubmittedAt DateTime?
 }
+
+// Quiz integrity signals: flags for mentors, never an automatic verdict.
+enum IntegrityEventType { TAB_HIDDEN WINDOW_BLUR FULLSCREEN_EXIT COPY_BLOCKED PASTE_BLOCKED CONTEXT_MENU_BLOCKED
+                          SCREENSHOT_KEY MOUSE_LEFT SECOND_SCREEN FAST_ANSWER CAMERA_OFF CAMERA_ON }
+enum IntegrityCameraStatus { NOT_REQUESTED ON DECLINED UNAVAILABLE }
+
+/// One proctored try at a quiz chapter (Course.integritySnapshots turns camera stills on).
+model IntegrityAttempt {
+  id            String   @id @default(cuid())
+  enrollmentId  String   // cascade
+  chapterId     String   // cascade
+  attempt       Int      // 1 + highest submitted attempt in the chapter when the sitting opened
+  cameraStatus  IntegrityCameraStatus @default(NOT_REQUESTED)
+  eventCount    Int      @default(0) // capped per attempt
+  droppedEvents Int      @default(0) // events refused once the cap was reached
+  snapshotCount Int      @default(0)
+  startedAt     DateTime @default(now())
+  lastSeenAt    DateTime @default(now())
+  @@unique([enrollmentId, chapterId, attempt])
+}
+
+/// Append-only. clientId makes retried batches idempotent.
+model IntegrityEvent {
+  id         String   @id @default(cuid())
+  attemptId  String
+  clientId   String   @db.VarChar(40)
+  type       IntegrityEventType
+  at         DateTime
+  blockId    String?
+  meta       Json?
+  receivedAt DateTime @default(now())
+  @@unique([attemptId, clientId])
+}
+
+/// Private 320x240 JPEG still. The image is deleted after 30 days; the row stays with deletedAt set.
+model IntegritySnapshot {
+  id         String    @id @default(cuid())
+  attemptId  String
+  storageKey String    @unique
+  bytes      Int
+  takenAt    DateTime  @default(now())
+  deletedAt  DateTime?
+}
 ```
 
 Auth.js v5 additionally requires its standard `Account`, `Session`, and `VerificationToken` models

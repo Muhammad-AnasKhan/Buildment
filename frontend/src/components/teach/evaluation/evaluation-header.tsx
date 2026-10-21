@@ -1,21 +1,19 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CircleUserRound } from "lucide-react";
+import { ArrowLeft, CircleUserRound } from "lucide-react";
 import { LearnerTrackBadges } from "@/components/teach/learner-track-badges";
 import { Badge } from "@/components/ui/badge";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { MenteeEvaluation } from "@/shared/api/teach";
 
 export function EvaluationHeader({ evaluation }: { evaluation: MenteeEvaluation }) {
   const { course, mentee, enrollment } = evaluation;
   return (
-    <header className="sticky top-0 z-20 -mx-4 border-b border-border/70 bg-background/92 px-4 py-4 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+    <header className="-mx-4 border-b border-border/70 px-4 py-5 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <Link href={`/courses/${course.slug}/mentees`} className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground">
             <ArrowLeft className="size-3.5" /> All mentees
           </Link>
-          <div className="mt-2 flex items-start gap-3">
+          <div className="mt-3 flex items-start gap-3">
             <div className="mt-0.5 grid size-10 shrink-0 place-items-center rounded-xl border bg-muted/60 text-muted-foreground">
               <CircleUserRound className="size-5" />
             </div>
@@ -29,16 +27,9 @@ export function EvaluationHeader({ evaluation }: { evaluation: MenteeEvaluation 
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-          <div className="mr-1 text-left lg:text-right">
-            <p className="text-xs font-medium text-muted-foreground">{enrollment.lastActiveLabel}</p>
-            <p className="max-w-72 truncate text-sm font-medium">{enrollment.currentChapter ?? "No chapter started"}</p>
-          </div>
-          {evaluation.reviewNextHref ? (
-            <Link href={evaluation.reviewNextHref} className={cn(buttonVariants({ size: "lg" }), "gap-2")}>Review next <ArrowRight /></Link>
-          ) : (
-            <span className={cn(buttonVariants({ variant: "outline", size: "lg" }), "pointer-events-none text-muted-foreground")}>Nothing waiting</span>
-          )}
+        <div className="min-w-0 rounded-xl border bg-card px-4 py-2.5 lg:max-w-xs">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Current work · {enrollment.lastActiveLabel}</p>
+          <p className="mt-1 truncate text-sm font-medium">{enrollment.currentChapter ?? "No chapter started"}</p>
         </div>
       </div>
     </header>

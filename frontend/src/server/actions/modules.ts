@@ -6,7 +6,7 @@ import { teachCall } from "./teach-call";
 
 export type CourseBuilderActionResult = { ok: true } | { ok: false; errors: string[] };
 
-async function builderCall(path: string, init: { method: "POST" | "PATCH"; json?: unknown }): Promise<CourseBuilderActionResult> {
+async function builderCall(path: string, init: { method: "POST" | "PATCH" | "PUT"; json?: unknown }): Promise<CourseBuilderActionResult> {
   const result = await teachCall<unknown>(path, init);
   if (!result.ok) return result;
   // Every course edit page re-renders; the builder has no stable slug at hand here.
@@ -25,6 +25,10 @@ export async function renameModule(input: { moduleId: string; title: string }): 
 
 export async function moveModule(input: { moduleId: string; direction: "up" | "down" }): Promise<CourseBuilderActionResult> {
   return builderCall(`/api/v1/teach/modules/${encodeURIComponent(input.moduleId)}/move`, { method: "POST", json: { direction: input.direction } });
+}
+
+export async function updateCourseIntegrity(input: { courseId: string; integritySnapshots: boolean }): Promise<CourseBuilderActionResult> {
+  return builderCall(`/api/v1/teach/courses/${encodeURIComponent(input.courseId)}/integrity`, { method: "PUT", json: { integritySnapshots: input.integritySnapshots } });
 }
 
 export async function updateCourseSettings(input: { courseId: string } & CourseSettingsInput): Promise<CourseBuilderActionResult> {
