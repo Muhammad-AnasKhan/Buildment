@@ -1,6 +1,7 @@
+import { renderEmailTemplate } from "./render.js";
 
 import { prisma } from "../../db/prisma.js";
-import { escapeHtml, formatMessagePreview } from "./format.js";
+import { formatMessagePreview } from "./format.js";
 import { listAdminNotificationEmails } from "./admin-recipients.js";
 import { appBaseUrl, sendEmail } from "./send.js";
 
@@ -33,10 +34,7 @@ export async function notifyAdminsInstructorAccessRequest(requestId: string): Pr
 
   await notifyEachAdmin({
     subject: `Instructor access request · ${applicant}`,
-    html: `<p>A learner requested instructor access on Buildment.</p>
-<p><strong>${escapeHtml(applicant)}</strong> (${escapeHtml(request.user.email)})</p>
-${preview ? `<blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #6366f1;background:#f8fafc;">${escapeHtml(preview)}</blockquote>` : ""}
-<p><a href="${url}">Review in the admin console</a></p>`,
+    html: await renderEmailTemplate("notify-admins-instructor-access-request", { applicant, email: request.user.email, preview, url }),
     text: `Instructor access request from ${applicant} (${request.user.email}).${preview ? `\n\n${preview}` : ""}\n\nReview: ${url}`,
   });
 }
@@ -55,9 +53,7 @@ export async function notifyAdminsOrganizationCourseRequest(requestId: string): 
 
   await notifyEachAdmin({
     subject: `Org course allocation request · ${request.organization.name}`,
-    html: `<p>An organization requested access to allocate a course.</p>
-<p><strong>${escapeHtml(request.organization.name)}</strong> (${escapeHtml(request.organization.slug)}) wants <strong>${escapeHtml(request.course.title)}</strong>.</p>
-<p><a href="${url}">Review in the admin console</a></p>`,
+    html: await renderEmailTemplate("notify-admins-organization-course-request", { organizationName: request.organization.name, organizationSlug: request.organization.slug, courseTitle: request.course.title, url: url }),
     text: `${request.organization.name} requested course "${request.course.title}". Review: ${url}`,
   });
 }
@@ -78,9 +74,7 @@ export async function notifyUserInstructorAccessDecision(input: {
     await sendEmail({
       to: user.email,
       subject: "Instructor access approved · Buildment",
-      html: `<p>Hi ${escapeHtml(user.name ?? "there")},</p>
-<p>Your request to teach on Buildment was <strong>approved</strong>. You can open the mentor workspace and create or manage courses.</p>
-<p><a href="${url}">Open the teach workspace</a></p>`,
+      html: await renderEmailTemplate("notify-user-instructor-access-decision-approved", { name: user.name ?? "there", url: url }),
       text: `Your instructor access was approved. Open: ${url}`,
     });
     return;
@@ -89,9 +83,7 @@ export async function notifyUserInstructorAccessDecision(input: {
   await sendEmail({
     to: user.email,
     subject: "Instructor access update · Buildment",
-    html: `<p>Hi ${escapeHtml(user.name ?? "there")},</p>
-<p>Your request for instructor access was reviewed and was not approved at this time. You can keep learning as a mentee and submit a new request later if your plans change.</p>
-<p><a href="${url}">Back to your dashboard</a></p>`,
+    html: await renderEmailTemplate("notify-user-instructor-access-decision-declined", { name: user.name ?? "there", url: url }),
     text: `Your instructor access request was not approved. Dashboard: ${url}`,
   });
 }
@@ -105,9 +97,7 @@ export async function notifyUserGrantedInstructorByAdmin(input: {
   await sendEmail({
     to: input.email,
     subject: "You have instructor access · Buildment",
-    html: `<p>Hi ${escapeHtml(input.name ?? "there")},</p>
-<p>A Buildment admin enabled instructor tools on your account. Sign in to open the teach workspace and publish courses.</p>
-<p><a href="${url}">Sign in to Buildment</a></p>`,
+    html: await renderEmailTemplate("notify-user-granted-instructor-by-admin", { name: input.name ?? "there", url: url }),
     text: `You have instructor access on Buildment. Sign in: ${url}`,
   });
 }
@@ -121,9 +111,7 @@ export async function notifyUserGrantedAdminByAdmin(input: {
   await sendEmail({
     to: input.email,
     subject: "You are now a platform admin · Buildment",
-    html: `<p>Hi ${escapeHtml(input.name ?? "there")},</p>
-<p>A Buildment admin granted your account platform administrator access. You can now manage organizations, course requests and user access from the admin console.</p>
-<p><a href="${url}">Open the admin console</a></p>`,
+    html: await renderEmailTemplate("notify-user-granted-admin-by-admin", { name: input.name ?? "there", url: url }),
     text: `You are now a platform admin on Buildment. Open: ${url}`,
   });
 }
@@ -147,9 +135,7 @@ export async function notifyMentorOrganizationCourseApproved(requestId: string):
   await sendEmail({
     to: mentorEmail,
     subject: `Organization approved for ${request.course.title}`,
-    html: `<p>Hi ${escapeHtml(request.course.mentor.name ?? "there")},</p>
-<p><strong>${escapeHtml(request.organization.name)}</strong> can now allocate seats for your course <strong>${escapeHtml(request.course.title)}</strong>.</p>
-<p>Learners from that organization may enroll through your integration settings.</p>`,
+    html: await renderEmailTemplate("notify-mentor-organization-course-approved", { name: request.course.mentor.name ?? "there", organizationName: request.organization.name, courseTitle: request.course.title }),
     text: `${request.organization.name} was approved to allocate "${request.course.title}".`,
   });
 }

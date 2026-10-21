@@ -1,6 +1,6 @@
+import { renderEmailTemplate } from "../email/render.js";
 import { prisma } from "../../db/prisma.js";
 import { appBaseUrl, emailConfigured, sendEmail } from "../email/send.js";
-import { escapeHtml } from "../email/format.js";
 import { loadLearnerHabit } from "../progress/learner-habit.js";
 import { logger } from "../../utils/logger.js";
 
@@ -44,7 +44,6 @@ export async function runWeeklyGoalReminders(): Promise<{ emailsSent: number; el
     const remaining = goal.target - goal.progress;
     const greeting = learner.name?.trim() || "there";
     const noteText = goal.note ? `Your focus: ${goal.note}\n\n` : "";
-    const noteHtml = goal.note ? `<p><strong>Your focus:</strong> ${escapeHtml(goal.note)}</p>` : "";
     const dashboardUrl = `${appBaseUrl()}/dashboard`;
 
     try {
@@ -52,7 +51,7 @@ export async function runWeeklyGoalReminders(): Promise<{ emailsSent: number; el
         to: learner.email,
         subject: `Your weekly goal: ${goal.progress} of ${goal.target} ${unit}`,
         text: `Hi ${greeting},\n\nYou have completed ${goal.progress} of ${goal.target} ${unit} in the last 7 days. ${remaining} to go.\n\n${noteText}Continue learning: ${dashboardUrl}\n\nYou can turn off daily reminders from your weekly goal on the dashboard.`,
-        html: `<p>Hi ${escapeHtml(greeting)},</p><p>You have completed <strong>${goal.progress} of ${goal.target} ${unit}</strong> in the last 7 days. ${remaining} to go.</p>${noteHtml}<p><a href="${escapeHtml(dashboardUrl)}">Continue learning</a></p><p>You can turn off daily reminders from your weekly goal on the dashboard.</p>`,
+        html: await renderEmailTemplate("run-weekly-goal-reminders", { name: greeting, progress: goal.progress, target: goal.target, unit: unit, remaining: remaining, note: goal.note, url: dashboardUrl }),
       });
       if (result.sent) {
         emailsSent += 1;

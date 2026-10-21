@@ -1,3 +1,4 @@
+import { renderEmailTemplate } from "../email/render.js";
 import { randomBytes } from "node:crypto";
 import type { CourseInstructorInviteResult, CourseTeamView } from "../../shared/api/teach.js";
 import type { SessionUser } from "../../types/auth.js";
@@ -11,7 +12,6 @@ import type { courseInstructorInviteBody } from "../../validations/teach.js";
 
 type InviteBody = z.infer<typeof courseInstructorInviteBody>;
 const expiry = () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!);
 
 export async function loadCourseTeam(user: SessionUser, slug: string): Promise<CourseTeamView> {
   const owned = await requireCourseBySlug(user, slug);
@@ -51,12 +51,12 @@ export async function inviteCourseInstructor(user: SessionUser, courseId: string
         select: { token: true },
       });
   const url = `${env.APP_URL}/instructor-invites/${invite.token}`;
-  const senderName = escapeHtml(user.name ?? "A course instructor");
-  const courseTitle = escapeHtml(course.title);
+  const senderName = user.name ?? "A course instructor";
+  const courseTitle = course.title;
   const sent = await sendEmail({
     to: email,
     subject: `Invitation to help teach ${course.title}`,
-    html: `<p>${senderName} invited you to join the Buildment course team for <strong>${courseTitle}</strong>.</p><p>Role: ${input.role === "COURSE_CREATOR" ? "Course creator" : "Submission evaluator"}.</p><p><a href="${url}">Review and accept the invitation</a></p><p>This link expires in seven days. You need an instructor-enabled account to accept it.</p>`,
+    html: await renderEmailTemplate("invite-course-instructor", { senderName: senderName, courseTitle: courseTitle, role: input.role === "COURSE_CREATOR" ? "Course creator" : "Submission evaluator", url: url }),
     text: `${user.name ?? "A course instructor"} invited you to join the Buildment course team for "${course.title}" as ${input.role === "COURSE_CREATOR" ? "a course creator" : "a submission evaluator"}. Accept the invitation here: ${url}\n\nThis link expires in seven days. You must sign in with an instructor-enabled account to accept it.`,
   });
   return { url, emailSent: sent.sent };

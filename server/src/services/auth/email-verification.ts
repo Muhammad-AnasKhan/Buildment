@@ -1,3 +1,4 @@
+import { renderEmailTemplate } from "../email/render.js";
 import { randomBytes } from "node:crypto";
 import { AUTH_ERROR_CODES } from "../../shared/api/auth.js";
 import { prisma } from "../../db/prisma.js";
@@ -26,8 +27,8 @@ export async function sendVerificationEmail(input: {
   const token = await createEmailVerificationToken(input.email);
   const verifyUrl = `${appBaseUrl()}/api/v1/auth/confirm-email?token=${encodeURIComponent(token)}`;
   const subject = "Verify your Buildment email";
-  const html = `<p>Hi${input.name ? ` ${input.name}` : ""},</p><p>Confirm your email to start learning on Buildment.</p><p><a href="${verifyUrl}">Verify email</a></p><p>This link expires in 24 hours.</p>`;
-  const text = `Verify your Buildment email: ${verifyUrl}`;
+  const html = await renderEmailTemplate("send-verification-email", { greeting: input.name ? ` ${input.name}` : "", url: verifyUrl });
+  const text = `Hi ${input.name ?? "there"},\n\nWelcome to Buildment. Confirm your email address to finish setting up your account and start learning:\n${verifyUrl}\n\nThis link expires in 24 hours. If you did not create a Buildment account, you can ignore this email.`;
 
   const result = await sendEmail({
     to: input.email,

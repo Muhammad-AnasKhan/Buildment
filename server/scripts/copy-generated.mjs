@@ -6,3 +6,10 @@ cpSync(
   new URL("../dist/generated/", import.meta.url),
   { recursive: true },
 );
+
+// EJS templates must also be available when running the compiled API.
+cpSync(
+  new URL("../src/services/email/templates/", import.meta.url),
+  new URL("../dist/services/email/templates/", import.meta.url),
+  { recursive: true },
+);

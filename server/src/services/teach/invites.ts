@@ -1,3 +1,4 @@
+import { renderEmailTemplate } from "../email/render.js";
 import { randomBytes } from "node:crypto";
 import { z } from "zod";
 import type { AssignByEmailsResult, InviteLinkResult } from "../../shared/api/teach.js";
@@ -39,27 +40,7 @@ async function sendInviteEmail(input: { to: string; token: string; courseTitle: 
     to: input.to,
     subject: `${mentor} invited you to "${input.courseTitle}" on buildment`,
     text: `${mentor} invited you to the course "${input.courseTitle}" on buildment.\n\nOpen this link to create your profile and start learning:\n${url}\n\nThe invite expires in ${INVITE_TTL_DAYS} days.`,
-    html: `
-      <div style="font-family:ui-sans-serif,system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 16px;color:#0a0a0a">
-        <p style="font-size:15px;line-height:1.6">
-          <strong>${mentor}</strong> invited you to the course
-          <strong>${input.courseTitle}</strong> on buildment.
-        </p>
-        <p style="margin:24px 0">
-          <a href="${url}" style="display:inline-block;background:#4f46e5;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:10px 20px;border-radius:9999px">
-            Accept invite &amp; start learning
-          </a>
-        </p>
-        <p style="font-size:13px;color:#737373;line-height:1.6">
-          Or paste this link into your browser:<br/>
-          <a href="${url}" style="color:#4f46e5">${url}</a>
-        </p>
-        <p style="font-size:12px;color:#a3a3a3;margin-top:24px">
-          This invite expires in ${INVITE_TTL_DAYS} days. If you don't have a buildment
-          profile yet, you'll create one when you open the link.
-        </p>
-      </div>
-    `,
+    html: await renderEmailTemplate("send-invite-email", { mentorName: mentor, courseTitle: input.courseTitle, url, expiryDays: INVITE_TTL_DAYS }),
   });
   return result.sent;
 }

@@ -1,0 +1,4 @@
+<p>Hi <%= name %>,</p>
+<p><strong><%= mentorName %></strong> replied to your question in <strong><%= courseTitle %></strong> (<%= lesson %>):</p>
+<blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #10b981;background:#f0fdf4;color:#0f172a;"><%= preview %></blockquote>
+<%- include('button', { url: url, label: "Read the full reply in Buildment" }) %>

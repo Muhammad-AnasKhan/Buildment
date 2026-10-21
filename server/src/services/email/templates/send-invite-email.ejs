@@ -1,0 +1,5 @@
+<p><strong><%= mentorName %></strong> invited you to the course <strong><%= courseTitle %></strong> on Buildment.</p>
+<p>Accept your invitation to set up your profile and start learning.</p>
+<%- include('button', { url, label: 'Accept invitation' }) %>
+<p style="font-size:14px;color:#667085;">This invitation expires in <%= expiryDays %> days. If you do not have a Buildment profile, you can create one after opening the link.</p>
+<p style="font-size:12px;color:#667085;">If the button does not work, copy this link into your browser:<br><a href="<%= url %>"><%= url %></a></p>
