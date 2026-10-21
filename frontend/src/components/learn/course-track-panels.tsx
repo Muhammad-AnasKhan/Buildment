@@ -15,6 +15,8 @@ export function VariantBanner({ courseSlug, track }: { courseSlug: string; track
   if (!family) return null;
   const variant = resolveVariant(family, track.variantSlug);
   const changeHref = `/courses/${courseSlug}/variant`;
+  // Finished learners keep whatever they built, including the default.
+  const settled = track.variantChosen || track.specialisationOpen;
 
   return (
     <section
@@ -23,13 +25,13 @@ export function VariantBanner({ courseSlug, track }: { courseSlug: string; track
     >
       <div className="min-w-0">
         <p className="text-xs font-medium uppercase tracking-wide text-primary">
-          {track.variantChosen ? `Your variant · ${variant.label}` : "Choose your variant"}
+          {settled ? `Your variant · ${variant.label}` : "Choose your variant"}
         </p>
         <h2 className="mt-1 text-lg font-semibold tracking-tight">
-          {track.variantChosen ? `You are building ${variant.productName}` : `You are on the general course, ${variant.productName}`}
+          {settled ? `You are building ${variant.productName}` : `You are on the general course, ${variant.productName}`}
         </h2>
         <p className="mt-1 text-sm leading-6 text-muted-foreground">
-          {track.variantChosen
+          {settled
             ? variant.summary
             : `Pick one of ${family.variants.length} products to build. The whole course takes on its look.`}
         </p>
