@@ -87,6 +87,14 @@ describe("recording events", () => {
     expect(await prisma.integrityEvent.count({ where: { attemptId } })).toBe(3);
   });
 
+  it("keeps one second-screen flag per attempt", async () => {
+    const { attemptId } = (await openAttempt()).body.data;
+    const screen = () => ({ id: eventId(), type: "SECOND_SCREEN", at: new Date().toISOString(), meta: { extended: true } });
+    await postEvents(attemptId, [screen(), screen()]).expect(200);
+    await postEvents(attemptId, [screen()]).expect(200);
+    expect(await prisma.integrityEvent.count({ where: { attemptId, type: "SECOND_SCREEN" } })).toBe(1);
+  });
+
   it("rejects event types outside the allow-list", async () => {
     const { attemptId } = (await openAttempt()).body.data;
     const res = await postEvents(attemptId, [{ id: eventId(), type: "KEYLOGGER", at: new Date().toISOString() }]);

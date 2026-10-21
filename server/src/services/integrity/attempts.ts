@@ -104,7 +104,16 @@ export async function recordIntegrityEvents(
     const [locked] = await tx.$queryRaw<Array<{ eventCount: number }>>`
       SELECT "eventCount" FROM "IntegrityAttempt" WHERE id = ${attemptId} FOR UPDATE`;
     const room = Math.max(0, INTEGRITY_LIMITS.eventsPerAttempt - (locked?.eventCount ?? 0));
-    const kept = events.slice(0, room);
+    // A second screen is a state, not an action: one row per attempt, whatever the browser sends.
+    let hasSecondScreen = events.some((event) => event.type === "SECOND_SCREEN")
+      && (await tx.integrityEvent.count({ where: { attemptId, type: "SECOND_SCREEN" } })) > 0;
+    const deduped = events.filter((event) => {
+      if (event.type !== "SECOND_SCREEN") return true;
+      if (hasSecondScreen) return false;
+      hasSecondScreen = true;
+      return true;
+    });
+    const kept = deduped.slice(0, room);
     const created = kept.length
       ? await tx.integrityEvent.createMany({
           data: kept.map((event) => ({
@@ -122,7 +131,7 @@ export async function recordIntegrityEvents(
       where: { id: attemptId },
       data: {
         eventCount: { increment: created.count },
-        droppedEvents: { increment: events.length - kept.length },
+        droppedEvents: { increment: deduped.length - kept.length },
         lastSeenAt: now,
       },
     });

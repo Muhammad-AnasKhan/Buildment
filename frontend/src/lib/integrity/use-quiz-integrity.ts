@@ -208,7 +208,12 @@ export function useQuizIntegrity({
 
   const applySession = useCallback((next: IntegrityAttemptSession) => {
     attemptIdRef.current = next.attemptId;
-    secondScreenFlagged.current = false;
+    // A second screen is a state, not an action: note it once per attempt, even across reloads.
+    try {
+      secondScreenFlagged.current = storage()?.getItem(`buildment:integrity-screen:${next.attemptId}`) === "1";
+    } catch {
+      secondScreenFlagged.current = false;
+    }
     fullscreenDismissals.current = 0;
     paceStart.current = Math.min(Date.parse(next.startedAt) || Date.now(), Date.now());
     setSession(next);
@@ -525,6 +530,11 @@ export function useQuizIntegrity({
     const checkScreens = () => {
       if (screenInfo.isExtended === true && !secondScreenFlagged.current) {
         secondScreenFlagged.current = true;
+        try {
+          if (attemptIdRef.current) storage()?.setItem(`buildment:integrity-screen:${attemptIdRef.current}`, "1");
+        } catch {
+          // Storage is optional.
+        }
         record("SECOND_SCREEN", { extended: true });
       }
     };
