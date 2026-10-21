@@ -8,7 +8,7 @@ export function MentorMeetAside({ menteeName }: { menteeName: string }) {
         <p className="text-xs font-medium uppercase tracking-wide text-neutral-400">Mentee</p>
         <p className="mt-1 text-sm font-semibold text-foreground">{menteeName}</p>
       </div>
-      <div className="rounded-xl border border-dashed border-border bg-neutral-50/80 p-4">
+      <div className="rounded-xl border border-dashed border-border bg-muted/50 p-4">
         <div className="flex items-center gap-2 text-sm font-medium text-foreground">
           <Phone className="size-4 text-neutral-400" aria-hidden />
           Meet with mentee

@@ -15,7 +15,7 @@ describe("confirmed chapter completion", () => {
     const html = renderProgress(2, 4);
     expect(html).toContain("2 of 4");
     expect(html).toContain("50% complete");
-    expect(html).toContain("One more chapter complete");
+    expect(html).toContain("You finished this chapter");
     expect(html).not.toContain("You completed the course");
   });
 

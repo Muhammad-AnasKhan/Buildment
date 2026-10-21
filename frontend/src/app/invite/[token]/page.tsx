@@ -56,8 +56,8 @@ export default async function InviteAcceptPage({
           </Button>
         </Link>
         {invite.email && (
-          <p className="mt-3 text-center text-xs text-neutral-400">
-            Use <span className="font-medium text-muted-foreground">{invite.email}</span> — the invite
+          <p className="mt-3 text-center text-xs text-muted-foreground">
+            Use <span className="font-medium text-muted-foreground">{invite.email}</span>. The invite
             is bound to that address.
           </p>
         )}
@@ -133,7 +133,7 @@ function InviteShell({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-card px-6 py-24">
+    <div className="flex flex-1 flex-col items-center justify-center bg-background px-6 py-24">
       <Logo size="lg" />
       <div className="mt-10 w-full max-w-sm">
         {invite && (

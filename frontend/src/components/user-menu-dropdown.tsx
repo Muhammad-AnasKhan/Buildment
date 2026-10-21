@@ -57,7 +57,7 @@ export function UserMenuDropdown({
       <DropdownMenuContent align="end" className="w-52">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="font-normal">
-            <p className="truncate text-sm font-medium text-neutral-950">{displayName}</p>
+            <p className="truncate text-sm font-medium text-foreground">{displayName}</p>
             {user.email && user.name && (
               <p className="truncate text-xs text-muted-foreground">{user.email}</p>
             )}

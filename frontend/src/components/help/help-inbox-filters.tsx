@@ -38,7 +38,7 @@ export function HelpInboxFilters({
             className={cn(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               current === tab.value
-                ? "bg-neutral-900 text-white"
+                ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >

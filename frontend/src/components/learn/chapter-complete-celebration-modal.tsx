@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";
@@ -72,7 +72,7 @@ export function ChapterCompleteCelebrationModal({
         </div>
         <p className="mt-4 text-sm font-medium text-muted-foreground">Progress saved</p>
         <h2 id="chapter-complete-title" className="mt-1 text-2xl font-semibold tracking-tight">
-          {courseComplete ? "You completed the course" : "One more chapter complete"}
+          {courseComplete ? "You completed the course" : "You finished this chapter"}
         </h2>
         <p id="chapter-complete-description" className="mt-3 text-sm leading-6 text-muted-foreground">
           {courseComplete

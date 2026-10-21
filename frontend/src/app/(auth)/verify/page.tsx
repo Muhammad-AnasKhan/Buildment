@@ -3,10 +3,10 @@ import { Logo } from "@/components/brand/logo";
 
 export default function VerifyRequestPage() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-card px-6 py-24">
+    <div className="flex flex-1 flex-col items-center justify-center bg-background px-6 py-24">
       <Logo size="lg" />
       <div className="mt-10 w-full max-w-sm text-center">
-        <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-indigo-50">
+        <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/15">
           <MailCheck className="size-5 text-indigo-600" />
         </div>
         <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
