@@ -49,7 +49,15 @@ export async function LearningObjectivesComponent({
             <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 font-mono text-xs font-semibold tabular-nums text-muted-foreground">
               {String(index + 1).padStart(2, "0")}
             </span>
-            <span className="min-w-0 pt-0.5 text-[15px] leading-relaxed text-foreground">{objective}</span>
+            <span className="min-w-0 pt-0.5 text-[15px] leading-relaxed text-foreground">
+              {String(objective).split(/(\*\*[^*]+\*\*)/g).filter(Boolean).map((part, i) =>
+                part.startsWith("**") && part.endsWith("**") ? (
+                  <strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>
+                ) : (
+                  <span key={i}>{part}</span>
+                )
+              )}
+            </span>
           </li>
         ))}
       </ol>

@@ -136,10 +136,12 @@ function LearningLogQuestion({
         <div className="min-w-0 flex-1 space-y-3">
           <div>
             <p className="text-[15px] font-semibold leading-snug text-foreground">
-              {question.title}
+              {parseInlineMarkdown(question.title)}
             </p>
             {question.hint ? (
-              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{question.hint}</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                {parseInlineMarkdown(question.hint)}
+              </p>
             ) : null}
           </div>
           <AnswerTextareaWithMic

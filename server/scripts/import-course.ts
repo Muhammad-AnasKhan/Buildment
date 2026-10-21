@@ -424,11 +424,6 @@ function normalizeGateLearningLog(body: string): string {
   return `${without.trim()}\n\n${block}`;
 }
 
-/** `use `<Outlet />` here` → `use '<Outlet />' here` — only when the inner span is JSX. */
-function fixJsxInInlineCode(prose: string): string {
-  return prose.replace(/`([^`\n]*)`(<[^`\n]+>)`([^`\n]*)/g, (_m, a, b, c) => `\`${a}'${b}'${c}\``);
-}
-
 function escapeMdxInline(text: string): string {
   return text.replace(/\{/g, "&#123;").replace(/\}/g, "&#125;").replace(/</g, "&lt;");
 }
@@ -496,8 +491,7 @@ function escapeMdxProse(body: string): string {
   });
 
   const escaped = splitOutsideFences(withMarkers, /```[\s\S]*?```/g, (segment) => {
-    const fixed = fixJsxInInlineCode(segment);
-    return splitOutsideFences(fixed, /`[^`\n]+`/g, (prose) =>
+    return splitOutsideFences(segment, /`[^`\n]+`/g, (prose) =>
       prose.replace(/\{/g, "&#123;").replace(/\}/g, "&#125;").replace(/</g, "&lt;")
     );
   });
