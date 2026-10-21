@@ -1,4 +1,4 @@
-import type { CoursePricingType, CourseStatus, EnrollmentLifecycle } from "../domain/enums.js";
+import type { CourseCategory, CoursePricingType, CourseStatus, EnrollmentLifecycle } from "../domain/enums.js";
 import type { CourseTrack } from "../lib/course-tracks.js";
 import type { SyllabusModule } from "./syllabus.js";
 
@@ -12,6 +12,8 @@ export type CatalogCourseSummary = {
   coverUrl: string | null;
   difficulty: string | null;
   estimatedHours: number | null;
+  /** Catalog grouping shown as tiles: technical courses and soft-skills courses. */
+  category: CourseCategory;
   pricingType: CoursePricingType;
   priceCents: number;
   currency: string;

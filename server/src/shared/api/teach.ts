@@ -1,5 +1,6 @@
 import type {
   ChapterReaderMode,
+  CourseCategory,
   CoursePricingType,
   CourseStatus,
   EnrollStatus,
@@ -94,6 +95,7 @@ export type CourseBuilderCourse = {
   projectGoal: string | null;
   difficulty: string | null;
   estimatedHours: number | null;
+  category: CourseCategory;
   sequential: boolean;
   coverUrl: string | null;
   status: CourseStatus;
@@ -112,7 +114,7 @@ export type CourseBuilderView = {
 
 export type CourseSettingsView = Pick<CourseBuilderCourse,
   "id" | "slug" | "title" | "description" | "projectGoal" | "difficulty" |
-  "estimatedHours" | "sequential" | "coverUrl" | "status" | "pricingType" |
+  "estimatedHours" | "category" | "sequential" | "coverUrl" | "status" | "pricingType" |
   "priceCents" | "currency"
 > & { enrollmentCount: number; chapterCount: number };
 
@@ -157,6 +159,7 @@ export type CourseSettingsInput = {
   projectGoal: string;
   difficulty: string;
   estimatedHours: string;
+  category: string;
   sequential: boolean;
   pricingType: string;
   priceDollars: string;

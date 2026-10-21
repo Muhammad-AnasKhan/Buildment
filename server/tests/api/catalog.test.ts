@@ -45,6 +45,8 @@ describe("catalog", () => {
     const paid = res.body.data.courses.find((c: { slug: string }) => c.slug === paidSlug);
     expect(paid).toMatchObject({ priceCents: 4900, enrollmentLifecycle: null });
     expect(mine).toMatchObject({ moduleCount: 1, chapterCount: 2 });
+    // Courses without a chosen category are listed under Tech.
+    expect(mine.category).toBe("TECH");
   });
 
   it("lists the catalog for anonymous visitors without enrollment state", async () => {

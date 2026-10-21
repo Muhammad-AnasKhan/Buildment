@@ -43,7 +43,7 @@ export default async function LoginPage({
     <div className="flex min-h-full flex-1 bg-background text-foreground lg:grid lg:grid-cols-2">
       <LoginBrandPanel />
 
-      <div className="flex flex-col px-6 py-10 sm:px-10 lg:py-16">
+      <div className="flex w-full min-w-0 flex-1 flex-col px-6 py-10 sm:px-10 lg:py-16">
         <div className="flex items-center justify-between lg:justify-end">
           <Link href="/" className="lg:hidden">
             <Logo size="sm" />
