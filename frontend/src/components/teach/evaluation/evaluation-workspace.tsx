@@ -40,7 +40,8 @@ export function EvaluationWorkspace({ evaluation }: { evaluation: MenteeEvaluati
   const selectSection = (next: Section) => {
     setSection(next);
     window.history.replaceState(null, "", `#${next}`);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
   };
 
   const tabs: Array<{ id: Section; label: string; count?: number }> = [

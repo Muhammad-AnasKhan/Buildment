@@ -57,7 +57,7 @@ function FlagChips({ attempt }: { attempt: IntegrityAttemptSummary }) {
   return (
     <ul className="flex flex-wrap gap-1.5" aria-label="Flags">
       {flags.map((type) => (
-        <li key={type} className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-xs text-amber-800 dark:text-amber-200">
+        <li key={type} className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 text-xs text-foreground">
           {INTEGRITY_EVENT_LABELS[type]}
           <span className="font-mono tabular-nums">{attempt.counts[type]}</span>
         </li>
