@@ -18,7 +18,6 @@ import { cn } from "@/lib/utils";
 import { helpUiCopy } from "@/shared/lib/help-ui-copy";
 import { formatStudyAmount } from "@/lib/format-study-duration";
 import { WeeklyGoalEditor } from "@/components/learn/dashboard/weekly-goal-editor";
-import { CourseCover } from "@/components/learn/course-cover";
 import type {
   DashboardAction,
   DashboardCourse,
@@ -44,10 +43,10 @@ function relativeTime(value: string | null) {
 function statusDetails(state: DashboardCourse["state"]) {
   switch (state) {
     case "PAYMENT_REQUIRED": return { label: "Payment due", variant: "destructive" as const };
-    case "NEEDS_REVISION": return { label: "Needs revision", variant: "destructive" as const };
+    case "NEEDS_REVISION": return { label: "Feedback to try", variant: "secondary" as const };
     case "AWAITING_REVIEW": return { label: "Awaiting review", variant: "secondary" as const };
     case "IN_PROGRESS": return { label: "In progress", variant: "secondary" as const };
-    case "NOT_STARTED": return { label: "Not started", variant: "outline" as const };
+    case "NOT_STARTED": return { label: "Ready to begin", variant: "outline" as const };
     case "COMPLETED": return { label: "Completed", variant: "outline" as const };
     case "DROPPED": return { label: "Dropped", variant: "outline" as const };
   }
@@ -59,10 +58,10 @@ function DashboardHeader({ model }: { model: MenteeDashboardViewModel }) {
       <div>
         <p className="text-sm font-medium text-muted-foreground">My learning</p>
         <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
-          Welcome back, {model.learner.name}
+          {model.courses.length === 0 ? "Welcome" : "Welcome back"}, {model.learner.name}
         </h1>
         <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Continue your current work and handle anything that needs your attention.
+          Take one step at a time. You can pick up from here when you are ready.
         </p>
       </div>
       <WeeklyGoalEditor goal={model.habit.weeklyGoal} />
@@ -74,15 +73,10 @@ function ContinueLearning({ course }: { course: DashboardCourse }) {
   const status = statusDetails(course.state);
   return (
     <section aria-labelledby="continue-heading" className="overflow-hidden rounded-2xl border bg-card shadow-sm">
-      <CourseCover
-        coverUrl={course.coverUrl}
-        title={course.title}
-        aspect="banner"
-        className="h-[180px] w-full rounded-none"
-      />
       <div className="p-5 sm:p-7">
       <div className="flex flex-wrap items-center gap-2">
-        <p id="continue-heading" className="text-sm font-semibold">Up next</p>
+        <BookOpen className="size-5 text-primary" aria-hidden />
+        <p id="continue-heading" className="text-sm font-semibold">{course.state === "IN_PROGRESS" ? "Continue where you left off" : course.state === "COMPLETED" ? "Look how far you have come" : "Your next step"}</p>
         <Badge variant={status.variant}>{status.label}</Badge>
       </div>
       <h2 className="mt-4 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">
@@ -92,18 +86,18 @@ function ContinueLearning({ course }: { course: DashboardCourse }) {
         {[course.currentModule, course.targetChapter?.title].filter(Boolean).join(" · ")}
       </p>
       <div className="mt-6">
-        <Progress value={course.percentComplete} className="gap-2">
+        <Progress value={course.percentComplete} className="gap-2 [&_[data-slot=progress-track]]:h-2 [&_[data-slot=progress-indicator]]:duration-200 motion-reduce:[&_[data-slot=progress-indicator]]:transition-none">
           <ProgressLabel className="text-xs text-muted-foreground">
-            {course.chaptersCompleted} of {course.chaptersTotal} chapters
+            {course.chaptersCompleted} of {course.chaptersTotal} chapters complete
           </ProgressLabel>
           <span className="ml-auto text-xs tabular-nums text-muted-foreground">
-            {course.percentComplete}%
+            {course.percentComplete === 0 && course.chaptersCompleted > 0 ? "<1" : course.percentComplete}%
           </span>
         </Progress>
       </div>
-      {course.targetChapter ? (
+      {course.targetChapter && course.targetChapter.blocksTotal > 0 ? (
         <p className="mt-4 text-sm text-muted-foreground">
-          {course.targetChapter.blocksCompleted}/{course.targetChapter.blocksTotal} checkpoints complete in this chapter.
+          {course.targetChapter.blocksCompleted} of {course.targetChapter.blocksTotal} checkpoints complete in this chapter.
         </p>
       ) : null}
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -111,7 +105,8 @@ function ContinueLearning({ course }: { course: DashboardCourse }) {
           href={course.href}
           className={buttonVariants({
             size: "lg",
-            variant: course.state === "NEEDS_REVISION" ? "destructive" : "default",
+            variant: "default",
+            className: "h-auto min-h-11 max-w-full whitespace-normal py-3 text-center transition-colors duration-200 active:bg-primary/80 motion-reduce:transition-none",
           })}
         >
           {course.actionLabel}
@@ -138,11 +133,11 @@ function ActivityStrip({ days, maxSeconds }: { days: DashboardDay[]; maxSeconds:
       <p className="text-xs text-muted-foreground">Estimated active time</p>
       <div className="mt-2 flex items-end gap-1.5" role="img" aria-label="Estimated study time for the last 7 days">
         {days.map((day) => {
-          const height = day.seconds <= 0 ? 0 : Math.max(12, Math.round((day.seconds / maxSeconds) * 100));
+          const height = day.seconds <= 0 ? 0 : Math.max(12, Math.round((day.seconds / Math.max(1, maxSeconds)) * 100));
           return (
             <div key={day.day} className="flex min-w-0 flex-1 flex-col items-center gap-1" title={`${day.day}: ${formatStudyAmount(day.seconds)}`}>
               <div className="flex h-12 w-full items-end rounded-sm bg-muted">
-                <div className="w-full rounded-sm bg-foreground/80" style={{ height: `${height}%` }} />
+                <div className="w-full rounded-sm bg-primary" style={{ height: `${height}%` }} />
               </div>
               <span className="text-[10px] text-muted-foreground">{weekdayLabel(day.day)}</span>
             </div>
@@ -154,13 +149,10 @@ function ActivityStrip({ days, maxSeconds }: { days: DashboardDay[]; maxSeconds:
 }
 
 function WeeklySnapshot({ model }: { model: MenteeDashboardViewModel }) {
-  const accuracy = model.primaryCourse && model.primaryCourse.maxScore > 0
-    ? Math.round((model.primaryCourse.totalScore / model.primaryCourse.maxScore) * 100)
-    : null;
   const metrics = [
     { label: "Estimated study this week", value: formatStudyAmount(model.overview.weekSeconds) },
     { label: "Active days", value: `${model.activity.activeDays} of 7` },
-    { label: "This course accuracy", value: accuracy === null ? "Not scored" : `${accuracy}%` },
+    { label: "Chapters completed", value: String(model.overview.chaptersCompleted) },
     { label: "Awaiting review", value: String(model.overview.pendingReviews) },
   ];
 
@@ -172,9 +164,9 @@ function WeeklySnapshot({ model }: { model: MenteeDashboardViewModel }) {
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
         {model.habit.streakCount === 0
-          ? "Study today to start a streak."
-          : `${model.habit.streakCount}-day streak`}
-        {model.habit.graceUsed ? " A missed day is covered." : ""}
+          ? "Every visit counts. Learn at your own pace."
+          : `${model.habit.streakCount}-day learning streak. One step at a time.`}
+
       </p>
       <ActivityStrip days={model.activity.week} maxSeconds={model.activity.maxDaySeconds} />
       <dl className="mt-4 divide-y divide-border">
@@ -192,7 +184,7 @@ function WeeklySnapshot({ model }: { model: MenteeDashboardViewModel }) {
             <span className="text-xs font-medium tabular-nums text-muted-foreground">{Math.min(model.habit.weeklyGoal.progress, model.habit.weeklyGoal.target)} / {model.habit.weeklyGoal.target}</span>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
-            {model.habit.weeklyGoal.progress >= model.habit.weeklyGoal.target ? "Goal reached this week" : `${model.habit.weeklyGoal.target - model.habit.weeklyGoal.progress} ${model.habit.weeklyGoal.kind === "CHAPTERS" ? "chapters" : "sessions"} to go this week`}
+            {model.habit.weeklyGoal.progress >= model.habit.weeklyGoal.target ? "You reached your goal. Your effort adds up." : `${model.habit.weeklyGoal.target - model.habit.weeklyGoal.progress} ${model.habit.weeklyGoal.kind === "CHAPTERS" ? "chapters" : "sessions"} to go this week`}
           </p>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Weekly goal progress" aria-valuenow={Math.min(model.habit.weeklyGoal.progress, model.habit.weeklyGoal.target)} aria-valuemin={0} aria-valuemax={model.habit.weeklyGoal.target}>
             <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, Math.round((model.habit.weeklyGoal.progress / model.habit.weeklyGoal.target) * 100))}%` }} />
@@ -201,6 +193,7 @@ function WeeklySnapshot({ model }: { model: MenteeDashboardViewModel }) {
           {model.habit.weeklyGoal.dailyReminder ? <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground"><Mail className="size-3.5" aria-hidden /> Daily email reminder on</p> : null}
         </div>
       ) : null}
+      <p className="mt-4 text-xs leading-5 text-muted-foreground">Breaks are part of learning. Your completed work stays with you.</p>
       <Link href="/progress" className="mt-4 inline-flex items-center gap-1 text-sm font-medium hover:underline">
         View progress details <ArrowRight className="size-3.5" aria-hidden />
       </Link>
@@ -241,10 +234,10 @@ function ActionCenter({ actions, hasCourse }: { actions: DashboardAction[]; hasC
     )
     .slice(0, 4);
   return (
-    <section aria-labelledby="attention-heading">
+    <section aria-labelledby="attention-heading" className="min-w-0">
       <div>
-        <h2 id="attention-heading" className="text-lg font-semibold tracking-tight">Needs attention</h2>
-        <p className="mt-1 text-sm text-muted-foreground">Feedback, revisions, and open requests.</p>
+        <h2 id="attention-heading" className="text-lg font-semibold tracking-tight">Your next steps</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Feedback and support for your learning.</p>
       </div>
       {visible.length > 0 ? (
         <ul className="mt-4 divide-y divide-border overflow-hidden rounded-xl border bg-card">
@@ -254,19 +247,19 @@ function ActionCenter({ actions, hasCourse }: { actions: DashboardAction[]; hasC
               <li key={action.id}>
                 <Link
                   href={action.href}
-                  className="group flex items-center gap-3 p-4 outline-none transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                  className="group flex items-center gap-3 p-4 outline-none transition-colors duration-200 motion-reduce:transition-none active:bg-muted hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 >
                   <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
                   <span className="min-w-0 flex-1">
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="truncate text-sm font-medium">{action.title}</span>
-                      {action.kind === "REVISION" ? <Badge variant="destructive">Revision</Badge> : null}
+                      {action.kind === "REVISION" ? <Badge variant="secondary">Feedback</Badge> : null}
                       {action.unread ? <Badge variant="secondary">Unread</Badge> : null}
                     </span>
                     <span className="mt-0.5 block truncate text-xs text-muted-foreground">{action.context}</span>
                     <span className="mt-0.5 block line-clamp-2 text-xs text-muted-foreground">{action.reason}</span>
                   </span>
-                  <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden />
+                  <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 motion-reduce:transition-none motion-safe:group-hover:translate-x-0.5" aria-hidden />
                 </Link>
               </li>
             );
@@ -276,7 +269,7 @@ function ActionCenter({ actions, hasCourse }: { actions: DashboardAction[]; hasC
         <div className="mt-4 flex items-start gap-3 rounded-xl border border-dashed bg-muted/20 p-4">
           <CheckCircle2 className="mt-0.5 size-4 text-muted-foreground" aria-hidden />
           <div>
-            <p className="text-sm font-medium">Nothing needs attention</p>
+            <p className="text-sm font-medium">You are all caught up</p>
             <p className="mt-1 text-sm text-muted-foreground">
               {hasCourse ? "You can continue learning when you’re ready." : "New assignments will appear here."}
             </p>
@@ -289,11 +282,11 @@ function ActionCenter({ actions, hasCourse }: { actions: DashboardAction[]; hasC
 
 function CourseListPreview({ courses }: { courses: DashboardCourse[] }) {
   return (
-    <section aria-labelledby="courses-preview-heading">
+    <section aria-labelledby="courses-preview-heading" className="min-w-0">
       <div className="flex items-end justify-between gap-4">
         <div>
           <h2 id="courses-preview-heading" className="text-lg font-semibold tracking-tight">My courses</h2>
-          <p className="mt-1 text-sm text-muted-foreground">A quick view of every assignment.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Your progress, one chapter at a time.</p>
         </div>
         <Link href="/my-courses" className="shrink-0 text-sm font-medium hover:underline">View all</Link>
       </div>
@@ -304,19 +297,19 @@ function CourseListPreview({ courses }: { courses: DashboardCourse[] }) {
             <div key={course.id} className="flex items-center gap-2 p-4">
               <Link
                 href={course.href}
-                className="group flex min-w-0 flex-1 items-center gap-4 rounded-lg outline-none transition-colors hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
+                className="group flex min-w-0 flex-1 items-center gap-4 rounded-lg outline-none transition-colors duration-200 motion-reduce:transition-none active:bg-muted hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <span className="relative size-12 shrink-0 overflow-hidden rounded-lg sm:size-14">
-                  <CourseCover coverUrl={course.coverUrl} title={course.title} aspect="thumb" className="size-full min-h-0 rounded-lg" />
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-muted text-primary">
+                  {course.state === "COMPLETED" ? <CheckCircle2 className="size-5" aria-hidden /> : <BookOpen className="size-5" aria-hidden />}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium">{course.title}</span>
                   <span className="mt-1 block text-xs text-muted-foreground">
-                    {course.actionLabel} · {course.percentComplete}% complete · {relativeTime(course.lastActiveAt)}
+                    {course.actionLabel} · {course.percentComplete === 0 && course.chaptersCompleted > 0 ? "<1" : course.percentComplete}% complete · {relativeTime(course.lastActiveAt)}
                   </span>
                 </span>
                 <Badge variant={status.variant} className="hidden sm:inline-flex">{status.label}</Badge>
-                <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden />
+                <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform duration-200 motion-reduce:transition-none motion-safe:group-hover:translate-x-0.5" aria-hidden />
               </Link>
               <Link href={course.overviewHref} className="shrink-0 text-xs font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline">
                 Overview
@@ -329,14 +322,12 @@ function CourseListPreview({ courses }: { courses: DashboardCourse[] }) {
   );
 }
 
-function CourseCard({ course }: { course: DashboardCourse }) {
+function CourseCard({ course, featured }: { course: DashboardCourse; featured: boolean }) {
   const status = statusDetails(course.state);
   return (
-    <article className={cn("overflow-hidden rounded-xl border bg-card", course.state === "DROPPED" && "opacity-75")}>
+    <article className={cn("overflow-hidden rounded-2xl border bg-card transition-shadow duration-200 hover:shadow-sm focus-within:ring-2 focus-within:ring-ring motion-reduce:transition-none", featured && "border-primary/40")}>
+      {featured ? <p className="border-b border-border bg-muted px-4 py-3 text-sm font-medium">{course.state === "IN_PROGRESS" ? "Continue where you left off" : "Your next step"}</p> : null}
       <div className="flex min-h-24 items-stretch border-b bg-muted/30">
-        <div className="w-28 shrink-0 overflow-hidden sm:w-36">
-          <CourseCover coverUrl={course.coverUrl} title={course.title} aspect="thumb" className="h-full min-h-24 rounded-none" />
-        </div>
         <div className="min-w-0 flex-1 p-4">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant={status.variant}>{status.label}</Badge>
@@ -352,21 +343,23 @@ function CourseCard({ course }: { course: DashboardCourse }) {
         </div>
       </div>
       <div className="p-4">
-        <Progress value={course.percentComplete} className="gap-2">
-          <ProgressLabel className="text-xs">{course.chaptersCompleted}/{course.chaptersTotal} chapters</ProgressLabel>
-          <span className="ml-auto text-xs tabular-nums text-muted-foreground">{course.percentComplete}%</span>
+        <Progress value={course.percentComplete} className="gap-2 [&_[data-slot=progress-track]]:h-2 [&_[data-slot=progress-indicator]]:duration-200 motion-reduce:[&_[data-slot=progress-indicator]]:transition-none">
+          <ProgressLabel className="text-xs">{course.chaptersCompleted} of {course.chaptersTotal} chapters complete</ProgressLabel>
+          <span className="ml-auto text-xs tabular-nums text-muted-foreground">{course.percentComplete === 0 && course.chaptersCompleted > 0 ? "<1" : course.percentComplete}%</span>
         </Progress>
-        {course.targetChapter ? <p className="mt-4 truncate text-sm">{course.targetChapter.status === "IN_PROGRESS" ? "Current" : "Next"}: <span className="font-medium">{course.targetChapter.title}</span></p> : null}
+        {course.targetChapter ? <p className="mt-4 text-sm leading-6">{course.targetChapter.status === "IN_PROGRESS" ? "Current" : "Next"}: <span className="font-medium">{course.targetChapter.title}</span></p> : null}
+        {course.state === "COMPLETED" ? <p className="mt-4 flex items-start gap-2 text-sm leading-6"><CheckCircle2 className="mt-1 size-4 shrink-0 text-primary" aria-hidden />You completed this course. Take a moment to see what you have learned.</p> : null}
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span>{formatStudyAmount(course.totalStudySeconds)} studied</span>
           <span>{relativeTime(course.lastActiveAt)}</span>
           {course.maxScore > 0 ? <span>{Math.round((course.totalScore / course.maxScore) * 100)}% scored accuracy</span> : null}
         </div>
-        <div className="mt-5 flex items-center justify-between gap-3">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
           <Link
             href={course.href}
             className={buttonVariants({
-              variant: course.state === "NEEDS_REVISION" ? "destructive" : "default",
+              variant: "default",
+            className: "h-auto min-h-11 max-w-full whitespace-normal py-3 text-center transition-colors duration-200 active:bg-primary/80 motion-reduce:transition-none",
             })}
           >
             {course.actionLabel}
@@ -378,12 +371,13 @@ function CourseCard({ course }: { course: DashboardCourse }) {
   );
 }
 
-export function MenteeCourseList({ courses, showHeading = true }: { courses: DashboardCourse[]; showHeading?: boolean }) {
+export function MenteeCourseList({ courses, showHeading = true, primaryCourseId }: { courses: DashboardCourse[]; showHeading?: boolean; primaryCourseId?: string }) {
+  const orderedCourses = [...courses].sort((a, b) => Number(b.id === primaryCourseId) - Number(a.id === primaryCourseId));
   return (
     <section aria-labelledby={showHeading ? "courses-heading" : undefined}>
       {showHeading ? <div><h2 id="courses-heading" className="text-lg font-semibold tracking-tight">My courses</h2><p className="mt-1 text-sm text-muted-foreground">All assigned courses and their next available steps.</p></div> : null}
-      <div className={cn("grid gap-4 lg:grid-cols-2", showHeading && "mt-4")}>
-        {courses.map((course) => <CourseCard key={course.id} course={course} />)}
+      <div className={cn("grid grid-cols-1 gap-4 lg:grid-cols-2", showHeading && "mt-4")}>
+        {orderedCourses.map((course) => <CourseCard key={course.id} course={course} featured={course.id === primaryCourseId && course.state !== "COMPLETED"} />)}
       </div>
     </section>
   );
@@ -393,9 +387,9 @@ function EmptyDashboard({ name }: { name: string }) {
   return (
     <div className="rounded-2xl border border-dashed bg-muted/20 px-6 py-16 text-center">
       <Inbox className="mx-auto size-8 text-muted-foreground" aria-hidden />
-      <h2 className="mt-4 text-lg font-semibold">No courses assigned yet</h2>
+      <h2 className="mt-4 text-lg font-semibold">Your learning starts here</h2>
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-        {name}, browse the catalog to enroll in published courses, or wait for an invite from your instructor.
+        {name}, choose a course from the catalog to get started. If your mentor sent an invite, open its link to join your course.
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
         <Link href="/catalog" className={buttonVariants()}>Browse catalog</Link>
@@ -414,7 +408,7 @@ function RecentEvents({ events }: { events: DashboardEvent[] }) {
       <ul className="mt-4 divide-y divide-border overflow-hidden rounded-xl border bg-card">
         {events.slice(0, 6).map((event) => (
           <li key={event.id}>
-            <Link href={event.href} className="flex items-center justify-between gap-4 p-4 transition-colors hover:bg-muted/50">
+            <Link href={event.href} className="flex items-center justify-between gap-4 p-4 transition-colors duration-200 motion-reduce:transition-none active:bg-muted hover:bg-muted/50">
               <span className="min-w-0">
                 <span className="block truncate text-sm font-medium">{event.title}</span>
                 <span className="mt-0.5 block truncate text-xs text-muted-foreground">{event.context}</span>
@@ -437,11 +431,11 @@ export function MenteeDashboard({ model }: { model: MenteeDashboardViewModel }) 
       ) : (
         <div className="mt-8 space-y-9">
           {model.activity.runningSession ? <ResumeBanner session={model.activity.runningSession} /> : null}
-          <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
             {model.primaryCourse ? <ContinueLearning course={model.primaryCourse} /> : null}
             <WeeklySnapshot model={model} />
           </div>
-          <div className="grid gap-8 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
             <ActionCenter actions={model.actions} hasCourse={Boolean(model.primaryCourse)} />
             <CourseListPreview courses={model.courses} />
           </div>
