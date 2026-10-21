@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BarChart3, BookOpen, CircleHelp, Clock3, MessageSquareText, Pencil, Search, Trash2, Users } from "lucide-react";
+import Image from "next/image";
+import { ArrowRight, Search, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { deleteCourse } from "@/server/actions/courses";
+import { isSafeAssetUrl } from "@/shared/lib/asset-url";
 import type { MentorCourseCard } from "@/shared/api/teach";
 
 type StatusFilter = "all" | "PUBLISHED" | "DRAFT" | "attention";
@@ -33,38 +34,46 @@ export function CourseBrowser({ courses }: { courses: MentorCourseCard[] }) {
         <label><span className="sr-only">Filter course status</span><select value={status} onChange={(event) => setStatus(event.target.value as StatusFilter)} className="h-9 w-full rounded-lg border bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 sm:w-40"><option value="all">All courses</option><option value="PUBLISHED">Published</option><option value="DRAFT">Drafts</option><option value="attention">Needs attention</option></select></label>
       </div>
     </div>
-    {visible.length ? <div className="mt-4 grid gap-4 lg:grid-cols-2">{visible.map((course) => <CourseCard key={course.id} course={course} />)}</div> : <div className="mt-4 rounded-2xl border border-dashed p-10 text-center"><p className="text-sm font-medium">No courses match</p><p className="mt-1 text-sm text-muted-foreground">Try a different search or status filter.</p></div>}
+    {visible.length ? <div className="mt-5 grid gap-5 lg:grid-cols-2">{visible.map((course) => <CourseCard key={course.id} course={course} />)}</div> : <div className="mt-4 rounded-2xl border border-dashed p-10 text-center"><p className="text-sm font-medium">No courses match</p><p className="mt-1 text-sm text-muted-foreground">Try a different search or status filter.</p></div>}
   </section>;
 }
 
 function CourseCard({ course }: { course: MentorCourseCard }) {
-  const attention = course.pendingReviews + course.openHelpRequests + course.inactiveLearners;
-  return <article className="flex min-w-0 flex-col rounded-2xl border bg-card p-5 transition-colors hover:border-foreground/15">
-    <div className="flex items-start gap-3"><span className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-sm font-semibold">{course.title.slice(0, 2).toUpperCase()}</span><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="truncate font-semibold">{course.title}</h3><Badge variant={course.status === "PUBLISHED" ? "secondary" : "outline"} className="capitalize">{course.status.toLowerCase()}</Badge></div><p className="mt-1 line-clamp-2 min-h-10 text-sm leading-5 text-muted-foreground">{course.description || "No course description yet."}</p></div></div>
-    <div className="mt-4 grid grid-cols-3 gap-3 border-y py-3 text-xs"><Metric icon={Users} value={String(course.learnerCount)} label="learners" /><Metric icon={BookOpen} value={`${course.averageProgress}%`} label="avg progress" /><Metric icon={MessageSquareText} value={String(course.pendingReviews)} label="to review" /></div>
-    {attention > 0 ? <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">{course.pendingReviews > 0 ? <span className="inline-flex items-center gap-1.5"><MessageSquareText className="size-3.5" />{course.pendingReviews} waiting</span> : null}{course.openHelpRequests > 0 ? <span className="inline-flex items-center gap-1.5"><CircleHelp className="size-3.5" />{course.openHelpRequests} open help</span> : null}{course.inactiveLearners > 0 ? <span className="inline-flex items-center gap-1.5"><Clock3 className="size-3.5" />{course.inactiveLearners} inactive 7+ days</span> : null}</div> : <p className="mt-3 text-xs text-muted-foreground">No current mentor actions.</p>}
-    <div className="mt-auto flex flex-wrap items-center gap-2 pt-5"><Link href={`/courses/${course.slug}/mentees`} className={cn(buttonVariants({ size: "sm" }), "gap-1.5")}>Open course <ArrowRight /></Link><Link href={`/courses/${course.slug}/edit`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}><Pencil /> Edit</Link><Link href={`/courses/${course.slug}/reports`} className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}><BarChart3 /> Reports</Link>{course.status === "DRAFT" ? <DeleteDraftButton course={course} /> : null}<span className="ml-auto text-[11px] text-muted-foreground">Updated {new Date(course.updatedAt).toLocaleDateString()}</span></div>
+  const cover = course.coverUrl && isSafeAssetUrl(course.coverUrl)
+    ? course.coverUrl
+    : course.slug.includes("multi-vendor")
+      ? "/showcase/multi-vendor-marketplace/freshmarket-marketplace-hd.png"
+      : course.slug.includes("ticket")
+        ? "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80"
+        : "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80";
+  const attention = course.pendingReviews > 0
+    ? `${course.pendingReviews} answer${course.pendingReviews === 1 ? "" : "s"} to check`
+    : course.openHelpRequests > 0
+      ? `${course.openHelpRequests} learner question${course.openHelpRequests === 1 ? "" : "s"}`
+      : course.inactiveLearners > 0
+        ? `${course.inactiveLearners} inactive learner${course.inactiveLearners === 1 ? "" : "s"}`
+        : null;
+
+  return <article className="flex min-w-0 flex-col overflow-hidden rounded-2xl border bg-card transition-colors hover:border-foreground/20">
+    <Link href={`/courses/${course.slug}/edit`} aria-label={`Open ${course.title} curriculum`} className="relative block overflow-hidden bg-muted">
+      <Image unoptimized src={cover} alt="" width={1200} height={560} sizes="(min-width: 1024px) 50vw, 100vw" className="aspect-[2.3/1] w-full object-cover transition-transform duration-300 hover:scale-[1.02]" />
+      <Badge variant={course.status === "PUBLISHED" ? "default" : "secondary"} className="absolute left-4 top-4 capitalize shadow-sm">{course.status.toLowerCase()}</Badge>
+    </Link>
+    <div className="flex flex-1 flex-col p-5 sm:p-6">
+      <Link href={`/courses/${course.slug}/edit`} className="w-fit max-w-full hover:underline hover:underline-offset-2"><h3 className="line-clamp-2 text-lg font-semibold leading-6 tracking-tight">{course.title}</h3></Link>
+      <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">{course.description || "Add a description in course settings."}</p>
+      <div className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        <span>{course.chapterCount} chapters</span><span aria-hidden>·</span>
+        <span>{course.learnerCount} learner{course.learnerCount === 1 ? "" : "s"}</span><span aria-hidden>·</span>
+        <span>{course.averageProgress}% average progress</span>
+      </div>
+      {attention && <p className="mt-3 w-fit rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-400">{attention}</p>}
+      <div className="mt-auto pt-5">
+        <div className="flex flex-wrap items-center gap-2 border-t pt-4">
+          <Link href={`/courses/${course.slug}/edit`} className={cn(buttonVariants({ size: "lg" }), "gap-1.5")}>Curriculum <ArrowRight className="size-4" aria-hidden /></Link>
+          <Link href={`/courses/${course.slug}/mentees`} className={cn(buttonVariants({ variant: "outline", size: "lg" }), "gap-1.5")}><Users className="size-4" aria-hidden /> Learners</Link>
+        </div>
+      </div>
+    </div>
   </article>;
 }
-
-function DeleteDraftButton({ course }: { course: MentorCourseCard }) {
-  const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-
-  function handleDelete() {
-    if (!window.confirm(`Delete the draft “${course.title}”? Its modules, chapters and content will be permanently removed.`)) return;
-    startTransition(async () => {
-      const result = await deleteCourse({ courseId: course.id });
-      setError(result.ok ? null : result.errors.join(" "));
-    });
-  }
-
-  return <>
-    <Button type="button" variant="ghost" size="sm" onClick={handleDelete} loading={pending} disabled={pending} className="text-destructive hover:text-destructive">
-      <Trash2 /> {pending ? "Deleting…" : "Delete"}
-    </Button>
-    {error ? <span role="alert" className="basis-full text-xs text-destructive">{error}</span> : null}
-  </>;
-}
-
-function Metric({ icon: Icon, value, label }: { icon: typeof Users; value: string; label: string }) { return <div className="min-w-0"><span className="flex items-center gap-1.5 text-muted-foreground"><Icon className="size-3.5" />{label}</span><span className="mt-1 block text-sm font-semibold tabular-nums text-foreground">{value}</span></div>; }

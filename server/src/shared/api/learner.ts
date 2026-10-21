@@ -124,6 +124,7 @@ export type LearnerProgressCourse = {
   activeDays: number;
   weekSeconds: number;
   totalStudySeconds: number;
+  dailyActivity: DashboardDay[];
   continueHref: string | null;
   modules: LearnerProgressModule[];
 };
@@ -149,7 +150,7 @@ export type LearnerProgressView = {
   };
 };
 
-export type WeeklyGoalInput = { kind: "SESSIONS" | "CHAPTERS"; target: number };
+export type WeeklyGoalInput = { kind: "SESSIONS" | "CHAPTERS"; target: number; note?: string; dailyReminder?: boolean };
 
 export type LearnerProfile = {
   name: string | null;

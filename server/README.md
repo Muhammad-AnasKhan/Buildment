@@ -45,8 +45,15 @@ Procfile             Heroku: release = migrate deploy, web = node dist/index.js
 - **Authorization:** `requireInstructor` / `requireAdmin` gate the routers; course, thread and
   enrollment ownership is decided in `services/teach/access.ts` and nowhere else.
 - **Jobs:** `jobs/scheduler.ts` runs each job at its UTC hour inside the process
-  (`JOBS_ENABLED`, `INACTIVITY_NUDGE_HOUR_UTC`); `/api/v1/jobs/*` + `CRON_SECRET` exist for
+  (`JOBS_ENABLED`, `INACTIVITY_NUDGE_HOUR_UTC`, `WEEKLY_GOAL_REMINDER_HOUR_UTC`);
+  daily goal reminders require `AUTH_RESEND_KEY` and an explicit learner opt-in. `/api/v1/jobs/*` + `CRON_SECRET` exist for
   external schedulers and multi-replica deployments.
+
+## Course images (Cloudflare R2)
+
+Set `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, and `R2_SECRET_ACCESS_KEY` in the API environment. The endpoint is the account S3 endpoint, without the bucket suffix. Use an R2 S3 token scoped to the `buildment` bucket. Never put the secret in the frontend environment or source code.
+
+Course creators can upload cover images in course settings and insert images from the chapter editor. JPEG, PNG, WebP, GIF, and AVIF files up to 8 MB are accepted. Uploads go through the authenticated API; the bucket can remain private, and browser CORS or an R2 public development URL are not required. Covers are served publicly through `/api/v1/media`, while chapter images are served only to course instructors, administrators, and learners with content access.
 
 ## Commands
 

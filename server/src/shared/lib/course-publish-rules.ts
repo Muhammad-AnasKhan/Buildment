@@ -17,9 +17,6 @@ export function validateCoursePublish(input: PublishValidationInput): string[] {
   if (input.chapterCount === 0) {
     errors.push("Add at least one chapter before publishing.");
   }
-  if (input.publishedChapterCount === 0) {
-    errors.push("Publish at least one chapter before publishing the course.");
-  }
   if (input.pricingType === "PAID" && input.priceCents <= 0) {
     errors.push("Set a price greater than zero for paid courses.");
   }

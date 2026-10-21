@@ -5,14 +5,19 @@ import { prisma } from "../../db/prisma.js";
 export async function setWeeklyGoal(userId: string, goal: WeeklyGoalInput) {
   await prisma.user.update({
     where: { id: userId },
-    data: { weeklyGoalKind: goal.kind, weeklyGoalTarget: goal.target },
+    data: {
+      weeklyGoalKind: goal.kind,
+      weeklyGoalTarget: goal.target,
+      weeklyGoalNote: goal.note?.trim() || null,
+      ...(goal.dailyReminder !== undefined ? { weeklyGoalReminderEnabled: goal.dailyReminder } : {}),
+    },
   });
 }
 
 export async function clearWeeklyGoal(userId: string) {
   await prisma.user.update({
     where: { id: userId },
-    data: { weeklyGoalKind: null, weeklyGoalTarget: null },
+    data: { weeklyGoalKind: null, weeklyGoalTarget: null, weeklyGoalNote: null, weeklyGoalReminderEnabled: false, weeklyGoalReminderSentOn: null },
   });
 }
 

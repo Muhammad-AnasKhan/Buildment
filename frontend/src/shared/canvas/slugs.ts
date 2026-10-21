@@ -8,6 +8,7 @@ export const CANVAS_SLUGS = [
   "weighted-matrix-two-offers",
   "freshmarket-order-status",
   "freshmarket-mark-packed",
+  "ticketline-seat-hold-race",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];

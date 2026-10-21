@@ -19,6 +19,8 @@ export async function loadLearnerHabit(userId: string): Promise<LearnerHabit> {
       select: {
         weeklyGoalKind: true,
         weeklyGoalTarget: true,
+        weeklyGoalNote: true,
+        weeklyGoalReminderEnabled: true,
         celebratedStreakMilestones: true,
       },
     }),
@@ -72,7 +74,7 @@ export async function loadLearnerHabit(userId: string): Promise<LearnerHabit> {
     streakMilestone: uncelebratedStreakMilestone(streak.count, user?.celebratedStreakMilestones ?? []),
     weeklyGoal:
       goalKind && goalTarget && goalTarget > 0
-        ? { kind: goalKind, target: goalTarget, progress }
+        ? { kind: goalKind, target: goalTarget, progress, note: user?.weeklyGoalNote ?? null, dailyReminder: user?.weeklyGoalReminderEnabled ?? false }
         : null,
   };
 }

@@ -23,6 +23,7 @@ export default async function ChapterEditorPage({
   return (
     <ChapterEditor
       chapterId={chapter.chapterId}
+      courseId={chapter.courseId}
       courseSlug={chapter.courseSlug}
       chapterTitle={chapter.title}
       chapterSummary={chapter.summary}

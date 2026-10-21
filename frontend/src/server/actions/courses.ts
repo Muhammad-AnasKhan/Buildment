@@ -12,6 +12,7 @@ async function courseCall(path: string, json?: unknown): Promise<CourseActionRes
   const result = await teachCall<CourseSlugResult>(path, { method: "POST", json });
   if (!result.ok) return result;
   revalidatePath(`/courses/${result.data.courseSlug}/edit`);
+  revalidatePath(`/courses/${result.data.courseSlug}/settings`);
   return { ok: true, courseSlug: result.data.courseSlug };
 }
 
@@ -56,6 +57,7 @@ export async function deleteCourse(input: {
   if (!result.ok) return result;
   revalidatePath("/courses");
   revalidatePath("/courses/[courseSlug]/edit", "page");
+  revalidatePath("/courses/[courseSlug]/settings", "page");
   revalidatePath("/", "layout");
   return { ok: true };
 }

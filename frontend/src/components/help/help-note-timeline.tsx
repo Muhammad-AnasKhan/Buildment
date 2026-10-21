@@ -19,7 +19,7 @@ export function HelpNoteTimeline({
   if (messages.length === 0) return null;
 
   return (
-    <ul className="space-y-4">
+    <ul className="space-y-5">
       {messages.map((message) => {
         const isMine = message.authorId === viewerId;
         const roleLabel =
@@ -31,15 +31,9 @@ export function HelpNoteTimeline({
 
         return (
           <li key={message.id}>
-            <article
-              className={
-                message.authorRole === "MENTOR"
-                  ? "rounded-lg bg-muted/50 px-4 py-3"
-                  : "rounded-lg bg-background px-4 py-3"
-              }
-            >
-              <header className="flex flex-wrap items-baseline gap-x-2 gap-y-0 text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">{roleLabel}</span>
+            <article className={message.authorRole === "MENTOR" ? "rounded-xl border border-primary/15 bg-primary/5 px-4 py-4" : "rounded-xl border bg-background px-4 py-4"}>
+              <header className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground">{roleLabel}</span>
                 <time dateTime={message.createdAt}>{formatWhen(message.createdAt)}</time>
               </header>
               <p className="mt-1.5 whitespace-pre-wrap text-[15px] leading-relaxed text-foreground">

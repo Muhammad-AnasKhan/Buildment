@@ -11,6 +11,7 @@ async function builderCall(path: string, init: { method: "POST" | "PATCH"; json?
   if (!result.ok) return result;
   // Every course edit page re-renders; the builder has no stable slug at hand here.
   revalidatePath("/courses/[courseSlug]/edit", "page");
+  revalidatePath("/courses/[courseSlug]/settings", "page");
   return { ok: true };
 }
 

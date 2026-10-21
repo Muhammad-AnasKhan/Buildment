@@ -14,6 +14,7 @@ import {
   LibraryBig,
   Menu,
   MessageSquareText,
+  Settings2,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -123,6 +124,13 @@ export function MentorWorkspaceSidebar({
         Boolean(routeCourseSlug) &&
         (pathname.endsWith("/edit") || pathname.includes("/chapters/")),
       count: selectedCourse?.chapterCount,
+      disabled: !selectedCourse,
+    },
+    {
+      label: "Settings",
+      href: courseBase ? `${courseBase}/settings` : "/courses",
+      icon: Settings2,
+      active: Boolean(routeCourseSlug) && pathname.endsWith("/settings"),
       disabled: !selectedCourse,
     },
     {

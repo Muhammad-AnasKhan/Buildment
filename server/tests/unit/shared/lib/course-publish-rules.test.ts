@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { validateCoursePublish } from "../../../../src/shared/lib/course-publish-rules.js";
 
 describe("validateCoursePublish", () => {
-  it("requires chapters and a published chapter", () => {
+  it("requires at least one chapter", () => {
     expect(
       validateCoursePublish({
         status: "DRAFT",
@@ -13,8 +13,19 @@ describe("validateCoursePublish", () => {
       })
     ).toEqual([
       "Add at least one chapter before publishing.",
-      "Publish at least one chapter before publishing the course.",
     ]);
+  });
+
+  it("allows a course with draft chapters", () => {
+    expect(
+      validateCoursePublish({
+        status: "DRAFT",
+        pricingType: "FREE",
+        priceCents: 0,
+        chapterCount: 1,
+        publishedChapterCount: 0,
+      })
+    ).toEqual([]);
   });
 
   it("requires price for paid courses", () => {

@@ -1,0 +1,1 @@
+ALTER TABLE "User" ADD COLUMN "weeklyGoalNote" VARCHAR(240);

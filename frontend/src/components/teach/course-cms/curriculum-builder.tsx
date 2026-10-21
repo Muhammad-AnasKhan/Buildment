@@ -9,7 +9,6 @@ import {
   ClipboardCheck,
   FileText,
   Flag,
-  GripVertical,
   Layers3,
   Pencil,
   Plus,
@@ -21,6 +20,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { MARKETPLACE_WEEKS } from "@/lib/marketplace-weeks";
+import { ModuleDisclosure } from "./module-disclosure";
 import { createChapter, moveChapter, removeChapter } from "@/server/actions/chapters";
 import { createModule, moveModule, renameModule } from "@/server/actions/modules";
 import type {
@@ -39,6 +40,14 @@ export function CurriculumBuilder({
   const chapterCount =
     looseChapters.length +
     course.modules.reduce((total, module) => total + module.chapters.length, 0);
+  const indexedModules = course.modules.map((module, index) => ({ module, index }));
+  const showWeeks = course.slug === "multi-vendor-marketplace";
+  const weekGroups = showWeeks ? MARKETPLACE_WEEKS.map((week) => ({
+    title: `Week ${week.number} - ${week.title}`,
+    modules: indexedModules.filter(({ module }) => module.order >= week.from && module.order <= week.to),
+  })) : [];
+  const closingModules = showWeeks ? indexedModules.filter(({ module }) => module.order === 99) : [];
+  const additionalModules = showWeeks ? indexedModules.filter(({ module }) => module.order !== 99 && !MARKETPLACE_WEEKS.some((week) => module.order >= week.from && module.order <= week.to)) : [];
 
   return (
     <main className="min-w-0">
@@ -79,15 +88,16 @@ export function CurriculumBuilder({
       </div>
 
       <div className="mt-5 space-y-4">
-        {course.modules.map((module, moduleIndex) => (
-          <ModuleCard
-            key={module.id}
-            courseId={course.id}
-            courseSlug={course.slug}
-            module={module}
-            moduleIndex={moduleIndex}
-            moduleCount={course.modules.length}
-          />
+        {showWeeks ? (
+          <>
+            {weekGroups.map((group, index) => (
+              <ModuleGroup key={group.title} title={group.title} modules={group.modules} course={course} defaultOpen={index === 0} />
+            ))}
+            {closingModules.length > 0 && <ModuleGroup title="Finish and present" modules={closingModules} course={course} />}
+            {additionalModules.length > 0 && <ModuleGroup title="Additional modules" modules={additionalModules} course={course} />}
+          </>
+        ) : course.modules.map((module, moduleIndex) => (
+          <ModuleCard key={module.id} courseId={course.id} courseSlug={course.slug} module={module} moduleIndex={moduleIndex} moduleCount={course.modules.length} />
         ))}
 
         {looseChapters.length > 0 ? (
@@ -118,6 +128,34 @@ export function CurriculumBuilder({
   );
 }
 
+function ModuleGroup({ title, modules, course, defaultOpen = false }: {
+  title: string;
+  modules: Array<{ module: CourseBuilderModule; index: number }>;
+  course: CourseBuilderCourse;
+  defaultOpen?: boolean;
+}) {
+  const chapterCount = modules.reduce((total, { module }) => total + module.chapters.length, 0);
+  const publishedCount = modules.reduce((total, { module }) => total + module.chapters.filter((chapter) => chapter.publishedAt).length, 0);
+
+  return (
+    <details className="group/week overflow-hidden rounded-xl border bg-card shadow-xs" open={defaultOpen ? true : undefined}>
+      <summary className="flex min-h-20 cursor-pointer list-none items-center gap-4 px-4 py-4 transition-colors hover:bg-muted/25 sm:px-6 [&::-webkit-details-marker]:hidden">
+        <span className="min-w-0 flex-1">
+          <span className="block text-base font-semibold tracking-tight">{title}</span>
+          <span className="mt-1 block text-xs text-muted-foreground">{modules.length} module{modules.length === 1 ? "" : "s"} · {chapterCount} chapter{chapterCount === 1 ? "" : "s"} · {publishedCount} published</span>
+        </span>
+        <span className="shrink-0 text-xs font-medium text-muted-foreground group-open/week:hidden">Show modules</span>
+        <span className="hidden shrink-0 text-xs font-medium text-muted-foreground group-open/week:inline">Hide modules</span>
+      </summary>
+      <div className="space-y-3 border-t bg-muted/10 p-3 sm:p-4">
+        {modules.length ? modules.map(({ module, index }) => (
+          <ModuleCard key={module.id} courseId={course.id} courseSlug={course.slug} module={module} moduleIndex={index} moduleCount={course.modules.length} />
+        )) : <p className="rounded-lg border border-dashed bg-background p-4 text-sm text-muted-foreground">No modules in this week yet.</p>}
+      </div>
+    </details>
+  );
+}
+
 function ModuleCard({
   courseId,
   courseSlug,
@@ -134,25 +172,14 @@ function ModuleCard({
   const publishedCount = module.chapters.filter((chapter) => chapter.publishedAt).length;
 
   return (
-    <section className="rounded-xl border bg-card shadow-xs">
-      <div className="flex flex-col gap-3 border-b bg-muted/25 px-3 py-3 sm:flex-row sm:items-center">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
-          <span className="hidden text-muted-foreground sm:block" aria-hidden="true">
-            <GripVertical className="size-4" />
-          </span>
-          <span className="grid size-8 shrink-0 place-items-center rounded-lg border bg-background font-mono text-xs font-medium text-muted-foreground">
-            {String(moduleIndex + 1).padStart(2, "0")}
-          </span>
-          <div className="min-w-0">
-            <h3 className="truncate text-sm font-semibold">{module.title}</h3>
-            <p className="text-xs text-muted-foreground">
-              {module.chapters.length} chapter{module.chapters.length === 1 ? "" : "s"} ·{" "}
-              {publishedCount} published
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-1 sm:justify-end">
+    <ModuleDisclosure
+      moduleId={module.id}
+      number={moduleIndex + 1}
+      title={module.title}
+      chapterCount={module.chapters.length}
+      publishedCount={publishedCount}
+      actions={
+        <>
           <MoveButton
             label={`Move ${module.title} up`}
             disabled={moduleIndex === 0}
@@ -222,8 +249,9 @@ function ModuleCard({
               </PendingSubmitButton>
             </form>
           </details>
-        </div>
-      </div>
+        </>
+      }
+    >
 
       {module.chapters.length > 0 ? (
         <ChapterList courseSlug={courseSlug} chapters={module.chapters} />
@@ -234,7 +262,7 @@ function ModuleCard({
           <p className="mt-1 text-xs text-muted-foreground">Use “Add chapter” to create the first lesson.</p>
         </div>
       )}
-    </section>
+    </ModuleDisclosure>
   );
 }
 

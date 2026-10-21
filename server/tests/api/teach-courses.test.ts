@@ -100,7 +100,6 @@ describe("course lifecycle", () => {
     expect(res.body.code).toBe("COURSE_NOT_PUBLISHABLE");
     expect(res.body.errors.map((e: { message: string }) => e.message)).toEqual([
       "Add at least one chapter before publishing.",
-      "Publish at least one chapter before publishing the course.",
     ]);
   });
 

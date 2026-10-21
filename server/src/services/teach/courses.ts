@@ -1,4 +1,4 @@
-import type { CourseBuilderChapter, CourseBuilderView, CourseSlugResult } from "../../shared/api/teach.js";
+import type { CourseBuilderChapter, CourseBuilderView, CourseDraftPreview, CourseSettingsView, CourseSlugResult } from "../../shared/api/teach.js";
 import { TEACH_ERROR_CODES } from "../../shared/api/teach.js";
 import { validateCoursePublish } from "../../shared/lib/course-publish-rules.js";
 import { slugify } from "../../shared/lib/mdx-headings.js";
@@ -7,6 +7,7 @@ import { ConflictError, UnprocessableError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
 import type { CourseSettingsBody, CreateCourseBody } from "../../validations/teach.js";
 import { requireCourseById, requireCourseBySlug } from "./access.js";
+import { publishChapters } from "./chapters.js";
 
 // Course lifecycle: DRAFT → PUBLISHED → (ARCHIVED when learners exist | DRAFT when none).
 // Publishing is the only transition with rules; see shared/lib/course-publish-rules.
@@ -102,6 +103,43 @@ export async function loadCourseBuilder(user: SessionUser, courseSlug: string): 
   };
 }
 
+/** Course settings without the full curriculum payload. */
+export async function loadCourseSettings(user: SessionUser, courseSlug: string): Promise<CourseSettingsView> {
+  const owned = await requireCourseBySlug(user, courseSlug);
+  const { _count, ...course } = await prisma.course.findUniqueOrThrow({
+    where: { id: owned.id },
+    select: {
+      id: true, slug: true, title: true, description: true, projectGoal: true,
+      difficulty: true, estimatedHours: true, sequential: true, coverUrl: true,
+      status: true, pricingType: true, priceCents: true, currency: true,
+      _count: { select: { enrollments: true, chapters: true } },
+    },
+  });
+  return { ...course, enrollmentCount: _count.enrollments, chapterCount: _count.chapters };
+}
+
+/** Read-only preview of the latest saved draft, available to the course team. */
+export async function loadCourseDraftPreview(user: SessionUser, courseSlug: string): Promise<CourseDraftPreview> {
+  const owned = await requireCourseBySlug(user, courseSlug);
+  const course = await prisma.course.findUniqueOrThrow({
+    where: { id: owned.id },
+    select: {
+      id: true, slug: true, title: true, description: true, projectGoal: true, coverUrl: true, status: true,
+      modules: {
+        orderBy: { order: "asc" },
+        select: { id: true, title: true, chapters: { orderBy: { order: "asc" }, select: { id: true, title: true, slug: true, readerMode: true, publishedAt: true, source: true } } },
+      },
+    },
+  });
+  return {
+    course: course as CourseDraftPreview["course"],
+    modules: course.modules.map((module) => ({
+      ...module,
+      chapters: module.chapters.map((chapter) => ({ ...chapter, publishedAt: chapter.publishedAt?.toISOString() ?? null })),
+    })),
+  };
+}
+
 export async function updateCourseSettings(user: SessionUser, courseId: string, input: CourseSettingsBody): Promise<void> {
   await requireCourseById(user, courseId);
 
@@ -135,27 +173,27 @@ export async function updateCourseSettings(user: SessionUser, courseId: string, 
 
 export async function publishCourse(user: SessionUser, courseId: string): Promise<CourseSlugResult> {
   const owned = await requireCourseById(user, courseId);
-  if (owned.status === "PUBLISHED") return { courseSlug: owned.slug };
-
-  const course = await prisma.course.findUniqueOrThrow({
-    where: { id: owned.id },
-    select: {
-      pricingType: true,
-      priceCents: true,
-      _count: { select: { chapters: true } },
-      chapters: { where: { publishedAt: { not: null } }, select: { id: true } },
-    },
-  });
-  const reasons = validateCoursePublish({
-    status: owned.status,
-    pricingType: course.pricingType,
-    priceCents: course.priceCents,
-    chapterCount: course._count.chapters,
-    publishedChapterCount: course.chapters.length,
-  });
-  if (reasons.length > 0) {
-    throw new UnprocessableError(reasons.join(" "), TEACH_ERROR_CODES.COURSE_NOT_PUBLISHABLE, reasons);
+  if (owned.status !== "PUBLISHED") {
+    const course = await prisma.course.findUniqueOrThrow({
+      where: { id: owned.id },
+      select: { pricingType: true, priceCents: true, _count: { select: { chapters: true } } },
+    });
+    const reasons = validateCoursePublish({
+      status: owned.status,
+      pricingType: course.pricingType,
+      priceCents: course.priceCents,
+      chapterCount: course._count.chapters,
+      // The publish operation below snapshots every chapter together.
+      publishedChapterCount: course._count.chapters,
+    });
+    if (reasons.length > 0) {
+      throw new UnprocessableError(reasons.join(" "), TEACH_ERROR_CODES.COURSE_NOT_PUBLISHABLE, reasons);
+    }
   }
+  // Publishing the course is the single action that validates and snapshots
+  // every chapter draft before the course becomes visible in the catalog.
+  await publishChapters(user, { courseId: owned.id });
+  if (owned.status === "PUBLISHED") return { courseSlug: owned.slug };
 
   await prisma.course.update({ where: { id: owned.id }, data: { status: "PUBLISHED", publishedAt: new Date() } });
   return { courseSlug: owned.slug };

@@ -22,7 +22,10 @@ export default async function CanvasPreviewPage() {
       </header>
       {CANVAS_SLUGS.map((slug) => (
         <section key={slug} className="mt-10">
-          <p className="font-mono text-xs text-muted-foreground">slug: {slug}</p>
+          <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <code>slug: {slug}</code>
+            <span className="rounded-full border border-border px-2 py-0.5 font-medium capitalize">{canvasRegistry[slug].kind.replaceAll("-", " ")}</span>
+          </p>
           <CanvasForSpec spec={canvasRegistry[slug]} />
         </section>
       ))}

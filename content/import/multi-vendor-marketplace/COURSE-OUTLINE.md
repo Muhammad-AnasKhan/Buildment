@@ -18,7 +18,7 @@
 | Week 1 — Foundations | Both apps run; client hits `GET /health`; MongoDB connected; seed data visible in Compass |
 | Week 2 — Vendor experience | Vendor registers, opens a store, adds a product with a photo, sees it in their dashboard |
 | Week 3 — Buyer experience | Customer browses, adds items from two vendors to cart, pays with Stripe test card, checks out once, sees split orders |
-| Week 4 — Polish & ship | Cached catalogue, search works, **async jobs after paid checkout**, app live on HTTPS |
+| Week 4 — Polish, harden & ship | Cached catalogue, search, **async jobs after paid checkout**, live HTTPS app, no overselling under concurrent checkout, server-priced promotions aligned with Stripe |
 
 ---
 
@@ -86,8 +86,8 @@ Concept chapters run shorter on *Build it* but still include applied repo work �
 | 21 | `21-cache-and-search/` | Week 4 | Redis cache with invalidation; text search on index |
 | 22 | `22-async-jobs-and-queues/` | Week 4 | BullMQ jobs on Redis; paid checkout enqueues notify jobs; worker process |
 | 23 | `23-deploy/` | Week 4 | Live HTTPS URL; secrets in env; API + worker survive restart |
-| 24 | `24-inventory-reservations/` | Week 5 | Stock holds at checkout; confirm on payment; ATP; expiry worker |
-| 25 | `25-promotions-and-pricing/` | Week 5 | Coupon rules engine; server-side cart pricing; redemption audit |
+| 24 | `24-inventory-reservations/` | Week 4 | Stock holds at checkout; confirm on payment; ATP; expiry worker; concurrency proof |
+| 25 | `25-promotions-and-pricing/` | Week 4 | Coupon rules engine; server-side cart pricing; redemption audit; Stripe-aligned totals |
 | 99 | `99-closing/` | Ship | Docs, demo video, case study, bar-raiser |
 
 ---

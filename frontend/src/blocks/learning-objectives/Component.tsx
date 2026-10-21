@@ -1,5 +1,7 @@
+import { Target } from "lucide-react";
 import { fetchBlockState } from "@/blocks/block-state";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { readerCardLg, readerEyebrow } from "@/components/learn/reader-theme";
 
 export async function LearningObjectivesComponent({
   id,
@@ -32,23 +34,25 @@ export async function LearningObjectivesComponent({
   }
 
   return (
-    <div className="not-prose my-6 overflow-hidden rounded-xl border border-amber-200 bg-amber-50/50 dark:border-amber-400/25 dark:bg-amber-500/10">
-      <div className="flex items-center gap-2 border-b border-amber-200/60 bg-amber-50 px-5 py-3 dark:border-amber-400/20 dark:bg-amber-500/10">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-amber-600 dark:text-amber-400">
-          <path d="M8 1l2.5 5 5.5.8-4 3.9.9 5.3L8 12.5 3.1 16l.9-5.3-4-3.9 5.5-.8L8 1z" fill="currentColor" />
-        </svg>
-        <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-100">Learning objectives</h4>
-      </div>
-      <ul className="divide-y divide-amber-200/60 dark:divide-amber-400/15">
-        {list.map((objective, i) => (
-          <li key={i} className="flex items-start gap-3 px-5 py-3 text-sm text-foreground/85">
-            <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-200 text-[11px] font-bold text-amber-800 dark:bg-amber-500/20 dark:text-amber-100">
-              {i + 1}
+    <section className={`not-prose my-8 ${readerCardLg}`} aria-labelledby={id ? `learning-objectives-${id}` : undefined} data-learning-objectives>
+      <header className="border-b border-border bg-muted/25 px-5 py-5 sm:px-6">
+        <div className="flex items-center gap-2">
+          <Target className="size-4 text-muted-foreground" aria-hidden />
+          <p className={readerEyebrow}>Learning objectives</p>
+        </div>
+        <h3 id={id ? `learning-objectives-${id}` : undefined} className="mt-2 text-xl font-semibold leading-tight tracking-tight text-foreground">What you&apos;ll learn</h3>
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">By the end of this chapter, you&apos;ll be able to:</p>
+      </header>
+      <ol className="divide-y divide-border px-5 sm:px-6">
+        {list.map((objective, index) => (
+          <li key={index} className="flex items-start gap-4 py-4 first:pt-5 last:pb-5">
+            <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg border border-border bg-muted/50 font-mono text-xs font-semibold tabular-nums text-muted-foreground">
+              {String(index + 1).padStart(2, "0")}
             </span>
-            <span className="leading-relaxed">{objective}</span>
+            <span className="min-w-0 pt-0.5 text-[15px] leading-relaxed text-foreground/90">{objective}</span>
           </li>
         ))}
-      </ul>
-    </div>
+      </ol>
+    </section>
   );
 }

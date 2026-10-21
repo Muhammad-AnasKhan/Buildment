@@ -20,7 +20,7 @@ Chapter 23 moved FreshMarket from **localhost to HTTPS** — production env, cli
 
 **Operational evidence** — correlated smoke results, a known rollback target, measured API recovery, and a queued job that survived worker downtime.
 
-## Week 4 gate — complete
+## Deployment milestone — complete
 
 | Target | Status |
 |---|---|
@@ -28,6 +28,8 @@ Chapter 23 moved FreshMarket from **localhost to HTTPS** — production env, cli
 | Async jobs after checkout | ✓ Ch 22 |
 | Live HTTPS | ✓ **this chapter** |
 | API + worker survive restart | ✓ |
+
+This completes the deployment milestone, not the full Week 4 core. Finish Chapters 24 and 25 to prove the live marketplace protects inventory and prices promotions on the server.
 
 ## Architecture you can draw in a viva
 
@@ -40,19 +42,19 @@ Browser → HTTPS → Express API → MongoDB
 Cloudinary ← image URLs in MongoDB only
 ```
 
-## Next — Chapters 24–25: Production hardening
+## Continue Week 4 — inventory and promotions
 
-Your first HTTPS deploy is the MVP milestone. Real grocery marketplaces still need:
+Your first HTTPS deploy is the midpoint of the final course week. A production-ready grocery marketplace also needs:
 
 - **Chapter 24 — Inventory reservations:** ATP, checkout holds, webhook confirm, expiry worker (no overselling).
 - **Chapter 25 — Promotions & pricing:** Server-side coupons, multi-vendor discount allocation, Stripe-aligned totals.
 
-Then **Chapter 99: Closing** — ship it, document it, bar-raiser (demo video, case study, viva prep).
+After the required Week 4 gates, continue to **Chapter 99: Closing** — ship it, document it, and prepare the demo video, case study, and viva.
 
-→ Mark this chapter complete in the platform, then continue to **Inventory reservations** (Chapter 24) after **23.16** gate.
+→ Complete **23.16**, then continue to **Inventory reservations** (Chapter 24). Chapters 24 and 25 are required Week 4 work.
 
 ## Continue to gate
 
 **Sub-chapter 23.16:** Checklist + learning log with **live URL**.
 
-Your app is on the internet. The next module hardens what happens when two customers compete for the same stock.
+Your app is on the internet. Next, harden checkout so concurrent buyers cannot claim the same stock and the server remains the source of truth for every discount.

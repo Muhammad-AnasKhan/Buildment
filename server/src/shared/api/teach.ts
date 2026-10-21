@@ -38,6 +38,7 @@ export type MentorCourseCard = {
   slug: string;
   title: string;
   description: string | null;
+  coverUrl: string | null;
   status: CourseStatus;
   chapterCount: number;
   learnerCount: number;
@@ -108,8 +109,28 @@ export type CourseBuilderView = {
   looseChapters: CourseBuilderChapter[];
 };
 
+export type CourseSettingsView = Pick<CourseBuilderCourse,
+  "id" | "slug" | "title" | "description" | "projectGoal" | "difficulty" |
+  "estimatedHours" | "sequential" | "coverUrl" | "status" | "pricingType" |
+  "priceCents" | "currency"
+> & { enrollmentCount: number; chapterCount: number };
+
+export type CourseDraftPreview = {
+  course: Pick<CourseBuilderCourse, "id" | "slug" | "title" | "description" | "projectGoal" | "coverUrl" | "status">;
+  modules: Array<{ id: string; title: string; chapters: Array<Pick<CourseBuilderChapter, "id" | "title" | "slug" | "readerMode" | "publishedAt"> & { source: string }> }>;
+};
+
+export type CourseTeamView = {
+  owner: { id: string; name: string | null; email: string };
+  instructors: Array<{ id: string; name: string | null; email: string; role: "COURSE_CREATOR" | "SUBMISSION_EVALUATOR" }>;
+  invites: Array<{ id: string; email: string; role: "COURSE_CREATOR" | "SUBMISSION_EVALUATOR"; url: string; expiresAt: string }>;
+};
+export type CourseInstructorInviteResult = { url: string; emailSent: boolean };
+export type CourseInstructorInviteAcceptance = { courseSlug: string; role: "COURSE_CREATOR" | "SUBMISSION_EVALUATOR" };
+
 export type ChapterEditorView = {
   chapterId: string;
+  courseId: string;
   courseSlug: string;
   title: string;
   summary: string | null;

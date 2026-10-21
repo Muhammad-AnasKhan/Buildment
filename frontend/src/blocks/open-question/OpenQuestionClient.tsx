@@ -84,6 +84,10 @@ export function OpenQuestionClient({
     setSubmitting(true);
     setError(null);
     try {
+      if (id.startsWith("preview-")) {
+        setSubmitted(true);
+        return;
+      }
       await apiFetch(`/api/v1/blocks/${id}/respond`, {
         method: "POST",
         json: { type: "OPEN_QUESTION", text, url: url.trim() || undefined },
@@ -111,7 +115,7 @@ export function OpenQuestionClient({
   return (
     <div
       ref={containerRef}
-      {...checkpointAttrs(id, submitted)}
+      {...(id.startsWith("preview-") ? {} : checkpointAttrs(id, submitted))}
       className={cn(
         readerBlockGrouped(groupPosition),
         "scroll-mt-24 transition-all duration-300",

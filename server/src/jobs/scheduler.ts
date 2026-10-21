@@ -1,6 +1,7 @@
 import { env, isProduction, isTest } from "../config/env.js";
 import { logger } from "../utils/logger.js";
 import { runInactivityNudges } from "../services/jobs/inactivity-nudges.js";
+import { runWeeklyGoalReminders } from "../services/jobs/weekly-goal-reminders.js";
 
 // Background jobs run inside the API process on a fixed daily time, so a
 // deployment needs no external cron. The /api/v1/jobs endpoints stay for
@@ -27,7 +28,10 @@ export function nextRunAt(hourUtc: number, from: Date = new Date()): Date {
 }
 
 export function defaultJobs(): ScheduledJob[] {
-  return [{ name: "inactivity-nudges", hourUtc: env.INACTIVITY_NUDGE_HOUR_UTC, run: runInactivityNudges }];
+  return [
+    { name: "inactivity-nudges", hourUtc: env.INACTIVITY_NUDGE_HOUR_UTC, run: runInactivityNudges },
+    { name: "weekly-goal-reminders", hourUtc: env.WEEKLY_GOAL_REMINDER_HOUR_UTC, run: runWeeklyGoalReminders },
+  ];
 }
 
 /**

@@ -1,6 +1,5 @@
 import type { CourseBuilderView } from "@/shared/api/teach";
 import { CourseHeader } from "@/components/teach/course-cms/course-header";
-import { CourseSettings } from "@/components/teach/course-cms/course-settings";
 import { CurriculumBuilder } from "@/components/teach/course-cms/curriculum-builder";
 import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
@@ -25,10 +24,7 @@ export default async function CourseEditPage({
     <div className="mx-auto w-full max-w-7xl space-y-8 px-1 pb-16 sm:px-2">
       <CourseHeader course={course} publishError={query.publishError} />
 
-      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_19rem]">
-        <CurriculumBuilder course={course} looseChapters={looseChapters} />
-        <CourseSettings course={course} />
-      </div>
+      <CurriculumBuilder course={course} looseChapters={looseChapters} />
     </div>
   );
 }
