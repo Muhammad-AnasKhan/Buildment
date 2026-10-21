@@ -364,6 +364,9 @@ model Block {
   sourceHash String? // hash of the block's MDX subtree; change detection bumps version (docs/02-content-authoring.mdx)
   tags       String[] // for weak-area reporting
   archivedAt DateTime?
+  // Null for blocks that existed before this column. Progress uses it so a
+  // block added after a learner finished a chapter cannot reopen it.
+  createdAt  DateTime?  @default(now())
   responses  Response[]
   stats      BlockStats?
 

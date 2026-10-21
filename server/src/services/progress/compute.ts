@@ -1,5 +1,6 @@
 import type { Prisma } from "../../generated/prisma/index.js";
 import {
+  addedAfterCompletion,
   chapterProgressStatus,
   checkpointSatisfied,
   isCompletableBlock,
@@ -22,10 +23,8 @@ export async function recomputeChapterProgress(
 ) {
   const blocks = await tx.block.findMany({
     where: { chapterId, archivedAt: null },
-    select: { id: true, type: true, required: true, points: true, archivedAt: true, config: true },
+    select: { id: true, type: true, required: true, points: true, archivedAt: true, config: true, createdAt: true },
   });
-  const completable = blocks.filter((block) => isCompletableBlock(block));
-  const blocksTotal = completable.length;
 
   const enrollment = await tx.enrollment.findUniqueOrThrow({
     where: { id: enrollmentId },
@@ -46,24 +45,28 @@ export async function recomputeChapterProgress(
   let blocksCompleted = 0;
   let score = 0;
   let maxScore = 0;
+  let blocksTotal = 0;
 
   const learnerUserId = enrollment.userId;
-  for (const block of completable) {
-    if (!learnerUserId) continue;
-    const latest = await tx.response.findFirst({
-      where: { blockId: block.id, userId: learnerUserId },
-      orderBy: { attempt: "desc" },
+  for (const block of blocks) {
+    if (!isCompletableBlock(block)) continue;
+    const latest = learnerUserId
+      ? await tx.response.findFirst({
+          where: { blockId: block.id, userId: learnerUserId },
+          orderBy: { attempt: "desc" },
+        })
+      : null;
+    const satisfied = checkpointSatisfied({
+      type: block.type,
+      config: block.config,
+      status: latest?.status ?? null,
+      isCorrect: latest?.isCorrect ?? null,
     });
-    if (
-      !checkpointSatisfied({
-        type: block.type,
-        config: block.config,
-        status: latest?.status ?? null,
-        isCorrect: latest?.isCorrect ?? null,
-      })
-    ) {
-      continue;
-    }
+    // A required block added after this learner finished the chapter does not
+    // reopen it. Once they do it, it counts like any other block.
+    if (!satisfied && addedAfterCompletion(block.createdAt, existing)) continue;
+    blocksTotal += 1;
+    if (!satisfied) continue;
     blocksCompleted += 1;
     if (latest?.score != null) score += latest.score;
     if (latest?.maxScore != null) maxScore += latest.maxScore;

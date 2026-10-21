@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  addedAfterCompletion,
   chapterProgressStatus,
   checkpointSatisfied,
   flattenChapterIds,
@@ -181,5 +182,23 @@ describe("previousChapterId", () => {
 
   it("returns the previous id", () => {
     expect(previousChapterId(["a", "b", "c"], "c")).toBe("b");
+  });
+});
+
+describe("addedAfterCompletion", () => {
+  const finished = { status: "COMPLETED" as const, completedAt: new Date("2026-10-01T10:00:00Z") };
+  const later = new Date("2026-10-02T00:00:00Z");
+
+  it("is true only for a block created after a completed chapter was finished", () => {
+    expect(addedAfterCompletion(later, finished)).toBe(true);
+    expect(addedAfterCompletion(new Date("2026-09-30T00:00:00Z"), finished)).toBe(false);
+    expect(addedAfterCompletion(finished.completedAt, finished)).toBe(false);
+  });
+
+  it("is false for legacy blocks and for chapters that are not completed", () => {
+    expect(addedAfterCompletion(null, finished)).toBe(false);
+    expect(addedAfterCompletion(later, { status: "IN_PROGRESS", completedAt: null })).toBe(false);
+    expect(addedAfterCompletion(later, { status: "COMPLETED", completedAt: null })).toBe(false);
+    expect(addedAfterCompletion(later, null)).toBe(false);
   });
 });

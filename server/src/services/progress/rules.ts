@@ -23,6 +23,22 @@ export function isCompletableBlock(block: BlockForProgress): boolean {
   return !block.archivedAt && block.required && COMPLETABLE_BLOCK_TYPES.has(block.type);
 }
 
+/**
+ * True when a block was created after the learner's stored progress reached
+ * COMPLETED. Content added later (a new required read, a reworded quiz that the
+ * importer recreates) must not reopen a finished chapter and lock every chapter
+ * after it. Blocks with no createdAt predate the column and keep the old rules,
+ * so a genuine regression on an existing block, such as a submission sent back
+ * in review, still reopens the chapter.
+ */
+export function addedAfterCompletion(
+  blockCreatedAt: Date | null | undefined,
+  progress: { status: ProgressStatus; completedAt: Date | null } | null | undefined
+): boolean {
+  if (!blockCreatedAt || progress?.status !== "COMPLETED" || !progress.completedAt) return false;
+  return blockCreatedAt.getTime() > progress.completedAt.getTime();
+}
+
 export function isCompleteResponseStatus(status: ResponseStatus | string): boolean {
   return status !== "DRAFT";
 }
