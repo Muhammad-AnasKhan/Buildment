@@ -5,6 +5,7 @@ import { requireTeachSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { CourseSettings } from "@/components/teach/course-cms/course-settings";
 import { CourseTeamPanel } from "@/components/teach/course-cms/course-team-panel";
+import { CourseIntegritySettings } from "@/components/teach/course-cms/course-integrity-settings";
 import { CourseManagementMenu } from "@/components/teach/course-cms/course-management-menu";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -39,10 +40,12 @@ export default async function CourseSettingsPage({ params }: { params: Promise<{
         <a href="#course-details" className="rounded-full border bg-card px-3 py-1.5 font-medium hover:bg-muted">Course details</a>
         <a href="#learning-rules" className="rounded-full border bg-card px-3 py-1.5 font-medium hover:bg-muted">Learning experience</a>
         <a href="#pricing" className="rounded-full border bg-card px-3 py-1.5 font-medium hover:bg-muted">Pricing</a>
+        <a href="#quiz-integrity" className="rounded-full border bg-card px-3 py-1.5 font-medium hover:bg-muted">Quiz integrity</a>
         <a href="#course-team" className="rounded-full border bg-card px-3 py-1.5 font-medium hover:bg-muted">Course team</a>
       </nav>
 
       <CourseSettings key={course.id} course={course} />
+      <CourseIntegritySettings courseId={course.id} integritySnapshots={course.integritySnapshots} />
       <div id="course-team" className="scroll-mt-24"><CourseTeamPanel courseId={course.id} courseSlug={course.slug} team={team} /></div>
     </main>
   );
