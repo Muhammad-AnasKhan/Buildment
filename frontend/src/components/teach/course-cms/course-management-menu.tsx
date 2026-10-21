@@ -2,10 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Archive, Loader2, MoreHorizontal, RotateCcw, Trash2, X } from "lucide-react";
+import { Archive, RotateCcw, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { deleteCourse, restoreCourseToDraft, unpublishCourse } from "@/server/actions/courses";
 import type { CourseBuilderCourse } from "@/shared/api/teach";
 
@@ -91,19 +90,12 @@ export function CourseManagementMenu({ course, chapterCount }: { course: Pick<Co
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger render={<button type="button" disabled={pending} className="inline-flex h-9 items-center gap-1.5 rounded-lg border bg-background px-3 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50" aria-label="More course actions" />}>
-          {pending ? <Loader2 className="size-4 animate-spin" aria-hidden /> : <MoreHorizontal className="size-4" aria-hidden />}
-          More
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-52 rounded-xl p-1.5">
-          {course.status === "PUBLISHED" && <DropdownMenuItem onClick={() => setMode("archive")} className="min-h-10 gap-2 px-3"><Archive className="size-4" aria-hidden />{archiveLabel}</DropdownMenuItem>}
-          {course.status === "ARCHIVED" && <DropdownMenuItem onClick={() => void restore()} className="min-h-10 gap-2 px-3"><RotateCcw className="size-4" aria-hidden />Move to draft</DropdownMenuItem>}
-          {course.status !== "DRAFT" && <DropdownMenuSeparator />}
-          <DropdownMenuItem variant="destructive" onClick={() => setMode("delete")} className="min-h-10 gap-2 px-3"><Trash2 className="size-4" aria-hidden />Delete course</DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {error && !mode && <p role="alert" className="w-full text-xs text-destructive">{error}</p>}
+      <div className="flex flex-wrap items-center gap-2">
+        {course.status === "PUBLISHED" && <Button type="button" size="lg" variant="outline" onClick={() => setMode("archive")} disabled={pending}><Archive className="size-4" aria-hidden />{archiveLabel}</Button>}
+        {course.status === "ARCHIVED" && <Button type="button" size="lg" variant="outline" onClick={() => void restore()} disabled={pending} loading={pending}><RotateCcw className="size-4" aria-hidden />Move to draft</Button>}
+        <Button type="button" size="lg" variant="destructive" onClick={() => setMode("delete")} disabled={pending}><Trash2 className="size-4" aria-hidden />Delete course</Button>
+        {error && !mode && <p role="alert" className="w-full text-xs text-destructive">{error}</p>}
+      </div>
 
       <dialog ref={dialogRef} onClose={close} onCancel={(event) => { if (pending) event.preventDefault(); }} onClick={(event) => { if (event.target === event.currentTarget) close(); }} aria-labelledby="course-management-title" className="fixed inset-0 z-50 m-auto w-[min(30rem,calc(100vw-2rem))] max-w-none rounded-2xl border bg-card p-0 text-card-foreground shadow-2xl backdrop:bg-black/60">
         <div className="flex items-start justify-between gap-3 border-b px-5 py-4">
