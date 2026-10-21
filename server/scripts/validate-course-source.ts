@@ -15,6 +15,8 @@ import { remarkChecklist } from "../src/shared/mdx/remark-checklist.js";
 import { remarkLearningLog } from "../src/shared/mdx/remark-learning-log.js";
 import { remarkMermaid } from "../src/shared/mdx/remark-mermaid.js";
 import { restoreInteractiveBlockTags } from "../src/shared/mdx/restore-block-tags.js";
+import { collectContentTokenProblems, tokenInFieldProblem } from "../src/shared/lib/content-tokens.js";
+import { secretFieldsWithTokens } from "../src/utils/sanitize-block-config.js";
 import { COURSE_SLUG, loadCourseManifest } from "./course-source.js";
 import { parseLesson, readLessonFiles, readModuleDirs } from "./import-course.js";
 
@@ -77,7 +79,16 @@ export function findBrokenChapters(): { total: number; failed: ChapterMdxFailure
   const allowed = new Set<string>(componentNames);
 
   try {
-    loadCourseManifest();
+    const manifest = loadCourseManifest();
+    const fieldProblems = manifest
+      ? [
+          tokenInFieldProblem("course title", manifest.title),
+          tokenInFieldProblem("course description", manifest.description),
+          tokenInFieldProblem("course project goal", manifest.projectGoal),
+          ...manifest.modules.map((mod) => tokenInFieldProblem(`module title for ${mod.dir}`, mod.title)),
+        ]
+      : [];
+    for (const problem of fieldProblems) if (problem) failed.push({ file: "course.yaml", error: problem });
   } catch (err) {
     failed.push({ file: "course.yaml", error: err instanceof Error ? err.message : String(err) });
   }
@@ -98,6 +109,13 @@ export function findBrokenChapters(): { total: number; failed: ChapterMdxFailure
         }
         const canvasProblems = collectCanvasProblems(source);
         if (canvasProblems.length > 0) throw new Error(canvasProblems.join(" "));
+        const tokenProblems = [
+          tokenInFieldProblem("chapter title", lesson.title),
+          tokenInFieldProblem("chapter summary", lesson.summary),
+          ...collectContentTokenProblems(source),
+          ...lesson.blocks.flatMap((block) => secretFieldsWithTokens(block.config).map((field) => `Block "${block.id}" uses a placeholder in "${field}". Answer keys, rubrics, tests and solutions must be the same for every learner.`)),
+        ].filter((problem): problem is string => problem !== null);
+        if (tokenProblems.length > 0) throw new Error(tokenProblems.join(" "));
         processor.runSync(processor.parse(source));
       } catch (err) {
         const message = err instanceof Error ? err.message.split("\n")[0] : String(err);

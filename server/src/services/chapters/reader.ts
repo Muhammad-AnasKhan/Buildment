@@ -1,4 +1,5 @@
 import type { ChapterReaderView } from "../../shared/api/reader.js";
+import { applyTokens, contentTokenValues } from "../../shared/lib/content-tokens.js";
 import { buildCourseTrack } from "../../shared/lib/course-tracks.js";
 import { learningLogToAnswers, learningLogToChecklist, parseLearningLog } from "../../shared/lib/learning-log.js";
 import { prisma } from "../../db/prisma.js";
@@ -143,7 +144,8 @@ export async function loadChapterReader(courseSlug: string, chapterSlug: string,
     }
   }
 
-  const source = content.compiled ?? content.source;
+  // Placeholders resolve per learner at read time; the stored snapshot keeps them.
+  const source = applyTokens(content.compiled ?? content.source, contentTokenValues(course.familySlug, enrollment.variantSlug));
   const log = parseLearningLog(currentProgress?.learningLog);
   const chapterComplete = currentProgress?.status === "COMPLETED";
   const checkpointsCompleted = currentProgress?.blocksCompleted ?? 0;
