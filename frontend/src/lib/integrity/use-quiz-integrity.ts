@@ -24,8 +24,6 @@ const REPEAT_MS = 1_500;
 const MIN_BLUR_MS = 1_000;
 const MIN_MOUSE_OUT_MS = 2_000;
 const FIRST_SNAPSHOT_MS = 5_000;
-/** "Not now" this many times and the full-screen banner stays away for the attempt. */
-const FULLSCREEN_DISMISS_LIMIT = 2;
 
 const NOTICE_TEXT: Partial<Record<IntegrityEventType, string>> = {
   TAB_HIDDEN: "You left the quiz tab. Your mentor will see this.",
@@ -98,7 +96,7 @@ export function useQuizIntegrity({
   const [serverFlags, setServerFlags] = useState(0);
   const [pendingFlags, setPendingFlags] = useState(0);
   const [notice, setNotice] = useState<IntegrityNotice | null>(null);
-  const [fullscreenPrompt, setFullscreenPrompt] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [cameraStatus, setCameraStatus] = useState<IntegrityCameraStatus>("NOT_REQUESTED");
   const [cameraStarting, setCameraStarting] = useState(false);
   /** Why the camera is off, so the pause screen can say what to do. */
@@ -116,7 +114,6 @@ export function useQuizIntegrity({
   const blurStart = useRef<number | null>(null);
   const mouseOutStart = useRef<number | null>(null);
   const wasFullscreen = useRef(false);
-  const fullscreenDismissals = useRef(0);
   const secondScreenFlagged = useRef(false);
   /** Set from the attempt's start time once it opens. */
   const paceStart = useRef(0);
@@ -217,7 +214,6 @@ export function useQuizIntegrity({
     } catch {
       secondScreenFlagged.current = false;
     }
-    fullscreenDismissals.current = 0;
     paceStart.current = Math.min(Date.parse(next.startedAt) || Date.now(), Date.now());
     setSession(next);
     setServerFlags(next.flagCount);
@@ -475,15 +471,14 @@ export function useQuizIntegrity({
     };
 
     const onFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
       if (document.fullscreenElement) {
         wasFullscreen.current = true;
-        setFullscreenPrompt(false);
         return;
       }
       if (!wasFullscreen.current || finishedRef.current) return;
       wasFullscreen.current = false;
       record("FULLSCREEN_EXIT", undefined, { quiet: true });
-      if (fullscreenSupported() && fullscreenDismissals.current < FULLSCREEN_DISMISS_LIMIT) setFullscreenPrompt(true);
     };
 
     const block = (type: IntegrityEventType) => (event: Event) => {
@@ -539,6 +534,7 @@ export function useQuizIntegrity({
     checkScreens();
 
     wasFullscreen.current = Boolean(document.fullscreenElement);
+    setIsFullscreen(wasFullscreen.current);
     flagHiddenReturn();
 
     document.addEventListener("visibilitychange", onVisibility);
@@ -634,20 +630,13 @@ export function useQuizIntegrity({
   const finish = useCallback(() => {
     if (finishedRef.current) return;
     finishedRef.current = true;
-    setFullscreenPrompt(false);
     writePending(hiddenKey, null);
     stopStream();
     void flush(true);
   }, [flush, hiddenKey, stopStream]);
 
   const returnToFullscreen = useCallback(() => {
-    setFullscreenPrompt(false);
     requestQuizFullscreen();
-  }, []);
-
-  const dismissFullscreenPrompt = useCallback(() => {
-    fullscreenDismissals.current += 1;
-    setFullscreenPrompt(false);
   }, []);
 
   return useMemo(
@@ -657,9 +646,9 @@ export function useQuizIntegrity({
       flagCount: serverFlags + pendingFlags,
       notice,
       dismissNotice: () => setNotice(null),
-      fullscreenPrompt,
+      isFullscreen,
+      requiresFullscreen: enabled,
       returnToFullscreen,
-      dismissFullscreenPrompt,
       fullscreenSupported: fullscreenSupported(),
       camera: {
         enabled: Boolean(session?.camera.enabled),
@@ -680,7 +669,7 @@ export function useQuizIntegrity({
       nextAttempt,
       finish,
     }),
-    [attachVideo, begin, cameraIssue, cameraStarting, cameraStatus, checkPace, dismissFullscreenPrompt, enabled, finish, fullscreenPrompt, dialog, nextAttempt, notice, pendingFlags, returnToFullscreen, serverFlags, session, startCamera, withoutFlags],
+    [attachVideo, begin, cameraIssue, cameraStarting, cameraStatus, checkPace, enabled, finish, isFullscreen, dialog, nextAttempt, notice, pendingFlags, returnToFullscreen, serverFlags, session, startCamera, withoutFlags],
   );
 }
 

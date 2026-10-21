@@ -12,13 +12,10 @@ import { cn } from "@/lib/utils";
 // noted and, when the course uses it, asks before the camera turns on.
 
 const NOTED = [
-  "When you leave this tab or window",
-  "When you leave full screen",
-  "Copy, paste and right-click (they are turned off)",
-  "Screenshot keys (we can see them, but we cannot stop them)",
-  "When your mouse leaves the page",
-  "A second screen, if your browser tells us",
-  "Answers sent much faster than reading time",
+  "Leaving this tab, window, or full screen",
+  "Copy, paste, or right-click attempts (blocked), and screenshot keys (noticed when the browser reports them)",
+  "Your pointer leaving the page, or a second screen when the browser reports it",
+  "Answers submitted unusually quickly",
 ];
 
 function IntegrityDialog({ integrity }: { integrity: QuizIntegrity }) {
@@ -46,6 +43,7 @@ function IntegrityDialog({ integrity }: { integrity: QuizIntegrity }) {
     <dialog
       ref={ref}
       aria-labelledby="quiz-integrity-title"
+      aria-describedby="quiz-integrity-description"
       onCancel={(event) => {
         event.preventDefault();
         close();
@@ -53,97 +51,87 @@ function IntegrityDialog({ integrity }: { integrity: QuizIntegrity }) {
       className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-0 backdrop:bg-background/70 open:flex open:items-center open:justify-center open:p-4"
     >
       {open ? (
-        <div className="relative max-h-[calc(100dvh-2rem)] w-full max-w-lg overflow-y-auto rounded-2xl border bg-card p-5 text-card-foreground shadow-xl sm:p-6">
-          {closable ? (
-            <button
-              type="button"
-              onClick={close}
-              aria-label={intro ? "Start quiz" : "Close"}
-              className="absolute right-3 top-3 rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              <X className="size-4" aria-hidden />
-            </button>
-          ) : null}
-          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
-            <ShieldCheck className="size-5" aria-hidden />
-            <p className="text-xs font-semibold uppercase tracking-wider">Proctored quiz</p>
-          </div>
-          <h2 id="quiz-integrity-title" className="mt-2 text-xl font-semibold tracking-tight">
-            Your mentor sees a short report of this quiz
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Nothing here fails or ends your quiz. Your mentor reads the report and decides.
-          </p>
-
-          <h3 className="mt-4 text-sm font-semibold">What we note</h3>
-          <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-muted-foreground">
-            {NOTED.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-          {integrity.fullscreenSupported ? (
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">The quiz opens in full screen. Press Esc to leave it if you need to.</p>
-          ) : null}
-
-          {camera.enabled ? (
-            <section aria-labelledby="quiz-camera-title" className="mt-4 rounded-xl border bg-muted/40 p-4">
-              <h3 id="quiz-camera-title" className="flex items-center gap-2 text-sm font-semibold">
-                <Camera className="size-4" aria-hidden />
-                Camera photos: needed for this course
-              </h3>
-              <dl className="mt-2 grid gap-1.5 text-sm leading-6">
-                <div>
-                  <dt className="inline font-medium">What: </dt>
-                  <dd className="inline text-muted-foreground">
-                    a small still photo from your camera ({INTEGRITY_LIMITS.snapshotWidth} x {INTEGRITY_LIMITS.snapshotHeight}). No video. No sound.
-                  </dd>
-                </div>
-                <div>
-                  <dt className="inline font-medium">How often: </dt>
-                  <dd className="inline text-muted-foreground">about once a minute while this quiz is open.</dd>
-                </div>
-                <div>
-                  <dt className="inline font-medium">Who can see them: </dt>
-                  <dd className="inline text-muted-foreground">only the mentors of this course and Buildment admins.</dd>
-                </div>
-                <div>
-                  <dt className="inline font-medium">Deleted: </dt>
-                  <dd className="inline text-muted-foreground">
-                    automatically after {session?.camera.retentionDays ?? INTEGRITY_LIMITS.retentionDays} days. The report stays.
-                  </dd>
-                </div>
-              </dl>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                If your camera stops, the quiz pauses until it is back on. Your answers are kept. No camera on this device? Ask your mentor before you start.
+        <div className="flex max-h-[min(44rem,calc(100dvh-2rem))] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-2xl">
+          <div className="flex shrink-0 items-start justify-between gap-4 border-b px-5 py-4 sm:px-6 sm:py-5">
+            <div>
+              <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
+                <ShieldCheck className="size-4" aria-hidden />
+                <p className="text-xs font-semibold uppercase tracking-wider">Proctored quiz</p>
+              </div>
+              <h2 id="quiz-integrity-title" className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
+                Your mentor can review this quiz
+              </h2>
+              <p id="quiz-integrity-description" className="mt-1 text-sm leading-6 text-muted-foreground">
+                Activity notes do not change your score. Full screen is required when you submit.
               </p>
-            </section>
-          ) : null}
+            </div>
+            {closable ? (
+              <button
+                type="button"
+                onClick={close}
+                aria-label={intro ? "Start quiz" : "Close"}
+                className="shrink-0 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              >
+                <X className="size-4" aria-hidden />
+              </button>
+            ) : null}
+          </div>
 
-          <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            {intro ? (
-              camera.enabled ? (
-                <Button type="button" onClick={integrity.begin} className="gap-1.5">
-                  <Camera className="size-4" aria-hidden />
-                  Turn on camera and start
-                </Button>
-              ) : (
-                <Button type="button" onClick={integrity.begin}>
-                  Start quiz
-                </Button>
-              )
-            ) : (
-              <>
-                {camera.enabled && camera.status !== "ON" ? (
-                  <Button type="button" variant="outline" onClick={() => { void camera.start(); integrity.closeInfo(); }} className="gap-1.5">
+          <div className="min-h-0 space-y-4 overflow-y-auto px-5 py-4 sm:px-6">
+            <section aria-labelledby="quiz-signals-title" className="rounded-xl border bg-muted/20 p-4">
+              <h3 id="quiz-signals-title" className="text-sm font-semibold">What your mentor can see</h3>
+              <ul className="mt-2 grid gap-1.5 pl-5 text-sm leading-5 text-foreground/85 marker:text-muted-foreground sm:grid-cols-2 sm:gap-x-7">
+                {NOTED.map((item) => <li key={item} className="list-disc">{item}</li>)}
+              </ul>
+            </section>
+
+            {camera.enabled ? (
+              <section aria-labelledby="quiz-camera-title" className="rounded-xl border border-emerald-600/25 bg-emerald-500/5 p-4">
+                <h3 id="quiz-camera-title" className="flex items-center gap-2 text-sm font-semibold">
+                  <Camera className="size-4 text-emerald-700 dark:text-emerald-300" aria-hidden />
+                  Camera photos are required for this course
+                </h3>
+                <p className="mt-1 text-sm leading-5 text-foreground/85">
+                  Your camera must stay on during the quiz. Small still photos are taken about once a minute. There is no video or sound.
+                </p>
+                <dl className="mt-3 grid gap-x-5 gap-y-2 text-xs leading-5 sm:grid-cols-2">
+                  <div><dt className="font-semibold">Photo</dt><dd className="text-muted-foreground">{INTEGRITY_LIMITS.snapshotWidth} × {INTEGRITY_LIMITS.snapshotHeight} pixels, about once a minute</dd></div>
+                  <div><dt className="font-semibold">Who sees it</dt><dd className="text-muted-foreground">Course mentors and Buildment admins</dd></div>
+                  <div><dt className="font-semibold">Automatic deletion</dt><dd className="text-muted-foreground">After {session?.camera.retentionDays ?? INTEGRITY_LIMITS.retentionDays} days; the activity report remains</dd></div>
+                  <div><dt className="font-semibold">If the camera stops</dt><dd className="text-muted-foreground">The quiz pauses and keeps your answers until the camera is back on</dd></div>
+                </dl>
+              </section>
+            ) : null}
+          </div>
+
+          <div className="shrink-0 border-t bg-card px-5 py-4 sm:px-6">
+            {intro && camera.enabled ? <p className="mb-3 text-xs text-muted-foreground">Your camera will turn on when you start. If it stops, your quiz will pause and keep your answers.</p> : null}
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              {intro ? (
+                camera.enabled ? (
+                  <Button type="button" onClick={integrity.begin} className="h-10 gap-1.5 px-4">
                     <Camera className="size-4" aria-hidden />
-                    Turn camera on
+                    Turn on camera and start
                   </Button>
-                ) : null}
-                <Button type="button" onClick={integrity.closeInfo}>
-                  Back to the quiz
-                </Button>
-              </>
-            )}
+                ) : (
+                  <Button type="button" onClick={integrity.begin}>
+                    Start quiz
+                  </Button>
+                )
+              ) : (
+                <>
+                  {camera.enabled && camera.status !== "ON" ? (
+                    <Button type="button" variant="outline" onClick={() => { void camera.start(); integrity.closeInfo(); }} className="gap-1.5">
+                      <Camera className="size-4" aria-hidden />
+                      Turn camera on
+                    </Button>
+                  ) : null}
+                  <Button type="button" onClick={integrity.closeInfo}>
+                    Back to the quiz
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       ) : null}
@@ -236,16 +224,21 @@ export function QuizIntegrityPanel({ integrity }: { integrity: QuizIntegrity }) 
             {notice?.text ?? ""}
           </p>
 
-          {integrity.fullscreenPrompt ? (
-            <div className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm">
-              <span className="mr-auto">You left full screen.</span>
-              <Button type="button" size="sm" onClick={integrity.returnToFullscreen} className="gap-1.5">
-                <Maximize className="size-3.5" aria-hidden />
-                Return to full screen
-              </Button>
-              <Button type="button" size="sm" variant="ghost" onClick={integrity.dismissFullscreenPrompt}>
-                Not now
-              </Button>
+          {integrity.requiresFullscreen && !integrity.isFullscreen && integrity.dialog !== "intro" ? (
+            <div role="alert" className="flex flex-wrap items-center gap-3 rounded-xl border border-amber-400 bg-amber-50 px-4 py-3 text-amber-950 shadow-sm dark:border-amber-500/60 dark:bg-amber-500/20 dark:text-amber-50">
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-amber-500/15"><Maximize className="size-4" aria-hidden /></span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">Full screen is required to submit</p>
+                <p className="mt-0.5 text-xs leading-5 text-amber-900 dark:text-amber-100">Your answers stay saved. Return to full screen before submitting the quiz.</p>
+              </div>
+              {integrity.fullscreenSupported ? (
+                <Button type="button" size="sm" onClick={integrity.returnToFullscreen} className="h-9 gap-1.5 bg-amber-950 px-3 text-white hover:bg-amber-900 dark:bg-amber-100 dark:text-amber-950 dark:hover:bg-white">
+                  <Maximize className="size-3.5" aria-hidden />
+                  Return to full screen
+                </Button>
+              ) : (
+                <p className="w-full text-xs font-medium sm:w-auto">Use a browser that supports full screen.</p>
+              )}
             </div>
           ) : null}
 

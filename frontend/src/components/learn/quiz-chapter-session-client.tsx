@@ -22,6 +22,9 @@ function isPerfectScore(summary: QuizResultSummary | null) {
   return Boolean(summary && summary.maxScore > 0 && summary.score === summary.maxScore);
 }
 
+const FULLSCREEN_REQUIRED_MESSAGE = "Return to full screen before submitting your quiz. Your selected answers are still saved.";
+const FULLSCREEN_UNAVAILABLE_MESSAGE = "This browser does not support the full-screen mode required to submit this quiz. Open it in a browser that supports full screen.";
+
 function missedQuestionIndices(
   stepIds: string[],
   quizBlockIds: string[],
@@ -112,6 +115,13 @@ export function QuizChapterSessionClient({
     rootRef: sectionRef,
     currentBlockId: stepIds[activeIndex] ?? null,
   });
+  useEffect(() => {
+    if (integrity.isFullscreen) {
+      setSubmitError((current) =>
+        current === FULLSCREEN_REQUIRED_MESSAGE || current === FULLSCREEN_UNAVAILABLE_MESSAGE ? null : current
+      );
+    }
+  }, [integrity.isFullscreen]);
 
   const [lastServerState, setLastServerState] = useState({ summary: initialScoreSummary, grades: initialBlockGrades });
   if (lastServerState.summary !== initialScoreSummary || lastServerState.grades !== initialBlockGrades) {
@@ -162,6 +172,12 @@ export function QuizChapterSessionClient({
 
   const submitQuiz = async () => {
     if (submitting || perfectScore || quizBlockIds.length === 0) return;
+    const canSubmitInFullscreen = () => {
+      if (!integrity.requiresFullscreen || document.fullscreenElement) return true;
+      setSubmitError(integrity.fullscreenSupported ? FULLSCREEN_REQUIRED_MESSAGE : FULLSCREEN_UNAVAILABLE_MESSAGE);
+      return false;
+    };
+    if (!canSubmitInFullscreen()) return;
     setSubmitting(true);
     setSubmitError(null);
     const answers = quizBlockIds.map((blockId) => {
@@ -193,6 +209,11 @@ export function QuizChapterSessionClient({
         )
       )
     ) {
+      setSubmitting(false);
+      return;
+    }
+    // Native confirmation dialogs can leave full-screen mode. Recheck before the API call.
+    if (!canSubmitInFullscreen()) {
       setSubmitting(false);
       return;
     }
@@ -448,7 +469,7 @@ export function QuizChapterSessionClient({
           </div>
           <QuizCameraGate integrity={integrity} />
         </div>
-        {submitError ? <p className="mt-3 text-sm text-destructive">{submitError}</p> : null}
+        {submitError ? <p className="mt-3 text-sm text-destructive" role="alert">{submitError}</p> : null}
       </section>
     </QuizSessionContext.Provider>
   );
