@@ -52,7 +52,7 @@ export function readCourseZip(buffer: Buffer): Record<string, Uint8Array> {
 type ImportPlan = {
   manifest: {
     title: string; description: string; projectGoal: string; difficulty: string;
-    estimatedHours: number; coverUrl?: string;
+    estimatedHours: number; coverUrl?: string; family?: string;
   };
   modules: { title: string; lessons: {
     lessonNum: number; slugPart: string; title: string; summary: string | null;
@@ -102,8 +102,8 @@ async function runCourseImport(user: SessionUser, buffer: Buffer) {
       throw new UnprocessableError("Course validation failed.", "COURSE_IMPORT_INVALID", [reasons || "Validation timed out or could not complete."]);
     }
     const plan = JSON.parse(await readFile(result, "utf8")) as ImportPlan;
-    const { title, description, projectGoal, difficulty, estimatedHours, coverUrl } = plan.manifest;
-    const metadata = { title, description, projectGoal, difficulty, estimatedHours, coverUrl };
+    const { title, description, projectGoal, difficulty, estimatedHours, coverUrl, family } = plan.manifest;
+    const metadata = { title, description, projectGoal, difficulty, estimatedHours, coverUrl, familySlug: family ?? null };
     try {
       const course = await prisma.$transaction(async tx => {
         const created = await tx.course.create({ data: { ...metadata, slug, mentorId: user.id, status: "DRAFT" } });

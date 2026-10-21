@@ -802,6 +802,7 @@ async function upsertCourse(manifest: CourseManifest | null) {
     difficulty: meta.difficulty,
     estimatedHours: meta.estimatedHours,
     coverUrl: meta.coverUrl ?? null,
+    familySlug: meta.family ?? null,
   };
 
   return prisma.course.upsert({

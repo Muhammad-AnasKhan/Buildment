@@ -12,6 +12,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { load as loadYaml } from "js-yaml";
 import { z } from "zod";
+import { findCourseFamily } from "../src/shared/lib/course-tracks.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_COURSE_SLUG = "multi-vendor-marketplace";
@@ -58,6 +59,11 @@ export const CourseManifestSchema = z.object({
   difficulty: z.enum(["Beginner", "Medium", "Advanced"]),
   estimatedHours: z.number().int().positive(),
   coverUrl: z.string().url().optional(),
+  /** Course family from src/shared/lib/course-tracks.ts; learners then pick a variant and a specialisation. */
+  family: z
+    .string()
+    .refine((slug) => findCourseFamily(slug) !== null, "family must name a course family in src/shared/lib/course-tracks.ts")
+    .optional(),
   modules: z.array(PlannedModuleSchema).min(1),
 });
 
