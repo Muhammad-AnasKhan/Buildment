@@ -162,23 +162,38 @@ describe("camera snapshots", () => {
     expect((await upload(attemptId, jpeg())).status).toBe(429);
   });
 
-  it("refuses a quiz submit while the required camera is off", async () => {
+  it("never blocks a quiz submit when the camera is off: it is only a flag", async () => {
     const { attemptId } = (await openAttempt()).body.data;
     const camera = (status: string) =>
       request(app).put(`/api/v1/integrity/attempts/${attemptId}/camera`).set(learner()).send({ status }).expect(200);
-    const submit = () =>
-      request(app)
-        .post(`/api/v1/chapters/${fx.chapterB.id}/quiz/submit`)
-        .set(learner())
-        .send({ answers: fx.quizChapterBlocks.map((block) => ({ blockId: block.id, selected: ["a"] })) });
 
     await camera("UNAVAILABLE");
-    const refused = await submit();
-    expect(refused.status).toBe(403);
-    expect(refused.body.code).toBe("CAMERA_REQUIRED");
+    const submitted = await request(app)
+      .post(`/api/v1/chapters/${fx.chapterB.id}/quiz/submit`)
+      .set(learner())
+      .send({ answers: fx.quizChapterBlocks.map((block) => ({ blockId: block.id, selected: ["a"] })) });
+    expect(submitted.status).toBe(200);
+    expect(submitted.body.data.score).toBe(2);
 
     await camera("ON");
-    expect((await submit()).status).toBe(200);
+  });
+});
+
+describe("attempt numbering", () => {
+  it("does not start a new attempt when an open question in the chapter is answered", async () => {
+    const before = (await openAttempt()).body.data;
+    const openQuestion = await prisma.block.create({
+      data: { id: `blk-oq-${fx.tag}`, chapterId: fx.chapterB.id, type: "OPEN_QUESTION", order: 9, config: { prompt: "Why?", minWords: 0 } },
+    });
+    await prisma.response.create({
+      data: { blockId: openQuestion.id, userId: fx.learner.id, enrollmentId: fx.enrollment.id, attempt: 7, status: "PENDING_REVIEW", payload: { text: "Because." } },
+    });
+    try {
+      const after = (await openAttempt()).body.data;
+      expect(after.attemptId).toBe(before.attemptId);
+    } finally {
+      await prisma.block.delete({ where: { id: openQuestion.id } });
+    }
   });
 });
 
@@ -186,12 +201,27 @@ describe("mentor view", () => {
   it("lists attempts in the mentee evaluation and hides details from learners", async () => {
     const res = await request(app).get(`/api/v1/teach/courses/${fx.course.slug}/mentees/${fx.enrollment.id}`).set(mentor());
     expect(res.status).toBe(200);
-    const latest = res.body.data.integrity[0];
+    const latest = res.body.data.integrity.find((attempt: { attempt: number }) => attempt.attempt === 2);
     expect(latest).toMatchObject({ chapterId: fx.chapterB.id, attempt: 2, cameraStatus: "ON", snapshotCount: 1 });
     expect(latest.counts).toMatchObject({ TAB_HIDDEN: 1, PASTE_BLOCKED: 1, CAMERA_OFF: 1 });
 
     const asLearner = await request(app).get(`/api/v1/teach/integrity/attempts/${latest.id}`).set(learner());
     expect(asLearner.status).toBe(403);
+  });
+
+  it("refuses the attempt detail to a mentor of another course", async () => {
+    const attempt = await prisma.integrityAttempt.findFirstOrThrow({ where: { enrollmentId: fx.enrollment.id } });
+    const outsider = await prisma.user.create({
+      data: { email: `outsider-${fx.tag}@test.local`, role: "MENTOR", emailVerified: new Date() },
+    });
+    try {
+      const token = (await createSession(outsider.id)).sessionToken;
+      const res = await request(app).get(`/api/v1/teach/integrity/attempts/${attempt.id}`).set({ Authorization: `Bearer ${token}` });
+      expect(res.status).toBe(403);
+    } finally {
+      await prisma.session.deleteMany({ where: { userId: outsider.id } });
+      await prisma.user.delete({ where: { id: outsider.id } });
+    }
   });
 
   it("serves snapshots only through a valid signed link", async () => {
@@ -215,8 +245,22 @@ describe("mentor view", () => {
     await prisma.integritySnapshot.update({ where: { id: snapshot.id }, data: { takenAt: new Date(Date.now() - 31 * 86_400_000) } });
     const flagsBefore = await prisma.integrityEvent.count({ where: { attempt: { enrollmentId: fx.enrollment.id } } });
 
+    // Storage refusing a key leaves the row for the next run instead of claiming it was deleted.
+    const refusingStore = {
+      put: async () => undefined,
+      get: async () => Buffer.alloc(0),
+      remove: async (keys: string[]) => keys,
+      sweep: async () => 0,
+    };
+    const refused = await runIntegrityRetention(new Date(), refusingStore);
+    expect(refused).toMatchObject({ deleted: 0 });
+    expect(refused.failed).toBeGreaterThanOrEqual(1);
+    expect((await prisma.integritySnapshot.findUniqueOrThrow({ where: { id: snapshot.id } })).deletedAt).toBeNull();
+
     const result = await runIntegrityRetention();
     expect(result.deleted).toBeGreaterThanOrEqual(1);
+    expect(result.failed).toBe(0);
+    expect((await runIntegrityRetention()).deleted).toBe(0);
 
     const detail = await request(app).get(`/api/v1/teach/integrity/attempts/${snapshot.attemptId}`).set(mentor());
     expect(detail.body.data.snapshots[0]).toMatchObject({ id: snapshot.id, url: null });
