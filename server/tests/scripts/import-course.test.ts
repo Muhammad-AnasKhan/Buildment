@@ -45,6 +45,18 @@ describe("course importer interaction intent", () => {
   });
 });
 
+describe("course importer inline code", () => {
+  it.each([
+    ["10-open-your-shop", "10.06-scaffold-vendor-layout.md", 6, "scaffold-vendor-layout", ["`<Outlet />`", "`/vendor/*`"]],
+    ["02-project-skeleton", "02.13-client-shell-and-routing.md", 13, "client-shell-and-routing", ["`<App />`", "`<p>`", '`<div id="api-status">`']],
+  ] as const)("keeps JSX code spans intact in %s/%s", (moduleDir, fileName, lessonNum, slugPart, spans) => {
+    const lesson = parseLesson(Number(moduleDir.slice(0, 2)), moduleDir, fileName, lessonNum, slugPart);
+
+    for (const span of spans) expect(lesson.source).toContain(span);
+    expect(lesson.source).not.toContain("'&lt;");
+  });
+});
+
 describe("course importer optional MustRead", () => {
   const mustRead = (attrs: string) => {
     const blocks: PendingBlock[] = [];
