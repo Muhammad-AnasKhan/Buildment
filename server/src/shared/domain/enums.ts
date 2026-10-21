@@ -64,6 +64,9 @@ export type ReviewVerdict = (typeof REVIEW_VERDICTS)[number];
 export const COURSE_STATUSES = ["DRAFT", "PUBLISHED", "ARCHIVED"] as const;
 export type CourseStatus = (typeof COURSE_STATUSES)[number];
 
+export const COURSE_CATEGORIES = ["TECH", "SOFT_SKILLS"] as const;
+export type CourseCategory = (typeof COURSE_CATEGORIES)[number];
+
 export const COURSE_PRICING_TYPES = ["FREE", "PAID"] as const;
 export type CoursePricingType = (typeof COURSE_PRICING_TYPES)[number];
 
