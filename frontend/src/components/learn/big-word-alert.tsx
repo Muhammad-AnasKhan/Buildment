@@ -19,12 +19,12 @@ export function BigWordAlert({ term, plainEnglish, whyItMatters }: BigWordAlertP
       </div>
       <div className="px-5 py-5 sm:px-6 sm:py-6">
         <p className="text-lg font-semibold tracking-tight text-foreground">{term}</p>
-        <p className="mt-2 text-[15px] leading-relaxed text-muted-foreground">{plainEnglish}</p>
+        <p className="mt-2 text-[15px] leading-relaxed text-foreground">{plainEnglish}</p>
         {whyItMatters ? (
           <p
             className={cn(
               "mt-4 rounded-lg border border-border bg-muted/45 px-4 py-3",
-              "text-sm leading-relaxed text-foreground/90"
+              "text-sm leading-relaxed text-foreground"
             )}
           >
             <span className="font-semibold text-foreground">Why it matters here: </span>

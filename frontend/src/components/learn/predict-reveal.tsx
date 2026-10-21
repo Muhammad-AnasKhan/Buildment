@@ -22,7 +22,7 @@ export function usePredictReveal() {
 
 export function PredictRevealHold() {
   return (
-    <p className="p-4 text-sm leading-relaxed text-muted-foreground">
+    <p className="p-4 text-sm leading-relaxed text-foreground">
       Answer the prediction in this lesson to reveal this.
     </p>
   );

@@ -352,7 +352,7 @@ export function ChapterReaderShell({
                   </h1>
                   {projectGoal && readerMode !== "QUIZ" ? (
                     <p className="mt-4 border-l-2 border-border pl-3 text-sm leading-6 text-muted-foreground">
-                      <span className="font-medium text-foreground/80">The project: </span>
+                      <span className="font-medium text-foreground">The project: </span>
                       {projectGoal.trim().replace(/\.+$/, "")}.
                     </p>
                   ) : null}

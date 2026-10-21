@@ -29,7 +29,7 @@ export function CheckpointIntro({
       <div className="px-5 py-4 sm:px-6 sm:py-5">
         {title ? <h3 className="mb-2 text-base font-semibold leading-snug tracking-tight text-foreground">{title}</h3> : null}
         {body ? (
-          <div className="text-[15px] leading-relaxed text-foreground/85 [&_a]:font-medium [&_a]:text-indigo-700 [&_a]:underline [&_a]:underline-offset-2 dark:[&_a]:text-indigo-300 [&_p]:my-0 [&_p+p]:mt-3 [&_strong]:font-semibold [&_strong]:text-foreground">
+          <div className="text-[15px] leading-relaxed text-foreground [&_a]:font-medium [&_a]:text-indigo-700 [&_a]:underline [&_a]:underline-offset-2 dark:[&_a]:text-indigo-300 [&_p]:my-0 [&_p+p]:mt-3 [&_strong]:font-semibold [&_strong]:text-foreground">
             {body}
           </div>
         ) : null}

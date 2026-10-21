@@ -31,7 +31,7 @@ export function RoadmapClient({ title, milestones }: RoadmapConfig) {
                     {current ? "You are here" : goal ? "Goal" : "Upcoming"}
                   </span>
                 </div>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{milestone.description}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-foreground">{milestone.description}</p>
               </div>
             </li>
           );

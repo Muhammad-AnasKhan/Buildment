@@ -321,7 +321,7 @@ export function CodeExerciseClient({
                   </p>
                 ) : null}
                 {result.explanation ? (
-                  <p className="mt-2 leading-relaxed text-foreground/90">{result.explanation}</p>
+                  <p className="mt-2 leading-relaxed text-foreground">{result.explanation}</p>
                 ) : null}
               </div>
             </div>
