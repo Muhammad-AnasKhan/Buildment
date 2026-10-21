@@ -130,6 +130,33 @@
   --code-fg: #f0ebe4;
 }
 
+/*
+ * Course family variants (components/learn/variant-theme.tsx). The scope sets
+ * the --variant-* colours; they pass WCAG AA on the light and dark surfaces
+ * above, which server/tests/unit/shared/lib/course-tracks.test.ts checks.
+ */
+[data-variant] {
+  --variant-accent: var(--variant-accent-light);
+  --primary: var(--variant-accent-light);
+  --primary-foreground: var(--variant-on-accent-light);
+  --ring: var(--variant-accent-light);
+}
+
+.dark [data-variant] {
+  --variant-accent: var(--variant-accent-dark);
+  --primary: var(--variant-accent-dark);
+  --primary-foreground: var(--variant-on-accent-dark);
+  --ring: var(--variant-accent-dark);
+}
+
+[data-variant] .prose {
+  --tw-prose-links: var(--variant-accent);
+}
+
+[data-variant-heading="serif"] :is(h1, h2, h3, h4) {
+  font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
