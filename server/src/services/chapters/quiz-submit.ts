@@ -8,6 +8,7 @@ import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js"
 import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
 import { ChapterLockedError, assertChapterUnlocked } from "../progress/gate.js";
 import { recomputeChapterProgress, recordBlockStats } from "../progress/compute.js";
+import { assertQuizCameraOn } from "../integrity/attempts.js";
 
 type Grade = { blockId: string; score: number | null; maxScore: number | null; isCorrect: boolean | null };
 
@@ -31,7 +32,7 @@ export async function submitChapterQuiz(input: {
 
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId },
-    select: { id: true, courseId: true, readerMode: true },
+    select: { id: true, courseId: true, readerMode: true, course: { select: { integritySnapshots: true } } },
   });
   if (!chapter || chapter.readerMode !== "QUIZ") throw new NotFoundError("Quiz chapter not found");
 
@@ -51,6 +52,8 @@ export async function submitChapterQuiz(input: {
     }
     throw error;
   }
+
+  await assertQuizCameraOn({ enrollmentId: enrollment.id, chapterId, cameraRequired: chapter.course.integritySnapshots });
 
   const quizBlocks = await prisma.block.findMany({
     where: { chapterId, type: "QUIZ", archivedAt: null },

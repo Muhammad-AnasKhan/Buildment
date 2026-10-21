@@ -26,6 +26,37 @@ async function countFlags(attemptId: string): Promise<number> {
   return prisma.integrityEvent.count({ where: { attemptId, type: FLAG_TYPES } });
 }
 
+/** The attempt a learner is on now: 1 + their highest submitted attempt in the chapter. */
+async function currentAttemptNumber(enrollmentId: string, chapterId: string): Promise<number> {
+  const submitted = await prisma.response.aggregate({
+    _max: { attempt: true },
+    where: { enrollmentId, status: { not: "DRAFT" }, block: { chapterId } },
+  });
+  return (submitted._max.attempt ?? 0) + 1;
+}
+
+/**
+ * When the course requires the camera, a quiz is only accepted while the camera
+ * of the current attempt is on. The browser pauses the quiz too; this stops a
+ * submit that skips the page.
+ */
+export async function assertQuizCameraOn(input: { enrollmentId: string; chapterId: string; cameraRequired: boolean }): Promise<void> {
+  if (!input.cameraRequired || !snapshotStorageAvailable()) return;
+  const attempt = await prisma.integrityAttempt.findUnique({
+    where: {
+      enrollmentId_chapterId_attempt: {
+        enrollmentId: input.enrollmentId,
+        chapterId: input.chapterId,
+        attempt: await currentAttemptNumber(input.enrollmentId, input.chapterId),
+      },
+    },
+    select: { cameraStatus: true },
+  });
+  if (attempt?.cameraStatus !== "ON") {
+    throw new ForbiddenError("Turn on your camera to submit this quiz. Your answers are kept.", "CAMERA_REQUIRED");
+  }
+}
+
 /** Opens (or resumes, after a reload or power cut) the proctored attempt for a quiz chapter. */
 export async function openIntegrityAttempt(user: SessionUser | undefined, chapterId: string): Promise<IntegrityAttemptSession> {
   const chapter = await prisma.chapter.findUnique({
@@ -35,11 +66,7 @@ export async function openIntegrityAttempt(user: SessionUser | undefined, chapte
   if (!chapter || chapter.readerMode !== "QUIZ") throw new NotFoundError("Quiz chapter not found");
   const enrollment = await requireBlockSubmissionAccess(chapter.courseId, user);
 
-  const submitted = await prisma.response.aggregate({
-    _max: { attempt: true },
-    where: { enrollmentId: enrollment.id, status: { not: "DRAFT" }, block: { chapterId } },
-  });
-  const attemptNumber = (submitted._max.attempt ?? 0) + 1;
+  const attemptNumber = await currentAttemptNumber(enrollment.id, chapterId);
   const cameraEnabled = chapter.course.integritySnapshots && snapshotStorageAvailable();
 
   const attempt = await prisma.integrityAttempt.upsert({

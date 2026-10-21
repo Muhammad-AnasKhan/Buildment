@@ -161,6 +161,25 @@ describe("camera snapshots", () => {
     expect((await upload(attemptId, jpeg())).status).toBe(201);
     expect((await upload(attemptId, jpeg())).status).toBe(429);
   });
+
+  it("refuses a quiz submit while the required camera is off", async () => {
+    const { attemptId } = (await openAttempt()).body.data;
+    const camera = (status: string) =>
+      request(app).put(`/api/v1/integrity/attempts/${attemptId}/camera`).set(learner()).send({ status }).expect(200);
+    const submit = () =>
+      request(app)
+        .post(`/api/v1/chapters/${fx.chapterB.id}/quiz/submit`)
+        .set(learner())
+        .send({ answers: fx.quizChapterBlocks.map((block) => ({ blockId: block.id, selected: ["a"] })) });
+
+    await camera("UNAVAILABLE");
+    const refused = await submit();
+    expect(refused.status).toBe(403);
+    expect(refused.body.code).toBe("CAMERA_REQUIRED");
+
+    await camera("ON");
+    expect((await submit()).status).toBe(200);
+  });
 });
 
 describe("mentor view", () => {
