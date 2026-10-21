@@ -88,7 +88,7 @@ function ChapterCompletionMoment({
 
   if (chapterComplete !== trackedComplete) {
     setTrackedComplete(chapterComplete);
-    if (chapterComplete) beginCelebration();
+    if (chapterComplete && !completionSaved) beginCelebration();
   }
 
   useEffect(() => {
@@ -224,7 +224,7 @@ function ChapterCompletionMoment({
             >
               <ArrowUp className="size-4 shrink-0" aria-hidden />
               {remaining === 1
-                ? "Go to last checkpoint"
+                ? "Go to the final checkpoint"
                 : "Go to next checkpoint"}
             </Button>
           )}
@@ -238,7 +238,7 @@ function ChapterCompletionMoment({
         streakMilestone={streakMilestone}
         courseCompleted={courseCompleted + (!chapterComplete && completionSaved ? 1 : 0)}
         courseTotal={courseTotal}
-        nextHref={nextLocked ? undefined : nextHref}
+        nextHref={nextLocked && !isComplete ? undefined : nextHref}
         nextTitle={nextTitle}
       />
     </>

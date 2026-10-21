@@ -43,7 +43,7 @@ function relativeTime(value: string | null) {
 function statusDetails(state: DashboardCourse["state"]) {
   switch (state) {
     case "PAYMENT_REQUIRED": return { label: "Payment due", variant: "destructive" as const };
-    case "NEEDS_REVISION": return { label: "Feedback to try", variant: "secondary" as const };
+    case "NEEDS_REVISION": return { label: "Revision requested", variant: "secondary" as const };
     case "AWAITING_REVIEW": return { label: "Awaiting review", variant: "secondary" as const };
     case "IN_PROGRESS": return { label: "In progress", variant: "secondary" as const };
     case "NOT_STARTED": return { label: "Ready to begin", variant: "outline" as const };
@@ -103,11 +103,7 @@ function ContinueLearning({ course }: { course: DashboardCourse }) {
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <Link
           href={course.href}
-          className={buttonVariants({
-            size: "lg",
-            variant: "default",
-            className: "h-auto min-h-11 max-w-full whitespace-normal py-3 text-center transition-colors duration-200 active:bg-primary/80 motion-reduce:transition-none",
-          })}
+          className={cn(buttonVariants({ size: "lg", variant: "default" }), "h-auto min-h-11 max-w-full whitespace-normal py-3 text-center transition-colors duration-200 active:bg-primary/80 motion-reduce:transition-none")}
         >
           {course.actionLabel}
           <ArrowRight data-icon="inline-end" />
@@ -152,7 +148,7 @@ function WeeklySnapshot({ model }: { model: MenteeDashboardViewModel }) {
   const metrics = [
     { label: "Estimated study this week", value: formatStudyAmount(model.overview.weekSeconds) },
     { label: "Active days", value: `${model.activity.activeDays} of 7` },
-    { label: "Chapters completed", value: String(model.overview.chaptersCompleted) },
+    { label: "Chapters completed (all courses)", value: String(model.overview.chaptersCompleted) },
     { label: "Awaiting review", value: String(model.overview.pendingReviews) },
   ];
 
@@ -357,10 +353,7 @@ function CourseCard({ course, featured }: { course: DashboardCourse; featured: b
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
           <Link
             href={course.href}
-            className={buttonVariants({
-              variant: "default",
-            className: "h-auto min-h-11 max-w-full whitespace-normal py-3 text-center transition-colors duration-200 active:bg-primary/80 motion-reduce:transition-none",
-            })}
+            className={cn(buttonVariants({ variant: "default" }), "h-auto min-h-11 max-w-full whitespace-normal py-3 text-center transition-colors duration-200 active:bg-primary/80 motion-reduce:transition-none")}
           >
             {course.actionLabel}
           </Link>
