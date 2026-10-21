@@ -21,25 +21,25 @@ export default async function MentorHelpThreadPage({
     <div className="mx-auto max-w-4xl">
       <Link
         href="/help"
-        className="text-sm text-neutral-500 transition-colors hover:text-neutral-900"
+        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         ← {copy.mentorNav}
       </Link>
 
-      <div className="mt-4 flex flex-wrap items-start justify-between gap-3 border-b border-neutral-200 pb-6">
+      <div className="mt-4 flex flex-wrap items-start justify-between gap-3 border-b border-border pb-6">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {thread.chapter?.title ?? thread.course.title}
           </h1>
-          <p className="mt-1 text-sm text-neutral-500">
+          <p className="mt-1 text-sm text-muted-foreground">
             {menteeName} · {thread.course.title}
           </p>
         </div>
         <span
           className={
             thread.status === "OPEN"
-              ? "rounded-full border border-neutral-200 bg-white px-3 py-1 text-xs font-medium text-neutral-700"
-              : "rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium text-neutral-600"
+              ? "rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-foreground"
+              : "rounded-full bg-muted px-3 py-1 text-xs font-medium text-muted-foreground"
           }
         >
           {thread.status === "OPEN" ? "Needs response" : "Resolved"}

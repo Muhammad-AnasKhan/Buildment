@@ -13,7 +13,7 @@ export function RepairEnrollmentProgressButton({ enrollmentId }: { enrollmentId:
       type="button"
       size="sm"
       variant="ghost"
-      className="h-8 gap-1.5 text-xs text-neutral-600"
+      className="h-8 gap-1.5 text-xs text-muted-foreground"
       loading={pending}
       disabled={pending}
       onClick={() => {

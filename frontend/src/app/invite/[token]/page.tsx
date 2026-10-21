@@ -57,7 +57,7 @@ export default async function InviteAcceptPage({
         </Link>
         {invite.email && (
           <p className="mt-3 text-center text-xs text-neutral-400">
-            Use <span className="font-medium text-neutral-600">{invite.email}</span> — the invite
+            Use <span className="font-medium text-muted-foreground">{invite.email}</span> — the invite
             is bound to that address.
           </p>
         )}
@@ -95,7 +95,7 @@ export default async function InviteAcceptPage({
       >
         {!user.name && (
           <div className="space-y-1.5">
-            <Label htmlFor="name" className="text-sm font-medium text-neutral-700">
+            <Label htmlFor="name" className="text-sm font-medium text-foreground">
               Your name
             </Label>
             <Input
@@ -103,7 +103,7 @@ export default async function InviteAcceptPage({
               name="name"
               required
               placeholder="How should your mentor address you?"
-              className="h-10 rounded-lg border-neutral-200"
+              className="h-10 rounded-lg border-border"
             />
           </div>
         )}
@@ -133,14 +133,14 @@ function InviteShell({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-white px-6 py-24">
+    <div className="flex flex-1 flex-col items-center justify-center bg-card px-6 py-24">
       <Logo size="lg" />
       <div className="mt-10 w-full max-w-sm">
         {invite && (
-          <div className="mb-6 rounded-xl border border-neutral-200 p-4">
-            <p className="font-semibold text-neutral-900">{invite.course.title}</p>
+          <div className="mb-6 rounded-xl border border-border p-4">
+            <p className="font-semibold text-foreground">{invite.course.title}</p>
             {invite.course.description && (
-              <p className="mt-1 line-clamp-3 text-sm text-neutral-500">
+              <p className="mt-1 line-clamp-3 text-sm text-muted-foreground">
                 {invite.course.description}
               </p>
             )}
@@ -151,8 +151,8 @@ function InviteShell({
           </div>
         )}
 
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">{title}</h1>
-        <p className="mt-2 text-sm leading-relaxed text-neutral-500">{body}</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{body}</p>
 
         {children ? (
           <div className="mt-6">{children}</div>

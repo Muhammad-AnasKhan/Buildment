@@ -16,6 +16,8 @@ import { setActiveSurfaceAction } from "@/server/actions/active-surface";
 import { requestInstructorAccessAction } from "@/server/actions/instructor-access";
 import type { InstructorAccessView } from "@/shared/lib/instructor-access";
 import { cn } from "@/lib/utils";
+import { ThemeMenuItems } from "@/components/theme-menu-items";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function WorkspaceAccountMenu({
   current,
@@ -47,11 +49,13 @@ export function WorkspaceAccountMenu({
   ];
 
   return (
+    <div className={cn("flex items-center gap-1", !compact && "w-full")}>
+    {compact && <ThemeToggle className="grid size-10 place-items-center rounded-lg p-0" />}
     <DropdownMenu>
       <DropdownMenuTrigger
         render={<button type="button" disabled={pending} aria-busy={pending || undefined} aria-label={`Account and workspace: ${label}`} className={cn(
           "flex items-center rounded-lg text-left outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring",
-          compact ? "size-10 justify-center" : "w-full gap-2.5 p-2",
+          compact ? "size-10 justify-center" : "min-w-0 flex-1 gap-2.5 p-2",
         )} />}
       >
         <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-xs font-semibold text-primary" aria-hidden="true">
@@ -105,10 +109,14 @@ export function WorkspaceAccountMenu({
           <Plug className="size-4" /> Integration API
         </DropdownMenuItem>}
         <DropdownMenuSeparator />
+        <ThemeMenuItems />
+        <DropdownMenuSeparator />
         <DropdownMenuItem disabled={pending} className="min-h-9 gap-2 px-2" variant="destructive" onClick={() => runAction(signOutAction)}>
           <LogOut className="size-4" /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+    {!compact && <ThemeToggle className="grid size-10 shrink-0 place-items-center rounded-lg p-0" />}
+    </div>
   );
 }
