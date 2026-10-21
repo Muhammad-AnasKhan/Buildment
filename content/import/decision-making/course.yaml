@@ -4,6 +4,7 @@ description: "Learn to make clear, defensible decisions at work: name the trade-
 projectGoal: "Write a decision memo for a real choice in your own work or study, using a framework from this course, and defend it to a mentor."
 difficulty: Beginner
 estimatedHours: 10
+category: soft-skills
 modules:
   - dir: 01-what-a-good-decision-is
     title: "What a good decision is"

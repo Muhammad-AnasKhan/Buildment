@@ -125,6 +125,26 @@ describe("course lifecycle", () => {
     const free = await request(app).patch(`/api/v1/teach/courses/${createdCourseId}/settings`).set(mentor()).send({ ...base, pricingType: "FREE", priceDollars: "", difficulty: "", estimatedHours: "" });
     expect(free.status).toBe(204);
   });
+
+  it("sets the catalog category, accepts course.yaml difficulties and keeps the category when it is omitted", async () => {
+    const base = {
+      title: "Renamed course", description: "", coverUrl: "", projectGoal: "", estimatedHours: "",
+      sequential: false, pricingType: "FREE", priceDollars: "", currency: "USD",
+    };
+    const soft = await request(app).patch(`/api/v1/teach/courses/${createdCourseId}/settings`).set(mentor())
+      .send({ ...base, difficulty: "Beginner", category: "SOFT_SKILLS" });
+    expect(soft.status).toBe(204);
+    expect(await prisma.course.findUniqueOrThrow({ where: { id: createdCourseId } })).toMatchObject({ category: "SOFT_SKILLS", difficulty: "Beginner" });
+
+    const omitted = await request(app).patch(`/api/v1/teach/courses/${createdCourseId}/settings`).set(mentor())
+      .send({ ...base, difficulty: "Advanced" });
+    expect(omitted.status).toBe(204);
+    expect(await prisma.course.findUniqueOrThrow({ where: { id: createdCourseId } })).toMatchObject({ category: "SOFT_SKILLS", difficulty: "Advanced" });
+
+    const unknown = await request(app).patch(`/api/v1/teach/courses/${createdCourseId}/settings`).set(mentor())
+      .send({ ...base, difficulty: "", category: "ART" });
+    expect(unknown.status).toBe(400);
+  });
 });
 
 describe("modules", () => {
