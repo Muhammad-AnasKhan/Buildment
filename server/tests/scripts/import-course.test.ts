@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseLesson } from "../../scripts/import-course.js";
+import { parseLesson, transformPresentationBlocks, type PendingBlock } from "../../scripts/import-course.js";
 
 describe("course importer interaction intent", () => {
   it("does not invent an OpenQuestion for a lesson without an authored interaction", () => {
@@ -42,5 +42,57 @@ describe("course importer interaction intent", () => {
 
     expect(lesson.source).toContain('<Roadmap title="FreshMarket build path"');
     expect(lesson.source).not.toContain("&lt;Roadmap");
+  });
+});
+
+describe("course importer inline code", () => {
+  it.each([
+    ["10-open-your-shop", "10.06-scaffold-vendor-layout.md", 6, "scaffold-vendor-layout", ["`<Outlet />`", "`/vendor/*`"]],
+    ["02-project-skeleton", "02.13-client-shell-and-routing.md", 13, "client-shell-and-routing", ["`<App />`", "`<p>`", '`<div id="api-status">`']],
+  ] as const)("keeps JSX code spans intact in %s/%s", (moduleDir, fileName, lessonNum, slugPart, spans) => {
+    const lesson = parseLesson(Number(moduleDir.slice(0, 2)), moduleDir, fileName, lessonNum, slugPart);
+
+    for (const span of spans) expect(lesson.source).toContain(span);
+    expect(lesson.source).not.toContain("'&lt;");
+  });
+});
+
+describe("course importer optional MustRead", () => {
+  const mustRead = (attrs: string) => {
+    const blocks: PendingBlock[] = [];
+    transformPresentationBlocks(
+      `<MustRead\n  title="T"\n  url="https://example.com/a"\n  description="D"\n${attrs}/>`,
+      (block) => {
+        blocks.push(block);
+        return "";
+      }
+    );
+    expect(blocks).toHaveLength(1);
+    return blocks[0]!;
+  };
+
+  it("keeps a MustRead required by default", () => {
+    expect(mustRead("").required).toBe(true);
+    expect(mustRead('  required="true"\n').required).toBe(true);
+  });
+
+  it('imports required="false" and required={false} as an optional block', () => {
+    expect(mustRead('  required="false"\n').required).toBe(false);
+    expect(mustRead("  required={false}\n").required).toBe(false);
+  });
+
+  it("keeps the flag out of the card config so block ids survive a re-import", () => {
+    expect(mustRead('  required="false"\n').config).not.toHaveProperty("required");
+  });
+
+  it("imports the example card in chapter 1.2 as optional", () => {
+    const lesson = parseLesson(1, "01-introduction", "01.02-how-to-use-this-course.md", 2, "how-to-use-this-course");
+    const reads = lesson.blocks.filter((block) => block.type === "MUST_READ");
+
+    expect(reads).toHaveLength(1);
+    expect(reads[0]!.required).toBe(false);
+    // Only the two authored short-answer quizzes gate the chapter, as before the card was restored.
+    expect(lesson.blocks.filter((block) => block.required).map((block) => block.type)).toEqual(["OPEN_QUESTION", "OPEN_QUESTION"]);
+    expect(lesson.source).toContain(`<MustRead id="${reads[0]!.id}" />`);
   });
 });

@@ -11,6 +11,7 @@ import {
 } from "react";
 import { CheckCircle2, CloudOff, Loader2, NotebookPen, Save } from "lucide-react";
 import { AnswerTextareaWithMic } from "@/components/learn/answer-textarea-with-mic";
+import { inlineMarkdownToText, parseInlineMarkdown } from "@/lib/inline-markdown";
 import { cn } from "@/lib/utils";
 import { saveLearningLogAnswers } from "@/server/actions/learning-log";
 import {
@@ -45,33 +46,6 @@ export function LearningLogProvider({
       {children}
     </LearningLogContext.Provider>
   );
-}
-
-function parseInlineMarkdown(text: string) {
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g).filter(Boolean);
-  return parts.map((part, index) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return (
-        <strong key={index} className="font-semibold text-foreground">
-          {part.slice(2, -2)}
-        </strong>
-      );
-    }
-    if (part.startsWith("*") && part.endsWith("*") && !part.startsWith("**")) {
-      return <em key={index}>{part.slice(1, -1)}</em>;
-    }
-    if (part.startsWith("`") && part.endsWith("`")) {
-      return (
-        <code
-          key={index}
-          className="rounded bg-muted px-1 py-0.5 font-mono text-[0.9em] text-foreground"
-        >
-          {part.slice(1, -1)}
-        </code>
-      );
-    }
-    return part;
-  });
 }
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -150,7 +124,7 @@ function LearningLogQuestion({
             enableSpeech
             placeholder="Write what you learned…"
             rows={4}
-            ariaLabel={question.title}
+            ariaLabel={inlineMarkdownToText(question.title)}
             className={cn(
               "placeholder:text-muted-foreground/70",
               styles.questionBorder,

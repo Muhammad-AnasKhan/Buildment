@@ -51,6 +51,8 @@ export type OpenQuestionBlockState = {
 export type MustReadBlockState = {
   type: "MUST_READ";
   config: { title: string; url: string; description: string; source?: string; readMinutes?: number };
+  /** False for an optional read: it never gates the chapter, so the card says so. */
+  required: boolean;
   initialRead: boolean;
 };
 

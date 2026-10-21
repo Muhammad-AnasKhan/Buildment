@@ -27,6 +27,13 @@ Every completable block is required by default; a mentor can mark any block `opt
 Chapters with zero completable blocks complete via an explicit **"Mark chapter complete"**
 button.
 
+Content added after a learner finished a chapter does not reopen it. When the stored status is
+`COMPLETED`, a required block whose `Block.createdAt` is later than `ChapterProgress.completedAt`
+is left out of the recompute until the learner does it. Blocks created before completion, and
+legacy blocks with no `createdAt`, follow the normal rule, so a real regression on them still
+reopens the chapter. In MDX source, `<MustRead required={false} ... />` (or `required="false"`)
+imports an optional read.
+
 Checklists persist on `ChapterProgress.learningLog.checklist` (account-scoped, not
 `localStorage`). They are an honor-system aid and do **not** gate the next chapter.
 

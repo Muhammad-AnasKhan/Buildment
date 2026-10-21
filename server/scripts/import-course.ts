@@ -69,7 +69,7 @@ const CHAPTER_NAMES: Record<number, string> = {
   99: "Closing",
 };
 
-type PendingBlock = {
+export type PendingBlock = {
   id: string;
   type: "QUIZ" | "OPEN_QUESTION" | "CHAPTER_RECAP" | "PROJECT_PREVIEW" | "LEARNING_OBJECTIVES" | "CODE" | "PREDICT" | "MUST_READ" | "VIDEO" | "VISUAL_WALKTHROUGH" | "VISUAL_DIAGRAM" | "ROADMAP";
   config: Prisma.InputJsonValue;
@@ -170,6 +170,13 @@ function parseJsxStringAttr(source: string, attr: string): string | undefined {
   return match?.[1];
 }
 
+/** Reads `attr="true|false"` or `attr={true|false}`. Anything else is undefined. */
+function parseJsxBooleanAttr(source: string, attr: string): boolean | undefined {
+  const match = source.match(new RegExp(`\\b${attr}=(?:"(true|false)"|\\{(true|false)\\})`));
+  const value = match?.[1] ?? match?.[2];
+  return value === undefined ? undefined : value === "true";
+}
+
 function parseJsxStringArray(source: string, attr: string): string[] | undefined {
   const match = source.match(new RegExp(`${attr}=\\{\\[([\\s\\S]*?)\\]\\}`));
   if (!match?.[1]) return undefined;
@@ -183,7 +190,7 @@ function parseJsxStringArray(source: string, attr: string): string[] | undefined
 }
 
 /** Inline presentation JSX -> registered blocks with stable id placeholders. */
-function transformPresentationBlocks(body: string, pushBlock: (b: PendingBlock) => string): string {
+export function transformPresentationBlocks(body: string, pushBlock: (b: PendingBlock) => string): string {
   return body.replace(/<(ChapterRecap|ProjectPreview|LearningObjectives|MustRead|VideoBlock)([\s\S]*?)\/>/g, (full, tagName: string, attrs: string) => {
     if (/\bid=/.test(attrs)) return full;
 
@@ -197,10 +204,13 @@ function transformPresentationBlocks(body: string, pushBlock: (b: PendingBlock) 
       const readMinutesStr = parseJsxStringAttr(pseudo, "readMinutes");
       const readMinutes = readMinutesStr ? Number(readMinutesStr) : undefined;
       if (!title || !url || !description) return full;
+      // `required="false"` (or `required={false}`) keeps an example or bonus read
+      // out of the chapter's completion rule. Everything else stays required.
+      const required = parseJsxBooleanAttr(pseudo, "required") ?? true;
       return pushBlock({
         id: ulid(),
         type: "MUST_READ",
-        required: true,
+        required,
         config: {
           title,
           url,

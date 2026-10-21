@@ -2,6 +2,7 @@ import { Target } from "lucide-react";
 import { fetchBlockState } from "@/blocks/block-state";
 import { PendingBlockCard } from "@/components/learn/pending-block-card";
 import { readerCardLg, readerEyebrow } from "@/components/learn/reader-theme";
+import { parseInlineMarkdown } from "@/lib/inline-markdown";
 
 export async function LearningObjectivesComponent({
   id,
@@ -50,13 +51,7 @@ export async function LearningObjectivesComponent({
               {String(index + 1).padStart(2, "0")}
             </span>
             <span className="min-w-0 pt-0.5 text-[15px] leading-relaxed text-foreground">
-              {String(objective).split(/(\*\*[^*]+\*\*)/g).filter(Boolean).map((part, i) =>
-                part.startsWith("**") && part.endsWith("**") ? (
-                  <strong key={i} className="font-semibold text-foreground">{part.slice(2, -2)}</strong>
-                ) : (
-                  <span key={i}>{part}</span>
-                )
-              )}
+              {parseInlineMarkdown(String(objective))}
             </span>
           </li>
         ))}
