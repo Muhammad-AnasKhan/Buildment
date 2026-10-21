@@ -4,6 +4,7 @@ import path from "node:path";
 import { DeleteObjectsCommand, GetObjectCommand, ListObjectsV2Command, PutObjectCommand } from "@aws-sdk/client-s3";
 import { isProduction } from "../../config/env.js";
 import { AppError, NotFoundError } from "../../utils/errors.js";
+import { snapshotSigningAvailable } from "./signed-url.js";
 import { isMissingObjectError, r2Storage } from "../storage/r2.js";
 
 // Quiz camera stills live in the private R2 bucket under `integrity/`. Without R2
@@ -16,7 +17,8 @@ const LOCAL_ROOT = path.join(tmpdir(), "buildment-integrity-snapshots");
 export type SnapshotStore = {
   put(key: string, bytes: Buffer): Promise<void>;
   get(key: string): Promise<Buffer>;
-  remove(keys: string[]): Promise<void>;
+  /** Deletes the keys and returns the ones that could not be deleted (a missing key counts as deleted). */
+  remove(keys: string[]): Promise<string[]>;
   /** Deletes every stored still last written before `cutoff`, including orphans. */
   sweep(cutoff: Date): Promise<number>;
 };
@@ -49,7 +51,15 @@ const localStore: SnapshotStore = {
     }
   },
   async remove(keys) {
-    await Promise.all(keys.map((key) => rm(localPath(key), { force: true })));
+    const failed: string[] = [];
+    for (const key of keys) {
+      try {
+        await rm(localPath(key), { force: true });
+      } catch {
+        failed.push(key);
+      }
+    }
+    return failed;
   },
   async sweep(cutoff) {
     let removed = 0;
@@ -66,11 +76,21 @@ const localStore: SnapshotStore = {
 
 function r2Store(r2: NonNullable<ReturnType<typeof r2Storage>>): SnapshotStore {
   const { client, bucket } = r2;
-  const removeKeys = async (keys: string[]) => {
+  const removeKeys = async (keys: string[]): Promise<string[]> => {
+    const failed: string[] = [];
     for (let i = 0; i < keys.length; i += 1000) {
       const chunk = keys.slice(i, i + 1000);
-      await client.send(new DeleteObjectsCommand({ Bucket: bucket, Delete: { Objects: chunk.map((Key) => ({ Key })), Quiet: true } }));
+      try {
+        // A batch delete can succeed overall and still fail single keys: those come back in Errors.
+        const result = await client.send(new DeleteObjectsCommand({ Bucket: bucket, Delete: { Objects: chunk.map((Key) => ({ Key })), Quiet: true } }));
+        for (const error of result.Errors ?? []) {
+          if (error.Key && error.Code !== "NoSuchKey") failed.push(error.Key);
+        }
+      } catch {
+        failed.push(...chunk);
+      }
     }
+    return failed;
   };
   return {
     async put(key, bytes) {
@@ -101,8 +121,7 @@ function r2Store(r2: NonNullable<ReturnType<typeof r2Storage>>): SnapshotStore {
         const stale = (page.Contents ?? [])
           .filter((object) => object.Key && object.LastModified && object.LastModified < cutoff)
           .map((object) => object.Key!);
-        if (stale.length) await removeKeys(stale);
-        removed += stale.length;
+        if (stale.length) removed += stale.length - (await removeKeys(stale)).length;
         token = page.IsTruncated ? page.NextContinuationToken : undefined;
       } while (token);
       return removed;
@@ -117,7 +136,12 @@ export function snapshotStore(): SnapshotStore {
   return localStore;
 }
 
-/** True when stills can be stored at all, so the quiz can skip the camera step otherwise. */
+/** True when stills can be stored at all (the retention job only needs this). */
 export function snapshotStorageAvailable(): boolean {
   return Boolean(r2Storage()) || !isProduction;
+}
+
+/** True when the camera can be offered: somewhere to store stills and a secret to sign mentor links. */
+export function cameraPhotosAvailable(): boolean {
+  return snapshotStorageAvailable() && snapshotSigningAvailable();
 }

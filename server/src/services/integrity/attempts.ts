@@ -12,7 +12,7 @@ import {
 import type { SessionUser } from "../../types/auth.js";
 import { BadRequestError, ForbiddenError, NotFoundError, TooManyRequestsError } from "../../utils/errors.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
-import { snapshotStorageAvailable, snapshotStore, SNAPSHOT_PREFIX } from "./snapshot-store.js";
+import { cameraPhotosAvailable, snapshotStore, SNAPSHOT_PREFIX } from "./snapshot-store.js";
 
 // The learner's side of quiz integrity. Every call here is best effort from the
 // browser's point of view: a failure must never stop the quiz, so the client
@@ -26,35 +26,17 @@ async function countFlags(attemptId: string): Promise<number> {
   return prisma.integrityEvent.count({ where: { attemptId, type: FLAG_TYPES } });
 }
 
-/** The attempt a learner is on now: 1 + their highest submitted attempt in the chapter. */
+/**
+ * The attempt a learner is on now: 1 + their highest multiple-choice attempt in the
+ * chapter. Only quiz answers count, so submitting an open question or code exercise
+ * in the same chapter does not start a new proctored attempt.
+ */
 async function currentAttemptNumber(enrollmentId: string, chapterId: string): Promise<number> {
   const submitted = await prisma.response.aggregate({
     _max: { attempt: true },
-    where: { enrollmentId, status: { not: "DRAFT" }, block: { chapterId } },
+    where: { enrollmentId, status: { not: "DRAFT" }, block: { chapterId, type: "QUIZ" } },
   });
   return (submitted._max.attempt ?? 0) + 1;
-}
-
-/**
- * When the course requires the camera, a quiz is only accepted while the camera
- * of the current attempt is on. The browser pauses the quiz too; this stops a
- * submit that skips the page.
- */
-export async function assertQuizCameraOn(input: { enrollmentId: string; chapterId: string; cameraRequired: boolean }): Promise<void> {
-  if (!input.cameraRequired || !snapshotStorageAvailable()) return;
-  const attempt = await prisma.integrityAttempt.findUnique({
-    where: {
-      enrollmentId_chapterId_attempt: {
-        enrollmentId: input.enrollmentId,
-        chapterId: input.chapterId,
-        attempt: await currentAttemptNumber(input.enrollmentId, input.chapterId),
-      },
-    },
-    select: { cameraStatus: true },
-  });
-  if (attempt?.cameraStatus !== "ON") {
-    throw new ForbiddenError("Turn on your camera to submit this quiz. Your answers are kept.", "CAMERA_REQUIRED");
-  }
 }
 
 /** Opens (or resumes, after a reload or power cut) the proctored attempt for a quiz chapter. */
@@ -67,7 +49,7 @@ export async function openIntegrityAttempt(user: SessionUser | undefined, chapte
   const enrollment = await requireBlockSubmissionAccess(chapter.courseId, user);
 
   const attemptNumber = await currentAttemptNumber(enrollment.id, chapterId);
-  const cameraEnabled = chapter.course.integritySnapshots && snapshotStorageAvailable();
+  const cameraEnabled = chapter.course.integritySnapshots && cameraPhotosAvailable();
 
   const attempt = await prisma.integrityAttempt.upsert({
     where: { enrollmentId_chapterId_attempt: { enrollmentId: enrollment.id, chapterId, attempt: attemptNumber } },
@@ -195,7 +177,7 @@ export async function saveIntegritySnapshot(
   bytes: Buffer,
 ): Promise<{ id: string; takenAt: string }> {
   const attempt = await requireOwnAttempt(user, attemptId);
-  if (!attempt.enrollment.course.integritySnapshots) {
+  if (!attempt.enrollment.course.integritySnapshots || !cameraPhotosAvailable()) {
     throw new ForbiddenError("Camera snapshots are off for this course.", "SNAPSHOTS_DISABLED");
   }
   if (attempt.cameraStatus !== "ON") throw new ForbiddenError("Turn the camera on first.", "CAMERA_NOT_ON");

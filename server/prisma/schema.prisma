@@ -256,7 +256,7 @@ model Course {
   currency       String       @default("USD")
   sequential     Boolean      @default(true)
   familySlug     String? // course family in src/shared/lib/course-tracks.ts; null = no variants
-  /// Quiz camera is opt-in per course and required once on; quiz integrity signals are always on.
+  /// Quiz camera photos are opt-in per course and never required; quiz integrity signals are always on.
   integritySnapshots Boolean  @default(false)
   mentorId       String
   mentor         User         @relation("CourseMentor", fields: [mentorId], references: [id])

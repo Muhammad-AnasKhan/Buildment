@@ -9,7 +9,7 @@ import {
 import type { SessionUser } from "../../types/auth.js";
 import { NotFoundError } from "../../utils/errors.js";
 import { requireCourseById } from "../teach/access.js";
-import { signedSnapshotUrl, verifySnapshotSignature } from "./signed-url.js";
+import { signedSnapshotUrl, snapshotSigningAvailable, verifySnapshotSignature } from "./signed-url.js";
 import { snapshotStore } from "./snapshot-store.js";
 
 // The mentor's side of quiz integrity. Callers must have checked course access;
@@ -96,7 +96,7 @@ export async function loadIntegrityAttemptDetail(user: SessionUser, attemptId: s
   const now = Date.now();
   let expiresAt: Date | null = null;
   const snapshots = row.snapshots.map((snapshot) => {
-    if (snapshot.deletedAt) return { id: snapshot.id, takenAt: snapshot.takenAt.toISOString(), url: null };
+    if (snapshot.deletedAt || !snapshotSigningAvailable()) return { id: snapshot.id, takenAt: snapshot.takenAt.toISOString(), url: null };
     const signed = signedSnapshotUrl(snapshot.id, now);
     expiresAt = signed.expiresAt;
     return { id: snapshot.id, takenAt: snapshot.takenAt.toISOString(), url: signed.url };
