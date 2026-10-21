@@ -9,6 +9,7 @@ import type {
   ResponseStatus,
   ReviewVerdict,
 } from "../domain/enums";
+import type { LearnerTrackSummary } from "../lib/course-tracks";
 import type { InstructorAccessView } from "../lib/instructor-access";
 
 // Wire contract for /api/v1/teach — the instructor workspace. Every date is an
@@ -198,6 +199,8 @@ export type MenteeRosterItem = {
   activityState: "recent" | "inactive" | "never";
   attention: Array<{ kind: MenteeAttentionKind; label: string }>;
   evaluationHref: string;
+  /** Variant and specialisation for a course in a family; null otherwise. */
+  track: LearnerTrackSummary | null;
 };
 
 export type PendingInviteView = { id: string; email: string; createdAt: string };
@@ -352,6 +355,8 @@ export type EvaluationReflection = {
 export type MenteeEvaluation = {
   course: { id: string; slug: string; title: string };
   mentee: { id: string; name: string; email: string | null };
+  /** Variant and specialisation for a course in a family; null otherwise. */
+  track: LearnerTrackSummary | null;
   enrollment: {
     id: string;
     status: string;

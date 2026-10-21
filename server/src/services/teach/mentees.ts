@@ -1,4 +1,5 @@
 import type { CourseMenteesView, MenteeAttentionKind, MenteeEvaluation } from "../../shared/api/teach.js";
+import { summarizeLearnerTrack } from "../../shared/lib/course-tracks.js";
 import { helpUiCopy } from "../../shared/lib/help-ui-copy.js";
 import { prisma } from "../../db/prisma.js";
 import { NotFoundError } from "../../utils/errors.js";
@@ -24,6 +25,7 @@ export async function loadCourseMentees(user: SessionUser, courseSlug: string): 
       slug: true,
       title: true,
       status: true,
+      familySlug: true,
       _count: { select: { chapters: true } },
       invites: {
         where: { acceptedAt: null, revokedAt: null },
@@ -42,6 +44,8 @@ export async function loadCourseMentees(user: SessionUser, courseSlug: string): 
           maxScore: true,
           pendingReviews: true,
           lastActiveAt: true,
+          variantSlug: true,
+          specialisationSlug: true,
           user: { select: { name: true, email: true, image: true } },
           chapterProgress: {
             where: { status: { not: "NOT_STARTED" } },
@@ -125,6 +129,7 @@ export async function loadCourseMentees(user: SessionUser, courseSlug: string): 
         activityState: activity,
         attention,
         evaluationHref: `/courses/${course.slug}/mentees/${enrollment.id}`,
+        track: summarizeLearnerTrack(course.familySlug, enrollment),
       },
     ];
   });
