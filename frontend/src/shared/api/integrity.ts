@@ -80,6 +80,7 @@ export type IntegrityEventInput = {
 export type IntegrityAttemptSession = {
   attemptId: string;
   attempt: number;
+  startedAt: string;
   /** Flags already stored for this attempt, so the badge survives a reload. */
   flagCount: number;
   camera: {

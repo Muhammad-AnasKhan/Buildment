@@ -46,12 +46,13 @@ export async function openIntegrityAttempt(user: SessionUser | undefined, chapte
     where: { enrollmentId_chapterId_attempt: { enrollmentId: enrollment.id, chapterId, attempt: attemptNumber } },
     create: { enrollmentId: enrollment.id, chapterId, attempt: attemptNumber },
     update: { lastSeenAt: new Date() },
-    select: { id: true, attempt: true, cameraStatus: true },
+    select: { id: true, attempt: true, cameraStatus: true, startedAt: true },
   });
 
   return {
     attemptId: attempt.id,
     attempt: attempt.attempt,
+    startedAt: attempt.startedAt.toISOString(),
     flagCount: await countFlags(attempt.id),
     camera: {
       enabled: cameraEnabled,

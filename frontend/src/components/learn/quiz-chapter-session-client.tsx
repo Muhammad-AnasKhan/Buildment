@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { apiFetch } from "@/lib/api-client";
 import { markChapterComplete } from "@/server/actions/progress";
 import { cn } from "@/lib/utils";
 import { QuizSessionContext, type QuizBlockGrade } from "@/components/learn/quiz-session-context";
+import { QuizIntegrityPanel } from "@/components/learn/quiz-integrity-panel";
+import { useQuizIntegrity } from "@/lib/integrity/use-quiz-integrity";
 
 type QuizResultSummary = { score: number; maxScore: number; questions: number };
 
@@ -65,6 +67,15 @@ export function QuizChapterSessionClient({
 
   const perfectScore = useMemo(() => isPerfectScore(scoreSummary), [scoreSummary]);
   const reviewMode = scoreSummary !== null;
+
+  // Integrity signals run while the quiz is still open; a finished quiz is not watched.
+  const sectionRef = useRef<HTMLElement>(null);
+  const integrity = useQuizIntegrity({
+    chapterId,
+    enabled: total > 0 && !chapterComplete && !(isPerfectScore(initialScoreSummary) && individualActivityCount === 0),
+    rootRef: sectionRef,
+    currentBlockId: stepIds[index] ?? null,
+  });
 
   const [lastServerState, setLastServerState] = useState({ summary: initialScoreSummary, grades: initialBlockGrades });
   if (lastServerState.summary !== initialScoreSummary || lastServerState.grades !== initialBlockGrades) {
@@ -130,13 +141,16 @@ export function QuizChapterSessionClient({
     const unanswered = answers.filter((answer) => answer.selected.length === 0).length;
     if (
       unanswered > 0 &&
-      !window.confirm(
-        `${unanswered} question${unanswered === 1 ? " is" : "s are"} unanswered. Submit anyway? Unanswered questions will be marked incorrect.`
+      !integrity.withoutFlags(() =>
+        window.confirm(
+          `${unanswered} question${unanswered === 1 ? " is" : "s are"} unanswered. Submit anyway? Unanswered questions will be marked incorrect.`
+        )
       )
     ) {
       setSubmitting(false);
       return;
     }
+    integrity.checkPace(reviewMode ? quizBlockIds.filter((blockId) => dirtyBlockIds.has(blockId)) : quizBlockIds);
 
     try {
       const body = await apiFetch<QuizSubmitResponse>(`/api/v1/chapters/${encodeURIComponent(chapterId)}/quiz/submit`, {
@@ -174,7 +188,10 @@ export function QuizChapterSessionClient({
 
       if (isPerfectScore(summary)) {
         playFeedback("celebration");
-        if (individualActivityCount === 0) window.dispatchEvent(new Event("buildment:quiz-perfect"));
+        if (individualActivityCount === 0) {
+          integrity.finish();
+          window.dispatchEvent(new Event("buildment:quiz-perfect"));
+        }
         for (const blockId of quizBlockIds) {
           try {
             window.localStorage.removeItem(`${draftStoragePrefix}:${blockId}`);
@@ -185,6 +202,7 @@ export function QuizChapterSessionClient({
       } else if (summary.score <= 0) {
         playFeedback("error");
       }
+      if (!isPerfectScore(summary)) void integrity.nextAttempt();
 
       setDraftAnswers({});
       router.refresh();
@@ -237,7 +255,7 @@ export function QuizChapterSessionClient({
 
   return (
     <QuizSessionContext.Provider value={sessionValue}>
-      <section id="quiz-chapter-session" className="not-prose mb-10 scroll-mt-24" aria-label="Quiz session">
+      <section ref={sectionRef} id="quiz-chapter-session" className="not-prose mb-10 scroll-mt-24" aria-label="Quiz session">
         <header className="mb-8 border-b border-border pb-6">
           <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             Quiz: {chapterTitle}
@@ -245,6 +263,7 @@ export function QuizChapterSessionClient({
           <p className="mt-3 text-sm font-medium text-muted-foreground">
             Question {index + 1} of {total}
           </p>
+          <QuizIntegrityPanel integrity={integrity} />
           {individualActivityCount > 0 && <p className="mt-2 text-sm text-muted-foreground">Submit each open question, prediction, or code exercise with its own button. Written answers are reviewed separately; the score below covers multiple-choice questions.</p>}
           {scoreSummary ? (
             <p className="mt-2 text-sm text-foreground">
@@ -273,6 +292,7 @@ export function QuizChapterSessionClient({
               key={stepIds[stepIndex] ?? stepIndex}
               className={cn(stepIndex === index ? "block" : "hidden")}
               aria-hidden={stepIndex !== index}
+              data-integrity-step={stepIds[stepIndex]}
             >
               {step}
             </div>
