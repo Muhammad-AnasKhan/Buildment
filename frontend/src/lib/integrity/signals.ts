@@ -21,6 +21,15 @@ export function screenshotCombo(event: KeyLike): string | null {
   return null;
 }
 
+/**
+ * Whether to show the "Return to full screen" banner after the learner left full
+ * screen. It is a reminder, never a gate: hidden where the browser has no Fullscreen
+ * API (iPhone Safari) and gone for the attempt after two "Not now".
+ */
+export function fullscreenPromptAllowed(input: { supported: boolean; dismissals: number }): boolean {
+  return input.supported && input.dismissals < 2;
+}
+
 /** ESL readers on phones: assume a slow, careful pace so honest learners are never flagged. */
 const WORDS_PER_MINUTE = 180;
 const MS_PER_QUESTION = 2_000;

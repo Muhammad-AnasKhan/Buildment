@@ -9,7 +9,7 @@ import { apiFetch } from "@/lib/api-client";
 import { markChapterComplete } from "@/server/actions/progress";
 import { cn } from "@/lib/utils";
 import { QuizSessionContext, type QuizBlockGrade } from "@/components/learn/quiz-session-context";
-import { QuizCameraGate, QuizIntegrityPanel } from "@/components/learn/quiz-integrity-panel";
+import { QuizIntegrityPanel } from "@/components/learn/quiz-integrity-panel";
 import { useQuizIntegrity } from "@/lib/integrity/use-quiz-integrity";
 
 type QuizResultSummary = { score: number; maxScore: number; questions: number };
@@ -21,9 +21,6 @@ type QuizSubmitResponse = QuizResultSummary & {
 function isPerfectScore(summary: QuizResultSummary | null) {
   return Boolean(summary && summary.maxScore > 0 && summary.score === summary.maxScore);
 }
-
-const FULLSCREEN_REQUIRED_MESSAGE = "Return to full screen before submitting your quiz. Your selected answers are still saved.";
-const FULLSCREEN_UNAVAILABLE_MESSAGE = "This browser does not support the full-screen mode required to submit this quiz. Open it in a browser that supports full screen.";
 
 function missedQuestionIndices(
   stepIds: string[],
@@ -115,13 +112,6 @@ export function QuizChapterSessionClient({
     rootRef: sectionRef,
     currentBlockId: stepIds[activeIndex] ?? null,
   });
-  useEffect(() => {
-    if (integrity.isFullscreen) {
-      setSubmitError((current) =>
-        current === FULLSCREEN_REQUIRED_MESSAGE || current === FULLSCREEN_UNAVAILABLE_MESSAGE ? null : current
-      );
-    }
-  }, [integrity.isFullscreen]);
 
   const [lastServerState, setLastServerState] = useState({ summary: initialScoreSummary, grades: initialBlockGrades });
   if (lastServerState.summary !== initialScoreSummary || lastServerState.grades !== initialBlockGrades) {
@@ -172,12 +162,6 @@ export function QuizChapterSessionClient({
 
   const submitQuiz = async () => {
     if (submitting || perfectScore || quizBlockIds.length === 0) return;
-    const canSubmitInFullscreen = () => {
-      if (!integrity.requiresFullscreen || document.fullscreenElement) return true;
-      setSubmitError(integrity.fullscreenSupported ? FULLSCREEN_REQUIRED_MESSAGE : FULLSCREEN_UNAVAILABLE_MESSAGE);
-      return false;
-    };
-    if (!canSubmitInFullscreen()) return;
     setSubmitting(true);
     setSubmitError(null);
     const answers = quizBlockIds.map((blockId) => {
@@ -209,11 +193,6 @@ export function QuizChapterSessionClient({
         )
       )
     ) {
-      setSubmitting(false);
-      return;
-    }
-    // Native confirmation dialogs can leave full-screen mode. Recheck before the API call.
-    if (!canSubmitInFullscreen()) {
       setSubmitting(false);
       return;
     }
@@ -362,113 +341,107 @@ export function QuizChapterSessionClient({
           </div>
         </header>
 
-        <div className="relative">
-          {/* A required camera that is off pauses the quiz; the answers stay underneath. */}
-          <div inert={integrity.camera.blocked} className={cn(integrity.camera.blocked && "pointer-events-none select-none opacity-30 blur-[2px]")}>
-            <div className="relative min-h-[12rem]">
-              {steps.map((step, stepIndex) => (
-                <div
-                  key={stepIds[stepIndex] ?? stepIndex}
-                  className={cn(stepIndex === activeIndex ? "block" : "hidden")}
-                  aria-hidden={stepIndex !== activeIndex}
-                  data-integrity-step={stepIds[stepIndex]}
-                >
-                  {step}
-                </div>
-              ))}
+        <div className="relative min-h-[12rem]">
+          {steps.map((step, stepIndex) => (
+            <div
+              key={stepIds[stepIndex] ?? stepIndex}
+              className={cn(stepIndex === activeIndex ? "block" : "hidden")}
+              aria-hidden={stepIndex !== activeIndex}
+              data-integrity-step={stepIds[stepIndex]}
+            >
+              {step}
             </div>
+          ))}
+        </div>
 
-            {scoreSummary ? (
-              <div
-                className={cn(
-                  "mt-8 rounded-xl border px-4 py-3 text-sm",
-                  perfectScore
-                    ? "border-emerald-500/30 bg-emerald-500/10 text-foreground"
-                    : "border-border bg-muted/40 text-foreground"
-                )}
-                role="status"
-              >
-                {perfectScore
-                  ? `${individualActivityCount > 0 ? "Multiple-choice complete" : "Quiz complete"} · ${scoreSummary.score}/${scoreSummary.maxScore} correct.`
-                  : `${scoreSummary.score}/${scoreSummary.maxScore} correct so far. Retry the ${missedIndices.length} missed question${missedIndices.length === 1 ? "" : "s"}, then submit again.`}
-                {!perfectScore && missedIndices.length > 0 ? (
-                  <div className="mt-3">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setRetryMissed(!retryMissed);
-                        setIndex(retryMissed ? 0 : missedIndices[0]);
-                      }}
-                    >
-                      {retryMissed ? "Review all questions" : `Retry ${missedIndices.length} missed question${missedIndices.length === 1 ? "" : "s"}`}
-                    </Button>
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-
-            <footer className="mt-10 flex items-center justify-between gap-3 border-t border-border pt-6">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={position === 0}
-                onClick={() => go(position - 1)}
-                className="gap-1"
-              >
-                <ChevronLeft className="size-4" aria-hidden />
-                Back
-              </Button>
-              {position < visibleIndices.length - 1 ? (
-                <Button type="button" size="sm" onClick={() => go(position + 1)} className="gap-1">
-                  {retryMissed && !perfectScore ? "Next missed question" : "Next"}
-                  <ChevronRight className="size-4" aria-hidden />
-                </Button>
-              ) : perfectScore && nextHref ? (
+        {scoreSummary ? (
+          <div
+            className={cn(
+              "mt-8 rounded-xl border px-4 py-3 text-sm",
+              perfectScore
+                ? "border-emerald-500/30 bg-emerald-500/10 text-foreground"
+                : "border-border bg-muted/40 text-foreground"
+            )}
+            role="status"
+          >
+            {perfectScore
+              ? `${individualActivityCount > 0 ? "Multiple-choice complete" : "Quiz complete"} · ${scoreSummary.score}/${scoreSummary.maxScore} correct.`
+              : `${scoreSummary.score}/${scoreSummary.maxScore} correct so far. Retry the ${missedIndices.length} missed question${missedIndices.length === 1 ? "" : "s"}, then submit again.`}
+            {!perfectScore && missedIndices.length > 0 ? (
+              <div className="mt-3">
                 <Button
                   type="button"
                   size="sm"
-                  disabled={movingNext || (nextLocked && !chapterComplete && !canMarkComplete)}
-                  loading={movingNext}
-                  onClick={() => void moveToNextChapter()}
-                  className="gap-1.5"
+                  variant="outline"
+                  onClick={() => {
+                    setRetryMissed(!retryMissed);
+                    setIndex(retryMissed ? 0 : missedIndices[0]);
+                  }}
                 >
-                  {movingNext ? "Opening next chapter…" : nextLocked && !chapterComplete && !canMarkComplete ? "Finish remaining activities" : "Next chapter"}
-                  {!movingNext && (!nextLocked || chapterComplete || canMarkComplete) ? <ChevronRight className="size-4" aria-hidden /> : null}
+                  {retryMissed ? "Review all questions" : `Retry ${missedIndices.length} missed question${missedIndices.length === 1 ? "" : "s"}`}
                 </Button>
-              ) : quizBlockIds.length > 0 ? (
-                <div className="flex flex-wrap justify-end gap-2">
-                  <Button
-                    type="button"
-                    size="sm"
-                    disabled={submitting || perfectScore}
-                    loading={submitting}
-                    onClick={() => void submitQuiz()}
-                  >
-                    {submitting ? "Submitting…" : perfectScore ? "Quiz complete" : scoreSummary ? "Submit again" : individualActivityCount > 0 ? "Submit multiple-choice answers" : "Submit quiz"}
-                  </Button>
-                  {!nextLocked && nextHref ? (
-                    <Button type="button" size="sm" variant="outline" disabled={submitting} onClick={() => void moveToNextChapter()} className="gap-1.5">
-                      Next chapter <ChevronRight className="size-4" aria-hidden />
-                    </Button>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="flex flex-wrap items-center justify-end gap-2">
-                  <p className="text-sm text-muted-foreground">Submit each activity above. Its result or review status appears on the activity.</p>
-                  {!nextLocked && nextHref ? (
-                    <Button type="button" size="sm" variant="outline" onClick={() => void moveToNextChapter()} className="gap-1.5">
-                      Next chapter <ChevronRight className="size-4" aria-hidden />
-                    </Button>
-                  ) : null}
-                </div>
-              )}
-            </footer>
+              </div>
+            ) : null}
           </div>
-          <QuizCameraGate integrity={integrity} />
-        </div>
+        ) : null}
+
+        <footer className="mt-10 flex items-center justify-between gap-3 border-t border-border pt-6">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={position === 0}
+            onClick={() => go(position - 1)}
+            className="gap-1"
+          >
+            <ChevronLeft className="size-4" aria-hidden />
+            Back
+          </Button>
+          {position < visibleIndices.length - 1 ? (
+            <Button type="button" size="sm" onClick={() => go(position + 1)} className="gap-1">
+              {retryMissed && !perfectScore ? "Next missed question" : "Next"}
+              <ChevronRight className="size-4" aria-hidden />
+            </Button>
+          ) : perfectScore && nextHref ? (
+            <Button
+              type="button"
+              size="sm"
+              disabled={movingNext || (nextLocked && !chapterComplete && !canMarkComplete)}
+              loading={movingNext}
+              onClick={() => void moveToNextChapter()}
+              className="gap-1.5"
+            >
+              {movingNext ? "Opening next chapter…" : nextLocked && !chapterComplete && !canMarkComplete ? "Finish remaining activities" : "Next chapter"}
+              {!movingNext && (!nextLocked || chapterComplete || canMarkComplete) ? <ChevronRight className="size-4" aria-hidden /> : null}
+            </Button>
+          ) : quizBlockIds.length > 0 ? (
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button
+                type="button"
+                size="sm"
+                disabled={submitting || perfectScore}
+                loading={submitting}
+                onClick={() => void submitQuiz()}
+              >
+                {submitting ? "Submitting…" : perfectScore ? "Quiz complete" : scoreSummary ? "Submit again" : individualActivityCount > 0 ? "Submit multiple-choice answers" : "Submit quiz"}
+              </Button>
+              {!nextLocked && nextHref ? (
+                <Button type="button" size="sm" variant="outline" disabled={submitting} onClick={() => void moveToNextChapter()} className="gap-1.5">
+                  Next chapter <ChevronRight className="size-4" aria-hidden />
+                </Button>
+              ) : null}
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <p className="text-sm text-muted-foreground">Submit each activity above. Its result or review status appears on the activity.</p>
+              {!nextLocked && nextHref ? (
+                <Button type="button" size="sm" variant="outline" onClick={() => void moveToNextChapter()} className="gap-1.5">
+                  Next chapter <ChevronRight className="size-4" aria-hidden />
+                </Button>
+              ) : null}
+            </div>
+          )}
+        </footer>
         {submitError ? <p className="mt-3 text-sm text-destructive" role="alert">{submitError}</p> : null}
       </section>
     </QuizSessionContext.Provider>
