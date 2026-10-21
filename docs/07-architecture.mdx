@@ -10,6 +10,9 @@ status: draft v1 — updated 2026-08-03 with editor/runner/auth research
 ## Stack
 
 - **Framework:** Next.js 15 (App Router), TypeScript strict, React Server Components by default.
+- **Backend:** Separate Express 5 + TypeScript API in `server/`, deployed independently from
+  the Next.js frontend in `frontend/`. Express owns database access, sessions, email, and
+  background jobs; the frontend calls it over HTTP through the `/api/v1` proxy.
 - **DB:** Postgres (Supabase or Neon). **ORM:** Prisma.
 - **Auth:** Auth.js v5 (formerly NextAuth) with email magic link + Google. Session in DB. See
   "Auth.js v5 status" below.
@@ -36,7 +39,8 @@ status: draft v1 — updated 2026-08-03 with editor/runner/auth research
 
 ## Why this stack
 
-One repo, one deploy, server-side grading in the same codebase as the UI, and a strong MDX story.
+One repo, two independent deployables (Next.js frontend and Express API), and a strong MDX story.
+Server-side grading and database access live in the Express API.
 Prisma keeps report queries typed and readable. The whole thing is deployable by one person on a
 free tier and scales to thousands of learners before anything needs rethinking.
 
