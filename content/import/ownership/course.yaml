@@ -5,6 +5,7 @@ description: "Learn to own outcomes, take initiative without waiting to be told,
 projectGoal: "Write a personal improvement plan with goals, habits and review dates, and share a progress check with a mentor."
 difficulty: Beginner
 estimatedHours: 10
+category: soft-skills
 modules:
   - dir: 01-ownership-and-accountability
     title: "Ownership and accountability"
@@ -20,7 +21,7 @@ modules:
         title: "Admitting mistakes"
         goal: "Report a mistake early with what happened, the impact and the fix."
       - file: 01.04-quiz.md
-        title: "Quiz: ownership"
+        title: "Ownership"
         goal: "Graded scenarios on ownership and accountability."
       - file: 01.05-checklist.md
         title: "Checklist and learning log"
@@ -55,7 +56,7 @@ modules:
         title: "Make progress with assumptions"
         goal: "Write down assumptions, share them, and keep moving while you wait for answers."
       - file: 03.04-quiz.md
-        title: "Quiz: ambiguity"
+        title: "Ambiguity"
         goal: "Graded scenarios on clarifying and handling unclear tasks."
       - file: 03.05-checklist.md
         title: "Checklist and learning log"
@@ -106,7 +107,7 @@ modules:
         title: "Setbacks and recovery"
         goal: "Recover from setbacks with small next steps and support, without blaming yourself."
       - file: 06.04-quiz.md
-        title: "Quiz: change"
+        title: "Change"
         goal: "Graded scenarios on responding to changing requirements."
       - file: 06.05-checklist.md
         title: "Checklist and learning log"
