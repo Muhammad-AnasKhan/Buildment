@@ -32,6 +32,7 @@ export function QuizChapterSessionClient({
   initialScoreSummary,
   initialBlockGrades,
   nextHref,
+  nextLocked,
   canMarkComplete,
   chapterComplete,
 }: {
@@ -46,6 +47,7 @@ export function QuizChapterSessionClient({
   initialScoreSummary: QuizResultSummary | null;
   initialBlockGrades: Record<string, QuizBlockGrade>;
   nextHref?: string;
+  nextLocked: boolean;
   canMarkComplete: boolean;
   chapterComplete: boolean;
 }) {
@@ -195,12 +197,12 @@ export function QuizChapterSessionClient({
   };
 
   const moveToNextChapter = async () => {
-    if (!nextHref || movingNext || !perfectScore) return;
-    if (chapterComplete) {
+    if (!nextHref || movingNext) return;
+    if (chapterComplete || (!nextLocked && (!perfectScore || !canMarkComplete))) {
       router.push(nextHref);
       return;
     }
-    if (!canMarkComplete) return;
+    if (!perfectScore || !canMarkComplete) return;
     setMovingNext(true);
     setSubmitError(null);
     try {
@@ -314,26 +316,40 @@ export function QuizChapterSessionClient({
             <Button
               type="button"
               size="sm"
-              disabled={movingNext || (!chapterComplete && !canMarkComplete)}
+              disabled={movingNext || (nextLocked && !chapterComplete && !canMarkComplete)}
               loading={movingNext}
               onClick={() => void moveToNextChapter()}
               className="gap-1.5"
             >
-              {movingNext ? "Opening next chapter…" : !chapterComplete && !canMarkComplete ? "Finish remaining activities" : "Next chapter"}
-              {!movingNext && (chapterComplete || canMarkComplete) ? <ChevronRight className="size-4" aria-hidden /> : null}
+              {movingNext ? "Opening next chapter…" : nextLocked && !chapterComplete && !canMarkComplete ? "Finish remaining activities" : "Next chapter"}
+              {!movingNext && (!nextLocked || chapterComplete || canMarkComplete) ? <ChevronRight className="size-4" aria-hidden /> : null}
             </Button>
           ) : quizBlockIds.length > 0 ? (
-            <Button
-              type="button"
-              size="sm"
-              disabled={submitting || perfectScore}
-              loading={submitting}
-              onClick={() => void submitQuiz()}
-            >
-              {submitting ? "Submitting…" : perfectScore ? "Quiz complete" : scoreSummary ? "Submit again" : individualActivityCount > 0 ? "Submit multiple-choice answers" : "Submit quiz"}
-            </Button>
+            <div className="flex flex-wrap justify-end gap-2">
+              <Button
+                type="button"
+                size="sm"
+                disabled={submitting || perfectScore}
+                loading={submitting}
+                onClick={() => void submitQuiz()}
+              >
+                {submitting ? "Submitting…" : perfectScore ? "Quiz complete" : scoreSummary ? "Submit again" : individualActivityCount > 0 ? "Submit multiple-choice answers" : "Submit quiz"}
+              </Button>
+              {!nextLocked && nextHref ? (
+                <Button type="button" size="sm" variant="outline" disabled={submitting} onClick={() => void moveToNextChapter()} className="gap-1.5">
+                  Next chapter <ChevronRight className="size-4" aria-hidden />
+                </Button>
+              ) : null}
+            </div>
           ) : (
-            <p className="text-sm text-muted-foreground">Submit each activity above. Its result or review status appears on the activity.</p>
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <p className="text-sm text-muted-foreground">Submit each activity above. Its result or review status appears on the activity.</p>
+              {!nextLocked && nextHref ? (
+                <Button type="button" size="sm" variant="outline" onClick={() => void moveToNextChapter()} className="gap-1.5">
+                  Next chapter <ChevronRight className="size-4" aria-hidden />
+                </Button>
+              ) : null}
+            </div>
           )}
         </footer>
         {submitError ? <p className="mt-3 text-sm text-destructive">{submitError}</p> : null}

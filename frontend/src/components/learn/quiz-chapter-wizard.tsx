@@ -7,7 +7,7 @@ import { getSessionUser } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { QuizChapterSessionClient } from "./quiz-chapter-session-client";
 
-export async function QuizChapterWizard({ chapterId, chapterTitle, nextHref, canMarkComplete, chapterComplete }: { chapterId: string; chapterTitle: string; nextHref?: string; canMarkComplete: boolean; chapterComplete: boolean }) {
+export async function QuizChapterWizard({ chapterId, chapterTitle, nextHref, nextLocked, canMarkComplete, chapterComplete }: { chapterId: string; chapterTitle: string; nextHref?: string; nextLocked: boolean; canMarkComplete: boolean; chapterComplete: boolean }) {
   const user = await getSessionUser();
   if (!user) return null;
 
@@ -28,6 +28,7 @@ export async function QuizChapterWizard({ chapterId, chapterTitle, nextHref, can
       initialScoreSummary={state.initialScoreSummary}
       initialBlockGrades={state.initialBlockGrades}
       nextHref={nextHref}
+      nextLocked={nextLocked}
       canMarkComplete={canMarkComplete}
       chapterComplete={chapterComplete}
     >

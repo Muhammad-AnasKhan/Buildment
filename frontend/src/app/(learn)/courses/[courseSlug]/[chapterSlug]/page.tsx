@@ -99,6 +99,7 @@ export default async function ChapterReaderPage({
           chapterId={chapter.id}
           chapterTitle={chapter.title}
           nextHref={next ? `/courses/${course.slug}/${next.slug}` : undefined}
+          nextLocked={content.nextLocked}
           canMarkComplete={content.canMarkComplete}
           chapterComplete={content.chapterComplete}
         />

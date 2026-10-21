@@ -18,6 +18,7 @@ const MODAL_OPEN_DELAY_MS = 820;
 
 export function ChapterCompletionStrip(props: {
   chapterId: string;
+  nextLocked: boolean;
   chapterComplete: boolean;
   canMarkComplete: boolean;
   checkpointsCompleted: number;
@@ -38,6 +39,7 @@ type CelebrationPhase = "idle" | "burst" | "modal";
 
 function ChapterCompletionMoment({
   chapterId,
+  nextLocked,
   chapterComplete,
   canMarkComplete,
   checkpointsCompleted,
@@ -52,6 +54,7 @@ function ChapterCompletionMoment({
   suppressAutoCelebration = false,
 }: {
   chapterId: string;
+  nextLocked: boolean;
   chapterComplete: boolean;
   canMarkComplete: boolean;
   checkpointsCompleted: number;
@@ -143,14 +146,19 @@ function ChapterCompletionMoment({
 
   let statusLine: string;
   if (chapterComplete) {
-    statusLine = "This lesson is complete — the next one is unlocked in the syllabus.";
+    statusLine = "This lesson is complete.";
   } else if (reflectionPending) {
-    statusLine =
-      "Check every checklist item and answer the learning log. The next chapter stays locked until those are saved.";
+    statusLine = nextLocked
+      ? "Check every checklist item and answer the learning log. The next chapter stays locked until those are saved."
+      : "Check every checklist item and answer the learning log to complete this chapter.";
   } else if (canMarkComplete) {
-    statusLine = hasCheckpoints
-      ? "All checkpoints are done. Mark complete to unlock the next lesson."
-      : "No graded checkpoints here — mark complete when you have read the lesson.";
+    if (!hasCheckpoints) {
+      statusLine = "No graded checkpoints here — mark complete when you have read the lesson.";
+    } else {
+      statusLine = nextLocked
+        ? "All checkpoints are done. Mark complete to unlock the next lesson."
+        : "All checkpoints are done. Mark this chapter complete when you are ready.";
+    }
   } else if (hasCheckpoints) {
     statusLine = `Finish ${remaining} more checkpoint${remaining === 1 ? "" : "s"} in this lesson (scroll up).`;
   } else {
