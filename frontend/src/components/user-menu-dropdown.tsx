@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/user-avatar";
+import { ThemeMenuItems } from "@/components/theme-menu-items";
 
 type UserMenuDropdownProps = {
   user: { name?: string | null; email?: string | null; image?: string | null };
@@ -58,7 +59,7 @@ export function UserMenuDropdown({
           <DropdownMenuLabel className="font-normal">
             <p className="truncate text-sm font-medium text-neutral-950">{displayName}</p>
             {user.email && user.name && (
-              <p className="truncate text-xs text-neutral-500">{user.email}</p>
+              <p className="truncate text-xs text-muted-foreground">{user.email}</p>
             )}
           </DropdownMenuLabel>
         </DropdownMenuGroup>
@@ -73,6 +74,8 @@ export function UserMenuDropdown({
             My progress
           </DropdownMenuItem>
         )}
+        <DropdownMenuSeparator />
+        <ThemeMenuItems />
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"
