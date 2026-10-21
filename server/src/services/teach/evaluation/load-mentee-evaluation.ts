@@ -15,6 +15,7 @@ import type {
   ProjectEvidence,
 } from "../../../shared/api/teach.js";
 import { helpUiCopy as copy } from "../../../shared/lib/help-ui-copy.js";
+import { loadIntegritySummaries } from "../../integrity/review.js";
 
 const RESPONSE_LIMIT = 240;
 const INACTIVE_DAYS = 7;
@@ -30,7 +31,7 @@ export async function loadMenteeEvaluation(args: {
   if (!enrollment || !isEnrollmentScopedToCourse(enrollment, args.course.id)) return null;
   if (!enrollment.userId || !enrollment.user) return null;
 
-  const [courseStructure, progressRows, responseRows, helpRows, sessionRows, study] =
+  const [courseStructure, progressRows, responseRows, helpRows, sessionRows, study, integrity] =
     await Promise.all([
       prisma.course.findUnique({
         where: { id: args.course.id },
@@ -114,6 +115,7 @@ export async function loadMenteeEvaluation(args: {
         include: { chapter: { select: { title: true } } },
       }),
       loadStudyWeek([enrollment.id]),
+      loadIntegritySummaries(enrollment.id),
     ]);
 
   if (!courseStructure) return null;
@@ -313,6 +315,7 @@ export async function loadMenteeEvaluation(args: {
       startedAt: session.startedAt.toISOString(),
     })),
     reflections: buildReflections(progressRows, courseStructure),
+    integrity,
   };
 }
 
