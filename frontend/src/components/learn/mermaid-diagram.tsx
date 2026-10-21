@@ -157,6 +157,8 @@ function mermaidThemeVariables(isDark: boolean): Record<string, string | boolean
 function initMermaid(api: MermaidApi, isDark: boolean) {
   api.initialize({
     startOnLoad: false,
+    // Mermaid otherwise leaves its error SVG in document.body when parsing fails.
+    suppressErrorRendering: true,
     theme: "base",
     look: "classic",
     securityLevel: "strict",
@@ -166,11 +168,27 @@ function initMermaid(api: MermaidApi, isDark: boolean) {
   return api;
 }
 
+function normalizeChart(chart: string): string {
+  const source = chart.trim();
+  // Previously imported ER charts can contain relationship lines without the
+  // diagram declaration. Keep those lessons readable until they are re-imported.
+  if (/^[A-Za-z_][\w-]*\s+\|\|--o\{\s+[A-Za-z_][\w-]*\s*:/.test(source)) {
+    return `erDiagram\n${source}`;
+  }
+  return chart;
+}
+
 function enqueueRender(id: string, chart: string, isDark: boolean) {
   const run = renderQueue.then(async () => {
     const api = await loadMermaid();
     initMermaid(api, isDark);
-    return api.render(id, chart);
+    try {
+      return await api.render(id, normalizeChart(chart));
+    } finally {
+      // Older Mermaid builds can leave a temporary node behind after failure.
+      document.getElementById(`d${id}`)?.remove();
+      document.getElementById(`i${id}`)?.remove();
+    }
   });
   renderQueue = run.then(
     () => undefined,

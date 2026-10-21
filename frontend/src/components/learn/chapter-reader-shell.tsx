@@ -359,7 +359,9 @@ export function ChapterReaderShell({
                         Module gate
                       </span>
                       <span className="text-muted-foreground">
-                        Check every item and answer the learning log. The next chapter stays locked until both are saved.
+                        {nextLocked
+                          ? "Check every item and answer the learning log. The next chapter stays locked until both are saved."
+                          : "Check every item and answer the learning log to complete this gate chapter."}
                       </span>
                     </p>
                   ) : null}

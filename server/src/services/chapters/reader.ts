@@ -164,7 +164,7 @@ export async function loadChapterReader(courseSlug: string, chapterSlug: string,
       canMarkComplete: !chapterComplete && remaining <= 0 && !reflectionPending,
       checkpointsCompleted,
       checkpointsTotal,
-      nextLocked: !bypassLocking && !chapterComplete && Boolean(next),
+      nextLocked: !bypassLocking && course.sequential && !chapterComplete && Boolean(next),
       reflectionPending,
       recap: {
         checks: chapterChecksLine(checkpointsCompleted, checkpointsTotal),
