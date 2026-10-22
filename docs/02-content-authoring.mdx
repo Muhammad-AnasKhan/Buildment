@@ -234,6 +234,8 @@ split pane.
 
 ## Block extraction and the sync problem
 
+Bulk course/module publishing validates MDX and prepares activity changes before opening a database transaction. The transaction rechecks the chapter and block snapshots, then creates, archives, and updates blocks in batches of at most 200 rows across the selected chapters. Updates retain block IDs and responses, and only changed subtrees increment activity versions. All batches and chapter publication snapshots commit together; concurrent edits or a failed batch roll back the whole publish. The database write phase has a 60-second timeout; compilation does not consume that timeout.
+
 The hard part of MDX + interactivity: the answers live in the DB, the questions live in a text
 blob. If a mentor edits a question after students have answered it, what happens?
 
