@@ -10,6 +10,10 @@ export const CANVAS_SLUGS = [
   "freshmarket-cart-split",
   "freshmarket-stock-holds",
   "ticketline-seat-hold-race",
+  "rag-hybrid-rerank",
+  "retrieval-metrics-at-k",
+  "agent-react-loop",
+  "langgraph-reducer-merge",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];

@@ -9,6 +9,10 @@ import { freshmarketCartSplit } from "./freshmarket-cart-split/data";
 import { freshmarketStockHolds } from "./freshmarket-stock-holds/data";
 import { weightedMatrixTwoOffers } from "./weighted-matrix-two-offers/data";
 import { ticketlineSeatHoldRace } from "./ticketline-seat-hold-race/data";
+import { ragHybridRerank } from "./rag-hybrid-rerank/data";
+import { retrievalMetricsAtK } from "./retrieval-metrics-at-k/data";
+import { agentReactLoop } from "./agent-react-loop/data";
+import { langgraphReducerMerge } from "./langgraph-reducer-merge/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the three
@@ -32,6 +36,10 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "freshmarket-cart-split": freshmarketCartSplit,
   "freshmarket-stock-holds": freshmarketStockHolds,
   "ticketline-seat-hold-race": ticketlineSeatHoldRace,
+  "rag-hybrid-rerank": ragHybridRerank,
+  "retrieval-metrics-at-k": retrievalMetricsAtK,
+  "agent-react-loop": agentReactLoop,
+  "langgraph-reducer-merge": langgraphReducerMerge,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
