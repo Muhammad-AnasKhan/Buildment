@@ -1,83 +1,96 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  BookOpenCheck,
-  ChartNoAxesCombined,
-  MessageSquareText,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { CatalogCourseSummary } from "@/shared/api/catalog";
 import { serverApiFetch } from "@/lib/api-server";
 import { Logo } from "@/components/brand/logo";
-import { CourseCard } from "@/components/marketing/course-card";
+import { CourseCatalog } from "@/components/marketing/course-catalog";
+import { FeatureTabs } from "@/components/marketing/feature-tabs";
+import { HeroStats, type HeroStat } from "@/components/marketing/hero-stats";
+import { HowItWorks } from "@/components/marketing/how-it-works";
 import { LandingHeader } from "@/components/marketing/landing-header";
 import { ProductFrame } from "@/components/marketing/product-frame";
 import { SectionHeader } from "@/components/marketing/section-header";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-const STEPS = [
-  {
-    title: "Choose a course",
-    text: "Browse published project courses and sign in to enroll.",
-  },
-  {
-    title: "Work through chapters",
-    text: "Read lessons, complete exercises, and submit answers at each step.",
-  },
-  {
-    title: "Ship the project",
-    text: "Finish with a working product and a clear record of what you built.",
-  },
-];
-
-const VALUE_PROPS = [
-  {
-    icon: BookOpenCheck,
-    title: "One project per course",
-    text: "Every chapter moves the same codebase forward instead of isolated tutorials.",
-  },
-  {
-    icon: MessageSquareText,
-    title: "Help in context",
-    text: "Questions and mentor replies stay tied to the course and chapter you are on.",
-  },
-  {
-    icon: ChartNoAxesCombined,
-    title: "Progress you can see",
-    text: "Completion, reviews, and activity show what is done and what needs attention.",
-  },
-];
+const SECTION = "px-4 py-16 sm:px-6 lg:px-8 lg:py-[84px]";
 
 function courseCatalogDescription(courseCount: number): string {
   if (courseCount === 0) return "";
   const noun = courseCount === 1 ? "course" : "courses";
-  return `${courseCount} published ${noun}. Sign in to enroll and follow the path chapter by chapter.`;
+  return `${courseCount} published ${noun}. Sign in to enroll in a course, follow each chapter at your own pace, and track your progress as you move forward.`;
 }
 
 export default async function MarketingHomePage() {
   // Public catalog, fetched anonymously so the landing page renders the same for everyone.
-  const { courses } = await serverApiFetch<{ courses: CatalogCourseSummary[] }>("/api/v1/catalog", { token: null });
+  const { courses } = await serverApiFetch<{ courses: CatalogCourseSummary[] }>(
+    "/api/v1/catalog",
+    { token: null },
+  );
+
+  // Hero stats come straight from the catalog, so they can never drift from the real numbers.
+  const totalHours = courses.reduce(
+    (sum, c) => sum + (c.estimatedHours ?? 0),
+    0,
+  );
+  const stats: HeroStat[] = [
+    {
+      value: courses.reduce((sum, c) => sum + c.chapterCount, 0),
+      label: "chapters",
+    },
+    {
+      value: courses.reduce((sum, c) => sum + c.moduleCount, 0),
+      label: "modules",
+    },
+    { value: totalHours, label: "of building", suffix: "h" },
+  ].filter((stat) => stat.value > 0);
+
+  // The "Choose a course" scene in How it works shows real courses (up to three).
+  const sceneCourses = courses.slice(0, 3).map((course) => ({
+    title: course.title,
+    meta: [
+      `${course.moduleCount} ${course.moduleCount === 1 ? "module" : "modules"}`,
+      course.estimatedHours !== null ? `${course.estimatedHours}h` : null,
+    ]
+      .filter(Boolean)
+      .join(" · "),
+    coverUrl: course.coverUrl,
+  }));
 
   return (
     <div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
       <LandingHeader showCourses={courses.length > 0} />
 
       <main className="flex-1">
-        <section className="border-b border-border" aria-labelledby="hero-heading">
-          <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-10 sm:px-6 sm:py-14 lg:grid-cols-2 lg:gap-12 lg:px-8 lg:py-16">
-            <div className="max-w-xl">
-              <SectionHeader
-                as="h1"
-                headingId="hero-heading"
-                label="Buildment"
-                title="Learn by building real projects"
-                description="Interactive courses guide you through one codebase—from setup to deploy—with lessons, exercises, and mentor feedback along the way."
-              />
+        {/* Hero: copy left, product preview right */}
+        <section aria-labelledby="hero-heading">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-[1fr_1.1fr] lg:gap-14 lg:px-8 lg:py-20">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">
+                Buildment
+              </p>
+              <h1
+                id="hero-heading"
+                className="mt-3 text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl"
+              >
+                Learn by building{" "}
+                <span className="bg-gradient-to-r from-foreground to-foreground/50 bg-clip-text text-transparent">
+                  real projects
+                </span>
+              </h1>
+              <p className="mt-5 max-w-[46ch] text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
+                Learn through interactive courses that guide you from setup to
+                deployment with practical lessons, hands on exercises, and
+                mentor feedback.
+              </p>
               <div className="mt-8 flex flex-wrap items-center gap-3">
                 {courses.length > 0 ? (
                   <a
                     href="#courses"
-                    className={cn(buttonVariants({ size: "lg" }), "h-10 gap-2 px-4")}
+                    className={cn(
+                      buttonVariants({ size: "lg" }),
+                      "h-11 gap-2 px-5 text-[0.95rem]",
+                    )}
                   >
                     Browse courses
                     <ArrowRight className="size-4" aria-hidden="true" />
@@ -90,7 +103,7 @@ export default async function MarketingHomePage() {
                       variant: courses.length > 0 ? "outline" : "default",
                       size: "lg",
                     }),
-                    "h-10 gap-2 px-4",
+                    "h-11 gap-2 px-5 text-[0.95rem]",
                   )}
                 >
                   Sign in
@@ -99,121 +112,111 @@ export default async function MarketingHomePage() {
                   ) : null}
                 </Link>
               </div>
+
+              <HeroStats stats={stats} />
             </div>
             <ProductFrame />
           </div>
         </section>
 
+        {/* Catalog */}
         {courses.length > 0 ? (
           <section
             id="courses"
-            className="scroll-mt-16 border-b border-border"
+            className={cn("scroll-mt-16 border-t border-border", SECTION)}
             aria-labelledby="courses-heading"
           >
-            <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
+            <div className="mx-auto max-w-7xl">
               <SectionHeader
                 headingId="courses-heading"
                 label="Explore"
                 title="Course catalog"
                 description={courseCatalogDescription(courses.length)}
-                className="border-b border-border pb-7"
+                className="mb-9"
               />
-              <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                {courses.map((course) => (
-                  <CourseCard
-                    key={course.id}
-                    course={{
-                      slug: course.slug,
-                      title: course.title,
-                      description: course.description,
-                      projectGoal: course.projectGoal,
-                      coverUrl: course.coverUrl,
-                      difficulty: course.difficulty,
-                      estimatedHours: course.estimatedHours,
-                      moduleCount: course.moduleCount,
-                      chapterCount: course.chapterCount,
-                    }}
-                  />
-                ))}
-              </div>
+
+              <CourseCatalog
+                courses={courses.map((course) => ({
+                  id: course.id,
+                  slug: course.slug,
+                  title: course.title,
+                  description: course.description,
+                  projectGoal: course.projectGoal,
+                  coverUrl: course.coverUrl,
+                  difficulty: course.difficulty,
+                  estimatedHours: course.estimatedHours,
+                  moduleCount: course.moduleCount,
+                  chapterCount: course.chapterCount,
+                }))}
+              />
             </div>
           </section>
         ) : null}
 
+        {/* Features: tabs left, panel right */}
         <section
           id="why"
-          className="mx-auto max-w-7xl scroll-mt-20 px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14"
+          className={cn("scroll-mt-16 border-t border-border", SECTION)}
           aria-labelledby="why-heading"
         >
-          <SectionHeader
-            headingId="why-heading"
-            label="Features"
-            title="Built for project-based learning"
-            description="Instruction, hands-on work, and feedback live in the same course—not in separate tools."
-            className="border-b border-border pb-7"
-          />
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {VALUE_PROPS.map((item) => (
-              <article
-                key={item.title}
-                className="rounded-2xl border border-border bg-card p-5 shadow-sm ring-1 ring-foreground/5 sm:p-6"
-              >
-                <div className="flex size-9 items-center justify-center rounded-lg border border-border bg-muted/40">
-                  <item.icon className="size-4 text-foreground" aria-hidden="true" />
-                </div>
-                <h3 className="mt-4 text-base font-semibold tracking-tight">{item.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{item.text}</p>
-              </article>
-            ))}
+          <div className="mx-auto max-w-7xl">
+            <SectionHeader
+              headingId="why-heading"
+              label="Features"
+              title="Learning that goes beyond theory"
+              description="Combine lessons, practical exercises, and mentor feedback in one place to build real skills through real projects."
+              className="mb-9"
+            />
+            <FeatureTabs />
           </div>
         </section>
 
+        {/* How it works: timeline left, stage right */}
         <section
           id="work"
-          className="border-t border-border bg-muted/20"
+          className={cn(
+            "scroll-mt-16 border-t border-border bg-muted/20",
+            SECTION,
+          )}
           aria-labelledby="work-heading"
         >
-          <div className="mx-auto max-w-7xl scroll-mt-20 px-4 py-10 sm:px-6 sm:py-12 lg:px-8 lg:py-14">
-            <div className="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start lg:gap-12">
-              <SectionHeader
-                headingId="work-heading"
-                label="How it works"
-                title="Three steps to get started"
-                description="Learners follow a clear path. Mentors author courses and review work from one workspace."
-              />
-              <ol className="divide-y divide-border rounded-2xl border border-border bg-card shadow-sm">
-                {STEPS.map((step, index) => (
-                  <li key={step.title} className="flex gap-4 p-5 sm:p-6">
-                    <span
-                      className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted/50 text-sm font-medium tabular-nums text-muted-foreground"
-                      aria-hidden
-                    >
-                      {index + 1}
-                    </span>
-                    <div>
-                      <h3 className="text-base font-semibold text-foreground">{step.title}</h3>
-                      <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{step.text}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
+          <div className="mx-auto max-w-7xl">
+            <SectionHeader
+              headingId="work-heading"
+              label="How it works"
+              title="Three simple steps to get started"
+              description="Follow a clear learning path, practice your skills, and get guidance from mentors along the way."
+              className="mb-9"
+            />
+            <HowItWorks courses={sceneCourses} />
           </div>
         </section>
 
-        <section className="px-4 pb-12 sm:px-6 sm:pb-14 lg:px-8 lg:pb-16" aria-labelledby="cta-heading">
-          <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 rounded-2xl border border-border bg-card px-6 py-8 shadow-sm sm:px-8 lg:flex-row lg:items-center">
-            <SectionHeader
-              as="h2"
-              headingId="cta-heading"
-              label="Get started"
-              title="Sign in and pick a course"
-              description="Create an account or sign in to enroll, track progress, and continue where you left off."
-              className="max-w-xl"
-            />
+        {/* CTA: full-width inverted block */}
+        <section
+          className="px-4 pb-16 sm:px-6 lg:px-8 lg:pb-[84px]"
+          aria-labelledby="cta-heading"
+        >
+          <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-7 rounded-[28px] bg-foreground p-8 text-background sm:p-12 lg:flex-row lg:items-center">
+            <div className="max-w-xl">
+              <p className="text-sm font-medium opacity-70">Get started</p>
+              <h2
+                id="cta-heading"
+                className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl"
+              >
+                Sign in and choose your course
+              </h2>
+              <p className="mt-3 text-sm leading-6 opacity-75 sm:text-base">
+                Create an account or sign in to start learning, track your
+                progress, and continue where you left off.
+              </p>
+            </div>
             <Link
               href="/login"
-              className={cn(buttonVariants({ size: "lg" }), "h-10 shrink-0 gap-2 px-4")}
+              className={cn(
+                buttonVariants({ size: "lg" }),
+                "h-11 shrink-0 gap-2 bg-background px-5 text-[0.95rem] text-foreground hover:bg-background/90",
+              )}
             >
               Sign in
               <ArrowRight className="size-4" aria-hidden="true" />
@@ -225,7 +228,9 @@ export default async function MarketingHomePage() {
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
           <Logo size="sm" />
-          <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()}</p>
+          <p className="text-sm text-muted-foreground">
+            &copy; {new Date().getFullYear()} DevWeekends. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>
