@@ -88,7 +88,7 @@ export function LoginBrandPanel() {
                 type="button"
                 onClick={() => pick(option)}
                 className={cn(
-                  "rounded-xl border px-4 py-2 text-sm font-semibold outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring",
+                  "rounded-xl cursor-pointer border px-4 py-2 text-sm font-semibold outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring",
                   isGood
                     ? "border-ok bg-ok text-white dark:text-[oklch(0.18_0.02_160)]"
                     : isBad

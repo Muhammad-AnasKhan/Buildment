@@ -113,7 +113,7 @@ export function ProductFrame() {
                     aria-current={on ? "true" : undefined}
                     onClick={() => selectModule(index)}
                     className={cn(
-                      "flex w-full items-center gap-2 rounded-[10px] px-2.5 py-2 text-left text-[13px] outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 sm:text-sm",
+                      "flex w-full items-center cursor-pointer gap-2 rounded-[10px] px-2.5 py-2 text-left text-[13px] outline-none transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 sm:text-sm",
                       on
                         ? "bg-foreground text-background"
                         : "text-muted-foreground hover:bg-muted",
@@ -189,7 +189,7 @@ export function ProductFrame() {
                 type="button"
                 onClick={fillExample}
                 disabled={isDone || reviewing}
-                className="rounded-md text-sm font-semibold text-foreground underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40"
+                className="rounded-md cursor-pointer text-sm font-semibold text-foreground underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-40"
               >
                 Show an example answer
               </button>

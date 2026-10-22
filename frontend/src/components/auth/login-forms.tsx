@@ -108,7 +108,7 @@ export function PasswordLoginForm({
       ) : null}
       <Button
         type="submit"
-        className="h-[50px] w-full rounded-[13px] bg-foreground text-[15px] font-semibold text-background transition-[transform,box-shadow] hover:-translate-y-0.5 hover:bg-foreground hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.35)] disabled:translate-y-0 disabled:opacity-70 motion-reduce:transform-none"
+        className="h-[50px] w-full cursor-pointer rounded-[13px] bg-foreground text-[15px] font-semibold text-background transition-[transform,box-shadow] hover:-translate-y-0.5 hover:bg-foreground hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.35)] disabled:translate-y-0 disabled:opacity-70 motion-reduce:transform-none"
         disabled={pending}
       >
         {pending ? (
@@ -189,7 +189,7 @@ export function MagicLinkForm({ redirectTo }: { redirectTo?: string | null }) {
       ) : null}
       <Button
         type="submit"
-        className="h-[50px] w-full rounded-[13px] bg-foreground text-[15px] font-semibold text-background transition-[transform,box-shadow] hover:-translate-y-0.5 hover:bg-foreground hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.35)] disabled:translate-y-0 disabled:opacity-70 motion-reduce:transform-none"
+        className="h-[50px] w-full rounded-[13px] cursor-pointer bg-foreground text-[15px] font-semibold text-background transition-[transform,box-shadow] hover:-translate-y-0.5 hover:bg-foreground hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.35)] disabled:translate-y-0 disabled:opacity-70 motion-reduce:transform-none"
         disabled={pending}
       >
         {pending ? (
