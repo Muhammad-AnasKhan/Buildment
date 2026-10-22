@@ -13,9 +13,9 @@ export const ragHybridRerank: SequenceSpec = {
     "The app sends the question to a keyword index and a vector index. Each returns its top 3 chunks. The app fuses the two lists with reciprocal rank fusion into 5 candidates, sends those 5 to a reranker, and passes the reranked top 3 to the model.",
   actors: [
     { name: "App", sub: "retriever" },
-    { name: "Keyword", sub: "BM25 index" },
-    { name: "Vectors", sub: "embedding index" },
-    { name: "Reranker", sub: "cross-encoder" },
+    { name: "Keyword", sub: "BM25" },
+    { name: "Vectors", sub: "embeddings" },
+    { name: "Reranker", sub: "rescores" },
   ],
   steps: [
     {

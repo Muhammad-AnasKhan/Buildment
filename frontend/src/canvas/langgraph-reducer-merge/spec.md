@@ -3,7 +3,7 @@
 - **Slug:** `langgraph-reducer-merge`
 - **Course:** AI Engineering Interview, chapter 7.2 "State, nodes, edges and reducers".
 - **Teaching claim:** Nodes return partial updates and LangGraph merges them at the end of each step. A key with a reducer combines updates (an append reducer keeps both messages). A key without a reducer is replaced by a single update, and two updates to it in the same step raise InvalidUpdateError.
-- **Renderer:** sequence (four lanes: State, Policy node, Order node, Merge).
+- **Renderer:** sequence (four lanes: State, Policy, Orders, Merge).
 
 ## Model
 

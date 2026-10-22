@@ -12,10 +12,10 @@ export const langgraphReducerMerge: SequenceSpec = {
   summary:
     "Two nodes read the same state and each returns an update. The messages key has an append reducer, so both new messages are kept. The status key has no reducer: one update replaces it, but two updates in the same step raise InvalidUpdateError.",
   actors: [
-    { name: "State", sub: "messages, status" },
-    { name: "Policy node", sub: "searches docs" },
-    { name: "Order node", sub: "looks up order" },
-    { name: "Merge", sub: "applies reducers" },
+    { name: "State", sub: "2 keys" },
+    { name: "Policy", sub: "node" },
+    { name: "Orders", sub: "node" },
+    { name: "Merge", sub: "reducers" },
   ],
   steps: [
     {
