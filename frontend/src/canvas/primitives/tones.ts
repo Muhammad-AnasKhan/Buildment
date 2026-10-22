@@ -81,5 +81,8 @@ export const NEUTRAL = {
 export const FOCUS_RING =
   "outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-card dark:focus-visible:ring-blue-400";
 
+/** The accent on native controls such as a range slider's track and thumb. */
+export const ACCENT_CONTROL = "accent-blue-600 dark:accent-blue-400";
+
 /** Colour changes on SVG shapes: short, and off when motion is reduced. */
 export const SHAPE_TRANSITION = "transition-colors duration-200 motion-reduce:transition-none";

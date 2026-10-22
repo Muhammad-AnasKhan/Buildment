@@ -2,7 +2,9 @@
 
 import { useId, useState } from "react";
 import { RotateCcw } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { CanvasFrame, CanvasNotes } from "../primitives/canvas-frame";
+import { ACCENT_CONTROL, FOCUS_RING, TONES } from "../primitives/tones";
 import { describeChange, formatMetric, K_BOUNDS, metricsAtK, RANKED_CHUNKS, type MetricsAtK } from "./model";
 
 const TRY_THIS = [
@@ -45,7 +47,7 @@ export function RetrievalMetricsCanvas({ title, purpose, limits }: { title: stri
           value={result.k}
           onChange={(event) => update(Number(event.target.value))}
           aria-valuetext={`k equals ${result.k}`}
-          className="mt-3 h-10 w-full cursor-pointer accent-blue-600 dark:accent-blue-400"
+          className={cn("mt-3 h-10 w-full cursor-pointer rounded-md", ACCENT_CONTROL, FOCUS_RING)}
         />
         <div className="flex justify-between text-[11px] tabular-nums text-muted-foreground"><span>{K_BOUNDS.min}</span><span>{K_BOUNDS.max}</span></div>
       </div>
@@ -64,7 +66,7 @@ export function RetrievalMetricsCanvas({ title, purpose, limits }: { title: stri
                 <span className="block truncate text-foreground">{chunk.gist}</span>
                 <span className="block truncate font-mono text-[11px] text-muted-foreground">{chunk.id}</span>
               </span>
-              <span className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${chunk.relevant ? "bg-emerald-50 text-emerald-800 ring-emerald-200/80 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-emerald-400/25" : "bg-muted text-muted-foreground ring-border"}`}>
+              <span className={cn("shrink-0 rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset", chunk.relevant ? TONES.good.chip : "bg-muted text-muted-foreground ring-border")}>
                 {chunk.relevant ? "relevant" : "not relevant"}
               </span>
               <span className="sr-only">{kept ? "kept" : "not kept"}</span>
@@ -79,7 +81,7 @@ export function RetrievalMetricsCanvas({ title, purpose, limits }: { title: stri
           type="button"
           onClick={() => update(K_BOUNDS.default)}
           disabled={result.k === K_BOUNDS.default}
-          className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className={cn("inline-flex min-h-11 items-center gap-1.5 rounded-lg border border-border px-3 text-sm font-medium text-foreground hover:bg-muted disabled:opacity-50", FOCUS_RING)}
         >
           <RotateCcw className="size-3.5" aria-hidden /> Reset
         </button>
