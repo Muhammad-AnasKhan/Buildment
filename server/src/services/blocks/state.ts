@@ -25,8 +25,8 @@ const strings = (value: unknown) => (Array.isArray(value) ? value.filter((item):
  * hidden tests and solutions are stripped before the config is returned.
  */
 export async function loadBlockState(blockId: string, user: SessionUser | undefined): Promise<BlockState> {
-  const block = await prisma.block.findUnique({ where: { id: blockId }, include: { chapter: { select: { course: { select: { id: true, familySlug: true } } } } } });
-  if (!block || block.archivedAt) throw new NotFoundError("Block not found");
+  const block = await prisma.block.findUnique({ where: { id: blockId }, include: { chapter: { select: { archivedAt: true, course: { select: { id: true, familySlug: true } } } } } });
+  if (!block || block.archivedAt || block.chapter.archivedAt) throw new NotFoundError("Block not found");
 
   // Prompts and options read in the caller's variant; anonymous previews get the fallbacks.
   const { course } = block.chapter;

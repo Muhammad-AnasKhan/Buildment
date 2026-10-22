@@ -12,7 +12,7 @@ import { checkpointSatisfied, isCompletableBlock } from "./rules.js";
 /** The learner's active enrollment for a chapter, with the chapter unlocked. */
 export async function unlockedChapterForLearner(chapterId: string, user: SessionUser) {
   const chapter = await prisma.chapter.findUnique({
-    where: { id: chapterId },
+    where: { id: chapterId, archivedAt: null },
     select: { id: true, courseId: true, slug: true, isMilestone: true, source: true, compiled: true, course: { select: { slug: true } } },
   });
   if (!chapter) throw new NotFoundError("Chapter not found.");

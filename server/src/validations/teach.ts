@@ -3,6 +3,7 @@ import { isSafeAssetUrl } from "../shared/lib/asset-url.js";
 import { id, params } from "./common.js";
 
 export const courseIdParams = params("courseId");
+export const approveCourseZipUpdateBody = z.object({ previewId: id, confirm: z.literal(true) });
 export const courseSlugParams = params("courseSlug");
 export const moduleIdParams = params("moduleId");
 export const chapterIdParams = params("chapterId");

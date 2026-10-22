@@ -19,7 +19,8 @@ import { milestoneReflectionBlocked } from "./reflection.js";
 export async function recomputeChapterProgress(
   tx: Prisma.TransactionClient,
   enrollmentId: string,
-  chapterId: string
+  chapterId: string,
+  options?: { preserveActivity?: boolean }
 ) {
   const blocks = await tx.block.findMany({
     where: { chapterId, archivedAt: null },
@@ -111,7 +112,7 @@ export async function recomputeChapterProgress(
     },
   });
 
-  await recomputeEnrollmentRollup(tx, enrollmentId);
+  await recomputeEnrollmentRollup(tx, enrollmentId, options);
 }
 
 /** Recompute every chapter for one enrollment (mentor repair / demo tooling). */
@@ -121,7 +122,7 @@ export async function repairEnrollmentProgress(
   courseId: string
 ) {
   const chapters = await tx.chapter.findMany({
-    where: { courseId },
+    where: { courseId, archivedAt: null },
     select: { id: true },
     orderBy: { order: "asc" },
   });
@@ -132,15 +133,16 @@ export async function repairEnrollmentProgress(
 
 export async function recomputeEnrollmentRollup(
   tx: Prisma.TransactionClient,
-  enrollmentId: string
+  enrollmentId: string,
+  options?: { preserveActivity?: boolean }
 ) {
-  const chapterProgress = await tx.chapterProgress.findMany({ where: { enrollmentId } });
+  const chapterProgress = await tx.chapterProgress.findMany({ where: { enrollmentId, chapter: { archivedAt: null } } });
   const chaptersCompleted = chapterProgress.filter((p) => p.status === "COMPLETED").length;
   const totalScore = chapterProgress.reduce((sum, p) => sum + p.score, 0);
   const maxScore = chapterProgress.reduce((sum, p) => sum + p.maxScore, 0);
 
   const enrollment = await tx.enrollment.findUniqueOrThrow({ where: { id: enrollmentId } });
-  const totalChapters = await tx.chapter.count({ where: { courseId: enrollment.courseId } });
+  const totalChapters = await tx.chapter.count({ where: { courseId: enrollment.courseId, archivedAt: null } });
   const allChaptersComplete = totalChapters > 0 && chaptersCompleted >= totalChapters;
   const roundedPercent = totalChapters > 0 ? Math.round((chaptersCompleted / totalChapters) * 100) : 0;
   const percentComplete = allChaptersComplete ? 100 : Math.min(99, roundedPercent);
@@ -152,9 +154,8 @@ export async function recomputeEnrollmentRollup(
       totalScore,
       maxScore,
       percentComplete,
-      lastActiveAt: new Date(),
-      startedAt: enrollment.startedAt ?? new Date(),
-      status: allChaptersComplete ? "COMPLETED" : "IN_PROGRESS",
+      ...(options?.preserveActivity ? {} : { lastActiveAt: new Date(), startedAt: enrollment.startedAt ?? new Date() }),
+      status: options?.preserveActivity && enrollment.status === "DROPPED" ? "DROPPED" : allChaptersComplete ? "COMPLETED" : "IN_PROGRESS",
       completedAt: allChaptersComplete ? (enrollment.completedAt ?? new Date()) : null,
     },
   });

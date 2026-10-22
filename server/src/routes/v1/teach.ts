@@ -9,6 +9,7 @@ import { requireZipImport } from "../../middlewares/require-zip-import.js";
 import { validate, validateBody, validateParams } from "../../middlewares/validate.js";
 import {
   assignByEmailsBody,
+  approveCourseZipUpdateBody,
   chapterDraftBody,
   chapterIdParams,
   courseInstructorInviteBody,
@@ -49,6 +50,8 @@ router.get("/workspace", teach.getWorkspace);
 
 router.get("/courses", teach.listCourses);
 router.post("/courses/import", requireZipImport, raw({ type: "application/zip", limit: "5mb" }), teach.importCourseZip);
+router.post("/courses/:courseId/import/preview", requireZipImport, validateParams(courseIdParams), raw({ type: "application/zip", limit: "5mb" }), teach.previewCourseZipUpdate);
+router.post("/courses/:courseId/import/approve", requireZipImport, validate({ params: courseIdParams, body: approveCourseZipUpdateBody }), teach.approveCourseZipUpdate);
 router.post("/courses", validateBody(createCourseBody), teach.createCourse);
 router.get("/courses/:courseSlug/builder", validateParams(courseSlugParams), teach.getCourseBuilder);
 router.get("/courses/:courseSlug/settings", validateParams(courseSlugParams), teach.getCourseSettings);

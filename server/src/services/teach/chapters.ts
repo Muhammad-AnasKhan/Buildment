@@ -25,7 +25,7 @@ import { syncChapterBlocksFromSource } from "./sync-blocks.js";
 // learners read Chapter.compiled, which publish snapshots after validation.
 
 async function requireChapter(user: SessionUser, chapterId: string) {
-  const chapter = await prisma.chapter.findUnique({ where: { id: chapterId } });
+  const chapter = await prisma.chapter.findUnique({ where: { id: chapterId, archivedAt: null } });
   if (!chapter) throw new NotFoundError("Chapter not found");
   const course = await requireCourseById(user, chapter.courseId);
   return { chapter, course };
@@ -42,12 +42,12 @@ export async function createChapter(user: SessionUser, courseId: string, input: 
   rejectTokensInChapterFields(input);
   const moduleId = input.moduleId ?? null;
   if (moduleId) {
-    const owner = await prisma.module.findFirst({ where: { id: moduleId, courseId }, select: { id: true } });
+    const owner = await prisma.module.findFirst({ where: { id: moduleId, courseId, archivedAt: null }, select: { id: true } });
     if (!owner) throw new NotFoundError("Module not found");
   }
 
   const slug = await uniqueChapterSlug(courseId, slugify(input.title));
-  const last = await prisma.chapter.findFirst({ where: { courseId, moduleId }, orderBy: { order: "desc" }, select: { order: true } });
+  const last = await prisma.chapter.findFirst({ where: { courseId, moduleId, archivedAt: null }, orderBy: { order: "desc" }, select: { order: true } });
   const chapter = await prisma.chapter.create({
     data: { courseId, moduleId, title: input.title, slug, order: (last?.order ?? 0) + 1, source: `# ${input.title}\n` },
     select: { id: true },
@@ -71,6 +71,7 @@ export async function moveChapter(user: SessionUser, chapterId: string, directio
     where: {
       courseId: chapter.courseId,
       moduleId: chapter.moduleId,
+      archivedAt: null,
       order: direction === "up" ? { lt: chapter.order } : { gt: chapter.order },
     },
     orderBy: { order: direction === "up" ? "desc" : "asc" },
@@ -254,7 +255,7 @@ export async function publishChapters(user: SessionUser, scope: { courseId: stri
   let courseId: string;
   let moduleId: string | undefined;
   if ("moduleId" in scope) {
-    const module = await prisma.module.findUnique({ where: { id: scope.moduleId }, select: { courseId: true } });
+    const module = await prisma.module.findUnique({ where: { id: scope.moduleId, archivedAt: null }, select: { courseId: true } });
     if (!module) throw new NotFoundError("Module not found");
     courseId = module.courseId;
     moduleId = scope.moduleId;
@@ -262,7 +263,7 @@ export async function publishChapters(user: SessionUser, scope: { courseId: stri
   await requireCourseById(user, courseId);
 
   await prisma.$transaction(async tx => {
-    const chapters = await tx.chapter.findMany({ where: { courseId, ...(moduleId ? { moduleId } : {}) }, orderBy: [{ order: "asc" }, { id: "asc" }] });
+    const chapters = await tx.chapter.findMany({ where: { courseId, archivedAt: null, ...(moduleId ? { moduleId } : {}) }, orderBy: [{ order: "asc" }, { id: "asc" }] });
     if (!chapters.length) throw new UnprocessableError("There are no chapters to publish.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE);
     const pending = chapters.filter(chapter => !chapter.publishedAt || chapter.compiled !== chapter.source);
     const problems: string[] = [];

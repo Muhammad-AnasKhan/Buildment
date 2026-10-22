@@ -382,6 +382,17 @@ describe("course ZIP import", () => {
       // Another instructor with ZIP import turned on still cannot reuse the slug.
       await prisma.user.update({ where: { id: strangerId }, data: { zipImportEnabled: true } });
       expect((await request(app).post(endpoint).set(stranger()).set("Content-Type", "application/zip").send(archive)).status).toBe(409);
+      // Exercise the real ZIP parser through update preview and approval, not just a mocked plan.
+      const updatePath = `/api/v1/teach/courses/${course.id}/import`;
+      const preview = await request(app).post(`${updatePath}/preview`).set(mentor()).set("Content-Type", "application/zip").send(archive);
+      expect(preview.status, JSON.stringify(preview.body)).toBe(200);
+      expect(preview.body.data.modules).toHaveLength(7);
+      const approved = await request(app).post(`${updatePath}/approve`).set(mentor()).send({ previewId: preview.body.data.previewId, confirm: true });
+      expect(approved.status, JSON.stringify(approved.body)).toBe(200);
+      expect(await prisma.chapter.count({ where: { courseId: course.id, archivedAt: null } })).toBe(36);
+      const originalFirst = course.chapters.find(chapter => chapter.slug === "1-1-set-the-scene")!;
+      expect(await prisma.chapter.findUniqueOrThrow({ where: { id: originalFirst.id } })).toMatchObject({ archivedAt: null, publishedAt: null });
+      expect(await prisma.course.findUniqueOrThrow({ where: { id: course.id } })).toMatchObject({ mentorId: fx.mentor.id, status: "DRAFT" });
     } finally {
       await prisma.user.update({ where: { id: strangerId }, data: { zipImportEnabled: false } });
       await prisma.course.deleteMany({ where: { slug } });

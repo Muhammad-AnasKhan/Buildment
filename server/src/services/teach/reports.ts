@@ -27,8 +27,9 @@ export async function loadCourseReport(user: SessionUser, courseSlug: string, ch
       where: { id: owned.id },
       select: {
         modules: {
+          where: { archivedAt: null },
           orderBy: { order: "asc" },
-          select: { id: true, title: true, chapters: { orderBy: { order: "asc" }, select: { id: true, title: true } } },
+          select: { id: true, title: true, chapters: { where: { archivedAt: null }, orderBy: { order: "asc" }, select: { id: true, title: true } } },
         },
       },
     }),

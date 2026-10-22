@@ -18,6 +18,7 @@ export async function getLearnerProgress(
     include: {
       course: { select: { id: true, slug: true, title: true } },
       chapterProgress: {
+        where: { chapter: { archivedAt: null } },
         include: { chapter: { select: { id: true, title: true, order: true } } },
         orderBy: { chapter: { order: "asc" } },
       },
@@ -25,7 +26,7 @@ export async function getLearnerProgress(
   });
   if (!enrollment) throw new NotFoundError("Enrollment not found");
 
-  const totalLessons = await prisma.chapter.count({ where: { courseId } });
+  const totalLessons = await prisma.chapter.count({ where: { courseId, archivedAt: null } });
   const completedLessons = enrollment.chapterProgress.filter((p) => p.status === "COMPLETED").length;
   const inProgress = enrollment.chapterProgress.find((p) => p.status === "IN_PROGRESS");
   const currentChapter = inProgress ?? enrollment.chapterProgress.find((p) => p.status !== "COMPLETED");

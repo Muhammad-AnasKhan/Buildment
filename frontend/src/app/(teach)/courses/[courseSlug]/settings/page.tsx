@@ -7,6 +7,7 @@ import { CourseSettings } from "@/components/teach/course-cms/course-settings";
 import { CourseTeamPanel } from "@/components/teach/course-cms/course-team-panel";
 import { CourseIntegritySettings } from "@/components/teach/course-cms/course-integrity-settings";
 import { CourseManagementMenu } from "@/components/teach/course-cms/course-management-menu";
+import { CourseZipUpdate } from "@/components/teach/course-cms/course-zip-update";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -27,6 +28,7 @@ export default async function CourseSettingsPage({ params }: { params: Promise<{
           <div className="flex flex-wrap items-center gap-2 lg:justify-end lg:self-end">
             <Link href={`/courses/${course.slug}/preview`} className={cn(buttonVariants({ variant: "outline", size: "lg" }), "gap-2")}>Preview course<ExternalLink className="size-4" aria-hidden /></Link>
             <CourseManagementMenu course={{ id: course.id, title: course.title, status: course.status, enrollmentCount: course.enrollmentCount }} chapterCount={course.chapterCount} />
+            {course.zipImportEnabled && <CourseZipUpdate courseId={course.id} courseTitle={course.title} />}
           </div>
         </div>
         <div className="max-w-3xl">

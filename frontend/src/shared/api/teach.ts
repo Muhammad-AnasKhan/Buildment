@@ -21,6 +21,32 @@ import type { IntegrityAttemptSummary } from "./integrity";
 // ---------------------------------------------------------------------------
 // Workspace shell and course list
 
+export type CourseUpdateAction = "added" | "changed" | "removed" | "restored" | "moved" | "unchanged";
+export type CourseUpdateChapterDiff = {
+  title: string;
+  previousTitle?: string;
+  previousModule?: string;
+  destinationModule?: string;
+  action: CourseUpdateAction;
+  similarity: number | null;
+  reason: string;
+  changes: string[];
+};
+export type CourseUpdateModuleDiff = {
+  title: string;
+  previousTitle?: string;
+  previousOrder?: number;
+  order?: number;
+  action: CourseUpdateAction;
+  chapters: CourseUpdateChapterDiff[];
+};
+export type CourseUpdatePreview = {
+  previewId: string;
+  expiresAt: string;
+  modules: CourseUpdateModuleDiff[];
+  warnings: string[];
+};
+
 export type MentorSidebarCourse = {
   id: string;
   slug: string;
@@ -118,7 +144,7 @@ export type CourseSettingsView = Pick<CourseBuilderCourse,
   "id" | "slug" | "title" | "description" | "projectGoal" | "difficulty" |
   "estimatedHours" | "category" | "sequential" | "coverUrl" | "status" | "pricingType" |
   "priceCents" | "currency"
-> & { enrollmentCount: number; chapterCount: number; integritySnapshots: boolean };
+> & { enrollmentCount: number; chapterCount: number; integritySnapshots: boolean; zipImportEnabled?: boolean };
 
 export type CourseDraftPreview = {
   course: Pick<CourseBuilderCourse, "id" | "slug" | "title" | "description" | "projectGoal" | "coverUrl" | "status">;

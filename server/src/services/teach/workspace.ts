@@ -16,7 +16,7 @@ export async function loadTeachWorkspace(user: SessionUser): Promise<TeachWorksp
         slug: true,
         title: true,
         status: true,
-        _count: { select: { chapters: true, enrollments: true } },
+        _count: { select: { chapters: { where: { archivedAt: null } }, enrollments: true } },
         enrollments: { select: { pendingReviews: true } },
         helpThreads: { where: { status: "OPEN" }, select: { id: true } },
       },
@@ -54,7 +54,7 @@ export async function loadMentorCourses(user: SessionUser): Promise<MentorCourse
       coverUrl: true,
       status: true,
       updatedAt: true,
-      _count: { select: { chapters: true } },
+      _count: { select: { chapters: { where: { archivedAt: null } } } },
       enrollments: {
         select: { status: true, percentComplete: true, pendingReviews: true, lastActiveAt: true },
       },
