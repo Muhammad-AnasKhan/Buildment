@@ -401,6 +401,38 @@ describe("course ZIP import", () => {
 });
 
 
+describe("legacy numeric quiz labels", () => {
+  it("publishes and repairs an existing quiz without replacing its ID or learner response", async () => {
+    const blockId = `numeric-options-${fx.course.id}`;
+    const chapter = await prisma.chapter.create({ data: {
+      courseId: fx.course.id, moduleId: fx.chapterB.moduleId, title: "Numeric quiz", slug: "numeric-quiz", order: 3,
+      readerMode: "QUIZ", source: `<Quiz id="${blockId}" />`,
+      blocks: { create: { id: blockId, type: "QUIZ", order: 1, config: {
+        quizType: "single", prompt: "How many queries?", options: [1, 2, 20, 21].map((label, i) => ({ id: `opt-${i}`, label })),
+        correctOptionIds: ["opt-3"], allowRetry: true,
+      } } },
+    } });
+    try {
+      const response = await prisma.response.create({ data: { blockId, userId: fx.learner.id, enrollmentId: fx.enrollment.id, payload: { selected: ["opt-3"] }, isCorrect: true } });
+      const endpoint = `/api/v1/teach/chapters/${chapter.id}/publish`;
+      for (let i = 0; i < 2; i++) {
+        // Repeat with a recorded source hash to cover both first and subsequent publishes.
+        if (i === 1) await prisma.block.update({ where: { id: blockId }, data: { config: {
+          quizType: "single", prompt: "How many queries?", options: [1, 2, 20, 21].map((label, index) => ({ id: `opt-${index}`, label })),
+          correctOptionIds: ["opt-3"], allowRetry: true,
+        } } });
+        const published = await request(app).post(endpoint).set(mentor());
+        expect(published.status, JSON.stringify(published.body)).toBe(204);
+        const saved = await prisma.block.findUniqueOrThrow({ where: { id: blockId } });
+        expect(saved.config).toMatchObject({ options: ["1", "2", "20", "21"].map((label, index) => ({ id: `opt-${index}`, label })), correctOptionIds: ["opt-3"] });
+        expect(saved.version).toBe(1);
+        expect(saved.archivedAt).toBeNull();
+        expect(await prisma.response.findUniqueOrThrow({ where: { id: response.id } })).toMatchObject({ blockId, isCorrect: true, payload: { selected: ["opt-3"] } });
+      }
+    } finally { await prisma.chapter.delete({ where: { id: chapter.id } }); }
+  });
+});
+
 describe("bulk chapter publishing", () => {
   it("validates atomically, scopes modules, publishes loose chapters and checks ownership", async () => {
     const course = await prisma.course.create({ data: {

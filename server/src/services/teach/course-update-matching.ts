@@ -1,5 +1,6 @@
 import type { ImportPlan } from "./course-import.js";
 import type { CourseUpdateModuleDiff, CourseUpdateChapterDiff } from "../../shared/api/teach.js";
+import { normalizeQuizConfig } from "../../shared/blocks/quiz/schema.js";
 
 export type IncomingLesson = ImportPlan["modules"][number]["lessons"][number];
 export type ExistingChapter = {
@@ -16,6 +17,8 @@ export function canonical(value: unknown): string {
   return JSON.stringify(value, (_key, item) => item && typeof item === "object" && !Array.isArray(item)
     ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b))) : item);
 }
+
+export const activityConfig = (block: { type: string; config: unknown }) => block.type === "QUIZ" ? normalizeQuizConfig(block.config) : block.config;
 
 function normalizedText(value: string) {
   return value.replace(/\bid\s*=\s*["'][^"']+["']/g, 'id="activity"')
@@ -43,7 +46,7 @@ function dice(left: Set<string>, right: Set<string>) {
 
 function contentText(lesson: Pick<IncomingLesson, "source" | "blocks"> | ExistingChapter) {
   const blocks = lesson.blocks.filter(block => !("archivedAt" in block) || !block.archivedAt);
-  return `${lesson.source}\n${blocks.map(block => `${block.type} ${canonical(block.config)}`).join("\n")}`;
+  return `${lesson.source}\n${blocks.map(block => `${block.type} ${canonical(activityConfig(block))}`).join("\n")}`;
 }
 
 function comparableSource(lesson: Pick<IncomingLesson, "source" | "blocks"> | ExistingChapter) {
@@ -115,7 +118,7 @@ export function matchCourseUpdate(plan: ImportPlan, modules: ExistingModule[], c
       if (previous) {
         if (previous.title !== lesson.title) changes.push("Title");
         if (comparableSource(previous) !== comparableSource(lesson) ||
-            canonical(previous.blocks.filter(b => !b.archivedAt).map(b => [b.type, b.config, b.required])) !== canonical(lesson.blocks.map(b => [b.type, b.config, b.required]))) changes.push("Content or activities");
+            canonical(previous.blocks.filter(b => !b.archivedAt).map(b => [b.type, activityConfig(b), b.required])) !== canonical(lesson.blocks.map(b => [b.type, activityConfig(b), b.required]))) changes.push("Content or activities");
         if (previous.order !== lesson.lessonNum) changes.push("Order");
         if (previous.summary !== lesson.summary || previous.estimatedMinutes !== lesson.estimatedMinutes || previous.isMilestone !== lesson.isMilestone || previous.readerMode !== lesson.readerMode) changes.push("Lesson settings");
         if (previous.compiled && comparableSource({ ...previous, source: previous.compiled }) !== comparableSource(lesson)) changes.push("Published content");

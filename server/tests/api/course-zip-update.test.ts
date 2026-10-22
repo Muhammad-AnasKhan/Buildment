@@ -72,6 +72,24 @@ async function approve(previewId: string) {
 }
 
 describe("ZIP update preview and approval", () => {
+  it("repairs legacy numeric quiz labels during an update while retaining activity responses", async () => {
+    const options = [1, 2, 20, 21].map((label, i) => ({ id: `opt-${i}`, label }));
+    const config = { quizType: "single", prompt: "How many queries?", options, correctOptionIds: ["opt-3"], allowRetry: true };
+    await prisma.block.update({ where: { id: blockId }, data: { type: "QUIZ", config } });
+    await prisma.chapter.update({ where: { id: payments.id }, data: { readerMode: "QUIZ", source: `<Quiz id="${blockId}" />`, compiled: `<Quiz id="${blockId}" />` } });
+    const incoming = currentPlan.modules[0].lessons[0];
+    incoming.readerMode = "QUIZ";
+    incoming.source = '<Quiz id="incoming-activity" />';
+    incoming.blocks = [{ id: "incoming-activity", type: "QUIZ", required: true, config: { ...config, options: options.map(option => ({ ...option, label: String(option.label) })) } }];
+    const diff = await preview();
+    expect(diff.modules[0].chapters[0].action).toBe("unchanged");
+    expect((await approve(diff.previewId)).status).toBe(200);
+    expect(await prisma.block.findUniqueOrThrow({ where: { id: blockId } })).toMatchObject({ archivedAt: null, chapterId: payments.id,
+      config: { options: options.map(option => ({ ...option, label: String(option.label) })), correctOptionIds: ["opt-3"] } });
+    expect(await prisma.block.count({ where: { chapterId: payments.id, archivedAt: null } })).toBe(1);
+    expect(await prisma.response.findUnique({ where: { id: responseId } })).not.toBeNull();
+  });
+
   it("previews a cross-module move without mutation, then retains chapter, block and learner identities", async () => {
     const paymentLesson = currentPlan.modules[0].lessons[0];
     currentPlan.modules[0].lessons = [currentPlan.modules[1].lessons[0]];

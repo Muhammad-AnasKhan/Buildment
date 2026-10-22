@@ -31,6 +31,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient, type Prisma } from "../src/generated/prisma/index.js";
 import { SEED_COURSE, SEED_USERS } from "../src/shared/lib/seed-data.js";
 import { VideoConfigSchema } from "../src/shared/blocks/video/schema.js";
+import { QuizConfigSchema, normalizeQuizConfig } from "../src/shared/blocks/quiz/schema.js";
 import { VisualWalkthroughConfigSchema } from "../src/shared/blocks/visual-walkthrough/schema.js";
 import { VisualDiagramConfigSchema } from "../src/shared/blocks/visual-diagram/schema.js";
 import { RoadmapConfigSchema } from "../src/shared/blocks/roadmap/schema.js";
@@ -95,7 +96,7 @@ async function reconcileBlockIds(chapterId: string, lesson: ParsedLesson) {
 
   for (const block of lesson.blocks) {
     const match = existing.find((old) =>
-      unmatched.has(old.id) && old.type === block.type && stableConfig(old.config) === stableConfig(block.config)
+      unmatched.has(old.id) && old.type === block.type && stableConfig(old.type === "QUIZ" ? normalizeQuizConfig(old.config) : old.config) === stableConfig(block.config)
     );
     if (!match) continue;
     lesson.source = lesson.source.replaceAll(block.id, match.id);
@@ -617,9 +618,9 @@ function transformPredictFences(body: string, pushBlock: (b: PendingBlock) => st
  * One explanation string for the learner, shown after they answer. `explanations` holds one
  * reason per option, in option order, so every choice (right or wrong) gets its own feedback.
  */
-function quizExplanation(options: string[], explanation?: string, explanations?: string[]): string | undefined {
+function quizExplanation(options: (string | number | boolean)[], explanation?: string, explanations?: string[]): string | undefined {
   // One line per option ("Option" reason) so the quiz feedback reads as a list, not one paragraph.
-  const perOption = (explanations ?? []).map((why, i) => (options[i] ? `"${options[i]}" ${why}` : why));
+  const perOption = (explanations ?? []).map((why, i) => (options[i] !== undefined ? `"${options[i]}" ${why}` : why));
   const text = [explanation, ...perOption].filter((part) => part?.trim()).join("\n");
   return text || undefined;
 }
@@ -630,7 +631,7 @@ function transformQuizFences(body: string, pushBlock: (b: PendingBlock) => strin
     let parsed: {
       type: "mcq" | "short";
       question: string;
-      options?: string[];
+      options?: (string | number | boolean)[];
       correct?: number;
       explanation?: string;
       explanations?: string[];
@@ -656,14 +657,14 @@ function transformQuizFences(body: string, pushBlock: (b: PendingBlock) => strin
         id,
         type: "QUIZ",
         required: true,
-        config: {
+        config: QuizConfigSchema.parse({
           quizType: "single",
           prompt: parsed.question,
           options,
           correctOptionIds: [`opt-${parsed.correct}`],
           explanation: quizExplanation(parsed.options, parsed.explanation, parsed.explanations),
           allowRetry: true,
-        },
+        }),
       });
       return placeholder;
     }

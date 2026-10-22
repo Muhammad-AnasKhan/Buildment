@@ -1,4 +1,5 @@
 import { blockDefinitions, isRegisteredBlockType } from "../../shared/blocks/definitions.js";
+import { QuizConfigSchema } from "../../shared/blocks/quiz/schema.js";
 import { diffBlocks, extractBlocksFromSource } from "../../shared/mdx/extract.js";
 import { blockConfigFromSource, extractBlockConfigsFromSource } from "../../shared/mdx/extract-block-config.js";
 import { restoreInteractiveBlockTags } from "../../shared/mdx/restore-block-tags.js";
@@ -43,6 +44,14 @@ export async function syncChapterBlocksFromSource(chapterId: string, source: str
   const diff = diffBlocks(extracted, existing);
 
   const sync = async (tx: Prisma.TransactionClient) => {
+    // Repair legacy imported scalar labels on save/publish without replacing the activity or its answers.
+    for (const block of existing) {
+      if (block.type !== "QUIZ" || !extractedById.has(block.id) || configs.has(block.id)) continue;
+      const raw = block.config as { options?: { label?: unknown }[] } | null;
+      if (!Array.isArray(raw?.options) || !raw.options.some(option => option && (typeof option.label === "number" || typeof option.label === "boolean"))) continue;
+      const normalized = QuizConfigSchema.safeParse(block.config);
+      if (normalized.success) await tx.block.update({ where: { id: block.id }, data: { config: asJson(normalized.data) } });
+    }
     if (diff.create.length > 0) {
       await tx.block.createMany({
         data: diff.create.map((block) => {

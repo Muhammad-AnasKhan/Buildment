@@ -7,7 +7,7 @@ import type { CourseUpdatePreview } from "../../shared/api/teach.js";
 import { BadRequestError, ConflictError } from "../../utils/errors.js";
 import { requireCourseById } from "./access.js";
 import { parseCourseZip, type ImportPlan } from "./course-import.js";
-import { canonical, matchCourseUpdate, type UpdateMapping } from "./course-update-matching.js";
+import { activityConfig, canonical, matchCourseUpdate, type UpdateMapping } from "./course-update-matching.js";
 import { recomputeChapterProgress, recomputeEnrollmentRollup } from "../progress/compute.js";
 
 async function snapshot(db: Prisma.TransactionClient, courseId: string) {
@@ -86,13 +86,13 @@ export async function approveCourseZipUpdate(user: SessionUser, courseId: string
           const blockIds: string[] = [];
           // Reuse only semantically identical activities; answers/reviews never migrate to a new task.
           for (const [index, block] of lesson.blocks.entries()) {
-            const previous = [...remainingBlocks.values()].find(b => b.type === block.type && b.required === block.required && canonical(b.config) === canonical(block.config));
+            const previous = [...remainingBlocks.values()].find(b => b.type === block.type && b.required === block.required && canonical(activityConfig(b)) === canonical(activityConfig(block)));
             const blockId = previous?.id ?? ulid();
             source = source.replaceAll(block.id, blockId);
             blockIds.push(blockId);
             if (previous) {
               remainingBlocks.delete(previous.id);
-              await tx.block.update({ where: { id: blockId }, data: { archivedAt: null, order: index + 1 } });
+              await tx.block.update({ where: { id: blockId }, data: { archivedAt: null, order: index + 1, config: block.config } });
             } else {
               await tx.block.create({ data: { ...block, id: blockId, chapterId, order: index + 1, blocking: false, points: 1, tags: [] } });
               changedActivityChapters.add(chapterId);
