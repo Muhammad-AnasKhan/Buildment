@@ -1,4 +1,5 @@
 import type { PrismaClient } from "../../generated/prisma/index.js";
+import { assignVariantIfRandom } from "../courses/variant-assignment.js";
 import { lifecycleForSignedInEnrollment } from "./lifecycle.js";
 
 export class SelfEnrollmentError extends Error {
@@ -64,6 +65,7 @@ export async function createSelfEnrollment(
         startedAt: lifecycle === "ACTIVE" ? new Date() : null,
       },
     });
+    await assignVariantIfRandom(tx, row);
 
     if (lifecycle === "PAYMENT_REQUIRED") {
       await tx.payment.create({

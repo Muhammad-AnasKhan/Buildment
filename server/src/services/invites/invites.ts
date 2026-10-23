@@ -5,6 +5,7 @@ import type { SessionUser } from "../../types/auth.js";
 import { notifyMenteeCourseEnrollment, notifyMentorNewEnrollment } from "../email/event-notifications.js";
 import { queueEmail } from "../email/queue.js";
 import { lifecycleForSignedInEnrollment } from "../enrollment/lifecycle.js";
+import { assignVariantIfRandom } from "../courses/variant-assignment.js";
 
 const inviteInclude = {
   course: {
@@ -89,6 +90,7 @@ export async function acceptInvite(user: SessionUser, token: string, name?: stri
         startedAt: checkoutRequired ? null : new Date(),
       },
     });
+    await assignVariantIfRandom(tx, enrollment);
     if (checkoutRequired) {
       await tx.payment.upsert({
         where: { enrollmentId: enrollment.id },

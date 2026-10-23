@@ -8,6 +8,7 @@ import { UnprocessableError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
 import { notifyMenteeCourseEnrollment, notifyMentorNewEnrollment } from "../email/event-notifications.js";
 import { queueEmail } from "../email/queue.js";
+import { assignVariantIfRandom } from "../courses/variant-assignment.js";
 import { inviteAcceptUrl, sendEmail } from "../email/send.js";
 import { requireCourseById, type OwnedCourse } from "./access.js";
 
@@ -72,8 +73,9 @@ export async function assignByEmails(user: SessionUser, courseId: string, emails
         where: { courseId_userId: { courseId: course.id, userId: existingUser.id } },
         update: { status: "ASSIGNED" },
         create: { courseId: course.id, userId: existingUser.id, status: "ASSIGNED", assignedById: user.id, source: "DIRECT", lifecycle: "ACTIVE" },
-        select: { id: true },
+        select: { id: true, courseId: true },
       });
+      await assignVariantIfRandom(prisma, enrollment);
       queueEmail(() => notifyMenteeCourseEnrollment(enrollment.id));
       queueEmail(() => notifyMentorNewEnrollment(enrollment.id));
       enrolledEmails.push(email);

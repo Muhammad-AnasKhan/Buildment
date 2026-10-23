@@ -6,6 +6,7 @@ import { prisma } from "../../db/prisma.js";
 import { NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
 import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
+import { variantAssignedFor } from "../courses/variant-assignment.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
 import { loadChapterThread } from "../help/threads.js";
 import { serializeHelpThread } from "../help/serialize.js";
@@ -33,6 +34,8 @@ export async function loadChapterReader(courseSlug: string, chapterSlug: string,
       projectGoal: true,
       sequential: true,
       familySlug: true,
+      variantAssignment: true,
+      mentorId: true,
       modules: {
         where: { archivedAt: null },
         orderBy: { order: "asc" },
@@ -101,7 +104,7 @@ export async function loadChapterReader(courseSlug: string, chapterSlug: string,
     prev: link(prev),
     next: link(next),
     modules,
-    track: buildCourseTrack(course.familySlug, enrollment),
+    track: buildCourseTrack(course.familySlug, enrollment, { variantAssigned: variantAssignedFor(course, user) }),
   };
 
   const locked = !bypassLocking && (gate?.lockedIds.has(chapter.id) ?? false);

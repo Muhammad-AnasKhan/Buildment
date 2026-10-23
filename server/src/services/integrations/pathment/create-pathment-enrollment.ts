@@ -5,6 +5,7 @@ import {
 } from "../allocation.js";
 import { pathmentAssignmentId } from "./enrollment-idempotency.js";
 import { lifecycleForPathmentEnrollment } from "../../enrollment/lifecycle.js";
+import { assignVariantIfRandom } from "../../courses/variant-assignment.js";
 import {
   pathmentEnrollmentPatch,
   shouldAttachPathmentOrg,
@@ -143,6 +144,7 @@ export async function createPathmentEnrollment(
       },
       include: { course: true, learnerProfile: true },
     });
+    await assignVariantIfRandom(tx, enrollment);
 
     if (course.pricingType === "PAID" && linkedUser && lifecycle === "PAYMENT_REQUIRED") {
       await tx.payment.create({

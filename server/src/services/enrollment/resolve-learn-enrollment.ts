@@ -2,6 +2,7 @@ import type { Enrollment, Role } from "../../generated/prisma/index.js";
 import { prisma } from "../../db/prisma.js";
 import { NotFoundError } from "../../utils/errors.js";
 import { isMentorOfCourse } from "../auth/access-rules.js";
+import { withAssignedVariant } from "../courses/variant-assignment.js";
 import { enrollmentGrantsContentAccess } from "./lifecycle.js";
 
 export type LearnAccessDenial =
@@ -27,7 +28,7 @@ export async function resolveLearnEnrollment(
 ): Promise<Enrollment> {
   const course = await prisma.course.findUnique({
     where: { id: courseId },
-    select: { id: true, mentorId: true },
+    select: { id: true, mentorId: true, familySlug: true, variantAssignment: true },
   });
   if (!course) throw new NotFoundError("Course not found");
 
@@ -51,7 +52,7 @@ export async function resolveLearnEnrollment(
   const denial = learnAccessDenial(enrollment);
   if (denial) throw new LearnAccessError(denial);
 
-  return enrollment!;
+  return withAssignedVariant(course, enrollment!);
 }
 
 export class LearnAccessError extends Error {
