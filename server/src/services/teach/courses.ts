@@ -8,6 +8,10 @@ import type { SessionUser } from "../../types/auth.js";
 import type { CourseSettingsBody, CreateCourseBody } from "../../validations/teach.js";
 import { requireCourseById, requireCourseBySlug } from "./access.js";
 import { publishChapters } from "./chapters.js";
+import { ensureBaselineRelease } from "../courses/releases.js";
+import { type ReleaseContent, variantForRelease } from "../courses/releases.js";
+import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
+import { publishDashboardStructureRelease } from "./publish-course-release.js";
 
 // Course lifecycle: DRAFT → PUBLISHED → (ARCHIVED when learners exist | DRAFT when none).
 // Publishing is the only transition with rules; see shared/lib/course-publish-rules.
@@ -79,6 +83,9 @@ export async function loadCourseBuilder(user: SessionUser, courseSlug: string): 
         pricingType: true,
         priceCents: true,
         currency: true,
+        familySlug: true,
+        variantFamily: true,
+        activeReleaseId: true,
         _count: { select: { enrollments: true } },
         modules: {
           where: { archivedAt: null },
@@ -94,14 +101,36 @@ export async function loadCourseBuilder(user: SessionUser, courseSlug: string): 
     }),
   ]);
 
-  const { _count, modules, ...settings } = course;
+  const { _count, modules, familySlug, variantFamily, activeReleaseId, ...settings } = course;
+  let builderModules = modules.map((module) => ({ ...module, chapters: module.chapters.map(toBuilderChapter) }));
+  if (activeReleaseId) {
+    const release = await prisma.courseRelease.findUniqueOrThrow({ where: { id: activeReleaseId } });
+    const shared = (release.content as unknown as ReleaseContent).variants[variantForRelease(resolveCourseFamily(familySlug, variantFamily), null)] ?? [];
+    const rows = new Map(modules.flatMap(module => module.chapters.map(chapter => [chapter.id, chapter] as const)));
+    const moduleRows = new Map(modules.map(module => [module.id, module]));
+    const activeIds = new Set(shared.flatMap(module => module.chapters.map(chapter => chapter.id)));
+    builderModules = shared.map(module => ({ id: module.id, title: moduleRows.get(module.id)?.title ?? module.title,
+      order: moduleRows.get(module.id)?.order ?? module.order,
+      chapters: module.chapters.map(chapter => {
+        const row = rows.get(chapter.id);
+        if (!row) throw new ConflictError("Course release refers to a missing chapter.");
+        return toBuilderChapter({ ...row, title: chapter.title, slug: chapter.slug, order: chapter.order,
+          estimatedMinutes: chapter.estimatedMinutes, readerMode: chapter.readerMode, isMilestone: chapter.isMilestone });
+      }).concat((moduleRows.get(module.id)?.chapters ?? []).filter(chapter => !activeIds.has(chapter.id) && !chapter.publishedAt).map(toBuilderChapter)),
+    }));
+    for (const module of modules) if (!builderModules.some(item => item.id === module.id) && module.chapters.some(chapter => !chapter.publishedAt)) {
+      builderModules.push({ id: module.id, title: module.title, order: module.order,
+        chapters: module.chapters.filter(chapter => !chapter.publishedAt).map(toBuilderChapter) });
+    }
+    builderModules.sort((a, b) => a.order - b.order);
+  }
   return {
     course: {
       ...settings,
       enrollmentCount: _count.enrollments,
-      modules: modules.map((module) => ({ ...module, chapters: module.chapters.map(toBuilderChapter) })),
+      modules: builderModules,
     },
-    looseChapters: looseChapters.map(toBuilderChapter),
+    looseChapters: looseChapters.filter(chapter => !activeReleaseId || !chapter.publishedAt).map(toBuilderChapter),
   };
 }
 
@@ -128,19 +157,55 @@ export async function loadCourseDraftPreview(user: SessionUser, courseSlug: stri
     where: { id: owned.id },
     select: {
       id: true, slug: true, title: true, description: true, projectGoal: true, coverUrl: true, status: true,
+      activeReleaseId: true, familySlug: true, variantFamily: true,
       modules: {
         where: { archivedAt: null },
         orderBy: { order: "asc" },
-        select: { id: true, title: true, chapters: { where: { archivedAt: null }, orderBy: { order: "asc" }, select: { id: true, title: true, slug: true, readerMode: true, publishedAt: true, source: true } } },
+        select: { id: true, title: true, chapters: { where: { archivedAt: null }, orderBy: { order: "asc" }, select: {
+          id: true, title: true, slug: true, readerMode: true, publishedAt: true, source: true,
+          releaseDraft: { select: { title: true, readerMode: true, source: true } },
+        } } },
       },
     },
   });
+  const { modules, activeReleaseId, familySlug, variantFamily, ...settings } = course;
+  type Row = (typeof modules)[number]["chapters"][number];
+  const toPreview = (row: Row, snapshot?: { title: string; slug: string; readerMode: Row["readerMode"] }) => ({
+    id: row.id,
+    title: row.releaseDraft?.title ?? snapshot?.title ?? row.title,
+    slug: snapshot?.slug ?? row.slug,
+    readerMode: row.releaseDraft?.readerMode ?? snapshot?.readerMode ?? row.readerMode,
+    publishedAt: row.publishedAt?.toISOString() ?? null,
+    source: row.releaseDraft?.source ?? row.source,
+    hasDraft: Boolean(row.releaseDraft) || !row.publishedAt,
+  });
+  let previewModules: CourseDraftPreview["modules"] = modules.map(module => ({
+    id: module.id, title: module.title, chapters: module.chapters.map(chapter => toPreview(chapter)),
+  }));
+  if (activeReleaseId) {
+    const release = await prisma.courseRelease.findFirstOrThrow({ where: { id: activeReleaseId, courseId: course.id } });
+    const shared = (release.content as unknown as ReleaseContent).variants[
+      variantForRelease(resolveCourseFamily(familySlug, variantFamily), null)] ?? [];
+    const rows = new Map(modules.flatMap(module => module.chapters.map(chapter => [chapter.id, chapter] as const)));
+    const moduleRows = new Map(modules.map(module => [module.id, module] as const));
+    const activeIds = new Set(shared.flatMap(module => module.chapters.map(chapter => chapter.id)));
+    previewModules = shared.map(module => ({
+      id: module.id, title: moduleRows.get(module.id)?.title ?? module.title,
+      chapters: module.chapters.map(chapter => {
+        const row = rows.get(chapter.id);
+        if (!row) throw new ConflictError("Course release refers to a missing chapter.");
+        return toPreview(row, chapter);
+      }).concat((moduleRows.get(module.id)?.chapters ?? [])
+        .filter(chapter => !chapter.publishedAt && !activeIds.has(chapter.id)).map(chapter => toPreview(chapter))),
+    }));
+    for (const module of modules) if (!shared.some(item => item.id === module.id)) {
+      const drafts = module.chapters.filter(chapter => !chapter.publishedAt && !activeIds.has(chapter.id));
+      if (drafts.length) previewModules.push({ id: module.id, title: module.title, chapters: drafts.map(chapter => toPreview(chapter)) });
+    }
+  }
   return {
-    course: course as CourseDraftPreview["course"],
-    modules: course.modules.map((module) => ({
-      ...module,
-      chapters: module.chapters.map((chapter) => ({ ...chapter, publishedAt: chapter.publishedAt?.toISOString() ?? null })),
-    })),
+    course: settings,
+    modules: previewModules,
   };
 }
 
@@ -198,9 +263,13 @@ export async function publishCourse(user: SessionUser, courseId: string): Promis
   // Publishing the course is the single action that validates and snapshots
   // every chapter draft before the course becomes visible in the catalog.
   await publishChapters(user, { courseId: owned.id });
-  if (owned.status === "PUBLISHED") return { courseSlug: owned.slug };
+  if (owned.status === "PUBLISHED" || owned.status === "ARCHIVED") {
+    await prisma.$transaction(tx => publishDashboardStructureRelease(tx, owned.id), { isolationLevel: "Serializable" });
+    if (owned.status === "PUBLISHED") return { courseSlug: owned.slug };
+  }
 
   await prisma.course.update({ where: { id: owned.id }, data: { status: "PUBLISHED", publishedAt: new Date() } });
+  await prisma.$transaction(async tx => { await ensureBaselineRelease(tx, owned.id); });
   return { courseSlug: owned.slug };
 }
 
@@ -229,10 +298,12 @@ export async function unpublishCourse(
   return { courseSlug: owned.slug };
 }
 
-/** Archived → DRAFT so the course can be edited and re-published. */
+/** Archived courses with learner history stay versioned; only empty ones can become drafts. */
 export async function restoreCourseToDraft(user: SessionUser, courseId: string): Promise<CourseSlugResult> {
   const owned = await requireCourseById(user, courseId);
   if (owned.status !== "ARCHIVED") return { courseSlug: owned.slug };
+  const learners = await prisma.enrollment.count({ where: { courseId: owned.id } });
+  if (learners) throw new ConflictError("This course has learners. Edit it while archived or publish it again so their progress stays safe.");
   await prisma.course.update({ where: { id: owned.id }, data: { status: "DRAFT", publishedAt: null } });
   return { courseSlug: owned.slug };
 }

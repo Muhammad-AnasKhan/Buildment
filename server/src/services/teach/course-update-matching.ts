@@ -4,13 +4,13 @@ import { normalizeQuizConfig } from "../../shared/blocks/quiz/schema.js";
 
 export type IncomingLesson = ImportPlan["modules"][number]["lessons"][number];
 export type ExistingChapter = {
-  id: string; moduleId: string | null; title: string; slug: string; order: number;
+  id: string; moduleId: string | null; contentKey?: string | null; title: string; slug: string; order: number;
   source: string; summary: string | null; estimatedMinutes: number | null;
   compiled?: string | null; publishedAt?: Date | string | null;
   readerMode: string; isMilestone: boolean; archivedAt: Date | string | null;
   blocks: { id: string; type: string; config: unknown; required: boolean; archivedAt: Date | string | null }[];
 };
-export type ExistingModule = { id: string; title: string; order: number; archivedAt: Date | string | null };
+export type ExistingModule = { id: string; contentKey?: string | null; title: string; order: number; archivedAt: Date | string | null };
 export type UpdateMapping = { moduleId: string | null; chapters: { chapterId: string | null; similarity: number | null; reason: string }[] }[];
 
 export function canonical(value: unknown): string {
@@ -78,10 +78,19 @@ export function matchCourseUpdate(plan: ImportPlan, modules: ExistingModule[], c
   const existingIndex = chapters.map(prepare);
   const scores = incoming.map(({ lesson }) => {
     const prepared = prepare(lesson);
-    return existingIndex.map(old => preparedSimilarity(prepared, old));
+    return existingIndex.map((old, index) => {
+      if (chapters[index].contentKey && chapters[index].contentKey !== lesson.key) return 0;
+      return preparedSimilarity(prepared, old);
+    });
   });
   const mapping: UpdateMapping = plan.modules.map(module => ({ moduleId: null, chapters: module.lessons.map(() => ({ chapterId: null, similarity: null, reason: "New or ambiguous content; previous learner history is retained separately." })) }));
   for (const [i, item] of incoming.entries()) {
+    const exactIndex = item.lesson.key ? chapters.findIndex(chapter => chapter.contentKey === item.lesson.key) : -1;
+    if (exactIndex >= 0) {
+      mapping[item.mi].chapters[item.li] = { chapterId: chapters[exactIndex].id,
+        similarity: scores[i][exactIndex] ?? 0, reason: "Stable lesson key matches, even if its content or location changed." };
+      continue;
+    }
     const ranked = scores[i].map((score, index) => ({ score, index })).sort((a, b) => b.score - a.score);
     const best = ranked[0];
     mapping[item.mi].chapters[item.li].similarity = best?.score ?? 0;
@@ -93,6 +102,7 @@ export function matchCourseUpdate(plan: ImportPlan, modules: ExistingModule[], c
   }
   // Match module names first, then chapter membership for renamed modules. Require mutual uniqueness.
   const moduleScores = plan.modules.map((module, mi) => modules.map(old => {
+    if (old.contentKey && old.contentKey !== module.key) return 0;
     const oldIds = new Set(chapters.filter(c => c.moduleId === old.id).map(c => c.id));
     const matched = mapping[mi].chapters.filter(c => c.chapterId && oldIds.has(c.chapterId)).length;
     const overlap = matched ? 2 * matched / (module.lessons.length + oldIds.size) : 0;
@@ -100,6 +110,11 @@ export function matchCourseUpdate(plan: ImportPlan, modules: ExistingModule[], c
     return normalizedText(module.title) === normalizedText(old.title) ? 3 + overlap : overlap;
   }));
   for (let mi = 0; mi < plan.modules.length; mi++) {
+    const exactIndex = plan.modules[mi].key ? modules.findIndex(module => module.contentKey === plan.modules[mi].key) : -1;
+    if (exactIndex >= 0) {
+      mapping[mi].moduleId = modules[exactIndex].id;
+      continue;
+    }
     const ranked = moduleScores[mi].map((score, index) => ({ score, index })).sort((a, b) => b.score - a.score);
     const best = ranked[0];
     if (!best || best.score < 0.5 || best.score - (ranked[1]?.score ?? 0) < 0.1) continue;
@@ -108,8 +123,6 @@ export function matchCourseUpdate(plan: ImportPlan, modules: ExistingModule[], c
   }
   const moduleById = new Map(modules.map(m => [m.id, m]));
   const chapterById = new Map(chapters.map(c => [c.id, c]));
-  const usedChapters = new Set(mapping.flatMap(m => m.chapters.map(c => c.chapterId).filter(Boolean)));
-  const usedModules = new Set(mapping.map(m => m.moduleId).filter(Boolean));
   const diff: CourseUpdateModuleDiff[] = plan.modules.map((module, mi) => {
     const match = mapping[mi], old = match.moduleId ? moduleById.get(match.moduleId) : undefined;
     const chapterDiffs: CourseUpdateChapterDiff[] = module.lessons.map((lesson, li) => {
@@ -129,24 +142,19 @@ export function matchCourseUpdate(plan: ImportPlan, modules: ExistingModule[], c
         action: !previous ? "added" : previous.archivedAt ? "restored" : moved ? "moved" : changes.length ? "changed" : "unchanged",
         similarity: matched.similarity, reason: matched.reason, changes };
     });
-    for (const chapter of chapters.filter(c => c.moduleId === old?.id && !c.archivedAt)) {
-      if (!usedChapters.has(chapter.id)) chapterDiffs.push({ title: chapter.title, action: "removed", similarity: null, reason: "Missing from ZIP; archived with learner history retained.", changes: [] });
-      else {
-        const dest = mapping.findIndex(m => m.chapters.some(c => c.chapterId === chapter.id));
-        if (dest !== mi) chapterDiffs.push({ title: chapter.title, action: "moved", destinationModule: plan.modules[dest].title, similarity: null, reason: "Moved out of this module; learner progress retained.", changes: [] });
-      }
-    }
-    return { title: module.title, previousTitle: old?.title, previousOrder: old?.order, order: mi + 1,
-      action: !old ? "added" : old.archivedAt ? "restored" : old.title !== module.title || old.order !== mi + 1 || chapterDiffs.some(c => c.action !== "unchanged") ? "changed" : "unchanged", chapters: chapterDiffs };
+    // Packages are patches: omission never means removal.
+    const order = module.order ?? old?.order ?? mi + 1;
+    return { title: module.title, previousTitle: old?.title, previousOrder: old?.order, order,
+      action: !old ? "added" : old.archivedAt ? "restored" : old.title !== module.title || old.order !== order || chapterDiffs.some(c => c.action !== "unchanged") ? "changed" : "unchanged", chapters: chapterDiffs };
   });
-  for (const module of modules.filter(m => !m.archivedAt && !usedModules.has(m.id))) {
-    diff.push({ title: module.title, previousOrder: module.order, action: "removed", chapters: chapters.filter(c => c.moduleId === module.id && !c.archivedAt).map(c => {
-      const dest = mapping.findIndex(m => m.chapters.some(match => match.chapterId === c.id));
-      return { title: c.title, action: dest < 0 ? "removed" : "moved", destinationModule: dest < 0 ? undefined : plan.modules[dest].title, similarity: null,
-        reason: dest < 0 ? "Archived; learner history retained." : "Moved to another module; learner progress retained.", changes: [] };
-    }) });
+  for (const key of plan.remove?.lessonKeys ?? []) {
+    const previous = chapters.find(chapter => chapter.contentKey === key);
+    diff.push({ title: previous?.title ?? key, action: "removed", chapters: [{ title: previous?.title ?? key,
+      action: "removed", similarity: null, reason: "Explicit removal from the new release; old releases retain it.", changes: [] }] });
   }
-  const loose = chapters.filter(c => c.moduleId === null && !c.archivedAt && !usedChapters.has(c.id));
-  if (loose.length) diff.push({ title: "Chapters without a module", action: "removed", chapters: loose.map(c => ({ title: c.title, action: "removed", similarity: null, reason: "Archived; learner history retained.", changes: [] })) });
+  for (const key of plan.remove?.moduleKeys ?? []) {
+    const previous = modules.find(module => module.contentKey === key);
+    diff.push({ title: previous?.title ?? key, action: "removed", chapters: [] });
+  }
   return { mapping, modules: diff };
 }

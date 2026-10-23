@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { EditorSkeleton } from "@/components/teach/editor-skeleton";
 import Link from "next/link";
 import {
@@ -75,6 +76,7 @@ export function ChapterEditor({
 }) {
   const [saveState, setSaveState] = useState<SaveState>({ kind: "idle" });
   const [publishErrors, setPublishErrors] = useState<string[]>([]);
+  const router = useRouter();
   const [publishedAt, setPublishedAt] = useState<string | null>(initialPublishedAt);
   const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState(
     initialHasUnpublishedChanges
@@ -156,10 +158,11 @@ export function ChapterEditor({
     if (result.ok) {
       setPublishedAt(new Date().toISOString());
       setHasUnpublishedChanges(false);
+      if (initialPublishedAt) router.push(`/courses/${courseSlug}/edit`);
     } else {
       setPublishErrors(result.errors);
     }
-  }, [chapterId, flushDraft]);
+  }, [chapterId, courseSlug, flushDraft, initialPublishedAt, router]);
 
   const handleSettingsSave = useCallback(async () => {
     const minutes = settings.estimatedMinutes.trim();

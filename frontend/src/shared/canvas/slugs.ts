@@ -15,6 +15,11 @@ export const CANVAS_SLUGS = [
   "retrieval-metrics-at-k",
   "agent-react-loop",
   "langgraph-reducer-merge",
+  "freelance-job-flowchart",
+  "job-application-status",
+  "check-the-ai-answer",
+  "sysdesign-truetime-commit-wait",
+  "sysdesign-replica-lag",
   "five-whys-chain",
   "laptop-charging-detective",
 ] as const;

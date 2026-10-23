@@ -37,9 +37,15 @@ const chooseVariant = (variantSlug: string) =>
 
 describe("placeholders in the chapter reader", () => {
   it("uses the family default product until the learner picks a variant", async () => {
-    const res = await readChapterA();
-    expect(res.status).toBe(200);
-    expect(res.body.data.content.source).toBe("# A\n\nOpen your FreshMarket vendor dashboard.");
+    try {
+      const res = await readChapterA();
+      expect(res.status).toBe(200);
+      expect(res.body.data.content.source).toBe("# A\n\nOpen your FreshMarket vendor dashboard.");
+      expect(res.body.data.track.variantLocked).toBe(true);
+    } finally {
+      await prisma.chapterProgress.deleteMany({ where: { enrollmentId: fx.enrollment.id } });
+      await prisma.enrollment.update({ where: { id: fx.enrollment.id }, data: { variantSlug: null, variantChosenAt: null, variantLockedAt: null } });
+    }
   });
 
   it("follows the chosen variant and leaves the stored snapshot untouched", async () => {

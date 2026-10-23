@@ -13,6 +13,11 @@ import { ragHybridRerank } from "./rag-hybrid-rerank/data";
 import { retrievalMetricsAtK } from "./retrieval-metrics-at-k/data";
 import { agentReactLoop } from "./agent-react-loop/data";
 import { langgraphReducerMerge } from "./langgraph-reducer-merge/data";
+import { freelanceJobFlowchart } from "./freelance-job-flowchart/data";
+import { jobApplicationStatus } from "./job-application-status/data";
+import { checkTheAiAnswer } from "./check-the-ai-answer/data";
+import { sysdesignTruetimeCommitWait } from "./sysdesign-truetime-commit-wait/data";
+import { sysdesignReplicaLag } from "./sysdesign-replica-lag/data";
 import { fiveWhysChain } from "./five-whys-chain/data";
 import { laptopChargingDetective } from "./laptop-charging-detective/data";
 
@@ -42,6 +47,11 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "retrieval-metrics-at-k": retrievalMetricsAtK,
   "agent-react-loop": agentReactLoop,
   "langgraph-reducer-merge": langgraphReducerMerge,
+  "freelance-job-flowchart": freelanceJobFlowchart,
+  "job-application-status": jobApplicationStatus,
+  "check-the-ai-answer": checkTheAiAnswer,
+  "sysdesign-truetime-commit-wait": sysdesignTruetimeCommitWait,
+  "sysdesign-replica-lag": sysdesignReplicaLag,
   "five-whys-chain": fiveWhysChain,
   "laptop-charging-detective": laptopChargingDetective,
 };
