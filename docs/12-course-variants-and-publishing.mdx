@@ -42,7 +42,6 @@ versioned editing path; they cannot move back to an editable draft.
 
 ```yaml
 slug: marketplace-course
-publication: update # For a new repository course: create, plus creatorEmail
 family: marketplace-course
 variantFamily:
   slug: marketplace-course
@@ -80,47 +79,18 @@ supplied lessons. The preview matches unchanged legacy content and adopts those
 keys while keeping its chapter IDs; review any ambiguous matches before approval.
 There is no need to list every old lesson in that first patch.
 
-## Repository workflow
+## Repository packages for now
 
-`.github/workflows/course-publish.yml` validates changed course sources on a PR
-without production database credentials. When a course package reaches `main`,
-the workflow previews each changed course and uploads its affected-module and
-variant summary as a `course-review-<slug>` artifact. It then waits for approval
-in a course-specific `course-publishing-<slug>` GitHub environment before
-publishing that exact commit. Configure that environment's required reviewer
-as the course creator before merging a package. Each course needs its own
-environment; an unconfigured environment has no publish secret and fails closed.
-Set `COURSE_PREVIEW_DATABASE_URL` as a repository secret for a database role
-that can read courses, learners, and content and write temporary preview rows.
-Set `COURSE_PUBLISH_DATABASE_URL` as a **secret in each course environment**
-with permission to write published releases. A missing environment secret makes
-the publish job fail closed.
-Deploy the Prisma migrations before enabling this workflow. The job checks the
-active release ID, creator ID, and full course snapshot fingerprint from the
-reviewed preview, and uses the same ZIP preview and approval
-service as the app. It cannot create a course by accident, and jobs for one
-course are serialized. GitHub does not infer the creator from `creatorEmail`,
-so configure each course environment's reviewer explicitly.
-Merging the PR alone must not publish before that approval.
-
-The **workflow_dispatch** path can process one course package manually from
-`main` after creator review. Pass the expected active release ID for an update
-to a course that already has a release, plus the snapshot fingerprint and creator
-ID printed by the preview. A stale value makes the run fail.
-Repository packages must declare `publication: create` or `publication: update`.
-Creation also requires `creatorEmail` for an existing account. Approval of a
-creation package creates a **draft** owned by that creator; the creator publishes
-the course in the dashboard after final review. An update cannot create a course,
-and a creation package cannot overwrite one. Every supplied repository module and
-lesson needs a stable `key`.
-
-`pnpm tsx scripts/publish-course-package.ts --course <slug>` prints a preview
-without publishing. Add `--expect-release <id> --expect-fingerprint <hash>
---expect-creator-id <id> --approve` only after creator
-approval. Do not run `scripts/import-course.ts` to update a published course:
-that legacy seeder still edits live rows. Agent IP output should remain a draft
-package for review. A repository-to-course agent and a ZIP upload are both
-inputs to this package format.
+Adding or changing `content/import/<slug>/` in a PR only changes the source
+files. GitHub Actions does not create a course, publish a version, or connect to
+the course database. After reviewing a new package, the creator can upload a ZIP
+from the dashboard to create a draft, then publish it there. For an existing
+course, the creator uses **Update from ZIP** to preview the affected lessons and
+variants before approval. Keep stable keys on modules and lessons so later
+updates can match content correctly. A repository-to-course agent should also
+produce a draft package for this review path. Do not use
+`scripts/import-course.ts` to update a published course: that legacy seeder
+edits live rows.
 
 ## Boundaries
 
