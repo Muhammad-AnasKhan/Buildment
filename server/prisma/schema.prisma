@@ -73,6 +73,12 @@ enum CourseCategory {
   SOFT_SKILLS
 }
 
+/// How learners in a course family get their variant.
+enum VariantAssignment {
+  SELF_SELECT // the learner picks and can change it until the course is complete
+  RANDOM // the platform assigns one at enrolment, balanced across variants, and the learner cannot change it
+}
+
 enum CourseInstructorRole {
   COURSE_CREATOR
   SUBMISSION_EVALUATOR
@@ -256,6 +262,7 @@ model Course {
   currency       String       @default("USD")
   sequential     Boolean      @default(true)
   familySlug     String? // course family in src/shared/lib/course-tracks.ts; null = no variants
+  variantAssignment VariantAssignment @default(SELF_SELECT)
   /// Quiz camera photos are opt-in per course and never required; quiz integrity signals are always on.
   integritySnapshots Boolean  @default(false)
   mentorId       String
