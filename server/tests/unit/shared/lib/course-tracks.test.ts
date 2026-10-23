@@ -69,6 +69,7 @@ describe("buildCourseTrack", () => {
       variantSlug: "grocery",
       variantChosen: false,
       variantLocked: false,
+      variantAssigned: false,
       specialisationSlug: null,
       specialisationOpen: false,
     });

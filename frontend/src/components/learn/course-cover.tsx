@@ -1,16 +1,18 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Deep two-stop gradients for courses without a cover photo. White text stays readable on
- * every pair in light and dark mode, and nothing is downloaded, which matters on slow links.
+ * Printed cover colors for courses without a photo. White text stays readable in
+ * both themes and nothing is downloaded, which matters on slow links.
  */
 const GENERATED_COVERS = [
-  { from: "#1e3a5f", to: "#2f6f8f", accent: "#7dd3fc" },
-  { from: "#3b2a5c", to: "#6b3f8f", accent: "#d8b4fe" },
-  { from: "#1f4d3a", to: "#2f7a5a", accent: "#86efac" },
-  { from: "#5c2a2a", to: "#8f4a3a", accent: "#fdba74" },
-  { from: "#2a3a5c", to: "#3f5f9f", accent: "#a5b4fc" },
-  { from: "#4a3a1f", to: "#7a5f2f", accent: "#fde68a" },
+  { from: "#193b4b", accent: "#b9d4df" },
+  { from: "#4a3049", accent: "#dfc0da" },
+  { from: "#234837", accent: "#b9dbbf" },
+  { from: "#653c2e", accent: "#e8c7b8" },
+  { from: "#343b65", accent: "#c3caec" },
+  { from: "#524723", accent: "#e4d79e" },
+  { from: "#623844", accent: "#ecc1cd" },
+  { from: "#264c4e", accent: "#b9e2df" },
 ] as const;
 
 function coverIndex(title: string) {
@@ -24,11 +26,14 @@ export function CourseCover({
   title,
   className,
   aspect = "video",
+  paletteIndex,
 }: {
   coverUrl: string | null | undefined;
   title: string;
   className?: string;
   aspect?: "video" | "banner" | "thumb";
+  /** List position avoids hash collisions between neighboring catalog covers. */
+  paletteIndex?: number;
 }) {
   const aspectClass =
     aspect === "banner"
@@ -37,7 +42,8 @@ export function CourseCover({
         ? "aspect-[4/3] min-h-[5rem]"
         : "aspect-video min-h-[7rem]";
 
-  const palette = GENERATED_COVERS[coverIndex(title)];
+  const index = paletteIndex === undefined ? coverIndex(title) : Math.abs(Math.trunc(paletteIndex)) % GENERATED_COVERS.length;
+  const palette = GENERATED_COVERS[index];
 
   return (
     <div
@@ -49,25 +55,28 @@ export function CourseCover({
     >
       {coverUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={coverUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        <img src={coverUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
       ) : (
         <div
           aria-hidden
           className="absolute inset-0 flex flex-col justify-end"
-          style={{ backgroundImage: `linear-gradient(135deg, ${palette.from}, ${palette.to})` }}
+          style={{ backgroundColor: palette.from }}
         >
           <div
-            className="absolute inset-0 opacity-[0.14]"
+            className="absolute inset-0 opacity-20"
             style={{
-              backgroundImage: "radial-gradient(circle at 1px 1px, #ffffff 1px, transparent 0)",
-              backgroundSize: aspect === "thumb" ? "10px 10px" : "18px 18px",
+              backgroundImage: `repeating-linear-gradient(${45 + index * 15}deg, transparent, transparent 22px, ${palette.accent} 22px, ${palette.accent} 23px)`,
             }}
           />
           <div
-            className="absolute -right-[12%] -top-[30%] aspect-square w-[55%] rounded-full opacity-25 blur-2xl"
-            style={{ backgroundColor: palette.accent }}
+            className="absolute -right-6 -top-8 size-40 rounded-full border-[24px] opacity-20"
+            style={{ borderColor: palette.accent }}
           />
-          {aspect === "thumb" ? (
+          {paletteIndex !== undefined ? (
+            <span className="relative p-4 font-serif text-6xl leading-none text-white">
+              {String(paletteIndex + 1).padStart(2, "0")}
+            </span>
+          ) : aspect === "thumb" ? (
             <span className="relative line-clamp-3 p-2 text-[11px] font-semibold leading-tight text-white">
               {title}
             </span>

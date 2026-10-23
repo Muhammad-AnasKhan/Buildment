@@ -5,6 +5,7 @@ import type { SessionUser } from "../../types/auth.js";
 import { notifyMenteeCourseEnrollment, notifyMentorNewEnrollment } from "../email/event-notifications.js";
 import { queueEmail } from "../email/queue.js";
 import { lifecycleForSignedInEnrollment } from "../enrollment/lifecycle.js";
+import { assignmentForNewEnrollment } from "../courses/variant-assignment.js";
 
 const inviteInclude = {
   course: {
@@ -77,10 +78,13 @@ export async function acceptInvite(user: SessionUser, token: string, name?: stri
   const checkoutRequired = lifecycle === "PAYMENT_REQUIRED";
 
   const enrollmentId = await prisma.$transaction(async (tx) => {
+    const existing = await tx.enrollment.findUnique({ where: { courseId_userId: { courseId: invite.courseId, userId: user.id } }, select: { id: true } });
+    const assignment = existing ? {} : await assignmentForNewEnrollment(tx, invite.courseId);
     const enrollment = await tx.enrollment.upsert({
       where: { courseId_userId: { courseId: invite.courseId, userId: user.id } },
       update: {},
       create: {
+        ...assignment,
         courseId: invite.courseId,
         userId: user.id,
         status: checkoutRequired ? "ASSIGNED" : "IN_PROGRESS",

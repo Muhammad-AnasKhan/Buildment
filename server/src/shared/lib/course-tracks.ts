@@ -48,6 +48,9 @@ export type CourseFamily = {
   specialisations: CourseSpecialisation[];
 };
 
+export const VARIANT_ASSIGNMENTS = ["SELF_SELECT", "RANDOM"] as const;
+export type VariantAssignment = (typeof VARIANT_ASSIGNMENTS)[number];
+
 /** What the reader and the course home need to know about the learner's track. */
 export type CourseTrack = {
   familySlug: string;
@@ -57,6 +60,8 @@ export type CourseTrack = {
   variantSlug: string;
   variantChosen: boolean;
   variantLocked: boolean;
+  /** True only for learners assigned at enrollment. */
+  variantAssigned: boolean;
   specialisationSlug: string | null;
   /** The specialisation choice opens once the course is complete. */
   specialisationOpen: boolean;
@@ -164,7 +169,108 @@ const MARKETPLACE: CourseFamily = {
   ],
 };
 
-export const COURSE_FAMILIES: readonly CourseFamily[] = [MARKETPLACE];
+// Capstone projects for the AI engineering interview course. Every variant
+// builds the same evaluated RAG plus agent service with one approval-gated
+// tool; the domain, documents, risky action and hardest constraint differ.
+// Plans per variant: agent-ip/work/ai-engineering-interview/capstone-variants.md.
+const AI_CAPSTONES: CourseFamily = {
+  slug: "ai-engineering-capstones",
+  label: "AI engineering capstones",
+  defaultVariantSlug: "shop-support",
+  variants: [
+    {
+      slug: "shop-support",
+      label: "Support agent",
+      productName: "Karmel Help",
+      summary: "A support agent for an online shop of handmade goods that answers policy questions and can look up orders and request refunds.",
+      hardestConstraint: "Mix policy answers with live order data in one reply, and never pay a refund twice.",
+      specialisationSlug: "agent-workflows",
+      theme: { accentLight: "#9B2226", onAccentLight: "#FFFFFF", accentDark: "#F87171", onAccentDark: "#2A0A0B", headingFont: "sans" },
+    },
+    {
+      slug: "policy-desk",
+      label: "Policy assistant",
+      productName: "Sanabel Desk",
+      summary: "An assistant that answers loan officers from a lender's policy documents and can request a repayment extension.",
+      hardestConstraint: "Policies change: answer from the version in force on the question's date and cite it.",
+      specialisationSlug: "retrieval-depth",
+      theme: { accentLight: "#1E40AF", onAccentLight: "#FFFFFF", accentDark: "#93C5FD", onAccentDark: "#0B1B3A", headingFont: "sans" },
+    },
+    {
+      slug: "runbook-bot",
+      label: "Runbook bot",
+      productName: "Nakhla Ops",
+      summary: "A knowledge bot for a remote software team's runbooks and incident notes that can restart a service.",
+      hardestConstraint: "Runbooks go stale: prefer the newest valid page and say when an answer comes from an old one.",
+      specialisationSlug: "llm-operations",
+      theme: { accentLight: "#0F766E", onAccentLight: "#FFFFFF", accentDark: "#2DD4BF", onAccentDark: "#042F2E", headingFont: "sans" },
+    },
+    {
+      slug: "clinic-desk",
+      label: "Clinic front desk",
+      productName: "Shifa Desk",
+      summary: "A front desk assistant for a small clinic that answers practical questions and can cancel or move appointments.",
+      hardestConstraint: "Logistics only: refuse medical advice safely, hand off to staff, and change bookings only after approval.",
+      specialisationSlug: "agent-workflows",
+      theme: { accentLight: "#1B6E3A", onAccentLight: "#FFFFFF", accentDark: "#4ADE80", onAccentDark: "#052E16", headingFont: "sans" },
+    },
+    {
+      slug: "field-reports",
+      label: "Field reports",
+      productName: "Marj Reports",
+      summary: "An analyst for an NGO's field reports and budget tables that drafts sections of donor updates.",
+      hardestConstraint: "Numbers sit in tables across many reports, and totals must add up across documents.",
+      specialisationSlug: "retrieval-depth",
+      theme: { accentLight: "#B45309", onAccentLight: "#FFFFFF", accentDark: "#FBBF24", onAccentDark: "#2A1700", headingFont: "sans" },
+    },
+    {
+      slug: "course-tutor",
+      label: "Course tutor",
+      productName: "Daris",
+      summary: "A tutor for a university course's notes and rules in Arabic and English that can request a deadline extension.",
+      hardestConstraint: "Questions and notes mix Arabic and English, and retrieval must work across both languages.",
+      specialisationSlug: "retrieval-depth",
+      theme: { accentLight: "#6D28D9", onAccentLight: "#FFFFFF", accentDark: "#A78BFA", onAccentDark: "#1E1033", headingFont: "sans" },
+    },
+    {
+      slug: "contract-review",
+      label: "Contract review",
+      productName: "Aqd Check",
+      summary: "An assistant that answers a freelancer's questions about client contracts and drafts change requests.",
+      hardestConstraint: "Quote the exact clause, never give legal advice, and send nothing to a client without approval.",
+      specialisationSlug: "llm-operations",
+      theme: { accentLight: "#9D174D", onAccentLight: "#FFFFFF", accentDark: "#F9A8D4", onAccentDark: "#3B0A1E", headingFont: "serif" },
+    },
+    {
+      slug: "onboarding",
+      label: "Onboarding buddy",
+      productName: "Rafiq",
+      summary: "An onboarding buddy for a remote company's handbook that can request laptops and system access.",
+      hardestConstraint: "Permission-aware retrieval: an employee never sees a manager-only document in an answer.",
+      specialisationSlug: "agent-workflows",
+      theme: { accentLight: "#155E75", onAccentLight: "#FFFFFF", accentDark: "#67E8F9", onAccentDark: "#083344", headingFont: "sans" },
+    },
+  ],
+  specialisations: [
+    {
+      slug: "retrieval-depth",
+      label: "Document intelligence in depth",
+      summary: "Retrieval over messy documents: tables, versions, languages and multi-hop questions, measured on a growing golden set.",
+    },
+    {
+      slug: "agent-workflows",
+      label: "Agent workflows with approvals",
+      summary: "Agents that act safely: more tools, longer-running approvals, idempotent writes and injection defences.",
+    },
+    {
+      slug: "llm-operations",
+      label: "Evaluation and LLM operations",
+      summary: "Running LLM systems after launch: online evals, judges checked against people, tracing, cost and incidents.",
+    },
+  ],
+};
+
+export const COURSE_FAMILIES: readonly CourseFamily[] = [MARKETPLACE, AI_CAPSTONES];
 
 export function findCourseFamily(familySlug: string | null | undefined): CourseFamily | null {
   if (!familySlug) return null;
@@ -205,7 +311,7 @@ export function courseFinished(enrollment: { status: string; percentComplete: nu
 
 export function buildCourseTrack(
   familySlug: string | CourseFamily | null | undefined,
-  enrollment: { variantSlug: string | null; variantLockedAt?: Date | string | null; specialisationSlug: string | null; status: string; percentComplete: number }
+  enrollment: { variantSlug: string | null; variantLockedAt?: Date | string | null; variantAssignedAt?: Date | string | null; specialisationSlug: string | null; status: string; percentComplete: number }
 ): CourseTrack | null {
   const family = typeof familySlug === "object" && familySlug ? familySlug : findCourseFamily(familySlug);
   if (!family) return null;
@@ -216,6 +322,7 @@ export function buildCourseTrack(
     variantSlug: resolveVariant(family, enrollment.variantSlug).slug,
     variantChosen: chosen !== null,
     variantLocked: Boolean(enrollment.variantLockedAt) || courseFinished(enrollment),
+    variantAssigned: Boolean(enrollment.variantAssignedAt),
     specialisationSlug: findSpecialisation(family, enrollment.specialisationSlug)?.slug ?? null,
     specialisationOpen: courseFinished(enrollment),
   };

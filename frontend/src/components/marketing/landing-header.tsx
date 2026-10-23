@@ -1,91 +1,20 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-
-const navLinkClass =
-  "rounded-md font-medium text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50";
 
 export function LandingHeader({ showCourses }: { showCourses: boolean }) {
   return (
-    <header className="sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-xl supports-[backdrop-filter]:bg-background/75">
-      <div className="mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
-        <div className="relative flex h-14 items-center justify-between sm:h-16">
-          <Link
-            href="/"
-            aria-label="buildment home"
-            className="shrink-0 rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <Logo size="sm" />
-          </Link>
-          <nav
-            aria-label="Primary navigation"
-            className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 md:flex"
-          >
-            {showCourses ? (
-              <a
-                href="#courses"
-                className={cn(navLinkClass, "px-3 py-2 text-sm hover:bg-muted/60")}
-              >
-                Courses
-              </a>
-            ) : null}
-            <a
-              href="#why"
-              className={cn(navLinkClass, "px-3 py-2 text-sm hover:bg-muted/60")}
-            >
-              Features
-            </a>
-            <a
-              href="#work"
-              className={cn(navLinkClass, "px-3 py-2 text-sm hover:bg-muted/60")}
-            >
-              How it works
-            </a>
-            <Link
-              href="/integrations"
-              className={cn(navLinkClass, "px-3 py-2 text-sm hover:bg-muted/60")}
-            >
-              Integrations
-            </Link>
-          </nav>
-          <div className="flex items-center gap-1.5">
-            <ThemeToggle className="size-9 p-0" />
-            <Link
-              href="/login"
-              className={cn(
-                buttonVariants({ size: "lg" }),
-                "h-9 gap-1.5 px-3 sm:px-4",
-              )}
-            >
-              Get started
-              <ArrowRight className="size-3.5" aria-hidden />
-            </Link>
-          </div>
+    <header className="border-b border-border bg-background">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-2 px-6 py-5 sm:px-8 lg:px-12">
+        <Link href="/" aria-label="buildment home" className="py-2"><Logo size="md" /></Link>
+        <div className="flex items-center gap-4 sm:order-3">
+          <ThemeToggle className="size-11 rounded-none p-3" />
+          <Link href="/login" className="inline-flex min-h-11 items-center text-sm font-medium underline underline-offset-4">Sign in</Link>
         </div>
-        <nav
-          aria-label="Mobile navigation"
-          className="-mx-1 flex h-10 items-center gap-1 overflow-x-auto md:hidden"
-        >
-          {showCourses ? (
-            <a
-              href="#courses"
-              className={cn(navLinkClass, "shrink-0 px-2 py-1.5 text-xs")}
-            >
-              Courses
-            </a>
-          ) : null}
-          <a href="#why" className={cn(navLinkClass, "shrink-0 px-2 py-1.5 text-xs")}>
-            Features
-          </a>
-          <a href="#work" className={cn(navLinkClass, "shrink-0 px-2 py-1.5 text-xs")}>
-            How it works
-          </a>
-          <Link href="/integrations" className={cn(navLinkClass, "shrink-0 px-2 py-1.5 text-xs")}>
-            Integrations
-          </Link>
+        <nav aria-label="Primary navigation" className="flex w-full items-center justify-between gap-3 text-xs sm:w-auto sm:gap-6 sm:text-sm">
+          {showCourses ? <a href="#courses" className="inline-flex min-h-11 items-center hover:underline underline-offset-4">The courses</a> : null}
+          <a href="#why" className="inline-flex min-h-11 items-center hover:underline underline-offset-4">With a mentor</a>
+          <a href="#work" className="inline-flex min-h-11 items-center hover:underline underline-offset-4">Your first chapter</a>
         </nav>
       </div>
     </header>

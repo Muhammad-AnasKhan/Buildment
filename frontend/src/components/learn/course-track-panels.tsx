@@ -44,7 +44,7 @@ export function VariantBanner({ courseSlug, track }: { courseSlug: string; track
         </span>
       </p>
       {track.variantLocked ? (
-        <p className="text-xs text-muted-foreground">Variant fixed after starting a chapter</p>
+        <p className="text-xs text-muted-foreground">{track.variantAssigned ? "Assigned to you for this course" : "Variant fixed after starting a chapter"}</p>
       ) : (
         <Link
           href={`/courses/${courseSlug}/variant`}
