@@ -1,7 +1,7 @@
 import type { StateMachineSpec } from "../renderers/state-machine/types";
 
 // Learn and Build with AI course, chapter 6.3 "Say when AI helped".
-// Hani's new post about his uncle's print shop stock app: list what AI did,
+// Hani's new post about the stock app he built for the print and copy shop where he works: list what AI did,
 // write the three-part AI-use line, check the rules where he posts, publish,
 // and correct openly when a reader finds a mistake. "All my own work" is
 // refused because it is not true. See spec.md.
@@ -10,7 +10,7 @@ export const discloseAiHelp: StateMachineSpec = {
   title: "Before you publish: say when AI helped",
   purpose: "Follow Hani's new post from a finished draft to a published post with an honest AI-use line, and see the claim the path refuses.",
   summary:
-    "Hani's draft is ready. He lists every task AI did: Gemini wrote the first version of the low-stock check, which he rewrote, explained one error and suggested the title. The line 'all my own work' is refused because it is not true. He writes a three-part AI-use line: the tool, what it did, and what he checked. He checks the rules where he posts and his uncle's condition on the screenshot, then publishes. When a reader finds a mistake, he corrects it openly, as he did on his first post.",
+    "Hani's draft is ready. He lists every task AI did: Gemini wrote the first version of the low-stock check, which he rewrote, explained one error and suggested the title. The line 'all my own work' is refused because it is not true. He writes a three-part AI-use line: the tool, what it did, and what he checked. He checks the rules where he posts and the shop owner's condition on the screenshot, then publishes. When a reader finds a mistake, he corrects it openly, as he did on his first post.",
   states: [
     { id: "draft", name: "Draft ready", sub: "written by Hani", col: 0, row: 0 },
     { id: "listed", name: "AI help listed", sub: "every task it did", col: 1, row: 0 },
@@ -61,7 +61,7 @@ export const discloseAiHelp: StateMachineSpec = {
       state: "rules",
       edge: 4,
       title: "Check the rules where he posts",
-      note: "At the time of writing, LinkedIn makes him responsible for what he posts, and DEV lets him mark the post as AI-assisted, so he does. His uncle agreed the shop can be named but not its numbers, so the screenshot shows made-up stock.",
+      note: "At the time of writing, LinkedIn makes him responsible for what he posts, and DEV lets him mark the post as AI-assisted, so he does. The owner agreed the shop can be named but not its numbers, so the screenshot shows made-up stock.",
       chips: ["LinkedIn: he is responsible", "DEV: AI-assisted", "made-up stock"],
     },
     {
@@ -81,7 +81,7 @@ export const discloseAiHelp: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "Before step 3, predict: does Hani's post need an AI-use line, even though he wrote every word of it? Then step on.",
+    "Go to step 3 and read why the path refuses 'all my own work': it is about the app and the title, not about who typed the words.",
     "At step 4, cover the line and say its three parts from memory. Which part would a reader miss most if it were gone?",
   ],
   limits:

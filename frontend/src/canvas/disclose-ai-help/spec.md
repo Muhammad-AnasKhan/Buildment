@@ -20,7 +20,7 @@ Honesty about AI help feels like a single yes or no. The canvas turns it into a 
 - Inputs: none beyond the shared step controls.
 - Outputs: the highlighted state, the active edge, the step note and chips.
 - Rule: six states in a snake (Draft ready, AI help listed, AI line written on row 0; Rules checked, Published, Corrected on row 1); five transitions and one rejected loop ("all my own" on AI line written); seven steps.
-- Fixed data (from chapter 6.3): Gemini wrote the first version of the low-stock check, which Hani rewrote and tested; it explained one error and suggested the title; the AI-use line is the one quoted in the chapter; LinkedIn makes the author responsible and DEV offers an AI-Assisted mark (checked 2026-10-24); his uncle allows the shop's name but not its numbers; the correction line on the first post is the one quoted in the chapter.
+- Fixed data (from chapter 6.3): Gemini wrote the first version of the low-stock check, which Hani rewrote and tested; it explained one error and suggested the title; the AI-use line is the one quoted in the chapter; LinkedIn makes the author responsible and DEV offers an AI-Assisted mark (checked 2026-10-24); the shop owner allows the shop's name but not its numbers; the correction line on the first post is the one quoted in the chapter.
 - Assumptions: one post, two platforms, one person's AI help that he can list in full.
 - Limitations: platform rules change; universities, clients and employers can have stricter rules.
 
@@ -39,7 +39,7 @@ Six labelled pills, five arrows and one rejected loop. Tone: bad on the refused 
 
 ## Copy
 - What this shows: the checks between a finished draft and an honest post.
-- Try this: 1. Before step 3, predict whether the post needs an AI-use line although Hani wrote every word (matches the chapter's predict). 2. At step 4, say the line's three parts from memory.
+- Try this: 1. Go to step 3 and read why "all my own work" is refused (this answers the chapter's predict without repeating it). 2. At step 4, say the line's three parts from memory.
 - What changed: each step note says what Hani did at that state and why.
 - Limits of the model: as in `limits`.
 
@@ -57,7 +57,7 @@ Shared stepper keyboard support and focus ring; `summary` gives the whole path f
 - [x] Reader fallback exists (prose in 6.3).
 
 ## Placement
-Chapter 6.3, after the predict on whether Hani's post needs an AI-use line, and before the section "The rules where you post".
+Chapter 6.3, after the worked example and its diagram (the predict sits earlier, right after the opening story), and before the section "The rules where you post".
 
 ## Build plan
 `frontend/src/canvas/disclose-ai-help/data.ts`, export `discloseAiHelp`, to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.
