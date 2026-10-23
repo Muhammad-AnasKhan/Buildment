@@ -13,6 +13,8 @@ import { ragHybridRerank } from "./rag-hybrid-rerank/data";
 import { retrievalMetricsAtK } from "./retrieval-metrics-at-k/data";
 import { agentReactLoop } from "./agent-react-loop/data";
 import { langgraphReducerMerge } from "./langgraph-reducer-merge/data";
+import { fiveWhysChain } from "./five-whys-chain/data";
+import { laptopChargingDetective } from "./laptop-charging-detective/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the three
@@ -40,6 +42,8 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "retrieval-metrics-at-k": retrievalMetricsAtK,
   "agent-react-loop": agentReactLoop,
   "langgraph-reducer-merge": langgraphReducerMerge,
+  "five-whys-chain": fiveWhysChain,
+  "laptop-charging-detective": laptopChargingDetective,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
