@@ -86,19 +86,21 @@ There is no need to list every old lesson in that first patch.
 without production database credentials. When a course package reaches `main`,
 the workflow previews each changed course and uploads its affected-module and
 variant summary as a `course-review-<slug>` artifact. It then waits for approval
-in the `course-publishing` GitHub environment before publishing that exact commit.
-Configure the environment's required reviewers to include the course creator.
+in a course-specific `course-publishing-<slug>` GitHub environment before
+publishing that exact commit. Configure that environment's required reviewer
+as the course creator before merging a package. Each course needs its own
+environment; an unconfigured environment has no publish secret and fails closed.
 Set `COURSE_PREVIEW_DATABASE_URL` as a repository secret for a database role
 that can read courses, learners, and content and write temporary preview rows.
-Set `COURSE_PUBLISH_DATABASE_URL` as a **course-publishing environment secret**
+Set `COURSE_PUBLISH_DATABASE_URL` as a **secret in each course environment**
 with permission to write published releases. A missing environment secret makes
 the publish job fail closed.
 Deploy the Prisma migrations before enabling this workflow. The job checks the
 active release ID, creator ID, and full course snapshot fingerprint from the
 reviewed preview, and uses the same ZIP preview and approval
 service as the app. It cannot create a course by accident, and jobs for one
-course are serialized. Configure the required reviewer for DevWeekends PR courses
-as their creator: GitHub does not infer the creator from `creatorEmail`.
+course are serialized. GitHub does not infer the creator from `creatorEmail`,
+so configure each course environment's reviewer explicitly.
 Merging the PR alone must not publish before that approval.
 
 The **workflow_dispatch** path can process one course package manually from

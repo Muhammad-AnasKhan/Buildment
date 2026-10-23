@@ -127,7 +127,7 @@ jobs:
       fail-fast: false
       matrix:
         course: ${{ fromJSON(needs.detect_merged_courses.outputs.courses) }}
-    environment: course-publishing
+    environment: course-publishing-${{ matrix.course }}
     concurrency:
       group: course-publish-${{ matrix.course }}
       cancel-in-progress: false
@@ -172,7 +172,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    environment: course-publishing
+    environment: course-publishing-${{ inputs.course }}
     concurrency:
       group: course-publish-${{ inputs.course }}
       cancel-in-progress: false
