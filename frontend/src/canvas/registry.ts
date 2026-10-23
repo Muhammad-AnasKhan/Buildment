@@ -20,6 +20,27 @@ import { sysdesignTruetimeCommitWait } from "./sysdesign-truetime-commit-wait/da
 import { sysdesignReplicaLag } from "./sysdesign-replica-lag/data";
 import { fiveWhysChain } from "./five-whys-chain/data";
 import { laptopChargingDetective } from "./laptop-charging-detective/data";
+import { afterIsNotBecauseTimeline } from "./after-is-not-because-timeline/data";
+import { andThenWhatChain } from "./and-then-what-chain/data";
+import { bakeryBottleneckMoves } from "./bakery-bottleneck-moves/data";
+import { baselThirdFactorSplit } from "./basel-third-factor-split/data";
+import { comparisonGroupVideoTest } from "./comparison-group-video-test/data";
+import { driftBackToNormal } from "./drift-back-to-normal/data";
+import { fishboneCheckEvidence } from "./fishbone-check-evidence/data";
+import { halvingBookingChain } from "./halving-booking-chain/data";
+import { hudaCausesAddUp } from "./huda-causes-add-up/data";
+import { hudaOrderDropChain } from "./huda-order-drop-chain/data";
+import { hudaReviewLoop } from "./huda-review-loop/data";
+import { isAndIsNotFridge } from "./is-and-is-not-fridge/data";
+import { oneChangePriceWeeks } from "./one-change-price-weeks/data";
+import { orderPileStockFlow } from "./order-pile-stock-flow/data";
+import { pilotWithAStopRule } from "./pilot-with-a-stop-rule/data";
+import { reviewWithoutBlameSteps } from "./review-without-blame-steps/data";
+import { stopEarlyBannerTest } from "./stop-early-banner-test/data";
+import { symptomFixLoop } from "./symptom-fix-loop/data";
+import { targetLooksGood } from "./target-looks-good/data";
+import { weakStrongFixes } from "./weak-strong-fixes/data";
+import { whoGotTheSurvey } from "./who-got-the-survey/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the three
@@ -54,6 +75,27 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-replica-lag": sysdesignReplicaLag,
   "five-whys-chain": fiveWhysChain,
   "laptop-charging-detective": laptopChargingDetective,
+  "after-is-not-because-timeline": afterIsNotBecauseTimeline,
+  "and-then-what-chain": andThenWhatChain,
+  "bakery-bottleneck-moves": bakeryBottleneckMoves,
+  "basel-third-factor-split": baselThirdFactorSplit,
+  "comparison-group-video-test": comparisonGroupVideoTest,
+  "drift-back-to-normal": driftBackToNormal,
+  "fishbone-check-evidence": fishboneCheckEvidence,
+  "halving-booking-chain": halvingBookingChain,
+  "huda-causes-add-up": hudaCausesAddUp,
+  "huda-order-drop-chain": hudaOrderDropChain,
+  "huda-review-loop": hudaReviewLoop,
+  "is-and-is-not-fridge": isAndIsNotFridge,
+  "one-change-price-weeks": oneChangePriceWeeks,
+  "order-pile-stock-flow": orderPileStockFlow,
+  "pilot-with-a-stop-rule": pilotWithAStopRule,
+  "review-without-blame-steps": reviewWithoutBlameSteps,
+  "stop-early-banner-test": stopEarlyBannerTest,
+  "symptom-fix-loop": symptomFixLoop,
+  "target-looks-good": targetLooksGood,
+  "weak-strong-fixes": weakStrongFixes,
+  "who-got-the-survey": whoGotTheSurvey,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
