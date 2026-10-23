@@ -20,7 +20,7 @@ The chapter states the licence cases in a table and the reading order in prose. 
 - Inputs: none beyond the shared step controls.
 - Outputs: the highlighted state, the active edge, the step note and chips.
 - Rule: six states on a 3 by 2 grid in a snake (Project found, Licence checked, Health checked on row 0; Read in order, Part reused, Credit given on row 1, right to left); five transitions; two rejected loops ("copy anyway" on Licence checked, "drop notice" on Credit given); eight steps.
-- Assumptions: shortlane is a made-up project with an MIT licence, a commit three weeks ago, nine contributors and answered issues; the reused part is a 20-line function.
+- Assumptions: shortlane is a made-up project with an MIT licence, a commit three weeks ago, nine contributors and answered issues; Yara reads it on lab day 9 (week 9) and reuses a 20-line function in week 9, her short codes week.
 - Limitations: four licence cases only; not legal advice; health signs do not make code correct.
 
 ## Rendering
@@ -28,7 +28,7 @@ The chapter states the licence cases in a table and the reading order in prose. 
 - Grid: columns 0 to 2, rows 0 to 1. The only edge between two states in the same column is Health checked to Read in order, labelled "ok" (2 characters), because it becomes horizontal on phones with about 22px between pills.
 - No diagonal edges. The two rejected loops sit on states in different columns and rows (column 1 row 0, column 0 row 1), so their labels do not overlap in the narrow layout, where loops sit to the right of the pill.
 - Edge labels are at most 13 characters.
-- Static fallback: chapter 5.5 covers the same path in prose (finding, health, reading order, the four licence cases and credit) before the canvas.
+- Static fallback: chapter 5.5 covers finding, health and the reading order in prose before the canvas, and the four licence cases and credit right after it.
 
 ## Controls
 Shared stepper controls only. No numeric inputs: the claim is about order and permission.
@@ -39,9 +39,9 @@ Six labelled pills, five arrows and two rejected loops. Tone good on the MIT lic
 ## Copy
 - What this shows: `purpose` in `data.ts`.
 - Try this:
-  1. Predict whether Yara can reuse code from an MIT project (matches the chapter's predict).
-  2. Why stars do not change what she may copy.
-  3. The difference between the licence notice and a README thank-you.
+  1. Step 2 then step 7: the notice is MIT's one condition, and a README thank-you does not replace it (answers the chapter's predict without restating it).
+  2. Step 3: stars do not change what she may copy.
+  3. Steps 4 and 5: health says the project is worth reading; the order says where to start.
 - What changed: each step note says what was checked or done and why it is allowed or refused.
 - Limits of the model: `limits` in `data.ts`.
 
@@ -52,14 +52,14 @@ Step 3 and step 7 are rejected loops: the state stays the same. Step 8 revisits 
 Shared stepper keyboard support and focus ring; `summary` gives the whole path, including both refusals, for screen readers; tone always has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable: the quiz after the canvas (Saleh's café app) asks which reuse a licence allows, and a second item (Malak's school timetable) asks which project's health signs make it worth studying.
+- [x] The claim is testable: the quiz after the canvas (Saleh's pharmacy app) asks which reuse a licence allows, and a second item (Malak's school timetable) asks which project's health signs make it worth studying.
 - [x] The model is tested by the shared registry consistency, label-fit and label-overlap tests.
 - [x] The design is simple and legible.
-- [x] Prediction before (can she reuse MIT code), transfer check after.
+- [x] Prediction before (on what condition she may reuse MIT code: keep the notice, or thank the author), transfer check after.
 - [x] Reader fallback exists (prose and table in 5.5).
 
 ## Placement
-In chapter 5.5, after "Credit, every time" and the predict, before "Where it goes wrong". Names and numbers match the chapter: shortlane (made up), MIT, last commit three weeks ago, nine contributors, a 20-line function, the README line.
+In chapter 5.5, under "May she reuse it?", after the predict and before "Licences in four cases". Names and numbers match the chapter: shortlane (made up), MIT, last commit three weeks ago, nine contributors, a 20-line function, the README line.
 
 ## Build plan
 `frontend/src/canvas/reuse-open-source-safely/data.ts` exporting `reuseOpenSourceSafely`; the orchestrator registers it in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`.

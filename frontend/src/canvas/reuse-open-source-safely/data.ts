@@ -10,7 +10,7 @@ export const reuseOpenSourceSafely: StateMachineSpec = {
   title: "Reuse open-source code, within the licence",
   purpose: "Follow one project from finding it to crediting it, and see the two moves the licence does not allow.",
   summary:
-    "Yara finds shortlane on a topic page, checks its licence (MIT), checks its health (recent commits, several contributors, answered issues), reads it in order (README, run it, one folder, its tests), reuses one function with the licence notice kept, and credits it in her README and write-up. Copying code from a project with no licence is refused, and so is dropping the licence notice in favour of a thank-you line.",
+    "Yara finds shortlane on a topic page and checks its licence (MIT) and its health (recent commits, several contributors, answered issues). She reads it in order: README, run it, one folder, its tests. She reuses one function with the licence notice kept, and credits it in her README and write-up. Copying code from a project with no licence is refused, and so is dropping the licence notice in favour of a thank-you line.",
   states: [
     { id: "found", name: "Project found", sub: "topic page", col: 0, row: 0 },
     { id: "licence", name: "Licence checked", sub: "MIT, or none", col: 1, row: 0 },
@@ -66,7 +66,7 @@ export const reuseOpenSourceSafely: StateMachineSpec = {
       state: "read",
       edge: 3,
       title: "Read it in order",
-      note: "README first, then she runs it in GitHub Codespaces, then one folder: the code that makes short codes, and its tests. A chat assistant's tour of one file names a function that is not there, so she checks every claim against the code.",
+      note: "On lab day 9: README first, then she runs it in GitHub Codespaces, then one folder, the code that makes short codes, and its tests. A chat assistant's tour of one file names a function that is not there, so she checks every claim against the code.",
       chips: ["README", "run it", "one folder", "tests"],
     },
     {
@@ -75,7 +75,7 @@ export const reuseOpenSourceSafely: StateMachineSpec = {
       tone: "good",
       outcome: "within licence",
       title: "Reuse one part, within the licence",
-      note: "She adapts shortlane's 20-line short-code function into Qasir and keeps the MIT notice in her licences folder. She can explain every line, so the explain-back rule is met too.",
+      note: "In week 9, her short codes week, she adapts shortlane's 20-line short-code function into Qasir and keeps the MIT notice in her licences folder. She can explain every line, so the explain-back rule is met too.",
       chips: ["MIT notice kept", "explain-back"],
     },
     {
@@ -95,9 +95,9 @@ export const reuseOpenSourceSafely: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "Before step 2, predict: can Yara reuse code from a project with an MIT licence? Then see what the licence asks of her.",
-    "At step 3, the project with no licence is the more popular one. Why do stars not change what she may copy?",
-    "At step 7, what is the difference between the licence notice and a thank-you line in the README?",
+    "Go to step 2 and read the one condition MIT sets, then go to step 7: a thank-you in the README is refused as a replacement for the notice.",
+    "At step 3, the project with no licence is the more popular one. Stars do not change what she may copy: without a licence she may only read it.",
+    "Compare steps 4 and 5: health tells her the project is worth reading, and the reading order tells her where to start.",
   ],
   limits:
     "This covers four common cases only (MIT, Apache 2.0, GPL and no licence) and is not legal advice: other licences have other conditions, and when you are unsure, ask a mentor or do not copy. The health signs make a project worth studying; they do not make its code correct. Shortlane and its numbers are made up for this example.",

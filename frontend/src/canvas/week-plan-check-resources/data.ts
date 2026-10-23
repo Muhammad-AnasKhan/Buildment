@@ -10,7 +10,7 @@ export const weekPlanCheckResources: SequenceSpec = {
   title: "Yara's caching week: ask, check, then plan",
   purpose: "See how an AI's list of resources becomes a week plan only after each item is checked, and what the check catches.",
   summary:
-    "Yara asks a chat assistant for three videos, one book chapter and two articles on caching, giving her level, time and data limits. She opens the three videos, which exist, though one is nine years old; she searches for the book in a library catalogue, on the publisher's website and in two bookshops and finds it does not exist; she opens both articles, which exist; she replaces the book with the official docs she found herself; she writes the week plan with an 'I checked it exists' column; and she ends the week with a recall test.",
+    "Yara asks a chat assistant for three videos, one book chapter and two articles on caching, giving her level, time and data limits. She opens the three videos, which exist, though one is nine years old. She searches the book's author and finds a real writer. She then searches the title in a library catalogue, on the publisher's website and in two bookshops, and finds the book does not exist. She opens both articles, which exist, and replaces the book with the official docs she found herself. She writes the week plan with an 'I checked it exists' column, and ends the week with a recall test.",
   actors: [
     { name: "Yara", sub: "you" },
     { name: "Chat assistant", sub: "suggests" },
@@ -51,8 +51,8 @@ export const weekPlanCheckResources: SequenceSpec = {
       tone: "bad",
       outcome: "no such book",
       title: "Check 2: the book",
-      note: "She searches a library catalogue, the publisher's website and two bookshop listings. No book has that title. The AI made it up, with a real-looking author, publisher and year.",
-      chips: ["library catalogue", "publisher", "two bookshops"],
+      note: "First she searches the author's name and finds a real writer with other books about web development. That proves the writer exists, not the book. Then she searches the title in a library catalogue, on the publisher's website and in two bookshop listings. No book has that title: the AI made it up and attached a real name.",
+      chips: ["author: real", "title: not found", "library, publisher, bookshops"],
     },
     {
       from: 0,
@@ -70,14 +70,14 @@ export const weekPlanCheckResources: SequenceSpec = {
       tone: "good",
       outcome: "replaced",
       title: "Replace what failed",
-      note: "Instead of asking for another book and hoping, she uses the caching page in the official docs of the cache her lab runs. She found it herself, so there is nothing to doubt. Checking all six items took her about 20 minutes.",
+      note: "Instead of asking for another book and hoping, she uses the caching page in the official docs of the cache her lab runs. She found it herself, so there is nothing to doubt.",
     },
     {
       from: 0,
       to: 3,
       label: "write the week",
       title: "Write the week plan",
-      note: "Only checked items go in, each with how she checked it. One angle and one short lab a day; articles on days with weak data, videos at the café with internet.",
+      note: "Only checked items go in, each with how she checked it. One angle and one short lab a day; articles on days with weak data, videos on evenings with a good connection.",
       chips: ["I checked it exists (how)", "five angles", "daily labs"],
     },
     {
@@ -91,10 +91,10 @@ export const weekPlanCheckResources: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Before step 2, predict: is asking the AI worth it if one suggestion may be made up? At the end, count what Yara kept: five of six, plus the docs.",
-    "At step 4, Yara searched three kinds of places before she decided the book does not exist. Why is one search for the author's name not enough?",
+    "Go to step 4 and compare the two searches: the author's name finds a real writer, the title finds nothing in a library catalogue, on the publisher's site or in two bookshops.",
+    "At the end, count what Yara kept: two videos, one video for ideas only, both articles and the docs she found herself. One of the AI's six suggestions was invented.",
     "At step 3, one video is real but nine years old. What does she still check before she copies a command from it?",
   ],
   limits:
-    "Here five of six suggestions were real and the fake one was found quickly. A real list can hold more invented items, a real book with the wrong chapter, or a link to a page that says something else. Finding an item proves it exists, not that it is correct: you still read it with your own judgement. The 20 minutes of checking is this example's number.",
+    "Here five of six suggestions were real and the fake one was found quickly. A real list can hold more invented items, a real book with the wrong chapter, or a link to a page that says something else. Finding an item proves it exists, not that it is correct: you still read it with your own judgement.",
 };
