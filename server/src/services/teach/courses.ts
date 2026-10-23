@@ -1,6 +1,7 @@
 import type { CourseBuilderChapter, CourseBuilderView, CourseDraftPreview, CourseSettingsView, CourseSlugResult } from "../../shared/api/teach.js";
 import { TEACH_ERROR_CODES } from "../../shared/api/teach.js";
 import { validateCoursePublish } from "../../shared/lib/course-publish-rules.js";
+import { findCourseFamily } from "../../shared/lib/course-tracks.js";
 import { slugify } from "../../shared/lib/mdx-headings.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, UnprocessableError } from "../../utils/errors.js";
@@ -114,6 +115,7 @@ export async function loadCourseSettings(user: SessionUser, courseSlug: string):
       id: true, slug: true, title: true, description: true, projectGoal: true,
       difficulty: true, estimatedHours: true, category: true, sequential: true, coverUrl: true,
       status: true, pricingType: true, priceCents: true, currency: true, integritySnapshots: true,
+      familySlug: true, variantAssignment: true,
       _count: { select: { enrollments: true, chapters: { where: { archivedAt: null } } } },
     },
   });
@@ -147,6 +149,14 @@ export async function loadCourseDraftPreview(user: SessionUser, courseSlug: stri
 export async function updateCourseSettings(user: SessionUser, courseId: string, input: CourseSettingsBody): Promise<void> {
   await requireCourseById(user, courseId);
 
+  if (input.variantAssignment === "RANDOM") {
+    const { familySlug } = await prisma.course.findUniqueOrThrow({ where: { id: courseId }, select: { familySlug: true } });
+    if (!findCourseFamily(familySlug)) {
+      const reason = "Only a course in a course family has variants to assign.";
+      throw new UnprocessableError(reason, "VALIDATION_ERROR", [reason]);
+    }
+  }
+
   let priceCents = 0;
   if (input.pricingType === "PAID") {
     if (input.priceDollars === "") {
@@ -169,6 +179,7 @@ export async function updateCourseSettings(user: SessionUser, courseId: string, 
       estimatedHours: input.estimatedHours === "" ? null : input.estimatedHours,
       ...(input.category ? { category: input.category } : {}),
       sequential: input.sequential,
+      ...(input.variantAssignment ? { variantAssignment: input.variantAssignment } : {}),
       pricingType: input.pricingType,
       priceCents,
       currency: input.currency.toUpperCase(),

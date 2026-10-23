@@ -9,7 +9,7 @@ import type {
   ResponseStatus,
   ReviewVerdict,
 } from "../domain/enums.js";
-import type { LearnerTrackSummary } from "../lib/course-tracks.js";
+import type { LearnerTrackSummary, VariantAssignment } from "../lib/course-tracks.js";
 import type { InstructorAccessView } from "../lib/instructor-access.js";
 import type { IntegrityAttemptSummary } from "./integrity.js";
 
@@ -143,7 +143,15 @@ export type CourseSettingsView = Pick<CourseBuilderCourse,
   "id" | "slug" | "title" | "description" | "projectGoal" | "difficulty" |
   "estimatedHours" | "category" | "sequential" | "coverUrl" | "status" | "pricingType" |
   "priceCents" | "currency"
-> & { enrollmentCount: number; chapterCount: number; integritySnapshots: boolean; zipImportEnabled?: boolean };
+> & {
+  enrollmentCount: number;
+  chapterCount: number;
+  integritySnapshots: boolean;
+  zipImportEnabled?: boolean;
+  /** Course family the course belongs to, or null when it has no variants. */
+  familySlug: string | null;
+  variantAssignment: VariantAssignment;
+};
 
 export type CourseDraftPreview = {
   course: Pick<CourseBuilderCourse, "id" | "slug" | "title" | "description" | "projectGoal" | "coverUrl" | "status">;
