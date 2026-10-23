@@ -2,6 +2,7 @@
   "name": "@buildment/server",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@12.11.2",
   "description": "Buildment API — Express 5 + TypeScript. Owns the database, sessions, email, background jobs and the contract code in src/shared.",
   "type": "module",
   "main": "dist/index.js",

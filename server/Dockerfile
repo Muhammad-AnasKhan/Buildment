@@ -2,7 +2,11 @@
 #   docker build -f server/Dockerfile -t buildment-api .
 
 FROM node:20-alpine AS base
-RUN corepack enable
+ENV COREPACK_HOME=/usr/local/share/corepack
+RUN corepack enable \
+ && corepack prepare pnpm@12.11.2 --activate \
+ && pnpm --version \
+ && chmod -R a+rX "$COREPACK_HOME"
 WORKDIR /app/server
 ENV npm_config_fetch_retries=5 npm_config_fetch_timeout=60000
 
