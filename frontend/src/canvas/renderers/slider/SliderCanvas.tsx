@@ -5,11 +5,22 @@ import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CanvasFrame, CanvasNotes } from "../../primitives/canvas-frame";
 import { ACCENT_CONTROL, FOCUS_RING, TONES } from "../../primitives/tones";
+import { getCanvasSpec } from "../../registry";
 import { barPercent, defaultValues, isDefault, withValue } from "./model";
 import type { SliderInput, SliderSpec, SliderValues } from "./types";
 
-/** A small numeric model: move a slider, watch the outputs recalculate, read what changed. */
-export function SliderCanvas({ spec }: { spec: SliderSpec }) {
+/**
+ * A small numeric model: move a slider, watch the outputs recalculate, read what changed.
+ * The spec holds functions, which cannot cross from a server component to this client
+ * component, so the canvas receives its slug and looks the spec up here.
+ */
+export function SliderCanvas({ slug }: { slug: string }) {
+  const spec = getCanvasSpec(slug);
+  if (!spec || spec.kind !== "slider") return null;
+  return <SliderModel spec={spec} />;
+}
+
+function SliderModel({ spec }: { spec: SliderSpec }) {
   const [values, setValues] = useState<SliderValues>(() => defaultValues(spec));
   const [change, setChange] = useState("");
   const result = spec.compute(values);
