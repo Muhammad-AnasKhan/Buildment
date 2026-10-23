@@ -141,7 +141,7 @@ modules:
       - file: 06.03-say-when-ai-helped.md
         title: "Say when AI helped"
         goal: "Write an honest line about how AI helped, and know the rules of the places you post to and work for."
-      - file: 06.04-mixed-review.md
+      - file: 06.04-quiz.md
         title: "Mixed review: which habit first?"
         goal: "Choose the right habit for fresh cases from every module."
       - file: 06.05-capstone-your-project-start.md
