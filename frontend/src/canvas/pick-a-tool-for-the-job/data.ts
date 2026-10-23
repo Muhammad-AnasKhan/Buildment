@@ -31,7 +31,7 @@ export const pickAToolForTheJob: FactorSpec = {
   scoreScale: { min: 1, max: 5 },
   unit: "points",
   tryThis: [
-    "Before you change any weight, predict which kind of tool comes out ahead when all four needs matter equally.",
+    "Leave every weight at 'Matters': the chat assistant leads with 26 points, against 24 for the source notebook and 20 for the search tool.",
     "Set only 'Stays inside my sources' to 'Matters a lot'. The source notebook takes the lead, 29 points to 28 for the chat assistant and 21 for the search tool.",
     "Set 'Finds recent pages' to 'Matters a lot' and the other three to 'Matters a little'. The search tool leads with 20 points, against 17 for the chat assistant and 14 for the source notebook.",
   ],

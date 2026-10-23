@@ -76,7 +76,7 @@ export const keepWorkInYourFiles: SequenceSpec = {
       tone: "warn",
       outcome: "nothing lost",
       title: "June: the tool stops opening",
-      note: "For a whole week, the chat tool will not open for him. His notes and his saved prompt are in his own files, so he opens a second chat assistant, pastes them in, and carries on the same day.",
+      note: "For a whole week, the chat tool will not open for him. His phone still works, and his notes app holds his pages and his saved prompt. He opens a second chat assistant, pastes them in, and carries on the same day. The repository is not needed this time: it protects him if he loses the phone.",
     },
     {
       from: 0,
@@ -88,7 +88,7 @@ export const keepWorkInYourFiles: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Before step 7, predict how much of his work on indexes Ahmad loses when the tool stops opening for a week.",
+    "Go to step 7: when the tool will not open, Ahmad carries on from the notes app on his phone. The repository is not needed that week.",
     "Compare step 3 with step 7. The tool changed both times. What was different about where Ahmad's work lived?",
   ],
   limits:

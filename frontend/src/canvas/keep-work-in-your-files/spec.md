@@ -37,7 +37,7 @@ Four lanes and eight arrows, one per step. Tone: warn on "history only" and on "
 
 ## Copy
 - What this shows: `purpose` in `data.ts`.
-- Try this: 1. The first line matches the chapter's predict (how much Ahmad loses when the tool stops opening). 2. Compare step 3 with step 7.
+- Try this: 1. The first line points at step 7, which answers the chapter's predict (the same-day copy in his notes app, not the weekly upload, keeps the week going). 2. Compare step 3 with step 7.
 - What changed: each step note says where the work is after that step.
 - Limits of the model: `limits` in `data.ts`.
 
@@ -48,7 +48,7 @@ Step 2 is a loop on the Chat tool lane; its label is placed on the side with roo
 Shared stepper keyboard support and focus ring; `summary` tells the whole story for screen readers; every tone has a text badge or a title that says what happened.
 
 ## Acceptance criteria
-- [x] The claim is testable (the quiz after the canvas transfers it to Aseel's glossary and to Nada's fallback).
+- [x] The claim is testable (the quiz after the canvas transfers it to Aseel's glossary and to Nada's toolkit page, where her saved prompts are locked inside the tool that stopped opening).
 - [x] The model is tested (registry consistency and label-fit tests, once registered).
 - [x] The design is simple and legible (four lanes, eight steps).
 - [x] Prediction before, transfer check after.

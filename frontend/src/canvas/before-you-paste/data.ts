@@ -83,7 +83,7 @@ export const beforeYouPaste: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "Before you start, predict: can Mahmoud still use an AI tool for this job, or must he do it all by hand?",
+    "Go to step 6: the script with KEY_HERE and five made-up rows were enough for the AI to find the bug and write the formula.",
     "At step 5, think of one more job where the AI would need the real data. What would Mahmoud do then?",
   ],
   limits:

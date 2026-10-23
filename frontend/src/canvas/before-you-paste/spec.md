@@ -38,7 +38,7 @@ Four labelled pills, three solid arrows and two dashed rejected loops. Tone: bad
 
 ## Copy
 - What this shows: `purpose` in `data.ts`.
-- Try this: 1. The first line matches the chapter's predict (can Mahmoud still use an AI tool for this job?). 2. At step 5, think of a job that needs real data and what Mahmoud would do.
+- Try this: 1. The first line points at step 6, which answers the chapter's predict (what the AI needs to write the formula: a few made-up rows, not the real list). 2. At step 5, think of a job that needs real data and what Mahmoud would do.
 - What changed: each step note says what was asked, whether it was refused, and why.
 - Limits of the model: `limits` in `data.ts`.
 
@@ -49,7 +49,7 @@ Steps 2, 4 and 5 keep the state unchanged (two rejected loops and one step with 
 Shared stepper keyboard support and focus ring; `summary` gives the whole flow for screen readers; every tone has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (the quiz after the canvas transfers it to Anas's order sheet, and a second item to checking a formula and a link).
+- [x] The claim is testable (the quiz after the canvas transfers it to Anas's pharmacy product list, where the owner agreed to share one column only, and a second item to checking a formula and a link).
 - [x] The model is tested (registry consistency and label-fit tests, once registered).
 - [x] The design is simple and legible (four states, no diagonals).
 - [x] Prediction before, transfer check after.
