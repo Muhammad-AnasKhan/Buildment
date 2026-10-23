@@ -197,6 +197,8 @@ export type CourseSettingsInput = {
   estimatedHours: string;
   category: string;
   sequential: boolean;
+  /** Only sent for a course in a family; omitted leaves it as it is. */
+  variantAssignment?: string;
   pricingType: string;
   priceDollars: string;
   currency: string;
