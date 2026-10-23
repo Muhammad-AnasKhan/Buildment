@@ -3,7 +3,7 @@ title: "Learn and Build with AI: An Enabler, Not a Replacement"
 description: "AI will not do your career for you, and it will not take it away. Learn to use AI tools as an enabler: see what AI does not know and which calls stay yours, learn a topic deeply from several angles with AI, turn sources into audio you can learn from on the go, run small daily labs and post them to GitHub, plan a strong project over six months that you fully understand, and share your progress honestly."
 projectGoal: "Build the start of a strong project you understand: a six-month plan with a weekly learning plan, a GitHub lab log with at least ten daily labs, structured notes in your own words, and one honest public write-up. Or work from a provided case. Then walk a mentor through it in five minutes and explain one part without notes."
 difficulty: Beginner
-estimatedHours: 21
+estimatedHours: 22
 category: tech
 modules:
   - dir: 01-ai-as-an-enabler
