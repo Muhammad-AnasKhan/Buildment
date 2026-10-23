@@ -63,6 +63,18 @@ import { motivationWaveHabitSize } from "./motivation-wave-habit-size/data";
 import { ifThenMoment } from "./if-then-moment/data";
 import { chooseAnAnchor } from "./choose-an-anchor/data";
 import { thirtyDayReview } from "./thirty-day-review/data";
+import { khaledEveningCues } from "./khaled-evening-cues/data";
+import { stepsToStart } from "./steps-to-start/data";
+import { powerCutBackupPlan } from "./power-cut-backup-plan/data";
+import { fewerTemptations } from "./fewer-temptations/data";
+import { mahaNightLoop } from "./maha-night-loop/data";
+import { phoneOutOfTheBedroom } from "./phone-out-of-the-bedroom/data";
+import { trackerWeekNotes } from "./tracker-week-notes/data";
+import { streakOrDoneCount } from "./streak-or-done-count/data";
+import { slipOrGiveUp } from "./slip-or-give-up/data";
+import { whichHabitFirst } from "./which-habit-first/data";
+import { dinaStudyBlock } from "./dina-study-block/data";
+import { prayerTimeAnchors } from "./prayer-time-anchors/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -139,6 +151,18 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "if-then-moment": ifThenMoment,
   "choose-an-anchor": chooseAnAnchor,
   "thirty-day-review": thirtyDayReview,
+  "khaled-evening-cues": khaledEveningCues,
+  "steps-to-start": stepsToStart,
+  "power-cut-backup-plan": powerCutBackupPlan,
+  "fewer-temptations": fewerTemptations,
+  "maha-night-loop": mahaNightLoop,
+  "phone-out-of-the-bedroom": phoneOutOfTheBedroom,
+  "tracker-week-notes": trackerWeekNotes,
+  "streak-or-done-count": streakOrDoneCount,
+  "slip-or-give-up": slipOrGiveUp,
+  "which-habit-first": whichHabitFirst,
+  "dina-study-block": dinaStudyBlock,
+  "prayer-time-anchors": prayerTimeAnchors,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */

@@ -63,6 +63,18 @@ export const CANVAS_SLUGS = [
   "if-then-moment",
   "choose-an-anchor",
   "thirty-day-review",
+  "khaled-evening-cues",
+  "steps-to-start",
+  "power-cut-backup-plan",
+  "fewer-temptations",
+  "maha-night-loop",
+  "phone-out-of-the-bedroom",
+  "tracker-week-notes",
+  "streak-or-done-count",
+  "slip-or-give-up",
+  "which-habit-first",
+  "dina-study-block",
+  "prayer-time-anchors",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];
