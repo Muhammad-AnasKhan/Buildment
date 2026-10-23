@@ -5,7 +5,7 @@ export type MachineState = {
   name: string;
   /** Short second line, for example what is true in this state. */
   sub?: string;
-  /** Grid position. Columns 0 to 2, rows 0 to 2, so a phone can show it whole. */
+  /** Grid position. Columns 0 to 2, rows 0 to 1, so a phone can show it whole (rows sit 150px apart in the narrow layout). */
   col: number;
   row: number;
 };
