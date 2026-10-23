@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import { CANVAS_SLUGS, isCanvasSlug, type CanvasSlug } from "@/shared/canvas/slugs";
 import type { FactorSpec } from "./renderers/factor/types";
 import type { SequenceSpec } from "./renderers/sequence/types";
+import type { SliderSpec } from "./renderers/slider/types";
 import type { StateMachineSpec } from "./renderers/state-machine/types";
 import { freshmarketMarkPacked } from "./freshmarket-mark-packed/data";
 import { freshmarketOrderStatus } from "./freshmarket-order-status/data";
@@ -15,7 +16,7 @@ import { agentReactLoop } from "./agent-react-loop/data";
 import { langgraphReducerMerge } from "./langgraph-reducer-merge/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
-// server/src/shared/canvas/slugs.ts. Each entry is data for one of the three
+// server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
 // renderers or a reviewed custom component. MDX names a slug, never code.
 // A new interaction model can own its UI without being squeezed into one of
 // the three reusable renderer shapes.
@@ -27,7 +28,7 @@ export type CustomCanvasSpec = {
   component: ComponentType<{ title: string; purpose: string; limits: string }>;
 };
 
-export type CanvasSpec = SequenceSpec | StateMachineSpec | FactorSpec | CustomCanvasSpec;
+export type CanvasSpec = SequenceSpec | StateMachineSpec | FactorSpec | SliderSpec | CustomCanvasSpec;
 
 export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "weighted-matrix-two-offers": weightedMatrixTwoOffers,
