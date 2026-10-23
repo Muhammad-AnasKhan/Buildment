@@ -8,7 +8,7 @@
   },
   "scripts": {
     "install:all": "pnpm --dir server install && pnpm --dir frontend install",
-    "dev": "concurrently -k -n server,frontend -c magenta,green \"pnpm --dir server dev\" \"pnpm --dir frontend dev\"",
+    "dev": "concurrently --raw -k -n server,frontend -c magenta,green \"pnpm --dir server dev\" \"pnpm --dir frontend dev\"",
     "build": "pnpm --dir server build && pnpm --dir frontend build",
     "heroku-postbuild": "pnpm --dir server install --frozen-lockfile --prod=false && pnpm --dir server build",
     "start": "pnpm --dir server start",
