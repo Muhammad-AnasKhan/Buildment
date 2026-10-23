@@ -15,6 +15,20 @@ export const CANVAS_SLUGS = [
   "retrieval-metrics-at-k",
   "agent-react-loop",
   "langgraph-reducer-merge",
+  "llm-token-cost",
+  "sampling-temperature",
+  "rag-two-paths",
+  "chunk-size-overlap",
+  "adaptive-routing-cost",
+  "judge-position-bias",
+  "workflow-or-agent",
+  "hitl-interrupt-resume",
+  "mcp-tool-call",
+  "indirect-injection-trace",
+  "async-concurrency-limit",
+  "retry-backoff-jitter",
+  "trace-sampling",
+  "serverless-vs-cluster-cost",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];

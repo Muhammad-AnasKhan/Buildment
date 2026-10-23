@@ -14,6 +14,20 @@ import { ragHybridRerank } from "./rag-hybrid-rerank/data";
 import { retrievalMetricsAtK } from "./retrieval-metrics-at-k/data";
 import { agentReactLoop } from "./agent-react-loop/data";
 import { langgraphReducerMerge } from "./langgraph-reducer-merge/data";
+import { llmTokenCost } from "./llm-token-cost/data";
+import { samplingTemperature } from "./sampling-temperature/data";
+import { ragTwoPaths } from "./rag-two-paths/data";
+import { chunkSizeOverlap } from "./chunk-size-overlap/data";
+import { adaptiveRoutingCost } from "./adaptive-routing-cost/data";
+import { judgePositionBias } from "./judge-position-bias/data";
+import { workflowOrAgent } from "./workflow-or-agent/data";
+import { hitlInterruptResume } from "./hitl-interrupt-resume/data";
+import { mcpToolCall } from "./mcp-tool-call/data";
+import { indirectInjectionTrace } from "./indirect-injection-trace/data";
+import { asyncConcurrencyLimit } from "./async-concurrency-limit/data";
+import { retryBackoffJitter } from "./retry-backoff-jitter/data";
+import { traceSampling } from "./trace-sampling/data";
+import { serverlessVsClusterCost } from "./serverless-vs-cluster-cost/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -41,6 +55,20 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "retrieval-metrics-at-k": retrievalMetricsAtK,
   "agent-react-loop": agentReactLoop,
   "langgraph-reducer-merge": langgraphReducerMerge,
+  "llm-token-cost": llmTokenCost,
+  "sampling-temperature": samplingTemperature,
+  "rag-two-paths": ragTwoPaths,
+  "chunk-size-overlap": chunkSizeOverlap,
+  "adaptive-routing-cost": adaptiveRoutingCost,
+  "judge-position-bias": judgePositionBias,
+  "workflow-or-agent": workflowOrAgent,
+  "hitl-interrupt-resume": hitlInterruptResume,
+  "mcp-tool-call": mcpToolCall,
+  "indirect-injection-trace": indirectInjectionTrace,
+  "async-concurrency-limit": asyncConcurrencyLimit,
+  "retry-backoff-jitter": retryBackoffJitter,
+  "trace-sampling": traceSampling,
+  "serverless-vs-cluster-cost": serverlessVsClusterCost,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
