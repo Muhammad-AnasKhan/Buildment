@@ -40,7 +40,7 @@ Five pills, four allowed arrows and two refused (dashed) moves. Tones: bad with 
 ## Copy
 - What this shows: one decision from question to owned result, with the two moves a responsible process refuses.
 - Try this:
-  1. Before step 6, predict: can Dina use the timetable the AI recommended, or must she choose B to stay in charge? (Matches the chapter's predict.)
+  1. Step 5 shows what Dina's three checks found in each timetable, and step 6 shows what she did with the AI's pick. (Points at the steps that answer the chapter's predict, which asks whether the AI's recommended timetable passes her three checks.)
   2. At step 5, which of Dina's three checks could the AI have known, and which could only come from her?
   3. Look at the two refused moves. What would each one have cost the club?
 - What changed: each step note says who made the move and why it is allowed or refused.
@@ -55,7 +55,7 @@ Five pills, four allowed arrows and two refused (dashed) moves. Tones: bad with 
 Shared stepper keyboard support and focus ring; `summary` gives the whole path for screen readers; every tone has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable: the quizzes after the canvas transfer it to a café booking tool (agreeing with a checked AI pick) and an exam seating plan (who is accountable).
+- [x] The claim is testable: the quizzes after the canvas transfer it to a tailor's message tool (agreeing with a checked AI pick) and an exam seating plan (who is accountable).
 - [x] The model is tested: registry consistency, label-fit and label-overlap tests, once registered.
 - [x] The design is simple and legible: five states, six edges, no diagonals.
 - [x] Prediction before (chapter predict, first line of `tryThis`), transfer check after.

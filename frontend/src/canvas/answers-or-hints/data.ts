@@ -61,7 +61,7 @@ export const answersOrHints: StateMachineSpec = {
       tone: "bad",
       outcome: "9 of 20",
       title: "Kinan's test, alone",
-      note: "In the entry test there is no AI. Problems with two percentage changes in a row catch him out: he remembers reading about them, not how to do them. He scores 9 of 20.",
+      note: "In the entry test there is no AI. He gets most problems with two percentage changes in a row wrong: he remembers reading about them, not how to do them. He scores 9 of 20.",
     },
     {
       state: "test-hints",
@@ -78,8 +78,8 @@ export const answersOrHints: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "Before step 5, predict who scores higher in the test with no AI: Kinan, 20 of 20 in practice, or Asma, 14 of 20.",
-    "Compare steps 2 and 4. Which practice score tells you more about the test, and why?",
+    "Steps 5 and 6 answer the prediction above the canvas: compare each test score with the same person's practice score in steps 2 and 4.",
+    "Which practice score told you more about the test, and why?",
     "What would change on Kinan's row if he closed each answer and then redid the problem alone?",
   ],
   limits:

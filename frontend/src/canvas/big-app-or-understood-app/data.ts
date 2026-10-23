@@ -30,8 +30,7 @@ export const bigAppOrUnderstoodApp: FactorSpec = {
   scoreScale: { min: 1, max: 5 },
   unit: "points",
   tryThis: [
-    "Before you change any weight, predict: is there any setting where Khaled's store comes out ahead?",
-    "Set 'Number of features' to 'Matters a lot' and the other four to 'Matters a little'. Khaled's store wins, 22 points to 20.",
+    "Set 'Number of features' to 'Matters a lot' and the other four to 'Matters a little'. Khaled's store wins, 22 points to 20: this is one of only two settings where it leads.",
     "Keep that, then set 'Can explain every part' to 'Matters'. Yara's slice leads again, 25 points to 23.",
     "Set every weight to 'Matters a little'. Yara's slice leads, 18 points to 12.",
   ],

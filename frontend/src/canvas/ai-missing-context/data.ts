@@ -39,7 +39,7 @@ export const aiMissingContext: SequenceSpec = {
       to: 2,
       label: "list the facts",
       title: "What only Majd knows",
-      note: "He writes four facts the AI could not see. Context: customers order from phones with weak data, and the budget is $300 with nothing to pay each month. Private: the shop already pays for a hosting account this year. Local: customers pay cash at the counter.",
+      note: "He writes four facts the AI could not see. All four are context: who the customers are, how they pay, the budget, and what the shop already has. Customers order from phones with weak data and pay cash at the counter. The budget is $300, with nothing to pay each month. The shop already pays for a hosting account this year.",
       chips: ["phones, weak data", "$300, nothing monthly", "hosting paid this year", "cash at the counter"],
     },
     {
@@ -79,7 +79,7 @@ export const aiMissingContext: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Before step 5, predict how different the answer will be once Majd adds four facts about the shop.",
+    "Step 5 shows which part of the first plan the AI kept, and step 6 shows why that part still fails at this shop.",
     "At step 6, which kind of missing knowledge is the email problem: context, private data, local and recent, or something nobody wrote down?",
     "Look at step 4. What did Majd leave out of his question on purpose, and why?",
   ],

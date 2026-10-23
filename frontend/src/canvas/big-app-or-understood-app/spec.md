@@ -70,23 +70,22 @@ The shared factor table and totals: each cell shows score x weight, and the lead
 ## Copy
 - What this shows: as in `whatThisShows`.
 - Try this:
-  1. Before you change any weight, predict: is there any setting where Khaled's store comes out ahead? (Matches the chapter's predict.)
-  2. Set "Number of features" to "Matters a lot" and the other four to "Matters a little". Khaled's store wins, 22 points to 20.
-  3. Keep that, then set "Can explain every part" to "Matters". Yara's slice leads again, 25 points to 23.
-  4. Set every weight to "Matters a little". Yara's slice leads, 18 points to 12.
+  1. Set "Number of features" to "Matters a lot" and the other four to "Matters a little". Khaled's store wins, 22 points to 20: one of only two settings where it leads. (Points at the setting that answers the chapter's predict; does not repeat it.)
+  2. Keep that, then set "Can explain every part" to "Matters". Yara's slice leads again, 25 points to 23.
+  3. Set every weight to "Matters a little". Yara's slice leads, 18 points to 12.
 - What changed: the shared renderer states the new totals and leader after each change.
 - Limits of the model: as in `limits`.
 
 ## Edge cases
 - Ties exist (two settings above); the shared renderer labels a tie.
 - All weights at the same level: the slice leads (12 to 18 at 1, 36 to 54 at 3).
-- Facts match chapter 1.5: 14 features against 3, about 16 hours over two weeks, prices stored as text, blank payment page, "link not found" page, a decision note.
+- Facts match chapter 1.5 and the course's canonical facts: 14 features against 3; Yara's first slice built in weeks 1 to 2 (about 16 hours) saves a link, opens it by its short code, shows a "link not found" page and keeps a click count as a number saved in the database; prices stored as text; blank payment page; a decision note.
 
 ## Accessibility
 Shared factor controls are labelled HTML inputs with keyboard support; totals and the leader are given in text, never by colour alone.
 
 ## Acceptance criteria
-- [x] The claim is testable: the quizzes after the canvas transfer it to a bootcamp final review and to a shop owner choosing between three freelancers.
+- [x] The claim is testable: the quizzes after the canvas transfer it to a bootcamp project with one part the student cannot explain, and to a school library choosing between three freelancers with a real trade-off (features, explanation, a handled failure, start date).
 - [x] The model is tested: the shared factor model tests and the registry scale checks, once registered; totals above computed for all 243 settings.
 - [x] The design is simple and legible: two options, five criteria.
 - [x] Prediction before (chapter predict, first line of `tryThis`), transfer check after.

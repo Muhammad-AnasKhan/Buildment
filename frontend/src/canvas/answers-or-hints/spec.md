@@ -39,8 +39,8 @@ Six pills, four arrows. Tones: warn with "20 of 20" on Kinan's practice (a high 
 ## Copy
 - What this shows: two practice paths with the same tool, and what each practice score did and did not predict.
 - Try this:
-  1. Before step 5, predict who scores higher in the test with no AI: Kinan, 20 of 20 in practice, or Asma, 14 of 20. (Matches the chapter's predict.)
-  2. Compare steps 2 and 4. Which practice score tells you more about the test, and why?
+  1. Steps 5 and 6 answer the prediction above the canvas: compare each test score with the same person's practice score in steps 2 and 4. (Points at the answering steps; does not repeat the predict.)
+  2. Which practice score told you more about the test, and why?
   3. What would change on Kinan's row if he closed each answer and then redid the problem alone?
 - What changed: each step note gives the practice or test result and what the fellow did.
 - Limits of the model: as in `limits`.

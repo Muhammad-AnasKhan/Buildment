@@ -38,7 +38,7 @@ Three lanes and seven arrows. Tones: warn on the generic answer (fits most shops
 ## Copy
 - What this shows: the same question asked without and with the facts only you know, and one fact that only a person could give.
 - Try this:
-  1. Before step 5, predict how different the answer will be once Majd adds four facts about the shop. (Matches the chapter's predict.)
+  1. Step 5 shows which part of the first plan the AI kept, and step 6 shows why that part still fails at this shop. (Points at the steps that answer the chapter's predict, which asks which part of the first plan survives; it does not repeat the question.)
   2. At step 6, which kind of missing knowledge is the email problem?
   3. Look at step 4: what did Majd leave out of his question on purpose, and why?
 - What changed: each step note says what the AI saw and what it produced.
@@ -48,12 +48,13 @@ Three lanes and seven arrows. Tones: warn on the generic answer (fits most shops
 - Step 7 is a loop on the "You" lane; its label "decide, then test" sits to the right of the lane, inside 340px.
 - Chips are kept short (under 25 characters) so they wrap cleanly on a phone.
 - Numbers match the chapter exactly: a budget of $300, nothing monthly, cash at the counter, hosting already paid for this year.
+- Classification matches chapter 1.2: all four facts in step 3 are context (who the customers are, how they pay, the budget, what the shop already has), as the chapter defines context; the email fact in step 6 is the kind "nobody wrote it down".
 
 ## Accessibility
 Shared stepper keyboard support and focus ring; `summary` gives the whole flow for screen readers; every tone has a text badge, so colour is never the only signal.
 
 ## Acceptance criteria
-- [x] The claim is testable: the quizzes after the canvas transfer it to a school lab plan (context) and a courier price (local and recent).
+- [x] The claim is testable: the quizzes after the canvas transfer it to a school lab plan (context) and a library poster with last year's opening hours (local and recent).
 - [x] The model is tested: registry consistency and label-fit tests, once the orchestrator registers the slug.
 - [x] The design is simple and legible: three lanes, seven steps.
 - [x] Prediction before (chapter predict, first line of `tryThis`), transfer check after (two MCQs).

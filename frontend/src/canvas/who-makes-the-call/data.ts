@@ -81,7 +81,7 @@ export const whoMakesTheCall: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "Before step 6, predict: can Dina use the timetable the AI recommended, or must she choose B to stay in charge?",
+    "Step 5 shows what Dina's three checks found in each timetable, and step 6 shows what she did with the AI's pick.",
     "At step 5, which of Dina's three checks could the AI have known, and which could only come from her?",
     "Look at the two refused moves. What would each one have cost the club?",
   ],
