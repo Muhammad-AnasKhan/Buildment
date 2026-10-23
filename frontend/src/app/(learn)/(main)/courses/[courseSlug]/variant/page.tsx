@@ -16,10 +16,8 @@ export default async function CourseVariantPage({ params }: { params: Promise<{ 
   await requireLearnSurface();
   const overview = await serverApiFetchOrNotFound<CourseOverview>(`/api/v1/courses/${encodeURIComponent(courseSlug)}/overview`);
   const { course, track } = overview;
-  const family = findCourseFamily(track?.familySlug);
-  if (overview.access !== "active" || !track || !family || track.specialisationOpen || track.variantAssigned) {
-    redirect(`/courses/${course.slug}`);
-  }
+  const family = track?.family ?? findCourseFamily(track?.familySlug);
+  if (overview.access !== "active" || !track || !family || track.variantLocked) redirect(`/courses/${course.slug}`);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-5 py-8 sm:px-6 sm:py-10">
@@ -29,7 +27,7 @@ export default async function CourseVariantPage({ params }: { params: Promise<{ 
         <h1 className="text-2xl font-semibold tracking-tight">Choose what you build</h1>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           Every variant teaches the same skills through a different product. Your pick sets the product name and colour
-          in the chapters and shows on your mentor&apos;s roster. You can change it until you finish the course.
+          in the chapters and shows on your mentor&apos;s roster. Your choice is fixed when you start a chapter.
         </p>
       </header>
 

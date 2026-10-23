@@ -14,6 +14,7 @@ const track: CourseTrack = {
   familySlug: "multi-vendor-marketplace",
   variantSlug: "books",
   variantChosen: true,
+  variantLocked: false,
   variantAssigned: false,
   specialisationSlug: null,
   specialisationOpen: false,
@@ -31,16 +32,14 @@ describe("VariantBanner", () => {
   });
 
   it("hides the picker and says the variant was assigned when the course assigns it", () => {
-    const html = render({ variantAssigned: true });
+    const html = render({ variantAssigned: true, variantLocked: true });
     expect(html).toContain("You are building <strong");
     expect(html).toContain("Assigned to you for this course");
     expect(html).not.toContain("/variant");
   });
 
-  it("treats a learner from before the switch as settled on the general course", () => {
-    const html = render({ variantSlug: "grocery", variantChosen: false, variantAssigned: true });
-    expect(html).toContain("FreshMarket");
-    expect(html).not.toContain("You can pick a different product");
-    expect(html).not.toContain("/variant");
+  it("keeps an earlier learner free to choose after the course mode changes", () => {
+    const html = render({ variantSlug: "grocery", variantChosen: false, variantAssigned: false });
+    expect(html).toContain("Choose a variant");
   });
 });

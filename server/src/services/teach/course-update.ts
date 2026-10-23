@@ -1,5 +1,4 @@
 import { createHash } from "node:crypto";
-import { ulid } from "ulid";
 import type { Prisma } from "../../generated/prisma/index.js";
 import { prisma } from "../../db/prisma.js";
 import type { SessionUser } from "../../types/auth.js";
@@ -7,44 +6,79 @@ import type { CourseUpdatePreview } from "../../shared/api/teach.js";
 import { BadRequestError, ConflictError } from "../../utils/errors.js";
 import { requireCourseById } from "./access.js";
 import { parseCourseZip, type ImportPlan } from "./course-import.js";
-import { activityConfig, canonical, matchCourseUpdate, type UpdateMapping } from "./course-update-matching.js";
-import { recomputeChapterProgress, recomputeEnrollmentRollup } from "../progress/compute.js";
+import { canonical, matchCourseUpdate, type UpdateMapping } from "./course-update-matching.js";
+import { publishCourseRelease } from "./publish-course-release.js";
+import { type ReleaseContent, variantForRelease } from "../courses/releases.js";
+import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
+
+const fingerprint = (value: unknown) => createHash("sha256").update(canonical(value)).digest("hex");
+type StoredPlan = { content: ImportPlan; mapping: UpdateMapping };
 
 async function snapshot(db: Prisma.TransactionClient, courseId: string) {
-  return db.course.findUniqueOrThrow({ where: { id: courseId }, include: {
+  const course = await db.course.findUniqueOrThrow({ where: { id: courseId }, include: {
     modules: { orderBy: { id: "asc" } },
     chapters: { orderBy: { id: "asc" }, include: { blocks: { orderBy: [{ order: "asc" }, { id: "asc" }] } } },
   } });
+  if (!course.activeReleaseId) return { ...course, revision: null };
+  const release = await db.courseRelease.findUniqueOrThrow({ where: { id: course.activeReleaseId } });
+  const modules = (release.content as unknown as ReleaseContent).variants[variantForRelease(resolveCourseFamily(course.familySlug, course.variantFamily), null)] ?? [];
+  const moduleById = new Map(course.modules.map(module => [module.id, module]));
+  const chapterById = new Map(course.chapters.map(chapter => [chapter.id, chapter]));
+  return { ...course, revision: release.id,
+    modules: modules.map(module => ({ ...moduleById.get(module.id)!, contentKey: module.key, title: module.title, order: module.order })),
+    chapters: modules.flatMap(module => module.chapters.map(chapter => ({ ...chapterById.get(chapter.id)!,
+      moduleId: module.id, contentKey: chapter.key, slug: chapter.slug, title: chapter.title, order: chapter.order }))),
+  };
 }
-const fingerprint = (value: unknown) => createHash("sha256").update(canonical(value)).digest("hex");
-type StoredPlan = { content: ImportPlan; mapping: UpdateMapping };
 
 export async function previewCourseZipUpdate(user: SessionUser, courseId: string, buffer: Buffer): Promise<CourseUpdatePreview> {
   const course = await requireCourseById(user, courseId);
   const { slug, plan } = await parseCourseZip(buffer);
+  if (plan.manifest.publication === "create") throw new BadRequestError("This package declares course creation. Use the new-course import instead.");
   if (slug !== course.slug) throw new BadRequestError(`The ZIP slug must be "${course.slug}" to update this course.`);
   const current = await snapshot(prisma, courseId);
+  if ((current.modules.some(module => module.contentKey) || current.chapters.some(chapter => chapter.contentKey)) &&
+      plan.modules.some(module => !module.key || module.lessons.some(lesson => !lesson.key))) {
+    throw new BadRequestError("This course uses stable content keys. Include a key for every supplied module and lesson in the ZIP.");
+  }
   const result = matchCourseUpdate(plan, current.modules, current.chapters);
+  const activeRelease = current.revision ? await prisma.courseRelease.findUniqueOrThrow({ where: { id: current.revision } }) : null;
+  const effective = activeRelease?.content as unknown as ReleaseContent | undefined;
+  const variantSlugs = effective ? Object.keys(effective.variants) :
+    resolveCourseFamily(current.familySlug, current.variantFamily)?.variants.map(variant => variant.slug) ?? ["default"];
+  const learnerCounts = await prisma.enrollment.groupBy({ by: ["variantSlug"], where: { courseId, lifecycle: "ACTIVE" }, _count: { _all: true } });
+  const variants = variantSlugs.map(slug => {
+    const affected = new Set<string>();
+    const existing = effective?.variants[slug]?.flatMap(module => module.chapters) ?? [];
+    for (const [mi, module] of plan.modules.entries()) for (const [li, lesson] of module.lessons.entries()) {
+      if (result.modules[mi]?.chapters[li]?.action === "unchanged") continue;
+      const priorId = result.mapping[mi]?.chapters[li]?.chapterId;
+      const variantChapter = existing.find(chapter => lesson.key ? chapter.key === lesson.key : chapter.id === priorId);
+      if (!priorId || !variantChapter || variantChapter.id === priorId) affected.add(lesson.key ?? lesson.title);
+    }
+    for (const key of plan.remove?.lessonKeys ?? []) affected.add(key);
+    for (const override of plan.variants?.find(variant => variant.slug === slug)?.overrides ?? []) affected.add(override.lessonKey);
+    return { slug, affectedLessons: [...affected], activeLearners: learnerCounts.filter(row => (row.variantSlug ?? variantForRelease(resolveCourseFamily(current.familySlug, current.variantFamily), null)) === slug)
+      .reduce((sum, row) => sum + row._count._all, 0) };
+  });
   const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
   const warnings = [
-    "Removed content is archived. Mentor, team, enrollments, submissions, and learner history are retained.",
-    "Uncertain matches are treated as new chapters. Existing progress is not transferred to ambiguous content.",
-    "Changed activities receive new identities; old submissions remain in history. Completion percentages can change.",
-    "Approval releases incoming chapters immediately for published or archived courses, including previously unpublished chapters. Draft courses remain drafts.",
+    "Only supplied keys change. Omitted content stays in the course; removals must be explicit.",
+    "Shared edits reach inheriting variants. A variant override changes only that variant.",
+    "Learners who already started stay on their release. New learners receive the new release.",
+    "Changed chapters and activities get new progress identities; old submissions and history remain.",
     "Course details, pricing, ownership, and publication status are unchanged.",
   ];
-  // Bound retained temporary packages. Approvals are persisted so they work across server instances.
   await prisma.courseImportPreview.deleteMany({ where: { expiresAt: { lt: new Date() }, appliedAt: null } });
   await prisma.courseImportPreview.deleteMany({ where: { courseId, userId: user.id, appliedAt: null } });
   const preview = await prisma.courseImportPreview.create({ data: {
     courseId, userId: user.id, fingerprint: fingerprint(current), expiresAt,
     plan: { content: plan, mapping: result.mapping } as unknown as Prisma.InputJsonValue,
-    diff: { modules: result.modules, warnings } as unknown as Prisma.InputJsonValue,
+    diff: { modules: result.modules, variants, warnings } as unknown as Prisma.InputJsonValue,
   } });
-  return { previewId: preview.id, expiresAt: expiresAt.toISOString(), modules: result.modules, warnings };
+  return { previewId: preview.id, expiresAt: expiresAt.toISOString(), modules: result.modules, variants, warnings };
 }
 
-/** Apply only the server-owned plan the instructor reviewed, with a stale-content check. */
 export async function approveCourseZipUpdate(user: SessionUser, courseId: string, previewId: string) {
   await requireCourseById(user, courseId);
   try {
@@ -54,69 +88,8 @@ export async function approveCourseZipUpdate(user: SessionUser, courseId: string
       const current = await snapshot(tx, courseId);
       if (fingerprint(current) !== preview.fingerprint) throw new ConflictError("Course content changed after this preview. Upload the ZIP again to review the latest changes.");
       const { content, mapping } = preview.plan as unknown as StoredPlan;
-      const now = new Date();
-      const oldChapters = new Map(current.chapters.map(c => [c.id, c]));
-      const keptModules: string[] = [], keptChapters: string[] = [];
-      const changedActivityChapters = new Set<string>();
-      // Park ALL module orders below their current range before reordering (unique per course).
-      const baseOrder = Math.min(0, ...current.modules.map(m => m.order)) - current.modules.length - 1;
-      for (const [index, module] of current.modules.entries()) {
-        await tx.module.update({ where: { id: module.id }, data: { order: baseOrder + index } });
-      }
-      const usedSlugs = new Set(current.chapters.map(c => c.slug));
-      for (const [mi, module] of content.modules.entries()) {
-        const match = mapping[mi];
-        const moduleId = match.moduleId ?? ulid();
-        keptModules.push(moduleId);
-        if (match.moduleId) await tx.module.update({ where: { id: moduleId }, data: { title: module.title, order: mi + 1, archivedAt: null } });
-        else await tx.module.create({ data: { id: moduleId, courseId, title: module.title, order: mi + 1 } });
-        for (const [li, lesson] of module.lessons.entries()) {
-          const chapterId = match.chapters[li].chapterId ?? ulid();
-          const old = oldChapters.get(chapterId);
-          keptChapters.push(chapterId);
-          let source = lesson.source;
-          if (!old) {
-            const baseSlug = `${mi + 1}-${lesson.lessonNum}-${lesson.slugPart}`;
-            let slug = baseSlug;
-            if (usedSlugs.has(slug)) slug = `${baseSlug}-${ulid().toLowerCase()}`;
-            usedSlugs.add(slug);
-            await tx.chapter.create({ data: { id: chapterId, courseId, moduleId, slug, title: lesson.title, source: "", order: lesson.lessonNum } });
-          }
-          const remainingBlocks = new Map(old?.blocks.slice().sort((a, b) => Number(Boolean(a.archivedAt)) - Number(Boolean(b.archivedAt))).map(b => [b.id, b]) ?? []);
-          const blockIds: string[] = [];
-          // Reuse only semantically identical activities; answers/reviews never migrate to a new task.
-          for (const [index, block] of lesson.blocks.entries()) {
-            const previous = [...remainingBlocks.values()].find(b => b.type === block.type && b.required === block.required && canonical(activityConfig(b)) === canonical(activityConfig(block)));
-            const blockId = previous?.id ?? ulid();
-            source = source.replaceAll(block.id, blockId);
-            blockIds.push(blockId);
-            if (previous) {
-              remainingBlocks.delete(previous.id);
-              await tx.block.update({ where: { id: blockId }, data: { archivedAt: null, order: index + 1, config: block.config } });
-            } else {
-              await tx.block.create({ data: { ...block, id: blockId, chapterId, order: index + 1, blocking: false, points: 1, tags: [] } });
-              changedActivityChapters.add(chapterId);
-            }
-          }
-          const data = { moduleId, title: lesson.title, summary: lesson.summary, source, compiled: source,
-            publishedAt: current.status === "DRAFT" ? old?.publishedAt ?? null : now,
-            order: lesson.lessonNum, estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode,
-            isMilestone: lesson.isMilestone, archivedAt: null };
-          await tx.chapter.update({ where: { id: chapterId }, data });
-          if (old?.blocks.some(b => !b.archivedAt && !blockIds.includes(b.id))) changedActivityChapters.add(chapterId);
-          if (old && (old.isMilestone || lesson.isMilestone) && old.source !== source) changedActivityChapters.add(chapterId);
-          await tx.block.updateMany({ where: { chapterId, id: { notIn: blockIds }, archivedAt: null }, data: { archivedAt: now } });
-        }
-      }
-      await tx.chapter.updateMany({ where: { courseId, id: { notIn: keptChapters }, archivedAt: null }, data: { archivedAt: now } });
-      await tx.module.updateMany({ where: { courseId, id: { notIn: keptModules }, archivedAt: null }, data: { archivedAt: now } });
-      // Preserve timestamps and learning logs; refresh only progress affected by changed activities.
-      const affected = await tx.chapterProgress.findMany({ where: { chapterId: { in: [...changedActivityChapters] } }, select: { chapterId: true, enrollmentId: true } });
-      for (const row of affected) await recomputeChapterProgress(tx, row.enrollmentId, row.chapterId, { preserveActivity: true });
-      const enrollments = await tx.enrollment.findMany({ where: { courseId }, select: { id: true } });
-      for (const enrollment of enrollments) await recomputeEnrollmentRollup(tx, enrollment.id, { preserveActivity: true });
-      await tx.course.update({ where: { id: courseId }, data: { updatedAt: now } });
-      await tx.courseImportPreview.update({ where: { id: preview.id }, data: { appliedAt: now } });
+      await publishCourseRelease(tx, courseId, content, mapping);
+      await tx.courseImportPreview.update({ where: { id: preview.id }, data: { appliedAt: new Date() } });
       return { courseSlug: current.slug };
     }, { isolationLevel: "Serializable", timeout: 60000, maxWait: 10000 });
   } catch (error) {

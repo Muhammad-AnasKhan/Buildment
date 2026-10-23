@@ -44,6 +44,7 @@ export type CourseUpdatePreview = {
   previewId: string;
   expiresAt: string;
   modules: CourseUpdateModuleDiff[];
+  variants?: { slug: string; affectedLessons: string[]; activeLearners: number }[];
   warnings: string[];
 };
 
@@ -151,12 +152,13 @@ export type CourseSettingsView = Pick<CourseBuilderCourse,
   zipImportEnabled?: boolean;
   /** Course family the course belongs to, or null when it has no variants. */
   familySlug: string | null;
+  hasVariants: boolean;
   variantAssignment: VariantAssignment;
 };
 
 export type CourseDraftPreview = {
   course: Pick<CourseBuilderCourse, "id" | "slug" | "title" | "description" | "projectGoal" | "coverUrl" | "status">;
-  modules: Array<{ id: string; title: string; chapters: Array<Pick<CourseBuilderChapter, "id" | "title" | "slug" | "readerMode" | "publishedAt"> & { source: string }> }>;
+  modules: Array<{ id: string; title: string; chapters: Array<Pick<CourseBuilderChapter, "id" | "title" | "slug" | "readerMode" | "publishedAt"> & { source: string; hasDraft: boolean }> }>;
 };
 
 export type CourseTeamView = {

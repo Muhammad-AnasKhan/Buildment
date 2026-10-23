@@ -10,7 +10,7 @@
 // The token set is closed. A token outside it is a publish and import error,
 // never silently printed to a learner.
 
-import { findCourseFamily, resolveVariant } from "./course-tracks.js";
+import { findCourseFamily, resolveVariant, type CourseFamily } from "./course-tracks.js";
 
 export type ContentTokenName = "product.name";
 export type ContentTokenValues = Record<ContentTokenName, string>;
@@ -21,6 +21,11 @@ export const CONTENT_TOKEN_FALLBACKS: ContentTokenValues = {
 };
 
 export const CONTENT_TOKEN_NAMES = Object.keys(CONTENT_TOKEN_FALLBACKS) as ContentTokenName[];
+
+/** Product names enter MDX prose and quoted attributes after compilation checks. */
+export function isSafeProductName(value: string): boolean {
+  return /^[\p{L}\p{N}][\p{L}\p{N} .&+/’-]{0,79}$/u.test(value);
+}
 
 // Lower-case dotted names with no spaces, so Mermaid comments (%% note) and
 // directives (%%{init: ...}%%) never match.
@@ -44,11 +49,11 @@ export function hasContentTokens(text: string | null | undefined): boolean {
  * a pick (or with a retired variant) uses the family default; anything else,
  * including anonymous previews of a course without a family, uses the fallbacks.
  */
-export function contentTokenValues(familySlug: string | null | undefined, variantSlug: string | null | undefined): ContentTokenValues {
-  const family = findCourseFamily(familySlug);
+export function contentTokenValues(familySlug: string | CourseFamily | null | undefined, variantSlug: string | null | undefined): ContentTokenValues {
+  const family = typeof familySlug === "object" && familySlug ? familySlug : findCourseFamily(familySlug);
   if (!family) return { ...CONTENT_TOKEN_FALLBACKS };
   const variant = resolveVariant(family, variantSlug);
-  return { "product.name": variant.productName || CONTENT_TOKEN_FALLBACKS["product.name"] };
+  return { "product.name": isSafeProductName(variant.productName) ? variant.productName : CONTENT_TOKEN_FALLBACKS["product.name"] };
 }
 
 /** Replace known tokens. Unknown ones are left as written; publish and import reject them. */

@@ -63,7 +63,8 @@ describe("canvas data is internally consistent", () => {
         const ids = new Set(spec.states.map((s) => s.id));
         for (const s of spec.states) {
           expect(s.col).toBeLessThanOrEqual(2);
-          expect(s.row).toBeLessThanOrEqual(2);
+          // The narrow layout puts rows 150px apart in a 340px picture, so a third row falls off.
+          expect(s.row, s.id).toBeLessThanOrEqual(1);
         }
         for (const e of spec.edges) {
           expect(ids.has(e.from), e.from).toBe(true);
@@ -87,6 +88,17 @@ describe("canvas data is internally consistent", () => {
             expect(box.x + box.w, `${layout} ${e.label}`).toBeLessThanOrEqual(g.width);
             expect(box.y).toBeGreaterThanOrEqual(0);
             expect(box.y + box.h).toBeLessThanOrEqual(g.height);
+          }
+          // Two edge labels on top of each other cannot be read (for example a diagonal
+          // beside a vertical edge in one square of the grid).
+          const boxes = spec.edges.map((e) => ({ label: e.label, ...g.labelBox(e, g.edge(e)!) }));
+          for (let i = 0; i < boxes.length; i++) {
+            for (let j = i + 1; j < boxes.length; j++) {
+              const a = boxes[i];
+              const b = boxes[j];
+              const overlap = a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+              expect(overlap, `${layout}: "${a.label}" overlaps "${b.label}"`).toBe(false);
+            }
           }
         }
       });

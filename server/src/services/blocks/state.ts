@@ -13,6 +13,8 @@ import { findEnrollmentForBlockState } from "../enrollment/api-learn-access.js";
 import { NotFoundError } from "../../utils/errors.js";
 import { sanitizeBlockConfig } from "../../utils/sanitize-block-config.js";
 import type { SessionUser } from "../../types/auth.js";
+import { releaseContainsChapter } from "../courses/releases.js";
+import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
 
 type Payload = Record<string, unknown> | null;
 
@@ -25,13 +27,14 @@ const strings = (value: unknown) => (Array.isArray(value) ? value.filter((item):
  * hidden tests and solutions are stripped before the config is returned.
  */
 export async function loadBlockState(blockId: string, user: SessionUser | undefined): Promise<BlockState> {
-  const block = await prisma.block.findUnique({ where: { id: blockId }, include: { chapter: { select: { archivedAt: true, course: { select: { id: true, familySlug: true } } } } } });
+  const block = await prisma.block.findUnique({ where: { id: blockId }, include: { chapter: { select: { id: true, archivedAt: true, course: { select: { id: true, familySlug: true, variantFamily: true } } } } } });
   if (!block || block.archivedAt || block.chapter.archivedAt) throw new NotFoundError("Block not found");
 
   // Prompts and options read in the caller's variant; anonymous previews get the fallbacks.
   const { course } = block.chapter;
-  const enrollment = user && course.familySlug ? await findEnrollmentForBlockState(course.id, user.id) : null;
-  return withTokens(await blockStateFor(block, user), contentTokenValues(course.familySlug, enrollment?.variantSlug));
+  const enrollment = user ? await findEnrollmentForBlockState(course.id, user.id) : null;
+  if (enrollment && !(await releaseContainsChapter(course.id, enrollment, course.familySlug, block.chapter.id))) throw new NotFoundError("Block not found");
+  return withTokens(await blockStateFor(block, user), contentTokenValues(resolveCourseFamily(course.familySlug, course.variantFamily), enrollment?.variantSlug));
 }
 
 /** Resolve placeholders in what the author wrote (config and explanations), never in the learner's own answer. */

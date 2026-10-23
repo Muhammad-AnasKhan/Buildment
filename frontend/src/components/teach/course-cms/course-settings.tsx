@@ -26,7 +26,7 @@ function settingsFromCourse(course: CourseSettingsView): CourseSettingsInput {
     estimatedHours: course.estimatedHours == null ? "" : String(course.estimatedHours),
     category: course.category,
     sequential: course.sequential,
-    ...(course.familySlug ? { variantAssignment: course.variantAssignment } : {}),
+    ...(course.hasVariants ? { variantAssignment: course.variantAssignment } : {}),
     pricingType: course.pricingType,
     priceDollars: course.pricingType === "PAID" && course.priceCents > 0 ? (course.priceCents / 100).toFixed(2) : "",
     currency: course.currency,
@@ -218,10 +218,10 @@ export function CourseSettings({ course }: { course: CourseSettingsView }) {
             <input type="checkbox" name="sequential" defaultChecked={course.sequential} className="mt-1 size-4 accent-primary" />
             <span><span className="block text-sm font-medium">Require chapters in order</span><span className="mt-1 block text-xs leading-5 text-muted-foreground">Learners finish the previous chapter before opening the next one.</span></span>
           </label>
-          {course.familySlug && (
-            <Field label="Course variant" htmlFor="course-variant-assignment" hint="With random assignment, each new learner gets the variant fewest learners have, and cannot change it. Learners who already have a variant keep it.">
+          {course.hasVariants && (
+            <Field label="Course variant" htmlFor="course-variant-assignment" hint="New learners get a variant with the fewest learners and cannot change it. Existing learners keep their choice and progress.">
               <select id="course-variant-assignment" name="variantAssignment" defaultValue={course.variantAssignment} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30">
-                <option value="SELF_SELECT">Learners choose their variant</option><option value="RANDOM">Assign a variant at random</option>
+                <option value="SELF_SELECT">Learners choose their variant</option><option value="RANDOM">Assign a balanced variant</option>
               </select>
             </Field>
           )}

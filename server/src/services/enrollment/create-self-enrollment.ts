@@ -1,5 +1,5 @@
 import type { PrismaClient } from "../../generated/prisma/index.js";
-import { assignVariantIfRandom } from "../courses/variant-assignment.js";
+import { assignmentForNewEnrollment } from "../courses/variant-assignment.js";
 import { lifecycleForSignedInEnrollment } from "./lifecycle.js";
 
 export class SelfEnrollmentError extends Error {
@@ -55,8 +55,10 @@ export async function createSelfEnrollment(
   const lifecycle = lifecycleForSignedInEnrollment(course.pricingType);
 
   const enrollment = await db.$transaction(async (tx) => {
+    const assignment = await assignmentForNewEnrollment(tx, course.id);
     const row = await tx.enrollment.create({
       data: {
+        ...assignment,
         courseId: course.id,
         userId: input.userId,
         source: "SELF",
@@ -65,7 +67,6 @@ export async function createSelfEnrollment(
         startedAt: lifecycle === "ACTIVE" ? new Date() : null,
       },
     });
-    await assignVariantIfRandom(tx, row);
 
     if (lifecycle === "PAYMENT_REQUIRED") {
       await tx.payment.create({

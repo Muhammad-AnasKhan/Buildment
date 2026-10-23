@@ -11,6 +11,9 @@ import { ulid } from "ulid";
 import { prisma } from "../../db/prisma.js";
 import { BadRequestError, ConflictError, TooManyRequestsError, UnprocessableError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
+import type { CourseFamily } from "../../shared/lib/course-tracks.js";
+import { publishCourseRelease } from "./publish-course-release.js";
+import type { UpdateMapping } from "./course-update-matching.js";
 
 const execute = promisify(execFile);
 const MAX_EXPANDED = 20 * 1024 * 1024;
@@ -41,7 +44,7 @@ export function readCourseZip(buffer: Buffer): Record<string, Uint8Array> {
     if ((total += bytes.length) > MAX_EXPANDED) throw new BadRequestError("ZIP expands beyond 20 MB.");
     if (!name.startsWith(prefix)) throw new BadRequestError("All files must be inside the course folder.");
     const relative = name.slice(prefix.length);
-    if (!/^(course\.yaml|COURSE-OUTLINE\.md|\d+-[a-z0-9-]+\/\d+\.\d+-[a-z0-9-]+\.md)$/.test(relative)) {
+    if (!/^(course\.yaml|COURSE-OUTLINE\.md|(?:variants\/[a-z0-9-]+\/)?\d+-[a-z0-9-]+\/\d+\.\d+-[a-z0-9-]+\.md)$/.test(relative)) {
       throw new BadRequestError(`Unsupported course file: ${relative}`);
     }
     result[relative] = bytes;
@@ -53,14 +56,17 @@ export type ImportPlan = {
   manifest: {
     title: string; description: string; projectGoal: string; difficulty: string;
     estimatedHours: number; coverUrl?: string; family?: string; category?: "tech" | "soft-skills";
-    variantAssignment?: "self_select" | "random";
+    variantFamily?: CourseFamily;
+    publication?: "create" | "update"; creatorEmail?: string;
   };
-  modules: { title: string; lessons: {
-    lessonNum: number; slugPart: string; title: string; summary: string | null;
+  modules: { key?: string; order?: number; title: string; lessons: {
+    key?: string; lessonNum: number; slugPart: string; title: string; summary: string | null;
     source: string; estimatedMinutes: number | null; readerMode: "DEFAULT" | "QUIZ";
     isMilestone: boolean;
     blocks: { id: string; type: Prisma.BlockCreateManyInput["type"]; config: Prisma.InputJsonValue; required: boolean }[];
   }[] }[];
+  variants?: { slug: string; overrides: { lessonKey: string; lesson: ImportPlan["modules"][number]["lessons"][number] }[] }[];
+  remove?: { moduleKeys: string[]; lessonKeys: string[] };
 };
 
 let importing = false;
@@ -119,23 +125,30 @@ async function parseCourseZipFiles(buffer: Buffer) {
 
 async function runCourseImport(user: SessionUser, buffer: Buffer) {
   const { slug, plan } = await parseCourseZip(buffer);
-  const { title, description, projectGoal, difficulty, estimatedHours, coverUrl, family } = plan.manifest;
+  if (plan.manifest.publication === "update") throw new BadRequestError("This package declares an update. Open the existing course and use Update from ZIP.");
+  if (!plan.modules.length) throw new BadRequestError("A new course needs at least one module.");
+  const { title, description, projectGoal, difficulty, estimatedHours, coverUrl, family, variantFamily } = plan.manifest;
   const category = plan.manifest.category === "soft-skills" ? "SOFT_SKILLS" as const : "TECH" as const;
-  const variantAssignment = plan.manifest.variantAssignment === "random" ? "RANDOM" as const : "SELF_SELECT" as const;
-  const metadata = { title, description, projectGoal, difficulty, estimatedHours, coverUrl, category, familySlug: family ?? null, variantAssignment };
+  const metadata = { title, description, projectGoal, difficulty, estimatedHours, coverUrl, category,
+    familySlug: family ?? null, variantFamily: variantFamily as unknown as Prisma.InputJsonValue | undefined };
   try {
     const course = await prisma.$transaction(async tx => {
       const created = await tx.course.create({ data: { ...metadata, slug, mentorId: user.id, status: "DRAFT" } });
       const modules: Prisma.ModuleCreateManyInput[] = [];
       const chapters: Prisma.ChapterCreateManyInput[] = [];
       const blocks: Prisma.BlockCreateManyInput[] = [];
+      const mapping: UpdateMapping = [];
       for (const [index, module] of plan.modules.entries()) {
         const moduleId = ulid();
-        modules.push({ id: moduleId, courseId: created.id, title: module.title, order: index + 1 });
+        const mapped: UpdateMapping[number] = { moduleId, chapters: [] };
+        mapping.push(mapped);
+        modules.push({ id: moduleId, courseId: created.id, contentKey: module.key, title: module.title, order: index + 1 });
         for (const lesson of module.lessons) {
           const chapterId = ulid();
+          mapped.chapters.push({ chapterId, similarity: 1, reason: "Initial import" });
           chapters.push({
             id: chapterId, courseId: created.id, moduleId,
+            contentKey: lesson.key,
             slug: `${index + 1}-${lesson.lessonNum}-${lesson.slugPart}`,
             title: lesson.title, summary: lesson.summary, source: lesson.source, compiled: lesson.source,
             order: lesson.lessonNum, estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode,
@@ -149,8 +162,9 @@ async function runCourseImport(user: SessionUser, buffer: Buffer) {
       await tx.module.createMany({ data: modules });
       await tx.chapter.createMany({ data: chapters });
       if (blocks.length) await tx.block.createMany({ data: blocks });
+      if (plan.variants?.length) await publishCourseRelease(tx, created.id, plan, mapping);
       return created;
-    }, { timeout: 30000, maxWait: 10000 });
+    }, { timeout: 120000, maxWait: 10000 });
     return { courseSlug: course.slug };
   } catch (error) {
     if ((error as { code?: string }).code === "P2002") throw new ConflictError("A course with this slug already exists. Use Update from ZIP in its course settings, or change the slug to create a separate course.");
