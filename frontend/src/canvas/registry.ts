@@ -56,6 +56,28 @@ import { symptomFixLoop } from "./symptom-fix-loop/data";
 import { targetLooksGood } from "./target-looks-good/data";
 import { weakStrongFixes } from "./weak-strong-fixes/data";
 import { whoGotTheSurvey } from "./who-got-the-survey/data";
+import { aiMissingContext } from "./ai-missing-context/data";
+import { whoMakesTheCall } from "./who-makes-the-call/data";
+import { answersOrHints } from "./answers-or-hints/data";
+import { bigAppOrUnderstoodApp } from "./big-app-or-understood-app/data";
+import { beforeYouPaste } from "./before-you-paste/data";
+import { pickAToolForTheJob } from "./pick-a-tool-for-the-job/data";
+import { keepWorkInYourFiles } from "./keep-work-in-your-files/data";
+import { closeItAndRecall } from "./close-it-and-recall/data";
+import { fiveAnglesOnCaching } from "./five-angles-on-caching/data";
+import { aiQuizPartner } from "./ai-quiz-partner/data";
+import { listenThenRead } from "./listen-then-read/data";
+import { notePageLifecycle } from "./note-page-lifecycle/data";
+import { dailyLabLoop } from "./daily-lab-loop/data";
+import { planALabWithAi } from "./plan-a-lab-with-ai/data";
+import { urlShortenerStopAPart } from "./url-shortener-stop-a-part/data";
+import { labLogCommitPush } from "./lab-log-commit-push/data";
+import { sixMonthHoursSplit } from "./six-month-hours-split/data";
+import { weekPlanCheckResources } from "./week-plan-check-resources/data";
+import { twoOptionsTradeOff } from "./two-options-trade-off/data";
+import { reuseOpenSourceSafely } from "./reuse-open-source-safely/data";
+import { commitsToArticle } from "./commits-to-article/data";
+import { discloseAiHelp } from "./disclose-ai-help/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -125,6 +147,28 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "target-looks-good": targetLooksGood,
   "weak-strong-fixes": weakStrongFixes,
   "who-got-the-survey": whoGotTheSurvey,
+  "ai-missing-context": aiMissingContext,
+  "who-makes-the-call": whoMakesTheCall,
+  "answers-or-hints": answersOrHints,
+  "big-app-or-understood-app": bigAppOrUnderstoodApp,
+  "before-you-paste": beforeYouPaste,
+  "pick-a-tool-for-the-job": pickAToolForTheJob,
+  "keep-work-in-your-files": keepWorkInYourFiles,
+  "close-it-and-recall": closeItAndRecall,
+  "five-angles-on-caching": fiveAnglesOnCaching,
+  "ai-quiz-partner": aiQuizPartner,
+  "listen-then-read": listenThenRead,
+  "note-page-lifecycle": notePageLifecycle,
+  "daily-lab-loop": dailyLabLoop,
+  "plan-a-lab-with-ai": planALabWithAi,
+  "url-shortener-stop-a-part": urlShortenerStopAPart,
+  "lab-log-commit-push": labLogCommitPush,
+  "six-month-hours-split": sixMonthHoursSplit,
+  "week-plan-check-resources": weekPlanCheckResources,
+  "two-options-trade-off": twoOptionsTradeOff,
+  "reuse-open-source-safely": reuseOpenSourceSafely,
+  "commits-to-article": commitsToArticle,
+  "disclose-ai-help": discloseAiHelp,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
