@@ -48,6 +48,9 @@ export type CourseFamily = {
   specialisations: CourseSpecialisation[];
 };
 
+export const VARIANT_ASSIGNMENTS = ["SELF_SELECT", "RANDOM"] as const;
+export type VariantAssignment = (typeof VARIANT_ASSIGNMENTS)[number];
+
 /** What the reader and the course home need to know about the learner's track. */
 export type CourseTrack = {
   familySlug: string;
@@ -57,6 +60,8 @@ export type CourseTrack = {
   variantSlug: string;
   variantChosen: boolean;
   variantLocked: boolean;
+  /** True only for learners assigned at enrollment. */
+  variantAssigned: boolean;
   specialisationSlug: string | null;
   /** The specialisation choice opens once the course is complete. */
   specialisationOpen: boolean;
@@ -205,7 +210,7 @@ export function courseFinished(enrollment: { status: string; percentComplete: nu
 
 export function buildCourseTrack(
   familySlug: string | CourseFamily | null | undefined,
-  enrollment: { variantSlug: string | null; variantLockedAt?: Date | string | null; specialisationSlug: string | null; status: string; percentComplete: number }
+  enrollment: { variantSlug: string | null; variantLockedAt?: Date | string | null; variantAssignedAt?: Date | string | null; specialisationSlug: string | null; status: string; percentComplete: number }
 ): CourseTrack | null {
   const family = typeof familySlug === "object" && familySlug ? familySlug : findCourseFamily(familySlug);
   if (!family) return null;
@@ -216,6 +221,7 @@ export function buildCourseTrack(
     variantSlug: resolveVariant(family, enrollment.variantSlug).slug,
     variantChosen: chosen !== null,
     variantLocked: Boolean(enrollment.variantLockedAt) || courseFinished(enrollment),
+    variantAssigned: Boolean(enrollment.variantAssignedAt),
     specialisationSlug: findSpecialisation(family, enrollment.specialisationSlug)?.slug ?? null,
     specialisationOpen: courseFinished(enrollment),
   };

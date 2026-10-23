@@ -12,6 +12,7 @@ const track = {
   variantSlug: "books",
   variantChosen: true,
   variantLocked: false,
+  variantAssigned: false,
   specialisationSlug: null,
   specialisationOpen: false,
 };

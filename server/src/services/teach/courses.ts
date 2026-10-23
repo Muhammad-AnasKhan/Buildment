@@ -143,11 +143,13 @@ export async function loadCourseSettings(user: SessionUser, courseSlug: string):
       id: true, slug: true, title: true, description: true, projectGoal: true,
       difficulty: true, estimatedHours: true, category: true, sequential: true, coverUrl: true,
       status: true, pricingType: true, priceCents: true, currency: true, integritySnapshots: true,
+      familySlug: true, variantFamily: true, variantAssignment: true,
       _count: { select: { enrollments: true, chapters: { where: { archivedAt: null } } } },
     },
   });
   const account = await prisma.user.findUnique({ where: { id: user.id }, select: { zipImportEnabled: true } });
-  return { ...course, enrollmentCount: _count.enrollments, chapterCount: _count.chapters, zipImportEnabled: account?.zipImportEnabled ?? false };
+  const { variantFamily, ...settings } = course;
+  return { ...settings, hasVariants: Boolean(resolveCourseFamily(course.familySlug, variantFamily)), enrollmentCount: _count.enrollments, chapterCount: _count.chapters, zipImportEnabled: account?.zipImportEnabled ?? false };
 }
 
 /** Read-only preview of the latest saved draft, available to the course team. */
@@ -212,6 +214,14 @@ export async function loadCourseDraftPreview(user: SessionUser, courseSlug: stri
 export async function updateCourseSettings(user: SessionUser, courseId: string, input: CourseSettingsBody): Promise<void> {
   await requireCourseById(user, courseId);
 
+  if (input.variantAssignment === "RANDOM") {
+    const { familySlug, variantFamily } = await prisma.course.findUniqueOrThrow({ where: { id: courseId }, select: { familySlug: true, variantFamily: true } });
+    if (!resolveCourseFamily(familySlug, variantFamily)) {
+      const reason = "Only a course in a course family has variants to assign.";
+      throw new UnprocessableError(reason, "VALIDATION_ERROR", [reason]);
+    }
+  }
+
   let priceCents = 0;
   if (input.pricingType === "PAID") {
     if (input.priceDollars === "") {
@@ -234,6 +244,7 @@ export async function updateCourseSettings(user: SessionUser, courseId: string, 
       estimatedHours: input.estimatedHours === "" ? null : input.estimatedHours,
       ...(input.category ? { category: input.category } : {}),
       sequential: input.sequential,
+      ...(input.variantAssignment ? { variantAssignment: input.variantAssignment } : {}),
       pricingType: input.pricingType,
       priceCents,
       currency: input.currency.toUpperCase(),
