@@ -18,6 +18,8 @@ export const CANVAS_SLUGS = [
   "freelance-job-flowchart",
   "job-application-status",
   "check-the-ai-answer",
+  "sysdesign-truetime-commit-wait",
+  "sysdesign-replica-lag",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];
