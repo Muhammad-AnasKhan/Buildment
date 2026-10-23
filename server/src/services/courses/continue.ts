@@ -17,13 +17,14 @@ export async function continueChapterPath(input: {
       slug: true,
       sequential: true,
       modules: {
+        where: { archivedAt: null },
         orderBy: { order: "asc" },
         select: {
           id: true,
           order: true,
           title: true,
           chapters: {
-            where: { publishedAt: { not: null } },
+            where: { archivedAt: null, publishedAt: { not: null } },
             orderBy: { order: "asc" },
             select: {
               id: true,

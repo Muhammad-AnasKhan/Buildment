@@ -382,6 +382,17 @@ describe("course ZIP import", () => {
       // Another instructor with ZIP import turned on still cannot reuse the slug.
       await prisma.user.update({ where: { id: strangerId }, data: { zipImportEnabled: true } });
       expect((await request(app).post(endpoint).set(stranger()).set("Content-Type", "application/zip").send(archive)).status).toBe(409);
+      // Exercise the real ZIP parser through update preview and approval, not just a mocked plan.
+      const updatePath = `/api/v1/teach/courses/${course.id}/import`;
+      const preview = await request(app).post(`${updatePath}/preview`).set(mentor()).set("Content-Type", "application/zip").send(archive);
+      expect(preview.status, JSON.stringify(preview.body)).toBe(200);
+      expect(preview.body.data.modules).toHaveLength(7);
+      const approved = await request(app).post(`${updatePath}/approve`).set(mentor()).send({ previewId: preview.body.data.previewId, confirm: true });
+      expect(approved.status, JSON.stringify(approved.body)).toBe(200);
+      expect(await prisma.chapter.count({ where: { courseId: course.id, archivedAt: null } })).toBe(36);
+      const originalFirst = course.chapters.find(chapter => chapter.slug === "1-1-set-the-scene")!;
+      expect(await prisma.chapter.findUniqueOrThrow({ where: { id: originalFirst.id } })).toMatchObject({ archivedAt: null, publishedAt: null });
+      expect(await prisma.course.findUniqueOrThrow({ where: { id: course.id } })).toMatchObject({ mentorId: fx.mentor.id, status: "DRAFT" });
     } finally {
       await prisma.user.update({ where: { id: strangerId }, data: { zipImportEnabled: false } });
       await prisma.course.deleteMany({ where: { slug } });
@@ -389,6 +400,38 @@ describe("course ZIP import", () => {
   }, 60000);
 });
 
+
+describe("legacy numeric quiz labels", () => {
+  it("publishes and repairs an existing quiz without replacing its ID or learner response", async () => {
+    const blockId = `numeric-options-${fx.course.id}`;
+    const chapter = await prisma.chapter.create({ data: {
+      courseId: fx.course.id, moduleId: fx.chapterB.moduleId, title: "Numeric quiz", slug: "numeric-quiz", order: 3,
+      readerMode: "QUIZ", source: `<Quiz id="${blockId}" />`,
+      blocks: { create: { id: blockId, type: "QUIZ", order: 1, config: {
+        quizType: "single", prompt: "How many queries?", options: [1, 2, 20, 21].map((label, i) => ({ id: `opt-${i}`, label })),
+        correctOptionIds: ["opt-3"], allowRetry: true,
+      } } },
+    } });
+    try {
+      const response = await prisma.response.create({ data: { blockId, userId: fx.learner.id, enrollmentId: fx.enrollment.id, payload: { selected: ["opt-3"] }, isCorrect: true } });
+      const endpoint = `/api/v1/teach/chapters/${chapter.id}/publish`;
+      for (let i = 0; i < 2; i++) {
+        // Repeat with a recorded source hash to cover both first and subsequent publishes.
+        if (i === 1) await prisma.block.update({ where: { id: blockId }, data: { config: {
+          quizType: "single", prompt: "How many queries?", options: [1, 2, 20, 21].map((label, index) => ({ id: `opt-${index}`, label })),
+          correctOptionIds: ["opt-3"], allowRetry: true,
+        } } });
+        const published = await request(app).post(endpoint).set(mentor());
+        expect(published.status, JSON.stringify(published.body)).toBe(204);
+        const saved = await prisma.block.findUniqueOrThrow({ where: { id: blockId } });
+        expect(saved.config).toMatchObject({ options: ["1", "2", "20", "21"].map((label, index) => ({ id: `opt-${index}`, label })), correctOptionIds: ["opt-3"] });
+        expect(saved.version).toBe(1);
+        expect(saved.archivedAt).toBeNull();
+        expect(await prisma.response.findUniqueOrThrow({ where: { id: response.id } })).toMatchObject({ blockId, isCorrect: true, payload: { selected: ["opt-3"] } });
+      }
+    } finally { await prisma.chapter.delete({ where: { id: chapter.id } }); }
+  });
+});
 
 describe("bulk chapter publishing", () => {
   it("validates atomically, scopes modules, publishes loose chapters and checks ownership", async () => {

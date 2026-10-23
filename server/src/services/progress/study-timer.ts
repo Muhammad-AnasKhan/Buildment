@@ -21,7 +21,7 @@ export type HeartbeatResult = {
 /** The chapter plus the caller's enrollment in its course; 404/403 otherwise. */
 async function enrolledChapter(chapterId: string, user: SessionUser) {
   const chapter = await prisma.chapter.findUnique({
-    where: { id: chapterId },
+    where: { id: chapterId, archivedAt: null },
     select: { id: true, courseId: true },
   });
   if (!chapter) throw new NotFoundError("Chapter not found");

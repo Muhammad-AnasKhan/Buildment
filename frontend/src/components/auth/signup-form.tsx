@@ -15,7 +15,8 @@ const initial: SignupState = { fieldErrors: {}, formError: null };
 
 export function SignupForm() {
   const [state, formAction, pending] = useActionState(signupAction, initial);
-  const { errorFor, formError, clearField, setLocalErrors } = useAuthFormErrors(state);
+  const { errorFor, formError, clearField, setLocalErrors } =
+    useAuthFormErrors(state);
   const nameError = errorFor("name");
   const emailError = errorFor("email");
   const passwordError = errorFor("password");
@@ -36,29 +37,58 @@ export function SignupForm() {
   }
 
   return (
-    <form action={formAction} onSubmit={validateBeforeSubmit} noValidate className="space-y-3">
+    <form
+      action={formAction}
+      onSubmit={validateBeforeSubmit}
+      noValidate
+      className="space-y-3.5"
+    >
       <div className="space-y-1.5">
-        <Label htmlFor="name">Name</Label>
-        <Input id="name" name="name" required maxLength={120} autoComplete="name" className="h-10" onChange={() => clearField("name")} aria-invalid={Boolean(nameError)} aria-describedby={nameError ? "signup-name-error" : undefined} />
-        {nameError ? <p id="signup-name-error" className="text-xs text-destructive">{nameError}</p> : null}
+        <Label htmlFor="name" className="text-sm font-semibold">
+          Name
+        </Label>
+        <Input
+          id="name"
+          name="name"
+          required
+          maxLength={120}
+          autoComplete="name"
+          className="h-12 rounded-xl bg-background px-3.5 dark:bg-background"
+          onChange={() => clearField("name")}
+          aria-invalid={Boolean(nameError)}
+          aria-describedby={nameError ? "signup-name-error" : undefined}
+        />
+        {nameError ? (
+          <p id="signup-name-error" className="text-[13px] text-destructive">
+            {nameError}
+          </p>
+        ) : null}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email" className="text-sm font-semibold">
+          Email
+        </Label>
         <Input
           id="email"
           name="email"
           type="email"
           required
           autoComplete="email"
-          className="h-10"
+          className="h-12 rounded-xl bg-background px-3.5 dark:bg-background"
           onChange={() => clearField("email")}
           aria-invalid={Boolean(emailError)}
           aria-describedby={emailError ? "signup-email-error" : undefined}
         />
-        {emailError ? <p id="signup-email-error" className="text-xs text-destructive">{emailError}</p> : null}
+        {emailError ? (
+          <p id="signup-email-error" className="text-[13px] text-destructive">
+            {emailError}
+          </p>
+        ) : null}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password" className="text-sm font-semibold">
+          Password
+        </Label>
         <PasswordInput
           id="password"
           name="password"
@@ -66,20 +96,44 @@ export function SignupForm() {
           minLength={8}
           maxLength={128}
           autoComplete="new-password"
-          className="h-10"
+          className="h-12 rounded-xl bg-background px-3.5 dark:bg-background pr-11"
           onChange={() => clearField("password")}
           aria-invalid={Boolean(passwordError)}
           aria-describedby={passwordError ? "signup-password-error" : undefined}
         />
-        {passwordError ? <p id="signup-password-error" className="text-xs text-destructive">{passwordError}</p> : null}
+        {passwordError ? (
+          <p
+            id="signup-password-error"
+            className="text-[13px] text-destructive"
+          >
+            {passwordError}
+          </p>
+        ) : null}
       </div>
       {formError ? (
-        <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+        <p
+          role="alert"
+          className="rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-sm text-destructive"
+        >
           {formError}
         </p>
       ) : null}
-      <Button type="submit" className="h-10 w-full" disabled={pending}>
-        {pending ? "Creating account…" : "Sign up"}
+      <Button
+        type="submit"
+        className="h-[50px] w-full cursor-pointer rounded-[13px] bg-foreground text-[15px] font-semibold text-background transition-[transform,box-shadow] hover:-translate-y-0.5 hover:bg-foreground hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.35)] disabled:translate-y-0 disabled:opacity-70 motion-reduce:transform-none"
+        disabled={pending}
+      >
+        {pending ? (
+          <>
+            <span
+              aria-hidden
+              className="size-3.5 animate-spin rounded-full border-2 border-current border-r-transparent"
+            />
+            <span className="sr-only">Creating account…</span>
+          </>
+        ) : (
+          "Create account"
+        )}
       </Button>
     </form>
   );

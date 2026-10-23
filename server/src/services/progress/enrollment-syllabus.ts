@@ -7,13 +7,14 @@ import { isCompletableBlock } from "./rules.js";
 const courseModulesSelect = {
   sequential: true,
   modules: {
+    where: { archivedAt: null },
     orderBy: { order: "asc" as const },
     select: {
       id: true,
       order: true,
       title: true,
       chapters: {
-        where: { publishedAt: { not: null } },
+        where: { archivedAt: null, publishedAt: { not: null } },
         orderBy: { order: "asc" as const },
         select: {
           id: true,

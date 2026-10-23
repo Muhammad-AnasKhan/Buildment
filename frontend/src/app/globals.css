@@ -25,6 +25,8 @@
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
@@ -87,6 +89,8 @@
   --code-border: #d0d7de;
   --code-lang-fg: #57606a;
   --code-fg: #24292f;
+  --ok: #12a36b;
+  --ok-soft: #dcf7ea;
 }
 
 .dark {
@@ -128,6 +132,8 @@
   --code-border: #3a352e;
   --code-lang-fg: #a3998e;
   --code-fg: #f0ebe4;
+  --ok: #3ddc97;
+  --ok-soft: #123326;
 }
 
 /*
@@ -516,4 +522,107 @@
 .dark .mermaid-svg-dark svg .loopLine,
 .dark .mermaid-svg-dark svg .labelBox {
   stroke: oklch(0.93 0.012 88 / 22%) !important;
+}
+
+/* Landing page + auth pages: small looping/entrance animations (components/marketing). */
+@keyframes bm-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes bm-pick {
+  to {
+    border-color: var(--foreground);
+    background-color: var(--muted);
+  }
+}
+
+@keyframes bm-enroll-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes bm-enroll-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bm-check {
+  from {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.2);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes bm-grow {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.bm-pop {
+  animation: bm-pop 0.45s cubic-bezier(0.3, 0.8, 0.3, 1) var(--d, 0s) both;
+}
+
+.bm-pick {
+  animation:
+    bm-pop 0.45s cubic-bezier(0.3, 0.8, 0.3, 1) var(--d, 0s) both,
+    bm-pick 0.3s ease 1.1s forwards;
+}
+
+.bm-enroll-to {
+  opacity: 0;
+}
+
+.bm-enroll-from {
+  animation: bm-enroll-out 0.2s ease 1.5s forwards;
+}
+
+.bm-enroll-to {
+  animation: bm-enroll-in 0.2s ease 1.6s forwards;
+}
+
+.bm-check {
+  animation: bm-check 0.4s ease calc(var(--d, 0s) + 0.25s) both;
+}
+
+.bm-grow {
+  width: 0;
+  animation: bm-grow 2.2s cubic-bezier(0.3, 0.8, 0.3, 1) 0.1s forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bm-pop,
+  .bm-pick,
+  .bm-check,
+  .bm-enroll-from,
+  .bm-enroll-to,
+  .bm-grow {
+    animation: none;
+  }
+  .bm-pick {
+    border-color: var(--foreground);
+    background-color: var(--muted);
+  }
+  .bm-enroll-from {
+    opacity: 0;
+  }
+  .bm-enroll-to {
+    opacity: 1;
+  }
+  .bm-grow {
+    width: 100%;
+  }
 }

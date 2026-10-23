@@ -26,7 +26,7 @@ export async function createModule(user: SessionUser, courseId: string, title: s
 }
 
 async function requireModule(user: SessionUser, moduleId: string) {
-  const courseModule = await prisma.module.findUnique({ where: { id: moduleId }, select: { id: true, courseId: true } });
+  const courseModule = await prisma.module.findUnique({ where: { id: moduleId, archivedAt: null }, select: { id: true, courseId: true } });
   if (!courseModule) throw new NotFoundError("Module not found");
   await requireCourseById(user, courseModule.courseId);
   return courseModule;
@@ -50,6 +50,7 @@ export async function moveModule(user: SessionUser, moduleId: string, direction:
         const neighbor = await tx.module.findFirst({
           where: {
             courseId: courseModule.courseId,
+            archivedAt: null,
             order: direction === "up" ? { lt: current.order } : { gt: current.order },
           },
           orderBy: { order: direction === "up" ? "desc" : "asc" },

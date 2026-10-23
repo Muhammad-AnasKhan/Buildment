@@ -61,7 +61,7 @@ export async function loadQuizChapterState(chapterId: string, userId: string): P
 
 /** The learner's placeholder values, looked up only when a quiz actually uses a placeholder. */
 async function learnerTokenValues(chapterId: string, userId: string) {
-  const chapter = await prisma.chapter.findUnique({ where: { id: chapterId }, select: { courseId: true, course: { select: { familySlug: true } } } });
+  const chapter = await prisma.chapter.findUnique({ where: { id: chapterId, archivedAt: null }, select: { courseId: true, course: { select: { familySlug: true } } } });
   const enrollment = chapter?.course.familySlug
     ? await prisma.enrollment.findUnique({ where: { courseId_userId: { courseId: chapter.courseId, userId } }, select: { variantSlug: true } })
     : null;

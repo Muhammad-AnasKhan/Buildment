@@ -4,7 +4,8 @@ import { z } from "zod";
 // See sanitizeBlockConfig in src/mdx/sanitize.ts for the client projection.
 export const QuizOptionSchema = z.object({
   id: z.string(),
-  label: z.string(),
+  // YAML treats unquoted numbers/booleans as scalars. Keep option IDs and grading keys unchanged.
+  label: z.preprocess(value => typeof value === "number" || typeof value === "boolean" ? String(value) : value, z.string()),
 });
 
 export const QuizConfigSchema = z.object({
@@ -17,6 +18,12 @@ export const QuizConfigSchema = z.object({
 });
 
 export type QuizConfig = z.infer<typeof QuizConfigSchema>;
+
+/** Compare legacy imported labels by their display value, preserving malformed configs for validation. */
+export function normalizeQuizConfig(config: unknown): unknown {
+  const parsed = QuizConfigSchema.safeParse(config);
+  return parsed.success ? parsed.data : config;
+}
 
 // The projection sanitizeBlockConfig() produces for the client — see
 // src/mdx/sanitize.ts and docs/09-security.mdx.

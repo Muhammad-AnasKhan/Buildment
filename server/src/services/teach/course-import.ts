@@ -49,7 +49,7 @@ export function readCourseZip(buffer: Buffer): Record<string, Uint8Array> {
   return result;
 }
 
-type ImportPlan = {
+export type ImportPlan = {
   manifest: {
     title: string; description: string; projectGoal: string; difficulty: string;
     estimatedHours: number; coverUrl?: string; family?: string; category?: "tech" | "soft-skills";
@@ -63,6 +63,7 @@ type ImportPlan = {
 };
 
 let importing = false;
+let parsing = false;
 
 export async function importCourseZip(user: SessionUser, buffer: Buffer) {
   if (importing) throw new TooManyRequestsError("A course import is running. Please try again shortly.");
@@ -71,7 +72,14 @@ export async function importCourseZip(user: SessionUser, buffer: Buffer) {
   finally { importing = false; }
 }
 
-async function runCourseImport(user: SessionUser, buffer: Buffer) {
+export async function parseCourseZip(buffer: Buffer) {
+  if (parsing) throw new TooManyRequestsError("A course ZIP is being validated. Please try again shortly.");
+  parsing = true;
+  try { return await parseCourseZipFiles(buffer); }
+  finally { parsing = false; }
+}
+
+async function parseCourseZipFiles(buffer: Buffer) {
   if (!Buffer.isBuffer(buffer) || !buffer.length) throw new BadRequestError("Upload a ZIP file.");
   const files = readCourseZip(buffer);
   let slug: string;
@@ -102,43 +110,48 @@ async function runCourseImport(user: SessionUser, buffer: Buffer) {
       throw new UnprocessableError("Course validation failed.", "COURSE_IMPORT_INVALID", [reasons || "Validation timed out or could not complete."]);
     }
     const plan = JSON.parse(await readFile(result, "utf8")) as ImportPlan;
-    const { title, description, projectGoal, difficulty, estimatedHours, coverUrl, family } = plan.manifest;
-    const category = plan.manifest.category === "soft-skills" ? "SOFT_SKILLS" as const : "TECH" as const;
-    const metadata = { title, description, projectGoal, difficulty, estimatedHours, coverUrl, category, familySlug: family ?? null };
-    try {
-      const course = await prisma.$transaction(async tx => {
-        const created = await tx.course.create({ data: { ...metadata, slug, mentorId: user.id, status: "DRAFT" } });
-        const modules: Prisma.ModuleCreateManyInput[] = [];
-        const chapters: Prisma.ChapterCreateManyInput[] = [];
-        const blocks: Prisma.BlockCreateManyInput[] = [];
-        for (const [index, module] of plan.modules.entries()) {
-          const moduleId = ulid();
-          modules.push({ id: moduleId, courseId: created.id, title: module.title, order: index + 1 });
-          for (const lesson of module.lessons) {
-            const chapterId = ulid();
-            chapters.push({
-              id: chapterId, courseId: created.id, moduleId,
-              slug: `${index + 1}-${lesson.lessonNum}-${lesson.slugPart}`,
-              title: lesson.title, summary: lesson.summary, source: lesson.source, compiled: lesson.source,
-              order: lesson.lessonNum, estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode,
-              isMilestone: lesson.isMilestone,
-            });
-            blocks.push(...lesson.blocks.map((block, i) => ({
-              ...block, chapterId, order: i + 1, blocking: false, points: 1, tags: [],
-            })));
-          }
-        }
-        await tx.module.createMany({ data: modules });
-        await tx.chapter.createMany({ data: chapters });
-        if (blocks.length) await tx.block.createMany({ data: blocks });
-        return created;
-      }, { timeout: 30000, maxWait: 10000 });
-      return { courseSlug: course.slug };
-    } catch (error) {
-      if ((error as { code?: string }).code === "P2002") throw new ConflictError("A course with this slug already exists. Change the slug in course.yaml.");
-      throw error;
-    }
+    return { slug, plan };
   } finally {
     await rm(temporary, { recursive: true, force: true });
+  }
+}
+
+async function runCourseImport(user: SessionUser, buffer: Buffer) {
+  const { slug, plan } = await parseCourseZip(buffer);
+  const { title, description, projectGoal, difficulty, estimatedHours, coverUrl, family } = plan.manifest;
+  const category = plan.manifest.category === "soft-skills" ? "SOFT_SKILLS" as const : "TECH" as const;
+  const metadata = { title, description, projectGoal, difficulty, estimatedHours, coverUrl, category, familySlug: family ?? null };
+  try {
+    const course = await prisma.$transaction(async tx => {
+      const created = await tx.course.create({ data: { ...metadata, slug, mentorId: user.id, status: "DRAFT" } });
+      const modules: Prisma.ModuleCreateManyInput[] = [];
+      const chapters: Prisma.ChapterCreateManyInput[] = [];
+      const blocks: Prisma.BlockCreateManyInput[] = [];
+      for (const [index, module] of plan.modules.entries()) {
+        const moduleId = ulid();
+        modules.push({ id: moduleId, courseId: created.id, title: module.title, order: index + 1 });
+        for (const lesson of module.lessons) {
+          const chapterId = ulid();
+          chapters.push({
+            id: chapterId, courseId: created.id, moduleId,
+            slug: `${index + 1}-${lesson.lessonNum}-${lesson.slugPart}`,
+            title: lesson.title, summary: lesson.summary, source: lesson.source, compiled: lesson.source,
+            order: lesson.lessonNum, estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode,
+            isMilestone: lesson.isMilestone,
+          });
+          blocks.push(...lesson.blocks.map((block, i) => ({
+            ...block, chapterId, order: i + 1, blocking: false, points: 1, tags: [],
+          })));
+        }
+      }
+      await tx.module.createMany({ data: modules });
+      await tx.chapter.createMany({ data: chapters });
+      if (blocks.length) await tx.block.createMany({ data: blocks });
+      return created;
+    }, { timeout: 30000, maxWait: 10000 });
+    return { courseSlug: course.slug };
+  } catch (error) {
+    if ((error as { code?: string }).code === "P2002") throw new ConflictError("A course with this slug already exists. Use Update from ZIP in its course settings, or change the slug to create a separate course.");
+    throw error;
   }
 }

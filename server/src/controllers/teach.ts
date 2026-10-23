@@ -256,6 +256,16 @@ export async function importCourseZip(req: Request, res: Response) {
   created(res, await courseImport.importCourseZip(req.user!, req.body));
 }
 
+export async function previewCourseZipUpdate(req: Request, res: Response) {
+  const { previewCourseZipUpdate } = await import("../services/teach/course-update.js");
+  ok(res, await previewCourseZipUpdate(req.user!, String(req.params.courseId), req.body));
+}
+
+export async function approveCourseZipUpdate(req: Request, res: Response) {
+  const { approveCourseZipUpdate } = await import("../services/teach/course-update.js");
+  ok(res, await approveCourseZipUpdate(req.user!, String(req.params.courseId), req.body.previewId));
+}
+
 export async function publishCourseChapters(req: Request, res: Response) {
   await chapters.publishChapters(req.user!, { courseId: param(req, "courseId") });
   noContent(res);

@@ -11,6 +11,7 @@ import remarkGfm from "remark-gfm";
 import { collectCanvasProblems } from "../src/shared/mdx/canvas-tags.js";
 import { isActivityOnlySource } from "../src/shared/mdx/extract-block-config.js";
 import { collectUnknownComponents } from "../src/shared/mdx/extract.js";
+import { mdxComponentAllowlist } from "../src/shared/mdx/component-allowlist.js";
 import { remarkChecklist } from "../src/shared/mdx/remark-checklist.js";
 import { remarkLearningLog } from "../src/shared/mdx/remark-learning-log.js";
 import { remarkMermaid } from "../src/shared/mdx/remark-mermaid.js";
@@ -20,48 +21,6 @@ import { secretFieldsWithTokens } from "../src/utils/sanitize-block-config.js";
 import { COURSE_SLUG, loadCourseManifest } from "./course-source.js";
 import { parseLesson, readLessonFiles, readModuleDirs } from "./import-course.js";
 
-const componentNames = [
-  "Quiz",
-  "Predict",
-  "OpenQuestion",
-  "CodeExercise",
-  "Steps",
-  "ProjectPreview",
-  "LearningObjectives",
-  "ChapterRecap",
-  "Checklist",
-  "LearningLog",
-  "VideoBlock",
-  "VisualWalkthrough",
-  "VisualDiagram",
-  "Roadmap",
-  "MermaidDiagram",
-  "Callout",
-  "FaqGroup",
-  "FaqItem",
-  "CheckpointIntro",
-  "MustRead",
-  "BigWordAlert",
-  "InterestingRead",
-  "RealWorldEvent",
-  "ApiRequestPanel",
-  "ApiRequest",
-  "ComparePanel",
-  "CompareColumn",
-  "FileTree",
-  "FileTreeItem",
-  "TerminalBlock",
-  "TerminalLine",
-  "DiffBlock",
-  "ArchitectureDiagram",
-  "ArchNode",
-  "StateMachine",
-  "EntityDiagram",
-  "TraceRequest",
-  "TraceStep",
-  "InteractiveCanvas",
-  "EcosystemGallery",
-] as const;
 
 export type ChapterMdxFailure = { file: string; error: string };
 
@@ -76,7 +35,9 @@ export function findBrokenChapters(): { total: number; failed: ChapterMdxFailure
     .use(remarkChecklist)
     .use(remarkLearningLog)
     .use(remarkMermaid);
-  const allowed = new Set<string>(componentNames);
+  // Same list the API checks at publish time, so source validation never
+  // rejects a component the reader renders (GlossaryTerm, Step) or allows one it refuses.
+  const allowed = mdxComponentAllowlist;
 
   try {
     const manifest = loadCourseManifest();

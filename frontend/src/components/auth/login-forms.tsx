@@ -14,15 +14,28 @@ import { useAuthFormErrors } from "@/components/auth/use-auth-form-errors";
 
 const initial: AuthFormState = { fieldErrors: {}, formError: null };
 
-export function PasswordLoginForm({ redirectTo, defaultEmail }: { redirectTo?: string | null; defaultEmail?: string }) {
-  const [state, action, pending] = useActionState(signInWithPasswordAction, initial);
-  const { errorFor, formError, clearField, setLocalErrors } = useAuthFormErrors(state);
+export function PasswordLoginForm({
+  redirectTo,
+  defaultEmail,
+}: {
+  redirectTo?: string | null;
+  defaultEmail?: string;
+}) {
+  const [state, action, pending] = useActionState(
+    signInWithPasswordAction,
+    initial,
+  );
+  const { errorFor, formError, clearField, setLocalErrors } =
+    useAuthFormErrors(state);
   const emailError = errorFor("email");
   const passwordError = errorFor("password");
 
   function validateBeforeSubmit(event: FormEvent<HTMLFormElement>) {
     const formData = new FormData(event.currentTarget);
-    const parsed = loginSchema.safeParse({ email: formData.get("email"), password: formData.get("password") });
+    const parsed = loginSchema.safeParse({
+      email: formData.get("email"),
+      password: formData.get("password"),
+    });
     if (!parsed.success) {
       event.preventDefault();
       setLocalErrors(zodAuthErrors(parsed.error));
@@ -32,49 +45,165 @@ export function PasswordLoginForm({ redirectTo, defaultEmail }: { redirectTo?: s
   }
 
   return (
-    <form action={action} onSubmit={validateBeforeSubmit} noValidate className="space-y-3">
-      {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
+    <form
+      action={action}
+      onSubmit={validateBeforeSubmit}
+      noValidate
+      className="space-y-3.5"
+    >
+      {redirectTo && (
+        <input type="hidden" name="redirectTo" value={redirectTo} />
+      )}
       <div className="space-y-1.5">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" placeholder="you@example.com" required autoComplete="email" className="h-10" defaultValue={defaultEmail ?? ""} onChange={() => clearField("email")} aria-invalid={Boolean(emailError)} aria-describedby={emailError ? "login-email-error" : undefined} />
-        {emailError ? <p id="login-email-error" className="text-xs text-destructive">{emailError}</p> : null}
+        <Label htmlFor="email" className="text-sm font-semibold">
+          Email
+        </Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="you@example.com"
+          required
+          autoComplete="email"
+          className="h-12 rounded-xl bg-background px-3.5 dark:bg-background"
+          defaultValue={defaultEmail ?? ""}
+          onChange={() => clearField("email")}
+          aria-invalid={Boolean(emailError)}
+          aria-describedby={emailError ? "login-email-error" : undefined}
+        />
+        {emailError ? (
+          <p id="login-email-error" className="text-[13px] text-destructive">
+            {emailError}
+          </p>
+        ) : null}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="password">Password</Label>
-        <PasswordInput id="password" name="password" required maxLength={128} autoComplete="current-password" className="h-10" onChange={() => clearField("password")} aria-invalid={Boolean(passwordError)} aria-describedby={passwordError ? "login-password-error" : undefined} />
-        {passwordError ? <p id="login-password-error" className="text-xs text-destructive">{passwordError}</p> : null}
+        <Label htmlFor="password" className="text-sm font-semibold">
+          Password
+        </Label>
+        <PasswordInput
+          id="password"
+          name="password"
+          required
+          maxLength={128}
+          autoComplete="current-password"
+          className="h-12 rounded-xl bg-background px-3.5 dark:bg-background pr-11"
+          onChange={() => clearField("password")}
+          aria-invalid={Boolean(passwordError)}
+          aria-describedby={passwordError ? "login-password-error" : undefined}
+        />
+        {passwordError ? (
+          <p id="login-password-error" className="text-[13px] text-destructive">
+            {passwordError}
+          </p>
+        ) : null}
       </div>
-      {formError ? <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{formError}</p> : null}
-      <Button type="submit" className="h-10 w-full" disabled={pending}>{pending ? "Signing in…" : "Sign in"}</Button>
+      {formError ? (
+        <p
+          role="alert"
+          className="rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-sm text-destructive"
+        >
+          {formError}
+        </p>
+      ) : null}
+      <Button
+        type="submit"
+        className="h-[50px] w-full cursor-pointer rounded-[13px] bg-foreground text-[15px] font-semibold text-background transition-[transform,box-shadow] hover:-translate-y-0.5 hover:bg-foreground hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.35)] disabled:translate-y-0 disabled:opacity-70 motion-reduce:transform-none"
+        disabled={pending}
+      >
+        {pending ? (
+          <>
+            <span
+              aria-hidden
+              className="size-3.5 animate-spin rounded-full border-2 border-current border-r-transparent"
+            />
+            <span className="sr-only">Signing in…</span>
+          </>
+        ) : (
+          "Sign in"
+        )}
+      </Button>
     </form>
   );
 }
 
 export function MagicLinkForm({ redirectTo }: { redirectTo?: string | null }) {
   const [state, action, pending] = useActionState(sendMagicLinkAction, initial);
-  const { errorFor, formError, clearField, setLocalErrors } = useAuthFormErrors(state);
+  const { errorFor, formError, clearField, setLocalErrors } =
+    useAuthFormErrors(state);
   const emailError = errorFor("email");
 
   function validateBeforeSubmit(event: FormEvent<HTMLFormElement>) {
-    const parsed = authEmailSchema.safeParse(new FormData(event.currentTarget).get("email"));
+    const parsed = authEmailSchema.safeParse(
+      new FormData(event.currentTarget).get("email"),
+    );
     if (!parsed.success) {
       event.preventDefault();
-      setLocalErrors({ email: parsed.error.issues[0]?.message ?? "Enter a valid email" });
+      setLocalErrors({
+        email: parsed.error.issues[0]?.message ?? "Enter a valid email",
+      });
     } else {
       setLocalErrors({});
     }
   }
 
   return (
-    <form action={action} onSubmit={validateBeforeSubmit} noValidate className="space-y-3">
-      {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
+    <form
+      action={action}
+      onSubmit={validateBeforeSubmit}
+      noValidate
+      className="space-y-3.5"
+    >
+      {redirectTo && (
+        <input type="hidden" name="redirectTo" value={redirectTo} />
+      )}
       <div className="space-y-1.5">
-        <Label htmlFor="magic-email">Email for magic link</Label>
-        <Input id="magic-email" name="email" type="email" placeholder="you@example.com" required autoComplete="email" className="h-10" onChange={() => clearField("email")} aria-invalid={Boolean(emailError)} aria-describedby={emailError ? "magic-email-error" : undefined} />
-        {emailError ? <p id="magic-email-error" className="text-xs text-destructive">{emailError}</p> : null}
+        <Label htmlFor="magic-email" className="text-sm font-semibold">
+          Email for magic link
+        </Label>
+        <Input
+          id="magic-email"
+          name="email"
+          type="email"
+          placeholder="you@example.com"
+          required
+          autoComplete="email"
+          className="h-12 rounded-xl bg-background px-3.5 dark:bg-background"
+          onChange={() => clearField("email")}
+          aria-invalid={Boolean(emailError)}
+          aria-describedby={emailError ? "magic-email-error" : undefined}
+        />
+        {emailError ? (
+          <p id="magic-email-error" className="text-[13px] text-destructive">
+            {emailError}
+          </p>
+        ) : null}
       </div>
-      {formError ? <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{formError}</p> : null}
-      <Button type="submit" variant="outline" className="h-10 w-full" disabled={pending}>{pending ? "Sending…" : "Send magic link"}</Button>
+      {formError ? (
+        <p
+          role="alert"
+          className="rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-sm text-destructive"
+        >
+          {formError}
+        </p>
+      ) : null}
+      <Button
+        type="submit"
+        className="h-[50px] w-full rounded-[13px] cursor-pointer bg-foreground text-[15px] font-semibold text-background transition-[transform,box-shadow] hover:-translate-y-0.5 hover:bg-foreground hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.35)] disabled:translate-y-0 disabled:opacity-70 motion-reduce:transform-none"
+        disabled={pending}
+      >
+        {pending ? (
+          <>
+            <span
+              aria-hidden
+              className="size-3.5 animate-spin rounded-full border-2 border-current border-r-transparent"
+            />
+            <span className="sr-only">Sending…</span>
+          </>
+        ) : (
+          "Send magic link"
+        )}
+      </Button>
     </form>
   );
 }

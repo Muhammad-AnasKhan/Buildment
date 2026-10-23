@@ -1,0 +1,293 @@
+slug: ai-engineering-interview
+title: "Cracking the AI Engineering and Agentic AI Interview"
+description: "Get ready for AI engineer, LLM engineer and agentic AI interviews at remote-first companies. Learn RAG, agents, evaluation, async Python services and production operations from the foundations up to senior depth, practise every round of the interview loop with model answers and follow-up probes, then build, evaluate and defend your own small RAG plus agent service."
+projectGoal: "Build a small RAG plus agent service that runs on your laptop with no paid API key, measure it with recall@k, precision@k, MRR and faithfulness on a golden set, run that evaluation as a regression test, and defend your design in a recorded mock interview."
+difficulty: Advanced
+estimatedHours: 52
+category: tech
+modules:
+  - dir: 01-the-interview-loop
+    title: "The AI engineering interview loop"
+    summary: "See the three rounds you are preparing for, learn to tell a project story with numbers, and set up the workspace you will build in."
+    lessons:
+      - file: 01.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show what AI engineering interviews test, what the course practises, and what the learner will build and defend."
+      - file: 01.02-three-rounds.md
+        title: "The three rounds and what each one tests"
+        goal: "Name what the project deep dive, the hands-on and system design round, and the managerial round each look for."
+      - file: 01.03-project-story-with-numbers.md
+        title: "Tell a project story with numbers"
+        goal: "Structure a two-minute project story with a problem, a design, numbers, a trade-off and what you would change."
+      - file: 01.04-set-up-your-workspace.md
+        title: "Set up your workspace"
+        goal: "Create the Python project, virtual environment and first passing test that every later build chapter extends."
+      - file: 01.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a first written project story, to compare with the capstone defence later."
+  - dir: 02-llm-foundations
+    title: "LLM foundations for application engineers"
+    summary: "Learn the parts of a language model an interviewer expects an application engineer to know: tokens, context, cost, embeddings, prompts and structured outputs."
+    lessons:
+      - file: 02.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce the foundations through a cost and quality problem in a support assistant."
+      - file: 02.02-tokens-context-and-cost.md
+        title: "Tokens, context windows and cost"
+        goal: "Estimate tokens, cost and latency for a request, and explain why a longer prompt is not free."
+      - file: 02.03-embeddings-and-similarity.md
+        title: "Embeddings and similarity"
+        goal: "Explain what an embedding is, how cosine similarity ranks text, and where embeddings fail."
+      - file: 02.04-prompts-and-structured-outputs.md
+        title: "Prompts, sampling and structured outputs"
+        goal: "Write a prompt with a schema, validate the model's output, and choose a temperature for the task."
+      - file: 02.05-quiz.md
+        title: "LLM foundations"
+        goal: "Graded scenarios on tokens, cost, embeddings and structured outputs."
+      - file: 02.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a written interview answer on cost and context."
+  - dir: 03-rag-fundamentals
+    title: "RAG fundamentals"
+    summary: "Build the basic retrieval-augmented generation pipeline: load, chunk, embed, store, retrieve and answer with citations."
+    lessons:
+      - file: 03.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce RAG through an assistant that answers from an organisation's own policy documents."
+      - file: 03.02-the-rag-pipeline.md
+        title: "The RAG pipeline end to end"
+        goal: "Draw the indexing path and the query path, and say what can fail at each step."
+      - file: 03.03-chunking.md
+        title: "Chunking strategies"
+        goal: "Choose a chunk size, overlap and splitting rule for a document set, and defend the choice."
+      - file: 03.04-vector-stores-and-indexes.md
+        title: "Vector stores and indexes"
+        goal: "Compare exact and approximate search, metadata filters and storage options by scale and cost."
+      - file: 03.05-build-a-minimal-rag-pipeline.md
+        title: "Build a minimal RAG pipeline"
+        goal: "Build and test a chunker, an embedder, an in-memory store and a cited answer on your laptop."
+      - file: 03.06-quiz.md
+        title: "RAG fundamentals"
+        goal: "Graded scenarios on the pipeline, chunking and vector search."
+      - file: 03.07-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: the minimal pipeline passes its tests, and a written chunking defence."
+  - dir: 04-advanced-retrieval
+    title: "Advanced retrieval"
+    summary: "Improve retrieval with hybrid search, reranking, query rewriting, multi-hop and cross-document retrieval, tables, Graph RAG and adaptive retrieval, and know when fine-tuning is the better tool."
+    lessons:
+      - file: 04.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show the failures that basic vector search cannot fix."
+      - file: 04.02-hybrid-search-and-reranking.md
+        title: "Hybrid search and reranking"
+        goal: "Combine keyword and vector search with rank fusion, then rerank the top results, and explain the cost of each step."
+      - file: 04.03-query-rewriting-and-multi-hop.md
+        title: "Query rewriting, multi-hop and cross-document retrieval"
+        goal: "Rewrite and split a question so that retrieval can find evidence spread across several documents."
+      - file: 04.04-tables-pdfs-and-graph-rag.md
+        title: "Tables, PDFs and Graph RAG"
+        goal: "Choose how to index tables and PDFs, and say when a knowledge graph helps and when it is overkill."
+      - file: 04.05-adaptive-retrieval-and-fine-tuning.md
+        title: "Adaptive retrieval, and RAG versus fine-tuning"
+        goal: "Route a query by its complexity, and decide between RAG, fine-tuning and both."
+      - file: 04.06-quiz.md
+        title: "Advanced retrieval"
+        goal: "Graded scenarios on hybrid search, reranking, rewriting and routing."
+      - file: 04.07-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a written retrieval upgrade plan with costs."
+  - dir: 05-evaluation
+    title: "Evaluating RAG and LLM systems"
+    summary: "Measure retrieval and generation with numbers, use an LLM judge carefully, and turn a golden set into a regression test."
+    lessons:
+      - file: 05.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show why 'it looks good to me' is not an answer in an interview or in production."
+      - file: 05.02-retrieval-metrics.md
+        title: "Retrieval metrics: recall@k, precision@k and MRR"
+        goal: "Compute recall@k, precision@k and MRR by hand and explain how they move as k changes."
+      - file: 05.03-faithfulness-and-grounding.md
+        title: "Faithfulness, grounding and hallucination"
+        goal: "Check whether an answer is supported by its sources, and detect unsupported claims."
+      - file: 05.04-llm-as-judge.md
+        title: "LLM-as-judge and its pitfalls"
+        goal: "Design a judge prompt with a rubric, and name the biases that make a judge wrong."
+      - file: 05.05-build-a-regression-eval.md
+        title: "Build a golden set and a regression eval"
+        goal: "Write a golden set and metric functions, and fail a test run when quality drops."
+      - file: 05.06-quiz.md
+        title: "Evaluation"
+        goal: "Graded scenarios on metrics, judges and regression evals."
+      - file: 05.07-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: the eval runs as a test, and a written answer on how you measure quality."
+  - dir: 06-agents-and-tool-calling
+    title: "Agents and tool calling"
+    summary: "Learn how a model calls tools with structured arguments, how the ReAct loop works, and when a fixed workflow beats an agent."
+    lessons:
+      - file: 06.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce agents through a support assistant that must look up an order before it answers."
+      - file: 06.02-tool-calling-and-structured-outputs.md
+        title: "Tool calling and structured outputs"
+        goal: "Define a tool with a schema, validate the arguments, and handle a bad or failed call."
+      - file: 06.03-the-react-loop.md
+        title: "The ReAct loop"
+        goal: "Trace a reason, act, observe loop step by step and set the limits that stop it running forever."
+      - file: 06.04-workflows-or-agents.md
+        title: "Workflows or agents: when not to use an agent"
+        goal: "Choose between a fixed workflow, a router and an agent for a task, with reasons."
+      - file: 06.05-quiz.md
+        title: "Agents and tool calling"
+        goal: "Graded scenarios on tool schemas, the loop and when to use an agent."
+      - file: 06.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a written agent design with its tools and stop rules."
+  - dir: 07-stateful-agents-with-langgraph
+    title: "Stateful agents with LangGraph"
+    summary: "Model an agent as a graph with typed state, reducers, memory, checkpoints and a human approval step, and know when several agents are worth it."
+    lessons:
+      - file: 07.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show why a loop in plain code gets hard to test, resume and approve."
+      - file: 07.02-state-nodes-edges-and-reducers.md
+        title: "State, nodes, edges and reducers"
+        goal: "Explain how a node's update is merged into state, and pick the right reducer for each key."
+      - file: 07.03-memory-and-checkpoints.md
+        title: "Memory and checkpoints"
+        goal: "Separate short-term thread memory from long-term memory, and use checkpoints to resume a run."
+      - file: 07.04-human-in-the-loop.md
+        title: "Human-in-the-loop approvals"
+        goal: "Pause a graph before a risky tool call, show the reviewer the right facts, and resume with their decision."
+      - file: 07.05-multi-agent-orchestration.md
+        title: "Multi-agent orchestration"
+        goal: "Compare a supervisor, a handoff design and a single agent, and name the cost of each."
+      - file: 07.06-build-an-agent-with-approval.md
+        title: "Build an agent with an approval step"
+        goal: "Build and test a small LangGraph agent that pauses for approval before a risky tool call."
+      - file: 07.07-quiz.md
+        title: "Stateful agents"
+        goal: "Graded scenarios on reducers, memory, approvals and multi-agent designs."
+      - file: 07.08-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: the approval graph passes its tests, and a written state design."
+  - dir: 08-mcp-and-guardrails
+    title: "MCP, prompt injection and guardrails"
+    summary: "Connect tools through the Model Context Protocol, understand prompt injection, and defend an agent in layers."
+    lessons:
+      - file: 08.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce the risks of tools through an agent that reads a document with hidden instructions."
+      - file: 08.02-mcp.md
+        title: "MCP: tools over a protocol"
+        goal: "Explain what MCP standardises, what a server exposes, and what it does not solve."
+      - file: 08.03-prompt-injection.md
+        title: "Prompt injection"
+        goal: "Tell direct from indirect prompt injection, and trace how an injected instruction reaches a tool call."
+      - file: 08.04-guardrails-in-layers.md
+        title: "Guardrails in layers"
+        goal: "Design input, tool, output and permission guardrails, and say what each one cannot stop."
+      - file: 08.05-quiz.md
+        title: "MCP and guardrails"
+        goal: "Graded scenarios on MCP, injection and layered defences."
+      - file: 08.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a written threat model for your capstone agent."
+  - dir: 09-python-service-engineering
+    title: "Python service engineering"
+    summary: "Write the async Python and FastAPI code an AI service needs: concurrency limits, validation, structured errors, retries, timeouts, streaming, caching and budgets."
+    lessons:
+      - file: 09.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show how a slow model provider can take down a service that was never designed for it."
+      - file: 09.02-async-python.md
+        title: "Async Python: gather, semaphores and cancellation"
+        goal: "Run model calls concurrently with a limit, and cancel work that is no longer needed."
+      - file: 09.03-fastapi-and-pydantic.md
+        title: "A FastAPI service with Pydantic validation"
+        goal: "Validate requests and responses with Pydantic, and return structured errors with the right status codes."
+      - file: 09.04-retries-timeouts-and-rate-limits.md
+        title: "Retries, timeouts and rate limits"
+        goal: "Retry only safe failures with exponential backoff and jitter, inside a total time budget."
+      - file: 09.05-streaming-caching-and-budgets.md
+        title: "Streaming, caching, cost and latency budgets"
+        goal: "Decide when to stream and what to cache, and set a cost and latency budget per request."
+      - file: 09.06-build-the-async-service.md
+        title: "Build the async service"
+        goal: "Build and test a FastAPI endpoint with validation, a concurrency limit, retries and a timeout."
+      - file: 09.07-quiz.md
+        title: "Python service engineering"
+        goal: "Graded scenarios on async code, validation, retries and budgets."
+      - file: 09.08-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: the service passes its tests, and a written failure story."
+  - dir: 10-production
+    title: "Production: tracking, tracing, deployment and monitoring"
+    summary: "Track experiments, trace every model call, choose between serverless and Kubernetes, and monitor quality after launch."
+    lessons:
+      - file: 10.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce production through a quality drop nobody noticed for two weeks."
+      - file: 10.02-experiment-tracking-with-mlflow.md
+        title: "Experiment tracking with MLflow"
+        goal: "Log parameters, metrics and artifacts for each experiment so a result can be reproduced and compared."
+      - file: 10.03-tracing-and-observability.md
+        title: "Tracing and observability"
+        goal: "Trace one request through retrieval, the model and tools, and choose what to log and what to keep private."
+      - file: 10.04-serverless-or-kubernetes.md
+        title: "Deployment: serverless or Kubernetes"
+        goal: "Choose between serverless functions, a container service and Kubernetes for an LLM service, with reasons."
+      - file: 10.05-monitoring-and-incidents.md
+        title: "Monitoring evals in production and incident stories"
+        goal: "Monitor quality, cost and latency after launch, and tell an incident story an interviewer trusts."
+      - file: 10.06-quiz.md
+        title: "Production"
+        goal: "Graded scenarios on tracking, tracing, deployment and monitoring."
+      - file: 10.07-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a written deployment and monitoring plan for your capstone."
+  - dir: 11-mock-interviews
+    title: "Mock interviews: every round"
+    summary: "Practise each round with a framework for answering, question banks with model answers and follow-up probes, and timed mock sessions."
+    lessons:
+      - file: 11.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Explain how to practise with the question banks and how to run a mock with a friend or alone."
+      - file: 11.02-round-one-project-deep-dive.md
+        title: "Round one: the project deep dive"
+        goal: "Answer deep-dive questions about your own project with numbers, trade-offs and honest limits."
+      - file: 11.03-round-two-hands-on-coding.md
+        title: "Round two: hands-on coding"
+        goal: "Think aloud, clarify, test and handle edge cases in a practical AI coding task."
+      - file: 11.04-round-two-ai-system-design.md
+        title: "Round two: AI system design"
+        goal: "Run a seven-step system design answer for an AI system within 40 minutes."
+      - file: 11.05-round-three-managerial.md
+        title: "Round three: the managerial round"
+        goal: "Answer questions about past projects, deployment, evaluation in production and what you would do differently."
+      - file: 11.06-quiz.md
+        title: "Interview craft"
+        goal: "Graded scenarios on choosing the stronger interview answer."
+      - file: 11.07-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a written system design and a recorded mock answer."
+  - dir: 12-capstone
+    title: "Capstone: build, evaluate and defend"
+    summary: "Build a small evaluated RAG plus agent service on one of three scenarios, write its evaluation report, and defend it in a recorded mock interview."
+    lessons:
+      - file: 12.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Choose a scenario and read the brief, the must-haves and the rubric."
+      - file: 12.02-build-the-service.md
+        title: "Build the service"
+        goal: "Combine retrieval, the agent, the approval step and the service into one tested repository."
+      - file: 12.03-evaluate-and-report.md
+        title: "Evaluate and write the report"
+        goal: "Run the evaluation, find and fix one failure, and write a one-page evaluation report and design note."
+      - file: 12.04-record-your-defence.md
+        title: "Record your mock-interview defence"
+        goal: "Record a five-minute walkthrough and answers to follow-up probes, and submit the repository."
+      - file: 12.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: final checks, and a comparison with your first project story from module 1."

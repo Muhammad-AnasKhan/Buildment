@@ -5,7 +5,7 @@ import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js"
 
 /** Private margin note on a heading; an empty body removes it. */
 export async function saveHeadingNote(user: SessionUser, input: { chapterId: string; headingId: string; body: string }) {
-  const chapter = await prisma.chapter.findUnique({ where: { id: input.chapterId }, select: { id: true, courseId: true } });
+  const chapter = await prisma.chapter.findUnique({ where: { id: input.chapterId, archivedAt: null }, select: { id: true, courseId: true } });
   if (!chapter) throw new NotFoundError("Chapter not found.");
   await requireBlockSubmissionAccess(chapter.courseId, user);
 

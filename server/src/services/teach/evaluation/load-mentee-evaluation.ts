@@ -40,12 +40,14 @@ export async function loadMenteeEvaluation(args: {
           sequential: true,
           familySlug: true,
           modules: {
+            where: { archivedAt: null },
             orderBy: { order: "asc" },
             select: {
               id: true,
               order: true,
               title: true,
               chapters: {
+                where: { archivedAt: null },
                 orderBy: { order: "asc" },
                 select: {
                   id: true,

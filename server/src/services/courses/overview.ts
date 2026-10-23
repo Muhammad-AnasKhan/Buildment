@@ -25,13 +25,14 @@ export async function getCourseOverview(courseSlug: string, user: SessionUser): 
       status: true,
       mentor: { select: { name: true } },
       modules: {
+        where: { archivedAt: null },
         orderBy: { order: "asc" },
         select: {
           id: true,
           order: true,
           title: true,
           chapters: {
-            where: { publishedAt: { not: null } },
+            where: { archivedAt: null, publishedAt: { not: null } },
             orderBy: { order: "asc" },
             select: {
               id: true,
