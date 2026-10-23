@@ -16,6 +16,8 @@ import { loadCourseGate } from "../progress/gate.js";
 import { loadLearnerHabit } from "../progress/learner-habit.js";
 import { milestoneReflectionBlocked } from "../progress/reflection.js";
 import { isCompletableBlock, previousChapterId } from "../progress/rules.js";
+import { releaseForEnrollment, releaseModulesWithBlocks, variantForRelease } from "../courses/releases.js";
+import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -23,7 +25,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
  * Everything the chapter reader shows for the signed-in learner. Opening an
  * unlocked chapter also starts it and marks pending review feedback as seen.
  */
-export async function loadChapterReader(courseSlug: string, chapterSlug: string, user: SessionUser): Promise<ChapterReaderView> {
+export async function loadChapterReader(courseSlug: string, chapterSlug: string, user: SessionUser, retry = 0): Promise<ChapterReaderView> {
   const course = await prisma.course.findUnique({
     where: { slug: courseSlug },
     select: {
@@ -33,6 +35,7 @@ export async function loadChapterReader(courseSlug: string, chapterSlug: string,
       projectGoal: true,
       sequential: true,
       familySlug: true,
+      variantFamily: true,
       modules: {
         where: { archivedAt: null },
         orderBy: { order: "asc" },
@@ -62,8 +65,10 @@ export async function loadChapterReader(courseSlug: string, chapterSlug: string,
 
   const enrollment = await requireBlockSubmissionAccess(course.id, user);
   const bypassLocking = bypassProgressGatingForEmail(user.email);
+  const selectedRelease = await releaseForEnrollment(course.id, enrollment, course.familySlug);
+  const courseModules = selectedRelease ? await releaseModulesWithBlocks(selectedRelease.modules) : course.modules;
 
-  const flatChapters = course.modules.flatMap((mod) =>
+  const flatChapters = courseModules.flatMap((mod) =>
     mod.chapters.map((ch) => ({
       ...ch,
       moduleTitle: mod.title,
@@ -82,7 +87,7 @@ export async function loadChapterReader(courseSlug: string, chapterSlug: string,
 
   const [gate, syllabus] = await Promise.all([
     loadCourseGate(course.id, enrollment.id, { bypassLocking }),
-    syllabusForEnrollment(course, enrollment.id, bypassLocking),
+    syllabusForEnrollment({ ...course, modules: courseModules }, enrollment.id, bypassLocking),
   ]);
   const { modules } = syllabus;
 
@@ -101,7 +106,7 @@ export async function loadChapterReader(courseSlug: string, chapterSlug: string,
     prev: link(prev),
     next: link(next),
     modules,
-    track: buildCourseTrack(course.familySlug, enrollment),
+    track: buildCourseTrack(course.variantFamily ? resolveCourseFamily(course.familySlug, course.variantFamily) : course.familySlug, enrollment),
   };
 
   const locked = !bypassLocking && (gate?.lockedIds.has(chapter.id) ?? false);
@@ -109,6 +114,19 @@ export async function loadChapterReader(courseSlug: string, chapterSlug: string,
     const prevId = previousChapterId(gate?.orderedIds ?? [], chapter.id);
     const previous = (prevId ? flatChapters.find((c) => c.id === prevId) : prev) ?? null;
     return { ...base, locked: true, previous: previous ? { slug: previous.slug, title: previous.title } : null, content: null };
+  }
+
+  try {
+    await prisma.$transaction(async tx => { await ensureChapterStarted(tx, enrollment.id, chapter.id); });
+  } catch (error) {
+    if (error instanceof NotFoundError && retry === 0) return loadChapterReader(courseSlug, chapterSlug, user, 1);
+    throw error;
+  }
+  const startedEnrollment = await prisma.enrollment.findUniqueOrThrow({ where: { id: enrollment.id } });
+  const expectedVariant = variantForRelease(resolveCourseFamily(course.familySlug, course.variantFamily), enrollment.variantSlug);
+  if (retry === 0 && (expectedVariant !== variantForRelease(resolveCourseFamily(course.familySlug, course.variantFamily), startedEnrollment.variantSlug) ||
+      (selectedRelease && selectedRelease.release.id !== startedEnrollment.releaseId))) {
+    return loadChapterReader(courseSlug, chapterSlug, user, 1);
   }
 
   const [content, currentProgress, helpThreadRow, habit, chapterResponses, predictBlocks, headingNotes] = await Promise.all([
@@ -132,9 +150,6 @@ export async function loadChapterReader(courseSlug: string, chapterSlug: string,
   ]);
   if (!content) throw new NotFoundError("Chapter not found");
 
-  await prisma.$transaction(async (tx) => {
-    await ensureChapterStarted(tx, enrollment.id, chapter.id);
-  });
   await prisma.review.updateMany({
     where: { seenAt: null, response: { userId: user.id, block: { chapterId: chapter.id } } },
     data: { seenAt: new Date() },
@@ -146,7 +161,7 @@ export async function loadChapterReader(courseSlug: string, chapterSlug: string,
   }
 
   // Placeholders resolve per learner at read time; the stored snapshot keeps them.
-  const source = applyTokens(content.compiled ?? content.source, contentTokenValues(course.familySlug, enrollment.variantSlug));
+  const source = applyTokens(content.compiled ?? content.source, contentTokenValues(resolveCourseFamily(course.familySlug, course.variantFamily), startedEnrollment.variantSlug));
   const log = parseLearningLog(currentProgress?.learningLog);
   const chapterComplete = currentProgress?.status === "COMPLETED";
   const checkpointsCompleted = currentProgress?.blocksCompleted ?? 0;
@@ -160,6 +175,7 @@ export async function loadChapterReader(courseSlug: string, chapterSlug: string,
 
   return {
     ...base,
+    track: buildCourseTrack(course.variantFamily ? resolveCourseFamily(course.familySlug, course.variantFamily) : course.familySlug, startedEnrollment),
     locked: false,
     previous: null,
     content: {

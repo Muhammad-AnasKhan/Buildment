@@ -1,5 +1,7 @@
 import type { ChapterReportView, CourseActivityView, CourseReportView } from "../../shared/api/teach.js";
 import { prisma } from "../../db/prisma.js";
+import { type ReleaseContent, variantForRelease } from "../courses/releases.js";
+import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
 import { toCsv } from "../../utils/csv.js";
 import type { SessionUser } from "../../types/auth.js";
 import { requireCourseBySlug } from "./access.js";
@@ -26,6 +28,7 @@ export async function loadCourseReport(user: SessionUser, courseSlug: string, ch
     prisma.course.findUniqueOrThrow({
       where: { id: owned.id },
       select: {
+        activeReleaseId: true, familySlug: true, variantFamily: true,
         modules: {
           where: { archivedAt: null },
           orderBy: { order: "asc" },
@@ -52,11 +55,16 @@ export async function loadCourseReport(user: SessionUser, courseSlug: string, ch
   };
 
   const enrolled = enrollments.length;
-  const chapterIds = new Set(course.modules.flatMap((module) => module.chapters.map((chapter) => chapter.id)));
+  const release = course.activeReleaseId ? await prisma.courseRelease.findUnique({ where: { id: course.activeReleaseId } }) : null;
+  const releaseModules = release ? (release.content as unknown as ReleaseContent).variants[
+    variantForRelease(resolveCourseFamily(course.familySlug, course.variantFamily), null)] : null;
+  const modules = releaseModules?.map(module => ({ id: module.id, title: module.title,
+    chapters: module.chapters.map(chapter => ({ id: chapter.id, title: chapter.title })) })) ?? course.modules;
+  const chapterIds = new Set(modules.flatMap((module) => module.chapters.map((chapter) => chapter.id)));
 
   return {
     course: { id: owned.id, slug: owned.slug, title: owned.title },
-    modules: course.modules,
+    modules,
     summary: {
       enrolled,
       started: enrollments.filter((e) => e.startedAt !== null).length,

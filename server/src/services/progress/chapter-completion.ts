@@ -4,10 +4,11 @@ import { ConflictError, ForbiddenError, NotFoundError } from "../../utils/errors
 import type { SessionUser } from "../../types/auth.js";
 import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
-import { recomputeEnrollmentRollup } from "./compute.js";
+import { lockEnrollmentVariant, recomputeEnrollmentRollup } from "./compute.js";
 import { ChapterLockedError, assertChapterUnlocked } from "./gate.js";
 import { milestoneReflectionBlocked } from "./reflection.js";
 import { checkpointSatisfied, isCompletableBlock } from "./rules.js";
+import { assertEnrollmentChapter } from "../courses/releases.js";
 
 /** The learner's active enrollment for a chapter, with the chapter unlocked. */
 export async function unlockedChapterForLearner(chapterId: string, user: SessionUser) {
@@ -84,6 +85,8 @@ export async function markChapterComplete(chapterId: string, user: SessionUser):
   }
 
   await prisma.$transaction(async (tx) => {
+    await lockEnrollmentVariant(tx, enrollment.id);
+    await assertEnrollmentChapter(tx, enrollment.id, chapter.id);
     const key = { enrollmentId_chapterId: { enrollmentId: enrollment.id, chapterId: chapter.id } };
     const existing = await tx.chapterProgress.findUnique({ where: key, select: { completedAt: true } });
     await tx.chapterProgress.upsert({

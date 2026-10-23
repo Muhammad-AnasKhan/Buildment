@@ -1,0 +1,128 @@
+# Course variants and safe publishing
+
+## What is implemented
+
+A course keeps one stable `Course.id`. A course may have no variants, use the built-in
+marketplace variants, or declare its own `variantFamily` in `course.yaml`.
+The package contains shared modules and lessons. Each variant lists only the lessons
+it changes. A variant can replace an entire lesson with a Markdown file or replace
+an exact passage within the shared lesson. Multiple lesson overrides cover a module.
+Unspecified lessons inherit the shared version. Stable module and lesson `key` values
+carry identity across titles, paths and ordering changes.
+
+Approved ZIP updates are **patches**. Omitting a key leaves it unchanged. Removing
+a lesson or module requires `remove.lessonKeys` or `remove.moduleKeys` in the manifest.
+An update that only removes content can use `modules: []`.
+Creation and update are separate operations; an update fails if the slug does not
+identify the existing course. The creator reviews a server-owned preview with
+affected variants and active learner counts, then approves it. The preview is
+bound to the current content and expires after 30 minutes.
+
+Approval creates a `CourseRelease` with a complete curriculum for every variant.
+Shared lessons reference one chapter row. A variant override or changed lesson
+gets a new chapter and activity IDs. The active release pointer changes in the
+same transaction. Repeating a package whose effective content is unchanged
+does not make another release. Old chapter rows, answers, notes and reviews remain.
+
+Existing enrollments with work are pinned to the baseline release before an update.
+Opening the first chapter pins a new enrollment to the then-active release and
+locks its variant. The reader, overview, continue link, gating and progress totals
+use that pinned release. The server reads already-materialized content; it does not
+generate chapters on each request. `%%product.name%%` still resolves at read time.
+Old learners keep their content and progress; new learners receive the new release.
+
+Published chapters edited in the dashboard save to `CourseChapterDraft`. Publishing
+one creates a new release without changing the chapter an active learner reads.
+Dashboard module names, order and chapter moves enter a new release when the
+creator presses **Publish course**. Removing a published chapter creates a release
+without deleting learner history. Archived courses with learners keep the same
+versioned editing path; they cannot move back to an editable draft.
+
+## Authoring example
+
+```yaml
+slug: marketplace-course
+publication: update # For a new repository course: create, plus creatorEmail
+family: marketplace-course
+variantFamily:
+  slug: marketplace-course
+  label: Marketplace course
+  defaultVariantSlug: food
+  variants:
+    - { slug: food, label: Food, productName: FreshMarket, summary: Build a food market, hardestConstraint: Inventory }
+    - { slug: electricity, label: Electricity, productName: GridMarket, summary: Trade power, hardestConstraint: Matching }
+modules:
+  - key: foundations
+    dir: 01-foundations
+    title: Foundations
+    lessons:
+      - { key: marketplace-model, file: 01.01-model.md, title: The model, goal: Explain the model }
+variants:
+  - slug: electricity
+    overrides:
+      - lessonKey: marketplace-model
+        replacements:
+          - { from: "Buyers order stock.", to: "Buyers reserve electricity capacity." }
+      # Alternatively: file: variants/electricity/01-foundations/01.01-model.md
+remove:
+  moduleKeys: []
+  lessonKeys: []
+```
+
+Replacement text must match exactly once in the transformed shared lesson.
+A replacement file is a full lesson and must pass the same MDX and activity checks
+as shared content. New graded work gets separate progress. Keep keys stable and
+review the effect on every variant before approval.
+
+The older `multi-vendor-marketplace` source folder has no `course.yaml` yet.
+Its first repository update needs an explicit manifest with stable keys for the
+supplied lessons. The preview matches unchanged legacy content and adopts those
+keys while keeping its chapter IDs; review any ambiguous matches before approval.
+There is no need to list every old lesson in that first patch.
+
+## Repository workflow
+
+`.github/workflows/course-publish.yml` validates changed course sources on a PR
+without production database credentials. When a course package reaches `main`,
+the workflow previews each changed course and uploads its affected-module and
+variant summary as a `course-review-<slug>` artifact. It then waits for approval
+in the `course-publishing` GitHub environment before publishing that exact commit.
+Configure the environment's required reviewers to include the course creator.
+Set `COURSE_PREVIEW_DATABASE_URL` as a repository secret for a database role
+that can read courses, learners, and content and write temporary preview rows.
+Set `COURSE_PUBLISH_DATABASE_URL` as a **course-publishing environment secret**
+with permission to write published releases. A missing environment secret makes
+the publish job fail closed.
+Deploy the Prisma migrations before enabling this workflow. The job checks the
+active release ID, creator ID, and full course snapshot fingerprint from the
+reviewed preview, and uses the same ZIP preview and approval
+service as the app. It cannot create a course by accident, and jobs for one
+course are serialized. Configure the required reviewer for DevWeekends PR courses
+as their creator: GitHub does not infer the creator from `creatorEmail`.
+Merging the PR alone must not publish before that approval.
+
+The **workflow_dispatch** path can process one course package manually from
+`main` after creator review. Pass the expected active release ID for an update
+to a course that already has a release, plus the snapshot fingerprint and creator
+ID printed by the preview. A stale value makes the run fail.
+Repository packages must declare `publication: create` or `publication: update`.
+Creation also requires `creatorEmail` for an existing account. Approval of a
+creation package creates a **draft** owned by that creator; the creator publishes
+the course in the dashboard after final review. An update cannot create a course,
+and a creation package cannot overwrite one. Every supplied repository module and
+lesson needs a stable `key`.
+
+`pnpm tsx scripts/publish-course-package.ts --course <slug>` prints a preview
+without publishing. Add `--expect-release <id> --expect-fingerprint <hash>
+--expect-creator-id <id> --approve` only after creator
+approval. Do not run `scripts/import-course.ts` to update a published course:
+that legacy seeder still edits live rows. Agent IP output should remain a draft
+package for review. A repository-to-course agent and a ZIP upload are both
+inputs to this package format.
+
+## Boundaries
+
+The current ZIP parser accepts one course manifest and numbered Markdown
+lessons. New variant definitions can be supplied on course creation; changing
+an existing family's variants needs a separate migration so pinned learners
+do not silently change tracks. Labs will use a separate format when built.

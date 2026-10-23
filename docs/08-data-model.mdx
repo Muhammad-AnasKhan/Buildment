@@ -52,6 +52,10 @@ model Course {
   estimatedHours Int?
   status        CourseStatus @default(DRAFT)
   sequential    Boolean      @default(true)
+  familySlug    String?      // null for courses without variants
+  variantFamily Json?        // creator-defined catalog, when not using built-in family
+  activeReleaseId String?    // atomic pointer to approved content
+  releases      CourseRelease[]
   mentorId      String
   mentor        User         @relation("CourseMentor", fields: [mentorId], references: [id])
   modules       Module[]
@@ -84,11 +88,13 @@ model Module {
   id        String    @id @default(cuid())
   courseId  String
   course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  contentKey String?  // stable author key; null for older content
   title     String
   order     Int
   archivedAt DateTime?
   chapters  Chapter[]
   @@unique([courseId, order])
+  @@unique([courseId, contentKey])
 }
 
 model Chapter {
@@ -97,6 +103,7 @@ model Chapter {
   course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   moduleId    String?
   module      Module?  @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  contentKey  String?  // stable author key; independent of file and title
   slug        String
   title       String
   summary     String?
@@ -111,6 +118,7 @@ model Chapter {
   blocks      Block[]
   progress    ChapterProgress[]
   @@unique([courseId, slug])
+  @@unique([courseId, contentKey])
   @@index([courseId, order])
 }
 
@@ -150,6 +158,10 @@ model Enrollment {
   lastNudgeSentAt   DateTime?
   startedAt         DateTime?
   completedAt       DateTime?
+  variantSlug       String?
+  variantChosenAt   DateTime?
+  variantLockedAt   DateTime? // first chapter start
+  releaseId         String?    // learner's pinned course release
   createdAt         DateTime     @default(now())
   chapterProgress   ChapterProgress[]
   dailyActivity     DailyActivity[]
@@ -370,13 +382,27 @@ boilerplate from the adapter's own docs, not domain-specific.
 
 ## Course ZIP update previews
 
-`Module.archivedAt` and `Chapter.archivedAt` mark content removed by an approved ZIP update. Archived content is excluded from curriculum navigation, publishing, and completion totals. Database identities, learner progress, responses, reviews, and notes remain available for restoration.
+`CourseRelease` holds a complete, materialized module and chapter map for each variant. It
+references immutable chapter and block rows. Shared lessons may be referenced by several
+variants and releases; changed chapters and graded work get new row identities. A course's
+`activeReleaseId` points to the latest approved release. `Enrollment.releaseId` pins a learner
+after they begin. Existing progress and submissions stay on the referenced old rows.
 
-`CourseImportPreview` stores an immutable parsed package, proposed matches, module/chapter diff, and a fingerprint of the reviewed course content. It belongs to one course and instructor, expires after 30 minutes, and records `appliedAt` after approval. The client submits only its preview ID and explicit confirmation. A serializable transaction rejects stale or repeated approvals and applies all content changes together.
+`CourseImportPreview` stores an immutable parsed package, proposed matches, effective variant
+diff and fingerprint of the reviewed course content. It belongs to one course and instructor,
+expires after 30 minutes, and records `appliedAt` after approval. The client submits only the
+preview ID and explicit confirmation. A serializable transaction rejects stale or repeated
+approvals and moves the active pointer with the new release.
 
-ZIP updates preserve course metadata, ownership, team, pricing, and enrollments. Matching compares chapters across the course, including archived chapters, using 90% content similarity and 10% title similarity. A match needs at least 80% combined similarity, at least 72% content similarity, and an 8 percentage point lead over competing matches on both sides. Ambiguous content creates new records. Exact activity configurations reuse existing block IDs; changed activities create new blocks and archive prior ones without deleting submissions.
+ZIP updates preserve course metadata, ownership, team, pricing, and enrollments. Stable author
+keys match modules and lessons first; unkeyed legacy packages may use content similarity.
+Omission is unchanged. `remove.moduleKeys` and `remove.lessonKeys` make removal explicit in the
+new release while old releases keep their content. A dashboard chapter draft lives in
+`CourseChapterDraft` until the creator publishes it.
 
-Approved updates publish incoming lessons immediately for published or archived courses; draft courses remain drafts. Completion rollups exclude archived chapters and are refreshed without recording artificial learner activity. Apply the `20261022000000_course_zip_updates` migration before deploying these API changes.
+Progress and completion totals count only the chapters in that enrollment's release and variant.
+See [course variants and publishing](12-course-variants-and-publishing.mdx) for the package and
+workflow contract.
 
 ## Response payload shapes
 
