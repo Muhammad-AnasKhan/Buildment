@@ -1,4 +1,5 @@
 import type { Prisma } from "../../generated/prisma/index.js";
+import { isDeepStrictEqual } from "node:util";
 import { compile } from "@mdx-js/mdx";
 import remarkGfm from "remark-gfm";
 import type { ChapterEditorView, ChapterIdResult, SavedAtResult } from "../../shared/api/teach.js";
@@ -7,9 +8,9 @@ import { blockDefinitions, isRegisteredBlockType } from "../../shared/blocks/def
 import { collectContentTokenProblems, tokenInFieldProblem } from "../../shared/lib/content-tokens.js";
 import { slugify } from "../../shared/lib/mdx-headings.js";
 import { mdxComponentAllowlist } from "../../shared/mdx/component-allowlist.js";
-import { collectUnknownComponents, diffBlocks, extractBlocksFromSource } from "../../shared/mdx/extract.js";
+import { collectUnknownComponents, diffBlocks } from "../../shared/mdx/extract.js";
 import { collectCanvasProblems } from "../../shared/mdx/canvas-tags.js";
-import { blockConfigFromSource, extractBlockConfigsFromSource, hasQuizBlocks, isActivityOnlySource } from "../../shared/mdx/extract-block-config.js";
+import { blockConfigFromSource, hasQuizBlocks, isActivityOnlySource } from "../../shared/mdx/extract-block-config.js";
 import { remarkChecklist } from "../../shared/mdx/remark-checklist.js";
 import { remarkLearningLog } from "../../shared/mdx/remark-learning-log.js";
 import { restoreInteractiveBlockTags } from "../../shared/mdx/restore-block-tags.js";
@@ -19,13 +20,13 @@ import { secretFieldsWithTokens } from "../../utils/sanitize-block-config.js";
 import type { SessionUser } from "../../types/auth.js";
 import type { ChapterSettingsBody, CreateChapterBody, MoveDirection } from "../../validations/teach.js";
 import { requireCourseById } from "./access.js";
-import { syncChapterBlocksFromSource } from "./sync-blocks.js";
+import { applyBlockSyncPlans, planChapterBlockSync, prepareChapterBlockSync, syncChapterBlocksFromSource, type ExistingSyncBlock } from "./sync-blocks.js";
 
 // Mentor-facing chapter mutations. Draft saves write Chapter.source only;
 // learners read Chapter.compiled, which publish snapshots after validation.
 
 async function requireChapter(user: SessionUser, chapterId: string) {
-  const chapter = await prisma.chapter.findUnique({ where: { id: chapterId } });
+  const chapter = await prisma.chapter.findUnique({ where: { id: chapterId, archivedAt: null } });
   if (!chapter) throw new NotFoundError("Chapter not found");
   const course = await requireCourseById(user, chapter.courseId);
   return { chapter, course };
@@ -42,12 +43,12 @@ export async function createChapter(user: SessionUser, courseId: string, input: 
   rejectTokensInChapterFields(input);
   const moduleId = input.moduleId ?? null;
   if (moduleId) {
-    const owner = await prisma.module.findFirst({ where: { id: moduleId, courseId }, select: { id: true } });
+    const owner = await prisma.module.findFirst({ where: { id: moduleId, courseId, archivedAt: null }, select: { id: true } });
     if (!owner) throw new NotFoundError("Module not found");
   }
 
   const slug = await uniqueChapterSlug(courseId, slugify(input.title));
-  const last = await prisma.chapter.findFirst({ where: { courseId, moduleId }, orderBy: { order: "desc" }, select: { order: true } });
+  const last = await prisma.chapter.findFirst({ where: { courseId, moduleId, archivedAt: null }, orderBy: { order: "desc" }, select: { order: true } });
   const chapter = await prisma.chapter.create({
     data: { courseId, moduleId, title: input.title, slug, order: (last?.order ?? 0) + 1, source: `# ${input.title}\n` },
     select: { id: true },
@@ -71,6 +72,7 @@ export async function moveChapter(user: SessionUser, chapterId: string, directio
     where: {
       courseId: chapter.courseId,
       moduleId: chapter.moduleId,
+      archivedAt: null,
       order: direction === "up" ? { lt: chapter.order } : { gt: chapter.order },
     },
     orderBy: { order: direction === "up" ? "desc" : "asc" },
@@ -178,7 +180,12 @@ export async function removeChapter(
 type PublishableChapter = { id: string; title: string; summary: string | null; readerMode: string };
 
 /** Everything that would break the reader: MDX syntax, unknown components, block configs, misplaced placeholders. */
-async function collectPublishProblems(chapter: PublishableChapter, renderable: string, db: Prisma.TransactionClient = prisma): Promise<string[]> {
+async function collectPublishProblems(
+  chapter: PublishableChapter,
+  renderable: string,
+  db: Prisma.TransactionClient = prisma,
+  loaded?: ReturnType<typeof prepareChapterBlockSync> & { existing: ExistingSyncBlock[] },
+): Promise<string[]> {
   const { id: chapterId, readerMode } = chapter;
   const problems: string[] = [];
 
@@ -208,9 +215,8 @@ async function collectPublishProblems(chapter: PublishableChapter, renderable: s
     problems.push("Quiz flow supports activities only: Quiz, Open Question, Predict, and Code Exercise. Move lesson text and visual blocks to a standard lesson.");
   }
 
-  const extracted = extractBlocksFromSource(renderable);
-  const configs = extractBlockConfigsFromSource(renderable);
-  const existing = await db.block.findMany({
+  const { extracted, configs } = loaded ?? prepareChapterBlockSync(renderable);
+  const existing = loaded?.existing ?? await db.block.findMany({
     where: { chapterId, archivedAt: null },
     select: { id: true, type: true, config: true, sourceHash: true },
   });
@@ -254,31 +260,57 @@ export async function publishChapters(user: SessionUser, scope: { courseId: stri
   let courseId: string;
   let moduleId: string | undefined;
   if ("moduleId" in scope) {
-    const module = await prisma.module.findUnique({ where: { id: scope.moduleId }, select: { courseId: true } });
+    const module = await prisma.module.findUnique({ where: { id: scope.moduleId, archivedAt: null }, select: { courseId: true } });
     if (!module) throw new NotFoundError("Module not found");
     courseId = module.courseId;
     moduleId = scope.moduleId;
   } else courseId = scope.courseId;
   await requireCourseById(user, courseId);
 
-  await prisma.$transaction(async tx => {
-    const chapters = await tx.chapter.findMany({ where: { courseId, ...(moduleId ? { moduleId } : {}) }, orderBy: [{ order: "asc" }, { id: "asc" }] });
-    if (!chapters.length) throw new UnprocessableError("There are no chapters to publish.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE);
-    const pending = chapters.filter(chapter => !chapter.publishedAt || chapter.compiled !== chapter.source);
-    const problems: string[] = [];
-    for (const chapter of pending) {
-      const reasons = await collectPublishProblems(chapter, restoreInteractiveBlockTags(chapter.source), tx);
-      problems.push(...reasons.map(reason => `${chapter.title}: ${reason}`));
+  const selection = {
+    where: { courseId, archivedAt: null, ...(moduleId ? { moduleId } : {}) },
+    orderBy: [{ order: "asc" }, { id: "asc" }],
+    include: { blocks: { orderBy: { id: "asc" } } },
+  } satisfies Prisma.ChapterFindManyArgs;
+  const chapters = await prisma.chapter.findMany(selection);
+  if (!chapters.length) throw new UnprocessableError("There are no chapters to publish.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE);
+  const pending = chapters.filter(chapter => !chapter.publishedAt || chapter.compiled !== chapter.source);
+  if (!pending.length) return;
+  // MDX compilation and AST extraction can take longer than an interactive transaction's lifetime.
+  // Complete this work without holding a connection, then recheck the exact content before writing.
+  const prepared = new Map<string, ReturnType<typeof prepareChapterBlockSync> & { existing: ExistingSyncBlock[] }>();
+  const problems: string[] = [];
+  for (const chapter of pending) {
+    try {
+      prepared.set(chapter.id, { ...prepareChapterBlockSync(chapter.source), existing: chapter.blocks.filter(block => !block.archivedAt) });
+    } catch (error) {
+      problems.push(`${chapter.title}: MDX failed to compile: ${error instanceof Error ? error.message : String(error)}`);
+      continue;
     }
-    if (problems.length) throw new UnprocessableError("Some chapters cannot be published yet. No chapters were published.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE, problems);
-    const publishedAt = new Date();
-    for (const chapter of pending) {
-      await syncChapterBlocksFromSource(chapter.id, chapter.source, tx);
-      const updated = await tx.chapter.updateMany({
-        where: { id: chapter.id, source: chapter.source, readerMode: chapter.readerMode, compiled: chapter.compiled, publishedAt: chapter.publishedAt },
-        data: { compiled: chapter.source, publishedAt },
-      });
-      if (updated.count !== 1) throw new ConflictError("A chapter changed during publishing. Please try again.");
-    }
-  }, { timeout: 20000 });
+    const reasons = await collectPublishProblems(chapter, restoreInteractiveBlockTags(chapter.source), prisma, prepared.get(chapter.id)!);
+    problems.push(...reasons.map(reason => `${chapter.title}: ${reason}`));
+  }
+  if (problems.length) throw new UnprocessableError("Some chapters cannot be published yet. No chapters were published.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE, problems);
+  const blockPlans = pending.map(chapter => {
+    const content = prepared.get(chapter.id)!;
+    return planChapterBlockSync(chapter.id, content, content.existing);
+  });
+  try {
+    await prisma.$transaction(async tx => {
+      const current = await tx.chapter.findMany(selection);
+      if (!isDeepStrictEqual(current, chapters)) throw new ConflictError("Course content changed during validation. Please publish again.");
+      await applyBlockSyncPlans(tx, blockPlans);
+      const publishedAt = new Date();
+      for (const chapter of pending) {
+        const updated = await tx.chapter.updateMany({
+          where: { id: chapter.id, source: chapter.source, readerMode: chapter.readerMode, compiled: chapter.compiled, publishedAt: chapter.publishedAt },
+          data: { compiled: chapter.source, publishedAt },
+        });
+        if (updated.count !== 1) throw new ConflictError("A chapter changed during publishing. Please try again.");
+      }
+    }, { timeout: 60000, isolationLevel: "Serializable" });
+  } catch (error) {
+    if ((error as { code?: string }).code === "P2034") throw new ConflictError("Course content changed during publishing. Please publish again.");
+    throw error;
+  }
 }

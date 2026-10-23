@@ -1,5 +1,23 @@
 import { describe, expect, it } from "vitest";
 import { parseLesson, transformPresentationBlocks, type PendingBlock } from "../../scripts/import-course.js";
+import { QuizConfigSchema } from "../../src/shared/blocks/quiz/schema.js";
+
+describe("course importer numeric quiz labels", () => {
+  it("imports chapter 14.7's unquoted numeric YAML options as display strings", () => {
+    const lesson = parseLesson(14, "14-browse-catalogue-api", "14.07-quiz.md", 7, "quiz");
+    const quizzes = lesson.blocks.filter(block => block.type === "QUIZ");
+    expect(quizzes).toHaveLength(3);
+    const first = QuizConfigSchema.parse(quizzes[0].config);
+    expect(first.options).toEqual([1, 2, 20, 21].map((value, i) => ({ id: `opt-${i}`, label: String(value) })));
+    expect(first.correctOptionIds).toEqual(["opt-3"]);
+    for (const block of quizzes) expect(QuizConfigSchema.safeParse(block.config).success).toBe(true);
+  });
+  it("normalizes legacy scalar labels while rejecting missing or structured labels", () => {
+    const config = { prompt: "Choose", options: [{ id: "a", label: 0 }, { id: "b", label: false }], correctOptionIds: ["a"] };
+    expect(QuizConfigSchema.parse(config).options.map(option => option.label)).toEqual(["0", "false"]);
+    for (const label of [null, undefined, {}, []]) expect(QuizConfigSchema.safeParse({ ...config, options: [{ id: "a", label }, config.options[1]] }).success).toBe(false);
+  });
+});
 
 describe("course importer interaction intent", () => {
   it("does not invent an OpenQuestion for a lesson without an authored interaction", () => {

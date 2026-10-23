@@ -46,7 +46,7 @@ export async function saveLearningLogAnswers(
   user: SessionUser,
   input: { chapterId: string; answers: Record<string, string> }
 ): Promise<LearningLogSaveResult> {
-  const chapter = await prisma.chapter.findUnique({ where: { id: input.chapterId }, select: { id: true, courseId: true } });
+  const chapter = await prisma.chapter.findUnique({ where: { id: input.chapterId, archivedAt: null }, select: { id: true, courseId: true } });
   if (!chapter) throw new NotFoundError("Chapter not found.");
   const enrollment = await requireBlockSubmissionAccess(chapter.courseId, user);
 

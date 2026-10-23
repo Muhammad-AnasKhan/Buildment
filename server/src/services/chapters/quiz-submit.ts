@@ -30,7 +30,7 @@ export async function submitChapterQuiz(input: {
   const { chapterId, user, answers } = input;
 
   const chapter = await prisma.chapter.findUnique({
-    where: { id: chapterId },
+    where: { id: chapterId, archivedAt: null },
     select: { id: true, courseId: true, readerMode: true },
   });
   if (!chapter || chapter.readerMode !== "QUIZ") throw new NotFoundError("Quiz chapter not found");

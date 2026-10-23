@@ -78,9 +78,9 @@ export async function submitBlockResponse(input: {
 
   const block = await prisma.block.findUnique({
     where: { id: blockId },
-    include: { chapter: { select: { id: true, courseId: true, readerMode: true, course: { select: { familySlug: true } } } } },
+    include: { chapter: { select: { archivedAt: true, id: true, courseId: true, readerMode: true, course: { select: { familySlug: true } } } } },
   });
-  if (!block || block.archivedAt) throw new NotFoundError("Block not found");
+  if (!block || block.archivedAt || block.chapter.archivedAt) throw new NotFoundError("Block not found");
   if (!isRegisteredBlockType(block.type)) {
     throw new NotImplementedError(`Block type ${block.type} has no grader yet`);
   }

@@ -42,7 +42,7 @@ async function currentAttemptNumber(enrollmentId: string, chapterId: string): Pr
 /** Opens (or resumes, after a reload or power cut) the proctored attempt for a quiz chapter. */
 export async function openIntegrityAttempt(user: SessionUser | undefined, chapterId: string): Promise<IntegrityAttemptSession> {
   const chapter = await prisma.chapter.findUnique({
-    where: { id: chapterId },
+    where: { id: chapterId, archivedAt: null },
     select: { id: true, courseId: true, readerMode: true, course: { select: { integritySnapshots: true } } },
   });
   if (!chapter || chapter.readerMode !== "QUIZ") throw new NotFoundError("Quiz chapter not found");

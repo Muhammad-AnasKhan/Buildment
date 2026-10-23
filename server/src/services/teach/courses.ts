@@ -81,13 +81,14 @@ export async function loadCourseBuilder(user: SessionUser, courseSlug: string): 
         currency: true,
         _count: { select: { enrollments: true } },
         modules: {
+          where: { archivedAt: null },
           orderBy: { order: "asc" },
-          select: { id: true, title: true, order: true, chapters: { orderBy: { order: "asc" }, select: builderChapterSelect } },
+          select: { id: true, title: true, order: true, chapters: { where: { archivedAt: null }, orderBy: { order: "asc" }, select: builderChapterSelect } },
         },
       },
     }),
     prisma.chapter.findMany({
-      where: { courseId: owned.id, moduleId: null },
+      where: { courseId: owned.id, moduleId: null, archivedAt: null },
       orderBy: { order: "asc" },
       select: builderChapterSelect,
     }),
@@ -113,10 +114,11 @@ export async function loadCourseSettings(user: SessionUser, courseSlug: string):
       id: true, slug: true, title: true, description: true, projectGoal: true,
       difficulty: true, estimatedHours: true, category: true, sequential: true, coverUrl: true,
       status: true, pricingType: true, priceCents: true, currency: true, integritySnapshots: true,
-      _count: { select: { enrollments: true, chapters: true } },
+      _count: { select: { enrollments: true, chapters: { where: { archivedAt: null } } } },
     },
   });
-  return { ...course, enrollmentCount: _count.enrollments, chapterCount: _count.chapters };
+  const account = await prisma.user.findUnique({ where: { id: user.id }, select: { zipImportEnabled: true } });
+  return { ...course, enrollmentCount: _count.enrollments, chapterCount: _count.chapters, zipImportEnabled: account?.zipImportEnabled ?? false };
 }
 
 /** Read-only preview of the latest saved draft, available to the course team. */
@@ -127,8 +129,9 @@ export async function loadCourseDraftPreview(user: SessionUser, courseSlug: stri
     select: {
       id: true, slug: true, title: true, description: true, projectGoal: true, coverUrl: true, status: true,
       modules: {
+        where: { archivedAt: null },
         orderBy: { order: "asc" },
-        select: { id: true, title: true, chapters: { orderBy: { order: "asc" }, select: { id: true, title: true, slug: true, readerMode: true, publishedAt: true, source: true } } },
+        select: { id: true, title: true, chapters: { where: { archivedAt: null }, orderBy: { order: "asc" }, select: { id: true, title: true, slug: true, readerMode: true, publishedAt: true, source: true } } },
       },
     },
   });
@@ -178,7 +181,7 @@ export async function publishCourse(user: SessionUser, courseId: string): Promis
   if (owned.status !== "PUBLISHED") {
     const course = await prisma.course.findUniqueOrThrow({
       where: { id: owned.id },
-      select: { pricingType: true, priceCents: true, _count: { select: { chapters: true } } },
+      select: { pricingType: true, priceCents: true, _count: { select: { chapters: { where: { archivedAt: null } } } } },
     });
     const reasons = validateCoursePublish({
       status: owned.status,

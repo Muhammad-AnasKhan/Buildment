@@ -26,7 +26,7 @@ export async function loadCourseMentees(user: SessionUser, courseSlug: string): 
       title: true,
       status: true,
       familySlug: true,
-      _count: { select: { chapters: true } },
+      _count: { select: { chapters: { where: { archivedAt: null } } } },
       invites: {
         where: { acceptedAt: null, revokedAt: null },
         orderBy: { createdAt: "desc" },

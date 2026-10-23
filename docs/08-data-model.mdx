@@ -55,6 +55,7 @@ model Course {
   mentorId      String
   mentor        User         @relation("CourseMentor", fields: [mentorId], references: [id])
   modules       Module[]
+  importPreviews CourseImportPreview[]
   chapters      Chapter[]
   enrollments   Enrollment[]
   invites       Invite[]
@@ -64,12 +65,28 @@ model Course {
   @@index([mentorId, status])
 }
 
+model CourseImportPreview {
+  id          String   @id @default(cuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  userId      String
+  fingerprint String
+  plan        Json
+  diff        Json
+  expiresAt   DateTime
+  appliedAt   DateTime?
+  createdAt   DateTime @default(now())
+  @@index([courseId, userId])
+  @@index([expiresAt])
+}
+
 model Module {
   id        String    @id @default(cuid())
   courseId  String
   course    Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
   title     String
   order     Int
+  archivedAt DateTime?
   chapters  Chapter[]
   @@unique([courseId, order])
 }
@@ -90,6 +107,7 @@ model Chapter {
   compiled          String?  @db.Text        // compiled MDX at publish
   publishedAt       DateTime?
   isMilestone       Boolean  @default(false)
+  archivedAt        DateTime?
   blocks      Block[]
   progress    ChapterProgress[]
   @@unique([courseId, slug])
@@ -349,6 +367,16 @@ Auth.js v5 additionally requires its standard `Account`, `Session`, and `Verific
 via `@auth/prisma-adapter` — add those in M0 alongside `User` (see
 [`phases/m0-foundation.mdx`](phases/m0-foundation.mdx)); they're omitted above since they're
 boilerplate from the adapter's own docs, not domain-specific.
+
+## Course ZIP update previews
+
+`Module.archivedAt` and `Chapter.archivedAt` mark content removed by an approved ZIP update. Archived content is excluded from curriculum navigation, publishing, and completion totals. Database identities, learner progress, responses, reviews, and notes remain available for restoration.
+
+`CourseImportPreview` stores an immutable parsed package, proposed matches, module/chapter diff, and a fingerprint of the reviewed course content. It belongs to one course and instructor, expires after 30 minutes, and records `appliedAt` after approval. The client submits only its preview ID and explicit confirmation. A serializable transaction rejects stale or repeated approvals and applies all content changes together.
+
+ZIP updates preserve course metadata, ownership, team, pricing, and enrollments. Matching compares chapters across the course, including archived chapters, using 90% content similarity and 10% title similarity. A match needs at least 80% combined similarity, at least 72% content similarity, and an 8 percentage point lead over competing matches on both sides. Ambiguous content creates new records. Exact activity configurations reuse existing block IDs; changed activities create new blocks and archive prior ones without deleting submissions.
+
+Approved updates publish incoming lessons immediately for published or archived courses; draft courses remain drafts. Completion rollups exclude archived chapters and are refreshed without recording artificial learner activity. Apply the `20261022000000_course_zip_updates` migration before deploying these API changes.
 
 ## Response payload shapes
 

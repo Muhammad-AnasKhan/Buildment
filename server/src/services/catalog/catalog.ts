@@ -17,7 +17,7 @@ const summarySelect = {
   priceCents: true,
   currency: true,
   mentor: { select: { name: true } },
-  _count: { select: { modules: true, chapters: true } },
+  _count: { select: { modules: { where: { archivedAt: null } }, chapters: { where: { archivedAt: null } } } },
 } as const;
 
 /** Published courses. Anonymous visitors (the landing page) get no enrollment state. */
@@ -51,13 +51,14 @@ export async function getCatalogCourse(courseSlug: string, userId: string): Prom
       ...summarySelect,
       status: true,
       modules: {
+        where: { archivedAt: null },
         orderBy: { order: "asc" },
         select: {
           id: true,
           title: true,
           order: true,
           chapters: {
-            where: { publishedAt: { not: null } },
+            where: { archivedAt: null, publishedAt: { not: null } },
             orderBy: { order: "asc" },
             select: { id: true, title: true, order: true, estimatedMinutes: true },
           },

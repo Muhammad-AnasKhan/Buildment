@@ -22,11 +22,12 @@ export async function loadCourseGate(
     select: {
       sequential: true,
       modules: {
+        where: { archivedAt: null },
         orderBy: { order: "asc" },
         select: {
           order: true,
           chapters: {
-            where: { publishedAt: { not: null } },
+            where: { archivedAt: null, publishedAt: { not: null } },
             orderBy: { order: "asc" },
             select: { id: true, order: true, slug: true, title: true },
           },
