@@ -8,7 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { readLessonFiles, readModuleDirs } from "./import-course.js";
 
-const COURSE_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../content/import/multi-vendor-marketplace");
+const COURSE_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../courses/multi-vendor-marketplace");
 
 const PREFIXES = ["**Where the project is now:**", "**Why this step matters:**"];
 

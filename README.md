@@ -45,7 +45,7 @@ cp frontend/.env.example frontend/.env # API_URL (the web app never talks to Pos
 docker compose up -d                  # starts local Postgres on :5432
 pnpm db:ready                         # migrate deploy + prisma generate (use after git pull)
 pnpm db:seed                          # 1 admin, 1 mentor, 3 mentees, 1 course, 4 preview enrollments
-pnpm content:import                   # sync FreshMarket chapters/blocks from content/import
+pnpm content:import                   # sync FreshMarket chapters/blocks from courses/
 pnpm dev                              # API on :4000, web on :3000
 ```
 
@@ -94,9 +94,9 @@ Run from the repo root unless noted.
 | `pnpm db:migrate` | `prisma migrate dev` (server) |
 | `pnpm db:seed` | Re-run the seed script (idempotent — upserts) |
 | `pnpm db:studio` | Prisma Studio, a GUI for the local database |
-| `pnpm content:import` | Import course content from `content/import/` into the database |
+| `pnpm content:import` | Import course content from `courses/` into the database |
 | `pnpm content:validate` | Compile-check every stored chapter the way publish does (needs DB) |
-| `pnpm --dir server content:validate:source` | Compile-check from `content/import/` (no DB) |
+| `pnpm --dir server content:validate:source` | Compile-check from `courses/` (no DB) |
 | `pnpm --dir server content:audit` | Structural audit (gates, learning logs, STYLE heuristics) |
 | `pnpm --dir server db:seed:showcase` | Add realistic, repeatable demo history after the course import |
 | `pnpm --dir frontend exec playwright test` | Browser end-to-end suite (starts API + web itself; see `frontend/playwright.config.ts`) |

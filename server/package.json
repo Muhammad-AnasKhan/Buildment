@@ -27,6 +27,8 @@
     "content:validate": "tsx scripts/validate-chapters.ts",
     "content:validate:source": "tsx scripts/validate-course-source.ts",
     "content:audit": "tsx scripts/audit-course-structure.ts",
+    "courses:check": "tsx scripts/repository-course-publish.ts --check",
+    "courses:publish": "tsx scripts/repository-course-publish.ts --publish",
     "content:strip-code": "tsx scripts/strip-code-exercises.ts",
     "content:seed-predicts": "tsx scripts/seed-predict-fences.ts",
     "stats:backfill": "tsx scripts/backfill-block-stats.ts",

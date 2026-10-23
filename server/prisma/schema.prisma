@@ -264,6 +264,8 @@ model Course {
   variantFamily  Json? // creator-defined variant catalog; null uses a built-in family
   variantAssignment VariantAssignment @default(SELF_SELECT)
   activeReleaseId String? // latest approved content release; set atomically with publication
+  repositorySourceHash String? // last repository package published by the course workflow
+  repositoryReleaseId String? // release active when that package was published
   releases       CourseRelease[]
   /// Quiz camera photos are opt-in per course and never required; quiz integrity signals are always on.
   integritySnapshots Boolean  @default(false)

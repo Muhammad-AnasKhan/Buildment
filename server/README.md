@@ -64,7 +64,7 @@ Course creators can upload cover images in course settings and insert images fro
 | `pnpm test` | unit + API tests (`DATABASE_URL`, or `TEST_DATABASE_URL`, must point at Postgres) |
 | `pnpm typecheck` / `pnpm lint` | |
 | `pnpm db:migrate` / `db:ready` / `db:seed` / `db:studio` | Prisma |
-| `pnpm content:import` / `content:validate` / `content:validate:source` / `content:audit` | course content pipeline (`content/import/` → Postgres) |
+| `pnpm content:import` / `content:validate` / `content:validate:source` / `content:audit` | course content pipeline (`courses/` → Postgres) |
 | `pnpm db:seed:showcase` / `db:seed:integration` / `stats:backfill` | demo data and maintenance |
 | `pnpm sync-shared` / `sync-shared:check` | copy `src/shared` into the web app / verify the copy is current |
 
@@ -77,4 +77,5 @@ docker run -p 4000:4000 --env-file .env buildment-api
 ```
 
 The image carries the compiled API, the Prisma schema and migrations, and the scripts, so
-`pnpm db:seed` works inside the container too (the course import reads `content/` from a checkout).
+`pnpm db:seed` works inside the container too. Repository course imports read `courses/`
+from a checkout; the server-only image does not bundle those source packages.

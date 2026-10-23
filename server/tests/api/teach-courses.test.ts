@@ -259,6 +259,27 @@ describe("chapters", () => {
     expect(Object.keys(editor.body.data.blockConfigs)).toEqual(["q-1"]);
   });
 
+  it("publishes a standalone quiz inside a standard teaching lesson", async () => {
+    const builder = await request(app).get(`/api/v1/teach/courses/${createdCourseSlug}/builder`).set(mentor());
+    const moduleId = builder.body.data.course.modules[0].id;
+    const created = await request(app).post(`/api/v1/teach/courses/${createdCourseId}/chapters`).set(mentor())
+      .send({ moduleId, title: "Inline checkpoint" });
+    expect(created.status).toBe(201);
+    const inlineChapterId = created.body.data.chapterId;
+    const source = [
+      "# Inline checkpoint",
+      "",
+      "Explain the idea, then answer this check.",
+      "",
+      '<Quiz id="inline-check" prompt="2 + 2?" options={[{"id":"a","label":"4"},{"id":"b","label":"5"}]} correctOptionIds={["a"]} />',
+    ].join("\n");
+    const saved = await request(app).put(`/api/v1/teach/chapters/${inlineChapterId}/draft`).set(mentor()).send({ source });
+    expect(saved.status).toBe(200);
+    const published = await request(app).post(`/api/v1/teach/chapters/${inlineChapterId}/publish`).set(mentor());
+    expect(published.status, JSON.stringify(published.body)).toBe(204);
+    expect(await prisma.chapter.findUniqueOrThrow({ where: { id: inlineChapterId } })).toMatchObject({ readerMode: "DEFAULT", compiled: source });
+  });
+
   it("publishes the course once a chapter is live, then archives or drafts it on unpublish", async () => {
     const publish = await request(app).post(`/api/v1/teach/courses/${createdCourseId}/publish`).set(mentor());
     expect(publish.status).toBe(200);
@@ -339,7 +360,7 @@ describe("course ZIP import", () => {
     expect(await prisma.course.findUnique({ where: { slug } })).toBeNull();
   }, 20000);
   it("imports validated lessons and blocks as an owned draft, refusing duplicate slugs", async () => {
-    const source = new URL("../../../content/import/decision-making/", import.meta.url);
+    const source = new URL("../../../courses/decision-making/", import.meta.url);
     const slug = `zip-import-${fx.course.id.toLowerCase()}`;
     const files: Record<string, Uint8Array> = {};
     for (const entry of readdirSync(source, { withFileTypes: true })) {

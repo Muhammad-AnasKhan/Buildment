@@ -1,4 +1,4 @@
-// Excerpts come from content/transformed/multi-vendor-marketplace/01-introduction/01.06-course-outline.mdx.
+// Excerpts come from the FreshMarket course source in courses/multi-vendor-marketplace/.
 // Keep quoted course material separate from the page's editorial copy.
 export const COURSE_EXCERPT = {
   source: "FreshMarket / 01.06 / Course outline",
