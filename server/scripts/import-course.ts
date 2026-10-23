@@ -402,14 +402,18 @@ function isGateChecklistChapter(fileName: string): boolean {
   return /-checklist\.md$/.test(fileName) || fileName.includes("production-env-checklist");
 }
 
-/** Gate/quiz chapters should stay focused — no glossary cards or optional reads. */
-function stripFocusChapterEnrichment(body: string): string {
-  return body
+/**
+ * Gate/quiz chapters should stay focused: no glossary cards or optional reads.
+ * A gate keeps its ChapterRecap, because agent-ip puts the module recap at the
+ * gate (02-course-architecture.md). A quiz chapter holds activities only.
+ */
+function stripFocusChapterEnrichment(body: string, keepRecap: boolean): string {
+  const focused = body
     .replace(/<BigWordAlert[\s\S]*?\/>/g, "")
     .replace(/<RealWorldEvent[\s\S]*?\/>/g, "")
     .replace(/<MustRead[\s\S]*?\/>/g, "")
-    .replace(/<InterestingRead[\s\S]*?<\/InterestingRead>/g, "")
-    .replace(/<ChapterRecap[\s\S]*?\/>/g, "")
+    .replace(/<InterestingRead[\s\S]*?<\/InterestingRead>/g, "");
+  return (keepRecap ? focused : focused.replace(/<ChapterRecap[\s\S]*?\/>/g, ""))
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
@@ -746,7 +750,7 @@ export function parseLesson(moduleNum: number, moduleDir: string, fileName: stri
   source = stripLeadingH1(source);
   source = unwrapArticleBreak(source);
   if (isFocusChapter(fileName)) {
-    source = stripFocusChapterEnrichment(source);
+    source = stripFocusChapterEnrichment(source, isGateChecklistChapter(fileName));
   }
   if (isGateChecklistChapter(fileName)) {
     source = normalizeGateLearningLog(source);

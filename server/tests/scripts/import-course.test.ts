@@ -114,3 +114,15 @@ describe("course importer optional MustRead", () => {
     expect(lesson.source).toContain(`<MustRead id="${reads[0]!.id}" />`);
   });
 });
+
+describe("course importer gate recaps", () => {
+  it("keeps a gate's ChapterRecap and still strips its optional enrichment", () => {
+    const lesson = parseLesson(3, "03-why-mongodb", "03.11-checklist.md", 11, "checklist");
+    const recaps = lesson.blocks.filter((block) => block.type === "CHAPTER_RECAP");
+
+    expect(recaps).toHaveLength(1);
+    expect(lesson.source).toContain(`<ChapterRecap id="${recaps[0]!.id}" />`);
+    expect(lesson.source).not.toContain("<BigWordAlert");
+    expect(lesson.blocks.some((block) => block.type === "MUST_READ")).toBe(false);
+  });
+});
