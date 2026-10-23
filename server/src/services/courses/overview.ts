@@ -6,6 +6,8 @@ import type { SessionUser } from "../../types/auth.js";
 import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
 import { enrollmentGrantsContentAccess } from "../enrollment/lifecycle.js";
 import { pickDefaultOpenModule, resolveContinueChapterPath, syllabusForEnrollment } from "../progress/enrollment-syllabus.js";
+import { releaseForEnrollment, releaseModulesWithBlocks } from "./releases.js";
+import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
 
 /** Everything the course overview page shows, including whether the caller may read it. */
 export async function getCourseOverview(courseSlug: string, user: SessionUser): Promise<CourseOverview> {
@@ -22,6 +24,7 @@ export async function getCourseOverview(courseSlug: string, user: SessionUser): 
       estimatedHours: true,
       sequential: true,
       familySlug: true,
+      variantFamily: true,
       status: true,
       mentor: { select: { name: true } },
       modules: {
@@ -48,7 +51,7 @@ export async function getCourseOverview(courseSlug: string, user: SessionUser): 
   });
   if (!course) throw new NotFoundError("Course not found");
 
-  const { mentor, modules: courseModules, sequential, familySlug, ...courseFields } = course;
+  const { mentor, modules: courseModules, sequential, familySlug, variantFamily, ...courseFields } = course;
   const base = { course: { ...courseFields, instructorName: mentor.name } };
 
   const enrollment = await prisma.enrollment.findUnique({
@@ -65,8 +68,10 @@ export async function getCourseOverview(courseSlug: string, user: SessionUser): 
     return { ...base, access: "payment_required", enrollment: summary, track: null, syllabus: null };
   }
 
+  const selected = await releaseForEnrollment(course.id, enrollment, familySlug);
+  const effectiveModules = selected ? await releaseModulesWithBlocks(selected.modules) : courseModules;
   const { modules, flatChapters } = await syllabusForEnrollment(
-    { sequential, modules: courseModules },
+    { sequential, modules: effectiveModules },
     enrollment.id,
     bypassProgressGatingForEmail(user.email)
   );
@@ -75,7 +80,7 @@ export async function getCourseOverview(courseSlug: string, user: SessionUser): 
     ...base,
     access: "active",
     enrollment: summary,
-    track: buildCourseTrack(familySlug, enrollment),
+    track: buildCourseTrack(variantFamily ? resolveCourseFamily(familySlug, variantFamily) : familySlug, enrollment),
     syllabus: {
       modules,
       chapterCount: flatChapters.length,

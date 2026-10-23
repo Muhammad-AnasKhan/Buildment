@@ -17,6 +17,21 @@ const modules: ExistingModule[] = [
 const plan = (entries: ImportPlan["modules"]): ImportPlan => ({ manifest: { title: "Test", description: "Test", projectGoal: "Test", difficulty: "beginner", estimatedHours: 1 }, modules: entries });
 
 describe("ID-free course update matching", () => {
+  it("uses stable keys across a complete rewrite and module move", () => {
+    const old = chapter("payment", "a", lesson("Payments", payment), { contentKey: "payment-safety" });
+    const result = matchCourseUpdate(plan([{ key: "operations", title: "New operations", lessons: [
+      { ...lesson("Billing", deployment), key: "payment-safety" },
+    ] }]), [{ ...modules[0], contentKey: "operations" }], [old]);
+    expect(result.mapping[0].moduleId).toBe("a");
+    expect(result.mapping[0].chapters[0]).toMatchObject({ chapterId: "payment", reason: expect.stringContaining("Stable lesson key") });
+  });
+  it("never transfers progress between different keyed lessons with similar text", () => {
+    const old = chapter("payment", "a", lesson("Payments", payment), { contentKey: "payment-safety" });
+    const result = matchCourseUpdate(plan([{ title: "Checkout", lessons: [
+      { ...lesson("Payments", payment), key: "new-payment-project" },
+    ] }]), modules, [old]);
+    expect(result.mapping[0].chapters[0].chapterId).toBeNull();
+  });
   it("matches moved chapters across modules while retaining their database identities", () => {
     const payments = lesson("Payments", payment), deploy = lesson("Deployment", deployment);
     const result = matchCourseUpdate(plan([{ title: "Checkout", lessons: [deploy] }, { title: "Operations", lessons: [payments] }]), modules,
@@ -52,7 +67,7 @@ describe("ID-free course update matching", () => {
   it("does not match a major rewrite merely because its title and position are unchanged", () => {
     const result = matchCourseUpdate(plan([{ title: "Checkout", lessons: [lesson("Payments", deployment)] }]), modules, [chapter("payment", "a", lesson("Payments", payment))]);
     expect(result.mapping[0].chapters[0].chapterId).toBeNull();
-    expect(result.modules[0].chapters.some(c => c.action === "removed" && c.title === "Payments")).toBe(true);
+    expect(result.modules[0].chapters.some(c => c.action === "removed")).toBe(false);
   });
   it("ignores generated block IDs but compares activity configuration and punctuation edits", () => {
     const old = lesson("Question", '<Quiz id="01ARZ3NDEKTSV4RRFFQ69G5FAV" />');

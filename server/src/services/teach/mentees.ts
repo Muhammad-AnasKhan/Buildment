@@ -1,5 +1,6 @@
 import type { CourseMenteesView, MenteeAttentionKind, MenteeEvaluation } from "../../shared/api/teach.js";
-import { summarizeLearnerTrack } from "../../shared/lib/course-tracks.js";
+import { resolveCourseFamily, summarizeLearnerTrack } from "../../shared/lib/course-tracks.js";
+import { type ReleaseContent, variantForRelease } from "../courses/releases.js";
 import { helpUiCopy } from "../../shared/lib/help-ui-copy.js";
 import { prisma } from "../../db/prisma.js";
 import { NotFoundError } from "../../utils/errors.js";
@@ -26,6 +27,8 @@ export async function loadCourseMentees(user: SessionUser, courseSlug: string): 
       title: true,
       status: true,
       familySlug: true,
+      variantFamily: true,
+      activeReleaseId: true,
       _count: { select: { chapters: { where: { archivedAt: null } } } },
       invites: {
         where: { acceptedAt: null, revokedAt: null },
@@ -45,6 +48,7 @@ export async function loadCourseMentees(user: SessionUser, courseSlug: string): 
           pendingReviews: true,
           lastActiveAt: true,
           variantSlug: true,
+          releaseId: true,
           specialisationSlug: true,
           user: { select: { name: true, email: true, image: true } },
           chapterProgress: {
@@ -62,6 +66,15 @@ export async function loadCourseMentees(user: SessionUser, courseSlug: string): 
       helpThreads: { where: { status: "OPEN" }, select: { menteeId: true } },
     },
   });
+  const releaseIds = [...new Set([course.activeReleaseId, ...course.enrollments.map(item => item.releaseId)].filter((id): id is string => Boolean(id)))];
+  const releases = await prisma.courseRelease.findMany({ where: { id: { in: releaseIds } }, select: { id: true, content: true } });
+  const byRelease = new Map(releases.map(release => [release.id, release.content as unknown as ReleaseContent]));
+  const family = resolveCourseFamily(course.familySlug, course.variantFamily);
+  const chapterCountFor = (releaseId: string | null, variantSlug: string | null) => {
+    const content = byRelease.get(releaseId ?? course.activeReleaseId ?? "");
+    const modules = content?.variants[variantForRelease(family, variantSlug)] ?? content?.variants.default;
+    return modules ? modules.flatMap(module => module.chapters).length : course._count.chapters;
+  };
 
   // Latest response per (enrollment, block) decides whether a revision is still owed.
   const enrollmentIds = course.enrollments.map((item) => item.id);
@@ -117,7 +130,7 @@ export async function loadCourseMentees(user: SessionUser, courseSlug: string): 
         progressState: progressState(enrollment.status, enrollment.percentComplete),
         percentComplete: enrollment.percentComplete,
         chaptersCompleted: enrollment.chaptersCompleted,
-        chapterCount: course._count.chapters,
+        chapterCount: chapterCountFor(enrollment.releaseId, enrollment.variantSlug),
         score: enrollment.totalScore,
         maxScore: enrollment.maxScore,
         pendingReviews: enrollment.pendingReviews,
@@ -129,7 +142,7 @@ export async function loadCourseMentees(user: SessionUser, courseSlug: string): 
         activityState: activity,
         attention,
         evaluationHref: `/courses/${course.slug}/mentees/${enrollment.id}`,
-        track: summarizeLearnerTrack(course.familySlug, enrollment),
+        track: summarizeLearnerTrack(resolveCourseFamily(course.familySlug, course.variantFamily), enrollment),
       },
     ];
   });
@@ -137,7 +150,7 @@ export async function loadCourseMentees(user: SessionUser, courseSlug: string): 
   const linkInvite = course.invites.find((invite) => invite.email === null) ?? null;
 
   return {
-    course: { id: course.id, slug: course.slug, title: course.title, status: course.status, chapterCount: course._count.chapters },
+    course: { id: course.id, slug: course.slug, title: course.title, status: course.status, chapterCount: chapterCountFor(null, null) },
     linkInvite: linkInvite ? { id: linkInvite.id, token: linkInvite.token, url: inviteAcceptUrl(linkInvite.token) } : null,
     pendingEmailInvites: course.invites.flatMap((invite) =>
       invite.email ? [{ id: invite.id, email: invite.email, createdAt: invite.createdAt.toISOString() }] : []

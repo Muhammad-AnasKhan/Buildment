@@ -2,12 +2,14 @@ import { COURSE_TRACK_ERROR_CODES, type UpdateCourseTrackResult } from "../../sh
 import {
   buildCourseTrack,
   courseFinished,
+  resolveCourseFamily,
   findCourseFamily,
   findSpecialisation,
   findVariant,
   type CourseFamily,
 } from "../../shared/lib/course-tracks.js";
 import { prisma } from "../../db/prisma.js";
+import { Prisma } from "../../generated/prisma/index.js";
 import { BadRequestError, ConflictError, NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
@@ -16,29 +18,47 @@ import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js"
 // build, and which specialisation they take once the course is complete.
 
 async function loadFamilyEnrollment(courseSlug: string, user: SessionUser) {
-  const course = await prisma.course.findUnique({ where: { slug: courseSlug }, select: { id: true, slug: true, familySlug: true } });
+  const course = await prisma.course.findUnique({ where: { slug: courseSlug }, select: { id: true, slug: true, familySlug: true, variantFamily: true } });
   if (!course) throw new NotFoundError("Course not found");
-  const family = findCourseFamily(course.familySlug);
+  const family = resolveCourseFamily(course.familySlug, course.variantFamily);
   if (!family) throw new ConflictError("This course has no variants to choose from.", COURSE_TRACK_ERROR_CODES.NO_FAMILY);
   const enrollment = await requireBlockSubmissionAccess(course.id, user);
   return { course, family, enrollment };
 }
 
 function result(courseSlug: string, family: CourseFamily, enrollment: Parameters<typeof buildCourseTrack>[1]): UpdateCourseTrackResult {
-  return { courseSlug, track: buildCourseTrack(family.slug, enrollment)! };
+  return { courseSlug, track: buildCourseTrack(findCourseFamily(family.slug) ? family.slug : family, enrollment)! };
 }
 
-/** Pick or change the variant. Locked once the course is complete. */
+/** Pick or change the variant until the learner begins the course. */
 export async function chooseCourseVariant(courseSlug: string, user: SessionUser, variantSlug: string): Promise<UpdateCourseTrackResult> {
   const { course, family, enrollment } = await loadFamilyEnrollment(courseSlug, user);
   if (!findVariant(family, variantSlug)) throw new BadRequestError("Unknown variant for this course.");
   if (courseFinished(enrollment)) {
     throw new ConflictError("The variant is fixed once the course is complete.", COURSE_TRACK_ERROR_CODES.COURSE_FINISHED);
   }
-  const updated = await prisma.enrollment.update({
-    where: { id: enrollment.id },
-    data: { variantSlug, variantChosenAt: new Date() },
-  });
+  if (enrollment.variantLockedAt) {
+    throw new ConflictError("The variant is fixed once you start a chapter.", COURSE_TRACK_ERROR_CODES.VARIANT_LOCKED);
+  }
+  let updated;
+  try {
+    updated = await prisma.$transaction(async tx => {
+      const changed = await tx.enrollment.updateMany({
+        where: { id: enrollment.id, variantLockedAt: null, status: { not: "COMPLETED" }, percentComplete: { lt: 100 } },
+        data: { variantSlug, variantChosenAt: new Date() },
+      });
+      if (!changed.count || await tx.chapterProgress.count({ where: { enrollmentId: enrollment.id,
+        OR: [{ startedAt: { not: null } }, { status: { not: "NOT_STARTED" } }] } })) {
+        throw new ConflictError("The variant is fixed once you start a chapter.", COURSE_TRACK_ERROR_CODES.VARIANT_LOCKED);
+      }
+      return tx.enrollment.findUniqueOrThrow({ where: { id: enrollment.id } });
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+  } catch (error) {
+    if ((error as { code?: string }).code === "P2034") {
+      throw new ConflictError("The variant was locked while you were choosing it. Refresh and try again.", COURSE_TRACK_ERROR_CODES.VARIANT_LOCKED);
+    }
+    throw error;
+  }
   return result(course.slug, family, updated);
 }
 

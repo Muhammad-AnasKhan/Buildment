@@ -187,7 +187,7 @@ export default async function CourseReportsPage({
               <div>
                 <h2 className="text-base font-semibold">Chapter report</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Per-block attempts and correct rates — confusion flags mark blocks to rewrite.
+                  Current shared chapters only. Older and variant-only work remains in each learner’s evaluation.
                 </p>
               </div>
               <form action={`/courses/${course.slug}/reports`} method="GET">

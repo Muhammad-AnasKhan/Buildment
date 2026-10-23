@@ -49,7 +49,7 @@ export async function requireBlockSubmissionAccess(courseId: string, user: Sessi
 export async function findEnrollmentForBlockState(courseId: string, userId: string) {
   const enrollment = await prisma.enrollment.findUnique({
     where: { courseId_userId: { courseId, userId } },
-    select: { id: true, lifecycle: true, userId: true, variantSlug: true },
+    select: { id: true, lifecycle: true, userId: true, variantSlug: true, releaseId: true },
   });
   if (learnAccessDenial(enrollment)) return null;
   return enrollment;

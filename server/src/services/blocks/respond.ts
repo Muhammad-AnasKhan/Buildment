@@ -10,12 +10,14 @@ import { prisma } from "../../db/prisma.js";
 import { BadRequestError, ForbiddenError, NotFoundError, NotImplementedError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
 import { applyTokens, contentTokenValues } from "../../shared/lib/content-tokens.js";
+import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
 import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
 import { ChapterLockedError, assertChapterUnlocked } from "../progress/gate.js";
-import { adjustEnrollmentPendingReviews, recomputeChapterProgress, recordBlockStats } from "../progress/compute.js";
+import { adjustEnrollmentPendingReviews, lockEnrollmentVariant, recomputeChapterProgress, recordBlockStats } from "../progress/compute.js";
 import { notifyMentorPendingReview } from "../email/event-notifications.js";
 import { queueEmail } from "../email/queue.js";
+import { assertEnrollmentChapter } from "../courses/releases.js";
 
 export type BlockResponseResult = {
   score: number | null;
@@ -78,7 +80,7 @@ export async function submitBlockResponse(input: {
 
   const block = await prisma.block.findUnique({
     where: { id: blockId },
-    include: { chapter: { select: { archivedAt: true, id: true, courseId: true, readerMode: true, course: { select: { familySlug: true } } } } },
+    include: { chapter: { select: { archivedAt: true, id: true, courseId: true, readerMode: true, course: { select: { familySlug: true, variantFamily: true } } } } },
   });
   if (!block || block.archivedAt || block.chapter.archivedAt) throw new NotFoundError("Block not found");
   if (!isRegisteredBlockType(block.type)) {
@@ -110,6 +112,8 @@ export async function submitBlockResponse(input: {
   const previousAttempts = await prisma.response.count({ where: { blockId, userId: learner.id } });
 
   const response = await prisma.$transaction(async (tx) => {
+    await lockEnrollmentVariant(tx, enrollment.id);
+    await assertEnrollmentChapter(tx, enrollment.id, block.chapter.id);
     const created = await tx.response.create({
       data: {
         blockId,
@@ -140,7 +144,7 @@ export async function submitBlockResponse(input: {
     maxScore: response.maxScore,
     isCorrect: response.isCorrect,
     status: response.status,
-    explanation: graded.explanation && applyTokens(graded.explanation, contentTokenValues(block.chapter.course.familySlug, enrollment.variantSlug)),
+    explanation: graded.explanation && applyTokens(graded.explanation, contentTokenValues(resolveCourseFamily(block.chapter.course.familySlug, block.chapter.course.variantFamily), enrollment.variantSlug)),
     solution: graded.solution,
     failedTestName: graded.failedTestName,
     errorMessage: graded.errorMessage,

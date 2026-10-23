@@ -47,7 +47,7 @@ export function StepNote({
           </span>
         ) : null}
       </div>
-      <p className="mt-2 text-sm leading-relaxed text-foreground/85">{note}</p>
+      <p className="mt-2 text-sm leading-relaxed text-foreground">{note}</p>
       <Chips items={chips ?? []} />
     </div>
   );

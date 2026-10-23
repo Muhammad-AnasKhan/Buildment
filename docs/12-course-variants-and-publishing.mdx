@@ -1,0 +1,100 @@
+# Course variants and safe publishing
+
+## What is implemented
+
+A course keeps one stable `Course.id`. A course may have no variants, use the built-in
+marketplace variants, or declare its own `variantFamily` in `course.yaml`.
+The package contains shared modules and lessons. Each variant lists only the lessons
+it changes. A variant can replace an entire lesson with a Markdown file or replace
+an exact passage within the shared lesson. Multiple lesson overrides cover a module.
+Unspecified lessons inherit the shared version. Stable module and lesson `key` values
+carry identity across titles, paths and ordering changes.
+
+Approved ZIP updates are **patches**. Omitting a key leaves it unchanged. Removing
+a lesson or module requires `remove.lessonKeys` or `remove.moduleKeys` in the manifest.
+An update that only removes content can use `modules: []`.
+Creation and update are separate operations; an update fails if the slug does not
+identify the existing course. The creator reviews a server-owned preview with
+affected variants and active learner counts, then approves it. The preview is
+bound to the current content and expires after 30 minutes.
+
+Approval creates a `CourseRelease` with a complete curriculum for every variant.
+Shared lessons reference one chapter row. A variant override or changed lesson
+gets a new chapter and activity IDs. The active release pointer changes in the
+same transaction. Repeating a package whose effective content is unchanged
+does not make another release. Old chapter rows, answers, notes and reviews remain.
+
+Existing enrollments with work are pinned to the baseline release before an update.
+Opening the first chapter pins a new enrollment to the then-active release and
+locks its variant. The reader, overview, continue link, gating and progress totals
+use that pinned release. The server reads already-materialized content; it does not
+generate chapters on each request. `%%product.name%%` still resolves at read time.
+Old learners keep their content and progress; new learners receive the new release.
+
+Published chapters edited in the dashboard save to `CourseChapterDraft`. Publishing
+one creates a new release without changing the chapter an active learner reads.
+Dashboard module names, order and chapter moves enter a new release when the
+creator presses **Publish course**. Removing a published chapter creates a release
+without deleting learner history. Archived courses with learners keep the same
+versioned editing path; they cannot move back to an editable draft.
+
+## Authoring example
+
+```yaml
+slug: marketplace-course
+family: marketplace-course
+variantFamily:
+  slug: marketplace-course
+  label: Marketplace course
+  defaultVariantSlug: food
+  variants:
+    - { slug: food, label: Food, productName: FreshMarket, summary: Build a food market, hardestConstraint: Inventory }
+    - { slug: electricity, label: Electricity, productName: GridMarket, summary: Trade power, hardestConstraint: Matching }
+modules:
+  - key: foundations
+    dir: 01-foundations
+    title: Foundations
+    lessons:
+      - { key: marketplace-model, file: 01.01-model.md, title: The model, goal: Explain the model }
+variants:
+  - slug: electricity
+    overrides:
+      - lessonKey: marketplace-model
+        replacements:
+          - { from: "Buyers order stock.", to: "Buyers reserve electricity capacity." }
+      # Alternatively: file: variants/electricity/01-foundations/01.01-model.md
+remove:
+  moduleKeys: []
+  lessonKeys: []
+```
+
+Replacement text must match exactly once in the transformed shared lesson.
+A replacement file is a full lesson and must pass the same MDX and activity checks
+as shared content. New graded work gets separate progress. Keep keys stable and
+review the effect on every variant before approval.
+
+The older `multi-vendor-marketplace` source folder has no `course.yaml` yet.
+Its first repository update needs an explicit manifest with stable keys for the
+supplied lessons. The preview matches unchanged legacy content and adopts those
+keys while keeping its chapter IDs; review any ambiguous matches before approval.
+There is no need to list every old lesson in that first patch.
+
+## Repository packages for now
+
+Adding or changing `content/import/<slug>/` in a PR only changes the source
+files. GitHub Actions does not create a course, publish a version, or connect to
+the course database. After reviewing a new package, the creator can upload a ZIP
+from the dashboard to create a draft, then publish it there. For an existing
+course, the creator uses **Update from ZIP** to preview the affected lessons and
+variants before approval. Keep stable keys on modules and lessons so later
+updates can match content correctly. A repository-to-course agent should also
+produce a draft package for this review path. Do not use
+`scripts/import-course.ts` to update a published course: that legacy seeder
+edits live rows.
+
+## Boundaries
+
+The current ZIP parser accepts one course manifest and numbered Markdown
+lessons. New variant definitions can be supplied on course creation; changing
+an existing family's variants needs a separate migration so pinned learners
+do not silently change tracks. Labs will use a separate format when built.

@@ -11,6 +11,7 @@ const track = {
   familySlug: "multi-vendor-marketplace",
   variantSlug: "books",
   variantChosen: true,
+  variantLocked: false,
   specialisationSlug: null,
   specialisationOpen: false,
 };
@@ -27,6 +28,14 @@ describe("variantForTrack", () => {
   it("returns null for ordinary courses", () => {
     expect(variantForTrack(null)).toBeNull();
     expect(variantForTrack({ ...track, familySlug: "unknown" })).toBeNull();
+  });
+
+  it("uses a creator-defined variant from the course API", () => {
+    const family = { slug: "grid-market", label: "Grid market", defaultVariantSlug: "food", specialisations: [], variants: [
+      { slug: "food", label: "Food", productName: "FreshMarket", summary: "Food", hardestConstraint: "Stock", specialisationSlug: "", theme: variantForTrack(track)!.theme },
+      { slug: "electricity", label: "Electricity", productName: "GridMarket", summary: "Power", hardestConstraint: "Matching", specialisationSlug: "", theme: variantForTrack(track)!.theme },
+    ] };
+    expect(variantForTrack({ ...track, familySlug: family.slug, family, variantSlug: "electricity" })?.productName).toBe("GridMarket");
   });
 });
 
