@@ -36,6 +36,7 @@ import { VisualWalkthroughConfigSchema } from "../src/shared/blocks/visual-walkt
 import { VisualDiagramConfigSchema } from "../src/shared/blocks/visual-diagram/schema.js";
 import { RoadmapConfigSchema } from "../src/shared/blocks/roadmap/schema.js";
 import { COURSE_OUTPUT_DIR, COURSE_SOURCE_DIR, loadCourseManifest, type CourseManifest } from "./course-source.js";
+import { recomputeEnrollmentRollup } from "../src/services/progress/compute.js";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -800,6 +801,11 @@ async function upsertCourse(manifest: CourseManifest | null) {
   }
 
   const meta = manifest ?? SEED_COURSE;
+  const existing = await prisma.course.findUnique({ where: { slug: meta.slug }, select: { activeReleaseId: true,
+    enrollments: { where: { OR: [{ startedAt: { not: null } }, { chapterProgress: { some: {} } }] }, take: 1, select: { id: true } } } });
+  if (existing?.activeReleaseId || existing?.enrollments.length) {
+    throw new Error("This course has a release or active learner work. Use the reviewed course package publisher instead of content:import.");
+  }
   const fields = {
     title: meta.title,
     description: meta.description,
@@ -809,6 +815,7 @@ async function upsertCourse(manifest: CourseManifest | null) {
     category: manifest?.category === "soft-skills" ? ("SOFT_SKILLS" as const) : ("TECH" as const),
     coverUrl: meta.coverUrl ?? null,
     familySlug: meta.family ?? null,
+    variantFamily: manifest?.variantFamily as unknown as Prisma.InputJsonValue | undefined,
   };
 
   return prisma.course.upsert({
@@ -852,11 +859,12 @@ async function main() {
     const displayOrder = index + 1;
     importedModuleOrders.push(displayOrder);
 
+    const plannedModule = manifest?.modules.find(m => m.dir === dirName);
     const title = moduleTitles.get(dirName) ?? CHAPTER_NAMES[moduleNum] ?? `Module ${displayOrder}`;
     const mod = await prisma.module.upsert({
       where: { courseId_order: { courseId: course.id, order: displayOrder } },
-      update: { title },
-      create: { courseId: course.id, order: displayOrder, title },
+      update: { title, contentKey: plannedModule?.key, archivedAt: null },
+      create: { courseId: course.id, order: displayOrder, title, contentKey: plannedModule?.key },
     });
     moduleCount += 1;
 
@@ -864,6 +872,7 @@ async function main() {
     fs.mkdirSync(outputModuleDir, { recursive: true });
 
     for (const { fileName, lessonNum, slugPart } of readLessonFiles(dirName)) {
+      const contentKey = plannedModule?.lessons.find(l => l.file === fileName)?.key;
       const lesson = parseLesson(moduleNum, dirName, fileName, lessonNum, slugPart);
       const slug = `${displayOrder}-${lessonNum}-${slugPart}`;
       importedChapterSlugs.push(slug);
@@ -877,6 +886,8 @@ async function main() {
       const chapter = await prisma.chapter.upsert({
         where: { courseId_slug: { courseId: course.id, slug } },
         update: {
+          contentKey,
+          archivedAt: null,
           moduleId: mod.id,
           title: lesson.title,
           summary: lesson.summary,
@@ -890,6 +901,7 @@ async function main() {
         },
         create: {
           courseId: course.id,
+          contentKey,
           moduleId: mod.id,
           slug,
           title: lesson.title,
@@ -947,12 +959,20 @@ async function main() {
     }
   }
 
-  await prisma.chapter.deleteMany({
-    where: { courseId: course.id, slug: { notIn: importedChapterSlugs } },
+  // A source omission must not cascade-delete learner responses, notes or study history.
+  const archivedAt = new Date();
+  await prisma.chapter.updateMany({
+    where: { courseId: course.id, slug: { notIn: importedChapterSlugs }, archivedAt: null },
+    data: { archivedAt },
   });
-  await prisma.module.deleteMany({
-    where: { courseId: course.id, order: { notIn: importedModuleOrders } },
+  await prisma.module.updateMany({
+    where: { courseId: course.id, order: { notIn: importedModuleOrders }, archivedAt: null },
+    data: { archivedAt },
   });
+  const enrollments = await prisma.enrollment.findMany({ where: { courseId: course.id }, select: { id: true } });
+  for (const enrollment of enrollments) {
+    await prisma.$transaction(tx => recomputeEnrollmentRollup(tx, enrollment.id, { preserveActivity: true }));
+  }
 
   console.log(`Course:   ${course.title} (${course.slug})`);
   console.log(`Modules:  ${moduleCount}`);

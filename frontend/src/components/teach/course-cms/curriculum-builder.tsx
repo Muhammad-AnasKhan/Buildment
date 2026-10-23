@@ -97,7 +97,7 @@ export function CurriculumBuilder({
             {additionalModules.length > 0 && <ModuleGroup title="Additional modules" modules={additionalModules} course={course} />}
           </>
         ) : course.modules.map((module, moduleIndex) => (
-          <ModuleCard key={module.id} courseId={course.id} courseSlug={course.slug} module={module} moduleIndex={moduleIndex} moduleCount={course.modules.length} />
+          <ModuleCard key={module.id} courseId={course.id} courseSlug={course.slug} courseStatus={course.status} module={module} moduleIndex={moduleIndex} moduleCount={course.modules.length} />
         ))}
 
         {looseChapters.length > 0 ? (
@@ -108,7 +108,7 @@ export function CurriculumBuilder({
                 Legacy chapters without a module. Open them to preserve or move their content.
               </p>
             </div>
-            <ChapterList courseSlug={course.slug} chapters={looseChapters} />
+            <ChapterList courseSlug={course.slug} courseStatus={course.status} chapters={looseChapters} />
           </section>
         ) : null}
 
@@ -149,7 +149,7 @@ function ModuleGroup({ title, modules, course, defaultOpen = false }: {
       </summary>
       <div className="space-y-3 border-t bg-muted/10 p-3 sm:p-4">
         {modules.length ? modules.map(({ module, index }) => (
-          <ModuleCard key={module.id} courseId={course.id} courseSlug={course.slug} module={module} moduleIndex={index} moduleCount={course.modules.length} />
+          <ModuleCard key={module.id} courseId={course.id} courseSlug={course.slug} courseStatus={course.status} module={module} moduleIndex={index} moduleCount={course.modules.length} />
         )) : <p className="rounded-lg border border-dashed bg-background p-4 text-sm text-muted-foreground">No modules in this week yet.</p>}
       </div>
     </details>
@@ -159,12 +159,14 @@ function ModuleGroup({ title, modules, course, defaultOpen = false }: {
 function ModuleCard({
   courseId,
   courseSlug,
+  courseStatus,
   module,
   moduleIndex,
   moduleCount,
 }: {
   courseId: string;
   courseSlug: string;
+  courseStatus: CourseBuilderCourse["status"];
   module: CourseBuilderModule;
   moduleIndex: number;
   moduleCount: number;
@@ -254,7 +256,7 @@ function ModuleCard({
     >
 
       {module.chapters.length > 0 ? (
-        <ChapterList courseSlug={courseSlug} chapters={module.chapters} />
+        <ChapterList courseSlug={courseSlug} courseStatus={courseStatus} chapters={module.chapters} />
       ) : (
         <div className="flex flex-col items-center px-4 py-8 text-center">
           <BookOpen className="size-6 text-muted-foreground/60" />
@@ -268,9 +270,11 @@ function ModuleCard({
 
 function ChapterList({
   courseSlug,
+  courseStatus,
   chapters,
 }: {
   courseSlug: string;
+  courseStatus: CourseBuilderCourse["status"];
   chapters: CourseBuilderChapter[];
 }) {
   return (
@@ -369,8 +373,9 @@ function ChapterList({
                   <div>
                     <p className="text-sm font-medium">Remove chapter?</p>
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                      “{chapter.title}” and its content will be permanently deleted, along with any
-                      learner progress and submissions.
+                      {(courseStatus === "PUBLISHED" || courseStatus === "ARCHIVED") && chapter.publishedAt
+                        ? `“${chapter.title}” will leave the next course release. Current learners keep this chapter and their progress.`
+                        : `“${chapter.title}” is a draft and will be permanently deleted.`}
                     </p>
                   </div>
                   <Button type="submit" variant="destructive" size="sm" className="w-full">

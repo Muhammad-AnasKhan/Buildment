@@ -3,6 +3,9 @@ import * as auth from "../../controllers/auth.js";
 import { authenticate, optionalAuth } from "../../middlewares/authenticate.js";
 import { userRateLimit } from "../../middlewares/rate-limit.js";
 import { validateBody, validateQuery } from "../../middlewares/validate.js";
+import { requireVerified } from "../../middlewares/require-verified.js";
+import * as desktop from "../../controllers/desktop-auth.js";
+import { z } from "zod";
 import {
   changePasswordBody,
   confirmEmailQuery,
@@ -15,6 +18,12 @@ import {
 } from "../../validations/auth.js";
 
 const router = Router();
+const proof = z.string().regex(/^[A-Za-z0-9_-]{43}$/);
+router.post("/desktop/authorize", authenticate, requireVerified,
+  userRateLimit({ scope: "desktop-authorize", max: 10 }),
+  validateBody(z.object({ challenge: proof })), desktop.authorize);
+router.post("/desktop/exchange", userRateLimit({ scope: "desktop-exchange", max: 20 }),
+  validateBody(z.object({ code: proof, verifier: proof })), desktop.exchange);
 
 // Credential endpoints are limited per client IP (there is no user yet).
 const emailFromBody = (req: { body: { email?: string } }) => req.body?.email ?? "";

@@ -36,6 +36,8 @@ describe("course track", () => {
       familySlug: "multi-vendor-marketplace",
       variantSlug: "grocery",
       variantChosen: false,
+      variantLocked: false,
+      variantAssigned: false,
       specialisationSlug: null,
       specialisationOpen: false,
     });
@@ -50,9 +52,30 @@ describe("course track", () => {
     expect(stored.variantSlug).toBe("books");
     expect(stored.variantChosenAt).toBeInstanceOf(Date);
 
-    const reader = await request(app).get(`/api/v1/courses/${fx.course.slug}/chapters/chapter-a`).set(learner());
-    expect(reader.status).toBe(200);
-    expect(reader.body.data.track).toMatchObject({ variantSlug: "books", variantChosen: true });
+    try {
+      const reader = await request(app).get(`/api/v1/courses/${fx.course.slug}/chapters/chapter-a`).set(learner());
+      expect(reader.status).toBe(200);
+      expect(reader.body.data.track).toMatchObject({ variantSlug: "books", variantChosen: true, variantLocked: true });
+      expect((await chooseVariant("services")).body.code).toBe("VARIANT_LOCKED_AFTER_START");
+      expect((await prisma.enrollment.findUniqueOrThrow({ where: { id: fx.enrollment.id } })).variantLockedAt).toBeInstanceOf(Date);
+    } finally {
+      await prisma.chapterProgress.deleteMany({ where: { enrollmentId: fx.enrollment.id } });
+      await prisma.enrollment.update({ where: { id: fx.enrollment.id }, data: { variantLockedAt: null } });
+    }
+  });
+
+  it("fixes the default variant when a chapter starts without a choice", async () => {
+    await prisma.enrollment.update({ where: { id: fx.enrollment.id }, data: { variantSlug: null, variantChosenAt: null } });
+    try {
+      expect((await request(app).get(`/api/v1/courses/${fx.course.slug}/chapters/chapter-a`).set(learner())).status).toBe(200);
+      const stored = await prisma.enrollment.findUniqueOrThrow({ where: { id: fx.enrollment.id } });
+      expect(stored.variantSlug).toBe("grocery");
+      expect(stored.variantLockedAt).toBeInstanceOf(Date);
+      expect((await chooseVariant("books")).body.code).toBe("VARIANT_LOCKED_AFTER_START");
+    } finally {
+      await prisma.chapterProgress.deleteMany({ where: { enrollmentId: fx.enrollment.id } });
+      await prisma.enrollment.update({ where: { id: fx.enrollment.id }, data: { variantSlug: "books", variantLockedAt: null } });
+    }
   });
 
   it("rejects unknown variants, strangers and courses without a family", async () => {

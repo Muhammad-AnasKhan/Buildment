@@ -81,6 +81,10 @@ export const NEUTRAL = {
 export const FOCUS_RING =
   "outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-card dark:focus-visible:ring-blue-400";
 
+/** A selected toggle or segment: the solid accent with readable text, on both themes. */
+export const ACCENT_SELECTED =
+  "data-[pressed]:border-blue-600 data-[pressed]:bg-blue-600 data-[pressed]:text-white dark:data-[pressed]:border-blue-400 dark:data-[pressed]:bg-blue-400 dark:data-[pressed]:text-blue-950";
+
 /** The accent on native controls such as a range slider's track and thumb. */
 export const ACCENT_CONTROL = "accent-blue-600 dark:accent-blue-400";
 

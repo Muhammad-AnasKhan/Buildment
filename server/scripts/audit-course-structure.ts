@@ -20,7 +20,33 @@ function isStrictModule(moduleNum: number): boolean {
 }
 const SKIP_DIRS = new Set(["scripts"]);
 
-type Issue = { level: "error" | "warn"; module: number; file?: string; message: string };
+/** An issue without a module applies to the whole course. */
+type Issue = { level: "error" | "warn"; module?: number; file?: string; message: string };
+
+/**
+ * Neither the Predict nor the Quiz block shuffles its options, so the learner
+ * sees them in source order. If the correct option sits in the same slot in
+ * most questions, a learner can pass by picking that slot. A chapter holds at
+ * most one prediction, so the check counts every question in the course.
+ */
+const POSITION_SKEW_MIN_QUESTIONS = 6;
+const POSITION_SKEW_SHARE = 0.7;
+const correctPositions = { prediction: [] as number[], quiz: [] as number[] };
+
+function auditCorrectPositions(kind: keyof typeof correctPositions): Issue[] {
+  const positions = correctPositions[kind];
+  if (positions.length < POSITION_SKEW_MIN_QUESTIONS) return [];
+  const counts = new Map<number, number>();
+  for (const position of positions) counts.set(position, (counts.get(position) ?? 0) + 1);
+  const [position, count] = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]!;
+  if (count / positions.length < POSITION_SKEW_SHARE) return [];
+  return [
+    {
+      level: "warn",
+      message: `Correct ${kind} option is option ${position + 1} in ${count}/${positions.length} ${kind} questions across the course. Options are not shuffled, so spread the correct position`,
+    },
+  ];
+}
 
 function readBody(filePath: string): string {
   return fs.readFileSync(filePath, "utf8").replace(/\r\n/g, "\n");
@@ -101,6 +127,7 @@ function auditInteractiveFences(moduleNum: number, fileName: string, body: strin
 
       const correctIndex = options.findIndex((option) => option.id === correctOptionId);
       if (correctIndex >= 0) {
+        correctPositions.prediction.push(correctIndex);
         const lengths = optionLengths(
           options.map((option) => (typeof option.label === "string" ? option.label : "")),
           correctIndex
@@ -175,6 +202,7 @@ function auditInteractiveFences(moduleNum: number, fileName: string, body: strin
         config.explanations.length === config.options.length &&
         config.explanations.every((why) => typeof why === "string" && why.trim().length > 0);
       if (validMcq) {
+        correctPositions.quiz.push(config.correct as number);
         const labels = (config.options as unknown[]).map((option) => String(option));
         const lengths = optionLengths(labels, config.correct as number);
         if (lengths.correctLength > 0) {
@@ -435,6 +463,7 @@ function main() {
     if (SKIP_DIRS.has(dirName)) continue;
     all.push(...auditModule(moduleNum, dirName));
   }
+  all.push(...auditCorrectPositions("prediction"), ...auditCorrectPositions("quiz"));
 
   const errors = all.filter((i) => i.level === "error");
   const warns = all.filter((i) => i.level === "warn");
@@ -442,14 +471,15 @@ function main() {
   for (const i of all) {
     const prefix = i.level === "error" ? "ERROR" : "WARN";
     const loc = i.file ? ` ${i.file}` : "";
-    console.log(`${prefix} [module ${String(i.module).padStart(2, "0")}]${loc}: ${i.message}`);
+    const scope = i.module === undefined ? "course" : `module ${String(i.module).padStart(2, "0")}`;
+    console.log(`${prefix} [${scope}]${loc}: ${i.message}`);
   }
 
   console.log(
     `\n[${COURSE_SLUG}] Audit complete: ${errors.length} error(s), ${warns.length} warning(s) across ${readModuleDirs().length} module dirs.`
   );
 
-  const demoErrors = errors.filter((e) => isStrictModule(e.module));
+  const demoErrors = errors.filter((e) => e.module === undefined || isStrictModule(e.module));
   if (demoErrors.length > 0) {
     process.exitCode = 1;
   } else if (strict && errors.length > 0) {

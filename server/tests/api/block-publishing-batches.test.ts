@@ -10,6 +10,8 @@ afterAll(async () => { await fx.cleanup(); });
 
 describe("batched activity publishing", () => {
   it("creates, changes and archives more than one batch while retaining learner responses", async () => {
+    // This exercises the draft block-sync path; published courses use immutable release copies.
+    await prisma.course.update({ where: { id: fx.course.id }, data: { status: "DRAFT" } });
     const module = await prisma.module.create({ data: { courseId: fx.course.id, title: "Batch publishing", order: 2 } });
     const size = BLOCK_SYNC_BATCH_SIZE + 5;
     const ids = Array.from({ length: size }, (_, i) => `batch-${fx.tag}-${i}`);
@@ -36,6 +38,7 @@ describe("batched activity publishing", () => {
     } finally {
       await prisma.chapter.delete({ where: { id: chapter.id } });
       await prisma.module.delete({ where: { id: module.id } });
+      await prisma.course.update({ where: { id: fx.course.id }, data: { status: "PUBLISHED" } });
     }
   }, 60000);
 

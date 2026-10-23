@@ -8,7 +8,7 @@ import { findCourseFamily, resolveVariant, type CourseTrack, type CourseVariant 
 /** The learner's variant for a course in a family, or null for an ordinary course. */
 export function variantForTrack(track: CourseTrack | null | undefined): CourseVariant | null {
   if (!track) return null;
-  const family = findCourseFamily(track.familySlug);
+  const family = track.family ?? findCourseFamily(track.familySlug);
   return family ? resolveVariant(family, track.variantSlug) : null;
 }
 

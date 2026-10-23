@@ -416,11 +416,7 @@ describe("legacy numeric quiz labels", () => {
       const response = await prisma.response.create({ data: { blockId, userId: fx.learner.id, enrollmentId: fx.enrollment.id, payload: { selected: ["opt-3"] }, isCorrect: true } });
       const endpoint = `/api/v1/teach/chapters/${chapter.id}/publish`;
       for (let i = 0; i < 2; i++) {
-        // Repeat with a recorded source hash to cover both first and subsequent publishes.
-        if (i === 1) await prisma.block.update({ where: { id: blockId }, data: { config: {
-          quizType: "single", prompt: "How many queries?", options: [1, 2, 20, 21].map((label, index) => ({ id: `opt-${index}`, label })),
-          correctOptionIds: ["opt-3"], allowRetry: true,
-        } } });
+        // Repeat publishing to prove a no-op does not touch the published block.
         const published = await request(app).post(endpoint).set(mentor());
         expect(published.status, JSON.stringify(published.body)).toBe(204);
         const saved = await prisma.block.findUniqueOrThrow({ where: { id: blockId } });

@@ -1,4 +1,7 @@
 import type { Prisma } from "../../generated/prisma/index.js";
+import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
+import { variantForRelease, type ReleaseContent } from "../courses/releases.js";
+import { assertEnrollmentChapter } from "../courses/releases.js";
 import {
   addedAfterCompletion,
   chapterProgressStatus,
@@ -121,8 +124,14 @@ export async function repairEnrollmentProgress(
   enrollmentId: string,
   courseId: string
 ) {
+  const enrollment = await tx.enrollment.findUniqueOrThrow({ where: { id: enrollmentId }, include: { course: { select: { familySlug: true, variantFamily: true, activeReleaseId: true } } } });
+  const releaseId = enrollment.releaseId ?? enrollment.course.activeReleaseId;
+  const release = releaseId ? await tx.courseRelease.findUnique({ where: { id: releaseId } }) : null;
+  const releaseIds = release ? ((release.content as unknown as ReleaseContent).variants[variantForRelease(resolveCourseFamily(enrollment.course.familySlug, enrollment.course.variantFamily), enrollment.variantSlug)]
+    ?? (release.content as unknown as ReleaseContent).variants.default)
+    ?.flatMap(module => module.chapters.map(chapter => chapter.id)) ?? [] : null;
   const chapters = await tx.chapter.findMany({
-    where: { courseId, archivedAt: null },
+    where: releaseIds ? { id: { in: releaseIds } } : { courseId, archivedAt: null },
     select: { id: true },
     orderBy: { order: "asc" },
   });
@@ -136,13 +145,19 @@ export async function recomputeEnrollmentRollup(
   enrollmentId: string,
   options?: { preserveActivity?: boolean }
 ) {
-  const chapterProgress = await tx.chapterProgress.findMany({ where: { enrollmentId, chapter: { archivedAt: null } } });
+  const enrollment = await tx.enrollment.findUniqueOrThrow({ where: { id: enrollmentId }, include: { course: { select: { familySlug: true, variantFamily: true, activeReleaseId: true } } } });
+  const releaseId = enrollment.releaseId ?? enrollment.course.activeReleaseId;
+  const release = releaseId ? await tx.courseRelease.findUnique({ where: { id: releaseId } }) : null;
+  const modules = release ? (release.content as unknown as ReleaseContent).variants[variantForRelease(resolveCourseFamily(enrollment.course.familySlug, enrollment.course.variantFamily), enrollment.variantSlug)]
+    ?? (release.content as unknown as ReleaseContent).variants.default ?? [] : null;
+  const chapterIds = modules?.flatMap(module => module.chapters.map(chapter => chapter.id));
+  const chapterProgress = await tx.chapterProgress.findMany({ where: { enrollmentId,
+    ...(chapterIds ? { chapterId: { in: chapterIds } } : { chapter: { archivedAt: null } }) } });
   const chaptersCompleted = chapterProgress.filter((p) => p.status === "COMPLETED").length;
   const totalScore = chapterProgress.reduce((sum, p) => sum + p.score, 0);
   const maxScore = chapterProgress.reduce((sum, p) => sum + p.maxScore, 0);
 
-  const enrollment = await tx.enrollment.findUniqueOrThrow({ where: { id: enrollmentId } });
-  const totalChapters = await tx.chapter.count({ where: { courseId: enrollment.courseId, archivedAt: null } });
+  const totalChapters = chapterIds ? chapterIds.length : await tx.chapter.count({ where: { courseId: enrollment.courseId, archivedAt: null } });
   const allChaptersComplete = totalChapters > 0 && chaptersCompleted >= totalChapters;
   const roundedPercent = totalChapters > 0 ? Math.round((chaptersCompleted / totalChapters) * 100) : 0;
   const percentComplete = allChaptersComplete ? 100 : Math.min(99, roundedPercent);
@@ -166,6 +181,8 @@ export async function ensureChapterStarted(
   enrollmentId: string,
   chapterId: string
 ) {
+  await lockEnrollmentVariant(tx, enrollmentId);
+  await assertEnrollmentChapter(tx, enrollmentId, chapterId);
   const existing = await tx.chapterProgress.findUnique({
     where: { enrollmentId_chapterId: { enrollmentId, chapterId } },
     select: { status: true },
@@ -193,6 +210,31 @@ export async function ensureChapterStarted(
         : {}),
       blocksTotal,
     },
+  });
+}
+
+/** A learner's first chapter activity fixes the variant used by their course. */
+export async function lockEnrollmentVariant(tx: Prisma.TransactionClient, enrollmentId: string) {
+  const owner = await tx.enrollment.findUniqueOrThrow({ where: { id: enrollmentId }, select: { courseId: true } });
+  // Publishing switches the same Course row. This lock makes a first chapter start
+  // happen entirely before or after that switch, so progress is pinned correctly.
+  await tx.$queryRaw`SELECT "id" FROM "Course" WHERE "id" = ${owner.courseId} FOR SHARE`;
+  const enrollment = await tx.enrollment.findUniqueOrThrow({
+    where: { id: enrollmentId },
+    select: { variantLockedAt: true, releaseId: true, course: { select: { familySlug: true, variantFamily: true, activeReleaseId: true } } },
+  });
+  if (!enrollment.releaseId && enrollment.course.activeReleaseId) {
+    await tx.enrollment.updateMany({ where: { id: enrollmentId, releaseId: null }, data: { releaseId: enrollment.course.activeReleaseId } });
+  }
+  const family = resolveCourseFamily(enrollment.course.familySlug, enrollment.course.variantFamily);
+  if (!family || enrollment.variantLockedAt) return;
+  await tx.enrollment.updateMany({
+    where: { id: enrollmentId, variantSlug: null, variantLockedAt: null },
+    data: { variantSlug: family.defaultVariantSlug, variantChosenAt: new Date() },
+  });
+  await tx.enrollment.updateMany({
+    where: { id: enrollmentId, variantLockedAt: null },
+    data: { variantLockedAt: new Date() },
   });
 }
 

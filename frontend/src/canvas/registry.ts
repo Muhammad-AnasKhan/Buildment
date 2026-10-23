@@ -28,6 +28,11 @@ import { asyncConcurrencyLimit } from "./async-concurrency-limit/data";
 import { retryBackoffJitter } from "./retry-backoff-jitter/data";
 import { traceSampling } from "./trace-sampling/data";
 import { serverlessVsClusterCost } from "./serverless-vs-cluster-cost/data";
+import { freelanceJobFlowchart } from "./freelance-job-flowchart/data";
+import { jobApplicationStatus } from "./job-application-status/data";
+import { checkTheAiAnswer } from "./check-the-ai-answer/data";
+import { sysdesignTruetimeCommitWait } from "./sysdesign-truetime-commit-wait/data";
+import { sysdesignReplicaLag } from "./sysdesign-replica-lag/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -69,6 +74,11 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "retry-backoff-jitter": retryBackoffJitter,
   "trace-sampling": traceSampling,
   "serverless-vs-cluster-cost": serverlessVsClusterCost,
+  "freelance-job-flowchart": freelanceJobFlowchart,
+  "job-application-status": jobApplicationStatus,
+  "check-the-ai-answer": checkTheAiAnswer,
+  "sysdesign-truetime-commit-wait": sysdesignTruetimeCommitWait,
+  "sysdesign-replica-lag": sysdesignReplicaLag,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
