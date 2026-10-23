@@ -56,6 +56,13 @@ export const CANVAS_SLUGS = [
   "target-looks-good",
   "weak-strong-fixes",
   "who-got-the-survey",
+  "rami-decide-or-cue",
+  "habit-loop-repeats",
+  "habit-strength-curve",
+  "motivation-wave-habit-size",
+  "if-then-moment",
+  "choose-an-anchor",
+  "thirty-day-review",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];

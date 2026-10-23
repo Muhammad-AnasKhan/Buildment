@@ -56,6 +56,13 @@ import { symptomFixLoop } from "./symptom-fix-loop/data";
 import { targetLooksGood } from "./target-looks-good/data";
 import { weakStrongFixes } from "./weak-strong-fixes/data";
 import { whoGotTheSurvey } from "./who-got-the-survey/data";
+import { ramiDecideOrCue } from "./rami-decide-or-cue/data";
+import { habitLoopRepeats } from "./habit-loop-repeats/data";
+import { habitStrengthCurve } from "./habit-strength-curve/data";
+import { motivationWaveHabitSize } from "./motivation-wave-habit-size/data";
+import { ifThenMoment } from "./if-then-moment/data";
+import { chooseAnAnchor } from "./choose-an-anchor/data";
+import { thirtyDayReview } from "./thirty-day-review/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -125,6 +132,13 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "target-looks-good": targetLooksGood,
   "weak-strong-fixes": weakStrongFixes,
   "who-got-the-survey": whoGotTheSurvey,
+  "rami-decide-or-cue": ramiDecideOrCue,
+  "habit-loop-repeats": habitLoopRepeats,
+  "habit-strength-curve": habitStrengthCurve,
+  "motivation-wave-habit-size": motivationWaveHabitSize,
+  "if-then-moment": ifThenMoment,
+  "choose-an-anchor": chooseAnAnchor,
+  "thirty-day-review": thirtyDayReview,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
