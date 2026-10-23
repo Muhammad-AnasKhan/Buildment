@@ -36,7 +36,7 @@ Winter steps light both chains ending at the tea; summer steps send the event ch
 ## Copy
 - What this shows: one habit written two ways, followed from winter to summer.
 - Try this:
-  1. Before step 5, predict which plan fits the summer evening (the chapter's predict).
+  1. Before step 5, predict when tea after the meal starts on a summer evening (the chapter's predict).
   2. Turn a clock-time habit into one that follows an event.
 - What changed: each step note gives the season, the times and where the tea lands.
 - Limits of the model: as in `limits`.
@@ -48,7 +48,7 @@ States are revisited across the two seasons; each step names its season in a chi
 Shared stepper keyboard support and focus ring; `summary` gives both seasons and both plans for screen readers; tone always has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (quiz after the canvas: a study habit set by clock time in winter, checked in summer).
+- [x] The claim is testable (transfer items in 6.5: a clock-time habit whose part of the day does not move, and a bedtime anchor that moves too far with the seasons; 6.4 quizzes test daily anchors and changed days).
 - [x] The model is tested (registry consistency, layout and label-overlap tests).
 - [x] Times match chapter 6.4.
 - [x] Prediction before, transfer check after.

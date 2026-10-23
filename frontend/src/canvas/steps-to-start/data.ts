@@ -113,7 +113,7 @@ export const stepsToStart: SliderSpec = {
   title: "Steps to start: study or scroll?",
   purpose: "Change the steps to start studying and the steps to start scrolling, and see on which of Khaled's 10 evenings each option wins.",
   intro:
-    "Khaled's energy after his shift on 10 evenings was 3, 5, 1, 4, 8, 3, 5, 2, 7 and 4 (0 to 10). Six evenings were tired ones, with energy of 4 or less. In his old flat, studying took 6 steps and scrolling took 0. Predict what happens on the tired evenings if the book waits open on the table, at 2 steps.",
+    "Khaled's energy after his shift on 10 evenings was 3, 5, 1, 4, 8, 3, 5, 2, 7 and 4 (0 to 10). Six evenings were tired ones, with energy of 4 or less. In his old flat, studying took 6 steps and scrolling took 0. Predict: with the book open on the table (2 steps), does study win on more tired evenings than before, or about as many?",
   inputs: [
     { id: "studySteps", label: "Steps to start studying", min: 0, max: 10, step: 1, default: 6, unit: "steps" },
     { id: "scrollSteps", label: "Steps to start scrolling", min: 0, max: 10, step: 1, default: 0, unit: "steps" },
@@ -122,7 +122,7 @@ export const stepsToStart: SliderSpec = {
   describeChange: describeStepsChange,
   barsTitle: "Evenings with study, out of 10",
   tryThis: [
-    "Lower the steps to start studying from 6 to 2 (the book open on the table). Study evenings rise from 2 to 9 of 10, and tired evenings with study go from 0 to 5 of 6.",
+    "Check your prediction: lower the steps to start studying from 6 to 2 (the book open on the table). Tired evenings with study go from 0 to 5 of 6, and all study evenings from 2 to 9 of 10.",
     "Put studying back to 6 and raise the steps to start scrolling from 0 to 3 (phone charging in the bedroom, app logged out). Study evenings rise to 8 of 10.",
     "Use both changes: 2 steps to study and 3 to scroll. Studying now takes fewer steps than scrolling, and the toy rule gives 10 of 10.",
   ],

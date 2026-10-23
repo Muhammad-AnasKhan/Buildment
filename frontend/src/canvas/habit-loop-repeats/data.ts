@@ -83,5 +83,5 @@ export const habitLoopRepeats: StateMachineSpec = {
     "At step 7, cover the reward box with your finger. What is left that can start the habit?",
   ],
   limits:
-    "Real habits have many cues at once, and rewards are not all or nothing. The evidence that strong habits run without the reward comes mostly from animals trained for a long time; in people it is mixed, so the canvas says can, not will. A habit whose reward stays gone for a long time may weaken.",
+    "Real habits have many cues at once, and rewards are not all or nothing. The evidence that strong habits run without the reward comes mostly from animals trained for a long time; in people it is mixed, so the canvas says can, not will.",
 };

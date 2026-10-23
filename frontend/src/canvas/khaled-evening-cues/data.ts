@@ -8,9 +8,9 @@ import type { StateMachineSpec } from "../renderers/state-machine/types";
 export const khaledEveningCues: StateMachineSpec = {
   kind: "state-machine",
   title: "Khaled's evening: a chain of cues",
-  purpose: "Step through the cues that run Khaled's evening, then change one early link and watch the rest of the chain change with it.",
+  purpose: "Step through the cues that run Khaled's evening, try stopping at the last link, then change one early link and watch the rest of the chain change with it.",
   summary:
-    "At 22:00 Khaled closes the laptop, sits on the sofa where his brother is watching football, and the phone already in his hand leads to scrolling until 00:30. When he changes the first link and stays at the table, the book he left open there becomes the next cue, he studies for 20 minutes, and only then joins his brother.",
+    "At 22:00 Khaled closes the laptop, sits on the sofa where his brother is watching football, and the phone already in his hand leads to scrolling until 00:30. Trying to stop after 30 minutes, at the last link, still ends at 23:50. When he changes the first link and stays at the table, the book he left open there becomes the next cue, he studies for 20 minutes, and only then joins his brother.",
   states: [
     { id: "shift", name: "Shift ends", sub: "22:00, laptop shut", col: 0, row: 0 },
     { id: "sofa", name: "Sits on the sofa", sub: "brother, football", col: 1, row: 0 },
@@ -50,6 +50,14 @@ export const khaledEveningCues: StateMachineSpec = {
       chips: ["object: phone in hand", "five cues, one direction"],
     },
     {
+      state: "phone",
+      tone: "warn",
+      outcome: "23:50",
+      title: "Trying the last link",
+      note: "One evening he tries the other idea: stop after 30 minutes of scrolling. At 22:40 he tells himself 'five more minutes', and again at 23:00. He puts the phone down at 23:50. By the time he tried to stop, the chain was already running.",
+      chips: ["last link: too late"],
+    },
+    {
       state: "table",
       edge: 2,
       title: "Change the first link",
@@ -81,7 +89,7 @@ export const khaledEveningCues: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "At step 4, before you go on, check the prediction you made above the canvas: which cues of the old chain will now never appear?",
+    "Check the prediction you made above the canvas: compare step 4, where he tries the last link, with step 5, where he changes the first one. Which cues of the old chain never appear after step 5?",
     "At the last step, name the cue that pulled Khaled back into the old chain. Was it a place, a time, people or an action?",
   ],
   limits:

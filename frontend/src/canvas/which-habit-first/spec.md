@@ -59,7 +59,7 @@ Ties are named as ties. Long option names ("10-minute walk", "Sleep by 23:00") f
 Weight buttons at least 44px tall, labelled; totals as text; the change sentence in a live region.
 
 ## Acceptance criteria
-- [x] The claim is testable (quiz after the canvas: a new person's scores and weights).
+- [x] The claim is testable (quiz after the canvas: a new person's first habit chosen from stated facts on the four questions, with no arithmetic).
 - [x] The model is tested (shared factor model tests; registry scale checks).
 - [x] Numbers match chapter 6.2.
 - [x] Prediction before, transfer check after.

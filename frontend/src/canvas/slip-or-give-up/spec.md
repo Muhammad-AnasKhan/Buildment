@@ -48,7 +48,7 @@ States are revisited (Missed a day, Doing the habit, Restart plan); each visit h
 Shared stepper keyboard support and focus ring; `summary` gives both roads for screen readers; tone always has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (quiz after the canvas: a new slip and three possible next steps).
+- [x] The claim is testable (quiz after the canvas: a slip with a cause that repeats, and restart plans with and without a change for it).
 - [x] The model is tested (registry consistency, layout and label-overlap tests).
 - [x] Facts match chapter 5.4 (Wednesday and Thursday missed, 5 questions on Friday, 20 minutes on Saturday).
 - [x] Prediction before, transfer check after.

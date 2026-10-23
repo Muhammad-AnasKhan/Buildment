@@ -50,7 +50,7 @@ Steps 1 and 7 have no edge (start, revisit). State names are 18 characters or fe
 Shared stepper keyboard support and focus ring; `summary` gives the whole loop for screen readers; tone always has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (quiz items on Hiba's lunch hour and Mazen's afternoon).
+- [x] The claim is testable (quiz items on Hiba's lunch hour and Mazen's wait at the oven).
 - [x] The model is tested (registry consistency and label-fit tests once registered).
 - [x] The design is simple and legible.
 - [x] Prediction before (which replacement meets the need), transfer check after.

@@ -47,7 +47,7 @@ Three stat cards (days done with the list of days, longest gap, motivation neede
 ## Copy
 - What this shows: a fixed fortnight of motivation and a toy rule; the done days for any habit size.
 - Try this:
-  1. Effort 7: 3 of 14 days (1, 2, 8); then effort 2: 14 of 14 (matches the chapter's predict).
+  1. Effort 7: 3 of 14 days (1, 2, 8), under half (matches the chapter's predict); then effort 2: 14 of 14.
   2. Hard week 2: the smallest version still 12 of 14; effort 7 only 2.
   3. The largest effort that still reaches 10 of 14: 4.
 - What changed: `describeWaveChange` gives the new count against the old one and why (a smaller habit fits low days; a hard week hurts a big habit more).
@@ -60,7 +60,7 @@ Effort 10 with a hard week of 3: 0 of 14, gap days 1 to 14. Effort 1 with a hard
 Native range inputs with labels and units; a one-sentence result summary; the days are listed in words, not only in bars.
 
 ## Acceptance criteria
-- [x] The claim is testable (transfer MCQs in 2.2: Bilal's 45-minute lesson on 3 of 14 days; Asma's Thursday hardest-day test).
+- [x] The claim is testable (transfer MCQs in 2.2: Reem grew her habit too fast and her notes show it; Asma's Thursday hardest-day test). The predict gives the 14-day series in its prompt..
 - [x] The model is tested (`frontend/tests/unit/canvas/motivation-wave-habit-size.test.ts`).
 - [x] Numbers match chapter 2.2.
 - [x] Prediction before, transfer check after.

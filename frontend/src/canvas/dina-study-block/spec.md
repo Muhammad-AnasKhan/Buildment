@@ -48,7 +48,7 @@ Self-loop "start signal" fits beside Dina's lane at 340px; the arrow from Mother
 Shared stepper keyboard support and focus ring; `summary` gives the whole block for screen readers; tone always has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (quiz after the canvas: a new study block with an interruption).
+- [x] The claim is testable (quizzes after the canvas: a time-leak log for a new study block, and an anchor for a block that must not follow a client's clock).
 - [x] The model is tested (registry consistency and label-fit tests).
 - [x] Times match chapter 6.3 (12:40 start, 12:55 interruption, 13:15 end).
 - [x] Prediction before, transfer check after.

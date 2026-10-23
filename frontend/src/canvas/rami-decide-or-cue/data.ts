@@ -76,7 +76,7 @@ export const ramiDecideOrCue: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Before you step through, predict which of the two actions goes through a deciding step. Then check at steps 2 and 4.",
+    "Before you step through, recall your guess about how many of Rami's 23 phone pickups he chose. Then count the deciding steps on the phone path and on the study path.",
     "Before step 5, say what the deciding step will answer on a tired Tuesday. Then compare it with step 6, Thursday.",
   ],
   limits:

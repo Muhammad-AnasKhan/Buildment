@@ -89,8 +89,8 @@ export const prayerTimeAnchors: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "Before step 5, predict which plan still fits Dina's evening in summer: tea after the meal, or tea at 18:00. Then check.",
-    "Think of a clock-time habit of your own, or Dina's 18:00 alarm. Which event in the day could it follow instead?",
+    "Before step 5, predict when tea after the meal starts on a summer evening: around 20:45, or around 18:00 as in winter. Then check.",
+    "Think of a clock-time habit of your own, or Dina's 18:00 alarm. Where does it land in winter and in summer? Would you change the time each season, or tie it to an event?",
   ],
   limits:
     "The times are this example's: real prayer times depend on where you live and the date. Research has not shown that event cues beat clock cues in general; in the few studies that compared them they worked about equally well. The point here is fit with your own day: a clock time works if you check it each season, and an event works only if it really happens every day.",

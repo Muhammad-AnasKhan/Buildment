@@ -36,5 +36,5 @@ export const chooseAnAnchor: FactorSpec = {
     "Set Free minutes after to Very important. After Fajr and tea still leads, 40 to 35 and 34.",
   ],
   limits:
-    "The scores and weights are Lina's own judgment, and the model treats them as exact. It cannot see a problem she left off the list, such as an anchor that disappears on some days. A gap of one or two points means both anchors could work; the chapter explains why a moving anchor is weaker even when it wins on points.",
+    "The scores and weights are Lina's own judgment, and the model treats them as exact. It cannot see a problem she left off the list, such as an anchor that disappears on some days; chapter 2.4 adds a second anchor for those. A gap of one or two points means both anchors could work; the chapter explains why a moving anchor is weaker even when it wins on points.",
 };

@@ -11,7 +11,7 @@ export const thirtyDayReview: StateMachineSpec = {
   purpose:
     "Step through one month of tracking in order and see how counts, timing and notes lead to one change and a two-week test.",
   summary:
-    "Samir read on 23 of 30 evenings, with a longest gap of 2 evenings. Days 1 to 15 had 1 miss and days 16 to 30 had 6. His notes show 4 misses on dark evenings after the power schedule changed, 2 on Fridays at his uncle's home and 1 for a late client call. He chooses one change, a charged lamp on the shelf by the book, tests it for two weeks, and then decides again. A last step shows why three changes at once cannot be read.",
+    "Samir read on 23 of 30 evenings, with a longest gap of 2 evenings. Days 1 to 15 had 1 miss and days 16 to 30 had 6. His notes show 4 misses on dark evenings after the power schedule changed on day 17, 2 on Fridays at his uncle's home and 1 for a late client call. He chooses one change, a charged lamp on the shelf by the book, tests it for two weeks, and then decides again. A last step shows why three changes at once cannot be read.",
   states: [
     { id: "count", name: "Count days done", sub: "23 of 30", col: 0, row: 0 },
     { id: "when", name: "When misses fell", sub: "1, then 6", col: 1, row: 0 },
@@ -47,7 +47,7 @@ export const thirtyDayReview: StateMachineSpec = {
       state: "causes",
       edge: 2,
       title: "Step 3: read the notes",
-      note: "Power off after the meal, too dark: 4 misses, on days 17, 18, 24 and 27. Friday meal at his uncle's home: 2, on days 7 and 21. A late client call: 1, on day 29. The power schedule moved to the evenings from day 17.",
+      note: "Power off after the meal, too dark: 4 misses, on days 17, 18, 24 and 27. Friday meal at his uncle's home: 2, on days 7 and 21. A late client call: 1, on day 29. The power schedule changed on day 17, and the evenings went dark.",
       chips: ["dark: 4", "uncle's: 2", "late call: 1"],
     },
     {
@@ -56,7 +56,7 @@ export const thirtyDayReview: StateMachineSpec = {
       tone: "good",
       outcome: "one change",
       title: "Step 4: choose one change",
-      note: "Dark evenings cause the most misses. On ordinary evenings at home he read on 22 of 23, so the anchor works. On day 22 the power was off and he read by his sister's lamp. So: charge a small lamp while the power is on, and keep it on the shelf by the book.",
+      note: "Dark evenings cause the most misses. On ordinary evenings at home he read on 22 of 23, so the anchor works. On day 22 the power was off and he read by his sister's lamp. So he keeps the anchor and changes the place: he charges a small lamp while the power is on and keeps it on the shelf by the book.",
       chips: ["biggest cause first", "Fridays: next review"],
     },
     {
@@ -83,7 +83,7 @@ export const thirtyDayReview: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "At step 3, check the guess you made above the canvas: did the notes point to something in his evenings, or to his interest in reading?",
+    "At step 4, check the guess you made above the canvas: did Samir keep his anchor, or move his reading to an hour when it is light?",
     "At step 7, ask what Samir would learn next month if he changed three things at once.",
   ],
   limits:

@@ -57,7 +57,7 @@ All weights at 1: 16, 15, 13 (Fajr and tea leads by 1). All weights at 3: 48, 45
 The renderer's weight buttons are at least 44px tall; totals and the leader are stated in text.
 
 ## Acceptance criteria
-- [x] The claim is testable (transfer MCQs in 2.4: Salma's moving bread-delivery anchor; Adam's anchor for a habit that must also happen on Fridays).
+- [x] The claim is testable (transfer MCQs in 2.4: Salma's anchor with no clear end and a list kept at home; Adam needs a second anchor for Fridays).
 - [x] The model is tested (shared factor model tests; registry scale checks once registered).
 - [x] Numbers match chapter 2.4.
 - [x] Prediction before, transfer check after.

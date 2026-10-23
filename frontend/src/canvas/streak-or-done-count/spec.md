@@ -31,7 +31,7 @@ The chapter does the counting for Yousef's month once in prose. Moving the misse
   |---|---|---|
   | Days done | days of 30 | "25 of 30", detail "83% of the month" |
   | Streak on day 30 | days | "2 days", detail "longest run 23 days" |
-  | Longest gap | days | "5 days" |
+  | Longest gap | days | "5 days", detail "missed in a row", or "first miss moved to day N" when the misses had to move to fit |
   | Bars | days | days done, longest run, streak on day 30, longest gap; scale 0 to 30 |
 
 - Rule (`missedDaysFor`, `countMonth` in `data.ts`): place the misses from the first-miss day, one a day (together) or one every other day (spread out). If they would run past day 30, move the first miss earlier until they fit, and say so. Then count: days done = 30 minus misses; streak on day 30 = days done in a row counting back from day 30; longest run and longest gap = the longest runs of done and missed days.
@@ -64,7 +64,7 @@ Four horizontal bars on one scale, so the learner sees days done stay long while
   1. One miss on day 24: streak 6, days done 29 (the chapter's predict).
   2. Five misses spread out: days done stays 25, longest gap 1 (first miss moves to day 22).
   3. Seven misses together from day 24 (waiting for next month): days done 23, gap 7.
-- What changed: `describeStreakChange` names the input that moved and how days done, the streak on day 30 and the longest gap changed.
+- What changed: `describeStreakChange` names the input that moved and how days done, the streak on day 30 and the longest gap changed; when the first miss has to move, the longest-gap stat says so, so the move is never silent.
 - Limits of the model: as in `limits`.
 
 ## Edge cases
@@ -74,7 +74,7 @@ Zero misses (streak 30, gap 0); ten spread misses from day 30 (moved to start on
 Shared slider keyboard support and live region; `summary` names the missed days and all four counts for screen readers; bars carry text values.
 
 ## Acceptance criteria
-- [x] The claim is testable (quiz after the canvas: a tracker counted by days done and longest gap).
+- [x] The claim is testable (quiz after the canvas: a month with many one-day misses, read for days done and for the cause in the notes).
 - [x] The model is tested (`frontend/tests/unit/canvas/streak-or-done-count.test.ts`: defaults, the three "try this" values, edges, summary, describeChange).
 - [x] Numbers match chapter 5.3 (days 24 to 28 missed, 25 of 30, streak 2, run 23, gap 5).
 - [x] Prediction before, transfer check after.

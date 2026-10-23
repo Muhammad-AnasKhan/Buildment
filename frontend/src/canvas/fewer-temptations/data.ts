@@ -24,6 +24,16 @@ export function giveInsPerWeek({ perDay, resistedPercent }: TemptationInputs): n
   return perDay * DAYS_PER_WEEK * (1 - resisted / 100);
 }
 
+/**
+ * The share you would need to resist, facing every temptation, to match the
+ * give-ins you get by facing half of them: 1 - r' = (1 - r) / 2, so
+ * r' = (100 + r) / 2. At 50% that is 75%.
+ */
+export function resistanceToMatchHalving(resistedPercent: number): number {
+  const r = Math.min(100, Math.max(0, resistedPercent));
+  return (100 + r) / 2;
+}
+
 export type TemptationCompare = {
   now: number;
   halfTemptations: number;
@@ -52,6 +62,10 @@ export function formatGiveIns(n: number): string {
   return `${Math.round(n)}`;
 }
 
+function formatPercent(n: number): string {
+  return Number.isInteger(n) ? `${n}` : n.toFixed(1);
+}
+
 function fewer(base: number, other: number): string {
   const diff = Math.round(base) - Math.round(other);
   if (diff <= 0) return "no fewer";
@@ -67,14 +81,14 @@ export function computeTemptations(values: SliderValues): SliderResult {
     stats: [
       { label: "Give-ins a week now", value: formatGiveIns(c.now), detail: `${inputs.perDay} a day x 7 x ${100 - inputs.resistedPercent}% not resisted` },
       { label: "Half the temptations", value: formatGiveIns(c.halfTemptations), detail: fewer(c.now, c.halfTemptations) },
-      { label: `Resist ${EXTRA_RESIST_POINTS} points more`, value: formatGiveIns(c.moreResistance), detail: fewer(c.now, c.moreResistance) },
+      { label: "To match halving, resist", value: `${formatPercent(resistanceToMatchHalving(inputs.resistedPercent))}%`, detail: `instead of ${inputs.resistedPercent}%, every night` },
     ],
     bars: [
       { label: "Now", value: c.now, display: formatGiveIns(c.now) },
       { label: "Half the temptations", value: c.halfTemptations, display: formatGiveIns(c.halfTemptations), tone: halfWins && !tie ? "good" : undefined },
       { label: `Resist ${c.moreResistedPercent}%`, value: c.moreResistance, display: formatGiveIns(c.moreResistance), tone: !halfWins && !tie ? "good" : undefined },
     ],
-    summary: `Meeting ${inputs.perDay} temptations a day and resisting ${inputs.resistedPercent}% gives about ${formatGiveIns(c.now)} give-ins a week. Facing half the temptations gives about ${formatGiveIns(c.halfTemptations)}; resisting ${EXTRA_RESIST_POINTS} points more gives about ${formatGiveIns(c.moreResistance)}.`,
+    summary: `Meeting ${inputs.perDay} temptations a day and resisting ${inputs.resistedPercent}% gives about ${formatGiveIns(c.now)} give-ins a week. Facing half the temptations gives about ${formatGiveIns(c.halfTemptations)} (${fewer(c.now, c.halfTemptations)}). Resisting ${EXTRA_RESIST_POINTS} points more gives about ${formatGiveIns(c.moreResistance)}. To match halving by resisting alone, she would need to resist ${formatPercent(resistanceToMatchHalving(inputs.resistedPercent))}% every night.`,
   };
 }
 
@@ -95,15 +109,16 @@ export function describeTemptationChange(before: SliderValues, after: SliderValu
   else if (Math.round(y.halfTemptations) === Math.round(y.moreResistance)) compare = "Here, halving the temptations and resisting 10 points more cut about the same.";
   else if (y.halfTemptations < y.moreResistance) compare = "Halving the temptations still cuts more than resisting 10 points more.";
   else compare = "At this high resistance, 10 points more would cut more than halving the temptations, but resisting this often, night after night, is the hard part.";
-  return `${moved}: give-ins a week ${total}. ${compare}`;
+  const tieNow = formatPercent(resistanceToMatchHalving(b.resistedPercent));
+  return `${moved}: give-ins a week ${total}. ${compare} Matching halving by resisting alone would take ${tieNow}%.`;
 }
 
 export const fewerTemptations: SliderSpec = {
   kind: "slider",
   title: "Fewer temptations or more willpower?",
-  purpose: "Change how many temptations Maha meets each night and how many she resists, and compare halving the temptations with resisting a little harder.",
+  purpose: "Change how many temptations Maha meets each night and how many she resists, and see how much more resisting it would take to match facing half as many temptations.",
   intro:
-    "In this example, Maha counts about 8 moments each night in bed when she feels pulled to open the video app, and she resists about half of them. Give-ins a week = temptations a day x 7 x the share she does not resist. Predict which cuts more: facing half as many temptations, or resisting 10 percentage points more often.",
+    "In this example, Maha counts about 8 moments each night in bed when she feels pulled to open the video app, and she resists about half of them. Give-ins a week = temptations a day x 7 x the share she does not resist. Predict how often she would need to resist, facing all 8, to cut as much as facing half the temptations: about 60% or about 75%?",
   inputs: [
     { id: "perDay", label: "Temptations a day", min: 0, max: 20, step: 1, default: 8, unit: "a day" },
     { id: "resistedPercent", label: "Share resisted", min: 0, max: 90, step: 5, default: 50, unit: "%" },
@@ -112,10 +127,10 @@ export const fewerTemptations: SliderSpec = {
   describeChange: describeTemptationChange,
   barsTitle: "Give-ins a week",
   tryThis: [
-    "Leave the defaults and compare the bars: halving the temptations gives 14 give-ins a week, while resisting 10 points more (60%) gives about 22.",
+    "Check your prediction: at the defaults, the third number shows 75%. To match halving the temptations (14 give-ins a week), she would have to resist 6 of every 8 urges, every night. Resisting 60% gives about 22.",
     "Lower the temptations from 8 to 4 a day, as Maha did by turning off night notifications. Give-ins fall from 28 to 14 without any extra willpower.",
     "Raise the share resisted to 80%. Now 10 points more and halving cut the same. Ask yourself how many nights you could resist 8 times out of 10.",
   ],
   limits:
-    "This is simple arithmetic on the chapter's example numbers, not a research finding, and real temptations are not all the same size. It assumes the share you resist stays the same when you face fewer temptations; in real life, fewer fights may even leave more energy for the ones that remain. At very high resistance (80% or more), ten more points would cut as much or more than halving, but resisting that often every night is exactly what is hard.",
+    "This is simple arithmetic on the chapter's example numbers, not a research finding, and real temptations are not all the same size. It assumes the share you resist stays the same when you face fewer temptations. At very high resistance (80% or more), ten more points would cut as much as halving or more, but resisting that often every night is exactly what is hard.",
 };

@@ -48,7 +48,7 @@ Three stat cards and four bars. The "Your settings" bar is good at 8 or more eve
 ## Copy
 - What this shows: how the gap between the steps to study and the steps to scroll decides, in a toy rule, which option wins on each of 10 evenings.
 - Try this:
-  1. Lower study steps from 6 to 2: study evenings 2 to 9 of 10; tired evenings 0 to 5 of 6 (matches the predict).
+  1. Lower study steps from 6 to 2: tired evenings with study 0 to 5 of 6 (the predict asks whether tired-evening wins rise); all study evenings 2 to 9 of 10.
   2. Study back to 6, scroll steps 0 to 3: 8 of 10.
   3. Both: 2 and 3: 10 of 10.
 - What changed: `describeStepsChange` names the lever moved, the gap before and after, and the change in study evenings and tired study evenings.

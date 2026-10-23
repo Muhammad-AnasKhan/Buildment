@@ -113,7 +113,7 @@ export function computeStreak(values: SliderValues): SliderResult {
     stats: [
       { label: "Days done", value: `${c.daysDone} of ${DAYS}`, detail: `${percent}% of the month` },
       { label: "Streak on day 30", value: days(c.streakOnLastDay), detail: `longest run ${days(c.longestRun)}` },
-      { label: "Longest gap", value: days(c.longestGap), detail: "missed in a row" },
+      { label: "Longest gap", value: days(c.longestGap), detail: moved(inputs, c) ? `first miss moved to day ${c.firstMissUsed}` : "missed in a row" },
     ],
     bars: [
       { label: "Days done", value: c.daysDone, display: `${c.daysDone}` },

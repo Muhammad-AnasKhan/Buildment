@@ -1,7 +1,7 @@
 import type { SequenceSpec } from "../renderers/sequence/types";
 
 // Building Habits That Last course, chapter 4.4 "Remove the cue and add
-// friction". Maha's plan in two nights: the phone charges in the kitchen and a
+// friction". A night with only a promise (phone on the pillow, about 1:00), then Maha's plan in two nights: the phone charges in the kitchen and a
 // battery clock is her alarm (cue removed, friction added), she notices and
 // names the urge and goes back to her book; then a slip night (she came home
 // late and the phone came to bed), handled by noticing, acting and adding one
@@ -9,15 +9,25 @@ import type { SequenceSpec } from "../renderers/sequence/types";
 export const phoneOutOfTheBedroom: SequenceSpec = {
   kind: "sequence",
   title: "The phone leaves the bedroom",
-  purpose: "Follow one night with the plan and one slip night, and see how removing the cue, adding friction and noticing the moment work together.",
+  purpose: "Compare a night with only a promise, a night with the plan and a slip night, and see how removing the cue, adding friction and noticing the moment work together.",
   summary:
-    "At 22:45 Maha plugs her phone into a charger in the kitchen and uses a battery clock as her alarm. In bed she reads one story. When the urge to check the phone comes, she notices it, names it and goes back to the page, and she is asleep at 23:40. On a slip night she comes home late and the phone comes to bed; at 23:50 she notices, stops and takes the phone to the kitchen, asleep at 00:15. The next morning she writes one line on her card and adds an if-then line for late nights.",
+    "With only a promise and the phone on her pillow, Maha scrolls until about 1:00. With the plan, at 22:45 Maha plugs her phone into a charger in the kitchen and uses a battery clock as her alarm. In bed she reads one story. When the urge to check the phone comes, she notices it, names it and goes back to the page, and she is asleep at 23:40. On a slip night she comes home late and the phone comes to bed; at 23:50 she notices, stops and takes the phone to the kitchen, asleep at 00:15. The next morning she writes one line on her card and adds an if-then line for late nights.",
   actors: [
     { name: "Maha", sub: "in her room" },
     { name: "Phone", sub: "kitchen charger" },
     { name: "Book", sub: "on the pillow" },
   ],
   steps: [
+    {
+      from: 0,
+      to: 0,
+      label: "promise only",
+      tone: "bad",
+      outcome: "about 1:00",
+      title: "The old way: a promise",
+      note: "Before the plan, the phone charged on her pillow, and she promised herself 'no videos after 23:30'. At 23:10 the phone lit up beside her, and she put it down at about 1:00. The promise left the cue right beside her.",
+      chips: ["phone: on the pillow", "plan: a promise"],
+    },
     {
       from: 0,
       to: 1,
@@ -81,9 +91,9 @@ export const phoneOutOfTheBedroom: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Check the prediction you made above the canvas: at step 6, what did Maha do on the slip night instead of trying not to think about the videos?",
-    "At step 5, find what brought the old cue back into the bedroom. Which line in step 7 deals with it?",
+    "Check the prediction you made above the canvas: at step 7, what did Maha do on the slip night instead of trying not to think about the videos?",
+    "At step 6, find what brought the old cue back into the bedroom. Which line in step 8 deals with it?",
   ],
   limits:
-    "Two nights cannot show every kind of slip, and some nights the urge will win before she notices. Noticing works by giving her control in the moment; it does not make the habit vanish. The plan depends on the alarm job moving to a clock and on the family being fine with no replies at night. The numbers belong to this example.",
+    "Three nights cannot show every kind of slip, and some nights the urge will win before she notices. Noticing works by giving her control in the moment; it does not make the habit vanish. The plan depends on the alarm job moving to a clock and on the family being fine with no replies at night. The numbers belong to this example.",
 };

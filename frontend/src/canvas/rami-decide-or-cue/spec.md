@@ -37,7 +37,7 @@ Four lanes, one arrow per step. Warn tone only on the two moments that lose the 
 ## Copy
 - What this shows: the phone goes from a situation straight to the action; the study goes through deciding first.
 - Try this:
-  1. Predict which action goes through a deciding step (the chapter's predict), then check at steps 2 and 4.
+  1. Recall the chapter's predict (how many of Rami's 23 phone pickups he chose), then count the deciding steps on each path.
   2. Before step 5, say what the decision will answer on a tired Tuesday; compare with step 6.
 - What changed: each step note says what happened at that arrow; step 7 compares the two paths.
 - Limits of the model: as in `limits`.

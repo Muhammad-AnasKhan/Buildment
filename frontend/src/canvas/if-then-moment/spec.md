@@ -36,7 +36,7 @@ Warn tone only on Monday's missed practice; good tone only on Tuesday's three se
 ## Copy
 - What this shows: the same small habit, with and without a named moment.
 - Try this:
-  1. Before step 6, predict what starts the writing on Tuesday (matches the chapter's predict).
+  1. Recall the chapter's predict: on a busy day, does naming the moment help more than making the habit smaller? Then compare the two days.
   2. Count how often Lina must remember the plan on each day.
 - What changed: on Monday the plan lived in her head; on Tuesday the situation started the action.
 - Limits of the model: as in `limits`.
@@ -48,7 +48,7 @@ Three loops on lane 0 with labels up to 18 characters; all fit the narrow layout
 Shared stepper keyboard support and focus ring; `summary` gives both days for screen readers; tones carry text badges.
 
 ## Acceptance criteria
-- [x] The claim is testable (transfer MCQs in 2.3: Nadia's plans for reading at the library corner; Fadi's alarm versus hanging up his apron).
+- [x] The claim is testable (transfer MCQs in 2.3: Hanan's plan with two actions after the returns box; Fadi's alarm versus hanging up his apron).
 - [x] The model is tested (registry consistency and label-fit tests once registered).
 - [x] Facts match chapter 2.3.
 - [x] Prediction before, transfer check after.

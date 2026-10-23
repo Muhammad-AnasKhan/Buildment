@@ -82,7 +82,7 @@ export const ifThenMoment: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Before step 6, predict what starts the writing on Tuesday: Lina's memory, or the moment. Then check.",
+    "Before you step through, recall your prediction: on a busy day, does naming the moment help more than making the habit smaller? Then compare Monday and Tuesday, which have the same small habit.",
     "Count how many times Lina has to remember the plan on each day. On Monday, all day. On Tuesday, once, when the glass is empty.",
   ],
   limits:

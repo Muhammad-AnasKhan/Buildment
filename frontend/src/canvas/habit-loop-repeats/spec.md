@@ -23,7 +23,7 @@ The claim is about repetition: the same loop, gone round several times, ends in 
 - Steps: cue, routine, reward (good, "reward"), link (week 1 to 3), cue again (week 6), strong habit, runs on the cue (warn, "can").
 - Facts match chapter 1.3: sitting down on the mattress after dinner, messages then videos, the Friday night when nobody writes.
 - Assumptions: one main cue and one kind of reward.
-- Limitations: many cues at once in real life; rewards are not all or nothing; human evidence for reward-insensitive habits is mixed; a habit whose reward stays gone may weaken.
+- Limitations: many cues at once in real life; rewards are not all or nothing; human evidence for reward-insensitive habits is mixed; the canvas makes no claim about how long a habit runs without any reward.
 
 ## Rendering
 - Shared state machine renderer, 3 columns by 2 rows. The loop is a square on columns 0 and 1; the strong-habit states sit in column 2.
@@ -51,7 +51,7 @@ The loop passes the cue twice; each pass has its own note and chips. Labels fit 
 Shared stepper keyboard support and focus ring; `summary` describes the whole loop for screen readers; tones always carry a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (transfer MCQ in 1.3: Tareq still checks his phone after every hem when order messages have stopped).
+- [x] The claim is testable (transfer MCQs in 1.3: find the cue in Tareq's one-day log of phone checks; choose the reward that helps while Fadi's habit forms). The predict before it asks whether Rami's hand will move on a night with no reward.
 - [x] The model is tested (registry consistency, layout and label-overlap tests once registered).
 - [x] Facts match chapters 1.2 and 1.3.
 - [x] Prediction before, transfer check after.

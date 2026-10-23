@@ -51,6 +51,11 @@ describe("streak-or-done-count model", () => {
     expect(c.longestGap).toBe(1);
   });
 
+  it("shows a moved first miss in the longest-gap stat, and not when nothing moved", () => {
+    expect(computeStreak({ missed: 5, firstMiss: 24, spread: 1 }).stats[2]!.detail).toBe("first miss moved to day 22");
+    expect(computeStreak({ missed: 5, firstMiss: 24, spread: 0 }).stats[2]!.detail).toBe("missed in a row");
+  });
+
   it("try this 3: waiting until the first of next month makes a gap of 7", () => {
     const c = countMonth({ missed: 7, firstMiss: 24, spread: 0 });
     expect(c.missedDays).toEqual([24, 25, 26, 27, 28, 29, 30]);
