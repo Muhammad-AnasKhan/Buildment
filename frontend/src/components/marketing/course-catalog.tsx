@@ -1,4 +1,4 @@
-﻿import { CourseCard, type CourseCardData } from "@/components/marketing/course-card";
+import { CourseCard, type CourseCardData } from "@/components/marketing/course-card";
 
 export type CatalogCourse = CourseCardData & { id: string };
 
@@ -14,4 +14,3 @@ export function CourseCatalog({ courses }: { courses: CatalogCourse[] }) {
     </ul>
   );
 }
-

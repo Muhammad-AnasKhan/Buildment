@@ -72,7 +72,11 @@ export function CourseCover({
             className="absolute -right-6 -top-8 size-40 rounded-full border-[24px] opacity-20"
             style={{ borderColor: palette.accent }}
           />
-          {aspect === "thumb" ? (
+          {paletteIndex !== undefined ? (
+            <span className="relative p-4 font-serif text-6xl leading-none text-white">
+              {String(paletteIndex + 1).padStart(2, "0")}
+            </span>
+          ) : aspect === "thumb" ? (
             <span className="relative line-clamp-3 p-2 text-[11px] font-semibold leading-tight text-white">
               {title}
             </span>

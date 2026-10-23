@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { CourseCover } from "@/components/learn/course-cover";
 
@@ -50,4 +50,3 @@ export function CourseCard({ course, coverIndex = 0 }: { course: CourseCardData;
     </article>
   );
 }
-
