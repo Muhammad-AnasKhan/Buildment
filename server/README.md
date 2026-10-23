@@ -26,8 +26,8 @@ tests/
 └─ helpers/          fixtures that build and tear down their own course/org
 scripts/             course import/validation/audit, demo seeds, stats backfill, sync-shared (tsx)
 prisma/              schema, migrations, seed
-Dockerfile           production image, self-contained (build from this folder)
-Procfile             Heroku: release = migrate deploy, web = node dist/index.js
+Dockerfile           production image with courses/ (build from repository root)
+Procfile             Heroku APP_BASE=server: release = migrate and publish, web = node dist/index.js
 ```
 
 ## Conventions
@@ -71,11 +71,13 @@ Course creators can upload cover images in course settings and insert images fro
 ## Docker
 
 ```bash
-docker build -t buildment-api .                 # from this folder
-docker run --rm --env-file .env buildment-api pnpm exec prisma migrate deploy
-docker run -p 4000:4000 --env-file .env buildment-api
+docker build -f server/Dockerfile -t buildment-api . # from repository root
+docker run --rm --env-file server/.env buildment-api pnpm exec prisma migrate deploy
+docker run --rm --env-file server/.env buildment-api pnpm courses:publish
+docker run -p 4000:4000 --env-file server/.env buildment-api
 ```
 
 The image carries the compiled API, the Prisma schema and migrations, and the scripts, so
-`pnpm db:seed` works inside the container too. Repository course imports read `courses/`
-from a checkout; the server-only image does not bundle those source packages.
+`pnpm db:seed` works inside the container too. It also carries the repository course sources
+and the course auditor for release publishing. The production instructor account must exist
+before `pnpm courses:publish` runs.

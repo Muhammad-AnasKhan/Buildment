@@ -13,12 +13,12 @@ import { fileURLToPath } from "node:url";
 import { zipSync } from "fflate";
 import { load as loadYaml, dump as dumpYaml } from "js-yaml";
 import { z } from "zod";
-import { CourseManifestSchema } from "./course-source.js";
+import { CourseManifestSchema, coursesRootForServer } from "./course-source.js";
 import type { SessionUser } from "../src/types/auth.js";
 
 const SERVER_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const REPO_ROOT = path.resolve(SERVER_ROOT, "..");
-const COURSES_ROOT = path.join(REPO_ROOT, "courses");
+const COURSES_ROOT = coursesRootForServer(SERVER_ROOT);
+const REPO_ROOT = path.dirname(COURSES_ROOT);
 const ZIP_FILE = /^(?:variants\/[a-z0-9-]+\/)?\d+-[a-z0-9-]+\/\d+\.\d+-[a-z0-9-]+\.md$/;
 
 type Package = { slug: string; dir: string; manifest: ReturnType<typeof CourseManifestSchema.parse> };
@@ -104,7 +104,7 @@ function validate(pkg: Package, instructorEmail: string) {
 }
 
 async function publish(packages: Package[], instructorEmail: string) {
-  if (!process.env.DATABASE_URL) throw new Error("COURSE_DATABASE_URL must be configured as the DATABASE_URL secret for publishing");
+  if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL must be configured in the backend release environment");
   const { prisma } = await import("../src/db/prisma.js");
   const { importCourseZip } = await import("../src/services/teach/course-import.js");
   const { previewCourseZipUpdate, approveCourseZipUpdate } = await import("../src/services/teach/course-update.js");

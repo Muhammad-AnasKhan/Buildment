@@ -132,14 +132,17 @@ Each folder deploys on its own; nothing outside it is needed.
   preset. Environment: `API_URL` (the API's public URL) and `APP_URL` (the Vercel URL). Browser
   traffic to `/api/v1/*` and `/integrations/v1/*` is proxied to the API server-side, so there is
   no CORS and the session cookie just works.
-- **API on Heroku:** deploy the `server` folder (with the monorepo buildpack, `APP_BASE=server`,
-  or push a subtree). `server/Procfile` runs `prisma migrate deploy` as the release phase and
-  `node dist/index.js` as the web process; the `build` script generates the Prisma client and
-  compiles. Config vars: `DATABASE_URL`, `APP_URL` (the web URL — used in email links),
+- **API on Heroku:** deploy the full repository so `courses/` and `agent-ip/scripts/` reach
+  the backend release. The root `Procfile` supports a root deployment; `server/Procfile`
+  supports a monorepo buildpack with `APP_BASE=server` that retains sibling directories.
+  The release phase runs `prisma migrate deploy` and then publishes opted-in courses using
+  the existing `DATABASE_URL`. A server-only subtree deploy cannot publish courses.
+  The `build` script generates the Prisma client and compiles. Config vars:
+  `DATABASE_URL`, `APP_URL` (the web URL — used in email links),
   `CORS_ORIGINS`, the email and OpenRouter keys from `server/.env.example`, `CRON_SECRET`.
   Background jobs run inside the process once a day; set `JOBS_ENABLED=false` on every dyno but
   one, or hand the schedule to an external scheduler calling `POST /api/v1/jobs/*`.
-- **Containers anywhere:** `docker build -t buildment-api server/` and
+- **Containers anywhere:** `docker build -f server/Dockerfile -t buildment-api .` and
   `docker build -t buildment-web frontend/` (Next.js standalone output);
   `docker compose --profile app up --build` runs Postgres, migrations and both apps locally.
 - **CI** (`.github/workflows/ci.yml`): one job per app (typecheck, lint, tests against Postgres,

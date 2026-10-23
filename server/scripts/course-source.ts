@@ -17,6 +17,17 @@ import { isSafeProductName } from "../src/shared/lib/content-tokens.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_COURSE_SLUG = "multi-vendor-marketplace";
+const SERVER_ROOT = path.resolve(__dirname, "..");
+
+/** Support a root checkout and Heroku's APP_BASE=server slug layout. */
+export function coursesRootForServer(serverRoot: string): string {
+  const nested = path.join(serverRoot, "courses");
+  return fs.existsSync(path.join(nested, "publishing.yaml"))
+    ? nested
+    : path.resolve(serverRoot, "../courses");
+}
+
+const COURSES_ROOT = coursesRootForServer(SERVER_ROOT);
 
 function courseSlugFromArgs(argv: string[]): string {
   const index = argv.indexOf("--course");
@@ -31,7 +42,7 @@ function courseSlugFromArgs(argv: string[]): string {
 
 export const COURSE_SLUG = courseSlugFromArgs(process.argv);
 // ZIP validation runs the same scripts against an isolated temporary folder.
-export const COURSE_SOURCE_DIR = process.env.COURSE_IMPORT_SOURCE ?? path.resolve(__dirname, "../../courses", COURSE_SLUG);
+export const COURSE_SOURCE_DIR = process.env.COURSE_IMPORT_SOURCE ?? path.join(COURSES_ROOT, COURSE_SLUG);
 export const COURSE_MANIFEST_PATH = path.join(COURSE_SOURCE_DIR, "course.yaml");
 
 if (!fs.existsSync(COURSE_SOURCE_DIR)) {

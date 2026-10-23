@@ -1,0 +1,14 @@
+.git
+**/node_modules
+**/dist
+**/.next
+**/.env
+**/.env.*
+!**/.env.example
+frontend
+desktop
+docs
+exports
+agent-ip/work
+coverage
+*.tsbuildinfo

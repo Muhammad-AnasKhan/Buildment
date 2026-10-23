@@ -5,6 +5,7 @@ import path from "node:path";
 import { unzipSync } from "fflate";
 import { load as loadYaml } from "js-yaml";
 import { courseSourceHash, packageZip, publishingSettings, selectedPackages } from "../../scripts/repository-course-publish.js";
+import { coursesRootForServer } from "../../scripts/course-source.js";
 
 const temporary: string[] = [];
 afterEach(() => { for (const dir of temporary.splice(0)) fs.rmSync(dir, { recursive: true, force: true }); });
@@ -19,6 +20,18 @@ function course(root: string, slug: string, extra = "") {
 }
 
 describe("repository course publishing selection", () => {
+  it("finds courses beside server and in an APP_BASE release slug", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "buildment-course-layout-"));
+    temporary.push(root);
+    const server = path.join(root, "server");
+    const courses = path.join(root, "courses");
+    fs.mkdirSync(server);
+    fs.mkdirSync(courses);
+    fs.writeFileSync(path.join(courses, "publishing.yaml"), "instructorEmail: devweekends@gmail.com\n");
+    expect(coursesRootForServer(server)).toBe(courses);
+    expect(coursesRootForServer(root)).toBe(courses);
+  });
+
   it("selects only opted-in packages and builds the ZIP expected by the import services", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "buildment-course-test-"));
     temporary.push(root);
