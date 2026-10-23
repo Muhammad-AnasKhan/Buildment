@@ -1,0 +1,156 @@
+slug: building-habits
+title: "Building Habits That Last"
+description: "Learn how habits really form, and use it to build good habits and weaken the ones you do not want. Tie a tiny first step to a clear cue, let your surroundings do the work, track without shame, restart after a missed day, and keep your habits going through power cuts, weak internet, prayer times and family life. Grounded in research, with every idea credited to the people who found it."
+projectGoal: "Design, run and review your own 30-day habit plan with real tracking data, or review a provided case: the habit written as a cue and a tiny step, the friction you changed, a backup version for hard days, your tracker with its missed days, and what you will keep, change or drop. Then walk a mentor through it in five minutes."
+difficulty: Beginner
+estimatedHours: 16
+category: soft-skills
+modules:
+  - dir: 01-how-habits-work
+    title: "How habits work"
+    summary: "See what a habit really is: a behaviour your surroundings start for you, learned by repeating it in the same situation. Meet the cue, the routine and the reward, and find out how long a habit really takes to form."
+    lessons:
+      - file: 01.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce habits through a fellow who cannot start the study habit he wants, while another habit, checking his phone, runs without him deciding."
+      - file: 01.02-what-a-habit-is.md
+        title: "What a habit is"
+        goal: "Tell a habit from a decision and from a goal: a habit is started by a cue in a familiar situation, with little thought."
+      - file: 01.03-cue-routine-reward.md
+        title: "Cue, routine and reward"
+        goal: "Find the cue, the routine and the reward in a real habit, and explain why the reward matters most while a habit is forming."
+      - file: 01.04-how-long-a-habit-takes.md
+        title: "How long a habit takes"
+        goal: "Explain what research says about how long habits take to form, why the '21 days' idea is a myth, and why one missed day does not erase your progress."
+      - file: 01.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: describe the cue, routine and reward of one habit you already have."
+  - dir: 02-starting-a-habit
+    title: "Starting a habit that sticks"
+    summary: "Stop waiting for motivation. Make the first step tiny, tie it to a clear moment with an if-then plan, and attach it to something you already do every day."
+    lessons:
+      - file: 02.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce starting a habit through a freelancer whose big plan to practise every day faded within a week."
+      - file: 02.02-start-small.md
+        title: "Motivation goes up and down, so start small"
+        goal: "Explain why motivation is not a reliable engine, and shrink a habit until it fits your hardest day."
+      - file: 02.03-if-then-plans.md
+        title: "If-then plans"
+        goal: "Turn a wish into an if-then plan that names the exact moment and the exact first step."
+      - file: 02.04-anchor-to-a-routine.md
+        title: "Anchor it to something you already do"
+        goal: "Choose a strong anchor for a new habit: an existing routine that happens every day, in the right place, and ends at a clear moment."
+      - file: 02.05-quiz.md
+        title: "Starting a habit"
+        goal: "Graded scenarios on tiny steps, if-then plans and anchors, including an AI answer to check."
+      - file: 02.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: design your course habit as a cue and a smallest version, and start tracking it."
+  - dir: 03-your-surroundings
+    title: "Let your surroundings do the work"
+    summary: "Your place, your things and your timetable start most of your habits. Change them on purpose: make the good choice easy and the unwanted one harder, and plan for the days the power and the internet fail."
+    lessons:
+      - file: 03.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce environment design through a remote worker in a shared family home whose phone is always closer than his work."
+      - file: 03.02-context-cues.md
+        title: "Places, times and people as cues"
+        goal: "Find the place, time, people and earlier action that start a habit, and use a change of routine as a chance to start a new one."
+      - file: 03.03-friction.md
+        title: "Friction: easier and harder"
+        goal: "Count the steps between you and a behaviour, and change them so the good choice takes less effort and the unwanted one takes more."
+      - file: 03.04-power-cuts-and-weak-internet.md
+        title: "When the power and the internet fail"
+        goal: "Give a habit a backup version for days with no power or weak internet, so a hard day does not break it."
+      - file: 03.05-quiz.md
+        title: "Your surroundings"
+        goal: "Graded scenarios on cues, friction and backup versions."
+      - file: 03.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: redesign one place or routine for your course habit, and write its backup version."
+  - dir: 04-breaking-a-habit
+    title: "Breaking a habit you do not want"
+    summary: "Willpower alone is a weak plan. Find what starts the habit and what it gives you, then remove the cue, add friction and choose a better routine for the same need."
+    lessons:
+      - file: 04.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce breaking a habit through a fellow whose late-night phone scrolling leaves her tired every morning."
+      - file: 04.02-willpower-is-not-the-plan.md
+        title: "Why willpower is not the plan"
+        goal: "Explain what research says about willpower, and why facing fewer temptations works better than resisting more of them."
+      - file: 04.03-same-need-new-routine.md
+        title: "Same cue, same need, new routine"
+        goal: "Find the cue and the need behind an unwanted habit, and choose a replacement routine that meets the same need."
+      - file: 04.04-remove-the-cue.md
+        title: "Remove the cue and add friction"
+        goal: "Weaken an unwanted habit by avoiding or removing its cue, making it harder to start, and noticing the moment it begins."
+      - file: 04.05-quiz.md
+        title: "Breaking a habit"
+        goal: "Graded scenarios on willpower, replacement routines and cue removal, including an AI answer to check."
+      - file: 04.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a plan to weaken one unwanted habit, yours or a provided case."
+  - dir: 05-tracking-and-restarting
+    title: "Tracking, missed days and restarting"
+    summary: "Track what you do, not only what you hope to get. Treat a missed day as information, not failure, restart before one miss becomes many, and keep going when results are slow."
+    lessons:
+      - file: 05.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce tracking and restarting through a fellow whose long streak broke during a week of power cuts."
+      - file: 05.02-tracking-that-helps.md
+        title: "Tracking that helps"
+        goal: "Track a habit simply, on paper or a phone, recording the action you control rather than the result you hope for."
+      - file: 05.03-missed-days.md
+        title: "Missing a day without losing the habit"
+        goal: "Explain why one missed day matters less than giving up after it, and count progress in a way that does not punish a miss."
+      - file: 05.04-slow-results-and-restarting.md
+        title: "Slow results, slips and starting again"
+        goal: "Tell a slip from giving up, write a restart plan, and keep going when results come later than the effort."
+      - file: 05.05-quiz.md
+        title: "Tracking and restarting"
+        goal: "Graded scenarios on tracking, missed days and restarting, including an AI answer to check."
+      - file: 05.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: review your course habit tracker so far and write your restart plan."
+  - dir: 06-habits-for-your-life
+    title: "Habits for your whole life"
+    summary: "Choose which habit matters most now, build study and focused work habits that survive a busy home, and fit habits into a daily rhythm of prayer times, sleep, health and family."
+    lessons:
+      - file: 06.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce habits across a whole life through a fellow who tried to start five habits at once while studying, working and caring for her family."
+      - file: 06.02-choose-one-habit.md
+        title: "Choose one habit, and the person you are becoming"
+        goal: "Choose one habit to start first, and see each repetition as small evidence of the kind of person you are becoming."
+      - file: 06.03-study-and-deep-work.md
+        title: "Study and focused work habits"
+        goal: "Build a study or focused work habit with a start signal, a protected time, a phone out of reach and offline materials, including for remote work across time zones."
+      - file: 06.04-a-daily-rhythm.md
+        title: "A daily rhythm: prayer times, sleep, health and family"
+        goal: "Fit habits into a daily rhythm, using fixed points such as prayer times and meals as anchors, and adjust when the day changes."
+      - file: 06.05-quiz.md
+        title: "Habits for your life"
+        goal: "Graded scenarios on choosing a habit, study and focused work, and daily rhythm."
+      - file: 06.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a weekly rhythm plan with your habits placed on real anchors."
+  - dir: 07-your-30-day-plan
+    title: "Your 30-day habit plan"
+    summary: "Read 30 days of tracking data honestly, decide what to keep, change or drop, and bring every tool together in your own 30-day plan and review."
+    lessons:
+      - file: 07.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Bring the course together through a fellow looking back at a month of tracking, and introduce the capstone."
+      - file: 07.02-reading-your-30-days.md
+        title: "Reading your 30 days"
+        goal: "Read a 30-day tracker for patterns, find what caused the missed days, and choose one change at a time."
+      - file: 07.03-quiz.md
+        title: "Mixed review: which tool first?"
+        goal: "Graded fresh cases from every module: choose which habit tool to use first, and why."
+      - file: 07.04-capstone-30-day-plan.md
+        title: "Capstone: your 30-day habit plan"
+        goal: "Design, run and review a 30-day habit plan with real tracking data, or review a provided case, and decide what to keep, change or drop."
+      - file: 07.05-checklist.md
+        title: "Course checklist and your habit toolkit"
+        goal: "Gate: final checks, your habit toolkit, a look back at the habit you described in module 1, and your plan for the next 30 days."
