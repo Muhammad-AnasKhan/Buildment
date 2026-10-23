@@ -1,0 +1,181 @@
+slug: cause-and-effect
+title: "Why Things Happen: Cause, Effect and Systems Thinking"
+description: "Find out why things really happen, at work and in life. Tell a cause from a coincidence, test a cause fairly, dig past symptoms to root causes, solve problems like a detective, see the feedback loops in a system, and ask 'and then what?' before you act. Every module is practice with everyday cases: shops, freelance work, study, phones and family plans."
+projectGoal: "Investigate one real problem, or a provided case, from start to finish: describe it exactly, map its possible causes, find a root cause with evidence, plan a fair test of your fix, and predict its side effects. Then walk a mentor through it in five minutes."
+difficulty: Medium
+estimatedHours: 19
+category: soft-skills
+modules:
+  - dir: 01-why-things-happen
+    title: "Why things happen"
+    summary: "See causes as chains, not single culprits, and catch the two habits that fool everyone: blaming one cause, and believing that what came first must be the cause."
+    lessons:
+      - file: 01.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce cause and effect through a home bakery whose orders suddenly dropped, and the five different guesses people made."
+      - file: 01.02-chains-of-cause-and-effect.md
+        title: "Chains of cause and effect"
+        goal: "Draw a chain of causes from a problem back to where it started, and tell a direct cause from a contributing one."
+      - file: 01.03-the-single-cause-trap.md
+        title: "The single-cause trap"
+        goal: "Spot the habit of blaming one cause when several causes worked together."
+      - file: 01.04-after-is-not-because.md
+        title: "After is not because"
+        goal: "Explain why 'it happened after, so it happened because' is a weak reason, using everyday examples."
+      - file: 01.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a cause-and-effect chain for a problem you have seen."
+  - dir: 02-correlation-and-cause
+    title: "Correlation, cause and hidden factors"
+    summary: "When two things move together, check for a hidden third factor, a cause that runs the other way, plain chance, and conclusions drawn only from the winners."
+    lessons:
+      - file: 02.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce correlation through a claim that students who use a study app get higher marks."
+      - file: 02.02-hidden-third-factors.md
+        title: "Hidden third factors"
+        goal: "Find a hidden third factor that could explain why two things move together."
+      - file: 02.03-reverse-cause-and-chance.md
+        title: "Reverse cause, chance and the drift back to normal"
+        goal: "Check whether the cause might run the other way, whether chance could explain the pattern, and whether an unusual result is simply drifting back to normal."
+      - file: 02.04-survivors-and-selection.md
+        title: "Survivors and selection"
+        goal: "Spot conclusions drawn only from the people or projects that survived or were picked."
+      - file: 02.05-quiz.md
+        title: "Correlation and cause"
+        goal: "Graded scenarios on third factors, reverse cause, chance and selection, including an AI answer to check."
+      - file: 02.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: one real claim tested for a third factor, reverse cause, chance and selection."
+  - dir: 03-testing-a-cause
+    title: "Testing a cause fairly"
+    summary: "Find out whether a cause is real with a fair test: change one thing at a time, compare with a group that did not change, and plan small, cheap experiments with a measure chosen in advance."
+    lessons:
+      - file: 03.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce fair tests through a freelancer who changed three things at once and could not tell which one worked."
+      - file: 03.02-change-one-thing.md
+        title: "Change one thing at a time"
+        goal: "Design a fair test that changes one thing and keeps everything else the same."
+      - file: 03.03-compare-with-a-control.md
+        title: "Compare with a group that did not change"
+        goal: "Use a comparison group to tell a real effect from what would have happened anyway."
+      - file: 03.04-small-experiments.md
+        title: "Small experiments"
+        goal: "Plan a small, cheap experiment, such as an A/B test, deciding the measure and the number of cases before you start, and never stopping early because you are ahead."
+      - file: 03.05-quiz.md
+        title: "Testing a cause"
+        goal: "Graded scenarios on fair tests, comparison groups and small experiments."
+      - file: 03.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a fair test plan for a cause you want to check."
+  - dir: 04-root-causes
+    title: "Finding root causes"
+    summary: "Stop fixing the same problem again and again. Tell symptoms from root causes, use the five whys and fishbone diagrams, and look for causes in processes, not people to blame."
+    lessons:
+      - file: 04.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce root causes through a family shop whose deliveries keep arriving late."
+      - file: 04.02-symptoms-and-root-causes.md
+        title: "Symptoms and root causes"
+        goal: "Tell a symptom from a root cause, and explain why fixing only symptoms keeps problems coming back."
+      - file: 04.03-five-whys.md
+        title: "The five whys"
+        goal: "Use the five whys to dig from a problem to a root cause, and know where the method goes wrong."
+      - file: 04.04-fishbone-diagrams.md
+        title: "Fishbone diagrams"
+        goal: "Map many possible causes in groups with a fishbone diagram before choosing which ones to check."
+      - file: 04.05-causes-not-culprits.md
+        title: "Causes, not culprits, and strong fixes"
+        goal: "Look for causes in steps, tools and systems instead of a person to blame, and choose a strong fix (a better design) over a weak one (a reminder)."
+      - file: 04.06-quiz.md
+        title: "Root causes"
+        goal: "Graded scenarios on symptoms, the five whys, fishbones and blame."
+      - file: 04.07-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: five whys and a fishbone for a real or provided problem."
+  - dir: 05-solve-it-like-a-detective
+    title: "Solve it like a detective"
+    summary: "Solve problems step by step: describe the problem exactly, list possible causes, test the cheapest likely one first, and split the problem in half to find a fault fast."
+    lessons:
+      - file: 05.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce step-by-step problem solving through a laptop that will not charge the day before a deadline."
+      - file: 05.02-describe-the-problem-exactly.md
+        title: "Describe the problem exactly"
+        goal: "Describe a problem by what, where, when and how much, and by what is not affected."
+      - file: 05.03-guess-test-repeat.md
+        title: "Guess, test, repeat"
+        goal: "List possible causes, test them one at a time with the cheapest likely one first as a rule of thumb, and confirm a fix with a test."
+      - file: 05.04-split-the-problem-in-half.md
+        title: "Split the problem in half"
+        goal: "Find a fault faster by testing the middle of a chain and ruling out half of it each time."
+      - file: 05.05-quiz.md
+        title: "Problem solving"
+        goal: "Graded scenarios on describing problems, choosing the next test and splitting in half, including an AI answer to check."
+      - file: 05.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a problem-solving log for a real or provided problem."
+  - dir: 06-systems-and-feedback-loops
+    title: "Systems and feedback loops"
+    summary: "See how causes loop back on themselves: loops where more leads to more, loops that pull back toward a limit, the delays that cause overshoot, and the bottleneck that sets the pace of a whole process."
+    lessons:
+      - file: 06.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce systems through a home bakery that grew fast and then suddenly stalled."
+      - file: 06.02-reinforcing-loops.md
+        title: "Loops where more leads to more"
+        goal: "Draw a reinforcing loop and explain how it can make something grow fast or collapse fast."
+      - file: 06.03-balancing-loops-and-delays.md
+        title: "Loops that pull back, delays and stocks"
+        goal: "Draw a balancing loop that pulls toward a limit, explain how a delay causes overshoot, and see a stock as something that fills and drains like a water tank."
+      - file: 06.04-bottlenecks.md
+        title: "Bottlenecks"
+        goal: "Find the slowest step in a process, explain why speeding up the other steps does not help, and expect the bottleneck to move once you fix it."
+      - file: 06.05-quiz.md
+        title: "Systems and feedback loops"
+        goal: "Graded scenarios on loops, delays and bottlenecks, including an AI answer to check."
+      - file: 06.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a loop diagram of a system in your life or work."
+  - dir: 07-consequences
+    title: "Consequences: and then what?"
+    summary: "Look past the first effect of a decision. Ask 'and then what?', see how targets change behaviour, and plan for side effects before they surprise you."
+    lessons:
+      - file: 07.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce second-order effects through a well-meant rule that made a problem worse."
+      - file: 07.02-and-then-what.md
+        title: "And then what?"
+        goal: "Ask 'and then what?' to find the second and third effects of a decision."
+      - file: 07.03-incentives-and-targets.md
+        title: "Incentives and targets"
+        goal: "Spot when a target or reward changes behaviour in ways nobody wanted."
+      - file: 07.04-side-effects.md
+        title: "Side effects"
+        goal: "Predict how people will react to a change, and plan a way to catch side effects early."
+      - file: 07.05-quiz.md
+        title: "Consequences"
+        goal: "Graded scenarios on second-order effects, targets and side effects, including an AI answer to check."
+      - file: 07.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a consequence map for a decision you or someone near you is making."
+  - dir: 08-learning-from-what-went-wrong
+    title: "Learning from what went wrong, and capstone"
+    summary: "Review a failure without blame so it does not happen again, then bring every habit together in a full investigation of one problem."
+    lessons:
+      - file: 08.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Bring the course together through a project that went wrong, and introduce the capstone."
+      - file: 08.02-blameless-reviews.md
+        title: "Reviews without blame"
+        goal: "Run a short review after something goes wrong, without blaming a person: what happened, why, and what will change, while honest mistakes and deliberate harm are still told apart."
+      - file: 08.03-quiz.md
+        title: "Mixed review: which habit first?"
+        goal: "Graded fresh cases from every module: choose which habit to use first, and why."
+      - file: 08.04-capstone-investigate-a-problem.md
+        title: "Capstone: investigate a problem"
+        goal: "Investigate one real or provided problem: describe it, map its causes, find a root cause with evidence, plan a fair test of a fix and predict its side effects."
+      - file: 08.05-checklist.md
+        title: "Course checklist and your cause-and-effect toolkit"
+        goal: "Gate: a short review without blame of a provided incident, final checks, your toolkit, and a look back at your first chain in module 1."
