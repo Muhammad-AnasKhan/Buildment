@@ -1,0 +1,190 @@
+slug: logic-building
+title: "Think Clearly: Logic for the AI Era"
+description: "A gentle, playful start in clear thinking, with no coding and no hard maths. Break problems into steps, reason with rules, spot hidden assumptions and weak arguments, make good guesses with rough numbers, and check what an AI tells you before you trust it. Every module starts with a puzzle from everyday life: markets, family budgets, study and freelancing."
+projectGoal: "Think through one real choice, or a provided scenario, in five parts: the steps, two hidden assumptions, a rough number, a check of an AI answer and a decision with its reason. Then walk a mentor through it in five minutes."
+difficulty: Beginner
+estimatedHours: 13
+category: soft-skills
+modules:
+  - dir: 01-warm-up-your-thinking
+    title: "Warm up your thinking"
+    summary: "See that clear thinking is a skill you can train, catch the puzzles that trick fast readers, and learn what to do when you are stuck."
+    lessons:
+      - file: 01.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Welcome the learner, explain how the course works, and start with a first puzzle."
+      - file: 01.02-read-slowly.md
+        title: "Read slowly"
+        goal: "Catch the trick in puzzles that fool fast readers by reading every word and checking what the question really asks."
+      - file: 01.03-fast-and-slow-answers.md
+        title: "Fast answers and slow answers"
+        goal: "Tell when a quick answer is fine and when to stop and check it."
+      - file: 01.04-how-to-be-stuck-well.md
+        title: "How to be stuck well"
+        goal: "Use four moves when you are stuck: draw it, try a small case, work backward and ask a clear question."
+      - file: 01.05-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a first learning log on how you think when a problem is hard."
+  - dir: 02-steps-and-patterns
+    title: "Steps and patterns"
+    summary: "Break a task into clear steps someone else can follow, find the rule behind a pattern, sort by hand, and draw a decision as a flowchart. This is how computers are told what to do, without any code."
+    lessons:
+      - file: 02.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce step-by-step thinking through a family getting ready for a big meal."
+      - file: 02.02-recipes-are-instructions.md
+        title: "Recipes are instructions"
+        goal: "Break a task into clear, ordered steps that someone else can follow without asking you."
+      - file: 02.03-patterns-and-sequences.md
+        title: "Patterns and sequences"
+        goal: "Find the rule behind a sequence and use it to predict what comes next."
+      - file: 02.04-sorting-by-hand.md
+        title: "Sorting by hand"
+        goal: "Compare two ways to sort a pile of papers and explain why one takes fewer steps."
+      - file: 02.05-flowcharts.md
+        title: "Flowcharts: draw a decision"
+        goal: "Draw a decision as a flowchart with yes and no paths that someone else can follow."
+      - file: 02.06-quiz.md
+        title: "Steps and patterns"
+        goal: "Graded puzzles on steps, patterns, sorting and flowcharts."
+      - file: 02.07-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: written steps for a real task that someone else could follow."
+  - dir: 03-if-then-and-maybe
+    title: "If, then, and maybe"
+    summary: "Read rules with if, and, or and not, tell what a rule really proves, solve logic grid puzzles, and follow things that move from one state to another."
+    lessons:
+      - file: 03.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce rules and conditions through a scholarship with clear entry rules."
+      - file: 03.02-if-and-or-not.md
+        title: "If, and, or, not"
+        goal: "Read a rule with if, and, or and not, and decide who it applies to."
+      - file: 03.03-what-follows.md
+        title: "What follows and what does not"
+        goal: "Tell what a rule really proves, and spot the mistake of reading a rule backwards."
+      - file: 03.04-logic-grid-puzzles.md
+        title: "Logic grid puzzles"
+        goal: "Solve a small logic grid by writing down what you know and crossing out what cannot be true."
+      - file: 03.05-things-that-change-state.md
+        title: "Things that change state"
+        goal: "Follow a job application through its states and say which moves are allowed."
+      - file: 03.06-quiz.md
+        title: "If, then, and maybe"
+        goal: "Graded puzzles on conditions, reversed rules, logic grids and states."
+      - file: 03.07-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a logic puzzle solved and explained step by step in your own words."
+  - dir: 04-assumptions-causes-and-evidence
+    title: "Assumptions, causes and evidence"
+    summary: "Find the hidden assumption in a claim, tell cause from coincidence, look for the third factor, and read charts and small samples honestly."
+    lessons:
+      - file: 04.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce evidence through a confident claim about a busy shop."
+      - file: 04.02-hidden-assumptions.md
+        title: "Hidden assumptions"
+        goal: "Find the hidden assumption in a claim and say one way to test it."
+      - file: 04.03-cause-or-coincidence.md
+        title: "Cause or coincidence"
+        goal: "Tell cause from correlation, and suggest a third factor that could explain both."
+      - file: 04.04-reading-charts-honestly.md
+        title: "Reading charts and small samples honestly"
+        goal: "Spot cut-off axes, picked time periods and small samples in charts and claims."
+      - file: 04.05-quiz.md
+        title: "Assumptions, causes and evidence"
+        goal: "Graded scenarios on assumptions, causes, charts and samples, including an AI answer to check."
+      - file: 04.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a hidden assumption found in a real claim, with a way to test it."
+  - dir: 05-rough-numbers-and-good-guesses
+    title: "Rough numbers and good guesses"
+    summary: "Break a big number question into small guesses, use a rough estimate to catch numbers that cannot be right, and work with simple budgets and averages."
+    lessons:
+      - file: 05.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Show why a rough answer beats no answer, through a question about a neighbourhood bakery."
+      - file: 05.02-fermi-questions.md
+        title: "Fermi questions"
+        goal: "Break a big number question into small guesses and multiply them into an estimate."
+      - file: 05.03-sanity-checks.md
+        title: "Sanity checks"
+        goal: "Use a rough estimate to catch a number that cannot be right, including in an AI answer."
+      - file: 05.04-budgets-and-averages.md
+        title: "Budgets and averages"
+        goal: "Work out a simple budget and an average, and see how one big number can pull an average."
+      - file: 05.05-quiz.md
+        title: "Rough numbers"
+        goal: "Graded estimates, sanity checks and averages, including an AI answer to check."
+      - file: 05.06-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: one estimate written out with its assumptions."
+  - dir: 06-weak-arguments
+    title: "Weak arguments and how to answer them"
+    summary: "Split an argument into claim, reasons and evidence, name six common weak arguments, check offers that are too good to be true, and disagree politely."
+    lessons:
+      - file: 06.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce arguments through a forwarded message that sounds convincing."
+      - file: 06.02-what-an-argument-is.md
+        title: "What an argument is"
+        goal: "Split an argument into its claim, its reasons and its evidence."
+      - file: 06.03-six-common-traps.md
+        title: "Six common traps"
+        goal: "Name six common weak arguments and say what is missing in each."
+      - file: 06.04-too-good-to-be-true.md
+        title: "Too good to be true"
+        goal: "Check a job offer or scholarship message for the signs of a scam before you reply."
+      - file: 06.05-disagree-well.md
+        title: "Disagree well"
+        goal: "State the other view fairly, then reply to it politely with a reason."
+      - file: 06.06-quiz.md
+        title: "Weak arguments"
+        goal: "Graded scenarios on naming traps and spotting scams, including an AI answer to check."
+      - file: 06.07-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a polite written reply to a weak claim."
+  - dir: 07-thinking-with-ai
+    title: "Thinking with AI: ask well, check always"
+    summary: "See why an AI can sound sure and still be wrong, write clear instructions in five parts, check an AI answer three ways, and know when not to use AI at all."
+    lessons:
+      - file: 07.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Introduce AI tools through a student who trusted an answer that sounded sure."
+      - file: 07.02-what-ai-is-good-and-bad-at.md
+        title: "What AI is good and bad at"
+        goal: "Explain in plain words why an AI can sound sure and still be wrong."
+      - file: 07.03-clear-instructions.md
+        title: "Clear instructions in five parts"
+        goal: "Write clear instructions for a person or an AI in five parts: goal, context, steps, format and how to check."
+      - file: 07.04-check-the-ai-answer.md
+        title: "Check the AI's answer"
+        goal: "Check a claim three ways: find the source, solve it another way and check the rough numbers."
+      - file: 07.05-when-not-to-use-ai.md
+        title: "When not to use AI"
+        goal: "Decide when not to use or trust AI: private data, health and legal questions, your own learning and honest work."
+      - file: 07.06-quiz.md
+        title: "Thinking with AI"
+        goal: "Graded scenarios on instructions, checking AI answers and when not to use AI."
+      - file: 07.07-checklist.md
+        title: "Checklist and learning log"
+        goal: "Gate: a vague instruction rewritten into a clear one."
+  - dir: 08-deciding-and-capstone
+    title: "Deciding without all the facts, and capstone"
+    summary: "Judge a decision by what you knew at the time, test before you bet big, then bring every habit together in the capstone."
+    lessons:
+      - file: 08.01-set-the-scene.md
+        title: "Set the scene"
+        goal: "Bring every habit from the course together and introduce the capstone."
+      - file: 08.02-good-decisions-and-good-outcomes.md
+        title: "Good decisions and good outcomes"
+        goal: "Judge a decision by what you knew at the time, and weigh options by their chances and what you would regret."
+      - file: 08.03-small-tests-before-big-bets.md
+        title: "Small tests before big bets"
+        goal: "Turn a big, uncertain choice into a small and cheap test first."
+      - file: 08.04-capstone-think-it-through.md
+        title: "Capstone: think it through"
+        goal: "Submit five parts for one choice: the steps, two assumptions, a rough number, an AI check and a decision."
+      - file: 08.05-checklist.md
+        title: "Course checklist and your thinking toolkit"
+        goal: "Gate: final checks, your thinking toolkit, and a look back at your first learning log."
