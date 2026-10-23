@@ -68,6 +68,7 @@ describe("buildCourseTrack", () => {
       familySlug: "multi-vendor-marketplace",
       variantSlug: "grocery",
       variantChosen: false,
+      variantLocked: false,
       specialisationSlug: null,
       specialisationOpen: false,
     });

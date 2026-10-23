@@ -93,15 +93,19 @@ difficulty: Beginner
 estimatedHours: 10
 modules:
   - dir: 01-introduction
+    key: introduction
     title: Introduction
     lessons:
       - file: 01.01-set-the-scene.md
+        key: set-the-scene
         title: Set the scene
         goal: Explain the problem and course outcome.
       - file: 01.02-quiz.md
+        key: quiz
         title: Quiz
         goal: Check understanding through scenarios.
       - file: 01.03-checklist.md
+        key: checklist
         title: Checklist and learning log
         goal: Verify the work and reflect on the decision.
 ```
@@ -113,13 +117,26 @@ each lesson needs `file`, `title`, and `goal`. Optional fields include `coverUrl
 and module `summary`. All planned files must exist, and every numbered source file/module must
 be listed. The manifest example is only a plan; the lesson bodies must also pass validation.
 
+`key` is optional for older packages, but new course sources should assign one stable, unique
+kebab-case key to every module and lesson. Keep each key when a file moves, a title changes, or
+the lesson is rewritten. A keyed course requires keys on every supplied module and lesson in an
+update. ZIP updates match keys before content similarity. Different keys create new content;
+existing learner releases and progress remain separate.
+
+A variant course adds `family` and either uses a built-in family or declares `variantFamily`
+with at least two variants. Under `variants`, target a shared `lessonKey` and supply either
+exact `replacements` for a sentence/section or a complete Markdown `file` under
+`variants/<variant-slug>/<module-dir>/<lesson-file>.md`. See
+[`12-course-variants-and-publishing.mdx`](12-course-variants-and-publishing.mdx) for an example.
+
 ### Upload validation and limits
 
 - Maximum **5 MB compressed**, **20 MB expanded**, and **1,000 archive entries**, including directories.
 - Exactly one `course.yaml`, at the root or inside one wrapper folder. When a wrapper is used,
   every file must be inside it.
-- Accepted files are `course.yaml`, optional `COURSE-OUTLINE.md`, and numbered Markdown paths
-  such as `01-introduction/01.02-quiz.md`. Exclude images, scripts, generated files, `.git`,
+- Accepted files are `course.yaml`, optional `COURSE-OUTLINE.md`, numbered shared Markdown paths
+  such as `01-introduction/01.02-quiz.md`, and variant lesson files under `variants/<slug>/`.
+  Exclude images, scripts, generated files, `.git`,
   `node_modules`, `.DS_Store`, and `__MACOSX`. Reference media through remote URLs.
 - Archive paths must use forward slashes. Absolute paths, backslashes, parent traversal, and
   drive-style paths are rejected.
@@ -127,10 +144,12 @@ be listed. The manifest example is only a plan; the lesson bodies must also pass
   component allowlist and activity-only quiz rule, and runs the structure audit in strict mode.
   The audit checks gates, learning logs, quiz/Predict YAML, per-option explanations, and rejects
   em/en dashes in manifest-backed courses. Review warnings, but warnings alone do not reject an upload.
-- Validation has a 15-second process limit. A validation failure returns reasons without creating
+- Validation has a 120-second process limit. A validation failure returns reasons without creating
   a course. Validated course data is written in one transaction.
-- An existing course slug is rejected. ZIP import creates a new course; it does not update one.
-  Choose a new manifest slug when creating another course.
+- **Import course ZIP** creates a new draft and rejects an existing slug. To update an existing
+  course, use **Course settings → Update from ZIP** with the same slug. Updates are patches:
+  omitted content stays, explicit `remove.lessonKeys` and `remove.moduleKeys` remove content
+  from the new release, and learners already working keep their old release and progress.
 
 ### Prepare and validate on Windows
 
@@ -146,10 +165,10 @@ The source checks need no database. Keep the ZIP outside the source folder and i
 contents for extra files. If upload validation fails, fix the original source, rerun the checks,
 rebuild the ZIP, and retry. Do not bypass validation to make an invalid quiz import.
 
-The bulk CLI alternative is `pnpm --dir server content:import --course example-course`.
-Unlike ZIP import, the CLI uses the first MENTOR account and creates published content; verify
-database and ownership before running it. Re-import can replace block rows, so do not use the CLI
-to overwrite live learner assessments without a block migration plan.
+For a repository PR, the `Course package` workflow validates the PR and previews a
+merged package. Its GitHub environment approval lets the creator publish the update.
+The trusted publisher uses the ZIP preview and approval service. The older `content:import` CLI still
+updates live rows and must not be used to update a published course.
 
 ## Why MDX and not a JSON block editor (Notion-style)
 

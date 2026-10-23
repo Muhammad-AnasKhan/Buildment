@@ -4,6 +4,7 @@ import type { SessionUser } from "../../types/auth.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
 import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
 import { resolveContinueChapterPath, syllabusForEnrollment } from "../progress/enrollment-syllabus.js";
+import { releaseForEnrollment, releaseModulesWithBlocks } from "./releases.js";
 
 /** Path of the chapter the learner should open next in this course (`null` when done). */
 export async function continueChapterPath(input: {
@@ -16,6 +17,7 @@ export async function continueChapterPath(input: {
       id: true,
       slug: true,
       sequential: true,
+      familySlug: true,
       modules: {
         where: { archivedAt: null },
         orderBy: { order: "asc" },
@@ -46,6 +48,8 @@ export async function continueChapterPath(input: {
   const enrollment = await requireBlockSubmissionAccess(course.id, input.user);
   const bypassLocking = bypassProgressGatingForEmail(input.user!.email);
 
-  const { flatChapters } = await syllabusForEnrollment(course, enrollment.id, bypassLocking);
+  const selected = await releaseForEnrollment(course.id, enrollment, course.familySlug);
+  const modules = selected ? await releaseModulesWithBlocks(selected.modules) : course.modules;
+  const { flatChapters } = await syllabusForEnrollment({ ...course, modules }, enrollment.id, bypassLocking);
   return { href: resolveContinueChapterPath(course.slug, flatChapters) };
 }

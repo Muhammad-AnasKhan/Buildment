@@ -256,6 +256,9 @@ model Course {
   currency       String       @default("USD")
   sequential     Boolean      @default(true)
   familySlug     String? // course family in src/shared/lib/course-tracks.ts; null = no variants
+  variantFamily  Json? // creator-defined variant catalog; null uses a built-in family
+  activeReleaseId String? // latest approved content release; set atomically with publication
+  releases       CourseRelease[]
   /// Quiz camera photos are opt-in per course and never required; quiz integrity signals are always on.
   integritySnapshots Boolean  @default(false)
   mentorId       String
@@ -265,6 +268,7 @@ model Course {
   modules        Module[]
   importPreviews CourseImportPreview[]
   chapters       Chapter[]
+  chapterDrafts  CourseChapterDraft[]
   enrollments    Enrollment[]
   organizationCourses OrganizationCourse[]
   organizationCourseRequests OrganizationCourseRequest[]
@@ -312,12 +316,14 @@ model Module {
   id       String    @id @default(cuid())
   courseId String
   course   Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  contentKey String? // stable author key, independent of title, path and order
   title    String
   order    Int
   archivedAt DateTime?
   chapters Chapter[]
 
   @@unique([courseId, order])
+  @@unique([courseId, contentKey])
 }
 
 enum ChapterReaderMode {
@@ -331,6 +337,7 @@ model Chapter {
   course            Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
   moduleId          String?
   module            Module?           @relation(fields: [moduleId], references: [id], onDelete: SetNull)
+  contentKey        String?           // stable author key, independent of title, path and module
   slug              String
   title             String
   summary           String?
@@ -348,9 +355,28 @@ model Chapter {
   studySessions     StudySession[]
   headingNotes      HeadingNote[]
   integrityAttempts IntegrityAttempt[]
+  releaseDraft CourseChapterDraft?
 
   @@unique([courseId, slug])
+  @@unique([courseId, contentKey])
   @@index([courseId, order])
+}
+
+model CourseChapterDraft {
+  chapterId String @id
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  courseId String
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  baseReleaseId String
+  title String
+  summary String?
+  estimatedMinutes Int?
+  readerMode ChapterReaderMode
+  isMilestone Boolean
+  source String @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
 }
 
 // Server-owned preview: clients approve an immutable, expiring update, never send a plan to apply.
@@ -368,6 +394,22 @@ model CourseImportPreview {
 
   @@index([courseId, userId])
   @@index([expiresAt])
+}
+
+// Immutable, materialized curriculum. Each variant lists the chapter rows it uses;
+// shared chapters may be referenced by several variants and releases.
+model CourseRelease {
+  id          String   @id @default(cuid())
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  number      Int
+  content     Json
+  sourceHash  String?
+  createdAt   DateTime @default(now())
+  enrollments Enrollment[]
+
+  @@unique([courseId, number])
+  @@unique([courseId, sourceHash])
 }
 
 model Block {
@@ -420,6 +462,9 @@ model Enrollment {
   completedAt       DateTime?
   variantSlug       String? // learner's variant in the course family; null = not picked yet
   variantChosenAt   DateTime?
+  variantLockedAt   DateTime? // first chapter start fixes the learner's variant
+  releaseId         String?
+  release           CourseRelease? @relation(fields: [releaseId], references: [id], onDelete: SetNull)
   specialisationSlug     String? // follow-up track picked once the course is complete
   specialisationChosenAt DateTime?
   createdAt         DateTime          @default(now())

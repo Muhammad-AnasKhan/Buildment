@@ -1,4 +1,5 @@
-import { summarizeLearnerTrack } from "../../../shared/lib/course-tracks.js";
+import { resolveCourseFamily, summarizeLearnerTrack } from "../../../shared/lib/course-tracks.js";
+import { releaseForEnrollment, releaseModulesWithBlocks } from "../../courses/releases.js";
 import { prisma } from "../../../db/prisma.js";
 import { OpenQuestionConfigSchema, openQuestionUrlPresentation } from "../../../shared/blocks/open-question/schema.js";
 import { submissionPreview } from "../../progress/submission-preview.js";
@@ -39,6 +40,7 @@ export async function loadMenteeEvaluation(args: {
         select: {
           sequential: true,
           familySlug: true,
+          variantFamily: true,
           modules: {
             where: { archivedAt: null },
             orderBy: { order: "asc" },
@@ -123,6 +125,8 @@ export async function loadMenteeEvaluation(args: {
     ]);
 
   if (!courseStructure) return null;
+  const selectedRelease = await releaseForEnrollment(args.course.id, enrollment, courseStructure.familySlug);
+  if (selectedRelease) courseStructure.modules = await releaseModulesWithBlocks(selectedRelease.modules);
 
   const progressByChapter = new Map(progressRows.map((row) => [row.chapterId, row]));
   const attemptsByBlock = new Map<string, number>();
@@ -285,7 +289,7 @@ export async function loadMenteeEvaluation(args: {
       name: enrollment.user.name ?? enrollment.user.email ?? "Mentee",
       email: enrollment.user.email,
     },
-    track: summarizeLearnerTrack(courseStructure?.familySlug, enrollment),
+    track: summarizeLearnerTrack(resolveCourseFamily(courseStructure?.familySlug, courseStructure?.variantFamily), enrollment),
     enrollment: {
       id: enrollment.id,
       status: enrollment.status,

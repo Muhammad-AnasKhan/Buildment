@@ -71,7 +71,7 @@ export function CourseHeader({
           {course.status === "PUBLISHED" && course.enrollmentCount > 0 ? (
             <p className="flex items-start gap-1.5 text-xs leading-5 text-amber-700 dark:text-amber-400">
               <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
-              Publishing updates makes them visible to {course.enrollmentCount} enrolled learner{course.enrollmentCount === 1 ? "" : "s"}.
+              Learners who started keep their version. New learners and those who have not started get the update.
             </p>
           ) : course.status === "ARCHIVED" ? (
             <p className="text-xs text-muted-foreground">Archived courses are closed to new enrollments. Existing learners keep access.</p>

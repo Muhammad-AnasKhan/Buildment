@@ -1,0 +1,214 @@
+name: Course package
+
+on:
+  pull_request:
+    paths:
+      - 'content/import/**'
+      - 'server/scripts/**'
+      - 'server/src/services/teach/**'
+      - '.github/workflows/course-publish.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'content/import/**'
+  workflow_dispatch:
+    inputs:
+      course:
+        description: Course package slug under content/import/
+        required: true
+        type: string
+      expect_release:
+        description: Active release ID shown in the creator's update preview (omit for creation or first release)
+        required: false
+        type: string
+      expect_fingerprint:
+        description: Course snapshot fingerprint from the reviewed preview
+        required: false
+        type: string
+      expect_creator_id:
+        description: Creator ID from the reviewed preview
+        required: false
+        type: string
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: server/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - name: Validate changed course sources
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" HEAD -- ':(top)content/import/' | awk -F/ 'NF >= 4 { print $3 }' | sort -u | while IFS= read -r course; do
+            [ -n "$course" ] || continue
+            COURSE_SLUG="$course" node -e 'const fs=require("fs"), yaml=require("js-yaml"); const p=`../content/import/${process.env.COURSE_SLUG}/course.yaml`; const m=yaml.load(fs.readFileSync(p,"utf8")); if(!["create","update"].includes(m?.publication) || (m.publication==="create" && !m.creatorEmail) || m.modules?.some(x=>!x.key || x.lessons?.some(y=>!y.key))) { console.error(`${p} needs publication: create|update, creatorEmail for creation, and stable keys on supplied modules and lessons`); process.exit(1) }'
+            pnpm content:validate:source --course "$course"
+            pnpm content:audit --course "$course"
+          done
+
+  detect_merged_courses:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      courses: ${{ steps.changed.outputs.courses }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: changed
+        name: Find changed course packages
+        env:
+          BASE_SHA: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$GITHUB_SHA" -- content/import/ \
+            | awk -F/ 'NF >= 4 { print $3 }' | sort -u > "$RUNNER_TEMP/course-slugs.txt"
+          COURSES=$(node -e 'const fs=require("fs"); const slugs=fs.readFileSync(process.argv[1],"utf8").trim().split("\n").filter(Boolean); if(slugs.some(s=>!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s))) process.exit(2); process.stdout.write(JSON.stringify(slugs))' "$RUNNER_TEMP/course-slugs.txt")
+          echo "courses=$COURSES" >> "$GITHUB_OUTPUT"
+
+  preview_merged_courses:
+    needs: detect_merged_courses
+    if: needs.detect_merged_courses.outputs.courses != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        course: ${{ fromJSON(needs.detect_merged_courses.outputs.courses) }}
+    defaults:
+      run:
+        working-directory: server
+    env:
+      DATABASE_URL: ${{ secrets.COURSE_PREVIEW_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: server/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate
+      - name: Preview merged package and affected variants
+        env:
+          COURSE_SLUG: ${{ matrix.course }}
+        run: |
+          set -euo pipefail
+          test -n "$DATABASE_URL" || { echo 'COURSE_PREVIEW_DATABASE_URL is required'; exit 1; }
+          pnpm tsx scripts/publish-course-package.ts --course "$COURSE_SLUG" --json-out "$RUNNER_TEMP/course-review.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: course-review-${{ matrix.course }}
+          path: ${{ runner.temp }}/course-review.json
+          retention-days: 7
+
+  publish_merged_courses:
+    needs: [detect_merged_courses, preview_merged_courses]
+    if: needs.detect_merged_courses.outputs.courses != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        course: ${{ fromJSON(needs.detect_merged_courses.outputs.courses) }}
+    environment: course-publishing-${{ matrix.course }}
+    concurrency:
+      group: course-publish-${{ matrix.course }}
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: server
+    env:
+      DATABASE_URL: ${{ secrets.COURSE_PUBLISH_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: course-review-${{ matrix.course }}
+          path: ${{ runner.temp }}/course-review
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: server/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate
+      - name: Publish approved merged package
+        env:
+          COURSE_SLUG: ${{ matrix.course }}
+        run: |
+          set -euo pipefail
+          test -n "$DATABASE_URL" || { echo 'COURSE_PUBLISH_DATABASE_URL is required'; exit 1; }
+          EXPECT_RELEASE=$(node -e 'const r=require(process.argv[1]); process.stdout.write(r.currentReleaseId || "")' "$RUNNER_TEMP/course-review/course-review.json")
+          EXPECT_FINGERPRINT=$(node -e 'const r=require(process.argv[1]); process.stdout.write(r.snapshotFingerprint || "")' "$RUNNER_TEMP/course-review/course-review.json")
+          EXPECT_CREATOR_ID=$(node -e 'const r=require(process.argv[1]); process.stdout.write(r.creatorId || "")' "$RUNNER_TEMP/course-review/course-review.json")
+          args=(--course "$COURSE_SLUG" --expect-creator-id "$EXPECT_CREATOR_ID" --approve)
+          if [ -n "$EXPECT_RELEASE" ]; then
+            args+=(--expect-release "$EXPECT_RELEASE")
+          fi
+          if [ -n "$EXPECT_FINGERPRINT" ]; then
+            args+=(--expect-fingerprint "$EXPECT_FINGERPRINT")
+          fi
+          pnpm tsx scripts/publish-course-package.ts "${args[@]}"
+
+  publish_manual:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: course-publishing-${{ inputs.course }}
+    concurrency:
+      group: course-publish-${{ inputs.course }}
+      cancel-in-progress: false
+    defaults:
+      run:
+        working-directory: server
+    env:
+      DATABASE_URL: ${{ secrets.COURSE_PUBLISH_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: server/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate
+      - name: Publish reviewed course package
+        env:
+          COURSE_SLUG: ${{ inputs.course }}
+          EXPECT_RELEASE: ${{ inputs.expect_release }}
+          EXPECT_FINGERPRINT: ${{ inputs.expect_fingerprint }}
+          EXPECT_CREATOR_ID: ${{ inputs.expect_creator_id }}
+        run: |
+          set -euo pipefail
+          test -n "$DATABASE_URL" || { echo 'COURSE_PUBLISH_DATABASE_URL is required'; exit 1; }
+          case "$COURSE_SLUG" in *[!a-z0-9-]*|'') exit 2;; esac
+          args=(--course "$COURSE_SLUG" --approve)
+          if [ -n "$EXPECT_RELEASE" ]; then
+            args+=(--expect-release "$EXPECT_RELEASE")
+          fi
+          if [ -n "$EXPECT_FINGERPRINT" ]; then
+            args+=(--expect-fingerprint "$EXPECT_FINGERPRINT")
+          fi
+          if [ -n "$EXPECT_CREATOR_ID" ]; then
+            args+=(--expect-creator-id "$EXPECT_CREATOR_ID")
+          fi
+          pnpm tsx scripts/publish-course-package.ts "${args[@]}"

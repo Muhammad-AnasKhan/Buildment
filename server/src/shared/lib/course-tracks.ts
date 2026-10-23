@@ -51,9 +51,12 @@ export type CourseFamily = {
 /** What the reader and the course home need to know about the learner's track. */
 export type CourseTrack = {
   familySlug: string;
+  /** Creator-defined catalog, carried with the API response for the picker and theme. */
+  family?: CourseFamily;
   /** The learner's variant, or the family default while they have not picked. */
   variantSlug: string;
   variantChosen: boolean;
+  variantLocked: boolean;
   specialisationSlug: string | null;
   /** The specialisation choice opens once the course is complete. */
   specialisationOpen: boolean;
@@ -168,6 +171,11 @@ export function findCourseFamily(familySlug: string | null | undefined): CourseF
   return COURSE_FAMILIES.find((family) => family.slug === familySlug) ?? null;
 }
 
+export function resolveCourseFamily(familySlug: string | null | undefined, definition?: unknown): CourseFamily | null {
+  if (definition && typeof definition === "object" && "slug" in definition && definition.slug === familySlug) return definition as CourseFamily;
+  return findCourseFamily(familySlug);
+}
+
 export function findVariant(family: CourseFamily, variantSlug: string | null | undefined): CourseVariant | null {
   if (!variantSlug) return null;
   return family.variants.find((variant) => variant.slug === variantSlug) ?? null;
@@ -196,26 +204,28 @@ export function courseFinished(enrollment: { status: string; percentComplete: nu
 }
 
 export function buildCourseTrack(
-  familySlug: string | null | undefined,
-  enrollment: { variantSlug: string | null; specialisationSlug: string | null; status: string; percentComplete: number }
+  familySlug: string | CourseFamily | null | undefined,
+  enrollment: { variantSlug: string | null; variantLockedAt?: Date | string | null; specialisationSlug: string | null; status: string; percentComplete: number }
 ): CourseTrack | null {
-  const family = findCourseFamily(familySlug);
+  const family = typeof familySlug === "object" && familySlug ? familySlug : findCourseFamily(familySlug);
   if (!family) return null;
   const chosen = findVariant(family, enrollment.variantSlug);
   return {
     familySlug: family.slug,
+    ...(typeof familySlug === "object" && familySlug ? { family } : {}),
     variantSlug: resolveVariant(family, enrollment.variantSlug).slug,
     variantChosen: chosen !== null,
+    variantLocked: Boolean(enrollment.variantLockedAt) || courseFinished(enrollment),
     specialisationSlug: findSpecialisation(family, enrollment.specialisationSlug)?.slug ?? null,
     specialisationOpen: courseFinished(enrollment),
   };
 }
 
 export function summarizeLearnerTrack(
-  familySlug: string | null | undefined,
+  familySlug: string | CourseFamily | null | undefined,
   enrollment: { variantSlug: string | null; specialisationSlug: string | null }
 ): LearnerTrackSummary | null {
-  const family = findCourseFamily(familySlug);
+  const family = typeof familySlug === "object" && familySlug ? familySlug : findCourseFamily(familySlug);
   if (!family) return null;
   const variant = findVariant(family, enrollment.variantSlug);
   const specialisation = findSpecialisation(family, enrollment.specialisationSlug);

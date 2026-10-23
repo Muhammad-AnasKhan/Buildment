@@ -2,9 +2,16 @@ import type { QuizChapterState } from "../../shared/api/blocks.js";
 import { QuizConfigSchema } from "../../shared/blocks/quiz/schema.js";
 import { applyTokens, contentTokenValues, hasContentTokens } from "../../shared/lib/content-tokens.js";
 import { prisma } from "../../db/prisma.js";
+import { releaseContainsChapter } from "../courses/releases.js";
+import { NotFoundError } from "../../utils/errors.js";
+import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
 
 /** Initial state for a quiz-mode chapter's wizard: last answers, grades and the score once every question is attempted. */
 export async function loadQuizChapterState(chapterId: string, userId: string): Promise<QuizChapterState> {
+  const chapter = await prisma.chapter.findUnique({ where: { id: chapterId }, select: { courseId: true, course: { select: { familySlug: true, variantFamily: true } } } });
+  if (!chapter) throw new NotFoundError("Chapter not found");
+  const enrollment = await prisma.enrollment.findUnique({ where: { courseId_userId: { courseId: chapter.courseId, userId } }, select: { releaseId: true, variantSlug: true } });
+  if (enrollment && !(await releaseContainsChapter(chapter.courseId, enrollment, chapter.course.familySlug, chapterId))) throw new NotFoundError("Chapter not found");
   const blocks = await prisma.block.findMany({
     where: { chapterId, archivedAt: null, type: { in: ["QUIZ", "OPEN_QUESTION", "PREDICT", "CODE"] } },
     orderBy: { order: "asc" },
@@ -61,9 +68,9 @@ export async function loadQuizChapterState(chapterId: string, userId: string): P
 
 /** The learner's placeholder values, looked up only when a quiz actually uses a placeholder. */
 async function learnerTokenValues(chapterId: string, userId: string) {
-  const chapter = await prisma.chapter.findUnique({ where: { id: chapterId, archivedAt: null }, select: { courseId: true, course: { select: { familySlug: true } } } });
+  const chapter = await prisma.chapter.findUnique({ where: { id: chapterId, archivedAt: null }, select: { courseId: true, course: { select: { familySlug: true, variantFamily: true } } } });
   const enrollment = chapter?.course.familySlug
     ? await prisma.enrollment.findUnique({ where: { courseId_userId: { courseId: chapter.courseId, userId } }, select: { variantSlug: true } })
     : null;
-  return contentTokenValues(chapter?.course.familySlug, enrollment?.variantSlug);
+  return contentTokenValues(resolveCourseFamily(chapter?.course.familySlug, chapter?.course.variantFamily), enrollment?.variantSlug);
 }

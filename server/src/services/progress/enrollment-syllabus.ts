@@ -3,6 +3,7 @@ import { prisma } from "../../db/prisma.js";
 import type { SyllabusChapter, SyllabusModule } from "../../types/syllabus.js";
 import { decorateSyllabus } from "./syllabus.js";
 import { isCompletableBlock } from "./rules.js";
+import { releaseForEnrollment, releaseModulesWithBlocks } from "../courses/releases.js";
 
 const courseModulesSelect = {
   sequential: true,
@@ -122,8 +123,11 @@ export async function loadEnrollmentSyllabus(args: {
 }) {
   const course = await prisma.course.findUnique({
     where: { id: args.courseId },
-    select: courseModulesSelect,
+    select: { ...courseModulesSelect, familySlug: true },
   });
   if (!course) return null;
-  return syllabusForEnrollment(course, args.enrollmentId, args.bypassLocking);
+  const enrollment = await prisma.enrollment.findUniqueOrThrow({ where: { id: args.enrollmentId }, select: { releaseId: true, variantSlug: true } });
+  const selected = await releaseForEnrollment(args.courseId, enrollment, course.familySlug);
+  const modules = selected ? await releaseModulesWithBlocks(selected.modules) : course.modules;
+  return syllabusForEnrollment({ ...course, modules }, args.enrollmentId, args.bypassLocking);
 }

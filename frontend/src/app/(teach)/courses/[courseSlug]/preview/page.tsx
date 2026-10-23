@@ -23,7 +23,7 @@ export default async function CourseDraftPreviewPage({ params }: { params: Promi
         </Link>
         <div className="rounded-2xl border bg-card p-6 sm:p-9">
           <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <Eye className="size-4" /> Mentor preview · {course.status === "PUBLISHED" ? "live course with current saved drafts" : "draft course"}
+            <Eye className="size-4" /> Mentor preview · {course.status === "PUBLISHED" || course.status === "ARCHIVED" ? "current course with saved drafts" : "draft course"}
           </div>
           {course.coverUrl ? <img src={course.coverUrl} alt="" className="mt-5 max-h-64 w-full rounded-xl object-cover" /> : null}
           <h1 className="mt-5 text-3xl font-semibold tracking-tight">{course.title}</h1>
@@ -41,7 +41,7 @@ export default async function CourseDraftPreviewPage({ params }: { params: Promi
               ...module.chapters.map((chapter) => (
                 <li key={chapter.id} className="pl-4">
                   <a className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline" href={`#${chapter.id}`}>
-                    {chapter.title}{chapter.publishedAt ? " · published" : " · draft"}
+                    {chapter.title}{chapter.hasDraft ? chapter.publishedAt ? " · draft update" : " · draft" : " · published"}
                   </a>
                 </li>
               )),
@@ -55,7 +55,7 @@ export default async function CourseDraftPreviewPage({ params }: { params: Promi
       ) : null}
       {modules.flatMap((module) => module.chapters.map((chapter) => (
         <article id={chapter.id} key={chapter.id} className="scroll-mt-8 rounded-2xl border bg-card p-6 sm:p-9">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{module.title} · {chapter.readerMode === "QUIZ" ? "Quiz" : "Lesson"} · {chapter.publishedAt ? "Published" : "Draft"}</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{module.title} · {chapter.readerMode === "QUIZ" ? "Quiz" : "Lesson"} · {chapter.hasDraft ? chapter.publishedAt ? "Draft update" : "Draft" : "Published"}</p>
           <h2 className="mt-2 text-2xl font-semibold">{chapter.title}</h2>
           <div className="prose prose-neutral mt-6 max-w-none dark:prose-invert">
             <ChapterMdx source={chapter.source} preview />
