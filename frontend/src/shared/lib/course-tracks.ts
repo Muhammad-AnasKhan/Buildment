@@ -49,12 +49,23 @@ export type CourseFamily = {
   specialisations: CourseSpecialisation[];
 };
 
+/**
+ * How learners in a course family get their variant, set per course
+ * (Course.variantAssignment). SELF_SELECT: the learner picks and can change it
+ * until the course is complete. RANDOM: the platform assigns one at enrolment,
+ * balanced across the variants, and the learner cannot change it.
+ */
+export const VARIANT_ASSIGNMENTS = ["SELF_SELECT", "RANDOM"] as const;
+export type VariantAssignment = (typeof VARIANT_ASSIGNMENTS)[number];
+
 /** What the reader and the course home need to know about the learner's track. */
 export type CourseTrack = {
   familySlug: string;
   /** The learner's variant, or the family default while they have not picked. */
   variantSlug: string;
   variantChosen: boolean;
+  /** The platform assigned the variant, so the learner cannot change it. */
+  variantAssigned: boolean;
   specialisationSlug: string | null;
   /** The specialisation choice opens once the course is complete. */
   specialisationOpen: boolean;
@@ -196,9 +207,25 @@ export function courseFinished(enrollment: { status: string; percentComplete: nu
   return enrollment.status === "COMPLETED" || enrollment.percentComplete >= 100;
 }
 
+/**
+ * The variant to assign next: the one fewest learners have, so the cohort
+ * spreads evenly. Ties are broken at random. `counts` maps variant slug to the
+ * number of enrolments already on it; retired slugs in it are ignored.
+ */
+export function pickBalancedVariant(
+  family: CourseFamily,
+  counts: Readonly<Record<string, number>>,
+  random: () => number = Math.random
+): CourseVariant {
+  const fewest = Math.min(...family.variants.map((variant) => counts[variant.slug] ?? 0));
+  const candidates = family.variants.filter((variant) => (counts[variant.slug] ?? 0) === fewest);
+  return candidates[Math.min(Math.floor(random() * candidates.length), candidates.length - 1)]!;
+}
+
 export function buildCourseTrack(
   familySlug: string | null | undefined,
-  enrollment: { variantSlug: string | null; specialisationSlug: string | null; status: string; percentComplete: number }
+  enrollment: { variantSlug: string | null; specialisationSlug: string | null; status: string; percentComplete: number },
+  options: { variantAssigned?: boolean } = {}
 ): CourseTrack | null {
   const family = findCourseFamily(familySlug);
   if (!family) return null;
@@ -207,6 +234,7 @@ export function buildCourseTrack(
     familySlug: family.slug,
     variantSlug: resolveVariant(family, enrollment.variantSlug).slug,
     variantChosen: chosen !== null,
+    variantAssigned: options.variantAssigned ?? false,
     specialisationSlug: findSpecialisation(family, enrollment.specialisationSlug)?.slug ?? null,
     specialisationOpen: courseFinished(enrollment),
   };

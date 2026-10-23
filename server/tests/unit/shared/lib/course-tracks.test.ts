@@ -4,6 +4,7 @@ import {
   buildCourseTrack,
   contrastRatio,
   findCourseFamily,
+  pickBalancedVariant,
   resolveVariant,
   specialisationsFor,
   summarizeLearnerTrack,
@@ -68,6 +69,7 @@ describe("buildCourseTrack", () => {
       familySlug: "multi-vendor-marketplace",
       variantSlug: "grocery",
       variantChosen: false,
+      variantAssigned: false,
       specialisationSlug: null,
       specialisationOpen: false,
     });
@@ -82,6 +84,52 @@ describe("buildCourseTrack", () => {
       buildCourseTrack("multi-vendor-marketplace", { ...enrollment, variantSlug: "books", percentComplete: 100 })
     ).toMatchObject({ variantSlug: "books", variantChosen: true, specialisationOpen: true });
     expect(buildCourseTrack("multi-vendor-marketplace", { ...enrollment, status: "COMPLETED" })?.specialisationOpen).toBe(true);
+  });
+
+  it("marks a variant the platform assigned", () => {
+    expect(buildCourseTrack("multi-vendor-marketplace", { ...enrollment, variantSlug: "books" }, { variantAssigned: true })).toMatchObject({
+      variantSlug: "books",
+      variantChosen: true,
+      variantAssigned: true,
+    });
+  });
+});
+
+describe("pickBalancedVariant", () => {
+  const slugs = marketplace.variants.map((variant) => variant.slug);
+
+  it("picks the variant fewest learners have", () => {
+    const counts = Object.fromEntries(slugs.map((slug) => [slug, 3]));
+    counts.handmade = 1;
+    expect(pickBalancedVariant(marketplace, counts).slug).toBe("handmade");
+  });
+
+  it("counts a variant nobody has yet as zero", () => {
+    const counts = Object.fromEntries(slugs.filter((slug) => slug !== "digital-goods").map((slug) => [slug, 1]));
+    expect(pickBalancedVariant(marketplace, counts).slug).toBe("digital-goods");
+  });
+
+  it("breaks ties at random among the least used", () => {
+    const counts = { grocery: 2, services: 2, handmade: 2, "home-kitchens": 2 };
+    expect(pickBalancedVariant(marketplace, counts, () => 0).slug).toBe("digital-goods");
+    expect(pickBalancedVariant(marketplace, counts, () => 0.99).slug).toBe("books");
+    expect(pickBalancedVariant(marketplace, {}, () => 0).slug).toBe(slugs[0]);
+    expect(pickBalancedVariant(marketplace, {}, () => 0.999999).slug).toBe(slugs.at(-1));
+  });
+
+  it("ignores retired slugs in the counts", () => {
+    expect(pickBalancedVariant(marketplace, { retired: 0, ...Object.fromEntries(slugs.map((slug) => [slug, 1])) }, () => 0).slug).toBe(slugs[0]);
+  });
+
+  it("spreads a cohort evenly whatever the random source", () => {
+    for (const random of [() => 0, () => 0.5, () => 0.999, Math.random]) {
+      const counts: Record<string, number> = {};
+      for (let i = 0; i < slugs.length * 5; i += 1) {
+        const slug = pickBalancedVariant(marketplace, counts, random).slug;
+        counts[slug] = (counts[slug] ?? 0) + 1;
+      }
+      expect(Object.values(counts)).toEqual(slugs.map(() => 5));
+    }
   });
 });
 
