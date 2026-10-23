@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CourseManifestSchema } from "../../scripts/course-source.js";
+import { CourseManifestSchema, variantAssignmentFromManifest } from "../../scripts/course-source.js";
 
 const manifest = {
   slug: "freshmarket-multi-vendor-marketplace-v2",
@@ -24,5 +24,25 @@ describe("course.yaml family", () => {
   it("rejects an unknown family so a typo cannot silently drop the variants", () => {
     const result = CourseManifestSchema.safeParse({ ...manifest, family: "multi-vendor-marketplce" });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("course.yaml variantAssignment", () => {
+  const family = { ...manifest, family: "multi-vendor-marketplace" };
+
+  it("is optional, so the course keeps whatever the backend set", () => {
+    expect(CourseManifestSchema.parse(family).variantAssignment).toBeUndefined();
+  });
+
+  it("accepts self_select and random, mapped to the course setting", () => {
+    expect(variantAssignmentFromManifest(CourseManifestSchema.parse({ ...family, variantAssignment: "random" }).variantAssignment!)).toBe("RANDOM");
+    expect(variantAssignmentFromManifest(CourseManifestSchema.parse({ ...family, variantAssignment: "self_select" }).variantAssignment!)).toBe("SELF_SELECT");
+  });
+
+  it("rejects unknown values and a setting without a family", () => {
+    expect(CourseManifestSchema.safeParse({ ...family, variantAssignment: "round_robin" }).success).toBe(false);
+    const orphan = CourseManifestSchema.safeParse({ ...manifest, variantAssignment: "random" });
+    expect(orphan.success).toBe(false);
+    expect(orphan.error?.issues[0]?.path).toEqual(["variantAssignment"]);
   });
 });

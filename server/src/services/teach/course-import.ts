@@ -53,6 +53,7 @@ export type ImportPlan = {
   manifest: {
     title: string; description: string; projectGoal: string; difficulty: string;
     estimatedHours: number; coverUrl?: string; family?: string; category?: "tech" | "soft-skills";
+    variantAssignment?: "self_select" | "random";
   };
   modules: { title: string; lessons: {
     lessonNum: number; slugPart: string; title: string; summary: string | null;
@@ -120,7 +121,8 @@ async function runCourseImport(user: SessionUser, buffer: Buffer) {
   const { slug, plan } = await parseCourseZip(buffer);
   const { title, description, projectGoal, difficulty, estimatedHours, coverUrl, family } = plan.manifest;
   const category = plan.manifest.category === "soft-skills" ? "SOFT_SKILLS" as const : "TECH" as const;
-  const metadata = { title, description, projectGoal, difficulty, estimatedHours, coverUrl, category, familySlug: family ?? null };
+  const variantAssignment = plan.manifest.variantAssignment === "random" ? "RANDOM" as const : "SELF_SELECT" as const;
+  const metadata = { title, description, projectGoal, difficulty, estimatedHours, coverUrl, category, familySlug: family ?? null, variantAssignment };
   try {
     const course = await prisma.$transaction(async tx => {
       const created = await tx.course.create({ data: { ...metadata, slug, mentorId: user.id, status: "DRAFT" } });

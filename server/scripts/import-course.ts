@@ -35,7 +35,7 @@ import { QuizConfigSchema, normalizeQuizConfig } from "../src/shared/blocks/quiz
 import { VisualWalkthroughConfigSchema } from "../src/shared/blocks/visual-walkthrough/schema.js";
 import { VisualDiagramConfigSchema } from "../src/shared/blocks/visual-diagram/schema.js";
 import { RoadmapConfigSchema } from "../src/shared/blocks/roadmap/schema.js";
-import { COURSE_OUTPUT_DIR, COURSE_SOURCE_DIR, loadCourseManifest, type CourseManifest } from "./course-source.js";
+import { COURSE_OUTPUT_DIR, COURSE_SOURCE_DIR, loadCourseManifest, variantAssignmentFromManifest, type CourseManifest } from "./course-source.js";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
@@ -809,6 +809,7 @@ async function upsertCourse(manifest: CourseManifest | null) {
     category: manifest?.category === "soft-skills" ? ("SOFT_SKILLS" as const) : ("TECH" as const),
     coverUrl: meta.coverUrl ?? null,
     familySlug: meta.family ?? null,
+    ...(manifest?.variantAssignment ? { variantAssignment: variantAssignmentFromManifest(manifest.variantAssignment) } : {}),
   };
 
   return prisma.course.upsert({

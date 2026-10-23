@@ -66,8 +66,21 @@ export const CourseManifestSchema = z.object({
     .string()
     .refine((slug) => findCourseFamily(slug) !== null, "family must name a course family in src/shared/lib/course-tracks.ts")
     .optional(),
+  /**
+   * How learners get a variant: "self_select" (they pick) or "random" (assigned at
+   * enrolment). Needs a family. Omitted keeps the course's current setting.
+   */
+  variantAssignment: z.enum(["self_select", "random"]).optional(),
   modules: z.array(PlannedModuleSchema).min(1),
+}).refine((manifest) => !manifest.variantAssignment || manifest.family, {
+  message: "variantAssignment needs a family",
+  path: ["variantAssignment"],
 });
+
+/** The Course.variantAssignment value for a course.yaml setting. */
+export function variantAssignmentFromManifest(setting: "self_select" | "random"): "SELF_SELECT" | "RANDOM" {
+  return setting === "random" ? "RANDOM" : "SELF_SELECT";
+}
 
 export type CourseManifest = z.infer<typeof CourseManifestSchema>;
 
