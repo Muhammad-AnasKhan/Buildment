@@ -14,14 +14,14 @@ renderer: sequence (HTML controls, inline SVG lanes)
 Ask an AI chat for a structured lab plan with your goal, time, level, tools and what to break; then cut it to your time and check each command against the official docs and each package on the official package site. In this plan one command is out of date and one package does not exist, and the AI's break idea is worth keeping.
 
 ## Why a canvas
-The habit is an order of checks across four sources: you, the AI, the docs and the package site. Lanes make it visible who supplies what. Stepping through lets the learner decide whether to keep the AI's break idea before seeing the cut plan, so the canvas does not only say "distrust the AI".
+The habit is an order of checks across four sources: you, the AI, the docs and the package site. Lanes make it visible who supplies what. The chapter's predict asks what Docker's docs say about the plan's command before step 4 shows it, and the canvas also shows the AI's break idea being kept, so it does not only say "distrust the AI".
 
 ## Model
 - Inputs: none beyond the step controls.
 - Outputs: the active arrow between lanes, the step note, outcome badge and chips.
-- Rule: four lanes (Yara, Chat assistant, Docker docs, Package site); seven steps: ask with five facts, a 75-minute plan, cut to 40, check commands in the docs, look up the package, ask the AI to fix the command, save the plan and the prompt.
-- Fixed data (as in chapter 4.3): AI plan study 15, build 40, break 10, write 10 = 75 minutes; cut plan study 10, build 15, break 5, write 10 = 40 minutes; old command `docker-compose up -d`, current `docker compose up -d`; made-up package `shortlink-cache-helper`.
-- Source for the command: Docker's documentation, checked 2026-10-24. Compose v1 (2014) is invoked with `docker-compose`; the supported versions (v2 and v5) are invoked with `docker compose`. The top-level `version` element is obsolete and only produces a warning.
+- Rule: four lanes (Yara, Chat assistant, Docker docs, Package site); seven steps: ask with five facts, a 75-minute plan, cut to 40, check commands in the docs, look up the package, ask the AI to fix the command, save the plan in her phone notes as the start of lab day 1, and the prompt in her notes.
+- Fixed data (as in chapter 4.3): AI plan study 15, build 40, break 10, write 10 = 75 minutes; cut plan study 10, build 15, break 5, write 10 = 40 minutes; old command `docker-compose up -d`, current `docker compose up -d`; package `shortlink-cache-helper`, a name invented for this example and labelled so in the chapter and the canvas.
+- Source for the command: Docker's documentation, checked 2026-10-24. Compose v1 (2014) is invoked with `docker-compose`; the supported versions (v2 and v5) are invoked with `docker compose`. The top-level `version` element is obsolete and only produces a warning (dossier S118, S119).
 - Assumptions: one out-of-date command and one made-up package, labelled in `limits` as this example's.
 - Limitations: a real plan may have no mistakes, or several.
 
@@ -38,7 +38,7 @@ Four lanes, one arrow per step. Tones: warn on the 75-minute plan and the out-of
 
 ## Copy
 - What this shows: an AI draft passing through your time and two official sources.
-- Try this: 1. Before step 3, decide whether to keep the AI's break idea (matches the chapter's predict). 2. Which parts could only Yara judge, and which could only the official sites check?
+- Try this: 1. Go to step 4 to check the chapter's prediction (docker-compose is the old Compose v1; newer versions use docker compose). 2. Which parts could only Yara judge, and which could only the official sites check?
 - What changed: each step note says what was kept, cut or found.
 - Limits of the model: as in `limits`.
 

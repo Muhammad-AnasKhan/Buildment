@@ -4,7 +4,7 @@ import type { SequenceSpec } from "../renderers/sequence/types";
 // Yara's lab day 4 on Qasir: app, cache and database in containers, each with
 // restart: unless-stopped. She stops the cache (links still work, slower),
 // starts it again, then stops the database (new links fail). The timings are
-// this lab's own example numbers. Every number matches the chapter. See spec.md.
+// invented for this example, not measured. Every number matches the chapter. See spec.md.
 export const urlShortenerStopAPart: SequenceSpec = {
   kind: "sequence",
   title: "Stop one part of Qasir and watch",
@@ -33,8 +33,8 @@ export const urlShortenerStopAPart: SequenceSpec = {
       tone: "good",
       outcome: "about 4 ms",
       title: "The cache answers first",
-      note: "The app looks in the cache first and finds the long address there. The log line says source=cache. The browser is sent on to the long address.",
-      chips: ["GET /k7Qa 302 source=cache 4ms"],
+      note: "The app looks in the cache first and finds the long address there. The log line says source=cache, and the browser is sent on to the long address.",
+      chips: ["GET /k7Qa source=cache 4ms"],
     },
     {
       from: 2,
@@ -53,8 +53,8 @@ export const urlShortenerStopAPart: SequenceSpec = {
       tone: "warn",
       outcome: "about 38 ms",
       title: "The link still opens, more slowly",
-      note: "Qasir treats a cache that does not answer like a cache that does not hold the link, so it asks the database. Every lookup now goes to the database. In this lab, that took about 38 ms instead of about 4.",
-      chips: ["GET /k7Qa 302 source=db 38ms"],
+      note: "Qasir treats a cache that does not answer like a cache that does not hold the link, so it asks the database. Every lookup now goes to the database, which takes about 38 ms instead of about 4 in this invented example.",
+      chips: ["GET /k7Qa source=db 38ms"],
     },
     {
       from: 2,
@@ -98,9 +98,9 @@ export const urlShortenerStopAPart: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Before step 4, predict: with the cache stopped, does the short link still open? Then check.",
+    "Go to step 4 to check your prediction: the link still opens, and the log line changes from source=cache to source=db.",
     "Before step 7, predict what happens to a link the cache holds, and to a brand new link, when the database stops.",
   ],
   limits:
-    "The 4 ms and 38 ms are this lab's own example numbers in one codespace, not a measure of any real service. Qasir only keeps working without its cache because its code asks the database when the cache does not answer; an app without that rule would return errors instead. Stop one part at a time, and start it again before the next.",
+    "The log lines and the 4 ms and 38 ms timings are invented for this example, not measured. Qasir only keeps working without its cache because its code asks the database when the cache does not answer; an app without that rule would return errors instead. Stop one part at a time, and start it again before the next.",
 };

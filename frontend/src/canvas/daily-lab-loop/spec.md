@@ -14,12 +14,12 @@ renderer: state-machine (HTML controls, inline SVG states)
 A lab day has four parts, study, build, break one thing and write, in about 30 to 45 minutes; when the build gets stuck you loop back to a smaller step instead of running past your time, and a power cut ends the day at "write what you have", which still counts as a lab day.
 
 ## Why a canvas
-The chapter states the four parts and sizes them in prose. The two exits from the plan, stuck and power cut, are moments of decision. Stepping through them lets the learner decide what Yara should do at minute 18 before the answer appears, and see the loop on Build that a static list of four parts flattens.
+The chapter states the four parts and sizes them in prose. The two exits from the plan, stuck and power cut, are moments of decision. The chapter's predict asks what the log shows for /K7QA, and the prose asks the learner to decide what they would do first at minute 18; stepping through answers both, and shows the loop on Build that a static list of four parts flattens.
 
 ## Model
 - Inputs: none beyond the step controls.
 - Outputs: the highlighted state, the active edge, the step note and chips.
-- Rule: five states. The main path Study, Build, Break one thing, Write it down; a loop on Build labelled "stuck"; a side exit from Build to "Short write-up" labelled "power cut". Six steps: study, stuck at minute 18, a smaller step runs at minute 24, the break (a short code in capital letters), the write (to minute 40), and lab day 6 ended by a power cut at minute 20.
+- Rule: five states. The main path Study, Build, Break one thing, Write it down; a loop on Build labelled "stuck"; a side exit from Build to "Short write-up" labelled "power cut". Six steps: study, stuck at minute 18, a smaller step runs at minute 24, the break (a short code in capital letters), the write (to minute 40), and lab day 6 ended by a power cut after the study part, at minute 20.
 - Fixed data (Yara's lab day 3, as in chapter 4.2): study 10, build 15, break 5, write 10, total 40 minutes; stuck at minute 18 with the build ending at minute 25; runs at minute 24; /K7QA instead of /k7Qa gives source=db and not found.
 - Assumptions: the minutes are the course's guide and Yara's example, not a rule.
 - Limitations: some problems cannot be made smaller in one evening; then the smaller step is writing down the exact error and what was tried.
@@ -39,7 +39,7 @@ Five pills and five edges, one of them a loop. Tones: warn on stuck and on the p
 
 ## Copy
 - What this shows: one 40-minute lab and the two ways a day leaves the plan.
-- Try this: 1. Before step 2, decide what Yara should do at minute 18 (matches the chapter's predict). 2. Add up the four parts; which would you shorten on a 30-minute evening?
+- Try this: 1. Go to step 4 to check the chapter's prediction (the log says source=db and the page says not found). 2. At step 2, compare what you would do first with step 3.
 - What changed: each step note says the minute, what happened and what she did.
 - Limits of the model: as in `limits`.
 
@@ -50,7 +50,7 @@ Step 5 (write) has no edge. Step 6 moves to another evening, and its title says 
 Shared stepper keyboard support and focus ring; `summary` gives the whole day, including the power cut, for screen readers; tone always has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (quizzes after the canvas ask for the right plan in 35 minutes and the right step after a power cut).
+- [x] The claim is testable (quizzes after the canvas ask for the right plan in 35 minutes and for a question small enough for one lab).
 - [x] The model is tested (registry consistency and label-fit tests; checked locally with the registry geometry).
 - [x] The design is simple and legible.
 - [x] Prediction before, transfer check after.

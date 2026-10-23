@@ -39,7 +39,7 @@ Four pills, three transitions and one rejected loop. Tones: bad on the refused c
 
 ## Copy
 - What this shows: one entry passing a check before it is saved and sent.
-- Try this: 1. Before step 3, decide whether committing .env is harmless if Yara deletes it next week (matches the chapter's predict). 2. At step 5, read only the commit message: what does a mentor learn from it?
+- Try this: 1. Go to step 3 to check the chapter's prediction (committing .env is refused, because the password would stay in the history). 2. At step 5, read only the commit message: what does a mentor learn from it?
 - What changed: each step note says what git status shows or what was saved.
 - Limits of the model: as in `limits`.
 

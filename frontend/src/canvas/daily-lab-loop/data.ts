@@ -30,7 +30,7 @@ export const dailyLabLoop: StateMachineSpec = {
       state: "study",
       edge: 0,
       title: "Study for 10 minutes",
-      note: "Lab day 3 has one question: does each lookup come from the cache or from the database? Yara rereads her notes page on caching and the part of Qasir's code that looks up a short link.",
+      note: "Lab day 3 has one question: does each lookup come from the cache or from the database? Yara rereads the 20 lines of Qasir's code that look up a short link, and one page of documentation on how a cache answers.",
       chips: ["one question", "minutes 0 to 10"],
     },
     {
@@ -72,13 +72,13 @@ export const dailyLabLoop: StateMachineSpec = {
       tone: "warn",
       outcome: "still a lab day",
       title: "Another evening: the power goes",
-      note: "On lab day 6, the power goes at minute 20 and her laptop has little charge left. She writes three lines in her phone notes: the goal, where she stopped, and the next step. She adds them to her log the next day.",
+      note: "On lab day 6, the power goes after the study part, at minute 20, and her laptop has little charge left. She writes three lines in her phone notes: the goal, where she stopped, and the next step. She adds them to her log the next day.",
       chips: ["goal", "where I stopped", "next step"],
     },
   ],
   tryThis: [
-    "Before step 2, decide what Yara should do when the app will not start at minute 18 and her build time ends at minute 25. Then check.",
-    "Add up Yara's four parts on lab day 3. Which part would you shorten first on a 30-minute evening?",
+    "Go to step 4 to check your prediction: the log line for /K7QA says source=db, and the page says not found.",
+    "At step 2, the app will not start and the build ends in 7 minutes. Compare what you would do first with step 3.",
   ],
   limits:
     "The minutes are the course's guide and Yara's own example, not a rule. Some labs need more study and less building. Stuck can also mean a problem you cannot shrink today; then the smaller step is writing down the exact error and what you tried.",

@@ -70,7 +70,7 @@ export const labLogCommitPush: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "Before step 3, decide: is committing .env harmless if Yara deletes it next week? Then check.",
+    "Go to step 3 to check your prediction: committing .env is refused, because the password would stay in the history even after a later delete.",
     "At step 5, read only the commit message. What could a mentor learn about Yara's lab day 4 without opening the file?",
   ],
   limits:

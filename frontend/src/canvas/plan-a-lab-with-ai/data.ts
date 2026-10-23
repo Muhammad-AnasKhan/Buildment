@@ -33,7 +33,7 @@ export const planALabWithAi: SequenceSpec = {
       tone: "warn",
       outcome: "too long",
       title: "A clear plan, and too big",
-      note: "Study 15, build 40, break 10, write 10: 75 minutes. The build adds a load balancer and a package called shortlink-cache-helper. The break idea is good: ask for a short code that does not exist.",
+      note: "Study 15, build 40, break 10, write 10: 75 minutes. The build adds a load balancer and a package called shortlink-cache-helper, a name invented for this example. The break idea is good: ask for a short code that does not exist.",
       chips: ["docker-compose up -d", "shortlink-cache-helper"],
     },
     {
@@ -52,7 +52,7 @@ export const planALabWithAi: SequenceSpec = {
       tone: "warn",
       outcome: "out of date",
       title: "Check each command in the docs",
-      note: "Docker's documentation (checked 2026-10-24) calls docker-compose, with a hyphen, the old Compose v1 from 2014. The supported versions use docker compose, with a space.",
+      note: "Docker's documentation (checked 2026-10-24) says docker-compose, with a hyphen, is Compose v1, first released in 2014. Newer versions use docker compose, with a space. The plan's version: line is obsolete and only produces a warning.",
       chips: ["old: docker-compose up -d", "docs: docker compose up -d"],
     },
     {
@@ -78,11 +78,11 @@ export const planALabWithAi: SequenceSpec = {
       tone: "good",
       outcome: "ready",
       title: "Save the plan and the prompt",
-      note: "The final plan goes into her qasir-labs repository as the start of her lab day 1 entry. The prompt that worked goes into her notes, ready for lab day 2.",
+      note: "The final plan goes into her phone notes as the start of her lab day 1 entry. The prompt that worked goes into her notes too, ready for lab day 2.",
     },
   ],
   tryThis: [
-    "Before step 3, decide: should Yara keep the AI's idea of asking for a short code that does not exist, or drop it? Then check.",
+    "Go to step 4 to check your prediction: the docs call docker-compose the old Compose v1 and show docker compose for newer versions.",
     "Look at step 2. Which parts of the plan could only Yara judge, and which could only the official sites check?",
   ],
   limits:

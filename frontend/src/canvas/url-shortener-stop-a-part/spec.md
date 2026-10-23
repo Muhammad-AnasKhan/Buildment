@@ -20,10 +20,10 @@ The order matters: one part at a time, started again before the next. Lanes show
 - Inputs: none beyond the step controls.
 - Outputs: the active arrow between lanes, the step note, outcome badge and chips (commands and log lines).
 - Rule: four lanes (Browser, App, Cache, Database); eight steps: open /k7Qa, cache hit, stop cache, lookup from the database, start cache, stop db, saving a new link fails, start db.
-- Fixed data (this lab's own example numbers, labelled in the chapter and in `limits`): cache hit about 4 ms; database lookup about 38 ms; a new link with the database stopped returns 500.
+- Fixed data (invented for this example, not measured; labelled so in the chapter and in `limits`): cache hit about 4 ms; database lookup about 38 ms; a new link with the database stopped returns 500. Log lines carry no HTTP status for lookups, to keep the chapter's load low.
 - Docker facts (dossier S54, S55, S56; Docker docs checked 2026-10-24): `docker compose stop <service>` stops a container without removing it, and `docker compose start <service>` starts it again; stopping asks the program to shut down and forces it after a short wait; with `unless-stopped`, a container you stop stays stopped, even after the Docker daemon restarts.
 - Assumptions: Qasir's code treats a cache that does not answer like a cache miss and asks the database.
-- Limitations: an app without that rule would return errors when the cache stops; the timings come from one codespace.
+- Limitations: an app without that rule would return errors when the cache stops; the timings are invented for this example.
 
 ## Rendering
 - Primary: the shared sequence renderer, narrow layout below `sm`.
@@ -38,7 +38,7 @@ Four lanes, one arrow per step. Tones: good on the cache hit and on each start, 
 
 ## Copy
 - What this shows: what each part of a link shortener is for, found by stopping it.
-- Try this: 1. Before step 4, predict whether the link still opens (matches the chapter's predict). 2. Before step 7, predict what happens to a cached link and to a new link.
+- Try this: 1. Go to step 4 to check the chapter's prediction (the link still opens, and the log changes from source=cache to source=db). 2. Before step 7, predict what happens to a cached link and to a new link.
 - What changed: each step note gives the command, the log line and what it means.
 - Limits of the model: as in `limits`.
 
