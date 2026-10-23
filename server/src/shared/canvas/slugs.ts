@@ -14,6 +14,9 @@ export const CANVAS_SLUGS = [
   "retrieval-metrics-at-k",
   "agent-react-loop",
   "langgraph-reducer-merge",
+  "freelance-job-flowchart",
+  "job-application-status",
+  "check-the-ai-answer",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];
