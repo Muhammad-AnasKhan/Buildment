@@ -43,7 +43,7 @@ export const notePageLifecycle: StateMachineSpec = {
       state: "own",
       edge: 1,
       title: "Rewritten in her own words",
-      note: "With the sources closed, she fills the template: her explanation, a picture checked against her slides, the 10.1.5.9 example, and what breaks: no matching route and no default route, so the router drops the packet.",
+      note: "With the sources closed, she fills the template: her explanation, a picture checked against her slides, a worked example from the lab, and what breaks: no matching route and no default route, so the router drops the packet.",
       chips: ["five angles", "open questions", "recall questions"],
     },
     {
@@ -70,8 +70,8 @@ export const notePageLifecycle: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "Before step 2, predict which page will help Lina more in six weeks: the pasted AI summary or her own short page.",
-    "At step 5, what does the Friday review add that the first four states do not?",
+    "At step 5, read the outcome badge and what she fixes: this is a page she wrote herself four days earlier.",
+    "At step 2, why does the refused paste leave the page in the same state?",
   ],
   limits:
     "Real pages move back and forth: a review often sends a page back to be rewritten, and some topics need more than one page. The Friday review is Lina's choice of day, not a rule. Any notes app, plain text files or paper can hold this page.",

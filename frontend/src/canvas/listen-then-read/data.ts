@@ -37,14 +37,14 @@ export const listenThenRead: SequenceSpec = {
       to: 3,
       label: "make an overview",
       title: "A focused audio overview",
-      note: "Her focus prompt: 'How a router decides where to send a packet. A second-year student. Use the words from my slides.' She checks the file size before downloading, and downloads at night when her data is cheaper.",
+      note: "Her focus prompt: 'How a router decides where to send a packet. A second-year student. Use the words from my slides.' She checks the file size, then tries the download option in her browser at night, when her data is cheaper. If it had failed, she would have listened while connected.",
       chips: ["focused with a prompt", "size checked first"],
     },
     {
       from: 3,
       to: 0,
       label: "listen on a walk",
-      title: "Meet the topic on the move",
+      title: "Meet the topic while walking",
       note: "On her walk to the university she hears the main ideas and the new words: next hop, routing table, default route. She is meeting the topic, not learning it yet.",
     },
     {
@@ -62,7 +62,7 @@ export const listenThenRead: SequenceSpec = {
       outcome: "audio was wrong",
       title: "Check one claim against the page",
       note: "The audio said a router uses the first route in its table that matches. The page says the most specific match wins. The audio also left out what happens when nothing matches: the router uses its default route if it has one.",
-      chips: ["10.0.0.0/8 and 10.1.0.0/16", "10.1.5.9 takes the /16"],
+      chips: ["audio: first match", "page: most specific"],
     },
     {
       from: 0,
@@ -75,7 +75,7 @@ export const listenThenRead: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Before step 6, predict: will the textbook page back up the audio's claim about how a router chooses a route?",
+    "At step 6, read the audio's claim and the page's rule side by side before you look at the badge.",
     "Which step could Lina drop if her data ran out, and which could she not?",
   ],
   limits:

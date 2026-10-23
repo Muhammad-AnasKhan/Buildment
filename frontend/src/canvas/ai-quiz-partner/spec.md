@@ -22,6 +22,7 @@ The chapter builds the quiz prompt line by line and argues the case in prose. Th
 - Rule: three lanes (Lina, Chat assistant, Her notes); eight steps: explain (warn), the quiz prompt, question 1, a right answer, a mixed question answered wrongly, a hint and a right second try, the miss logged, two reviews planned.
 - Facts (checked twice, match chapter 3.4): video calls use UDP at this exam's level because late pieces are useless; a file needs every piece, so TCP; reviews on Wednesday (three days after Sunday) and the Wednesday after (a week later), following the course's rule of thumb.
 - Assumptions: the chat assistant follows the prompt; Lina's lecture notes agree with the answers.
+- Note: the chapter's predict asks about step 5, where the mixed-in file question shows Lina choosing by speed.
 - Limitations: a quiz partner can be wrong; real protocols are more complicated than the exam level; the review gaps are a rule of thumb.
 
 ## Rendering
@@ -38,7 +39,7 @@ Three lanes, one arrow per step. Warn tone on the explain step and on the wrong 
 
 ## Copy
 - What this shows: the same chat assistant used to explain, then to quiz.
-- Try this: 1. Before step 2, predict who did the recall in step 1: Lina or the AI? (matches the chapter's predict) 2. At step 6, why does a hint help more than being told the answer?
+- Try this: 1. Compare steps 4 and 5: a right answer for the video call, then 'faster' as the reason for the file; read what the hint in step 6 changes (points at the steps that answer the chapter's predict about the mixed question). 2. Look at step 1 again: who produced the answer there?
 - What changed: each step note says who produced the answer.
 - Limits of the model: as in `limits`.
 

@@ -20,8 +20,8 @@ The chapter sets up Lina's week in prose (sources, privacy check, focus prompt, 
 - Inputs: none beyond the shared step controls.
 - Outputs: the active arrow between lanes, the step note, outcome badge and chips.
 - Rule: four lanes (Lina, Her sources, Notebook, Audio); seven steps: choose sources, add them, make a focused overview, listen on a walk, read the chapter, check one claim (warn), write the fix (good).
-- Facts (checked twice, match chapter 3.5): when several routes match, a router uses the most specific (longest matching prefix); a table with 10.0.0.0/8 and 10.1.0.0/16 sends 10.1.5.9 by the /16 route; when no route matches, the router uses its default route if it has one. The audio's wrong claim is "the first route in its table that matches".
-- Tool facts (dossier, checked 2026-10-24): the notebook is opened as the web version in the phone's browser; the overview is focused with a prompt; the file size is checked before download. No length in minutes appears anywhere.
+- Facts (checked twice, match chapter 3.5): when several routes match, a router uses the most specific (longest matching prefix); when no route matches, the router uses its default route if it has one. The audio's wrong claim is "the first route in its table that matches". Numeric address examples were removed in revision round 1 to lower the technical load.
+- Tool facts (dossier, checked 2026-10-24): the notebook is opened as the web version in the phone's browser; the overview is focused with a prompt; the file size is checked before download; the phone-browser download is tried, with listening while connected as the fallback (dossier U3: untested). No length in minutes appears anywhere.
 - Assumptions: the three sources are correct; one claim is checked.
 - Limitations: on another day the checked claim may be right; tool features change.
 
@@ -40,7 +40,7 @@ Four lanes, one arrow per step. Warn tone on the checked claim, good tone on the
 
 ## Copy
 - What this shows: the audio is where Lina meets the topic; the page is where she checks it.
-- Try this: 1. Before step 6, predict: will the textbook page back up the audio's claim about how a router chooses a route? (matches the chapter's predict) 2. Which step could Lina drop if her data ran out, and which could she not?
+- Try this: 1. At step 6, read the audio's claim and the page's rule side by side before you look at the badge (points at the step that answers the chapter's predict) 2. Which step could Lina drop if her data ran out, and which could she not?
 - What changed: each step note says what Lina did and what it gave her.
 - Limits of the model: as in `limits`.
 

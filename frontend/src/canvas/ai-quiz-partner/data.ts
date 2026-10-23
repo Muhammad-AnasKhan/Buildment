@@ -87,8 +87,8 @@ export const aiQuizPartner: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Before step 2, predict who did the recall in step 1: Lina or the AI?",
-    "At step 6, why does a hint help Lina more here than being told the answer?",
+    "Compare steps 4 and 5: a right answer for the video call, then 'faster' as the reason for the file. Read what the hint in step 6 changes.",
+    "Look at step 1 again. Who produced the answer there, Lina or the AI?",
   ],
   limits:
     "The AI quiz partner can be wrong, so its answers are checked against Lina's lecture notes. Real networks are more complicated than this exam level: some newer protocols add reliable delivery on top of UDP. The review dates follow the course's rule of thumb, not an exact law.",

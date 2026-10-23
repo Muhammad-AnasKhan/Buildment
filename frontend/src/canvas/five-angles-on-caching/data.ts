@@ -1,15 +1,15 @@
 import type { SequenceSpec } from "../renderers/sequence/types";
 
 // Learn and Build with AI course, chapter 3.3 "One topic, five angles".
-// Yara learns caching for Qasir, her link shortener, from five angles: her
-// own words, a picture, a worked example, a failure case and a tiny build.
-// Each angle finds a gap the others miss. See spec.md.
+// In week 7 of her plan, Yara learns caching for Qasir, her link shortener,
+// from five angles: her own words, a picture, a worked example, a failure case
+// and her lab days 3 and 4. Each angle finds a gap the others miss. See spec.md.
 export const fiveAnglesOnCaching: SequenceSpec = {
   kind: "sequence",
   title: "Five angles on caching",
   purpose: "See how each of five angles on one topic finds a gap that the others miss.",
   summary:
-    "Yara asks a chat assistant to explain caching, then writes it in her own words and finds she cannot say what happens on a miss. The AI's diagram, checked against her book, is missing an arrow. Tracing two clicks shows the second click would not be counted. Asking what breaks shows an edited link keeps sending people to the old page. Building a tiny cache shows she does not know what a full cache does. Her notes page lists all five gaps.",
+    "In week 7, Yara asks a chat assistant to explain caching, then writes it in her own words and finds she cannot say what happens on a miss. The AI's diagram, checked against her book, is missing an arrow. Tracing two clicks shows the second click would not be counted. Asking what breaks shows an edited link keeps sending people to the old page. On lab day 3, making the log say whether the cache or the database answered each click shows she had no way to tell if the cache was working. Her notes page lists all five gaps.",
   actors: [
     { name: "Yara", sub: "Qasir" },
     { name: "Chat assistant", sub: "any one" },
@@ -66,11 +66,12 @@ export const fiveAnglesOnCaching: SequenceSpec = {
     {
       from: 0,
       to: 3,
-      label: "build a tiny one",
+      label: "log each answer",
       tone: "warn",
-      outcome: "gap: when full",
+      outcome: "gap: is it working?",
       title: "Angle 5: build it",
-      note: "In her lab she builds a tiny cache in the app's memory. It keeps every link forever, so it would grow until the memory runs out. What does a real cache do when it is full? She writes the question down to check in the cache's documentation.",
+      note: "On lab day 3 she makes Qasir's log say, for each click, whether the cache or the database answered. Until now she had no way to tell: both answers look the same to the person clicking. How would she know the cache was working at all? On lab day 4 she uses this log when she stops the cache on purpose.",
+      chips: ["lab day 3", "lab day 4"],
     },
     {
       from: 0,
@@ -83,9 +84,9 @@ export const fiveAnglesOnCaching: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Before step 4, predict which angle will show that click counts could go wrong: tracing two clicks, or a simpler explanation.",
+    "At step 4, follow click 2 on the paper trace and see which part answers it, and what that means for the click count.",
     "Cover the outcome badges. For each gap, could a different angle have found it?",
   ],
   limits:
-    "This is one fellow's week on one topic, told to show the method. On another topic, two angles may find the same gap, or one angle may find nothing new. Five angles is the course's method built on supported parts, not a tested package.",
+    "This is one fellow's week 7 on one topic, told to show the method. On another topic, two angles may find the same gap, or one angle may find nothing new. Five angles is the course's method built on supported parts, not a tested package.",
 };

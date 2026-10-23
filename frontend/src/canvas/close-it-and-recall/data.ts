@@ -10,7 +10,7 @@ export const closeItAndRecall: StateMachineSpec = {
   title: "Close it and recall",
   purpose: "See why reading a clear explanation feels like knowing, and how recall from a blank page finds the gaps.",
   summary:
-    "Lina reads an AI's five steps for splitting a network of 256 addresses into four parts and rates herself 4 out of 5. She closes the explanation and writes the steps on a blank page. Two of the five steps are missing. She re-studies only those two, in her own words, and three days later recalls all five. Rereading a fourth time instead would have left her feeling she knew it, with both gaps hidden.",
+    "Lina reads an AI's five steps for splitting a network into four parts three times and rates herself 4 out of 5. She closes the explanation and writes the steps on a blank page. Two of the five steps are missing. She re-studies only those two, in her own words, and three days later recalls all five. Rereading a fourth time instead would have left her feeling she knew it, with both gaps hidden.",
   states: [
     { id: "explanation", name: "AI explanation", sub: "5 clear steps", col: 0, row: 0 },
     { id: "feels", name: "Feels known", sub: "rated 4 of 5", col: 1, row: 0 },
@@ -30,8 +30,8 @@ export const closeItAndRecall: StateMachineSpec = {
     {
       state: "explanation",
       title: "A clear explanation",
-      note: "Lina asks a chat assistant how to split one network of 256 addresses into four equal parts. It gives five clear, correct steps, with an example.",
-      chips: ["/24 to /26", "64 addresses per part", "62 usable"],
+      note: "Lina asks a chat assistant how to split one network into four equal parts. It gives five clear, correct steps, with an example.",
+      chips: ["5 steps", "1 example"],
     },
     {
       state: "feels",
@@ -54,14 +54,14 @@ export const closeItAndRecall: StateMachineSpec = {
       tone: "warn",
       outcome: "2 of 5 missed",
       title: "The gaps appear",
-      note: "She cannot say why four parts need the mask to grow from /24 to /26. And she wrote 64 usable addresses per part: she forgot that the first address names the network and the last is the broadcast address.",
-      chips: ["missed: why /26", "missed: first and last"],
+      note: "Two of the five steps are not on her page. She cannot say why four parts need two extra bits, and she forgot that two addresses in every part are kept back from devices.",
+      chips: ["missed: step 1", "missed: step 4"],
     },
     {
       state: "restudy",
       edge: 3,
       title: "Re-study only the gaps",
-      note: "She studies two steps, not five. She asks the AI to explain only those, then writes each in her own words: two extra bits give four parts; the first and last address are not for devices, so 64 becomes 62.",
+      note: "She studies two steps, not five. She asks the AI to explain only those, in a few sentences, then closes it and writes each step in her own words.",
     },
     {
       state: "later",
@@ -80,7 +80,7 @@ export const closeItAndRecall: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "Before step 4, predict: will Lina write all five steps, or miss a step she followed while reading?",
+    "Go to step 4 and compare what reached the blank page with the 4 out of 5 rating in step 2.",
     "At step 5, count how many steps she re-studies. Why not all five?",
   ],
   limits:

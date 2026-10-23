@@ -14,13 +14,13 @@ renderer: state-machine (HTML controls, inline SVG states)
 Reading a clear explanation feels like knowing; closing it and recalling from a blank page shows the gaps; re-studying only the gaps, then recalling again days later, is what builds memory.
 
 ## Why a canvas
-The chapter explains the fluency trap and lets the learner try it on a different topic (password hashing). The canvas makes the loop itself visible on Lina's subnetting: the rating stays high while the recall shows gaps, and the last step puts the rereading route next to the recall route. Stepping one state at a time lets the learner predict the recall result before seeing it.
+The chapter explains the fluency trap and lets the learner try it on an everyday topic (an invented library's laptop rules). The canvas makes the loop itself visible on Lina's subnetting: the rating stays high while the recall shows gaps, and the last step puts the rereading route next to the recall route. Stepping one state at a time lets the learner predict the recall result before seeing it.
 
 ## Model
 - Inputs: none beyond the shared step controls (Back, Next, Play, step chips).
 - Outputs: the highlighted state, the active edge, the step note, outcome badge and chips.
 - Rule: six states in a snake (explanation, feels known, blank page, gaps found, re-study gaps, recall again); five transitions; seven steps, the last revisiting "Feels known" with no edge as the rereading route.
-- Facts (checked twice): a /24 network has 256 addresses; four equal parts need two extra bits, so /26; each /26 has 2 to the power 6 = 64 addresses; minus the network and broadcast addresses, 62 usable. Lina rates 4 of 5, misses 2 of 5 steps, recalls 5 of 5 three days later. These match chapter 3.2 exactly.
+- Facts (checked twice): four equal parts need two extra bits in the mask; two addresses in every part (the network and broadcast addresses) are kept back from devices. The canvas names these gaps without numbers, to keep the technical load low (revision round 1). Lina reads three times, rates 4 of 5, misses 2 of 5 steps, recalls 5 of 5 three days later. These match chapter 3.2 exactly.
 - Assumptions: one learner, one topic, honest marking of each step.
 - Limitations: one round of recall shown; real gaps can need several rounds; the three-day gap is the example's, not a rule.
 
@@ -40,7 +40,7 @@ Six labelled pills and five arrows. Warn tone on "Feels known" (the 4 of 5 ratin
 
 ## Copy
 - What this shows: a high rating next to a recall that misses two steps, and the loop that fixes them.
-- Try this: 1. Before step 4, predict: will Lina write all five steps, or miss a step she followed while reading? (matches the chapter's predict) 2. At step 5, count how many steps she re-studies, and say why not all five.
+- Try this: 1. Go to step 4 and compare what reached the blank page with the 4 out of 5 rating in step 2 (points at the step that answers the chapter's predict, without restating it) 2. At step 5, count how many steps she re-studies, and say why not all five.
 - What changed: each step note says what Lina did and what it showed.
 - Limits of the model: as in `limits`.
 

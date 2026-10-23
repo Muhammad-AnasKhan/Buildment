@@ -39,7 +39,7 @@ Five labelled pills, one dashed rejected loop and four arrows. Bad tone on the r
 
 ## Copy
 - What this shows: a notes page becoming useful through small moves, and the shortcut that is refused.
-- Try this: 1. Before step 2, predict which page will help Lina more in six weeks: the pasted AI summary or her own short page (matches the chapter's predict). 2. At step 5, what does the Friday review add that the first four states do not?
+- Try this: 1. At step 5, read the outcome badge and what she fixes: a page she wrote herself four days earlier (points at the step that answers the chapter's predict). 2. At step 2, why does the refused paste leave the page in the same state?
 - What changed: each step note says what Lina did to the page.
 - Limits of the model: as in `limits`.
 
