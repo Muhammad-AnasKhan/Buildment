@@ -31,7 +31,7 @@ export function CanvasNotes({ tryThis, limits }: CanvasNotesProps) {
       {tryThis && tryThis.length > 0 ? (
         <div>
           <h4 className="font-semibold text-foreground">Try this</h4>
-          <ul className="mt-1.5 list-disc space-y-1 pl-5 text-foreground/85">
+          <ul className="mt-1.5 list-disc space-y-1 pl-5 text-foreground">
             {tryThis.map((idea) => (
               <li key={idea}>{idea}</li>
             ))}
@@ -40,7 +40,7 @@ export function CanvasNotes({ tryThis, limits }: CanvasNotesProps) {
       ) : null}
       <div>
         <h4 className="font-semibold text-foreground">Limits of the model</h4>
-        <p className="mt-1 text-muted-foreground">{limits}</p>
+        <p className="mt-1 text-foreground">{limits}</p>
       </div>
     </div>
   );

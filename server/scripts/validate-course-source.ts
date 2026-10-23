@@ -24,20 +24,30 @@ import { parseLesson, readLessonFiles, readModuleDirs } from "./import-course.js
 
 export type ChapterMdxFailure = { file: string; error: string };
 
+export function validateParsedLesson(lesson: ReturnType<typeof parseLesson>): void {
+  const processor = unified().use(remarkParse).use(remarkMdx).use(remarkGfm)
+    .use(remarkChecklist).use(remarkLearningLog).use(remarkMermaid);
+  const source = restoreInteractiveBlockTags(lesson.source);
+  if (lesson.readerMode === "QUIZ" && !isActivityOnlySource(source)) {
+    throw new Error("Quiz flow supports activities only: Quiz, OpenQuestion, Predict, and CodeExercise.");
+  }
+  const unknown = collectUnknownComponents(source, mdxComponentAllowlist);
+  if (unknown.length) throw new Error(`Unknown components: ${unknown.join(", ")}`);
+  const canvasProblems = collectCanvasProblems(source);
+  if (canvasProblems.length) throw new Error(canvasProblems.join(" "));
+  const tokenProblems = [
+    tokenInFieldProblem("chapter title", lesson.title), tokenInFieldProblem("chapter summary", lesson.summary),
+    ...collectContentTokenProblems(source),
+    ...lesson.blocks.flatMap(block => secretFieldsWithTokens(block.config).map(field => `Block "${block.id}" uses a placeholder in "${field}".`)),
+  ].filter((problem): problem is string => problem !== null);
+  if (tokenProblems.length) throw new Error(tokenProblems.join(" "));
+  processor.runSync(processor.parse(source));
+}
+
 /** Transform every source lesson and compile it. Empty list means the course is safe to import. */
 export function findBrokenChapters(): { total: number; failed: ChapterMdxFailure[] } {
   const failed: ChapterMdxFailure[] = [];
   let total = 0;
-  const processor = unified()
-    .use(remarkParse)
-    .use(remarkMdx)
-    .use(remarkGfm)
-    .use(remarkChecklist)
-    .use(remarkLearningLog)
-    .use(remarkMermaid);
-  // Same list the API checks at publish time, so source validation never
-  // rejects a component the reader renders (GlossaryTerm, Step) or allows one it refuses.
-  const allowed = mdxComponentAllowlist;
 
   try {
     const manifest = loadCourseManifest();
@@ -60,24 +70,7 @@ export function findBrokenChapters(): { total: number; failed: ChapterMdxFailure
       const file = `${dirName}/${fileName}`;
       try {
         const lesson = parseLesson(moduleNum, dirName, fileName, lessonNum, slugPart);
-        const source = restoreInteractiveBlockTags(lesson.source);
-        if (lesson.readerMode === "QUIZ" && !isActivityOnlySource(source)) {
-          throw new Error("Quiz flow supports activities only: Quiz, OpenQuestion, Predict, and CodeExercise. Move lesson text, headings, recaps, checklists, learning logs, and visual blocks to a standard lesson. Put activity instructions in the activity prompt.");
-        }
-        const unknown = collectUnknownComponents(source, allowed);
-        if (unknown.length > 0) {
-          throw new Error(`Unknown components: ${unknown.join(", ")}`);
-        }
-        const canvasProblems = collectCanvasProblems(source);
-        if (canvasProblems.length > 0) throw new Error(canvasProblems.join(" "));
-        const tokenProblems = [
-          tokenInFieldProblem("chapter title", lesson.title),
-          tokenInFieldProblem("chapter summary", lesson.summary),
-          ...collectContentTokenProblems(source),
-          ...lesson.blocks.flatMap((block) => secretFieldsWithTokens(block.config).map((field) => `Block "${block.id}" uses a placeholder in "${field}". Answer keys, rubrics, tests and solutions must be the same for every learner.`)),
-        ].filter((problem): problem is string => problem !== null);
-        if (tokenProblems.length > 0) throw new Error(tokenProblems.join(" "));
-        processor.runSync(processor.parse(source));
+        validateParsedLesson(lesson);
       } catch (err) {
         const message = err instanceof Error ? err.message.split("\n")[0] : String(err);
         failed.push({ file, error: message });

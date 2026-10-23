@@ -4,6 +4,7 @@ import type { SessionUser } from "../../types/auth.js";
 import type { SessionBody } from "../../validations/progress.js";
 import { recordStudyHeartbeat } from "./heartbeat.js";
 import { clientSessionStatus, controlStudySession } from "./study-session.js";
+import { releaseContainsChapter } from "../courses/releases.js";
 
 export type StudyClockState = {
   status: ReturnType<typeof clientSessionStatus> | "idle";
@@ -22,7 +23,7 @@ export type HeartbeatResult = {
 async function enrolledChapter(chapterId: string, user: SessionUser) {
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId, archivedAt: null },
-    select: { id: true, courseId: true },
+    select: { id: true, courseId: true, course: { select: { familySlug: true } } },
   });
   if (!chapter) throw new NotFoundError("Chapter not found");
 
@@ -30,6 +31,7 @@ async function enrolledChapter(chapterId: string, user: SessionUser) {
     where: { courseId_userId: { courseId: chapter.courseId, userId: user.id } },
   });
   if (!enrollment) throw new ForbiddenError("Not enrolled in this course", "not_enrolled");
+  if (!(await releaseContainsChapter(chapter.courseId, enrollment, chapter.course.familySlug, chapter.id))) throw new NotFoundError("Chapter not found");
 
   return { chapter, enrollment };
 }
