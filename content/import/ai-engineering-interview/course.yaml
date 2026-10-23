@@ -5,6 +5,7 @@ projectGoal: "Build a small RAG plus agent service that runs on your laptop with
 difficulty: Advanced
 estimatedHours: 52
 category: tech
+family: ai-engineering-capstones
 modules:
   - dir: 01-the-interview-loop
     title: "The AI engineering interview loop"
