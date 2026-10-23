@@ -83,8 +83,9 @@ export default async function CourseOverviewPage({
   const { track } = overview;
 
   // A course in a family starts with the variant choice, whichever way the learner enrolled.
-  // The picker sends finished learners back here, so they are never sent to it.
-  if (track && !track.variantChosen && !track.specialisationOpen && enrollment.chaptersCompleted === 0) {
+  // The picker sends finished learners back here, so they are never sent to it, and
+  // learners whose course assigns the variant have nothing to choose.
+  if (track && !track.variantChosen && !track.variantAssigned && !track.specialisationOpen && enrollment.chaptersCompleted === 0) {
     redirect(`/courses/${course.slug}/variant`);
   }
 

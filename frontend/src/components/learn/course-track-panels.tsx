@@ -19,8 +19,9 @@ export function VariantBanner({ courseSlug, track }: { courseSlug: string; track
   const family = findCourseFamily(track.familySlug);
   if (!family) return null;
   const variant = resolveVariant(family, track.variantSlug);
-  // Finished learners keep whatever they built, including the default.
-  const settled = track.variantChosen || track.specialisationOpen;
+  // Finished learners keep whatever they built, including the default, and so do
+  // learners whose course assigns the variant.
+  const settled = track.variantChosen || track.variantAssigned || track.specialisationOpen;
 
   return (
     <section
@@ -45,6 +46,8 @@ export function VariantBanner({ courseSlug, track }: { courseSlug: string; track
       </p>
       {track.specialisationOpen ? (
         <p className="text-xs text-muted-foreground">Fixed now that you have finished</p>
+      ) : track.variantAssigned ? (
+        <p className="text-xs text-muted-foreground">Assigned to you for this course</p>
       ) : (
         <Link
           href={`/courses/${courseSlug}/variant`}

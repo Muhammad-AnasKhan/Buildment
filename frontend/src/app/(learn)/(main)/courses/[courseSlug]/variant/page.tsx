@@ -17,7 +17,9 @@ export default async function CourseVariantPage({ params }: { params: Promise<{ 
   const overview = await serverApiFetchOrNotFound<CourseOverview>(`/api/v1/courses/${encodeURIComponent(courseSlug)}/overview`);
   const { course, track } = overview;
   const family = findCourseFamily(track?.familySlug);
-  if (overview.access !== "active" || !track || !family || track.specialisationOpen) redirect(`/courses/${course.slug}`);
+  if (overview.access !== "active" || !track || !family || track.specialisationOpen || track.variantAssigned) {
+    redirect(`/courses/${course.slug}`);
+  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-5 py-8 sm:px-6 sm:py-10">

@@ -11,6 +11,7 @@ const track = {
   familySlug: "multi-vendor-marketplace",
   variantSlug: "books",
   variantChosen: true,
+  variantAssigned: false,
   specialisationSlug: null,
   specialisationOpen: false,
 };
