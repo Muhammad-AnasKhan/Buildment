@@ -38,12 +38,12 @@ export function TestAccountPicker({
             type="submit"
             name="email"
             value={account.email}
+            aria-label={`${account.roleLabel}, ${account.email}`}
             disabled={pending}
             onClick={() => setChosen(account.email)}
             className="flex min-w-0 cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 text-left text-sm outline-none transition-colors hover:border-foreground/30 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-default disabled:opacity-70"
           >
             <span className="w-16 shrink-0 font-semibold">{account.roleLabel}</span>
-            <span className="sr-only">, </span>
             <span className="min-w-0 truncate text-muted-foreground">{account.email}</span>
             {pending && chosen === account.email ? (
               <span
