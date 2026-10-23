@@ -1,7 +1,7 @@
 slug: building-habits
 title: "Building Habits That Last"
 description: "Learn how habits really form, and use it to build good habits and weaken the ones you do not want. Tie a tiny first step to a clear cue, let your surroundings do the work, track without shame, restart after a missed day, and keep your habits going through power cuts, weak internet, prayer times and family life. Grounded in research, with every idea credited to the people who found it."
-projectGoal: "Design, run and review your own 30-day habit plan with real tracking data, or review a provided case: the habit written as a cue and a tiny step, the friction you changed, a backup version for hard days, your tracker with its missed days, and what you will keep, change or drop. Then walk a mentor through it in five minutes."
+projectGoal: "Design your own 30-day habit plan, run it for as many days as you can while you take the course, and review the real days you have, or review a provided month: the habit written as a cue and a small first step, the friction you changed, a backup version for hard days, your tracker with its missed days, and what you will keep, change or drop. Then walk a mentor through it in five minutes, and keep the plan running after the course."
 difficulty: Beginner
 estimatedHours: 16
 category: soft-skills
@@ -150,7 +150,7 @@ modules:
         goal: "Graded fresh cases from every module: choose which habit tool to use first, and why."
       - file: 07.04-capstone-30-day-plan.md
         title: "Capstone: your 30-day habit plan"
-        goal: "Design, run and review a 30-day habit plan with real tracking data, or review a provided case, and decide what to keep, change or drop."
+        goal: "Design a 30-day habit plan, review the real days you have tracked or a provided month, and decide what to keep, change or drop."
       - file: 07.05-checklist.md
         title: "Course checklist and your habit toolkit"
         goal: "Gate: final checks, your habit toolkit, a look back at the habit you described in module 1, and your plan for the next 30 days."

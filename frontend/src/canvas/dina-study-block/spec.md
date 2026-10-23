@@ -1,7 +1,7 @@
 ---
 artifact: canvas-spec
 course: building-habits
-chapter: 06.03-study-and-deep-work
+chapter: 06.03-study-and-focused-work
 slug: dina-study-block
 version: 1
 owner: interaction-designer
