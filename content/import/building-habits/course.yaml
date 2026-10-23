@@ -123,7 +123,7 @@ modules:
       - file: 06.02-choose-one-habit.md
         title: "Choose one habit, and the person you are becoming"
         goal: "Choose one habit to start first, and see each repetition as small evidence of the kind of person you are becoming."
-      - file: 06.03-study-and-deep-work.md
+      - file: 06.03-study-and-focused-work.md
         title: "Study and focused work habits"
         goal: "Build a study or focused work habit with a start signal, a protected time, a phone out of reach and offline materials, including for remote work across time zones."
       - file: 06.04-a-daily-rhythm.md
