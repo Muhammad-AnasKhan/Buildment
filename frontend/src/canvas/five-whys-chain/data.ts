@@ -76,7 +76,7 @@ export const fiveWhysChain: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "Before step 6, predict what the root cause will be. Is it a person or a missing step?",
+    "At step 6, check the prediction you made above the canvas. Was your root cause a person or a missing step?",
     "Count the whys in the chain. Would a sixth why still lead to something the shop can change?",
   ],
   limits:

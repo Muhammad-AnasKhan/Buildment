@@ -30,7 +30,7 @@ export const laptopChargingDetective: SequenceSpec = {
       to: 0,
       label: "list causes",
       title: "List the possible causes",
-      note: "Power travels from the socket, through the charger and cable, into the laptop's port and battery. Any link could be the fault. A useful rule of thumb: test the cheapest likely one first, and change one thing at a time.",
+      note: "Power travels from the socket, through the charger and cable, into the laptop's port and battery. Any link could be the fault. A useful rule of thumb: weigh how likely each cause is against how cheap it is to check, and change one thing at a time.",
       chips: ["socket", "charger and cable", "laptop port", "battery"],
     },
     {

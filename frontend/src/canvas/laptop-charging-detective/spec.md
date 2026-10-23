@@ -11,7 +11,7 @@ renderer: sequence (HTML controls, inline SVG lanes)
 # Canvas spec: Why will Nour's laptop not charge?
 
 ## Teaching claim
-Describe the problem exactly, then test one cause at a time, with the cheapest likely one first as a rule of thumb; a well-chosen test can rule out half the chain at once, and a fix counts only when a test confirms it.
+Describe the problem exactly, then test one cause at a time, weighing how likely each cause is against how cheap it is to check; a well-chosen test can rule out half the chain at once, and a fix counts only when a test confirms it.
 
 ## Why a canvas
 The order of the tests is the lesson. Stepping through them makes the learner predict what each test rules out before the answer appears, which prose alone reports after the fact.
