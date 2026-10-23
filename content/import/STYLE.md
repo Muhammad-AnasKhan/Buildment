@@ -69,7 +69,7 @@ Import normalizes embedded `### Learning log` sections via `normalizeGateLearnin
 
 ## MDX components
 
-Use existing components (`BigWordAlert`, `Callout`, `ChapterRecap`, `InterestingRead`, etc.) consistently. Gate/quiz focus chapters strip optional enrichment on import — do not rely on those in checklist files.
+Use existing components (`BigWordAlert`, `Callout`, `ChapterRecap`, `InterestingRead`, etc.) consistently. Gate and quiz chapters strip optional enrichment (`BigWordAlert`, `MustRead`, `InterestingRead`, `RealWorldEvent`) on import, so do not rely on those in checklist files. A gate keeps its `ChapterRecap`; a quiz chapter holds activities only.
 
 ## Code in lessons
 
