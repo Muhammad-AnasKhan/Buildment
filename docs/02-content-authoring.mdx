@@ -165,10 +165,11 @@ The source checks need no database. Keep the ZIP outside the source folder and i
 contents for extra files. If upload validation fails, fix the original source, rerun the checks,
 rebuild the ZIP, and retry. Do not bypass validation to make an invalid quiz import.
 
-For a repository PR, the `Course package` workflow validates the PR and previews a
-merged package. Its GitHub environment approval lets the creator publish the update.
-The trusted publisher uses the ZIP preview and approval service. The older `content:import` CLI still
-updates live rows and must not be used to update a published course.
+A repository PR only changes source files. It does not create or update a course in
+the database. To load a new course, the creator reviews the package and uploads
+its ZIP in the dashboard as a draft. To update an existing course, use the
+dashboard's **Update from ZIP** preview and approval. The older `content:import`
+CLI still updates live rows and must not be used to update a published course.
 
 ## Why MDX and not a JSON block editor (Notion-style)
 
