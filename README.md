@@ -1,4 +1,4 @@
-# buildment
+# Buildment
 
 An interactive, project-based learning platform. Mentors write MDX chapters with graded
 checkpoints (quizzes, tests, must-reads, open questions, runnable code); mentees work through
