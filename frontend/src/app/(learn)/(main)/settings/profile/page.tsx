@@ -1,13 +1,18 @@
 import type { LearnerProfile } from "@/shared/api/learner";
+import type { AiCredentialStatus } from "@/shared/api/ai";
 import { requireVerifiedUser } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { ProfileForm } from "@/components/auth/profile-form";
 import { PasswordForm } from "@/components/auth/password-form";
+import { AiKeySettings } from "@/components/learner/ai-key-settings";
 import { ProfileSettingsHero } from "@/components/auth/profile-settings-hero";
 
 export default async function ProfileSettingsPage() {
   await requireVerifiedUser();
-  const profile = await serverApiFetch<LearnerProfile>("/api/v1/learner/profile");
+  const [profile, aiStatus] = await Promise.all([
+    serverApiFetch<LearnerProfile>("/api/v1/learner/profile"),
+    serverApiFetch<AiCredentialStatus>("/api/v1/learner/ai-credential"),
+  ]);
 
   const coverUrl = profile.featuredCourse?.coverUrl ?? null;
   const coverLabel = profile.featuredCourse?.title ?? profile.name ?? "Your profile";
@@ -41,6 +46,7 @@ export default async function ProfileSettingsPage() {
             variant="plain"
           />
         </div>
+        <AiKeySettings initial={aiStatus} />
         <PasswordForm />
       </div>
     </div>
