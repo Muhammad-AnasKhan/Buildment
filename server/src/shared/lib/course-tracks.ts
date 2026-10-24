@@ -18,6 +18,13 @@ export type VariantTheme = {
   headingFont: "sans" | "serif";
 };
 
+/** One way learners reach the product the variant builds, e.g. "Email". */
+export type VariantChannel = {
+  label: string;
+  /** A suggested extra channel that learners may skip. */
+  optional?: boolean;
+};
+
 export type CourseVariant = {
   slug: string;
   /** Short label for chips and pickers, e.g. "Books". */
@@ -28,6 +35,8 @@ export type CourseVariant = {
   summary: string;
   /** The problem that makes this variant hard. */
   hardestConstraint: string;
+  /** Channels the product takes requests through, required ones first. Omitted when the variant has none to show. */
+  channels?: VariantChannel[];
   /** The specialisation that follows naturally from this variant. */
   specialisationSlug: string;
   theme: VariantTheme;
@@ -171,8 +180,12 @@ const MARKETPLACE: CourseFamily = {
 
 // Capstone projects for the AI engineering interview course. Every variant
 // builds the same evaluated RAG plus agent service with one approval-gated
-// tool; the domain, documents, risky action and hardest constraint differ.
+// tool, taking requests by web chat and email; the domain, documents, risky
+// action, hardest constraint and suggested third channel differ.
 // Plans per variant: agent-ip/work/ai-engineering-interview/capstone-variants.md.
+const CHAT_AND_EMAIL: VariantChannel[] = [{ label: "Web chat" }, { label: "Email" }];
+const withOptional = (label: string): VariantChannel[] => [...CHAT_AND_EMAIL, { label, optional: true }];
+
 const AI_CAPSTONES: CourseFamily = {
   slug: "ai-engineering-capstones",
   label: "AI engineering capstones",
@@ -184,6 +197,7 @@ const AI_CAPSTONES: CourseFamily = {
       productName: "Karmel Help",
       summary: "A support agent for an online shop of handmade goods that answers policy questions and can look up orders and request refunds.",
       hardestConstraint: "Mix policy answers with live order data in one reply, and never pay a refund twice.",
+      channels: withOptional("Messaging app"),
       specialisationSlug: "agent-workflows",
       theme: { accentLight: "#9B2226", onAccentLight: "#FFFFFF", accentDark: "#F87171", onAccentDark: "#2A0A0B", headingFont: "sans" },
     },
@@ -193,6 +207,7 @@ const AI_CAPSTONES: CourseFamily = {
       productName: "Sanabel Desk",
       summary: "An assistant that answers loan officers from a lender's policy documents and can request a repayment extension.",
       hardestConstraint: "Policies change: answer from the version in force on the question's date and cite it.",
+      channels: CHAT_AND_EMAIL,
       specialisationSlug: "retrieval-depth",
       theme: { accentLight: "#1E40AF", onAccentLight: "#FFFFFF", accentDark: "#93C5FD", onAccentDark: "#0B1B3A", headingFont: "sans" },
     },
@@ -202,6 +217,7 @@ const AI_CAPSTONES: CourseFamily = {
       productName: "Nakhla Ops",
       summary: "A knowledge bot for a remote software team's runbooks and incident notes that can restart a service.",
       hardestConstraint: "Runbooks go stale: prefer the newest valid page and say when an answer comes from an old one.",
+      channels: withOptional("Team chat"),
       specialisationSlug: "llm-operations",
       theme: { accentLight: "#0F766E", onAccentLight: "#FFFFFF", accentDark: "#2DD4BF", onAccentDark: "#042F2E", headingFont: "sans" },
     },
@@ -211,6 +227,7 @@ const AI_CAPSTONES: CourseFamily = {
       productName: "Shifa Desk",
       summary: "A front desk assistant for a small clinic that answers practical questions and can cancel or move appointments.",
       hardestConstraint: "Logistics only: refuse medical advice safely, hand off to staff, and change bookings only after approval.",
+      channels: withOptional("Web form"),
       specialisationSlug: "agent-workflows",
       theme: { accentLight: "#1B6E3A", onAccentLight: "#FFFFFF", accentDark: "#4ADE80", onAccentDark: "#052E16", headingFont: "sans" },
     },
@@ -220,6 +237,7 @@ const AI_CAPSTONES: CourseFamily = {
       productName: "Marj Reports",
       summary: "An analyst for an NGO's field reports and budget tables that drafts sections of donor updates.",
       hardestConstraint: "Numbers sit in tables across many reports, and totals must add up across documents.",
+      channels: CHAT_AND_EMAIL,
       specialisationSlug: "retrieval-depth",
       theme: { accentLight: "#B45309", onAccentLight: "#FFFFFF", accentDark: "#FBBF24", onAccentDark: "#2A1700", headingFont: "sans" },
     },
@@ -229,6 +247,7 @@ const AI_CAPSTONES: CourseFamily = {
       productName: "Daris",
       summary: "A tutor for a university course's notes and rules in Arabic and English that can request a deadline extension.",
       hardestConstraint: "Questions and notes mix Arabic and English, and retrieval must work across both languages.",
+      channels: CHAT_AND_EMAIL,
       specialisationSlug: "retrieval-depth",
       theme: { accentLight: "#6D28D9", onAccentLight: "#FFFFFF", accentDark: "#A78BFA", onAccentDark: "#1E1033", headingFont: "sans" },
     },
@@ -238,6 +257,7 @@ const AI_CAPSTONES: CourseFamily = {
       productName: "Aqd Check",
       summary: "An assistant that answers a freelancer's questions about client contracts and drafts change requests.",
       hardestConstraint: "Quote the exact clause, never give legal advice, and send nothing to a client without approval.",
+      channels: CHAT_AND_EMAIL,
       specialisationSlug: "llm-operations",
       theme: { accentLight: "#9D174D", onAccentLight: "#FFFFFF", accentDark: "#F9A8D4", onAccentDark: "#3B0A1E", headingFont: "serif" },
     },
@@ -247,6 +267,7 @@ const AI_CAPSTONES: CourseFamily = {
       productName: "Rafiq",
       summary: "An onboarding buddy for a remote company's handbook that can request laptops and system access.",
       hardestConstraint: "Permission-aware retrieval: an employee never sees a manager-only document in an answer.",
+      channels: withOptional("Team chat"),
       specialisationSlug: "agent-workflows",
       theme: { accentLight: "#155E75", onAccentLight: "#FFFFFF", accentDark: "#67E8F9", onAccentDark: "#083344", headingFont: "sans" },
     },

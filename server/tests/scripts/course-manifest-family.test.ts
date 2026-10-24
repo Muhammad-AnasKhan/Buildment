@@ -40,6 +40,18 @@ describe("course.yaml family", () => {
       variants: [{ ...custom.variantFamily.variants[0], productName: 'Bad" onClick="alert(1)' }, custom.variantFamily.variants[1]] } }).success).toBe(false);
   });
 
+  it("accepts variant channels and rejects an empty channel label", () => {
+    const variants = [
+      { slug: "food", label: "Food", productName: "FreshMarket", summary: "Sell food", hardestConstraint: "Inventory",
+        channels: [{ label: "Web chat" }, { label: "Email" }, { label: "Team chat", optional: true }] },
+      { slug: "electricity", label: "Electricity", productName: "GridMarket", summary: "Trade power", hardestConstraint: "Matching" },
+    ];
+    const custom = { ...manifest, family: "marketplace-lab", variantFamily: { slug: "marketplace-lab", label: "Marketplace lab", defaultVariantSlug: "food", variants } };
+    expect(CourseManifestSchema.safeParse(custom).success).toBe(true);
+    expect(CourseManifestSchema.safeParse({ ...custom, variantFamily: { ...custom.variantFamily,
+      variants: [{ ...variants[0], channels: [{ label: "" }] }, variants[1]] } }).success).toBe(false);
+  });
+
   it("accepts stable keys and rejects duplicates across modules", () => {
     const keyed = { ...manifest, modules: [
       { ...manifest.modules[0], key: "intro", lessons: [{ ...manifest.modules[0].lessons[0], key: "first-lesson" }] },

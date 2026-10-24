@@ -98,6 +98,7 @@ export const CourseManifestSchema = z.object({
       slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/), label: z.string().min(1),
       productName: z.string().refine(isSafeProductName, "Use a plain product name without Markdown, quotes, or angle brackets"),
       summary: z.string().min(1), hardestConstraint: z.string().min(1),
+      channels: z.array(z.object({ label: z.string().min(1).max(40), optional: z.boolean().optional() })).max(6).optional(),
       specialisationSlug: z.string().default(""),
       theme: z.object({ accentLight: z.string().regex(/^#[0-9A-Fa-f]{6}$/), onAccentLight: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
         accentDark: z.string().regex(/^#[0-9A-Fa-f]{6}$/), onAccentDark: z.string().regex(/^#[0-9A-Fa-f]{6}$/),
