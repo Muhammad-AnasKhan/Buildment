@@ -17,6 +17,10 @@ const SECRET_KEYS = new Set([
   "solution",
 ]);
 
+// Shown only after grading, from the respond route and the saved block state.
+// It usually names the right option, so it never ships with the question.
+const AFTER_ANSWER_KEYS = new Set(["explanation"]);
+
 // TSafe defaults to TFull for callers that don't have (or don't need) a
 // narrower client-facing type; pass it explicitly to get compile-time
 // protection against accidentally reading a secret key back out.
@@ -31,7 +35,7 @@ function stripSecrets(value: unknown): unknown {
   if (value && typeof value === "object") {
     return Object.fromEntries(
       Object.entries(value as Record<string, unknown>)
-        .filter(([key]) => !SECRET_KEYS.has(key))
+        .filter(([key]) => !SECRET_KEYS.has(key) && !AFTER_ANSWER_KEYS.has(key))
         .map(([key, val]) => [key, stripSecrets(val)])
     );
   }

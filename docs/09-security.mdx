@@ -53,8 +53,11 @@ it ships:
 
 ```
 Given any Block.config for any registered block type,
-sanitize(config) must never include keys: correct, correctOptionId, correctOptionIds, rubric, sampleAnswer, hiddenTests
+sanitize(config) must never include keys: correct, correctOptionId, correctOptionIds, rubric, sampleAnswer, hiddenTests, tests, solution, explanation
 ```
+
+`explanation` is stripped too because it usually names the right option. The learner still sees it,
+but only after answering: the respond route and the saved block state return it with the grade.
 
 This should be a property-style test over the Zod schemas in the registry (see
 [`03-blocks-registry.mdx`](03-blocks-registry.mdx)), not a hand-maintained list of block types —

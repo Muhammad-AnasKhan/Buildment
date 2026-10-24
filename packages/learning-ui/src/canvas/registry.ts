@@ -119,6 +119,14 @@ import { slipOrGiveUp } from "./slip-or-give-up/data";
 import { whichHabitFirst } from "./which-habit-first/data";
 import { dinaStudyBlock } from "./dina-study-block/data";
 import { prayerTimeAnchors } from "./prayer-time-anchors/data";
+import { prefillDecodeSteps } from "./prefill-decode-steps/data";
+import { kvCachePerToken } from "./kv-cache-per-token/data";
+import { gpuMemoryBudget } from "./gpu-memory-budget/data";
+import { pagedKvAllocation } from "./paged-kv-allocation/data";
+import { speculativeDecodingGain } from "./speculative-decoding-gain/data";
+import { selfHostOrApi } from "./self-host-or-api/data";
+import { admissionControlTokens } from "./admission-control-tokens/data";
+import { deploymentFitSteps } from "./deployment-fit-steps/data";
 import { storyOrUsually } from "./story-or-usually/data";
 import { myPartTeamPart } from "./my-part-team-part/data";
 import { samerDecisionWeights } from "./samer-decision-weights/data";
@@ -270,6 +278,14 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "which-habit-first": whichHabitFirst,
   "dina-study-block": dinaStudyBlock,
   "prayer-time-anchors": prayerTimeAnchors,
+  "prefill-decode-steps": prefillDecodeSteps,
+  "kv-cache-per-token": kvCachePerToken,
+  "gpu-memory-budget": gpuMemoryBudget,
+  "paged-kv-allocation": pagedKvAllocation,
+  "speculative-decoding-gain": speculativeDecodingGain,
+  "self-host-or-api": selfHostOrApi,
+  "admission-control-tokens": admissionControlTokens,
+  "deployment-fit-steps": deploymentFitSteps,
   "story-or-usually": storyOrUsually,
   "my-part-team-part": myPartTeamPart,
   "samer-decision-weights": samerDecisionWeights,

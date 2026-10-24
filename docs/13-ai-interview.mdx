@@ -18,7 +18,7 @@ OpenRouter. There is no voice yet.
 title: Talk through your payments project
 opening: Tell me about a payment feature you built. What was your part?
 focus: [ownership, impact, five-whys]
-context: resume
+context: resume-and-project
 maxTurns: 10
 whyDepth: 5
 required: false
@@ -32,7 +32,7 @@ rubric: A strong answer names what the learner decided alone, gives one number f
 | `title` | Heading of the block (required, up to 120 characters) | none |
 | `opening` | The first question, shown without calling the model (required, up to 600 characters) | none |
 | `focus` | Topics to cover, in order: `ownership`, `impact`, `five-whys`, `resume`, `best-technical`, `storytelling`, `case-study`, `strengths-weaknesses` | `[ownership, impact, five-whys]` |
-| `context` | What the learner pastes first: `resume`, `project` or `none` | `none` |
+| `context` | What the learner pastes first: `resume`, `project`, `resume-and-project` (two boxes: resume and important work) or `none` | `none` |
 | `maxTurns` | Answers allowed, 1 to 20 | `10` |
 | `whyDepth` | Follow-up "why" questions on one thread before moving to the next focus area, 1 to 8 | `5` |
 | `rubric` | What a strong interview shows. **Server only.** Up to 4000 characters | none |
@@ -50,11 +50,11 @@ in `server/src/shared/blocks/ai-interview/`.
 ## What the learner sees
 
 - No key saved: a friendly card that links to **Settings, AI interviews** (`/settings/profile#ai-interviews`).
-- A key and a start screen. If `context` is `resume` or `project`, a box to paste it (40 to 6000 characters).
+- A key and a start screen. If `context` is `resume` or `project`, a box to paste it (40 to 6000 characters). With `resume-and-project` there are two labelled boxes, "Your resume" (40 to 6000 characters) and "Your important work" (40 to 4000 characters), each with its own counter. Both must be filled before Start is enabled.
 - A chat (built for a 375px phone, light and dark): a turn counter ("3 of 10 answers"), an answer box
-  capped at 2000 characters, and **Finish and get feedback** once one answer is in. An active
+  capped at 2000 characters, a microphone button for dictation, and **Finish and get feedback** once one answer is in. An active
   interview is resumed after a reload.
-- A feedback card: strengths, weaknesses each with a suggested fix, notes per focus area, three next steps.
+- A feedback card, in this order: strengths to build on, what to do better (each with a suggested fix), notes per focus area, "Things to watch" (named flags, each with the learner's own words), and three next steps.
 
 Mentors read the transcript and the feedback in the existing mentee evaluation (the submission list).
 
@@ -72,6 +72,46 @@ Mentors read the transcript and the feedback in the existing mentee evaluation (
    session becomes `FINISHED` with its feedback and a `Response` (status `SUBMITTED`, no score) is written, so
    the block counts as complete. Finishing twice returns the saved result.
 4. **Abandon** marks the session `ABANDONED`. It never counts as completion.
+
+### Speech input
+
+The answer box reuses the dictation input that open questions have (`AnswerTextareaWithMic` and the browser speech
+recognition API), so there is no new dependency and nothing is sent anywhere for transcription. Spoken words are written
+into the box as text and can be edited. Typing always works, the button only shows in browsers that support speech, and
+the transcript the server stores is text. The pasted resume and work boxes have no microphone.
+
+### How the interviewer probes
+
+Every course gets the same default probes, with no setting to turn on. Each "why" follow-up picks the probe that fits
+the learner's last answer:
+
+- a decision or a reason: ask why;
+- a number, result or claim of success: ask for evidence ("How do you know?", "How did you measure it?", "Where did that
+  number come from?", "How did you find out the outcome?");
+- a technical choice: ask for the alternative ("Why not X?", "What happens if Y fails or the load doubles?");
+- a vague answer: ask for one specific example.
+
+The `impact` and `best-technical` focus guides carry the same evidence and alternatives probes when the interview moves
+to those topics.
+
+### Feedback
+
+The feedback call leads with strengths to build on, then frames each weakness as what to do better with one concrete fix.
+The three next steps may suggest building a personal project "around your own needs" or around a problem the learner
+has, but never name a specific project idea. It also lists `flags`: every named weak point that applies, each with the
+learner's own words that triggered it (an empty list when none applies).
+
+| Flag | Shown as | Meaning |
+| --- | --- | --- |
+| `vague-ownership` | Vague ownership | It stays unclear what the learner personally did |
+| `unsupported-number` | Unsupported number | A number or result with no source or way of measuring |
+| `pseudo-story` | Pseudo-story | Sounds like a story but has no checkable situation, action or outcome |
+| `invented-reason-risk` | Invented reason risk | A reason that sounds made up after the fact |
+| `jargon-without-explanation` | Jargon without explanation | Technical terms used without saying what they mean |
+
+The server keeps a flag only when its quote really appears in one of the learner's answers (ignoring case and spacing),
+so a made-up quote never reaches the learner or a mentor. Feedback saved before flags existed still parses, with no
+flags. Mentors see the flags, with their quotes, in the same submission text as the transcript.
 
 Guards: answers are capped at 2000 characters, questions at 220 output tokens, feedback at 1500, and turns at
 `maxTurns`. Timeouts and 5xx answers are retried once; invalid keys, out-of-credit keys and rate limits are not,
@@ -104,7 +144,7 @@ Interview, under `/api/v1/blocks/:blockId/ai-interview` (verified, enrolled lear
 
 | Method and path | Body | Returns |
 | --- | --- | --- |
-| `POST .../start` | `{ context? }` | `{ session }` |
+| `POST .../start` | `{ context?, contextWork? }` (`contextWork` only for `resume-and-project`) | `{ session }` |
 | `POST .../answer` | `{ sessionId, answer }` | `{ session }` |
 | `POST .../finish` | `{ sessionId }` | `{ session }` with `feedback` |
 | `POST .../abandon` | `{ sessionId }` | `{ session }` |
@@ -137,7 +177,7 @@ Error codes: `AI_NOT_CONFIGURED` (503), `AI_KEY_REQUIRED` (409), `AI_KEY_INVALID
 
 Set `AI_KEY_ENCRYPTION_KEY` on the API host before turning the feature on. This is a new configuration value that a
 person sets; nothing in the code or the migrations sets it. The migrations add the `AI_INTERVIEW` block type, the
-`AiCredential` table and the `AiInterviewSession` table.
+`AiCredential` table, the `AiInterviewSession` table and its `contextWork` column.
 
 ## Not in this version
 

@@ -25,7 +25,9 @@ export const aiCredentialModelBody = z.object({ model: model.nullable() });
 // ---- AI interview ------------------------------------------------------------------
 
 export const aiInterviewStartBody = z.object({
+  // Generous here; the service enforces each box's own limit with a clearer message.
   context: z.string().max(AI_INTERVIEW_LIMITS.contextMaxChars + 2000, "That is too long.").nullable().optional(),
+  contextWork: z.string().max(AI_INTERVIEW_LIMITS.workMaxChars + 2000, "That is too long.").nullable().optional(),
 });
 
 const sessionId = z.string().trim().min(1).max(64);

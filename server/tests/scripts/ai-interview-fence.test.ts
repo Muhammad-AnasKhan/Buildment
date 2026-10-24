@@ -79,6 +79,16 @@ describe("aiinterview fence", () => {
     await expect(lesson("01.03-bad.md", fence(yaml))).rejects.toThrow(reason);
   });
 
+  it.each(["resume", "project", "resume-and-project", "none"])("accepts context: %s", async (context) => {
+    const parsed = await lesson("01.06-context.md", fence(VALID.replace("context: resume", `context: ${context}`)));
+    expect(parsed.blocks[0]!.config).toMatchObject({ context });
+    expect(() => validator.validateParsedLesson(parsed)).not.toThrow();
+  });
+
+  it("names the allowed context values when one is wrong", async () => {
+    await expect(lesson("01.07-context.md", fence(VALID.replace("context: resume", "context: both")))).rejects.toThrow(/context/);
+  });
+
   it("refuses a placeholder inside the server-only rubric", async () => {
     const parsed = await lesson("01.04-token.md", fence(VALID.replace(/rubric: .*/, "rubric: Mentions %%product.name%%.")));
     expect(() => validator.validateParsedLesson(parsed)).toThrow(/placeholder/);

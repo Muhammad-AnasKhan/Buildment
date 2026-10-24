@@ -1,11 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
+
+// The speech hook reads the browser. Tests decide whether it is supported.
+vi.mock("@/lib/use-speech-input", () => ({
+  useSpeechInput: () => ({ supported: false, listening: false, error: null, toggle: () => {} }),
+}));
 import { renderToStaticMarkup } from "react-dom/server";
 import { AiInterviewView, type AiInterviewViewProps } from "@/blocks/ai-interview/AiInterviewView";
 import {
   AI_SETTINGS_HREF,
   checkAnswer,
   checkContext,
+  contextReady,
   friendlyError,
   interviewStage,
   turnCounter,
@@ -27,6 +33,7 @@ const session = (patch: Partial<AiInterviewSessionView> = {}): AiInterviewSessio
   id: "s1",
   status: "ACTIVE",
   context: null,
+  contextWork: null,
   transcript: [
     { role: "interviewer", content: "Tell me about a payment feature you built.", focus: "ownership", depth: 0, at },
     { role: "candidate", content: "I built the retry service.", at },
@@ -50,7 +57,7 @@ function render(patch: Partial<AiInterviewViewProps> = {}) {
       configured: true,
       hasKey: true,
       session: null,
-      contextDraft: "",
+      contextDrafts: { context: "", contextWork: "" },
       answerDraft: "",
       busy: null,
       error: null,
@@ -88,8 +95,12 @@ describe("interview helpers", () => {
     expect(checkAnswer("")).toMatchObject({ empty: true, canSend: false });
     expect(checkAnswer("  hi  ")).toMatchObject({ canSend: true });
     expect(checkAnswer("x".repeat(2001))).toMatchObject({ tooLong: true, canSend: false, remaining: -1 });
-    expect(checkContext("short").canStart).toBe(false);
-    expect(checkContext("a".repeat(60)).canStart).toBe(true);
+    expect(checkContext("short").ok).toBe(false);
+    expect(checkContext("a".repeat(60)).ok).toBe(true);
+    expect(checkContext("a".repeat(4001), 40, 4000).tooLong).toBe(true);
+    expect(contextReady("resume-and-project", { context: "a".repeat(60), contextWork: "" })).toBe(false);
+    expect(contextReady("resume-and-project", { context: "a".repeat(60), contextWork: "b".repeat(60) })).toBe(true);
+    expect(contextReady("none", { context: "", contextWork: "" })).toBe(true);
     expect(checkContext("a".repeat(6001)).tooLong).toBe(true);
   });
 
@@ -130,7 +141,7 @@ describe("interview block", () => {
     expect(empty).toMatch(/<button[^>]*disabled=""[^>]*>[^<]*Start interview/);
     expect(empty).toContain("At least 40 characters");
 
-    const filled = render({ config: resume, contextDraft: "I built the payment retry service at Acme and cut failed payments." });
+    const filled = render({ config: resume, contextDrafts: { context: "I built the payment retry service at Acme and cut failed payments.", contextWork: "" } });
     expect(filled).not.toMatch(/<button[^>]*disabled=""[^>]*>[^<]*Start interview/);
 
     expect(render({ config: { ...config, context: "project" } })).toContain("Your project");
@@ -189,10 +200,14 @@ describe("interview block", () => {
           weaknesses: [{ point: "No numbers.", fix: "Say how many payments you saved." }],
           focusNotes: [{ focus: "ownership", note: "Clear about your own part." }],
           nextSteps: ["Write one impact sentence.", "Practise out loud.", "Ask a friend to ask why."],
+          flags: [],
         },
       }),
     });
     expect(html).toContain("Interview finished");
+    expect(html).toContain("Strengths to build on");
+    expect(html).toContain("What to do better");
+    expect(html).not.toContain("Things to watch");
     expect(html).toContain("You told a clear story.");
     expect(html).toContain("Say how many payments you saved.");
     expect(html).toContain("Ownership");

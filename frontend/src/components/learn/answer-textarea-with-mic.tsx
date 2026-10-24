@@ -15,6 +15,10 @@ export function AnswerTextareaWithMic({
   ariaLabel,
   enableSpeech = true,
   className,
+  id,
+  disabled,
+  invalid,
+  describedBy,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -23,6 +27,10 @@ export function AnswerTextareaWithMic({
   ariaLabel: string;
   enableSpeech?: boolean;
   className?: string;
+  id?: string;
+  disabled?: boolean;
+  invalid?: boolean;
+  describedBy?: string;
 }) {
   const committedRef = useRef(value);
 
@@ -58,6 +66,10 @@ export function AnswerTextareaWithMic({
           placeholder={placeholder}
           rows={rows}
           aria-label={ariaLabel}
+          id={id}
+          disabled={disabled}
+          aria-invalid={invalid || undefined}
+          aria-describedby={describedBy}
           className={cn(
             "min-h-[6.5rem] resize-y bg-background text-[15px] leading-relaxed text-foreground",
             enableSpeech && supported && "pr-12",
@@ -74,6 +86,7 @@ export function AnswerTextareaWithMic({
               listening && "bg-rose-600 hover:bg-rose-700"
             )}
             onClick={toggle}
+            disabled={disabled}
             aria-pressed={listening}
             aria-label={listening ? "Stop dictation" : "Dictate answer with microphone"}
           >
@@ -82,7 +95,7 @@ export function AnswerTextareaWithMic({
         ) : null}
       </div>
       {enableSpeech && !supported ? (
-        <p className="text-xs text-muted-foreground">Speech input is not available in this browser — type your answer.</p>
+        <p className="text-xs text-muted-foreground">Speech input is not available in this browser. Type your answer.</p>
       ) : null}
       {error ? <p className="text-xs text-amber-700">{error}</p> : null}
       {listening ? (
