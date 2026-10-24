@@ -25,6 +25,7 @@ export async function getCourseOverview(courseSlug: string, user: SessionUser): 
       sequential: true,
       familySlug: true,
       variantFamily: true,
+      availableVariantSlugs: true,
       status: true,
       mentor: { select: { name: true } },
       modules: {
@@ -51,7 +52,7 @@ export async function getCourseOverview(courseSlug: string, user: SessionUser): 
   });
   if (!course) throw new NotFoundError("Course not found");
 
-  const { mentor, modules: courseModules, sequential, familySlug, variantFamily, ...courseFields } = course;
+  const { mentor, modules: courseModules, sequential, familySlug, variantFamily, availableVariantSlugs, ...courseFields } = course;
   const base = { course: { ...courseFields, instructorName: mentor.name } };
 
   const enrollment = await prisma.enrollment.findUnique({
@@ -80,7 +81,7 @@ export async function getCourseOverview(courseSlug: string, user: SessionUser): 
     ...base,
     access: "active",
     enrollment: summary,
-    track: buildCourseTrack(variantFamily ? resolveCourseFamily(familySlug, variantFamily) : familySlug, enrollment),
+    track: buildCourseTrack(variantFamily ? resolveCourseFamily(familySlug, variantFamily) : familySlug, enrollment, availableVariantSlugs),
     syllabus: {
       modules,
       chapterCount: flatChapters.length,
