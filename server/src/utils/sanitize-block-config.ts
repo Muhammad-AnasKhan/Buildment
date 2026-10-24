@@ -17,6 +17,11 @@ export const SECRET_KEYS: ReadonlySet<string> = new Set([
   "solution",
 ]);
 
+// Shown only after grading: the respond route and the saved block state return
+// it. It usually names the right option, so it never ships with the question.
+// Kept apart from SECRET_KEYS because it may hold %%placeholders%%.
+export const AFTER_ANSWER_KEYS: ReadonlySet<string> = new Set(["explanation"]);
+
 // TSafe defaults to TFull for callers that don't have (or don't need) a
 // narrower client-facing type; pass it explicitly to get compile-time
 // protection against accidentally reading a secret key back out.
@@ -31,7 +36,7 @@ function stripSecrets(value: unknown): unknown {
   if (value && typeof value === "object") {
     return Object.fromEntries(
       Object.entries(value as Record<string, unknown>)
-        .filter(([key]) => !SECRET_KEYS.has(key))
+        .filter(([key]) => !SECRET_KEYS.has(key) && !AFTER_ANSWER_KEYS.has(key))
         .map(([key, val]) => [key, stripSecrets(val)])
     );
   }
