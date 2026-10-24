@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { readLessonFiles, readModuleDirs } from "./import-course.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const ROOT = path.resolve(__dirname, "../../content/import/multi-vendor-marketplace");
+const ROOT = path.resolve(__dirname, "../../courses/multi-vendor-marketplace");
 
 function stripBody(body: string): string {
   let out = body.replace(/```code\n[\s\S]*?```/g, "");
