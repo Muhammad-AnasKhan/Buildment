@@ -1,0 +1,13 @@
+# Canvas spec: sysdesign-m13-ring-write
+
+- **Course and chapter:** system-design, 13.2 ("The Dynamo design, end to end"), beat 2, "Drag the key, skip repeated machines".
+- **Renderer:** custom beat canvas on `BeatFrame`. The ring is the chapter 9.3 ring: arcs, arc paths and ring points come from `sysdesign-m9-ring-play/model.ts` (`ringArcs`, `arcPath`, `ringPoint`), fed positions in whole degrees (`degToPos`). No second ring is drawn from scratch. The machine cards are compact (74 wide) so five fit in a row; they follow the `SvgNode` look but not its 112 unit size.
+- **Claim:** A key's copies go to the first 3 distinct machines clockwise from its point. A machine owns several points, so a walk over the next 3 points can meet one machine twice; the preference list skips repeats.
+- **Model** (`model.ts`): positions 0 to 359. A 20 and 55, B 90 and 175, C 140 and 320, D 215 and 345, E 250 and 290 (made up). The walk starts at the first point at or after the key (wrapping). Skip on: keep a machine the first time, skip its other points, until 3 machines. Skip off: the next 3 points, whoever owns them. First in the list is the coordinator.
+- **Inputs:** drag the key handle round the ring (whole degrees; arrows 1, Page keys 15, Home 0, End 359; default 10). Outside the picture: a Skip repeats toggle (on) and a Write button.
+- **Picture:** the ring with each machine's arcs in its colour; a dot with the machine letter per point; taken points outlined and numbered 1, 2, 3 inside the ring, skipped repeats show a cross; a thin accent trail from the key to the last point looked at. On Write a dot rides the trail, then the copies leave the coordinator along a curve under the cards; each card gets a pill ("lead", "copy 2" or "2 copies"). The coordinator card is outlined. Moving the key or the toggle hides the copies until the next Write.
+- **Numbers to check** (tests), as Skip on then Skip off: key 0, 10, 20, 359: A, B, C and A, A, B. 21: A, B, C both. 60: B, C, D and B, C, B. 130: C, B, D both. 240: E, C, D and E, E, C. 300: C, D, A both. 335: D, A, B and D, A, A.
+- **Verdicts:** "Copies on B, C and D" (names filled in); with 2 machines "Only 2 machines hold a copy". None before the first Write.
+- **Reduced motion:** no walker or flying copies; the pills and the verdict show at once; the numbers 1, 2, 3 stay on the ring.
+- **Accessibility:** the key is a `role="slider"` with value text "key at 10, copies on A, B and C"; the SVG description says the walk and the copies.
+- **Sources:** [S45], [S40]. The "distinct physical nodes" rule is flagged `source needed` in the chapter.

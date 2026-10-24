@@ -1,0 +1,12 @@
+# Canvas spec: sysdesign-m4-failover-play
+
+- **Course and chapter:** system-design, 4.4 "Load balancers: L4, L7 and health checks", beat "Fail a backend, watch the load shift". New slug.
+- **Renderer:** custom beat canvas on `BeatFrame`, `SvgNode`, `DotGrid`, `VerdictBanner`, `useBeatClock`, `primitives/svg-button.tsx`, and `models/lane-dots.ts` for the request dots.
+- **Claim:** A dead server keeps getting its share until interval x threshold has passed, so those requests fail. The survivors then carry its load.
+- **Model** (`models/failover.ts`, unit tested, piecewise exact): 180 requests a second over 3 servers of 100 a second each, so 60% busy each. Detection time = interval x 3 failed checks. Failed requests = the dead servers' share x the time they stay in rotation: 60 x 30 = 1,800 with 10 second checks, 60 x 6 = 360 with 2 second checks. After one server is removed, 2 servers at 90%. After two, 1 server at 180%. When all three are removed the balancer fails open: traffic goes to all of them and every request fails.
+- **Inputs:** tap a server to fail it or bring it back (a real button, Enter and Space); a toggle "every 2 s" or "every 10 s", default 10 s so the first run shows 1,800 failed requests and the switch to 2 s shows 360 (it clears the failures, so the learner fails the server again); Replay restarts the clock and replays the failures made so far. Time runs 4 times faster than the labels say, so 30 s of checking takes about 7.5 s on screen.
+- **Picture:** request dots run from the balancer to each server at a rate that follows its share; dots to a dead server are red; a check ring by the balancer fills one segment per failed check; a "Failed: N" counter grows while a dead server is still in rotation and stops when it is removed; each server has a pill with its busy share and a bar that rises and changes colour (a tick marks 80%).
+- **Verdicts (38 characters or fewer, tested):** all up "All 3 up: each 60% busy"; before removal "Dead server still gets traffic"; after removal "Out after checks: 2 at 90%"; two failed "2 down: 1 server, 180/s, overloaded"; all failed "No healthy server: fail open".
+- **Reduced motion:** a still picture at the settled state: failures removed, counter final, bars at their end values.
+- **Accessibility:** each server is a button with a "Fail" or "Bring back" label; the picture has a description with the interval, failed count and verdict; the colour is always paired with a word on the pill.
+- **Sources:** [S19], [S20], [S15]. The settings are examples.

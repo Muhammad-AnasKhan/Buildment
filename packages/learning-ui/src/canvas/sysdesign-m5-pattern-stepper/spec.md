@@ -1,0 +1,9 @@
+# Canvas spec: sysdesign-m5-pattern-stepper
+
+- **Course and chapter:** system-design, 5.3 "Cache patterns", beat "Pick a pattern, then crash it". Model `models/cache-pattern.ts` builds one `DesignSpec` per pattern; the picture is the house `DesignPicture` (primitives/design-stepper.tsx), with a row of pattern chips on top.
+- **Claim:** Every pattern except write-back treats the cache as a copy, so a cache crash costs speed and load, not data. Write-back loses writes that were confirmed but not flushed.
+- **Inputs:** five pattern chips (cache-aside, read-through, write-through, write-back, write-around); four steps by Back/Next or step chips: Read, Write, Crash, Re-read. Step 1 and step 4 each have a tap-the-App action (a second read, a hit).
+- **Picture:** App, Cache and Database cards with request dots along the links; the cache card turns red when the node crashes. Three chips carry the point: "cache copy" (none, fresh, stale, old), "database has write" (n/a, yes, not yet, lost) and "db reads after crash" (n/a, 0, 1).
+- **Per pattern:** aside and read-through write the database then drop the copy; write-through writes cache and database before ok; write-back writes the cache only ("not yet", then "lost" after the crash and the re-read loads the old 999); write-around writes the database only and leaves the old copy stale. Read-through and write-through load through the cache; aside and write-around load from the app (3 trips on a miss, 1 on a hit; S26).
+- **Verdicts after the last step:** "Crash cost speed, not data" (aside, read-through, write-around); "Cold cache, but no write lost" (write-through); "Crash lost a confirmed write" (write-back). After the write for write-back: "Fast ok, database not updated yet".
+- **Sources:** S24, S26. Write-back, read-through and write-around have no primary source in the dossier and are taught as trade-offs.

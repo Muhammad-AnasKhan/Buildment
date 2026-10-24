@@ -1,0 +1,14 @@
+# Canvas spec: sysdesign-m4-algorithm-race
+
+- **Course and chapter:** system-design, 4.5 "Balancing algorithms", beat "Same traffic, four algorithms". New slug.
+- **Renderer:** custom beat canvas on `BeatFrame`, `DotGrid`, `VerdictBanner`, `useBeatClock`, and the new `primitives/rail-strip.tsx` for the load rail.
+- **Claim:** At high load, pickers that look at queues (least connections, two choices) keep p99 low. Pickers that do not (random, round robin) let one server's line grow while others idle.
+- **Model** (`models/balancer-race.ts`, built on `sim/`: `createSimulation` and `seededRandom`; unit tested): one seeded stream of 6,000 requests (Poisson arrivals, 1 in 20 slow) goes through four balancers in front of 4 servers each. Work is 5.13 ms for 19 in 20 and 102.6 ms for 1 in 20, a mean of exactly 10 ms. Pickers: random (`floor(u1 x 4)`), round robin, least connections (first server on a tie), two choices (chapter 4.7's draw: `i = floor(u1 x n)`, `j = floor(u2 x (n - 1))` plus one if `j >= i`, first pick on a tie). p99 is nearest-rank over the response times after the first 5% (warm-up).
+- **Fixed numbers for the seed (tested):** p99 at 50% busy: random 240 ms, round robin 208, least connections 106, two choices 130. At 80%: 602, 413, 207, 255. At 95%: 1,145, 1,227, 425, 463. Each fleet has the same floor of about 103 ms, because 1 request in 20 is itself slow.
+- **Input:** a rail from 10% to 99% busy, step 1, marks at 50%, 80% and 95%; drag or arrow keys, Page keys, Home and End. Default 80%.
+- **Picture:** four panels in a 2 by 2 grid. Each panel has four server lanes: a small server box that goes green, amber or red with the length of its line, and the line as dots (a long bar for a slow request). A "p99" pill and a bar compare the four, and the best panel gets a green outline when they differ. The lines replay eight snapshots a second from a stretch of the same run.
+- **Verdicts (38 characters or fewer):** all four within 25 ms on p99 "Low load: all four look alike"; otherwise "Queue-blind pickers bend first". The spec's thresholds (under 50%) were replaced by the numbers themselves, see below.
+- **Spec change:** the spec asked for 30% to 99% and a verdict by load. With 1 request in 20 costing 20 times more, random is already 58% above the best at 30% busy (163 against 103 ms), so "all four look alike" would be false there. The rail runs from 10% (all four at 103 ms) and the verdict follows the numbers. No "over 100%" state: the rail stops at 99%.
+- **Reduced motion:** a still frame of the moment the lines were longest; p99 pills, bars and verdict follow the load.
+- **Accessibility:** one `role="slider"` for the load with a value text that lists the four p99 figures; the picture has a description with the same numbers; colours are paired with the numbers.
+- **Sources:** [S16], [S17], [S21].

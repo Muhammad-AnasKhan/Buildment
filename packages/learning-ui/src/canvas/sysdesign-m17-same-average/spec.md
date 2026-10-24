@@ -1,0 +1,13 @@
+# Canvas spec: sysdesign-m17-same-average
+
+- **Course and chapter:** system-design, 17.5 ("Dashboards that help"), beat 3, "Same average, different users". Playable; new slug.
+- **Renderer:** custom beat canvas on `BeatFrame`. The statistic chips are a radio group of `SvgRadioChip`s inside the picture, "Combine A and B" is an `SvgChip` toggle, the combine mode is a second radio group inside the third panel, `DotGrid`, `VerdictBanner`. `log-ruler` was not used: the strips sit on a linear 0 to 900 ms axis, not a log ladder.
+- **Claim:** Two services with the same average latency can have very different tails. The statistic the dashboard graphs decides what you can see, and percentiles from two servers must not be averaged.
+- **Input:** statistic: Average, p50, p99 (default Average). "Combine A and B" (off by default) turns on a third panel with "Average the two p99s | Merge the requests" (default Average). Turning Combine on sets the statistic to p99; tapping a statistic chip turns Combine off.
+- **Data** (`model.ts`, ms, course numbers): A = 88, 92, ..., 150 (sum 2,400); B = 40, 42, ..., 58, 700, 810 (sum 2,400). Nearest rank: p50 is the 10th value, p95 the 19th, p99 the 20th.
+- **Numbers to check** (tested): average 120 and 120; p50 120 and 50; p95 144 and 700; p99 150 and 810. Combined 40 requests: average 120, p99 810; averaging the two p99 values gives 480.
+- **Picture:** panels for A and B, each a strip of 20 dots on a 0 to 900 ms axis (dots are spread over four rows so a clump stays readable); a dashed line at 300 ms labelled "target: p99 under 300 ms"; a vertical marker at the chosen statistic with its value in a pill (green or red for p99 against the target, neutral for average and p50). B's two slow dots are amber while the statistic hides them and red when p99 is chosen. The third panel is a dashed invitation until Combine is on; then it holds 40 dots, the two mode chips, and a marker at 480 (red, with a faint "true 810 ms" ghost) or at 810 (green).
+- **Verdicts:** "Average: A and B look the same" (warn); "p50: B even looks better than A" (warn); "p99: B has users waiting 810 ms" (good); "Averaged p99 says 480; truth is 810" (bad); "Merged requests: p99 is 810" (good).
+- **Reduced motion:** the marker jumps; there is no sliding (opacity and colour changes only, off under reduced motion).
+- **Accessibility:** chips are radio groups with keyboard support; the markers carry text values; the verdict is a polite live region; the SVG description lists both markers.
+- **Sources:** percentiles over the mean [S95]; nearest rank is chapter 2.4; never average percentiles (chapter 2.4 fold). Data are course numbers.

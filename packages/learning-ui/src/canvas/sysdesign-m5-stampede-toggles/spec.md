@@ -1,0 +1,10 @@
+# Canvas spec: sysdesign-m5-stampede-toggles
+
+- **Course and chapter:** system-design, 5.6 "Stampedes and hot keys", beat "Toggle the fixes, watch the database". Model `models/stampede.ts`; chips are drawn in the SVG with `OverlayButton` real buttons on top.
+- **Claim:** A hot key's expiry sends rate x rebuild time queries at once; coalescing cuts it to one per app server, a shared lease to one; stale-while-revalidate removes the wait; random TTLs spread many keys' expiries.
+- **Story numbers:** 5,000 reads a second, 50 ms rebuild, 20 app servers, database about 800 page queries a second, key lifetime 60 s.
+- **Model:** one key: misses = 5,000 x 0.05 = 250 (Little's law, S5); coalesce min(20, 250) = 20; lease 1 (S24); lease wins over coalesce; serve stale (S23) sets the shoppers' wait to 0 and, alone, still sends 250 queries. 1,000 keys together: 1,000 misses in 1 s; random TTL 54 to 66 s: 1,000 / 12 = about 83 a second (reasoning from S90).
+- **Picture:** Shoppers, a stack of App servers, Cache and Database cards; the database queue drawn as up to 24 dots that fill and drain around each expiry; a chart of the database load over three minutes (spikes at 1, 2 and 3 minutes on a square-root scale, a dashed line at the database limit); toggle chips Coalesce, Shared lease, Serve stale, a mode switch (1 hot key, 1,000 keys together) and Random TTL.
+- **Rules:** in the 1,000-key view the three fixes are disabled (each key needs one rebuild whatever the fix) and Random TTL is enabled; in the 1-key view Random TTL is disabled.
+- **Verdicts:** none "250 queries at once: database falls"; coalesce "20 queries: one per app server"; lease "One query per expiry"; lease + stale "One query, and nobody waits"; also "250 queries, but nobody waits" (stale alone) and "20 queries, and nobody waits" (coalesce + stale); 1,000 keys "1,000 misses in the same second"; with random TTL "Misses spread: about 83 a second".
+- **Reduced motion:** the queue shows its peak, the chart shows all three spikes and the playhead rests at the end.

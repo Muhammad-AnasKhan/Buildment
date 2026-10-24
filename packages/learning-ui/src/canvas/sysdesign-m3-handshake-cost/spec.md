@@ -1,0 +1,14 @@
+# Canvas spec: sysdesign-m3-handshake-cost
+
+- **Course and chapter:** system-design, 3.2 ("TCP, UDP and the cost of a handshake"), beat 4 ("Distance multiplies every round trip"). New slug.
+- **Renderer:** custom beat canvas on `BeatFrame`. New small primitives: `primitives/rail-slider.tsx` (a slider that lives only on its rail inside the SVG) and `primitives/svg-chip.tsx` (tap chips drawn in the picture).
+- **Claim:** The time before the first byte on a new connection is the number of round trips times one round trip. The protocol sets the count; the distance sets the round trip.
+- **Model** (`models/handshake-cost.ts`): first byte = n x RTT. Plain TCP n = 2; TCP with TLS 1.3 n = 3; QUIC first visit n = 2; QUIC 0-RTT on a return visit n = 1; reused connection n = 1 (sources S10, S11, S13). TLS 1.2 is left out until its source note in 3.2 is resolved (RFC 5246); Challenge 2 measured 2 round trips for its handshake.
+- **Inputs:** five protocol chips inside the picture; a distance rail with four snaps from napkin-math [S3]: same region 0.25 ms, North America east to west 60 ms, Western Europe to North America East 80 ms, Western Europe to Singapore 160 ms. Default: TCP with TLS 1.3 at Singapore (480 ms).
+- **Picture:** a Phone card and a Server card, the server moving right as the distance grows; a dot goes out and back once for every round trip; a stacked bar on one fixed scale (480 ms), one segment per round trip, coloured and labelled TCP (or QUIC), TLS and request, with the total in ms on a pill over the bar end. The round trip being played lights its segment.
+- **Worked values to check:** TCP with TLS 1.3: 0.75, 180, 240 and 480 ms. QUIC first visit: 0.5, 120, 160 and 320 ms. Plain TCP at 160 ms: 320 ms. Reused or 0-RTT at 160 ms: 160 ms.
+- **Numbers visible at once:** the total (pill on the bar), the round trip (caption under the cards), the round-trip count (server pill).
+- **Verdicts (38 characters or fewer):** "Same region: under 1 ms, any way"; "TCP+TLS: 3 round trips, 480 ms"; "QUIC saves one round trip: 160 ms"; "Reused: 1 round trip, 160 ms"; "0-RTT: safe-to-repeat requests only"; plain TCP: "TCP: 2 round trips, 320 ms".
+- **Motion and reduced motion:** the dot and the lit segment follow one loop of n round trips and a pause. With reduced motion the dot is absent and every segment is drawn in full, so the still picture shows the whole bar. Pressing the rail pauses the loop.
+- **Accessibility:** the distance rail is a `role="slider"` (arrow keys step through the four distances, Home and End jump to the ends) with value text naming the distance and the round trip; each chip is a `role="button"` with `aria-pressed`; the SVG has a title and a description that states the protocol, the distance, the round trips and the total.
+- **Sources:** [S3] napkin math; [S10] RFC 9293 TCP; [S11] RFC 8446 TLS 1.3; [S13] RFC 9000 QUIC.

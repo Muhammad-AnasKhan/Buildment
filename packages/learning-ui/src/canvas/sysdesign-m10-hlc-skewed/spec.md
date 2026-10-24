@@ -1,0 +1,11 @@
+# Canvas spec: sysdesign-m10-hlc-skewed
+
+- **Course and chapter:** system-design, 10.5 ("Hybrid logical clocks"), beat 6 "Skew the clocks and watch the stamps". New slug.
+- **Renderer:** custom beat canvas on `BeatFrame`, the shared `lane-sequence` primitive, `RailSlider` for the three offset rails, `SvgChip`, `VerdictBanner`. The mode toggle ("Wall clock" or "Hybrid") sits outside the picture.
+- **Claim:** A hybrid stamp puts every receive after its send even when the receiver's clock is far behind; the time part runs ahead of the slow clock and the counter counts until the clock catches up.
+- **Model** (`models/hlc-skewed.ts`): offsets default A 0, B -40, C +25 ms. The first event is at true time 100; a send and its receive are 10 ms apart; the next action follows 10 ms after the previous event. Tick: if the clock is past l then (clock, 0), otherwise (l, c + 1). Receive: l = max(l, message l, clock); c = max of the counters of the inputs equal to l, plus 1, or 0 when only the clock equals l (the `HybridClock` of chapter 10.8). In wall mode the stamp is the clock reading.
+- **Worked run (offsets 0, -40, +25):** A sends (100,0); B receives (100,1) with clock 70; B local (100,2); B sends (100,3); C receives (165,0); C sends (175,0); A receives (175,1). With wall stamps the same run gives 100 for the send and 70 for the receive. Largest l ahead of a clock: 30 ms (at B's receive), then 20 and 10, inside the 65 ms spread of the offsets.
+- **Inputs:** a rail under each node card (-50 to +50 ms, snaps at 0, +-10, +-25, +-50); tap a node, then "Event on X" or "Send to Y" (tapping a second node sends at once); "Start over" returns to the opening run (A sends to B). The picture opens with that first message already sent. A run is full after 12 actions; the picture shows the last six events.
+- **Verdicts:** wall: "Receive stamped before its send" (or "after its send" when the clocks happen to agree); hybrid receive: "Receive (100,1) after send (100,0)"; later events: "Time part is 30 ms ahead of the clock", "Clock caught up: counter back to 0".
+- **Accessibility:** each rail is a `role="slider"` with value text; cards and chips are real buttons.
+- **Sources:** [S59] Kulkarni et al. 2014.

@@ -1,0 +1,13 @@
+# Canvas spec: sysdesign-m16-jitter-herd
+
+- **Course and chapter:** system-design, 16.4 beat 5, "A herd needs jitter". Playable; new slug.
+- **Renderer:** custom beat canvas on `BeatFrame`: Clients and Server cards with dots, an arrivals bar strip for seconds 0 to 19 with a capacity line, a served-so-far card with a progress bar, a three-way chip row for the wait rule, a `SnapStopsRail` for the retries, `VerdictBanner`. No control outside the picture.
+- **Claim:** When many clients fail at the same moment, backoff alone makes them retry together in waves. Full jitter spreads the retries so the server can use all its capacity, and it needs fewer calls overall.
+- **Input:** retries allowed per client 2, 4, 6, 8 (default 6); wait rule At once, Backoff, Backoff + jitter (default Backoff).
+- **Model** (`model.ts`, `herd`): 1,000 clients call in second 0; the server serves 100 calls per one-second slot and rejects the rest at once. A rejected client retries after: next slot (At once); 2 to the power (n minus 1) seconds for retry n, capped at 16 s (Backoff); an even share over 1 to min(16, 2 to the power n) whole seconds (jitter, expected values). After the last allowed retry a client gives up. 40 slots are run; the strip shows 20.
+- **Numbers to check** (tested): 6 retries: At once 4,900 calls, 700 served, 300 gave up; Backoff 4,500 calls, 600 served, 0 gave up, 400 by 10 s and 500 by 20 s; jitter 3,020 calls, 1,000 served, 844 by 10 s, 995 by 20 s. 2 retries: Backoff 2,700 calls, 300 served; jitter 2,616 calls, 692 served. 4 retries jitter: 999 served. 8 retries equals 6 for Backoff and jitter. Arrivals for 6 retries, jitter: 1000 450 538 188 199 210 136 48 48 48 48 39 29 17 6 3 3 3 3 3.
+- **Picture:** bars are arrivals each second (the first bar is 1,000), the dashed line is capacity 100. A sweep moves one second at a time; the counter shows how many were served by that second.
+- **Verdicts:** Backoff "Waves of 900, 800, 700: lockstep" (bad); jitter with all served "All 1,000 served by N s" (good, N from the model); jitter with 999 "999 of 1,000 served" (good); otherwise "Only 700 of 1,000 served" (warn). The numbers are filled in each time.
+- **Reduced motion:** the full strip is drawn, no sweep, no dots; the counter shows the value at 20 s.
+- **Accessibility:** the rule chips are a radio group; the SVG description lists the arrivals of the first 20 seconds, the peak and the number served.
+- **Sources:** full, equal and decorrelated jitter compared [S90]; the 243 times example [S89] is a different effect (amplification). The 1,000 clients and 100 calls a second are course numbers.

@@ -1,0 +1,12 @@
+# Canvas spec: sysdesign-m10-snowflake-bits
+
+- **Course and chapter:** system-design, 10.7 ("ID generation at scale"), beat 5 "Change the bits, then break the clock". New slug.
+- **Renderer:** custom beat canvas on `BeatFrame`, two `RailSlider` rails, `SvgChip` rows, `DotGrid`, `VerdictBanner`, the beat clock for the wait ring and the sweep. The handling toggle ("Trust the clock" or "Wait, then refuse") sits outside the picture.
+- **Claim:** The bits of a 64-bit ID are a budget between time, machine and count; a clock that steps back repeats IDs unless the generator remembers its last time.
+- **Model** (`models/snowflake-bits.ts`): 63 usable bits, time t = 63 - w - s. Machines 2^w; IDs per ms per machine 2^s; fleet IDs per second 2^w x 2^s x 1,000; lifetime 2^t ms / 31,557,600,000 ms a year. The generator is asked for r = min(20, 2^s) IDs a millisecond. A clock R ms behind: trusting repeats r x R IDs; guarded sees a gap of R - 1 ms and waits that long if it is at most 10 ms, otherwise refuses r x (R - 1 - 10) requests and waits 10 ms.
+- **Worked values:** 10/12 bits: 1,024 machines, 4,096 a ms, 69.7 years, 4,194,304,000 a second. 12/10: 4,096, 1,024, 69.7 years. 8/12: 256, 4,096, 278.7 years. 10/8: 1,024, 256, 1,115 years. 16/16: 65,536, 65,536, 24.9 days. At r = 20: R = 2: 40 repeated or a 1 ms wait; R = 5: 100 or 4 ms; R = 10: 200 or 9 ms; R = 50: 1,000 or 780 refused requests and a 10 ms wait.
+- **Inputs:** rails for machine bits and count bits (0 to 16, step 1, snap at 8, 10, 12); chips for the need a second (1 thousand, 100 thousand, 10 million, 1 billion; default 10 million); chips for the step back (0, 2, 5, 10, 50 ms).
+- **Picture:** a 64-cell bit bar (one unused bit, time, machine, count), three cards (machines, IDs per ms, lifetime; red when the split is in trouble), and a strip of the 20 IDs asked for in a millisecond: red when repeated, a ring that fills for the wait, amber for refused requests.
+- **Verdicts:** "Enough: 4.2 billion IDs a second", "Too few: the count field runs out", "Time runs out in N years" (or days), "Trusting: 100 repeated IDs", "Waits 4 ms, no repeats", "Refuses 780 requests, no repeats". A step back above 1 ms takes the banner; otherwise the budget does.
+- **Accessibility:** each rail is a `role="slider"`; chips are real buttons with `aria-pressed`.
+- **Sources:** [S65] (41, 10 and 12 bits; 69 years; 4,096 a ms; guard against a clock going backwards); [S66] (UUIDv7 48-bit time). The guarded generator is the one built in challenge 9, part 5.
