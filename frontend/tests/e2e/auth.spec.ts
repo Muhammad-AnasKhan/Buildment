@@ -54,6 +54,17 @@ test.describe("password sign-in", () => {
   });
 });
 
+test.describe("test account picker", () => {
+  test("signs the seeded mentor in with one click and lands on the workspace", async ({ page }) => {
+    test.setTimeout(120_000); // first workspace compile on a cold dev server is slow
+    await page.goto("/login");
+    await page.getByRole("button", { name: "Mentor, mentor@buildment.dev" }).click();
+
+    await expect(page).toHaveURL(/\/workspace/, { timeout: 30_000 });
+    expect(await whoAmI(page)).toBe("mentor@buildment.dev");
+  });
+});
+
 test.describe("signup", () => {
   test("creates an account that can sign in straight away without email delivery", async ({ page }) => {
     const email = `e2e-${Date.now()}@example.com`;
