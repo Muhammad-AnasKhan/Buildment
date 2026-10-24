@@ -640,3 +640,109 @@ modules:
       - file: 18.10-checklist.md
         title: "Checklist and learning log"
         goal: "Write a deploy and rollback plan for a service."
+  - dir: 19-multi-region-and-disaster-recovery
+    title: "Multi-region and disaster recovery"
+    summary: "Survive the loss of a data centre or a region and know what it costs: zones and cells, RPO and RTO, backups and restore drills, active-passive and active-active, global traffic routing, and data residency."
+    lessons:
+      - file: 19.01-set-the-scene-a-region-goes-dark.md
+        title: "Set the scene: a region goes dark"
+        goal: "See a single-region app go fully down, and meet the questions about data, time and cost that this module answers."
+      - file: 19.02-regions-availability-zones-and-failure-domains.md
+        title: "Regions, availability zones and failure domains"
+        goal: "Spread across zones and compute the gain and the capacity cost, see why shared parts defeat zones, and cut a system into cells to shrink the blast radius."
+      - file: 19.03-rpo-rto-backups-and-point-in-time-recovery.md
+        title: "RPO, RTO, backups and point-in-time recovery"
+        goal: "Find how much data and time a plan loses, see why replicas copy a bad delete, rewind with point-in-time recovery, and prove a backup with a restore drill."
+      - file: 19.04-active-passive-and-active-active.md
+        title: "Active-passive and active-active"
+        goal: "Compare backup and restore, pilot light, warm standby and active-active by downtime, lost writes and cost, and explain failover, failback and write conflicts."
+      - file: 19.05-global-traffic-routing.md
+        title: "Global traffic routing"
+        goal: "Add health check time and DNS cache time to get a failover time, compare latency, location, failover and anycast routing, and size the surviving region."
+      - file: 19.06-data-residency-and-global-consistency.md
+        title: "Data residency and global consistency"
+        goal: "Choose regional data or a global database, pay the write delay of each, and keep every copy and backup inside a residency rule."
+      - file: 19.08-quiz.md
+        title: "Multi-region and disaster recovery"
+        goal: "Answer graded scenarios on meeting an RPO and RTO together, recovering from a bad write, DNS failover time, shared failure domains behind cells, and keeping data in its region."
+      - file: 19.09-checklist-and-learning-log.md
+        title: "Checklist and learning log"
+        goal: "Write a disaster recovery plan for a courier app: RPO and RTO, the steps that add up to the RTO, how a bad write is undone, who presses the button, and where every copy lives."
+  - dir: 20-url-shortener-and-paste-service
+    title: "URL shortener and paste service"
+    summary: "Run the design loop on a link shortener: estimate the load, sketch the write and read paths, choose how to make short codes, and keep redirects fast with a cache, the right status code and counting off the path. Then reuse it all for a paste service."
+    lessons:
+      - file: 20.01-set-the-scene-and-requirements.md
+        title: "Set the scene and requirements"
+        goal: "Turn short links into numbers: writes, reads at peak and storage over five years, and find the number that drives the design."
+      - file: 20.02-high-level-design.md
+        title: "High-level design"
+        goal: "Draw the write path and the read path, size the blocks for 100,000 redirects a second, and extend the design to pastes."
+      - file: 20.03-deep-dive-generating-short-codes.md
+        title: "Deep dive: generating short codes"
+        goal: "Compare hashing, counters in base62, counter blocks and pre-made random codes, size the code length, and choose by whether codes must resist guessing."
+      - file: 20.04-deep-dive-the-read-path-at-scale.md
+        title: "Deep dive: the read path at scale"
+        goal: "Size a cache from its hit rate and p99, choose between a 301 and a 302, count clicks without slowing redirects, and survive a cold cache."
+      - file: 20.05-code-base62-and-a-key-range-allocator.md
+        title: "Code: base62 and a key range allocator"
+        goal: "Implement encodeBase62, decodeBase62 and createRangeAllocator and pass the tests."
+      - file: 20.07-quiz.md
+        title: "URL shortener"
+        goal: "Answer graded scenarios on peak load, code length, redirects, hit rate and p99, and counting off the path."
+      - file: 20.08-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a design for a paste service with one defended trade-off."
+  - dir: 21-news-feed-and-timelines
+    title: "News feed and timelines"
+    summary: "Run the design loop on a news feed: estimate feed opens and posts, sketch the write and read paths, choose between fan-out on write and on read with real follower numbers, then rank, cache and page the feed and keep it up when a part fails."
+    lessons:
+      - file: 21.01-set-the-scene-and-requirements.md
+        title: "Set the scene and requirements"
+        goal: "Turn daily users into feed opens and posts a second at peak, and find the number that drives the design."
+      - file: 21.02-high-level-design.md
+        title: "High-level design"
+        goal: "Separate post storage, the social graph and timelines, draw the write and read paths, and keep the newest timeline slice in memory."
+      - file: 21.03-deep-dive-fan-out-on-write-or-on-read.md
+        title: "Deep dive: fan-out on write or on read"
+        goal: "Compare push and pull with numbers, see why one huge account breaks push, set the hybrid threshold from two limits, and run the hybrid."
+      - file: 21.04-deep-dive-ranking-and-freshness.md
+        title: "Deep dive: ranking and freshness"
+        goal: "Build a candidate, rank, serve pipeline, cache the finished page without stale surprises, page a ranked list without repeats, and degrade when the ranker is slow."
+      - file: 21.05-code-merge-k-sorted-timelines.md
+        title: "Code: merge k sorted timelines"
+        goal: "Implement createHeap and mergeTimelines with a cursor and pass the tests."
+      - file: 21.07-quiz.md
+        title: "News feed"
+        goal: "Answer graded scenarios on peak load, fan-out time, slow-lookup chance, paging a ranked list and recovering from an empty cache."
+      - file: 21.08-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a design for a feed of study circles with one defended trade-off."
+  - dir: 22-chat-presence-and-notifications
+    title: "Chat, presence and notifications"
+    summary: "Run the design loop on a chat app: estimate messages, open connections and storage, sketch gateways, a chat service, a store and a registry, then go deep on connections, ordering, receipts, offline sync, presence and a notification service with preferences, retries and dedupe."
+    lessons:
+      - file: 22.01-set-the-scene-and-requirements.md
+        title: "Set the scene and requirements"
+        goal: "Turn daily users into messages a second, open connections at peak, gateways and storage, and find the number that drives the design."
+      - file: 22.02-high-level-design.md
+        title: "High-level design"
+        goal: "Draw gateways, chat service, store, registry and notifier, size each at peak, and explain why a tick means the message is saved and why a group is one write."
+      - file: 22.03-deep-dive-connections-at-scale.md
+        title: "Deep dive: connections at scale"
+        goal: "Route a message to the gateway that holds a user, restart gateways without a reconnect storm, drain a gateway, and catch a line that died without saying goodbye."
+      - file: 22.04-deep-dive-ordering-receipts-and-presence.md
+        title: "Deep dive: ordering, delivery receipts and presence"
+        goal: "Order messages with a counter per conversation, make a retry safe with a client id, report sent, delivered and read as cursors, catch up offline phones, and show online status without drowning the servers in pings."
+      - file: 22.05-deep-dive-a-notification-system.md
+        title: "Deep dive: a notification system"
+        goal: "Fan out push, email and SMS with preferences, a dedupe key, a queue per channel, retries with backoff, dead letters and time limits, and one alert for many messages."
+      - file: 22.06-code-per-conversation-sequencing-and-dedupe.md
+        title: "Code: per-conversation sequencing and dedupe"
+        goal: "Implement createConversationLog and createInbox and pass the tests on numbering, duplicates, gaps and a shuffled stream."
+      - file: 22.09-quiz.md
+        title: "Chat and notifications"
+        goal: "Answer graded scenarios on sizing gateways, message order, the cost of presence, a lost registry and an SMS outage."
+      - file: 22.10-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a design for a delivery app's rider chat and order alerts with one defended trade-off."

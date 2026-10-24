@@ -379,6 +379,28 @@ import { sysdesignM16ShedLoad } from "./sysdesign-m16-shed-load/data";
 import { sysdesignM16FallbackCache } from "./sysdesign-m16-fallback-cache/data";
 import { sysdesignM16NoHeadroom } from "./sysdesign-m16-no-headroom/data";
 import { sysdesignM15RetryReorderPlay } from "./sysdesign-m15-retry-reorder-play/data";
+import { sysdesignM19RegionDark } from "./sysdesign-m19-region-dark/data";
+import { sysdesignM19SharedDeploy } from "./sysdesign-m19-shared-deploy/data";
+import { sysdesignM19CellRollout } from "./sysdesign-m19-cell-rollout/data";
+import { sysdesignM19TwoClocks } from "./sysdesign-m19-two-clocks/data";
+import { sysdesignM19CopyMistake } from "./sysdesign-m19-copy-mistake/data";
+import { sysdesignM19Pitr } from "./sysdesign-m19-pitr/data";
+import { sysdesignM19LagLoss } from "./sysdesign-m19-lag-loss/data";
+import { sysdesignM19Failback } from "./sysdesign-m19-failback/data";
+import { sysdesignM19DnsTimeline } from "./sysdesign-m19-dns-timeline/data";
+import { sysdesignM19SurvivorOverload } from "./sysdesign-m19-survivor-overload/data";
+import { sysdesignM19GlobalCommit } from "./sysdesign-m19-global-commit/data";
+import { sysdesignM19BackupLeaves } from "./sysdesign-m19-backup-leaves/data";
+import { sysdesignM20ClickALink } from "./sysdesign-m20-click-a-link/data";
+import { sysdesignM20HashSameUrl } from "./sysdesign-m20-hash-same-url/data";
+import { sysdesignM20CounterBase62 } from "./sysdesign-m20-counter-base62/data";
+import { sysdesignM20RangeAllocator } from "./sysdesign-m20-range-allocator/data";
+import { sysdesignM20KeyPool } from "./sysdesign-m20-key-pool/data";
+import { sysdesignM20ReadPath } from "./sysdesign-m20-read-path/data";
+import { sysdesignM20Redirect301 } from "./sysdesign-m20-redirect-301/data";
+import { sysdesignM20Redirect302 } from "./sysdesign-m20-redirect-302/data";
+import { sysdesignM20ClickQueue } from "./sysdesign-m20-click-queue/data";
+import { sysdesignM20CacheLoss } from "./sysdesign-m20-cache-loss/data";
 import { sysdesignM15PartitionKeyPlay } from "./sysdesign-m15-partition-key-play/data";
 import { sysdesignM15PoisonPlay } from "./sysdesign-m15-poison-play/data";
 import { sysdesignM15WindowShapesPlay } from "./sysdesign-m15-window-shapes-play/data";
@@ -392,6 +414,16 @@ import { sysdesignM17UseQueue } from "./sysdesign-m17-use-queue/data";
 import { sysdesignM17RollbackFirst } from "./sysdesign-m17-rollback-first/data";
 import { sysdesignM15WatermarkDelayPlay } from "./sysdesign-m15-watermark-delay-play/data";
 import { sysdesignM15SlowSubscriberPlay } from "./sysdesign-m15-slow-subscriber-play/data";
+import { sysdesignM20EstimatePlay } from "./sysdesign-m20-estimate-play/data";
+import { sysdesignM20DesignStepper } from "./sysdesign-m20-design-stepper/data";
+import { sysdesignM20CollisionPlay } from "./sysdesign-m20-collision-play/data";
+import { sysdesignM20HitRatePlay } from "./sysdesign-m20-hit-rate-play/data";
+import { sysdesignM19AddZones } from "./sysdesign-m19-add-zones/data";
+import { sysdesignM19Cells } from "./sysdesign-m19-cells/data";
+import { sysdesignM19FailureTime } from "./sysdesign-m19-failure-time/data";
+import { sysdesignM19FailRegion } from "./sysdesign-m19-fail-region/data";
+import { sysdesignM19RouteUsers } from "./sysdesign-m19-route-users/data";
+import { sysdesignM19WriteLatency } from "./sysdesign-m19-write-latency/data";
 import { sysdesignM16SplitOrNot } from "./sysdesign-m16-split-or-not/data";
 import { sysdesignM16OrderPath } from "./sysdesign-m16-order-path/data";
 import { sysdesignM16TimeoutLine } from "./sysdesign-m16-timeout-line/data";
@@ -400,11 +432,47 @@ import { sysdesignM16JitterHerd } from "./sysdesign-m16-jitter-herd/data";
 import { sysdesignM16BreakerPlay } from "./sysdesign-m16-breaker-play/data";
 import { sysdesignM16BulkheadPools } from "./sysdesign-m16-bulkhead-pools/data";
 import { sysdesignM16DegradeMenu } from "./sysdesign-m16-degrade-menu/data";
+import { sysdesignM22SendAMessage } from "./sysdesign-m22-send-a-message/data";
+import { sysdesignM22SendPath } from "./sysdesign-m22-send-path/data";
+import { sysdesignM22GroupFanout } from "./sysdesign-m22-group-fanout/data";
+import { sysdesignM22RegisterSession } from "./sysdesign-m22-register-session/data";
+import { sysdesignM22RouteLookup } from "./sysdesign-m22-route-lookup/data";
+import { sysdesignM22DrainGateway } from "./sysdesign-m22-drain-gateway/data";
+import { sysdesignM22HalfOpen } from "./sysdesign-m22-half-open/data";
+import { sysdesignM22OrderClash } from "./sysdesign-m22-order-clash/data";
+import { sysdesignM22RetrySameId } from "./sysdesign-m22-retry-same-id/data";
+import { sysdesignM22ThreeTicks } from "./sysdesign-m22-three-ticks/data";
+import { sysdesignM22OfflineSync } from "./sysdesign-m22-offline-sync/data";
+import { sysdesignM22PresenceBeat } from "./sysdesign-m22-presence-beat/data";
+import { sysdesignM22PresenceSubscribe } from "./sysdesign-m22-presence-subscribe/data";
+import { sysdesignM22PrefsFilter } from "./sysdesign-m22-prefs-filter/data";
+import { sysdesignM22DedupeKey } from "./sysdesign-m22-dedupe-key/data";
+import { sysdesignM22RetryBackoff } from "./sysdesign-m22-retry-backoff/data";
+import { sysdesignM22CollapseLimit } from "./sysdesign-m22-collapse-limit/data";
+import { sysdesignM21TwoFeeds } from "./sysdesign-m21-two-feeds/data";
+import { sysdesignM21OneQueryFeed } from "./sysdesign-m21-one-query-feed/data";
+import { sysdesignM21TimelineCache } from "./sysdesign-m21-timeline-cache/data";
+import { sysdesignM21PushPost } from "./sysdesign-m21-push-post/data";
+import { sysdesignM21PullRead } from "./sysdesign-m21-pull-read/data";
+import { sysdesignM21StarPost } from "./sysdesign-m21-star-post/data";
+import { sysdesignM21PageCache } from "./sysdesign-m21-page-cache/data";
+import { sysdesignM21Reshuffle } from "./sysdesign-m21-reshuffle/data";
+import { sysdesignM21RankerSlow } from "./sysdesign-m21-ranker-slow/data";
 import { sysdesignM17TraceRequest } from "./sysdesign-m17-trace-request/data";
 import { sysdesignM17SloWindow } from "./sysdesign-m17-slo-window/data";
 import { sysdesignM17BurnReplay } from "./sysdesign-m17-burn-replay/data";
 import { sysdesignM17SameAverage } from "./sysdesign-m17-same-average/data";
 import { sysdesignM17IncidentStepper } from "./sysdesign-m17-incident-stepper/data";
+import { sysdesignM21EstimatePlay } from "./sysdesign-m21-estimate-play/data";
+import { sysdesignM21ActionMap } from "./sysdesign-m21-action-map/data";
+import { sysdesignM21FanoutPlay } from "./sysdesign-m21-fanout-play/data";
+import { sysdesignM21RankPlay } from "./sysdesign-m21-rank-play/data";
+import { sysdesignM22EstimatePlay } from "./sysdesign-m22-estimate-play/data";
+import { sysdesignM22DesignStepper } from "./sysdesign-m22-design-stepper/data";
+import { sysdesignM22ConnectionsPlay } from "./sysdesign-m22-connections-play/data";
+import { sysdesignM22SequencePlay } from "./sysdesign-m22-sequence-play/data";
+import { sysdesignM22PresencePlay } from "./sysdesign-m22-presence-play/data";
+import { sysdesignM22OutagePlay } from "./sysdesign-m22-outage-play/data";
 import { sysdesignM18LaptopVsServer } from "./sysdesign-m18-laptop-vs-server/data";
 import { sysdesignM18SameImage } from "./sysdesign-m18-same-image/data";
 import { sysdesignM18OomKill } from "./sysdesign-m18-oom-kill/data";
@@ -827,6 +895,28 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m16-fallback-cache": sysdesignM16FallbackCache,
   "sysdesign-m16-no-headroom": sysdesignM16NoHeadroom,
   "sysdesign-m15-retry-reorder-play": sysdesignM15RetryReorderPlay,
+  "sysdesign-m19-region-dark": sysdesignM19RegionDark,
+  "sysdesign-m19-shared-deploy": sysdesignM19SharedDeploy,
+  "sysdesign-m19-cell-rollout": sysdesignM19CellRollout,
+  "sysdesign-m19-two-clocks": sysdesignM19TwoClocks,
+  "sysdesign-m19-copy-mistake": sysdesignM19CopyMistake,
+  "sysdesign-m19-pitr": sysdesignM19Pitr,
+  "sysdesign-m19-lag-loss": sysdesignM19LagLoss,
+  "sysdesign-m19-failback": sysdesignM19Failback,
+  "sysdesign-m19-dns-timeline": sysdesignM19DnsTimeline,
+  "sysdesign-m19-survivor-overload": sysdesignM19SurvivorOverload,
+  "sysdesign-m19-global-commit": sysdesignM19GlobalCommit,
+  "sysdesign-m19-backup-leaves": sysdesignM19BackupLeaves,
+  "sysdesign-m20-click-a-link": sysdesignM20ClickALink,
+  "sysdesign-m20-hash-same-url": sysdesignM20HashSameUrl,
+  "sysdesign-m20-counter-base62": sysdesignM20CounterBase62,
+  "sysdesign-m20-range-allocator": sysdesignM20RangeAllocator,
+  "sysdesign-m20-key-pool": sysdesignM20KeyPool,
+  "sysdesign-m20-read-path": sysdesignM20ReadPath,
+  "sysdesign-m20-redirect-301": sysdesignM20Redirect301,
+  "sysdesign-m20-redirect-302": sysdesignM20Redirect302,
+  "sysdesign-m20-click-queue": sysdesignM20ClickQueue,
+  "sysdesign-m20-cache-loss": sysdesignM20CacheLoss,
   "sysdesign-m15-partition-key-play": sysdesignM15PartitionKeyPlay,
   "sysdesign-m15-poison-play": sysdesignM15PoisonPlay,
   "sysdesign-m15-window-shapes-play": sysdesignM15WindowShapesPlay,
@@ -840,6 +930,16 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m17-rollback-first": sysdesignM17RollbackFirst,
   "sysdesign-m15-watermark-delay-play": sysdesignM15WatermarkDelayPlay,
   "sysdesign-m15-slow-subscriber-play": sysdesignM15SlowSubscriberPlay,
+  "sysdesign-m20-estimate-play": sysdesignM20EstimatePlay,
+  "sysdesign-m20-design-stepper": sysdesignM20DesignStepper,
+  "sysdesign-m20-collision-play": sysdesignM20CollisionPlay,
+  "sysdesign-m20-hit-rate-play": sysdesignM20HitRatePlay,
+  "sysdesign-m19-add-zones": sysdesignM19AddZones,
+  "sysdesign-m19-cells": sysdesignM19Cells,
+  "sysdesign-m19-failure-time": sysdesignM19FailureTime,
+  "sysdesign-m19-fail-region": sysdesignM19FailRegion,
+  "sysdesign-m19-route-users": sysdesignM19RouteUsers,
+  "sysdesign-m19-write-latency": sysdesignM19WriteLatency,
   "sysdesign-m16-split-or-not": sysdesignM16SplitOrNot,
   "sysdesign-m16-order-path": sysdesignM16OrderPath,
   "sysdesign-m16-timeout-line": sysdesignM16TimeoutLine,
@@ -848,11 +948,47 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m16-breaker-play": sysdesignM16BreakerPlay,
   "sysdesign-m16-bulkhead-pools": sysdesignM16BulkheadPools,
   "sysdesign-m16-degrade-menu": sysdesignM16DegradeMenu,
+  "sysdesign-m22-send-a-message": sysdesignM22SendAMessage,
+  "sysdesign-m22-send-path": sysdesignM22SendPath,
+  "sysdesign-m22-group-fanout": sysdesignM22GroupFanout,
+  "sysdesign-m22-register-session": sysdesignM22RegisterSession,
+  "sysdesign-m22-route-lookup": sysdesignM22RouteLookup,
+  "sysdesign-m22-drain-gateway": sysdesignM22DrainGateway,
+  "sysdesign-m22-half-open": sysdesignM22HalfOpen,
+  "sysdesign-m22-order-clash": sysdesignM22OrderClash,
+  "sysdesign-m22-retry-same-id": sysdesignM22RetrySameId,
+  "sysdesign-m22-three-ticks": sysdesignM22ThreeTicks,
+  "sysdesign-m22-offline-sync": sysdesignM22OfflineSync,
+  "sysdesign-m22-presence-beat": sysdesignM22PresenceBeat,
+  "sysdesign-m22-presence-subscribe": sysdesignM22PresenceSubscribe,
+  "sysdesign-m22-prefs-filter": sysdesignM22PrefsFilter,
+  "sysdesign-m22-dedupe-key": sysdesignM22DedupeKey,
+  "sysdesign-m22-retry-backoff": sysdesignM22RetryBackoff,
+  "sysdesign-m22-collapse-limit": sysdesignM22CollapseLimit,
+  "sysdesign-m21-two-feeds": sysdesignM21TwoFeeds,
+  "sysdesign-m21-one-query-feed": sysdesignM21OneQueryFeed,
+  "sysdesign-m21-timeline-cache": sysdesignM21TimelineCache,
+  "sysdesign-m21-push-post": sysdesignM21PushPost,
+  "sysdesign-m21-pull-read": sysdesignM21PullRead,
+  "sysdesign-m21-star-post": sysdesignM21StarPost,
+  "sysdesign-m21-page-cache": sysdesignM21PageCache,
+  "sysdesign-m21-reshuffle": sysdesignM21Reshuffle,
+  "sysdesign-m21-ranker-slow": sysdesignM21RankerSlow,
   "sysdesign-m17-trace-request": sysdesignM17TraceRequest,
   "sysdesign-m17-slo-window": sysdesignM17SloWindow,
   "sysdesign-m17-burn-replay": sysdesignM17BurnReplay,
   "sysdesign-m17-same-average": sysdesignM17SameAverage,
   "sysdesign-m17-incident-stepper": sysdesignM17IncidentStepper,
+  "sysdesign-m21-estimate-play": sysdesignM21EstimatePlay,
+  "sysdesign-m21-action-map": sysdesignM21ActionMap,
+  "sysdesign-m21-fanout-play": sysdesignM21FanoutPlay,
+  "sysdesign-m21-rank-play": sysdesignM21RankPlay,
+  "sysdesign-m22-estimate-play": sysdesignM22EstimatePlay,
+  "sysdesign-m22-design-stepper": sysdesignM22DesignStepper,
+  "sysdesign-m22-connections-play": sysdesignM22ConnectionsPlay,
+  "sysdesign-m22-sequence-play": sysdesignM22SequencePlay,
+  "sysdesign-m22-presence-play": sysdesignM22PresencePlay,
+  "sysdesign-m22-outage-play": sysdesignM22OutagePlay,
   "sysdesign-m18-laptop-vs-server": sysdesignM18LaptopVsServer,
   "sysdesign-m18-same-image": sysdesignM18SameImage,
   "sysdesign-m18-oom-kill": sysdesignM18OomKill,
