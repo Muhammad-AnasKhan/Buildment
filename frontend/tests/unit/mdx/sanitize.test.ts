@@ -7,8 +7,10 @@ import { CodeConfigSchema } from "@/shared/blocks/code/schema";
 
 // Required by docs/09-security.mdx "The sanitizer contract" — must fail if a
 // `correct`/`correctOptionIds`/`rubric`/`sampleAnswer`/`hiddenTests` key ever
-// reaches a client-bound payload, for any registered block type.
+// reaches a client-bound payload, for any registered block type. `explanation`
+// usually names the right option, so it only arrives after grading.
 const SECRET_KEYS = [
+  "explanation",
   "correct",
   "correctOptionId",
   "correctOptionIds",
