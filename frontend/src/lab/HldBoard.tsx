@@ -7,7 +7,7 @@
 // watch the request travel the path, and the tiered-architecture model scores
 // utilisation, p99, availability and cost against the lab's targets.
 
-import { useCallback, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Background,
   BackgroundVariant,
@@ -15,10 +15,9 @@ import {
   MarkerType,
   Position,
   ReactFlow,
-  applyNodeChanges,
+  useNodesState,
   type Edge,
   type Node,
-  type NodeChange,
   type NodeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -105,7 +104,7 @@ export function HldBoard({ spec }: { spec: HldLabSpec }) {
   const [selected, setSelected] = useState<string | null>(
     () => start.nodes.find((n) => COMPONENT_CATALOG[n.kind].properties.some((p) => p.type === "size"))?.id ?? start.nodes[0]?.id ?? null,
   );
-  const [pos, setPos] = useState<Record<string, { x: number; y: number }>>({});
+  const [rfNodes, setRfNodes, onNodesChange] = useNodesState<Node<TierData>>([]);
   const [pulse, setPulse] = useState(-1);
 
   const board: Board = useMemo(
@@ -117,36 +116,35 @@ export function HldBoard({ spec }: { spec: HldLabSpec }) {
     [board, controls, targets],
   );
 
-  const rfNodes: Node<TierData>[] = order.map((n, i) => {
-    const tier = result.tiers.find((t) => t.id === n.id);
-    const cfg = controls.perNode[n.id] ?? {};
-    return {
-      id: n.id, type: "tier",
-      position: pos[n.id] ?? { x: 0, y: i * 108 },
-      width: 158, height: 92,
-      data: {
-        kind: n.kind,
-        size: typeof cfg.size === "string" ? cfg.size : undefined,
-        count: typeof cfg.count === "number" ? cfg.count : typeof cfg.replicas === "number" ? cfg.replicas : 1,
-        util: tier ? tier.utilisation : null,
-        selected: selected === n.id,
-        pulsing: pulse === i,
-      },
-    };
-  });
+  useEffect(() => {
+    setRfNodes((prev) =>
+      order.map((n, i) => {
+        const existing = prev.find((p) => p.id === n.id);
+        const tier = result.tiers.find((t) => t.id === n.id);
+        const cfg = controls.perNode[n.id] ?? {};
+        return {
+          id: n.id,
+          type: "tier",
+          position: existing?.position ?? { x: 0, y: i * 112 },
+          width: 158,
+          height: 92,
+          data: {
+            kind: n.kind,
+            size: typeof cfg.size === "string" ? cfg.size : undefined,
+            count: typeof cfg.count === "number" ? cfg.count : typeof cfg.replicas === "number" ? cfg.replicas : 1,
+            util: tier ? tier.utilisation : null,
+            selected: selected === n.id,
+            pulsing: pulse === i,
+          },
+        };
+      }),
+    );
+  }, [order, result, controls, selected, pulse, setRfNodes]);
   const rfEdges: Edge[] = board.edges.map((e) => ({
     id: `${e.from}-${e.to}`, source: e.from, target: e.to, type: "smoothstep", animated: true,
     style: { stroke: "#3b82f6", strokeWidth: 1.5 },
     markerEnd: { type: MarkerType.ArrowClosed, color: "#3b82f6", width: 16, height: 16 },
   }));
-
-  const onNodesChange = useCallback((changes: NodeChange<Node<TierData>>[]) => {
-    setPos((prev) => {
-      const next = { ...prev };
-      for (const c of changes) if (c.type === "position" && c.position) next[c.id] = c.position;
-      return next;
-    });
-  }, []);
 
   function addKind(kind: ComponentKind) {
     const id = `${kind}-${Date.now().toString(36)}`;
