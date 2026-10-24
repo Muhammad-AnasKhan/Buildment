@@ -7,12 +7,16 @@
 import { CanvasFrame, CanvasNotes } from "@/canvas/primitives/canvas-frame";
 import { getLabSpec } from "./registry";
 import type { LabSpec } from "./types";
-import { StaticBoard } from "./StaticBoard";
+import { HldBoard } from "./HldBoard";
 
 export function resolveLab(slug: unknown): { spec: LabSpec } | null {
   if (typeof slug !== "string") return null;
   const spec = getLabSpec(slug);
   return spec ? { spec } : null;
+}
+
+export function labView(spec: LabSpec): "hld-board" | "db-placeholder" {
+  return spec.family === "hld" ? "hld-board" : "db-placeholder";
 }
 
 export function Lab({ slug }: { slug?: unknown }) {
@@ -23,10 +27,7 @@ export function Lab({ slug }: { slug?: unknown }) {
   if (spec.family === "hld") {
     return (
       <CanvasFrame eyebrow="Explore" title={spec.title} purpose={spec.purpose}>
-        <StaticBoard board={spec.startingBoard ?? { nodes: [], edges: [] }} />
-        <p className="not-prose mt-3 text-sm text-muted-foreground">
-          The drag-and-build editor loads in the full lab.
-        </p>
+        <HldBoard spec={spec} />
         <CanvasNotes limits={spec.limits} />
       </CanvasFrame>
     );
