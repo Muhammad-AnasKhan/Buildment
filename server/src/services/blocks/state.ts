@@ -1,5 +1,6 @@
 import type { BlockState, ContentBlockState } from "../../shared/api/blocks.js";
 import { blockDefinitions } from "../../shared/blocks/definitions.js";
+import { AiInterviewConfigSchema, type SanitizedAiInterviewConfig } from "../../shared/blocks/ai-interview/schema.js";
 import { CodeConfigSchema, type SanitizedCodeConfig } from "../../shared/blocks/code/schema.js";
 import { MustReadConfigSchema } from "../../shared/blocks/must-read/schema.js";
 import { OpenQuestionConfigSchema, type SanitizedOpenQuestionConfig } from "../../shared/blocks/open-question/schema.js";
@@ -10,6 +11,7 @@ import { applyTokens, applyTokensDeep, contentTokenValues, type ContentTokenValu
 import { prisma } from "../../db/prisma.js";
 import type { Block } from "../../generated/prisma/index.js";
 import { findEnrollmentForBlockState } from "../enrollment/api-learn-access.js";
+import { loadAiInterviewInitialState } from "../ai/interview/service.js";
 import { NotFoundError } from "../../utils/errors.js";
 import { sanitizeBlockConfig } from "../../utils/sanitize-block-config.js";
 import type { SessionUser } from "../../types/auth.js";
@@ -122,6 +124,15 @@ async function blockStateFor(block: Block, user: SessionUser | undefined): Promi
         // Progress reads Block.required (see progress/rules.ts), so the card follows the same flag.
         required: block.required,
         initialRead: Boolean(latest && latest.status !== "DRAFT"),
+      };
+    }
+    case "AI_INTERVIEW": {
+      const config = AiInterviewConfigSchema.parse(block.config);
+      return {
+        type: "AI_INTERVIEW",
+        // sanitizeBlockConfig drops the rubric (a SECRET_KEY) along with every other server-only field.
+        config: sanitizeBlockConfig<typeof config, SanitizedAiInterviewConfig>(config),
+        initialState: await loadAiInterviewInitialState(user?.id, blockId, config),
       };
     }
     case "STEPS":
