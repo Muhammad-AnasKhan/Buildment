@@ -29,6 +29,7 @@ COPY server/prisma.config.ts ./
 COPY server/scripts scripts
 COPY courses /app/courses
 COPY agent-ip/scripts/audit-course.mjs /app/agent-ip/scripts/audit-course.mjs
+COPY agent-ip/scripts/audit-variant-repetition.mjs /app/agent-ip/scripts/audit-variant-repetition.mjs
 EXPOSE 4000
 USER node
 CMD ["node", "dist/index.js"]

@@ -83,7 +83,8 @@ export async function publishCourseRelease(tx: Prisma.TransactionClient, courseI
       const target = modules.find(module => module.id === moduleId);
       if (target) { target.title = incomingModule.title; target.key = incomingModule.key ?? null;
         if (incomingModule.order !== undefined) target.order = incomingModule.order; }
-      else modules.push({ id: moduleId, key: incomingModule.key ?? null, title: incomingModule.title, order: incomingModule.order ?? mi + 1, chapters: [] });
+      else if (!old || slug === defaultSlug) modules.push({ id: moduleId, key: incomingModule.key ?? null,
+        title: incomingModule.title, order: incomingModule.order ?? mi + 1, chapters: [] });
     }
     for (const [li, lesson] of incomingModule.lessons.entries()) {
       if (!lesson.key && shared.some(module => module.chapters.some(chapter => chapter.key))) throw new BadRequestError("Lesson keys are required for a keyed course.");
@@ -95,7 +96,8 @@ export async function publishCourseRelease(tx: Prisma.TransactionClient, courseI
       replacement.order = lesson.lessonNum;
       for (const slug of variantSlugs) {
         const modules = next.variants[slug];
-        const destination = modules.find(module => module.id === moduleId)!;
+        const destination = modules.find(module => module.id === moduleId);
+        if (!destination) continue; // This variant omitted the shared module.
         const existing = locate(modules, lesson.key ?? null, prior?.chapter.id ?? null);
         const inherits = !existing || !prior || existing.chapter.id === prior.chapter.id;
         if (existing && (slug === defaultSlug || inherits)) existing.module.chapters.splice(existing.index, 1);
@@ -132,16 +134,56 @@ export async function publishCourseRelease(tx: Prisma.TransactionClient, courseI
         { ...override.lesson, key: override.lessonKey, lessonNum: target.chapter.order });
       target.module.chapters[target.index] = chapter;
     }
+    for (const key of variant.omitLessonKeys ?? []) {
+      const target = locate(modules, key, null);
+      if (target) target.module.chapters.splice(target.index, 1);
+    }
+    for (const incoming of variant.modules ?? []) {
+      if (!incoming.key) throw new BadRequestError(`Variant ${variant.slug} module needs a stable key.`);
+      const old = modules.find(module => module.key === incoming.key);
+      const restored = !old ? await tx.module.findUnique({ where: { courseId_contentKey: { courseId, contentKey: incoming.key } } }) : null;
+      const moduleId = old?.id ?? restored?.id ?? ulid();
+      if (!old && !restored) await tx.module.create({ data: { id: moduleId, courseId,
+        contentKey: incoming.key, title: incoming.title, order: ++storageOrder } });
+      const destination = old ?? { id: moduleId, key: incoming.key, title: incoming.title,
+        order: incoming.order ?? ++storageOrder, chapters: [] };
+      destination.title = incoming.title;
+      destination.key = incoming.key;
+      if (!old) modules.push(destination);
+      for (const lesson of incoming.lessons) {
+        if (!lesson.key) throw new BadRequestError(`Variant ${variant.slug} lesson needs a stable key.`);
+        const prior = locate(modules, lesson.key, null);
+        const logicalSlug = prior?.chapter.slug ?? `${variant.slug}-${lesson.key}`;
+        const replacement = await equivalent(tx, prior?.chapter, lesson)
+          ? prior!.chapter
+          : await createReleaseChapter(tx, courseId, moduleId, logicalSlug, lesson);
+        if (prior) prior.module.chapters.splice(prior.index, 1);
+        destination.chapters.push({ ...replacement, key: lesson.key, order: lesson.lessonNum });
+      }
+    }
+    if (variant.moduleOrder) {
+      const byKey = new Map(modules.filter(module => module.key).map(module => [module.key!, module]));
+      next.variants[variant.slug] = variant.moduleOrder.map((key, index) => {
+        const module = byKey.get(key);
+        if (!module) throw new BadRequestError(`Variant ${variant.slug} module order references missing ${key}.`);
+        return { ...module, order: index + 1 };
+      });
+    }
   }
   for (const modules of Object.values(next.variants)) {
     modules.sort((a, b) => a.order - b.order);
     for (const module of modules) module.chapters.sort((a, b) => a.order - b.order);
   }
-  if (canonical(next) === canonical(previous)) return baseline;
+  if (canonical(next) === canonical(previous)) {
+    if (plan.manifest.availableVariantSlugs) await tx.course.update({ where: { id: courseId },
+      data: { availableVariantSlugs: plan.manifest.availableVariantSlugs } });
+    return baseline;
+  }
   const sourceHash = createHash("sha256").update(canonical({ base: baseline.id, plan })).digest("hex");
   const release = await tx.courseRelease.create({ data: { id: ulid(), courseId, number: baseline.number + 1,
     content: next as unknown as Prisma.InputJsonValue, sourceHash } });
-  await tx.course.update({ where: { id: courseId }, data: { activeReleaseId: release.id } });
+  await tx.course.update({ where: { id: courseId }, data: { activeReleaseId: release.id,
+    ...(plan.manifest.availableVariantSlugs ? { availableVariantSlugs: plan.manifest.availableVariantSlugs } : {}) } });
   return release;
 }
 
