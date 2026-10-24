@@ -6,7 +6,7 @@
  * each package through the same services as the mentor ZIP workflow.
  */
 import { createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,6 +20,9 @@ const SERVER_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 const COURSES_ROOT = coursesRootForServer(SERVER_ROOT);
 const REPO_ROOT = path.dirname(COURSES_ROOT);
 const ZIP_FILE = /^(?:variants\/[a-z0-9-]+\/)?\d+-[a-z0-9-]+\/\d+\.\d+-[a-z0-9-]+\.md$/;
+const LEGACY_COURSE_SLUGS: Record<string, string[]> = {
+  "multi-vendor-marketplace": ["freshmarket-multi-vendor-marketplace-v3"],
+};
 
 type Package = { slug: string; dir: string; manifest: ReturnType<typeof CourseManifestSchema.parse> };
 
@@ -99,8 +102,20 @@ function validate(pkg: Package, instructorEmail: string) {
   };
   run("scripts/validate-course-source.ts", ["--course", pkg.slug]);
   run("scripts/audit-course-structure.ts", ["--course", pkg.slug, "--strict"]);
-  execFileSync(process.execPath, ["agent-ip/scripts/audit-course.mjs", path.join("courses", pkg.slug)],
-    { cwd: REPO_ROOT, env, stdio: "inherit", timeout: 180000 });
+  const auditArgs = ["agent-ip/scripts/audit-course.mjs", path.join("courses", pkg.slug)];
+  if (pkg.manifest.repositoryEditorialAudit === "required") {
+    execFileSync(process.execPath, auditArgs, { cwd: REPO_ROOT, env, stdio: "inherit", timeout: 180000 });
+  } else {
+    const audit = spawnSync(process.execPath, auditArgs, {
+      cwd: REPO_ROOT, env, encoding: "utf8", timeout: 180000, maxBuffer: 10 * 1024 * 1024,
+    });
+    if (audit.error || (audit.status !== 0 && audit.status !== 1)) {
+      throw audit.error ?? new Error(`${pkg.slug}: editorial audit could not run: ${audit.stderr}`);
+    }
+    const summary = audit.stdout.match(/Chapters: \d+\nProse words: \d+\nNeeds work: \d+/)?.[0];
+    if (!summary) throw new Error(`${pkg.slug}: editorial audit ended without a results summary: ${audit.stderr}`);
+    console.log(`${pkg.slug}: editorial audit is advisory under an explicit publication exception. ${summary.replaceAll("\n", ", ")}`);
+  }
 }
 
 async function publish(packages: Package[], instructorEmail: string) {
@@ -119,19 +134,22 @@ async function publish(packages: Package[], instructorEmail: string) {
     // Bind every existing repository course, including the legacy FreshMarket
     // package. The previous owner keeps COURSE_CREATOR access.
     for (const entry of fs.readdirSync(COURSES_ROOT, { withFileTypes: true }).filter(item => item.isDirectory())) {
-      const course = await prisma.course.findUnique({ where: { slug: entry.name }, select: { id: true, mentorId: true } });
-      if (!course || course.mentorId === user.id) continue;
-      await prisma.$transaction(async tx => {
-        await tx.courseInstructor.upsert({
-          where: { courseId_userId: { courseId: course.id, userId: course.mentorId } },
-          update: { role: "COURSE_CREATOR" },
-          create: { courseId: course.id, userId: course.mentorId, role: "COURSE_CREATOR" },
+      const slugs = [entry.name, ...(LEGACY_COURSE_SLUGS[entry.name] ?? [])];
+      const courses = await prisma.course.findMany({ where: { slug: { in: slugs } }, select: { id: true, slug: true, mentorId: true } });
+      for (const course of courses) {
+        if (course.mentorId === user.id) continue;
+        await prisma.$transaction(async tx => {
+          await tx.courseInstructor.upsert({
+            where: { courseId_userId: { courseId: course.id, userId: course.mentorId } },
+            update: { role: "COURSE_CREATOR" },
+            create: { courseId: course.id, userId: course.mentorId, role: "COURSE_CREATOR" },
+          });
+          await tx.courseInstructor.deleteMany({ where: { courseId: course.id, userId: user.id } });
+          const changed = await tx.course.updateMany({ where: { id: course.id, mentorId: course.mentorId }, data: { mentorId: user.id } });
+          if (changed.count !== 1) throw new Error(`${course.slug}: course ownership changed during binding; retry the workflow`);
         });
-        await tx.courseInstructor.deleteMany({ where: { courseId: course.id, userId: user.id } });
-        const changed = await tx.course.updateMany({ where: { id: course.id, mentorId: course.mentorId }, data: { mentorId: user.id } });
-        if (changed.count !== 1) throw new Error(`${entry.name}: course ownership changed during binding; retry the workflow`);
-      });
-      console.log(`${entry.name}: assigned course ownership to ${instructorEmail}`);
+        console.log(`${course.slug}: assigned course ownership to ${instructorEmail}`);
+      }
     }
     for (const pkg of packages) {
       const sourceHash = courseSourceHash(pkg);

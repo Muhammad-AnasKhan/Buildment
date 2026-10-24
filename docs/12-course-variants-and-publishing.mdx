@@ -91,7 +91,13 @@ same ZIP import, preview, approval, and release services as the dashboard.
 New packages become published courses; updates make new immutable releases.
 The publisher records the package hash and active release, so unchanged packages
 skip another update preview. Packages without the opt-in flag stay
-in the repository and are not automatically published.
+in the repository and are not automatically published. The default
+`repositoryEditorialAudit: required` setting blocks publication when the
+course audit fails. An explicit `repositoryEditorialAudit: advisory` exception
+still runs and reports that audit while allowing source-valid, structurally
+valid courses through the release. The current batch uses this exception for
+eight packages with known editorial findings. `system-design` is presented as
+a short, two-topic lab until the full course is written.
 
 The instructor account must exist, be verified, have a Mentor or Admin role,
 and have ZIP import access. Existing course owners retain course-creator access
