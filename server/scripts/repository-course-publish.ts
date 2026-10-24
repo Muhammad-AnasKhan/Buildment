@@ -21,9 +21,6 @@ const SERVER_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 const COURSES_ROOT = coursesRootForServer(SERVER_ROOT);
 const REPO_ROOT = path.dirname(COURSES_ROOT);
 const ZIP_FILE = /^(?:variants\/[a-z0-9-]+\/)?\d+-[a-z0-9-]+\/\d+\.\d+-[a-z0-9-]+\.md$/;
-const LEGACY_COURSE_SLUGS: Record<string, string[]> = {
-  "multi-vendor-marketplace": ["freshmarket-multi-vendor-marketplace-v3"],
-};
 
 type Package = { slug: string; dir: string; manifest: ReturnType<typeof CourseManifestSchema.parse> };
 
@@ -146,11 +143,10 @@ async function publish(packages: Package[], instructorEmail: string) {
       throw new Error(`${instructorEmail} must be a verified instructor with ZIP import access before repository publishing runs`);
     }
     const user: SessionUser = owner;
-    // Bind every existing repository course, including the legacy FreshMarket
-    // package. The previous owner keeps COURSE_CREATOR access.
+    // Bind existing repository courses. The previous owner keeps COURSE_CREATOR access.
     for (const entry of fs.readdirSync(COURSES_ROOT, { withFileTypes: true }).filter(item => item.isDirectory())) {
       const target = packages.find(pkg => pkg.slug === entry.name)?.manifest.repositoryTargetSlug;
-      const slugs = [entry.name, ...(LEGACY_COURSE_SLUGS[entry.name] ?? []), ...(target ? [target] : [])];
+      const slugs = [entry.name, ...(target ? [target] : [])];
       const courses = await prisma.course.findMany({ where: { slug: { in: slugs } }, select: { id: true, slug: true, mentorId: true } });
       for (const course of courses) {
         if (course.mentorId === user.id) continue;
