@@ -3,7 +3,7 @@ artifact: canvas-spec
 course: faith-and-resilience
 chapter: 07.03-caring-for-body-and-mind
 slug: who-to-tell
-version: 1
+version: 2
 owner: interaction-designer
 renderer: state-machine (HTML controls, inline SVG states)
 ---
@@ -51,11 +51,11 @@ Step 1 has no edge (the starting state). Step 7 revisits a state with no active 
 Shared stepper keyboard support and focus ring; `summary` gives both roads for screen readers; every tone has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (the second quiz item in 7.3 asks for the next step in a new case, Salma).
-- [x] The model is tested (registry consistency and label-fit tests, once the slug is registered).
-- [x] The design is simple and legible.
-- [x] Prediction before (Yasmin's first step), transfer check after.
-- [x] Reader fallback exists (prose in 7.3).
+- [ ] The claim is testable (the second quiz item in 7.3 asks for the next step in a new case, Salma).
+- [ ] The model is tested (registry consistency and label-fit tests).
+- [ ] The design is simple and legible.
+- [ ] Prediction before (Yasmin's first step), transfer check after.
+- [ ] Reader fallback exists (prose in 7.3).
 
 ## Build plan
-`frontend/src/canvas/who-to-tell/data.ts` (export `whoToTell`), to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.
+`frontend/src/canvas/who-to-tell/data.ts` (export `whoToTell`), registered in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.

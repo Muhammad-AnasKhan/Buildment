@@ -47,7 +47,7 @@ export const whoToTell: StateMachineSpec = {
       tone: "good",
       outcome: "first step",
       title: "She tells someone she trusts",
-      note: "She sends her friend Mariam a voice message: she has not been well for three weeks. Mariam calls back the same evening, listens first, and reminds her she is allowed to be tired. When the Prophet, peace be upon him, was afraid, he told Khadijah (Sahih al-Bukhari 3).",
+      note: "She sends her friend Mariam a voice message: she has not been well for three weeks. Mariam calls back the same evening, listens first, and reminds her she is allowed to be tired. When the Prophet, peace be upon him, was afraid, he told his wife Khadijah, may Allah be pleased with her (Sahih al-Bukhari 3).",
       chips: ["Sahih al-Bukhari 3"],
     },
     {
@@ -86,5 +86,5 @@ export const whoToTell: StateMachineSpec = {
     "At step 5, notice that the mentor does not replace the doctor, and the doctor does not replace prayer. Who does what in Yasmin's plan?",
   ],
   limits:
-    "This is one order that often works; some people tell their mentor first, and that is fine. The canvas does not diagnose anything or say what treatment anyone needs: only a doctor or counsellor can do that. If you feel overwhelmed for a long time, or you have thoughts of harming yourself, talk to your mentor or the fellowship coordinator today, and to a doctor or counsellor if you can. This course does not replace professional care.",
+    "This is one order that often works; some people tell their mentor first, and that is fine. The canvas does not diagnose anything or say what treatment anyone needs: only a doctor or counsellor can do that. If you feel overwhelmed for a long time, or you have thoughts of harming yourself, talk to your mentor or the fellowship coordinator today. Talk to a doctor or counsellor too, if you can. This course does not replace professional care.",
 };
