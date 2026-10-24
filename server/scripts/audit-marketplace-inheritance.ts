@@ -28,7 +28,10 @@ if (!family) throw new Error("Marketplace variant family is missing");
 
 // Each term names a detail of the FreshMarket reference build. A flag asks a
 // reviewer to confirm whether that passage can really remain shared.
-const groceryDetails = /\b(?:freshmarket|grocer\w*|produce|apples?|milk|tomatoes?|olive oil|bakery|perish\w*|kilograms?|vegetables?|fruits?)\b/i;
+// "produce" is usually a verb in engineering prose ("the job can produce a
+// report"), so match only the grocery-noun uses. A bare \bproduce\b flagged
+// dozens of correct sentences and buried the real findings.
+const groceryDetails = /\b(?:freshmarket|grocer\w*|apples?|milk|tomatoes?|olive oil|bakery|perish\w*|kilograms?|vegetables?|fruits?)\b|\b(?:fresh\s+)?produce\s+(?:is|are|section|aisle|photos?|department|market|look)|\bthe\s+produce\b|\bbrowse\s+produce\b/i;
 
 type Replacement = { from: string; to: string };
 type VariantPlan = {
