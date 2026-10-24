@@ -38,7 +38,7 @@ export const admissionControlTokens: SliderSpec = {
   title: "How many requests to let in",
   purpose: "Set a limit in tokens and see how many arriving requests the server admits, queues or would have crashed on.",
   intro:
-    "The server's KV cache holds a fixed number of tokens, about 420,000 in the running example (55.94 GB at 131,072 bytes a token). Admission control counts tokens, not requests: it admits a request only while the tokens already promised stay under a limit, a share of that capacity. The rest wait in a queue. Before you move anything, predict how many of 30 requests of 16,384 tokens each get in at a 90% limit.",
+    "The server's KV cache holds a fixed number of tokens, about 420,000 in the running example (55.94 GB at 131,072 bytes a token). Admission control counts tokens, not requests: it admits a request only while the tokens already promised stay under a limit, a share of that capacity. The rest wait in a queue. Make the prediction above first, then move one slider.",
   inputs: [
     { id: "arrivals", label: "Requests arriving together", min: 1, max: 100, step: 1, default: 30, unit: "requests" },
     { id: "tokens", label: "Tokens each request holds", min: 1_024, max: 32_768, step: 1_024, default: 16_384, unit: "tokens" },

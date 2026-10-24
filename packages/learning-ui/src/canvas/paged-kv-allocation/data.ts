@@ -33,7 +33,7 @@ export const pagedKvAllocation: SliderSpec = {
   title: "Reserving the whole context versus paging",
   purpose: "Compare reserving a request's full context up front with allocating 16-token blocks as the tokens arrive.",
   intro:
-    "A server holds many requests at once, and each one's cache grows with its tokens. Contiguous reservation sets aside the full context for every request before it starts. Paged allocation hands out 16-token blocks only as tokens are produced, so a request holds its used tokens rounded up to a whole block. One token takes 131,072 bytes, as in the running example. Before you move anything, predict how much memory 20 requests use if each reserves 32,768 tokens but averages 6,000.",
+    "A server holds many requests at once, and each one's cache grows with its tokens. Contiguous reservation sets aside the full context for every request before it starts. Paged allocation hands out 16-token blocks only as tokens are produced, so a request holds its used tokens rounded up to a whole block. One token takes 131,072 bytes, as in the running example. Make the prediction above first, then move one slider.",
   inputs: [
     { id: "requests", label: "Requests held at once", min: 1, max: 64, step: 1, default: 20, unit: "requests" },
     { id: "reserved", label: "Reserved context", min: 2_048, max: 32_768, step: 2_048, default: 32_768, unit: "tokens" },

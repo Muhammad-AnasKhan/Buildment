@@ -155,8 +155,27 @@ describe("module 11 sequence canvases", () => {
     // All five fixes from the pack are listed.
     const fixes = deploymentFitSteps.steps.find((s) => s.label === "five fixes")!;
     expect(fixes.chips).toEqual(["FP8 KV", "shorter context", "fewer users", "second GPU", "admission control"]);
+    // Titles are plain words: no "Step N:" prefix to clash with the renderer's own "Step N of M" counter.
+    const titles = deploymentFitSteps.steps.map((s) => s.title);
+    for (const title of titles) expect(title, title).not.toMatch(/\bstep\s*\d/i);
+    expect(titles.slice(1, 5)).toEqual(["Weights", "KV cache per token", "Tokens held at once", "Memory left for the cache"]);
+    expect(titles[6]).toBe("Compare and decide");
+    expect(deploymentFitSteps.steps[6]!.label).toBe("85.9 > 55.94 GB");
+    // Try this names messages by title, never by step number, and the titles it names exist.
+    const tries = deploymentFitSteps.tryThis!;
+    for (const line of tries) expect(line).not.toMatch(/\bstep\s*\d/i);
+    expect(tries[0]).toContain("Compare and decide");
+    expect(tries[1]).toContain("Check the first fix with the same steps");
+    expect(titles).toContain("Compare and decide");
+    expect(titles).toContain("Check the first fix with the same steps");
+    expect(tries[0]).toBe(
+      "Before you open the message called Compare and decide, predict whether 20 chats of 32,768 tokens fit. Then compare 85.9 GB with the 55.94 GB left.",
+    );
+    expect(tries[1]).toBe(
+      "At the message called Check the first fix with the same steps, the cache bytes per value drop from 2 to 1. Predict how many chats fit now, then check the chips: 26.",
+    );
     // The estimate is done in tokens, and the answer leads with the number.
-    expect(text).toContain("tokens held at once");
+    expect(text).toMatch(/tokens held at once/i);
   });
 });
 

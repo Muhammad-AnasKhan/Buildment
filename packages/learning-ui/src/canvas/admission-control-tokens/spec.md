@@ -36,7 +36,7 @@ Stats: admitted now; queued; without admission control ("Fits" or "Over by X"). 
 - **What changed:** a live sentence names the input, says what it did to the token limit or the request size, and gives the new admitted, queued and no-control result.
 - **Limits:** a snapshot where no request finishes and no preemption is modelled; real engines also cap the number of sequences, and requests grow as they generate, which is why the limit sits below 100%.
 
-The chapter puts a Predict before the canvas (how many of 30 get in at 90%) and a transfer MCQ after it.
+The intro does not ask its own prediction: it says "Make the prediction above first, then move one slider." The chapter puts a Predict right before the canvas (how many of 30 requests of 16,384 tokens get in at a 90% limit) and a transfer MCQ after it.
 
 ## QA
 

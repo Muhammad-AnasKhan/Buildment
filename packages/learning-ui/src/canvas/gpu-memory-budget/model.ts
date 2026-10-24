@@ -42,7 +42,9 @@ export type Budget = BudgetInput & {
   fits: boolean;
   /** GB short when it does not fit, GB to spare when it does. */
   gapGB: number;
-  /** Most users that fit at this context. */
+  /** Tokens the cache space holds: floor(available / bytes per token). */
+  poolTokens: number;
+  /** Chats of this length that fit (tokens first, then chats): floor(pool / tokens per chat). */
   maxUsers: number;
 };
 
@@ -62,6 +64,7 @@ export function memoryBudget(values: SliderValues): Budget {
     availableGB: availableBytes / BYTES_PER_GB,
     fits: neededBytes <= availableBytes,
     gapGB: Math.abs(neededBytes - availableBytes) / BYTES_PER_GB,
+    poolTokens: Math.floor(availableBytes / perTokenBytes),
     maxUsers: Math.floor(availableBytes / perUserBytes),
   };
 }
@@ -78,7 +81,7 @@ export function describeBudgetChange(before: SliderValues, after: SliderValues):
   const a = memoryBudget(before);
   const b = memoryBudget(after);
   const moved = [a.users !== b.users, a.tokens !== b.tokens, a.bytesPerValue !== b.bytesPerValue, a.gpuGB !== b.gpuGB].filter(Boolean).length;
-  const tail = `${b.fits ? `It fits, with ${gb(b.gapGB)} to spare` : `It is out of memory by ${gb(b.gapGB)}`}, and at most ${count(b.maxUsers)} ${b.maxUsers === 1 ? "user fits" : "users fit"} at this context.`;
+  const tail = `${b.fits ? `It fits, with ${gb(b.gapGB)} to spare` : `It is out of memory by ${gb(b.gapGB)}`}. The cache space holds ${count(b.poolTokens)} tokens, which is ${count(b.maxUsers)} ${b.maxUsers === 1 ? "chat" : "chats"} of this length.`;
   if (moved === 0) return "Nothing changed: the budget is the same, so the verdict is the same.";
   if (moved > 1) {
     return `KV needed went from ${gb(a.neededGB)} to ${gb(b.neededGB)} and KV available from ${gb(a.availableGB)} to ${gb(b.availableGB)}. ${tail}`;

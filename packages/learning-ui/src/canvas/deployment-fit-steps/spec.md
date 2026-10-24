@@ -18,10 +18,12 @@ The running example: 8,030,261,248 parameters, 32 layers, 8 KV heads, head size 
 
 Steps (10): request config, weights, KV per token, tokens held, memory left (loop on GPU), what the GPU reports, the verdict (tone bad, "does not fit"), the five fixes, FP8 KV re-checked (tone good, "fits"), the answer in interview order (number, reason, trade-off).
 
+Step titles are words with no "Step N:" prefix, so they do not clash with the renderer's own counter ("Step 7 of 10" would otherwise read "Step 7: Step 5: compare and decide"): "Start with the model's numbers", "Weights", "KV cache per token", "Tokens held at once", "Memory left for the cache", "The GPU reports what is free", "Compare and decide", "A fix has a price", "Check the first fix with the same steps", "Say it in the interview order". The running example (20 chats on one 80 GB GPU) is kept.
+
 ## Learning interaction
 
 - **What this shows:** each multiplication as a message, with the arithmetic in chips, so the estimate can be said aloud.
-- **Try this:** predict the verdict before step 7 (does not fit: 85.9 GB against 55.94 GB); at step 9 halve the bytes per value and predict how many chats fit (26).
+- **Try this:** predict the verdict before opening the message called Compare and decide (does not fit: 85.9 GB against 55.94 GB); at the message called Check the first fix with the same steps, halve the bytes per value and predict how many chats fit (26). The lines name messages by title, not by number, because the renderer prints its own "Step N of 10" counter.
 - **What changed:** each step note says which quantity was produced and which units it is in.
 - **Limits:** one GPU, the example's 10% reserve, 16-bit weights; paging waste, fragmentation, prefix sharing and answer speed are left out, so a real server needs more headroom.
 

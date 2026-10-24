@@ -31,7 +31,7 @@ export const speculativeDecodingGain: SliderSpec = {
   title: "When speculative decoding pays off",
   purpose: "Change how often the target model accepts the draft and what the draft costs, and see the speed-up or slow-down.",
   intro:
-    "A small draft model guesses g tokens, and the large target model checks them in a single step. Each guess is kept with probability a, and a guess only counts if every guess before it was kept. The target step then also yields one token of its own. The draft costs c of one target step for each token it guesses. The expected tokens per target step are (1 - a^(g+1)) / (1 - a), and the walltime factor divides that by (g c + 1). Before you move anything, predict the factor for a = 0.80, g = 4 and c = 0.05.",
+    "A small draft model guesses g tokens, and the large target model checks them in a single step. Each guess is kept with probability a, and a guess only counts if every guess before it was kept. The target step then also yields one token of its own. The draft costs c of one target step for each token it guesses. The expected tokens per target step are (1 - a^(g+1)) / (1 - a), and the walltime factor divides that by (g c + 1). Make the prediction above first, then move one slider.",
   inputs: [
     { id: "acceptance", label: "Acceptance rate", min: 0.5, max: 0.95, step: 0.05, default: 0.8, unit: "" },
     { id: "drafts", label: "Draft tokens per step", min: 1, max: 10, step: 1, default: 4, unit: "tokens" },
@@ -42,7 +42,7 @@ export const speculativeDecodingGain: SliderSpec = {
   barsTitle: "Speed against plain decoding",
   tryThis: [
     "Lower the acceptance rate from 0.80 to 0.50. Tokens per step fall from 3.36 to 1.94 and the factor from 2.80 to 1.61, so the same draft pays back much less.",
-    "Raise the draft cost from 0.05 to 0.50 with acceptance 0.80 and 4 draft tokens. Tokens per step stay at 3.36 but the factor drops to 1.12, because drafting now takes 2 target steps of time.",
+    "Keep acceptance at 0.50 and 4 draft tokens, and raise the draft cost from 0.05 to 0.40. Tokens per step stay at 1.94 but the factor drops to 0.75 and the verdict turns to Slower, because each round now takes 2.60 target steps of time and yields only 1.94 tokens.",
   ],
   limits:
     "This is the speculative decoding paper's idealised model: each token is accepted independently with the same probability, and the costs are fixed. Real gains depend on how busy the server is, on the task and on how well the draft model matches the target. A busy, compute-bound server gains less.",

@@ -4,8 +4,8 @@ import { describeBudgetChange, gb, memoryBudget, verdictText } from "./model";
 // AI Engineering Interview course, chapter 11.4 "GPU memory budgeting and
 // sizing". The running example: an 80 GB GPU, 10% kept back, 16.06 GB of
 // weights at 16-bit, so 55.94 GB is left for the KV cache. 20 chats of 32,768
-// tokens need 85.90 GB, so the server is out of memory by 29.96 GB and 13
-// users fit. See spec.md.
+// tokens need 85.90 GB, so the server is out of memory by 29.96 GB. The cache
+// space holds 426,784 tokens, which is 13 chats of this length. See spec.md.
 
 export { describeBudgetChange, memoryBudget } from "./model";
 
@@ -21,9 +21,9 @@ function computeBudget(values: SliderValues): SliderResult {
         detail: b.fits ? "the cache fits beside the weights" : "more cache than the memory left",
       },
       {
-        label: "Most users that fit",
-        value: b.maxUsers.toLocaleString("en-US"),
-        detail: `at ${tokens} tokens each`,
+        label: "Cache space in tokens",
+        value: b.poolTokens.toLocaleString("en-US"),
+        detail: `${b.maxUsers.toLocaleString("en-US")} ${b.maxUsers === 1 ? "chat" : "chats"} of this length`,
       },
     ],
     bars: [
@@ -31,7 +31,7 @@ function computeBudget(values: SliderValues): SliderResult {
       { label: "KV needed", value: b.neededGB, display: gb(b.neededGB), tone: b.fits ? undefined : "bad" },
       { label: "KV available", value: b.availableGB, display: gb(b.availableGB) },
     ],
-    summary: `${b.users} users with ${tokens} tokens each need ${gb(b.neededGB)} of KV cache, and ${gb(b.availableGB)} is left after the weights and the reserve on a ${b.gpuGB} GB GPU. ${b.fits ? "It fits." : `It is out of memory by ${gb(b.gapGB)}.`} At most ${b.maxUsers} users fit at this context.`,
+    summary: `${b.users} users with ${tokens} tokens each need ${gb(b.neededGB)} of KV cache, and ${gb(b.availableGB)} is left after the weights and the reserve on a ${b.gpuGB} GB GPU. ${b.fits ? "It fits." : `It is out of memory by ${gb(b.gapGB)}.`} The cache space holds ${b.poolTokens.toLocaleString("en-US")} tokens, which is ${b.maxUsers.toLocaleString("en-US")} ${b.maxUsers === 1 ? "chat" : "chats"} of this length.`,
   };
 }
 
@@ -40,7 +40,7 @@ export const gpuMemoryBudget: SliderSpec = {
   title: "Will the KV cache fit beside the weights?",
   purpose: "Set users, context, KV precision and GPU size and see whether the cache fits in the memory left after the weights.",
   intro:
-    "Nour's team runs the running example's model on one GPU. The weights take 16.06 GB at 16-bit. In this example 10% of the GPU is kept back for activations and the engine, and the rest holds the weights and the KV cache. The cache needs users x tokens per user x bytes per token, where one token takes 131,072 bytes at 16-bit and 65,536 at FP8. Before you move anything, predict whether 20 users with 32,768 tokens each fit on an 80 GB GPU.",
+    "Nour's team runs the running example's model on one GPU. The weights take 16.06 GB at 16-bit. In this example 10% of the GPU is kept back for activations and the engine, and the rest holds the weights and the KV cache. The cache needs users x tokens per user x bytes per token, where one token takes 131,072 bytes at 16-bit and 65,536 at FP8. Make the prediction above first, then move one slider.",
   inputs: [
     { id: "users", label: "Users with a chat open", min: 1, max: 64, step: 1, default: 20, unit: "users" },
     { id: "tokens", label: "Tokens per user", min: 1_024, max: 131_072, step: 1_024, default: 32_768, unit: "tokens" },
@@ -51,8 +51,8 @@ export const gpuMemoryBudget: SliderSpec = {
   describeChange: describeBudgetChange,
   barsTitle: "Memory in GB",
   tryThis: [
-    "Set KV bytes per value to 1 (FP8). The cache needed halves to 42.95 GB, which fits in the 55.94 GB left, and 26 users fit.",
-    "Leave FP8 off and raise GPU memory from 80 to 96 GB. KV available rises to 70.34 GB, which is still short of 85.90 GB, and 16 users fit.",
+    "Set KV bytes per value to 1 (FP8). The cache needed halves to 42.95 GB, which fits in the 55.94 GB left. The cache space doubles to 853,568 tokens, which is 26 chats of this length.",
+    "Leave FP8 off and raise GPU memory from 80 to 96 GB. KV available rises to 70.34 GB, which is still short of 85.90 GB. The cache space grows to 536,647 tokens, which is 16 chats of this length.",
   ],
   limits:
     "One GPU, the example's 10% reserve, and the weights stay at 16-bit. There is no paging waste or fragmentation, and every user holds the full context at once. Real engines choose their own memory share, so use this to size a plan, not to promise a result.",

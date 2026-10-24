@@ -55,4 +55,9 @@ describe("paged kv allocation", () => {
     );
     expect(describePagedChange(start, start)).toMatch(/^Nothing changed/);
   });
+
+  it("points at the prediction above instead of asking its own", () => {
+    expect(pagedKvAllocation.intro).toContain("Make the prediction above first, then move one slider.");
+    expect(pagedKvAllocation.intro).not.toMatch(/predict how/i);
+  });
 });

@@ -51,4 +51,34 @@ describe("speculative decoding gain", () => {
     );
     expect(describeSpecChange(start, start)).toMatch(/^Nothing changed/);
   });
+
+  it("the second try-this reaches the Slower verdict: a = 0.50, g = 4, c = 0.40 gives 0.75", () => {
+    const first = { ...start, acceptance: 0.5 };
+    expect(values(first)).toEqual(["1.94", "1.61 times", "Faster"]);
+    const slower = { ...first, cost: 0.4 };
+    expect(expectedTokens(0.5, 4)).toBeCloseTo(1.9375, 10);
+    expect(walltimeFactor(0.5, 4, 0.4)).toBeCloseTo(0.7452, 4);
+    expect(values(slower)).toEqual(["1.94", "0.75 times", "Slower"]);
+    expect(speculativeDecodingGain.compute(slower).bars![1].tone).toBe("bad");
+    expect(speculativeDecodingGain.tryThis[1]).toBe(
+      "Keep acceptance at 0.50 and 4 draft tokens, and raise the draft cost from 0.05 to 0.40. Tokens per step stay at 1.94 but the factor drops to 0.75 and the verdict turns to Slower, because each round now takes 2.60 target steps of time and yields only 1.94 tokens.",
+    );
+    expect(speculativeGain(slower).drafts * speculativeGain(slower).cost + 1).toBeCloseTo(2.6, 10);
+    expect(describeSpecChange(first, slower)).toBe(
+      "Raising the draft cost from 0.05 to 0.40 of a target step does not change the tokens kept per step, only the time spent drafting them. Expected tokens per target step went from 1.94 to 1.94 and the walltime factor from 1.61 to 0.75, which is slower.",
+    );
+  });
+
+  it("the first try-this still holds, and the intro points at the prediction above", () => {
+    expect(speculativeDecodingGain.tryThis[0]).toContain("from 3.36 to 1.94 and the factor from 2.80 to 1.61");
+    expect(speculativeDecodingGain.intro).toContain("Make the prediction above first, then move one slider.");
+    expect(speculativeDecodingGain.intro).not.toMatch(/predict the factor/i);
+  });
+
+  it("the chapter's transfer MCQ does not reuse the Try this numbers", () => {
+    // Draft X: a = 0.70, c = 0.05. Draft Y: a = 0.90, c = 0.25. Both draft 4 tokens.
+    expect(walltimeFactor(0.7, 4, 0.05)).toBeCloseTo(2.31, 2);
+    expect(walltimeFactor(0.9, 4, 0.25)).toBeCloseTo(2.05, 2);
+    expect(walltimeFactor(0.7, 4, 0.05)).toBeGreaterThan(walltimeFactor(0.9, 4, 0.25));
+  });
 });

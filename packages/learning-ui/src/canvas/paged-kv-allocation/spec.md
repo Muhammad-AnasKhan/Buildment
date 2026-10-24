@@ -36,7 +36,7 @@ Stats: contiguous reservation (GB); paged blocks (GB); share wasted in each. Bar
 - **What changed:** a live sentence names the input and says which way of allocating moved (contiguous follows the reservation, paged follows the tokens in use), then both totals and waste shares.
 - **Limits:** every request has the average length; no prefix sharing; the paper's measured waste for real older systems (61.8% to 79.6%) also counts fragmentation this model leaves out.
 
-The chapter puts a Predict before the canvas and a transfer MCQ after it.
+The intro does not ask its own prediction: it says "Make the prediction above first, then move one slider." The chapter asks it just above the canvas in a line of prose (how much memory do 20 requests use if each reserves 32,768 tokens but averages 6,000?), and a transfer MCQ follows the canvas.
 
 ## QA
 

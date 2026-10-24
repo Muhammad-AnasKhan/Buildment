@@ -70,4 +70,9 @@ describe("admission control tokens", () => {
     expect(values({ ...start, tokens: 8_192 }).slice(0, 2)).toEqual(["30", "0"]);
     expect(Math.floor(378_000 / 8_192)).toBe(46);
   });
+
+  it("points at the prediction above instead of asking its own", () => {
+    expect(admissionControlTokens.intro).toContain("Make the prediction above first, then move one slider.");
+    expect(admissionControlTokens.intro).not.toMatch(/predict how/i);
+  });
 });
