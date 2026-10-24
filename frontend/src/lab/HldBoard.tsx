@@ -33,43 +33,43 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import type { ComponentKind } from "./catalog";
-import { COMPONENT_CATALOG, SIZE_CATALOG, canConnect, isComponentKind } from "./catalog";
+import type { PropertyDef, PropertyGroup, Role } from "./catalog";
+import { COMPONENT_CATALOG, SIZE_CATALOG, canConnect, isComponentKind, roleOf, sizesFor } from "./catalog";
 import type { Board, HldLabSpec } from "./types";
 import { initialControls, type BoardControls, type NodeConfig } from "./hld-board-model";
 import { runTieredModel, type ModelResult, type TierLoad } from "@/lab/tiered-architecture";
 
-const ICON: Partial<Record<ComponentKind, string>> = {
-  client: "○", dns: "◈", cdn: "☁", "load-balancer": "⇉",
-  "api-gateway": "‖", "app-server": "▣", cache: "⚡", database: "▽",
-  queue: "☰", worker: "⚙", "object-storage": "▦",
+// One color and icon per role. A component's chip, top bar and dots use its
+// role's color, and so does every link that leaves it, so a violet line always
+// means "from a load balancer", whichever course it is from. Red is kept for
+// trouble: down, unreachable or overloaded.
+const ROLE_ICON: Record<Role, string> = {
+  client: "○", dns: "◈", cdn: "☁", firewall: "⛨", limiter: "⧗", balancer: "⇉",
+  gateway: "‖", compute: "▣", function: "λ", worker: "⚙", cache: "⚡", database: "▽",
+  nosql: "◇", search: "⌕", queue: "☰", stream: "≋", storage: "▦",
 };
-const TYPE_LABEL: Partial<Record<ComponentKind, string>> = {
-  client: "User", cdn: "Edge cache", "load-balancer": "LB", "api-gateway": "Gateway",
-  "app-server": "Compute", cache: "Redis", database: "PostgreSQL", queue: "Broker",
-  worker: "Worker", "object-storage": "S3",
+const ROLE_COLOR: Record<Role, string> = {
+  client: "#64748b", dns: "#78716c", cdn: "#0ea5e9", firewall: "#e11d48", limiter: "#ea580c", balancer: "#8b5cf6",
+  gateway: "#c026d3", compute: "#3b82f6", function: "#0891b2", worker: "#6366f1", cache: "#f59e0b", database: "#10b981",
+  nosql: "#059669", search: "#a16207", queue: "#14b8a6", stream: "#0d9488", storage: "#84cc16",
 };
-// One color per kind of component. A component's chip, top bar and dots use it,
-// and so does every link that leaves it, so a violet line always means "from a
-// load balancer". Red is kept for trouble: down, unreachable or overloaded.
-const KIND_COLOR: Record<ComponentKind, string> = {
-  client: "#64748b",
-  dns: "#78716c",
-  cdn: "#0ea5e9",
-  "load-balancer": "#8b5cf6",
-  "api-gateway": "#c026d3",
-  "app-server": "#3b82f6",
-  worker: "#6366f1",
-  cache: "#f59e0b",
-  queue: "#14b8a6",
-  database: "#10b981",
-  "object-storage": "#84cc16",
+const ROLE_LABEL: Record<Role, string> = {
+  client: "Client", dns: "DNS", cdn: "CDN", firewall: "Firewall", limiter: "Rate limit", balancer: "Load balancing",
+  gateway: "Gateway", compute: "Compute", function: "Functions", worker: "Workers", cache: "Cache", database: "Database",
+  nosql: "NoSQL", search: "Search", queue: "Queue", stream: "Stream", storage: "Storage",
 };
-const chipStyle = (kind: ComponentKind) => ({ backgroundColor: `${KIND_COLOR[kind]}22`, color: KIND_COLOR[kind] });
-const PALETTE: { group: string; kinds: ComponentKind[] }[] = [
-  { group: "Edge", kinds: ["client", "cdn", "load-balancer", "api-gateway"] },
-  { group: "Compute", kinds: ["app-server", "worker"] },
-  { group: "Data", kinds: ["cache", "database", "queue", "object-storage"] },
+const iconOf = (kind: ComponentKind) => ROLE_ICON[roleOf(kind)];
+const colorOf = (kind: ComponentKind) => ROLE_COLOR[roleOf(kind)];
+const chipStyle = (kind: ComponentKind) => ({ backgroundColor: `${colorOf(kind)}22`, color: colorOf(kind) });
+const ROLE_GROUPS: { group: string; roles: Role[] }[] = [
+  { group: "Traffic", roles: ["client", "dns", "cdn", "firewall", "limiter", "balancer", "gateway"] },
+  { group: "Compute", roles: ["compute", "function", "worker"] },
+  { group: "Data", roles: ["cache", "database", "nosql", "search", "storage"] },
+  { group: "Messaging", roles: ["queue", "stream"] },
 ];
+function paletteFor(kinds: ComponentKind[]) {
+  return ROLE_GROUPS.map((g) => ({ group: g.group, kinds: kinds.filter((k) => g.roles.includes(roleOf(k))) })).filter((g) => g.kinds.length > 0);
+}
 
 const DRAG_TYPE = "application/x-lab-kind";
 const RED = "#ef4444";
@@ -104,7 +104,8 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
   const linked = ctx.reachable.has(id);
   const size = typeof cfg.size === "string" ? cfg.size.replace(/^(compute|memory|general)-/, "") : null;
   const count = typeof cfg.count === "number" ? cfg.count : typeof cfg.replicas === "number" ? cfg.replicas : typeof cfg.zones === "number" ? cfg.zones : null;
-  const u = tier && linked && !down ? tier.utilisation : null;
+  const u = tier && linked && !down && !tier.managed ? tier.utilisation : null;
+  const shownCount = tier && !tier.managed && linked ? tier.units : count;
 
   const frame = down
     ? "border-red-500 bg-red-50 dark:bg-red-500/10"
@@ -114,7 +115,7 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
         ? "border-blue-500 bg-card ring-2 ring-blue-500/30"
         : "border-border bg-card";
 
-  const color = KIND_COLOR[data.kind];
+  const color = colorOf(data.kind);
   const dimmed = ctx.focus != null && !ctx.focus.has(id);
 
   return (
@@ -126,11 +127,11 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
     >
       <Handle type="target" position={Position.Top} className={HANDLE} style={{ backgroundColor: color }} />
       <div className="flex items-center gap-2">
-        <span aria-hidden className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[13px] ${down ? "opacity-50" : ""}`} style={chipStyle(data.kind)}>{ICON[data.kind]}</span>
+        <span aria-hidden className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[13px] ${down ? "opacity-50" : ""}`} style={chipStyle(data.kind)}>{iconOf(data.kind)}</span>
         <div className="min-w-0 flex-1">
           <div className={`truncate text-[13px] font-medium leading-tight ${down ? "text-red-600 line-through dark:text-red-400" : ""}`}>{def.label}</div>
           <div className="truncate text-[10px] text-muted-foreground">
-            {TYPE_LABEL[data.kind]}{size ? ` · ${size}` : ""}{count != null && size ? ` x${count}` : ""}
+            {def.vendor}{size ? ` · ${size}` : ""}{shownCount != null && size ? ` x${shownCount}` : ""}
           </div>
         </div>
       </div>
@@ -145,6 +146,11 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
           </div>
           <span className={`text-[10px] font-semibold tabular-nums ${utilText(u)}`}>{Math.round(u * 100)}%</span>
         </div>
+      ) : null}
+      {!down && linked && tier?.note ? (
+        <div className="mt-1 truncate text-[10px] text-muted-foreground" title={tier.note}>{tier.note}</div>
+      ) : !down && linked && tier?.managed ? (
+        <div className="mt-1 text-[10px] text-muted-foreground">managed, scales for you</div>
       ) : null}
       <Handle type="source" position={Position.Bottom} className={HANDLE} style={{ backgroundColor: color }} />
     </div>
@@ -208,6 +214,57 @@ function Stat({ label, value, ok, hint }: { label: string; value: string; ok: bo
       <div className={`text-[19px] font-semibold leading-tight tabular-nums ${okText(ok)}`}>{value}</div>
       <div className="text-[10px] text-muted-foreground">{hint}</div>
     </div>
+  );
+}
+
+const GROUP_ORDER: PropertyGroup[] = ["Capacity", "Scaling", "Resilience", "Behaviour"];
+const SCALING_FIELDS = new Set(["minCount", "maxCount", "targetUtil"]);
+
+/** One configurable property: size and option pickers, toggles, sliders and numbers. */
+function PropertyField({ p, value, onChange }: { p: PropertyDef; value: number | string | undefined; onChange: (v: number | string) => void }) {
+  const v = value ?? p.default;
+  const row = "mb-1.5 flex items-center justify-between gap-2 text-[11px]";
+  const field = "rounded-md border border-border bg-card px-1.5 py-1 text-[11px]";
+  const label = <span className="text-muted-foreground" title={p.help}>{p.label}</span>;
+  if (p.type === "size" || p.type === "enum") {
+    const options = p.type === "size" ? sizesFor(p.sizeSet ?? "generic").map((t) => t.id) : p.options ?? [];
+    return (
+      <label className={row}>
+        {label}
+        <select value={String(v)} onChange={(e) => onChange(e.target.value)} className={`${field} max-w-[128px]`}>
+          {options.map((o) => <option key={o} value={o}>{o}</option>)}
+        </select>
+      </label>
+    );
+  }
+  if (p.type === "toggle") {
+    const on = Number(v) > 0;
+    return (
+      <div className={row}>
+        {label}
+        <button type="button" role="switch" aria-checked={on} aria-label={p.label} onClick={() => onChange(on ? 0 : 1)}
+          className={`relative h-4 w-7 shrink-0 rounded-full transition-colors ${on ? "bg-blue-600" : "bg-muted-foreground/30"}`}>
+          <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${on ? "left-3.5" : "left-0.5"}`} />
+        </button>
+      </div>
+    );
+  }
+  if (p.type === "ratio") {
+    return (
+      <label className={row}>
+        {label}
+        <span className="flex items-center gap-1.5">
+          <input type="range" min={0} max={1} step={p.step ?? 0.05} value={Number(v)} onChange={(e) => onChange(Number(e.target.value))} className="w-16 accent-blue-600" />
+          <span className="w-8 text-right tabular-nums">{Math.round(Number(v) * 100)}%</span>
+        </span>
+      </label>
+    );
+  }
+  return (
+    <label className={row}>
+      {label}
+      <input type="number" min={p.min} max={p.max} value={Number(v)} onChange={(e) => onChange(Number(e.target.value))} className={`${field} w-20 tabular-nums`} />
+    </label>
   );
 }
 
@@ -287,7 +344,7 @@ function Editor({ spec }: { spec: HldLabSpec }) {
     const target = result.tiers.find((t) => t.id === e.target);
     const state: FlowData["state"] = !live ? "dead" : target && target.utilisation >= 0.9 ? "hot" : "live";
     const sourceKind = nodes.find((n) => n.id === e.source)?.data.kind ?? "app-server";
-    const color = state === "live" ? KIND_COLOR[sourceKind] : RED;
+    const color = state === "live" ? colorOf(sourceKind) : RED;
     const related = !hover || hover.edge === e.id || hover.node === e.source || hover.node === e.target;
     return {
       ...e,
@@ -296,7 +353,8 @@ function Editor({ spec }: { spec: HldLabSpec }) {
       markerEnd: { type: MarkerType.ArrowClosed, color, width: 18, height: 18 },
     };
   });
-  const kindsOnBoard = [...new Set(nodes.map((n) => n.data.kind))];
+  const rolesOnBoard = [...new Set(nodes.map((n) => roleOf(n.data.kind)))];
+  const palette = useMemo(() => paletteFor(spec.allowedComponents), [spec]);
 
   function addNode(kind: ComponentKind, position?: { x: number; y: number }) {
     seq.current += 1;
@@ -338,9 +396,19 @@ function Editor({ spec }: { spec: HldLabSpec }) {
   };
   const alreadyLinked = (s: string, t: string) =>
     edges.some((e) => (e.source === s && e.target === t) || (e.source === t && e.target === s));
+  const reaches = (from: string, to: string) => {
+    const seen = new Set([from]);
+    const queue = [from];
+    while (queue.length > 0) {
+      const id = queue.shift()!;
+      if (id === to) return true;
+      for (const e of edges) if (e.source === id && !seen.has(e.target)) { seen.add(e.target); queue.push(e.target); }
+    }
+    return false;
+  };
   const isValidConnection = (c: Connection | Edge) => {
     const o = orient(c.source, c.target);
-    return o != null && !alreadyLinked(o.source, o.target);
+    return o != null && !alreadyLinked(o.source, o.target) && !reaches(o.target, o.source);
   };
   const [notice, setNotice] = useState<string | null>(null);
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -360,7 +428,8 @@ function Editor({ spec }: { spec: HldLabSpec }) {
     if (!ka || !kb || from === to) return;
     const a = COMPONENT_CATALOG[ka].label;
     const b = COMPONENT_CATALOG[kb].label;
-    flash(orient(from, to) ? `${a} and ${b} are already linked.` : `${a} and ${b} can't be linked: requests never flow between them.`);
+    const o = orient(from, to);
+    flash(!o ? `${a} and ${b} can't be linked: requests never flow between them.` : alreadyLinked(o.source, o.target) ? `${a} and ${b} are already linked.` : `That link would make a loop.`);
   };
 
   const run = () => {
@@ -408,7 +477,7 @@ function Editor({ spec }: { spec: HldLabSpec }) {
           <div className="border-b border-border p-3 @2xl:border-b-0 @2xl:border-r">
             <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Components</div>
             <div className="mb-2 text-[10px] text-muted-foreground">Drag onto the board, or click to add.</div>
-            {PALETTE.map((grp) => (
+            {palette.map((grp) => (
               <div key={grp.group} className="mb-2.5">
                 <div className="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">{grp.group}</div>
                 {grp.kinds.map((k) => {
@@ -421,7 +490,7 @@ function Editor({ spec }: { spec: HldLabSpec }) {
                       onClick={() => addNode(k)}
                       className="mb-1 flex w-full cursor-grab items-center gap-2 rounded-lg border border-border bg-background px-2 py-1.5 text-left transition-colors hover:border-blue-400 hover:bg-muted/40 active:cursor-grabbing"
                     >
-                      <span aria-hidden className="flex h-5 w-5 items-center justify-center rounded text-[11px]" style={chipStyle(k)}>{ICON[k]}</span>
+                      <span aria-hidden className="flex h-5 w-5 items-center justify-center rounded text-[11px]" style={chipStyle(k)}>{iconOf(k)}</span>
                       <span className="flex-1 truncate text-[12px] font-medium">{COMPONENT_CATALOG[k].label}</span>
                       {price ? <span className="text-[10px] tabular-nums text-muted-foreground">${price.pricePerHour}</span> : null}
                     </button>
@@ -475,10 +544,10 @@ function Editor({ spec }: { spec: HldLabSpec }) {
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border px-3 py-1.5 text-[11px] text-muted-foreground">
               <span>Link color = the component it leaves:</span>
-              {kindsOnBoard.map((k) => (
-                <span key={k} className="inline-flex items-center gap-1">
-                  <span aria-hidden className="inline-block h-[3px] w-4 rounded-full" style={{ backgroundColor: KIND_COLOR[k] }} />
-                  {COMPONENT_CATALOG[k].label}
+              {rolesOnBoard.map((r) => (
+                <span key={r} className="inline-flex items-center gap-1">
+                  <span aria-hidden className="inline-block h-[3px] w-4 rounded-full" style={{ backgroundColor: ROLE_COLOR[r] }} />
+                  {ROLE_LABEL[r]}
                 </span>
               ))}
               <span className="inline-flex items-center gap-1">
@@ -503,33 +572,23 @@ function Editor({ spec }: { spec: HldLabSpec }) {
             {sel && selDef ? (
               <div className="mb-3 rounded-xl border border-border bg-background p-2.5">
                 <div className="mb-1.5 flex items-center justify-between">
-                  <span className="text-[12px] font-semibold">{selDef.label}</span>
+                  <span className="text-[12px] font-semibold">{selDef.label} <span className="font-normal text-muted-foreground">{selDef.vendor}</span></span>
                   <button onClick={() => removeNode(sel.id)} className="text-[11px] text-muted-foreground hover:text-red-600">remove</button>
                 </div>
-                {selDef.properties.map((p) =>
-                  p.type === "size" ? (
-                    <label key={p.id} className="mb-1.5 flex items-center justify-between gap-2 text-[11px]">
-                      <span className="text-muted-foreground">{p.label}</span>
-                      <select value={String(selCfg[p.id] ?? p.default)} onChange={(e) => setProp(sel.id, p.id, e.target.value)}
-                        className="rounded-md border border-border bg-card px-1.5 py-1 text-[11px]">
-                        {SIZE_CATALOG.map((s) => <option key={s.id} value={s.id}>{s.id}</option>)}
-                      </select>
-                    </label>
-                  ) : p.type === "count" ? (
-                    <label key={p.id} className="mb-1.5 flex items-center justify-between gap-2 text-[11px]">
-                      <span className="text-muted-foreground">{p.label}</span>
-                      <input type="number" min={p.min} max={p.max} value={Number(selCfg[p.id] ?? p.default)}
-                        onChange={(e) => setProp(sel.id, p.id, Number(e.target.value))}
-                        className="w-16 rounded-md border border-border bg-card px-1.5 py-1 text-[11px] tabular-nums" />
-                    </label>
-                  ) : p.type === "ratio" ? (
-                    <label key={p.id} className="mb-1.5 flex items-center justify-between gap-2 text-[11px]">
-                      <span className="text-muted-foreground">{p.label}</span>
-                      <input type="range" min={0} max={1} step={0.05} value={Number(selCfg[p.id] ?? p.default)}
-                        onChange={(e) => setProp(sel.id, p.id, Number(e.target.value))} className="w-20 accent-blue-600" />
-                    </label>
-                  ) : null,
-                )}
+                {GROUP_ORDER.map((group) => {
+                  const fields = selDef.properties.filter(
+                    (p) => (p.group ?? "Capacity") === group && (!SCALING_FIELDS.has(p.id) || Number(selCfg.autoscale ?? 0) > 0),
+                  );
+                  if (fields.length === 0) return null;
+                  return (
+                    <div key={group}>
+                      <div className="mb-1 mt-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70">{group}</div>
+                      {fields.map((p) => (
+                        <PropertyField key={p.id} p={p} value={selCfg[p.id]} onChange={(v) => setProp(sel.id, p.id, v)} />
+                      ))}
+                    </div>
+                  );
+                })}
                 <button
                   onClick={() => toggleDown(sel.id)}
                   className={`mt-1 w-full rounded-md border px-2 py-1 text-[11px] font-semibold ${
@@ -559,6 +618,13 @@ function Editor({ spec }: { spec: HldLabSpec }) {
             <p className={`mt-2.5 text-[12px] font-semibold ${okText(result.allPass)}`}>
               {result.allPass ? "All targets green. Level passed." : result.failure ?? verdict(result)}
             </p>
+            {result.dropped > 0.5 || result.blocked > 0.5 || result.backlog > 0.5 ? (
+              <ul className="mt-1 space-y-0.5 text-[11px] text-muted-foreground">
+                {result.dropped > 0.5 ? <li>Rejecting {Math.round(result.dropped).toLocaleString()}/s at limits and throttles</li> : null}
+                {result.blocked > 0.5 ? <li>Firewall filtering {Math.round(result.blocked).toLocaleString()}/s</li> : null}
+                {result.backlog > 0.5 ? <li>Queue backlog growing {Math.round(result.backlog).toLocaleString()}/s: add consumers</li> : null}
+              </ul>
+            ) : null}
 
             </div>
             <div className="@5xl:border-t @5xl:border-border @5xl:pt-2.5">
