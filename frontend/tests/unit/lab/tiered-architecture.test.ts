@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { ComponentKind } from "@/lab/catalog";
 import type { Board } from "@/lab/types";
 import { runTieredModel } from "@/lab/tiered-architecture";
 
@@ -104,5 +105,87 @@ describe("runTieredModel", () => {
     b.nodes = b.nodes.map((n) => (n.id === "app" ? { ...n, props: { ...n.props, down: 1 } } : n));
     const r = runTieredModel(b, 1000, TARGETS);
     expect(r.failure).toContain("App server");
+  });
+});
+
+const node = (id: string, kind: ComponentKind, props: Record<string, number | string> = {}) => ({ id, kind, x: 0, y: 0, props });
+const chain = (nodes: ReturnType<typeof node>[], pairs: [string, string][]): Board => ({
+  nodes,
+  edges: pairs.map(([from, to]) => ({ from, to })),
+});
+
+describe("runTieredModel: component configurations", () => {
+  it("autoscales instances to hold the target utilisation", () => {
+    const b = chain(
+      [node("c", "client"), node("lb", "aws-alb"), node("asg", "aws-ec2-asg", { size: "m5.large", autoscale: 1, minCount: 2, maxCount: 20, targetUtil: 0.5 })],
+      [["c", "lb"], ["lb", "asg"]],
+    );
+    const asg = runTieredModel(b, 8000, {}).tiers.find((t) => t.id === "asg")!;
+    expect(asg.units).toBe(10); // m5.large serves 1,600/s; at 50% that is 800/s each
+    expect(asg.utilisation).toBeLessThanOrEqual(0.5 + 1e-9);
+  });
+
+  it("runs hot once autoscaling reaches its max", () => {
+    const b = chain(
+      [node("c", "client"), node("lb", "aws-alb"), node("asg", "aws-ec2-asg", { size: "m5.large", autoscale: 1, minCount: 2, maxCount: 4, targetUtil: 0.5 })],
+      [["c", "lb"], ["lb", "asg"]],
+    );
+    const asg = runTieredModel(b, 8000, {}).tiers.find((t) => t.id === "asg")!;
+    expect(asg.units).toBe(4);
+    expect(asg.utilisation).toBeCloseTo(8000 / 6400, 5);
+  });
+
+  it("charges managed services per request", () => {
+    const b = chain([node("c", "client"), node("gw", "aws-api-gateway", { apiType: "REST" })], [["c", "gw"]]);
+    const low = runTieredModel(b, 100, {}).costPerHour;
+    const high = runTieredModel(b, 1000, {}).costPerHour;
+    expect(high).toBeGreaterThan(low);
+    expect(high).toBeCloseTo(12.6, 1); // 3.6M requests an hour at $3.50 per million
+  });
+
+  it("drops traffic above a rate limit and protects what sits behind it", () => {
+    const b = chain([node("c", "client"), node("rl", "rate-limiter", { limit: 500 }), node("app", "app-server")], [["c", "rl"], ["rl", "app"]]);
+    const r = runTieredModel(b, 1000, {});
+    expect(r.dropped).toBeCloseTo(500, 5);
+    expect(r.edgeFlows["rl>app"]).toBeCloseTo(500, 5);
+  });
+
+  it("throttles Lambda beyond concurrency divided by duration", () => {
+    const b = chain(
+      [node("c", "client"), node("gw", "aws-api-gateway"), node("fn", "aws-lambda", { concurrency: 10, durationMs: 100 })],
+      [["c", "gw"], ["gw", "fn"]],
+    );
+    expect(runTieredModel(b, 300, {}).dropped).toBeCloseTo(200, 5); // at most 10 x 1000 / 100 = 100/s
+  });
+
+  it("lets a queue absorb work: slow workers build a backlog instead of capping requests", () => {
+    const b = chain(
+      [node("c", "client"), node("app", "app-server", { count: 4 }), node("q", "queue"), node("w", "worker", { count: 1, size: "compute-small" })],
+      [["c", "app"], ["app", "q"], ["q", "w"]],
+    );
+    const r = runTieredModel(b, 4000, {});
+    expect(r.backlog).toBeCloseTo(1600, 5); // one worker takes 2,400/s of the 4,000/s
+    expect(r.capacityCeiling).toBeGreaterThanOrEqual(4000);
+  });
+
+  it("is more available spread across two zones than in one", () => {
+    const mk = (zones: number) => chain([node("c", "client"), node("app", "app-server", { count: 2, azs: zones })], [["c", "app"]]);
+    expect(runTieredModel(mk(2), 1000, {}).availability).toBeGreaterThan(runTieredModel(mk(1), 1000, {}).availability);
+  });
+
+  it("spreads reads across read replicas", () => {
+    const mk = (replicas: number) =>
+      chain([node("c", "client"), node("app", "app-server", { count: 4 }), node("db", "database", { replicas, readRatio: 0.8 })], [["c", "app"], ["app", "db"]]);
+    const without = runTieredModel(mk(0), 2000, {}).tiers.find((t) => t.id === "db")!.utilisation;
+    const withTwo = runTieredModel(mk(2), 2000, {}).tiers.find((t) => t.id === "db")!.utilisation;
+    expect(withTwo).toBeLessThan(without);
+  });
+
+  it("lets CDN hits shield the origin", () => {
+    const b = chain(
+      [node("c", "client"), node("cf", "aws-cloudfront", { hitRate: 0.9 }), node("lb", "aws-alb"), node("app", "aws-ec2-asg")],
+      [["c", "cf"], ["cf", "lb"], ["lb", "app"]],
+    );
+    expect(runTieredModel(b, 10_000, {}).edgeFlows["cf>lb"]).toBeCloseTo(1000, 5);
   });
 });
