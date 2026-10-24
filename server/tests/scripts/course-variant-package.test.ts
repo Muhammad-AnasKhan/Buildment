@@ -13,7 +13,7 @@ import { saveChapterDraft } from "../../src/services/teach/chapters.js";
 
 describe("course ZIP variant overrides", () => {
   it("keeps explicit removals in a package with no lesson files", async () => {
-    const directory = new URL("../../../content/import/collaboration/", import.meta.url);
+    const directory = new URL("../../../courses/collaboration/", import.meta.url);
     const manifest = load(readFileSync(new URL("course.yaml", directory), "utf8")) as Record<string, unknown>;
     manifest.slug = `remove-only-${randomUUID()}`;
     manifest.publication = "update";
@@ -28,7 +28,7 @@ describe("course ZIP variant overrides", () => {
   }, 30000);
 
   it("refuses to create a course from a declared update package", async () => {
-    const directory = new URL("../../../content/import/collaboration/", import.meta.url);
+    const directory = new URL("../../../courses/collaboration/", import.meta.url);
     const files: Record<string, Uint8Array> = {};
     for (const entry of readdirSync(directory, { withFileTypes: true })) if (entry.isDirectory()) {
       for (const file of readdirSync(new URL(`${entry.name}/`, directory))) {
@@ -44,7 +44,7 @@ describe("course ZIP variant overrides", () => {
   }, 30000);
 
   it("parses a text replacement and a whole chapter replacement", async () => {
-    const directory = new URL("../../../content/import/collaboration/", import.meta.url);
+    const directory = new URL("../../../courses/collaboration/", import.meta.url);
     const files: Record<string, Uint8Array> = {};
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
       if (entry.isDirectory()) {
@@ -73,7 +73,7 @@ describe("course ZIP variant overrides", () => {
   }, 30000);
 
   it("creates a course with its own two variants and materialized override", async () => {
-    const directory = new URL("../../../content/import/collaboration/", import.meta.url);
+    const directory = new URL("../../../courses/collaboration/", import.meta.url);
     const files: Record<string, Uint8Array> = {};
     for (const entry of readdirSync(directory, { withFileTypes: true })) if (entry.isDirectory()) {
       for (const file of readdirSync(new URL(`${entry.name}/`, directory))) {

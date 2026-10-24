@@ -18,7 +18,7 @@ export function isSeedTestEmail(email: string): boolean {
   return SEED_TEST_EMAILS.has(email);
 }
 
-// Mirrors content/import/multi-vendor-marketplace/COURSE-OUTLINE.md — the
+// Mirrors courses/multi-vendor-marketplace/COURSE-OUTLINE.md — the
 // actual chapters/lessons/quizzes are populated by scripts/import-course.ts;
 // this is just the course-level record both that script and prisma/seed.ts
 // upsert against.

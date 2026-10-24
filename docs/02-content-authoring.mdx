@@ -10,13 +10,15 @@ status: draft v1 — editor decision resolved 2026-08-03
 **Format:** MDX — Markdown with our custom React components.
 **Where it lives:** published and draft chapters live in Postgres (`Chapter.source` holds the
 MDX string). Mentors can use the in-app editor or import a course ZIP without knowing git.
-Bulk authors can also maintain Markdown sources under `content/import/<course-slug>/`.
+Bulk authors can also maintain Markdown sources under `courses/<course-slug>/`.
 
 ## Quiz authoring and learner flow
 
 Quiz chapters use the `QUIZ` reader mode. For Markdown imports, a `*-quiz.md` filename or
 `stepType: Quiz` selects that mode; `stepType: Check` by itself on another filename does not.
 Gate chapters use the standard reader with their checklists and learning logs.
+Standard teaching lessons may include standalone Quiz blocks as inline checks.
+The dedicated Quiz reader remains an activity-only sequence.
 
 After import removes frontmatter and the author-facing title/banner, a quiz body must contain
 only top-level **Quiz, OpenQuestion, Predict, or CodeExercise** activities. Author imported
@@ -158,7 +160,7 @@ From the repository root, validate the source before creating the archive:
 ```powershell
 pnpm --dir server content:validate:source --course example-course
 pnpm --dir server content:audit --course example-course --strict
-Compress-Archive -Path 'content/import/example-course/*' -DestinationPath 'content/import/example-course.zip' -Force
+Compress-Archive -Path 'courses/example-course/*' -DestinationPath 'courses/example-course.zip' -Force
 ```
 
 The source checks need no database. Keep the ZIP outside the source folder and inspect its

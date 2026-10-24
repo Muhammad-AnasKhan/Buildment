@@ -11,7 +11,7 @@ import { slugify } from "../../shared/lib/mdx-headings.js";
 import { mdxComponentAllowlist } from "../../shared/mdx/component-allowlist.js";
 import { collectUnknownComponents, diffBlocks } from "../../shared/mdx/extract.js";
 import { collectCanvasProblems } from "../../shared/mdx/canvas-tags.js";
-import { blockConfigFromSource, hasQuizBlocks, isActivityOnlySource } from "../../shared/mdx/extract-block-config.js";
+import { blockConfigFromSource, isActivityOnlySource } from "../../shared/mdx/extract-block-config.js";
 import { remarkChecklist } from "../../shared/mdx/remark-checklist.js";
 import { remarkLearningLog } from "../../shared/mdx/remark-learning-log.js";
 import { restoreInteractiveBlockTags } from "../../shared/mdx/restore-block-tags.js";
@@ -154,9 +154,6 @@ export async function loadChapterEditor(user: SessionUser, chapterId: string): P
 export async function updateChapterSettings(user: SessionUser, chapterId: string, input: ChapterSettingsBody): Promise<SavedAtResult> {
   const { chapter, course } = await requireChapter(user, chapterId);
   rejectTokensInChapterFields(input);
-  if (input.readerMode !== "QUIZ" && chapter.compiled && hasQuizBlocks(restoreInteractiveBlockTags(chapter.compiled))) {
-    throw new UnprocessableError("Published quizzes require Quiz flow. Remove the quizzes and publish before changing the reader experience.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE);
-  }
   const draft = await releasedChapterDraft(chapter, course.status);
   if (draft) await prisma.courseChapterDraft.update({ where: { chapterId: chapter.id }, data: {
     title: input.title, summary: input.summary || null, estimatedMinutes: input.estimatedMinutes,
@@ -306,10 +303,6 @@ async function collectPublishProblems(
 
   problems.push(...collectCanvasProblems(renderable));
   problems.push(...collectContentTokenProblems(renderable));
-
-  if (readerMode !== "QUIZ" && hasQuizBlocks(renderable)) {
-    problems.push("Quizzes require Quiz flow. Change the reader experience in Chapter settings before publishing.");
-  }
 
   if (readerMode === "QUIZ" && !isActivityOnlySource(renderable)) {
     problems.push("Quiz flow supports activities only: Quiz, Open Question, Predict, and Code Exercise. Move lesson text and visual blocks to a standard lesson.");

@@ -45,7 +45,7 @@ cp frontend/.env.example frontend/.env # API_URL (the web app never talks to Pos
 docker compose up -d                  # starts local Postgres on :5432
 pnpm db:ready                         # migrate deploy + prisma generate (use after git pull)
 pnpm db:seed                          # 1 admin, 1 mentor, 3 mentees, 1 course, 4 preview enrollments
-pnpm content:import                   # sync FreshMarket chapters/blocks from content/import
+pnpm content:import                   # sync FreshMarket chapters/blocks from courses/
 pnpm dev                              # API on :4000, web on :3000
 ```
 
@@ -94,9 +94,9 @@ Run from the repo root unless noted.
 | `pnpm db:migrate` | `prisma migrate dev` (server) |
 | `pnpm db:seed` | Re-run the seed script (idempotent — upserts) |
 | `pnpm db:studio` | Prisma Studio, a GUI for the local database |
-| `pnpm content:import` | Import course content from `content/import/` into the database |
+| `pnpm content:import` | Import course content from `courses/` into the database |
 | `pnpm content:validate` | Compile-check every stored chapter the way publish does (needs DB) |
-| `pnpm --dir server content:validate:source` | Compile-check from `content/import/` (no DB) |
+| `pnpm --dir server content:validate:source` | Compile-check from `courses/` (no DB) |
 | `pnpm --dir server content:audit` | Structural audit (gates, learning logs, STYLE heuristics) |
 | `pnpm --dir server db:seed:showcase` | Add realistic, repeatable demo history after the course import |
 | `pnpm --dir frontend exec playwright test` | Browser end-to-end suite (starts API + web itself; see `frontend/playwright.config.ts`) |
@@ -132,14 +132,17 @@ Each folder deploys on its own; nothing outside it is needed.
   preset. Environment: `API_URL` (the API's public URL) and `APP_URL` (the Vercel URL). Browser
   traffic to `/api/v1/*` and `/integrations/v1/*` is proxied to the API server-side, so there is
   no CORS and the session cookie just works.
-- **API on Heroku:** deploy the `server` folder (with the monorepo buildpack, `APP_BASE=server`,
-  or push a subtree). `server/Procfile` runs `prisma migrate deploy` as the release phase and
-  `node dist/index.js` as the web process; the `build` script generates the Prisma client and
-  compiles. Config vars: `DATABASE_URL`, `APP_URL` (the web URL — used in email links),
+- **API on Heroku:** deploy the full repository so `courses/` and `agent-ip/scripts/` reach
+  the backend release. The root `Procfile` supports a root deployment; `server/Procfile`
+  supports a monorepo buildpack with `APP_BASE=server` that retains sibling directories.
+  The release phase runs `prisma migrate deploy` and then publishes opted-in courses using
+  the existing `DATABASE_URL`. A server-only subtree deploy cannot publish courses.
+  The `build` script generates the Prisma client and compiles. Config vars:
+  `DATABASE_URL`, `APP_URL` (the web URL — used in email links),
   `CORS_ORIGINS`, the email and OpenRouter keys from `server/.env.example`, `CRON_SECRET`.
   Background jobs run inside the process once a day; set `JOBS_ENABLED=false` on every dyno but
   one, or hand the schedule to an external scheduler calling `POST /api/v1/jobs/*`.
-- **Containers anywhere:** `docker build -t buildment-api server/` and
+- **Containers anywhere:** `docker build -f server/Dockerfile -t buildment-api .` and
   `docker build -t buildment-web frontend/` (Next.js standalone output);
   `docker compose --profile app up --build` runs Postgres, migrations and both apps locally.
 - **CI** (`.github/workflows/ci.yml`): one job per app (typecheck, lint, tests against Postgres,
