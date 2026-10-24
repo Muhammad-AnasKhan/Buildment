@@ -1,10 +1,8 @@
 // <Lab slug="..." /> from chapter MDX. Looks the slug up in the lab registry and
-// renders the lab's static starting board, readable before any editor script
-// loads. The interactive drag-and-build editor hydrates over this in a later
-// plan. An unknown slug renders a quiet note, and the chapter prose still
-// carries the idea.
+// renders the interactive board for an hld lab (a schema placeholder for db). An
+// unknown slug renders a quiet note, and the chapter prose still carries the
+// idea. Self-contained so it does not depend on the canvas primitives layer.
 
-import { CanvasFrame, CanvasNotes } from "@buildment/learning-ui/canvas/primitives/canvas-frame";
 import { getLabSpec } from "./registry";
 import type { LabSpec } from "./types";
 import { HldBoard } from "./HldBoard";
@@ -19,6 +17,20 @@ export function labView(spec: LabSpec): "hld-board" | "db-placeholder" {
   return spec.family === "hld" ? "hld-board" : "db-placeholder";
 }
 
+function LabFrame({ eyebrow, title, purpose, limits, children }: { eyebrow: string; title: string; purpose: string; limits: string; children: React.ReactNode }) {
+  return (
+    <figure className="not-prose my-8">
+      <figcaption className="mb-2">
+        <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{eyebrow}</div>
+        <div className="text-lg font-semibold">{title}</div>
+        <p className="text-sm text-muted-foreground">{purpose}</p>
+      </figcaption>
+      {children}
+      <p className="mt-2 text-xs text-muted-foreground">{limits}</p>
+    </figure>
+  );
+}
+
 export function Lab({ slug }: { slug?: unknown }) {
   const resolved = resolveLab(slug);
   if (!resolved) return <LabUnavailable />;
@@ -26,20 +38,16 @@ export function Lab({ slug }: { slug?: unknown }) {
 
   if (spec.family === "hld") {
     return (
-      <CanvasFrame eyebrow="Explore" title={spec.title} purpose={spec.purpose}>
+      <LabFrame eyebrow="Explore" title={spec.title} purpose={spec.purpose} limits={spec.limits}>
         <HldBoard spec={spec} />
-        <CanvasNotes limits={spec.limits} />
-      </CanvasFrame>
+      </LabFrame>
     );
   }
 
   return (
-    <CanvasFrame eyebrow="Explore" title={spec.title} purpose={spec.purpose}>
-      <p className="not-prose text-sm text-muted-foreground">
-        The schema board loads in the full lab.
-      </p>
-      <CanvasNotes limits={spec.limits} />
-    </CanvasFrame>
+    <LabFrame eyebrow="Explore" title={spec.title} purpose={spec.purpose} limits={spec.limits}>
+      <p className="text-sm text-muted-foreground">The schema board loads in the full lab.</p>
+    </LabFrame>
   );
 }
 

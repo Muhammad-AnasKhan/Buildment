@@ -1,21 +1,24 @@
 "use client";
 
 // The interactive HLD lab board. Three panels, like the products that do this
-// well: a component drawer, a React Flow canvas of the request path, and a live
-// score panel. Add components, pick each one's size and count, change the load,
-// and the tiered-architecture model recomputes utilisation, p99, availability
-// and cost and scores them against the lab's targets. The static board stays as
-// the no-JS fallback; this hydrates over it.
+// well (ScaleDojo), with a nicer, app-native finish: a component drawer, a React
+// Flow canvas of the request path you can drag and pan, and a live score panel.
+// Add components, pick each one's size and count, change the load, press Run to
+// watch the request travel the path, and the tiered-architecture model scores
+// utilisation, p99, availability and cost against the lab's targets.
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Background,
   BackgroundVariant,
   Handle,
+  MarkerType,
   Position,
   ReactFlow,
+  applyNodeChanges,
   type Edge,
   type Node,
+  type NodeChange,
   type NodeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
@@ -26,86 +29,71 @@ import { applied, initialControls, type BoardControls } from "./hld-board-model"
 import { runTieredModel, type ModelResult } from "@/lab/tiered-architecture";
 
 const ICON: Partial<Record<ComponentKind, string>> = {
-  client: "○",
-  dns: "◈",
-  cdn: "☁",
-  "load-balancer": "⇉",
-  "api-gateway": "‖",
-  "app-server": "▣",
-  cache: "⚡",
-  database: "▽",
-  queue: "☰",
-  worker: "⚙",
-  "object-storage": "▦",
+  client: "○", dns: "◈", cdn: "☁", "load-balancer": "⇉",
+  "api-gateway": "‖", "app-server": "▣", cache: "⚡", database: "▽",
+  queue: "☰", worker: "⚙", "object-storage": "▦",
 };
-
 const TYPE_LABEL: Partial<Record<ComponentKind, string>> = {
-  client: "User",
-  cdn: "Edge cache",
-  "load-balancer": "LB",
-  "api-gateway": "Gateway",
-  "app-server": "Compute",
-  cache: "Redis",
-  database: "PostgreSQL",
-  queue: "Broker",
-  worker: "Worker",
-  "object-storage": "S3",
+  client: "User", cdn: "Edge cache", "load-balancer": "LB", "api-gateway": "Gateway",
+  "app-server": "Compute", cache: "Redis", database: "PostgreSQL", queue: "Broker",
+  worker: "Worker", "object-storage": "S3",
 };
-
+const TINT: Partial<Record<ComponentKind, string>> = {
+  client: "bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-300",
+  cdn: "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300",
+  "load-balancer": "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300",
+  "api-gateway": "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300",
+  "app-server": "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300",
+  worker: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300",
+  cache: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300",
+  database: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
+  queue: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300",
+  "object-storage": "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
+};
 const PALETTE: { group: string; kinds: ComponentKind[] }[] = [
   { group: "Edge", kinds: ["client", "cdn", "load-balancer", "api-gateway"] },
   { group: "Compute", kinds: ["app-server", "worker"] },
   { group: "Data", kinds: ["cache", "database", "queue", "object-storage"] },
 ];
 
-function utilClass(u: number): string {
-  if (u < 0.7) return "bg-emerald-500";
-  if (u < 0.9) return "bg-amber-500";
-  return "bg-red-500";
-}
-function utilText(u: number): string {
-  if (u < 0.7) return "text-emerald-600 dark:text-emerald-400";
-  if (u < 0.9) return "text-amber-600 dark:text-amber-400";
-  return "text-red-600 dark:text-red-400";
-}
+const utilBar = (u: number) => (u < 0.7 ? "bg-emerald-500" : u < 0.9 ? "bg-amber-500" : "bg-red-500");
+const utilText = (u: number) =>
+  u < 0.7 ? "text-emerald-600 dark:text-emerald-400" : u < 0.9 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400";
+const okText = (ok: boolean) => (ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400");
 
-type TierData = { kind: ComponentKind; size?: string; count: number; util: number | null; selected: boolean };
+type TierData = { kind: ComponentKind; size?: string; count: number; util: number | null; selected: boolean; pulsing: boolean };
 
 function TierNode({ data }: NodeProps<Node<TierData>>) {
   const def = COMPONENT_CATALOG[data.kind];
   const u = data.util;
   return (
     <div
-      className={`w-[150px] rounded-xl border bg-card px-3 py-2 text-card-foreground shadow-sm ${
-        data.selected ? "border-blue-500 ring-1 ring-blue-500/40" : "border-border"
-      }`}
+      className={`w-[158px] rounded-xl border bg-card px-3 py-2 text-card-foreground transition-shadow ${
+        data.selected ? "border-blue-500 ring-2 ring-blue-500/30" : "border-border hover:border-border/80"
+      } ${data.pulsing ? "shadow-[0_0_0_3px_rgba(59,130,246,0.35)]" : "shadow-sm"}`}
     >
-      <Handle type="target" position={Position.Top} className="!bg-border" />
+      <Handle type="target" position={Position.Top} className="!h-1.5 !w-1.5 !border-0 !bg-blue-400" />
       <div className="flex items-center gap-2">
-        <span aria-hidden className="text-base text-muted-foreground">{ICON[data.kind]}</span>
-        <div className="min-w-0">
+        <span aria-hidden className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[13px] ${TINT[data.kind]}`}>{ICON[data.kind]}</span>
+        <div className="min-w-0 flex-1">
           <div className="truncate text-[13px] font-medium leading-tight">{def.label}</div>
-          <div className="truncate text-[10px] text-muted-foreground">{TYPE_LABEL[data.kind]}</div>
+          <div className="truncate text-[10px] text-muted-foreground">
+            {TYPE_LABEL[data.kind]}{data.size ? ` · ${data.size.replace(/^(compute|memory|general)-/, "")} x${data.count}` : ""}
+          </div>
         </div>
       </div>
-      {data.size ? (
-        <div className="mt-1 text-[10px] text-muted-foreground">
-          {data.size.replace("compute-", "").replace("memory-", "").replace("general-", "")} &middot; x{data.count}
+      {u != null ? (
+        <div className="mt-2 flex items-center gap-2">
+          <div className="h-[6px] flex-1 overflow-hidden rounded-full bg-muted">
+            <div className={`h-full rounded-full ${utilBar(u)} transition-all`} style={{ width: `${Math.min(Math.round(u * 100), 100)}%` }} />
+          </div>
+          <span className={`text-[10px] font-semibold tabular-nums ${utilText(u)}`}>{Math.round(u * 100)}%</span>
         </div>
       ) : null}
-      {u != null ? (
-        <>
-          <div className="mt-2 h-[5px] overflow-hidden rounded-full bg-muted">
-            <div className={`h-full ${utilClass(u)}`} style={{ width: `${Math.min(Math.round(u * 100), 100)}%` }} />
-          </div>
-          <div className={`mt-1 text-[10px] font-medium ${utilText(u)}`}>{Math.round(u * 100)}% busy</div>
-        </>
-      ) : null}
-      <Handle type="source" position={Position.Bottom} className="!bg-border" />
+      <Handle type="source" position={Position.Bottom} className="!h-1.5 !w-1.5 !border-0 !bg-blue-400" />
     </div>
   );
 }
-
 const nodeTypes = { tier: TierNode };
 
 export function HldBoard({ spec }: { spec: HldLabSpec }) {
@@ -117,6 +105,8 @@ export function HldBoard({ spec }: { spec: HldLabSpec }) {
   const [selected, setSelected] = useState<string | null>(
     () => start.nodes.find((n) => COMPONENT_CATALOG[n.kind].properties.some((p) => p.type === "size"))?.id ?? start.nodes[0]?.id ?? null,
   );
+  const [pos, setPos] = useState<Record<string, { x: number; y: number }>>({});
+  const [pulse, setPulse] = useState(-1);
 
   const board: Board = useMemo(
     () => ({ nodes: order, edges: order.slice(1).map((n, i) => ({ from: order[i].id, to: n.id })) }),
@@ -131,81 +121,99 @@ export function HldBoard({ spec }: { spec: HldLabSpec }) {
     const tier = result.tiers.find((t) => t.id === n.id);
     const cfg = controls.perNode[n.id] ?? {};
     return {
-      id: n.id,
-      type: "tier",
-      position: { x: 0, y: i * 112 },
-      width: 150,
-      height: 96,
+      id: n.id, type: "tier",
+      position: pos[n.id] ?? { x: 0, y: i * 108 },
+      width: 158, height: 92,
       data: {
         kind: n.kind,
         size: typeof cfg.size === "string" ? cfg.size : undefined,
         count: typeof cfg.count === "number" ? cfg.count : typeof cfg.replicas === "number" ? cfg.replicas : 1,
         util: tier ? tier.utilisation : null,
         selected: selected === n.id,
+        pulsing: pulse === i,
       },
-      draggable: false,
     };
   });
   const rfEdges: Edge[] = board.edges.map((e) => ({
-    id: `${e.from}-${e.to}`,
-    source: e.from,
-    target: e.to,
-    animated: true,
-    style: { stroke: "var(--color-blue-500, #3b82f6)" },
+    id: `${e.from}-${e.to}`, source: e.from, target: e.to, type: "smoothstep", animated: true,
+    style: { stroke: "#3b82f6", strokeWidth: 1.5 },
+    markerEnd: { type: MarkerType.ArrowClosed, color: "#3b82f6", width: 16, height: 16 },
   }));
+
+  const onNodesChange = useCallback((changes: NodeChange<Node<TierData>>[]) => {
+    setPos((prev) => {
+      const next = { ...prev };
+      for (const c of changes) if (c.type === "position" && c.position) next[c.id] = c.position;
+      return next;
+    });
+  }, []);
 
   function addKind(kind: ComponentKind) {
     const id = `${kind}-${Date.now().toString(36)}`;
     const cfg: Record<string, number | string> = {};
     for (const p of COMPONENT_CATALOG[kind].properties) cfg[p.id] = p.default;
-    const insertAt = Math.max(1, order.findIndex((n) => n.kind === "database"));
-    const at = insertAt < 0 ? order.length : insertAt;
+    const dbAt = order.findIndex((n) => n.kind === "database");
+    const at = dbAt < 0 ? order.length : Math.max(1, dbAt);
     const next = [...order];
     next.splice(at, 0, { id, kind, x: 0, y: 0 });
     setOrder(next);
     setControls((c) => ({ ...c, perNode: { ...c.perNode, [id]: cfg } }));
     setSelected(id);
   }
-  function removeNode(id: string) {
-    setOrder((o) => o.filter((n) => n.id !== id));
-    setSelected(null);
-  }
-  function setProp(id: string, key: string, value: number | string) {
+  const removeNode = (id: string) => { setOrder((o) => o.filter((n) => n.id !== id)); setSelected(null); };
+  const setProp = (id: string, key: string, value: number | string) =>
     setControls((c) => ({ ...c, perNode: { ...c.perNode, [id]: { ...c.perNode[id], [key]: value } } }));
-  }
+
+  const run = () => {
+    let i = 0; setPulse(0);
+    const t = setInterval(() => { i += 1; if (i >= order.length) { clearInterval(t); setPulse(-1); } else setPulse(i); }, 240);
+  };
 
   const sel = selected ? order.find((n) => n.id === selected) : null;
   const selDef = sel ? COMPONENT_CATALOG[sel.kind] : null;
   const selCfg = selected ? controls.perNode[selected] ?? {} : {};
 
   const Stat = ({ label, value, ok, hint }: { label: string; value: string; ok: boolean; hint: string }) => (
-    <div className="rounded-lg bg-muted/50 px-3 py-2">
+    <div className="rounded-xl bg-muted/50 px-3 py-2">
       <div className="text-[11px] text-muted-foreground">{label}</div>
-      <div className={`text-lg font-semibold leading-tight ${ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>{value}</div>
+      <div className={`text-[19px] font-semibold leading-tight tabular-nums ${okText(ok)}`}>{value}</div>
       <div className="text-[10px] text-muted-foreground">{hint}</div>
     </div>
   );
+  const missions: [string, boolean][] = [
+    [`Serve ${targets.rps?.toLocaleString() ?? "the"} req/s`, result.pass.rps],
+    [`p99 under ${targets.p99Ms ?? "target"} ms`, result.pass.p99],
+    [`${targets.availability ? (targets.availability * 100).toFixed(1) : "99.9"}% available`, result.pass.availability],
+    ["Within budget", result.pass.budget],
+  ];
 
   return (
-    <div className="not-prose my-6 overflow-hidden rounded-2xl border border-border bg-background">
-      <div className="grid grid-cols-1 lg:grid-cols-[168px_minmax(0,1fr)_252px]">
+    <div className="not-prose my-6 overflow-hidden rounded-2xl border border-border bg-card">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+        <div className="flex items-center gap-2">
+          <span className="rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">LVL 1</span>
+          <span className="text-[13px] font-medium">{spec.title}</span>
+        </div>
+        <button onClick={run} className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-1.5 text-[13px] font-semibold text-white transition-transform hover:bg-emerald-700 active:scale-95">
+          <span aria-hidden>{"▶"}</span> Run
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[172px_minmax(0,1fr)_256px]">
         {/* Drawer */}
         <div className="border-b border-border p-3 lg:border-b-0 lg:border-r">
           <div className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Components</div>
           {PALETTE.map((grp) => (
-            <div key={grp.group} className="mb-2">
-              <div className="mb-1 text-[10px] font-medium text-muted-foreground">{grp.group}</div>
+            <div key={grp.group} className="mb-2.5">
+              <div className="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">{grp.group}</div>
               {grp.kinds.map((k) => {
                 const price = SIZE_CATALOG.find((s) => s.id === COMPONENT_CATALOG[k].properties.find((p) => p.type === "size")?.default);
                 return (
-                  <button
-                    key={k}
-                    onClick={() => addKind(k)}
-                    className="mb-1 flex w-full items-center gap-2 rounded-lg border border-border bg-card px-2 py-1.5 text-left hover:border-blue-400"
-                  >
-                    <span aria-hidden className="text-sm text-muted-foreground">{ICON[k]}</span>
+                  <button key={k} onClick={() => addKind(k)}
+                    className="group mb-1 flex w-full items-center gap-2 rounded-lg border border-border bg-background px-2 py-1.5 text-left transition-colors hover:border-blue-400 hover:bg-muted/40">
+                    <span aria-hidden className={`flex h-5 w-5 items-center justify-center rounded text-[11px] ${TINT[k]}`}>{ICON[k]}</span>
                     <span className="flex-1 truncate text-[12px] font-medium">{COMPONENT_CATALOG[k].label}</span>
-                    {price ? <span className="text-[10px] text-muted-foreground">${price.pricePerHour}/h</span> : null}
+                    {price ? <span className="text-[10px] tabular-nums text-muted-foreground">${price.pricePerHour}</span> : null}
                   </button>
                 );
               })}
@@ -214,84 +222,59 @@ export function HldBoard({ spec }: { spec: HldLabSpec }) {
         </div>
 
         {/* Canvas */}
-        <div className="h-[380px] bg-muted/20">
+        <div className="h-[400px] bg-muted/20">
           <ReactFlow
-            nodes={rfNodes}
-            edges={rfEdges}
-            nodeTypes={nodeTypes}
+            nodes={rfNodes} edges={rfEdges} nodeTypes={nodeTypes}
+            onNodesChange={onNodesChange}
             onNodeClick={(_, n) => setSelected(n.id)}
-            onInit={(instance) => instance.fitView({ padding: 0.2 })}
-            fitView
-            fitViewOptions={{ padding: 0.2 }}
-            minZoom={0.3}
-            proOptions={{ hideAttribution: true }}
-            nodesConnectable={false}
-            nodesDraggable={false}
+            onInit={(instance) => instance.fitView({ padding: 0.18 })}
+            fitView fitViewOptions={{ padding: 0.18 }} minZoom={0.4} maxZoom={1.4}
+            proOptions={{ hideAttribution: true }} nodesConnectable={false}
           >
-            <Background variant={BackgroundVariant.Dots} gap={18} size={1} />
+            <Background variant={BackgroundVariant.Dots} gap={18} size={1} className="!bg-transparent" />
           </ReactFlow>
         </div>
 
         {/* Score */}
         <div className="border-t border-border p-3 lg:border-l lg:border-t-0">
-          <div className="text-base font-semibold">{spec.title}</div>
-          <p className="mb-2 text-[12px] text-muted-foreground">{spec.scenario}</p>
-
+          <p className="mb-2 text-[12px] leading-snug text-muted-foreground">{spec.scenario}</p>
           <label className="flex items-center justify-between text-[12px] text-muted-foreground">
             <span>Offered load</span>
-            <span className="font-medium text-foreground">{controls.load.toLocaleString()} req/s</span>
+            <span className="font-semibold tabular-nums text-foreground">{controls.load.toLocaleString()} req/s</span>
           </label>
-          <input
-            type="range"
-            min={500}
-            max={12000}
-            step={500}
-            value={controls.load}
+          <input type="range" min={500} max={12000} step={500} value={controls.load}
             onChange={(e) => setControls((c) => ({ ...c, load: Number(e.target.value) }))}
-            className="mb-3 w-full accent-blue-600"
-          />
+            className="mb-3 w-full accent-blue-600" />
 
           {sel && selDef ? (
-            <div className="mb-3 rounded-lg border border-border p-2">
-              <div className="mb-1 flex items-center justify-between">
-                <span className="text-[12px] font-medium">{selDef.label}</span>
+            <div className="mb-3 rounded-xl border border-border bg-background p-2.5">
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="text-[12px] font-semibold">{selDef.label}</span>
                 {sel.kind !== "client" ? (
                   <button onClick={() => removeNode(sel.id)} className="text-[11px] text-muted-foreground hover:text-red-600">remove</button>
                 ) : null}
               </div>
               {selDef.properties.map((p) =>
                 p.type === "size" ? (
-                  <label key={p.id} className="mb-1 flex items-center justify-between gap-2 text-[11px]">
+                  <label key={p.id} className="mb-1.5 flex items-center justify-between gap-2 text-[11px]">
                     <span className="text-muted-foreground">{p.label}</span>
-                    <select
-                      value={String(selCfg[p.id] ?? p.default)}
-                      onChange={(e) => setProp(sel.id, p.id, e.target.value)}
-                      className="rounded border border-border bg-card px-1 py-0.5 text-[11px]"
-                    >
+                    <select value={String(selCfg[p.id] ?? p.default)} onChange={(e) => setProp(sel.id, p.id, e.target.value)}
+                      className="rounded-md border border-border bg-card px-1.5 py-1 text-[11px]">
                       {SIZE_CATALOG.map((s) => <option key={s.id} value={s.id}>{s.id}</option>)}
                     </select>
                   </label>
                 ) : p.type === "count" ? (
-                  <label key={p.id} className="mb-1 flex items-center justify-between gap-2 text-[11px]">
+                  <label key={p.id} className="mb-1.5 flex items-center justify-between gap-2 text-[11px]">
                     <span className="text-muted-foreground">{p.label}</span>
-                    <input
-                      type="number"
-                      min={p.min}
-                      max={p.max}
-                      value={Number(selCfg[p.id] ?? p.default)}
+                    <input type="number" min={p.min} max={p.max} value={Number(selCfg[p.id] ?? p.default)}
                       onChange={(e) => setProp(sel.id, p.id, Number(e.target.value))}
-                      className="w-14 rounded border border-border bg-card px-1 py-0.5 text-[11px]"
-                    />
+                      className="w-16 rounded-md border border-border bg-card px-1.5 py-1 text-[11px] tabular-nums" />
                   </label>
                 ) : p.type === "ratio" ? (
-                  <label key={p.id} className="mb-1 flex items-center justify-between gap-2 text-[11px]">
+                  <label key={p.id} className="mb-1.5 flex items-center justify-between gap-2 text-[11px]">
                     <span className="text-muted-foreground">{p.label}</span>
-                    <input
-                      type="range" min={0} max={1} step={0.05}
-                      value={Number(selCfg[p.id] ?? p.default)}
-                      onChange={(e) => setProp(sel.id, p.id, Number(e.target.value))}
-                      className="w-20 accent-blue-600"
-                    />
+                    <input type="range" min={0} max={1} step={0.05} value={Number(selCfg[p.id] ?? p.default)}
+                      onChange={(e) => setProp(sel.id, p.id, Number(e.target.value))} className="w-20 accent-blue-600" />
                   </label>
                 ) : null,
               )}
@@ -305,9 +288,19 @@ export function HldBoard({ spec }: { spec: HldLabSpec }) {
             <Stat label="Cost" value={`$${result.costPerHour.toFixed(2)}/h`} ok={result.pass.budget} hint={targets.budgetPerHour ? `budget $${targets.budgetPerHour}` : "no target"} />
           </div>
 
-          <p className={`mt-2 text-[12px] font-medium ${result.allPass ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+          <p className={`mt-2.5 text-[12px] font-semibold ${okText(result.allPass)}`}>
             {result.allPass ? "All targets green. Level passed." : verdict(result)}
           </p>
+
+          <div className="mt-3 border-t border-border pt-2.5">
+            <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Missions</div>
+            {missions.map(([label, done]) => (
+              <div key={label} className="flex items-center gap-2 py-0.5 text-[12px]">
+                <span aria-hidden className={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] text-white ${done ? "bg-emerald-600" : "border border-border bg-transparent"}`}>{done ? "✓" : ""}</span>
+                <span className={done ? "text-foreground" : "text-muted-foreground"}>{label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
