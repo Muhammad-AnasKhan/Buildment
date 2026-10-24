@@ -172,6 +172,10 @@ enum StudySessionStatus {
   ENDED
 }
 
+enum AiProvider {
+  OPENROUTER
+}
+
 enum InstructorAccessRequestStatus {
   PENDING
   APPROVED
@@ -211,6 +215,26 @@ model User {
   organizationCourseRequestsReviewed OrganizationCourseRequest[] @relation("OrgCourseRequestReviewer")
   instructorAccessRequest       InstructorAccessRequest?
   instructorAccessReviews       InstructorAccessRequest[] @relation("InstructorAccessReviewer")
+  aiCredential                  AiCredential?
+}
+
+/// A learner's own AI provider key for AI interviews. Only the AES-256-GCM
+/// ciphertext is stored (key from AI_KEY_ENCRYPTION_KEY, the user id as
+/// associated data); the plaintext key never leaves the server.
+model AiCredential {
+  id         String     @id @default(cuid())
+  userId     String     @unique
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider   AiProvider @default(OPENROUTER)
+  ciphertext String     @db.Text
+  iv         String     @db.VarChar(32)
+  authTag    String     @db.VarChar(32)
+  lastFour   String     @db.VarChar(4)
+  /// Model id chosen by the learner; null means the server default.
+  model      String?    @db.VarChar(120)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  lastUsedAt DateTime?
 }
 
 model InstructorAccessRequest {
