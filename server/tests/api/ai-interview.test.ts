@@ -1,5 +1,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { randomBytes } from "node:crypto";
 import request from "supertest";
+import { createSession } from "../../src/services/auth/session.js";
 import { createApp } from "../../src/app.js";
 import { env } from "../../src/config/env.js";
 import { prisma } from "../../src/db/prisma.js";
@@ -352,8 +354,25 @@ describe("AI interview block", () => {
 
   it("cannot be used on another learner's session", async () => {
     const mine = await prisma.aiInterviewSession.findFirstOrThrow({ where: { blockId, status: "ACTIVE" } });
-    const res = await post("answer", { sessionId: mine.id, answer: "Hi" }, fx.unverifiedToken);
-    expect(res.status).toBe(403);
+    const other = await prisma.user.create({
+      data: { email: `other-${fx.tag}@test.local`, name: "Other Learner", role: "MENTEE", emailVerified: new Date() },
+    });
+    const otherSession = await createSession(other.id, randomBytes(32).toString("hex"));
+    await prisma.enrollment.create({
+      data: { courseId: fx.course.id, userId: other.id, lifecycle: "ACTIVE", status: "IN_PROGRESS", source: "DIRECT", startedAt: new Date() },
+    });
+    try {
+      for (const path of ["answer", "finish", "abandon"]) {
+        const res = await post(path, { sessionId: mine.id, answer: "Hi" }, otherSession.sessionToken);
+        expect(res.status).toBe(404);
+        expect(res.body.code).toBe("AI_INTERVIEW_NOT_FOUND");
+      }
+      expect((await prisma.aiInterviewSession.findUniqueOrThrow({ where: { id: mine.id } })).status).toBe("ACTIVE");
+    } finally {
+      await prisma.enrollment.deleteMany({ where: { userId: other.id } });
+      await prisma.session.deleteMany({ where: { userId: other.id } });
+      await prisma.user.delete({ where: { id: other.id } });
+    }
   });
 
   it("never puts the key or the rubric in a response, header or log line", () => {
