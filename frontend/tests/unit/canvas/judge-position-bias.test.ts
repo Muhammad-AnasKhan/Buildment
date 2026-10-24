@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { judgePositionBias } from "@/canvas/judge-position-bias/data";
-import { describeJudgeChange, firstPositionRate, formatPercent, judgeRuns } from "@/canvas/judge-position-bias/model";
-import { defaultValues } from "@/canvas/renderers/slider/model";
+import { judgePositionBias } from "@buildment/learning-ui/canvas/judge-position-bias/data";
+import { describeJudgeChange, firstPositionRate, formatPercent, judgeRuns } from "@buildment/learning-ui/canvas/judge-position-bias/model";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 describe("judge position bias", () => {
   it("starts at Karim's runs: 72% with B first, 52% with B second, average 62%", () => {

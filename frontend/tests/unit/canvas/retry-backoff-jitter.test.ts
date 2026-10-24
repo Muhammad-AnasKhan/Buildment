@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { computeRetries, describeRetryChange, retryBackoffJitter, retrySpread } from "@/canvas/retry-backoff-jitter/data";
-import { defaultValues } from "@/canvas/renderers/slider/model";
+import { computeRetries, describeRetryChange, retryBackoffJitter, retrySpread } from "@buildment/learning-ui/canvas/retry-backoff-jitter/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 const start = defaultValues(retryBackoffJitter);
 

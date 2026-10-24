@@ -8,7 +8,7 @@ import {
   roundUp,
   seededRandom,
   trueTimeNow,
-} from "@/canvas/sim";
+} from "@buildment/learning-ui/canvas/sim/index";
 
 describe("seeded random", () => {
   it("repeats the same run for the same seed", () => {

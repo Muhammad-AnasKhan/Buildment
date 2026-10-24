@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { InteractiveCanvas } from "@/canvas/InteractiveCanvas";
+import { InteractiveCanvas } from "@buildment/learning-ui/canvas/InteractiveCanvas";
 
 // The reader renders a canvas's starting state on the server. These check the
 // kit canvases render there without errors and show their first step.

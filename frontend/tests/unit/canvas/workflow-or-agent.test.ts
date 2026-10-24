@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { defaultWeights, describeChange, maxTotal, scoreOptions, standing } from "@/canvas/renderers/factor/model";
-import { workflowOrAgent as spec } from "@/canvas/workflow-or-agent/data";
+import { defaultWeights, describeChange, maxTotal, scoreOptions, standing } from "@buildment/learning-ui/canvas/renderers/factor/model";
+import { workflowOrAgent as spec } from "@buildment/learning-ui/canvas/workflow-or-agent/data";
 
 const all = (w: number) => Object.fromEntries(spec.criteria.map((c) => [c.id, w]));
 const lead = (weights: Record<string, number>) => standing(spec, scoreOptions(spec, weights).totals);

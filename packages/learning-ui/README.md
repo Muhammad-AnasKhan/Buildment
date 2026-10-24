@@ -2,7 +2,7 @@
 
 `@buildment/learning-ui` owns the browser-safe lesson blocks, diagrams, canvases,
 UI primitives, and quiz integrity engine used by web and desktop. Edit these
-implementations here. The old frontend paths re-export the package for existing
+implementations here. Canvas consumers import this package directly; the frontend canvas folder has been removed. Other old frontend paths re-export the package for existing
 readers and tests; they contain no duplicate implementation.
 
 Both apps declare a local `file:../packages/learning-ui` dependency. Run `pnpm

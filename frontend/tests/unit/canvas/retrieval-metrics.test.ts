@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeChange, formatMetric, metricsAtK } from "@/canvas/retrieval-metrics-at-k/model";
+import { describeChange, formatMetric, metricsAtK } from "@buildment/learning-ui/canvas/retrieval-metrics-at-k/model";
 
 describe("retrieval metrics at k", () => {
   it("starts at k = 3 with two of four relevant chunks found", () => {

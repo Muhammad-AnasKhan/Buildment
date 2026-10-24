@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeHoldRaceChange, simulateHoldRace } from "@/canvas/ticketline-seat-hold-race/model";
+import { describeHoldRaceChange, simulateHoldRace } from "@buildment/learning-ui/canvas/ticketline-seat-hold-race/model";
 
 describe("seat hold race", () => {
   it("shows the default overbooking risk and the atomic result", () => {

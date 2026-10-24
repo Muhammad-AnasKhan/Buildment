@@ -36,7 +36,7 @@ import {
   TraceRequest,
   TraceStep,
 } from "@/components/learn/content-blocks";
-import { InteractiveCanvas } from "@/canvas/InteractiveCanvas";
+import { InteractiveCanvas } from "@buildment/learning-ui/canvas/InteractiveCanvas";
 import { EcosystemGallery } from "@/components/learn/ecosystem-gallery";
 import { Checklist } from "@/components/learn/checklist";
 import { LearningLog } from "@/components/learn/learning-log";

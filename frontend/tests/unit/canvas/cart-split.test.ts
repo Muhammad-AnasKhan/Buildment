@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { splitCart } from "@/canvas/freshmarket-cart-split/model";
+import { splitCart } from "@buildment/learning-ui/canvas/freshmarket-cart-split/model";
 
 describe("FreshMarket cart split", () => {
   it("creates two store-scoped orders from one mixed cart", () => {

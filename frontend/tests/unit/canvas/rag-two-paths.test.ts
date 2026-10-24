@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { ragTwoPaths } from "@/canvas/rag-two-paths/data";
-import { sequenceGeometry } from "@/canvas/renderers/sequence/geometry";
+import { ragTwoPaths } from "@buildment/learning-ui/canvas/rag-two-paths/data";
+import { sequenceGeometry } from "@buildment/learning-ui/canvas/renderers/sequence/geometry";
 
 describe("rag two paths", () => {
   it("has short lane names and labels that fit a phone", () => {

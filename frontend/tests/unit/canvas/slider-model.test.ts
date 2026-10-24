@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { barPercent, defaultValues, isDefault, snapValue, withValue } from "@/canvas/renderers/slider/model";
-import type { SliderSpec } from "@/canvas/renderers/slider/types";
+import { barPercent, defaultValues, isDefault, snapValue, withValue } from "@buildment/learning-ui/canvas/renderers/slider/model";
+import type { SliderSpec } from "@buildment/learning-ui/canvas/renderers/slider/types";
 
 const spec: SliderSpec = {
   kind: "slider",
