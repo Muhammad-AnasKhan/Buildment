@@ -45,7 +45,7 @@ Five pills, four forward arrows and two refused loops. Tone: bad on the two refu
 ## Copy
 - What this shows: where istikhara sits in a decision, and two things it does not need.
 - Try this:
-  1. Predict whether facts and consultation are still needed once istikhara is prayed.
+  1. Predict whether Rania needs a dream before she can decide.
   2. At step 6, what would waiting for a dream have done to the deadlines?
   3. At step 7, which earlier step gave Rania her backup idea?
 - What changed: each step note says what Rania did and why.
@@ -58,12 +58,12 @@ Two steps revisit a state through its refused loop (steps 2 and 6); the first st
 Shared stepper keyboard support and focus ring; `summary` gives the whole order for screen readers; every tone has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (the chapter's quiz asks about no dream and about an option one is unsure is allowed).
-- [x] The model is tested (registry consistency and label-fit tests).
-- [x] The design is simple and legible.
-- [x] Prediction before, transfer check after.
-- [x] Reader fallback exists (prose and diagram in 5.4).
-- [x] No reward, faith or decree is measured; scholarly differences are named, not graded.
+- [ ] The claim is testable (the chapter's quiz asks about no dream and about an option one is unsure is allowed).
+- [ ] The model is tested (registry consistency and label-fit tests).
+- [ ] The design is simple and legible.
+- [ ] Prediction before, transfer check after.
+- [ ] Reader fallback exists (prose and diagram in 5.4).
+- [ ] No reward, faith or decree is measured; scholarly differences are named, not graded.
 
 ## Build plan
 `frontend/src/canvas/istikhara-in-order/data.ts`, to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.

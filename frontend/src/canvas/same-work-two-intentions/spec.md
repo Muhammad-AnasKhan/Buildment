@@ -43,7 +43,7 @@ Four lanes and seven arrows. Tone: warn on the power cut (badge "work stops"), g
 ## Copy
 - What this shows: one working day read under two aims.
 - Try this:
-  1. Predict whether the same work can make a different day.
+  1. Predict whether the good intended for the afternoon is lost when the power cut stops the work.
   2. Compare what the power cut costs under each aim.
   3. Write one step with your own aim beside it.
 - What changed: each step note names what the step is under aim 1 and under aim 2.
@@ -56,12 +56,12 @@ Three loops on Tariq's lane (steps 1, 4 and 7). The client-to-Tariq payment arro
 Shared stepper keyboard support and focus ring; `summary` describes the day and both aims for screen readers; tone is always paired with a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (the chapter's quiz asks about work that "does not count" and a plan stopped by a power cut).
-- [x] The model is tested (registry consistency and label-fit tests).
-- [x] The design is simple and legible.
-- [x] Prediction before, transfer check after.
-- [x] Reader fallback exists (prose and diagram in 6.2).
-- [x] No reward, faith or decree is measured; no reward numbers appear.
+- [ ] The claim is testable (the chapter's quiz asks about work that "does not count" and a plan stopped by a power cut).
+- [ ] The model is tested (registry consistency and label-fit tests).
+- [ ] The design is simple and legible.
+- [ ] Prediction before, transfer check after.
+- [ ] Reader fallback exists (prose and diagram in 6.2).
+- [ ] No reward, faith or decree is measured; no reward numbers appear.
 
 ## Build plan
 `frontend/src/canvas/same-work-two-intentions/data.ts`, to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.

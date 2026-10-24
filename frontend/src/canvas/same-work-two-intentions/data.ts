@@ -77,7 +77,7 @@ export const sameWorkTwoIntentions: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Before you start, predict: if two people do exactly the same work today, can the day still be different for them?",
+    "Before step 4, predict: when the power cut stops Tariq's work, is the good he intended for that afternoon lost?",
     "At step 4, compare what the power cut costs under each aim.",
     "Pick one step and write the same task with your own aim beside it.",
   ],

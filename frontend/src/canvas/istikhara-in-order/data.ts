@@ -83,11 +83,11 @@ export const istikharaInOrder: StateMachineSpec = {
       tone: "good",
       outcome: "the way opened",
       title: "Watch whether the way opens, and trust Allah",
-      note: "By Wednesday the startup agrees to the call times and sends the contract, and the steps are easy. Scholars differ on how much weight to give a feeling in the heart; ask a scholar you trust. You may repeat istikhara. Once you have decided, put your trust in Allah (Quran 3:159).",
+      note: "By Wednesday the startup agrees to the call times and sends the contract, and the steps are easy. If a step meets an obstacle, that is a reason to check the facts and the plan again, not a verdict from Allah. Scholars differ on how much weight to give a feeling in the heart; ask a scholar you trust. You may repeat istikhara. Once you have decided, put your trust in Allah (Quran 3:159).",
     },
   ],
   tryThis: [
-    "Before you start, predict: once Rania prays istikhara, does she still need the facts and the people she asked?",
+    "Before step 6, predict: Rania prays istikhara and has no dream. Does she need one before she can decide?",
     "At step 6, notice what Rania does when no dream comes. What would have happened to her two deadlines if she had waited for one?",
     "At step 7, find what made Rania comfortable with the startup's weak point. Which earlier step gave her that idea?",
   ],

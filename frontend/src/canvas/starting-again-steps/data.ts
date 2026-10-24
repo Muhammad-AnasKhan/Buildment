@@ -82,7 +82,7 @@ export const startingAgainSteps: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "Before step 3, predict: is losing the client itself a sin Tariq must repent for?",
+    "Before you start, predict: does saying 'if only' again and again help Tariq avoid the same mistake?",
     "At step 2, count how many steps 'if only' moves Tariq forward.",
     "At step 5, find the three changes. Which one would have saved the client last month?",
   ],

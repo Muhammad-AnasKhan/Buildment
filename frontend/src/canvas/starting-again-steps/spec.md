@@ -45,7 +45,7 @@ Six pills, five forward arrows and one refused loop. Tone: bad on "if only" (bad
 ## Copy
 - What this shows: the steps after a failure, and the loop that goes nowhere.
 - Try this:
-  1. Predict whether losing the client is itself a sin.
+  1. Predict whether repeating "if only" helps Tariq avoid the same mistake.
   2. Count how far "if only" moves Tariq.
   3. Which of the three changes would have saved the client?
 - What changed: each step note names what Tariq did and the source behind it.
@@ -58,12 +58,12 @@ The first step has no edge; step 2 uses the refused loop and stays on the setbac
 Shared stepper keyboard support and focus ring; `summary` gives the whole path for screen readers; every tone has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (the chapter's quiz asks about a failed exam and about "if only" after a lost file).
-- [x] The model is tested (registry consistency and label-fit tests).
-- [x] The design is simple and legible.
-- [x] Prediction before, transfer check after.
-- [x] Reader fallback exists (prose and diagram in 6.4).
-- [x] No reward, faith, sin or decree is measured.
+- [ ] The claim is testable (the chapter's quiz asks about a failed exam and about "if only" after a lost file).
+- [ ] The model is tested (registry consistency and label-fit tests).
+- [ ] The design is simple and legible.
+- [ ] Prediction before, transfer check after.
+- [ ] Reader fallback exists (prose and diagram in 6.4).
+- [ ] No reward, faith, sin or decree is measured.
 
 ## Build plan
 `frontend/src/canvas/starting-again-steps/data.ts`, to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.

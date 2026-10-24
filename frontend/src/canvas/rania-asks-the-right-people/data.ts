@@ -97,7 +97,7 @@ export const raniaAsksTheRightPeople: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Before step 3, predict: which will give Rania more useful advice, the family vote or three people asked one question each?",
+    "Before step 3, predict: will her mother, Reem and the people inside the work each add something the others could not?",
     "At each answer, name the one thing that person knew that nobody else did.",
     "Look at step 6. Why does Reem answer with questions instead of telling Rania which offer to take?",
   ],

@@ -42,7 +42,7 @@ Four lanes and nine numbered arrows. Tone: warn on the group vote (with a text b
 ## Copy
 - What this shows: Rania's consultation, one person and one question at a time.
 - Try this:
-  1. Predict whether the vote or the three targeted questions will help more.
+  1. Predict whether each person will add something the others could not.
   2. Name what each person knew that nobody else did.
   3. Why does Reem answer with questions?
 - What changed: each step note names the new fact or the care the answer brought.
@@ -55,12 +55,12 @@ Loops on Rania's lane (steps 1, 2 and 9) have no second actor. Long notes stay p
 Shared stepper keyboard support and focus ring; `summary` describes the whole flow for screen readers; tone is always paired with a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (the chapter's quiz asks whom to ask about what in a new case).
-- [x] The model is tested (registry consistency and label-fit tests).
-- [x] The design is simple and legible.
-- [x] Prediction before, transfer check after.
-- [x] Reader fallback exists (prose in 5.3).
-- [x] No reward, faith or decree is measured.
+- [ ] The claim is testable (the chapter's quiz asks whom to ask about what in a new case).
+- [ ] The model is tested (registry consistency and label-fit tests).
+- [ ] The design is simple and legible.
+- [ ] Prediction before, transfer check after.
+- [ ] Reader fallback exists (prose in 5.3).
+- [ ] No reward, faith or decree is measured.
 
 ## Build plan
 `frontend/src/canvas/rania-asks-the-right-people/data.ts`, to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.

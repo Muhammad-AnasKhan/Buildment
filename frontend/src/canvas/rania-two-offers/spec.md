@@ -76,12 +76,12 @@ At the defaults the renderer shows a tie, which is intended. Every weight at 1 o
 Weight buttons are keyboard reachable with visible focus; the totals and the "What changed" sentence are text, so nothing depends on colour or on seeing the bars.
 
 ## Acceptance criteria
-- [x] The claim is testable (the chapter's transfer quiz asks about two people with different priorities reading the same facts).
-- [x] The model is tested (the shared factor model tests and the registry scale checks).
-- [x] The design is simple and legible.
-- [x] Prediction before, transfer check after.
-- [x] Reader fallback exists (score table and worked totals in 5.2).
-- [x] No reward, faith or decree is measured: only Rania's own priorities for two jobs.
+- [ ] The claim is testable (the chapter's transfer quiz asks about two people with different priorities reading the same facts).
+- [ ] The model is tested (the shared factor model tests and the registry scale checks).
+- [ ] The design is simple and legible.
+- [ ] Prediction before, transfer check after.
+- [ ] Reader fallback exists (score table and worked totals in 5.2).
+- [ ] No reward, faith or decree is measured: only Rania's own priorities for two jobs.
 
 ## Build plan
 `frontend/src/canvas/rania-two-offers/data.ts`, to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.
