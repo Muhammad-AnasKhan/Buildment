@@ -119,6 +119,14 @@ export const CANVAS_SLUGS = [
   "which-habit-first",
   "dina-study-block",
   "prayer-time-anchors",
+  "prefill-decode-steps",
+  "kv-cache-per-token",
+  "gpu-memory-budget",
+  "paged-kv-allocation",
+  "speculative-decoding-gain",
+  "self-host-or-api",
+  "admission-control-tokens",
+  "deployment-fit-steps",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];
