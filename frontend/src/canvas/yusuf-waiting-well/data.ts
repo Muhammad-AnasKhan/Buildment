@@ -16,7 +16,7 @@ export const yusufWaitingWell: StateMachineSpec = {
     { id: "yaqub", name: "Yaqub waits", sub: "beautiful patience", col: 0, row: 0 },
     { id: "prison", name: "Yusuf in prison", sub: "asks to be named", col: 1, row: 0 },
     { id: "forgotten", name: "Forgotten", sub: "several years", col: 2, row: 0 },
-    { id: "recognised", name: "Recognised", sub: "mindful and patient", col: 2, row: 1 },
+    { id: "recognised", name: "Recognised", sub: "Quran 12:90", col: 2, row: 1 },
     { id: "forgives", name: "He forgives", sub: "no blame today", col: 1, row: 1 },
     { id: "together", name: "Family together", sub: "my Lord is subtle", col: 0, row: 1 },
   ],
