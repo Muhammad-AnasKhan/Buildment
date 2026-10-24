@@ -31,8 +31,8 @@ export const worryOrNextStep: StateMachineSpec = {
       state: "loop",
       edge: 0,
       title: "The loop",
-      note: "Yasmin sent a first draft to her client on Sunday. Six days later he has not replied. She checks her messages, imagines the worst and checks again. Each turn of the loop uses up power hours and asks the same question nobody can answer yet.",
-      chips: ["client silent for 6 days", "about 6 hours of power a day"],
+      note: "Yasmin sent a first draft to her client a week ago, on Sunday. He has still not replied. She checks her messages, imagines the worst and checks again. Each turn of the loop uses up power hours and asks the same question nobody can answer yet.",
+      chips: ["client silent for 7 days", "about 6 hours of power a day"],
     },
     {
       state: "list",
@@ -76,7 +76,7 @@ export const worryOrNextStep: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "At step 5, check the prediction you made above the canvas: what moved Yasmin forward, knowing the reply or knowing her step?",
+    "Recall your prediction about Rami. At step 4, check: does each of Yasmin's unseen questions have a part next to it that is hers?",
     "Pick one question from step 3. Which part in step 4 sits next to it?",
   ],
   limits:

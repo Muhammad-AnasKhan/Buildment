@@ -39,7 +39,7 @@ Four lanes, nine arrows, two of them loops (Abu Bakr feeding the camels; the fam
 
 ## Copy
 - What this shows: the planned steps of the Hijra in order, and the trust in the cave.
-- Try this: 1. Count the planned steps before step 8. 2. Name which earlier steps made the cave possible.
+- Try this: 1. Check the prediction about the guide at step 5, then count the planned steps before step 8. 2. Name which earlier steps made the cave possible.
 - What changed: each step note says what was done, by whom, and the source.
 - Limits of the model: as in `limits`.
 
@@ -50,11 +50,11 @@ Two consecutive arrows run from the Prophet's lane to Abu Bakr's; their labels d
 Shared stepper keyboard support and focus ring; `summary` gives the whole sequence for screen readers; tone always has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (the chapter's quiz transfers the pattern of planning, an expert chosen for skill, and trust to new cases).
-- [x] The model is tested (registry consistency and label-fit tests once registered).
-- [x] The design is simple and legible.
-- [x] Prediction before, transfer check after.
-- [x] Reader fallback exists (prose steps in 2.4).
+- [ ] The claim is testable (the chapter's quiz transfers the pattern of planning, an expert chosen for skill, and trust to new cases).
+- [ ] The model is tested (registry consistency and label-fit tests once registered).
+- [ ] The design is simple and legible.
+- [ ] Prediction before, transfer check after.
+- [ ] Reader fallback exists (prose steps in 2.4).
 
 ## Build plan
 `frontend/src/canvas/hijra-planned-steps/data.ts`, to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.

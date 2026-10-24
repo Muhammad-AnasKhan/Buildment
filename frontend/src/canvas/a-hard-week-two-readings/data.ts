@@ -51,7 +51,7 @@ export const aHardWeekTwoReadings: StateMachineSpec = {
       state: "test",
       edge: 2,
       title: "Reading 2: a test with a purpose",
-      note: "Allah created death and life to test which of us is best in deeds (Quran 67:2). People who say 'we believe' are tested, as those before them were (Quran 29:2). When the Prophet was asked who is tested most severely, he said the prophets, then those most like them (Jami' at-Tirmidhi 2398). So hardship is not a sign of Allah's anger.",
+      note: "Allah created death and life to test which of us is best in deeds (Quran 67:2). People who say 'we believe' are tested, as those before them were (Quran 29:2). When the Prophet, peace be upon him, was asked who is tested most severely, he said the prophets, then those most like them (Jami' at-Tirmidhi 2398). So hardship cannot be read as proof that Allah is angry with her.",
       chips: ["Quran 67:2", "Quran 29:2", "Tirmidhi 2398"],
     },
     {

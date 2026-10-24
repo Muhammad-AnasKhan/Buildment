@@ -68,12 +68,12 @@ export const birdsGoOut: StateMachineSpec = {
       tone: "good",
       outcome: "trust and move",
       title: "The third way: the birds go out",
-      note: "If you relied on Allah as He truly deserves, He would provide for you as He provides for the birds: they go out hungry in the morning and come back full in the evening (Jami' at-Tirmidhi 2344). The birds trust, and they still fly out. For Khalil: practise in set hours, plan the power, sleep, and rest his heart on Allah.",
+      note: "The Prophet, peace be upon him, said: if you relied on Allah as He truly deserves, He would provide for you as He provides for the birds: they go out hungry in the morning and come back full in the evening (Jami' at-Tirmidhi 2344). The birds trust, and they still fly out. For Khalil: practise in set hours, plan the power, sleep, and rest his heart on Allah.",
       chips: ["Tirmidhi 2344", "heart trusts, hands work"],
     },
   ],
   tryThis: [
-    "At step 6, check your prediction: what do the birds in the hadith do each morning?",
+    "At step 6, check your prediction about Mazen's cousin: what do the birds in the hadith do each morning?",
     "Compare steps 3 and 5. Both end badly. What is missing in each one?",
   ],
   limits:

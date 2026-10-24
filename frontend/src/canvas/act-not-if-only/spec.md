@@ -50,11 +50,11 @@ Two steps are loops inside Yasmin's lane; their labels sit to the right of the l
 Shared stepper keyboard support and focus ring; `summary` gives the whole evening for screen readers; tone always has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (the chapter's quiz asks which response to a new setback follows Sahih Muslim 2664).
-- [x] The model is tested (registry consistency and label-fit tests once registered).
-- [x] The design is simple and legible.
-- [x] Prediction before, transfer check after.
-- [x] Reader fallback exists (prose and worked example in 1.4).
+- [ ] The claim is testable (the chapter's quiz asks which response to a new setback follows Sahih Muslim 2664).
+- [ ] The model is tested (registry consistency and label-fit tests once registered).
+- [ ] The design is simple and legible.
+- [ ] Prediction before, transfer check after.
+- [ ] Reader fallback exists (prose and worked example in 1.4).
 
 ## Build plan
 `frontend/src/canvas/act-not-if-only/data.ts`, to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.

@@ -10,7 +10,7 @@ export const hijraPlannedSteps: SequenceSpec = {
   title: "The Hijra: planned steps, and trust in the cave",
   purpose: "Follow each planned step of the Hijra as Sahih al-Bukhari 3905 tells it, and see that the trust in the cave came with the plan, not instead of it.",
   summary:
-    "Abu Bakr fed two camels for four months. The Prophet came to his house at noon, at an unusual hour, and took a camel only with payment. Food was packed quickly, and Asma tied the bag with a piece of her belt. They hired a skilled guide who was not a Muslim at the time and gave him the camels. In the cave of Thawr, for three nights, Abdullah brought them news after dark and Amir brought milk each evening. When Abu Bakr was afraid, the Prophet said: do not grieve, Allah is with us. After three nights the guide came with the camels, and they travelled on.",
+    "Abu Bakr, may Allah be pleased with him, fed two camels for four months. The Prophet, peace be upon him, came to his house at noon, at an unusual hour, and took a camel only with payment. Food was packed quickly, and Asma, may Allah be pleased with her, tied the bag with a piece of her belt. They hired a skilled guide who was not a Muslim at the time and gave him the camels. In the cave of Thawr, for three nights, Abdullah and Amir, may Allah be pleased with them, brought news after dark and milk each evening. When Abu Bakr was afraid, the Prophet said: do not grieve, Allah is with us. After three nights the guide came with the camels, and they travelled on.",
   actors: [
     { name: "The Prophet" },
     { name: "Abu Bakr", sub: "his companion" },
@@ -23,7 +23,7 @@ export const hijraPlannedSteps: SequenceSpec = {
       to: 1,
       label: "feeds two camels",
       title: "A long preparation",
-      note: "Abu Bakr wanted to emigrate, and the Prophet, peace be upon him, asked him to wait. Abu Bakr used the time: he fed two she-camels for four months, so they would be ready.",
+      note: "Abu Bakr, may Allah be pleased with him, wanted to emigrate, and the Prophet, peace be upon him, asked him to wait. Abu Bakr used the time: he fed two she-camels for four months, so they would be ready.",
       chips: ["four months"],
     },
     {
@@ -46,7 +46,7 @@ export const hijraPlannedSteps: SequenceSpec = {
       to: 2,
       label: "packs the food",
       title: "Food packed, and Asma's belt",
-      note: "The family prepared the baggage quickly and put food in a leather bag. Asma, Abu Bakr's daughter, cut a piece of her belt to tie it. In her own report she cut it in two: one piece for the water-skin and one for the food (Sahih al-Bukhari 2979).",
+      note: "The family prepared the baggage quickly and put food in a leather bag. Asma, Abu Bakr's daughter, may Allah be pleased with her, cut a piece of her belt to tie it. In her own report she cut it in two: one piece for the water-skin and one for the food (Sahih al-Bukhari 2979).",
     },
     {
       from: 1,
@@ -61,7 +61,7 @@ export const hijraPlannedSteps: SequenceSpec = {
       to: 0,
       label: "news after dark",
       title: "A source of news",
-      note: "They stayed in a cave on Mount Thawr for three nights. Abdullah, Abu Bakr's son, a sharp young man, spent the nights with them, left before dawn, was among the people of Makkah by morning, and brought them every piece of news after dark.",
+      note: "They stayed in a cave on Mount Thawr for three nights. Abdullah, Abu Bakr's son, may Allah be pleased with him, a sharp young man, spent the nights with them, left before dawn, was among the people of Makkah by morning, and brought them every piece of news after dark.",
       chips: ["three nights"],
     },
     {
@@ -69,7 +69,7 @@ export const hijraPlannedSteps: SequenceSpec = {
       to: 0,
       label: "milk each evening",
       title: "Supplies nearby",
-      note: "Amir ibn Fuhayra, Abu Bakr's freed slave, grazed a flock of sheep near them, brought them milk each evening, and led the sheep away before dawn.",
+      note: "Amir ibn Fuhayra, may Allah be pleased with him, Abu Bakr's freed slave, grazed a flock of sheep near them, brought them milk each evening, and led the sheep away before dawn.",
     },
     {
       from: 0,
@@ -90,7 +90,7 @@ export const hijraPlannedSteps: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Check your prediction: before step 8, count how many of the steps were planned ahead.",
+    "Check your prediction at step 5: who did they hire as their guide, and why? Then count how many steps were planned before the cave.",
     "Step 8 is the only step about trust. Which earlier steps made it possible to be in that cave, safely supplied, at all?",
   ],
   limits:

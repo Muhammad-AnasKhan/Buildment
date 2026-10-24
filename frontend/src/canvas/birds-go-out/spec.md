@@ -39,7 +39,7 @@ Six labelled pills and five arrows. Tone: bad on "Stuck, asking" and "Worn out",
 
 ## Copy
 - What this shows: one need, met three ways, and where each way ends.
-- Try this: 1. At step 6, check the prediction (what the birds do each morning). 2. Compare steps 3 and 5: what is missing in each?
+- Try this: 1. At step 6, check the prediction about Mazen's cousin (what the birds do each morning). 2. Compare steps 3 and 5: what is missing in each?
 - What changed: each step note says what the person does and what it leads to.
 - Limits of the model: as in `limits`.
 
@@ -50,11 +50,11 @@ The first step has no edge. State names are 15 characters or fewer. No Arabic sc
 Shared stepper keyboard support and focus ring; `summary` gives all three ways for screen readers; tone always has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (the chapter's quiz asks the learner to name which way a new person has gone wrong).
-- [x] The model is tested (registry consistency and label-fit tests once registered).
-- [x] The design is simple and legible.
-- [x] Prediction before, transfer check after.
-- [x] Reader fallback exists (prose and worked example in 2.2).
+- [ ] The claim is testable (the chapter's quiz asks the learner to name which way a new person has gone wrong).
+- [ ] The model is tested (registry consistency and label-fit tests once registered).
+- [ ] The design is simple and legible.
+- [ ] Prediction before, transfer check after.
+- [ ] Reader fallback exists (prose and worked example in 2.2).
 
 ## Build plan
 `frontend/src/canvas/birds-go-out/data.ts`, to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.

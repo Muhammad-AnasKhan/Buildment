@@ -64,11 +64,11 @@ Zero charge, zero bank and zero grid: "Short by 75 min". Grid at 75: nothing is 
 Native range inputs with labels and units; the summary sentence describes the whole result for screen readers; bar tone always comes with the status in text.
 
 ## Acceptance criteria
-- [x] The claim is testable (the chapter's quiz transfers it to a new plan with a missing backup).
-- [x] The model is tested: `frontend/tests/unit/canvas/interview-power-plan.test.ts` covers the default, the minimums, the maximums, the exact-cover edge case, the try-this numbers, non-numeric input and the change sentences.
-- [x] The design is simple and legible.
-- [x] Prediction before, transfer check after.
-- [x] Reader fallback exists (prose arithmetic and worked plan in 2.3).
+- [ ] The claim is testable (the chapter's quiz transfers it to a new plan with a missing backup).
+- [ ] The model is tested: `frontend/tests/unit/canvas/interview-power-plan.test.ts` covers the default, the minimums, the maximums, the exact-cover edge case, the try-this numbers, non-numeric input and the change sentences.
+- [ ] The design is simple and legible.
+- [ ] Prediction before, transfer check after.
+- [ ] Reader fallback exists (prose arithmetic and worked plan in 2.3).
 
 ## Build plan
 `frontend/src/canvas/interview-power-plan/data.ts`, to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts` and `frontend/tests/unit/canvas/interview-power-plan.test.ts`; preview at `/workspace/canvases`.

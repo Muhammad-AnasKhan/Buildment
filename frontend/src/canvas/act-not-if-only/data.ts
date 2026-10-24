@@ -42,7 +42,7 @@ export const actNotIfOnly: SequenceSpec = {
       tone: "bad",
       outcome: "no step",
       title: "The past sends back the same pain",
-      note: "Each \"if only\" comes back with the same sadness and no step. The past cannot be changed, so the thought goes round again. The Prophet warned that \"if only\" opens the door to the work of Satan (Sahih Muslim 2664).",
+      note: "Each \"if only\" comes back with the same sadness and no step. The past cannot be changed, so the thought goes round again. The Prophet, peace be upon him, warned that \"if only\" opens the door to the work of Satan (Sahih Muslim 2664).",
     },
     {
       from: 1,

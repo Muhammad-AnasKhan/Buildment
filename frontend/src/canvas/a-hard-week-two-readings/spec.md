@@ -50,11 +50,11 @@ The first step has no edge (it shows the facts only). Two edges share the label 
 Shared stepper keyboard support and focus ring; `summary` gives both readings for screen readers; tone always has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (the chapter's quiz transfers it to a new person told that hardship means anger).
-- [x] The model is tested (registry consistency and label-fit tests once registered).
-- [x] The design is simple and legible.
-- [x] Prediction before, transfer check after.
-- [x] Reader fallback exists (prose readings and worked example in 1.3).
+- [ ] The claim is testable (the chapter's quiz transfers it to a new person told that hardship means anger).
+- [ ] The model is tested (registry consistency and label-fit tests once registered).
+- [ ] The design is simple and legible.
+- [ ] Prediction before, transfer check after.
+- [ ] Reader fallback exists (prose readings and worked example in 1.3).
 
 ## Build plan
 `frontend/src/canvas/a-hard-week-two-readings/data.ts`, to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.
