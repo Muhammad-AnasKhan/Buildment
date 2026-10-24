@@ -116,16 +116,64 @@ function reachableFrom(board: Board): Set<string> {
   return seen;
 }
 
+/** Live links between reachable nodes, deduplicated, as parent to children and child to parents. */
+function liveLinks(board: Board, reachable: Set<string>) {
+  const children = new Map<string, string[]>();
+  const parents = new Map<string, string[]>();
+  for (const e of board.edges) {
+    if (!reachable.has(e.from) || !reachable.has(e.to) || e.from === e.to) continue;
+    const kids = children.get(e.from) ?? [];
+    if (kids.includes(e.to)) continue;
+    children.set(e.from, [...kids, e.to]);
+    parents.set(e.to, [...(parents.get(e.to) ?? []), e.from]);
+  }
+  return { children, parents };
+}
+
+/** Reachable nodes in topological order (Kahn), so load and latency flow parent before child. */
+function topoOrder(reachable: Set<string>, children: Map<string, string[]>, parents: Map<string, string[]>): string[] {
+  const indegree = new Map([...reachable].map((id) => [id, (parents.get(id) ?? []).length]));
+  const queue = [...reachable].filter((id) => indegree.get(id) === 0);
+  const order: string[] = [];
+  while (queue.length > 0) {
+    const id = queue.shift()!;
+    order.push(id);
+    for (const kid of children.get(id) ?? []) {
+      indegree.set(kid, (indegree.get(kid) ?? 1) - 1);
+      if (indegree.get(kid) === 0) queue.push(kid);
+    }
+  }
+  return order;
+}
+
 export function runTieredModel(board: Board, load: number, targets: Targets): ModelResult {
+  const byId = new Map(board.nodes.map((n) => [n.id, n]));
   const reachable = reachableFrom(board);
-  const cacheNode = board.nodes.find((n) => n.kind === "cache" && reachable.has(n.id));
-  const cacheHit = cacheNode ? num(cacheNode, "hitRate", 0) : 0;
+  const { children, parents } = liveLinks(board, reachable);
+  const order = topoOrder(reachable, children, parents);
+
+  // Load enters at the live clients and flows down the links. Parallel children of
+  // the same kind share it evenly; different kinds are different services and each
+  // see the whole stream; a database next to a cache only sees the cache misses.
+  const incoming = new Map<string, number>();
+  const clients = order.filter((id) => byId.get(id)!.kind === "client");
+  for (const id of clients) incoming.set(id, load / clients.length);
+  for (const id of order) {
+    const flow = incoming.get(id) ?? 0;
+    const kids = children.get(id) ?? [];
+    const cache = kids.map((k) => byId.get(k)!).find((n) => n.kind === "cache");
+    const missRate = cache ? 1 - num(cache, "hitRate", 0) : 1;
+    const byKind = new Map<ComponentKind, string[]>();
+    for (const k of kids) byKind.set(byId.get(k)!.kind, [...(byKind.get(byId.get(k)!.kind) ?? []), k]);
+    for (const [kind, ids] of byKind) {
+      const share = kind === "database" ? flow * missRate : flow;
+      for (const k of ids) incoming.set(k, (incoming.get(k) ?? 0) + share / ids.length);
+    }
+  }
 
   const tiers: TierLoad[] = [];
+  const nodeAvail = new Map<ComponentKind, number[]>();
   let ceiling = Number.POSITIVE_INFINITY;
-  let p50 = NETWORK_MS;
-  let p99 = NETWORK_MS;
-  let availability = 1;
   let cost = 0;
   let failure: string | undefined;
 
@@ -136,41 +184,47 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     const down = isDown(node);
     const onPath = reachable.has(node.id);
     const capacity = down ? 0 : vcpu * (PER_VCPU[family] ?? 800) * units;
-    const incoming = !onPath ? 0 : node.kind === "database" ? load * (1 - cacheHit) : load;
-    const utilisation = capacity > 0 ? incoming / capacity : 0;
+    const flow = onPath ? incoming.get(node.id) ?? 0 : 0;
+    const utilisation = capacity > 0 ? flow / capacity : 0;
 
     tiers.push({ id: node.id, kind: node.kind, capacity, utilisation, down, reachable: onPath });
     cost += price * units; // placed hardware costs money whether or not it is serving
-
-    if (down) {
-      // A down component on the request path takes the path with it.
-      if (board.edges.some((e) => e.to === node.id || e.from === node.id)) {
-        ceiling = 0;
-        availability = 0;
-        failure ??= `${COMPONENT_CATALOG[node.kind].label} is down: requests through it fail.`;
-      }
-      continue;
-    }
     if (!onPath) continue;
 
-    // Max load this tier can take, expressed back at the system's offered load.
-    const loadFactor = incoming > 0 ? load / incoming : 1;
-    ceiling = Math.min(ceiling, capacity * loadFactor);
-
-    const service = SERVICE_MS[node.kind] ?? 5;
-    const u = Math.min(utilisation, 0.985);
-    p50 += service;
-    p99 += service / (1 - u);
-
+    // Max offered load before this tier saturates, expressed at the system's front door.
+    if (flow > 0) ceiling = Math.min(ceiling, (capacity * load) / flow);
     const single = SINGLE_AVAIL[node.kind] ?? 0.99;
-    availability *= 1 - Math.pow(1 - single, Math.max(units, 1));
+    nodeAvail.set(node.kind, [...(nodeAvail.get(node.kind) ?? []), 1 - Math.pow(1 - single, Math.max(units, 1))]);
   }
+
+  // Latency is the slowest path from a client to the end of the line.
+  const tierById = new Map(tiers.map((t) => [t.id, t]));
+  const lat50 = new Map<string, number>();
+  const lat99 = new Map<string, number>();
+  for (const id of order) {
+    const tier = tierById.get(id);
+    const service = tier ? SERVICE_MS[tier.kind] ?? 5 : 0;
+    const u = tier ? Math.min(tier.utilisation, 0.985) : 0;
+    const before = parents.get(id) ?? [];
+    lat50.set(id, service + Math.max(0, ...before.map((p) => lat50.get(p) ?? 0)));
+    lat99.set(id, service / (1 - u) + Math.max(0, ...before.map((p) => lat99.get(p) ?? 0)));
+  }
+  const p50 = NETWORK_MS + Math.max(0, ...lat50.values());
+  const p99 = NETWORK_MS + Math.max(0, ...lat99.values());
+
+  // Parallel components of the same kind back each other up; the kinds are in series.
+  let availability = 1;
+  for (const parts of nodeAvail.values()) availability *= 1 - parts.reduce((all, a) => all * (1 - a), 1);
 
   // A placed database that requests cannot reach means nothing is served.
   const databases = board.nodes.filter((n) => n.kind === "database");
   if (databases.length > 0 && !databases.some((n) => reachable.has(n.id))) {
     ceiling = 0;
-    failure ??= "The database is not linked into the request path.";
+    availability = 0;
+    const blocker = board.nodes.find((n) => isDown(n) && board.edges.some((e) => e.from === n.id || e.to === n.id));
+    failure = blocker
+      ? `${COMPONENT_CATALOG[blocker.kind].label} is down: requests through it fail.`
+      : "The database is not linked into the request path.";
   }
 
   if (!Number.isFinite(ceiling)) ceiling = 0;

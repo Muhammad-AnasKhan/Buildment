@@ -72,6 +72,26 @@ describe("runTieredModel", () => {
     expect(r.allPass).toBe(false);
   });
 
+  it("splits load across parallel load balancers", () => {
+    const single = runTieredModel(board(2, 0.8), 1000, TARGETS).tiers.find((t) => t.id === "lb")!.utilisation;
+    const b = board(2, 0.8);
+    b.nodes.push({ id: "lb2", kind: "load-balancer", x: 1, y: 1, props: { size: "general-small", zones: 1 } });
+    b.edges.push({ from: "client", to: "lb2" }, { from: "lb2", to: "app" });
+    const r = runTieredModel(b, 1000, TARGETS);
+    expect(r.tiers.find((t) => t.id === "lb")!.utilisation).toBeCloseTo(single / 2, 5);
+  });
+
+  it("keeps serving through a redundant load balancer when one is down", () => {
+    const b = board(2, 0.8);
+    b.nodes.push({ id: "lb2", kind: "load-balancer", x: 1, y: 1, props: { size: "general-small", zones: 1 } });
+    b.edges.push({ from: "client", to: "lb2" }, { from: "lb2", to: "app" });
+    b.nodes = b.nodes.map((n) => (n.id === "lb" ? { ...n, props: { ...n.props, down: 1 } } : n));
+    const r = runTieredModel(b, 1000, TARGETS);
+    expect(r.capacityCeiling).toBeGreaterThan(0);
+    expect(r.failure).toBeUndefined();
+    expect(r.tiers.find((t) => t.id === "lb2")!.utilisation).toBeCloseTo(1000 / 1600, 5);
+  });
+
   it("names the down component in the failure", () => {
     const b = board(2, 0.8);
     b.nodes = b.nodes.map((n) => (n.id === "app" ? { ...n, props: { ...n.props, down: 1 } } : n));
