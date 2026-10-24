@@ -38,8 +38,8 @@ Six labelled pills and five arrows. Tone: warn on the self-description and the p
 
 ## Copy
 - What this shows: three kinds of answer to the same question, and the follow-up each one draws.
-- Try this: 1. At step 3, check the prediction made above the canvas ("Whenever dispatch complained, I checked the logs first": a habit). 2. Count the turns Samer spent before his first real answer.
-- What changed: each step says what the founder can check.
+- Try this: 1. Count the follow-up questions the founder asks before Samer reaches a story, and check the prediction made above the canvas. 2. At step 5, find the four things the founder can check.
+- What changed: each step says what the founder can check. Every note except the last ends with one short question that the next step answers ("Before you press Next: ..."), so the learner thinks before each step. The chapter's worked example uses a different case (Reem) and does not retell the steps.
 - Limits of the model: as in `limits`.
 
 ## Edge cases

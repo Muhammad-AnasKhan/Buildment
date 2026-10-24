@@ -36,7 +36,7 @@ The subtraction is simple, but the learner has to see how the part they can clai
 
 - Formula: saved = before - after. Saved without you = minus the comparison change. Claim = saved - max(0, saved without you), never below 0, and 0 when nothing was saved. A comparison that got slower does not add to the claim.
 - Worked values: defaults 1, 0.5, 0.5 (50%). Comparison change 0: claim 1 hour. Comparison change -1: claim 0. After above before (2 to 3): "1 hour more", claim 0. Before 1, after 0.5, comparison +1: claim 0.5, 100%.
-- Assumptions: the comparison days were like Leen's days before the change, with the same kind of orders.
+- Assumptions: the comparison days were like Leen's days before the change, with the same kind of orders. The intro says the old-way days were shorter "probably because" the shop stopped selling large glass lamps, as chapter 2.4 does.
 - Limitations: simple arithmetic; a comparison is a hint, not proof. The chapter's second example (Fadi's crash fix, 12 to 5 for every 1,000 sessions, 3 from a phone version that left) is in prose only.
 
 ## Rendering

@@ -30,7 +30,7 @@ Prose says that a choice depends on its weights. Changing one weight and watchin
 - Weight levels: 1 Matters a little, 2 Matters, 3 Matters most.
 - Rule: total = sum of weight x score. Defaults: Block 25, Flag 28, Fix by hand 25, so flagging wins by 3, as in the case.
 - Worked values: No lost orders to 1 gives Block 23, Flag 20, Fix by hand 17 (blocking wins). With No lost orders at 3 and Quick to build at 3, Fix by hand 35 beats Flag 34. All weights at 1 gives Block 10, Flag 12, Fix by hand 12 (a tie).
-- Assumptions: the scores are Samer's judgments, not measurements.
+- Assumptions: the scores are Samer's judgements, not measurements.
 - Limitations: stated in `limits`; the table cannot hold what dispatch said or how many days Samer had.
 
 ## Rendering

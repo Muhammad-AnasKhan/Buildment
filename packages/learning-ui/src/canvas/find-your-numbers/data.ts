@@ -23,7 +23,7 @@ export const findYourNumbers: SequenceSpec = {
       to: 0,
       label: "ask one question",
       title: "Start with a question",
-      note: "Bilal's fix made the checkout wait for a slow payment provider. He never measured it. He asks one question: how many payments failed before and after the fix?",
+      note: "Bilal's fix made the checkout wait for a slow payment provider. He never measured it. He asks one question: how many payments failed before and after the fix? Before you press Next: who must Bilal ask before he looks at any data?",
       chips: ["one question", "one source"],
     },
     {
@@ -31,7 +31,7 @@ export const findYourNumbers: SequenceSpec = {
       to: 1,
       label: "ask, then count",
       title: "Get permission, then count",
-      note: "He asks his lead if he may read the payment log. His lead says yes for counts only. He will count failed and total attempts. He will not copy customer details.",
+      note: "He asks his lead if he may read the payment log. His lead says yes for counts only. He will count failed and total attempts. He will not copy customer details. Before you press Next: what two numbers does he need from the log?",
       chips: ["ask your lead first", "counts only"],
     },
     {
@@ -40,7 +40,7 @@ export const findYourNumbers: SequenceSpec = {
       label: "124 of 2,480",
       tone: "good",
       title: "The log: four weeks before",
-      note: "In the four weeks before the fix, the payment log shows 124 failed payments out of 2,480 attempts. That is 5%.",
+      note: "In the four weeks before the fix, the payment log shows 124 failed payments out of 2,480 attempts. That is 5%. Before you press Next: what does he need for the weeks after?",
       chips: ["124 / 2,480 = 5%", "source: payment log"],
     },
     {
@@ -50,7 +50,7 @@ export const findYourNumbers: SequenceSpec = {
       tone: "good",
       outcome: "5% to 2%",
       title: "The log: four weeks after",
-      note: "In the four weeks after, the log shows 52 failed payments out of 2,600 attempts. That is 2%.",
+      note: "In the four weeks after, the log shows 52 failed payments out of 2,600 attempts. That is 2%. Before you press Next: what must he write next to these numbers?",
       chips: ["52 / 2,600 = 2%", "source: payment log"],
     },
     {
@@ -58,7 +58,7 @@ export const findYourNumbers: SequenceSpec = {
       to: 3,
       label: "write it down",
       title: "Write the number with its source",
-      note: "Bilal writes: 'Failed payments fell from 5% to 2% (124 of 2,480, then 52 of 2,600), four weeks each, from the payment log.' A number with no source is only a claim.",
+      note: "Bilal writes: 'Failed payments fell from 5% to 2% (124 of 2,480, then 52 of 2,600), four weeks each, from the payment log.' A number with no source is only a claim. Before you press Next: which other source could check the log?",
       chips: ["before", "after", "window", "source"],
     },
     {
@@ -66,7 +66,7 @@ export const findYourNumbers: SequenceSpec = {
       to: 2,
       label: "ask support",
       title: "Ask the people",
-      note: "He asks the support person to count messages that say 'I paid but saw an error'. The support person counts them in the inbox.",
+      note: "He asks the support person to count messages that say 'I paid but saw an error'. The support person counts them in the inbox. Before you press Next: what might the inbox show?",
     },
     {
       from: 2,
@@ -74,7 +74,7 @@ export const findYourNumbers: SequenceSpec = {
       label: "19 then 6",
       tone: "good",
       title: "The inbox: users' own words",
-      note: "The inbox had 19 such messages in the four weeks before and 6 in the four weeks after. This agrees with the log, from a different source. It also shows what users felt.",
+      note: "The inbox had 19 such messages in the four weeks before and 6 in the four weeks after. This agrees with the log, from a different source. It also shows what users felt. Before you press Next: can Bilal claim a saving from the cloud bill?",
       chips: ["19 then 6", "source: support inbox"],
     },
     {
@@ -84,7 +84,7 @@ export const findYourNumbers: SequenceSpec = {
       tone: "warn",
       outcome: "nothing found",
       title: "The cloud bill",
-      note: "He compares the cloud bill for the two periods. It is the same within its usual ups and downs. His fix was not about cost, so the bill gives him nothing to claim.",
+      note: "He compares the cloud bill for the two periods. It is the same within its usual ups and downs. His fix was not about cost, so the bill gives him nothing to claim. Before you press Next: what does he write when a source gives nothing?",
       chips: ["no change", "do not claim cost"],
     },
     {

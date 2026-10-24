@@ -28,7 +28,7 @@ The two versions of the same call only make sense side by side and in order. Ste
 - Static fallback: chapter 6.4 tells both versions in prose.
 
 ## Controls
-Shared stepper controls.
+Shared stepper controls. Each step's note ends with one short question that the next step answers ("Before you press Next: ..."), so the learner thinks before each step. The chapter prose does not retell Nour's call; its worked example uses a different question (Rana, "What would you do in your first week?").
 
 ## Visualisation
 Two lanes and eight numbered arrows; tone and a text badge on the toned steps.
@@ -36,6 +36,7 @@ Two lanes and eight numbered arrows; tone and a text badge on the toned steps.
 ## Copy
 - What this shows: the same question answered at once and with a pause and a check.
 - Try this: 1. Compare the cost of the pause with the cost of the wrong answer. 2. Write one "Do you mean" question for your own call.
+- Under the canvas in the chapter: two or three sentences.
 - What changed: each step note says what the pause or the check saved.
 - Limits of the model: as in `limits`.
 

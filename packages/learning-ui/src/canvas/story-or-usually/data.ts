@@ -29,7 +29,7 @@ export const storyOrUsually: StateMachineSpec = {
       state: "ask",
       edge: 0,
       title: "The question",
-      note: "The founder says, 'Tell me about a time you fixed a problem fast.' This is turn 1. Samer has to choose what kind of answer to give.",
+      note: "The founder says, 'Tell me about a time you fixed a problem fast.' This is turn 1. Samer has to choose what kind of answer to give. Before you press Next: what kind of answer will he give first?",
       chips: ["turn 1"],
     },
     {
@@ -38,7 +38,7 @@ export const storyOrUsually: StateMachineSpec = {
       tone: "warn",
       outcome: "self-description",
       title: "A description of Samer",
-      note: "Samer says, 'I am quick and calm under pressure.' It describes him. It has no day and no event, so the founder cannot check it. He asks, 'Can you give me an example?' That costs a turn.",
+      note: "Samer says, 'I am quick and calm under pressure.' It describes him. It has no day and no event, so the founder cannot check it. He asks, 'Can you give me an example?' That is one more question. Before you press Next: will Samer's next answer be a day, or something else?",
       chips: ["no day", "no event", "turn 2"],
     },
     {
@@ -47,14 +47,14 @@ export const storyOrUsually: StateMachineSpec = {
       tone: "warn",
       outcome: "pseudo-story",
       title: "A habit, not a day",
-      note: "Samer says, 'We usually fix issues fast. When dispatch reports a bug, we look at it the same day.' This is closer, because it mentions work. But 'usually' and 'when' describe a habit. There is still no one day to check. The founder asks, 'Which time?'",
+      note: "Samer says, 'We usually fix issues fast. When dispatch reports a bug, we look at it the same day.' This is closer, because it mentions work. But 'usually' and 'when' describe a habit. There is still no one day to check. Before you press Next: what does the founder ask now?",
       chips: ["usually", "whenever", "turn 3"],
     },
     {
       state: "which",
       edge: 3,
       title: "The question a story answers first",
-      note: "'Which time?' asks for one day. Samer must now choose a real event from 14 months of work. The answer is the small address check he built, the one he nearly left out.",
+      note: "'Which time?' asks for one day. Samer must now choose a real event from 14 months of work. The answer is the small address check he built, the one he nearly left out. Before you press Next: what should Samer say about it, in four sentences?",
       chips: ["turn 4"],
     },
     {
@@ -63,7 +63,7 @@ export const storyOrUsually: StateMachineSpec = {
       tone: "good",
       outcome: "a story",
       title: "One time",
-      note: "Samer says, 'In my fourth month, drivers kept phoning dispatch about wrong addresses. The dispatch call sheet showed about 12 calls a week. I built a check on the order screen that flags a bad address. Once the check worked, the sheet showed about 5 calls a week for four weeks.' One day, one problem, one thing he did.",
+      note: "Samer says, 'In my fourth month, drivers kept phoning dispatch about wrong addresses. The dispatch call sheet showed about 12 calls a week. I built a check on the order screen that flags a bad address. Once the check worked, the sheet showed about 5 calls a week for four weeks.' One day, one problem, one thing he did. Before you press Next: what can the founder check in this answer?",
       chips: ["a time", "a problem", "what I did", "a result"],
     },
     {
@@ -76,8 +76,8 @@ export const storyOrUsually: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "At step 3, check the prediction you made above. 'When dispatch reports a bug, we look at it' sounds like work, but is it one day?",
-    "Count the turns Samer spent before his first real answer. What could he have said in turn 1?",
+    "Count the follow-up questions the founder asks before Samer reaches a story. Then check your prediction from the chapter.",
+    "At step 5, find the four things in Samer's story that the founder can check: a time, a problem, Samer's own action and a number with its source.",
   ],
   limits:
     "This is one example of how a founder might follow up. Real interviewers differ, and some will accept a short habit answer and move on. The numbers are the case's own, and a real story needs your own facts and a source you can name.",

@@ -121,7 +121,7 @@ export const howMuchWasYours: SliderSpec = {
   title: "How much of the change was yours?",
   purpose: "Subtract what happened without your work from the total change, and see how much is left to claim.",
   intro:
-    "In this example, Leen's packing day took about 3 hours before her change. In the next four weeks it took about 2 hours on the days she packed with the checklist and the new shelves. In the same four weeks, the days the part-time packer packed the old way took about 2.5 hours, because the shop also stopped selling large glass lamps. Predict first: how much of the 1 hour can Leen claim?",
+    "In this example, Leen's packing day took about 3 hours before her change. In the next four weeks it took about 2 hours on the days she packed with the checklist and the new shelves. In the same four weeks, the days the part-time packer packed the old way took about 2.5 hours, probably because the shop also stopped selling large glass lamps. Predict first: how much of the 1 hour can Leen claim?",
   inputs: [
     { id: "before", label: "Before: hours a packing day", min: 1, max: 6, step: 0.25, default: 3, unit: "hours" },
     { id: "after", label: "After: days with your work", min: 0.5, max: 6, step: 0.25, default: 2, unit: "hours" },

@@ -2,9 +2,10 @@ import type { StateMachineSpec } from "../renderers/state-machine/types";
 
 // Founder Interview course, chapter 3.4 "The resume line audit".
 // Every resume line is checked in the same order: what I did, why, what
-// happened, how I know, what I would change. Karam's checkout line fails two
-// checks and is rewritten, not defended. His second line passes all five and is
-// kept as it is. See spec.md.
+// happened, how I know, what I would change. The arrow that leaves a check says
+// how it went: "fails" or "ok". Karam's checkout line fails two checks and is
+// rewritten, not defended. His second line passes all five and is kept as it
+// is. See spec.md.
 export const resumeLineAudit: StateMachineSpec = {
   kind: "state-machine",
   title: "The five checks on Karam's resume lines",
@@ -20,22 +21,22 @@ export const resumeLineAudit: StateMachineSpec = {
     { id: "verdict", name: "Rewrite or keep", sub: "the decision", col: 0, row: 1 },
   ],
   edges: [
-    { from: "did", to: "why", label: "ok" },
+    { from: "did", to: "why", label: "fails" },
     { from: "why", to: "happened", label: "ok" },
     { from: "happened", to: "know", label: "ok" },
-    { from: "know", to: "change", label: "ok" },
+    { from: "know", to: "change", label: "fails" },
     { from: "change", to: "verdict", label: "ok" },
   ],
   steps: [
     {
       state: "did",
-      edge: 0,
       title: "The line to check",
-      note: "Karam's resume says: Led the redesign of the checkout page, increasing conversion by 20 percent. The audit asks five questions, in order, and writes one honest answer to each.",
+      note: "Karam's resume says: Led the redesign of the checkout page, increasing conversion by 20 percent. (Conversion is the share of visitors who buy.) The audit asks five questions, in order, and writes one honest answer to each. The arrow that leaves each check says how it went.",
       chips: ["Led the redesign of the checkout page, increasing conversion by 20 percent"],
     },
     {
       state: "did",
+      edge: 0,
       tone: "bad",
       outcome: "fails",
       title: "Check 1: what did I do?",
@@ -54,10 +55,10 @@ export const resumeLineAudit: StateMachineSpec = {
     {
       state: "happened",
       edge: 2,
-      tone: "warn",
-      outcome: "unclear",
+      tone: "good",
+      outcome: "can say it",
       title: "Check 3: what happened?",
-      note: "The line says conversion rose 20 percent. A result needs a before, an after and a time window, from chapter 2.2. Karam has only the final figure, with no before and no window.",
+      note: "Karam can say the result in one sentence: conversion rose 20 percent after launch, as his manager reported. This check only asks whether he can say what happened. The next check asks whether he can show it.",
     },
     {
       state: "know",
@@ -65,7 +66,7 @@ export const resumeLineAudit: StateMachineSpec = {
       tone: "bad",
       outcome: "fails",
       title: "Check 4: how do I know?",
-      note: "The 20 percent came from his manager's slide. Karam does not know how it was measured, or how much of it came from his page. A number he cannot source cannot stay in the line as his own.",
+      note: "The 20 percent came from his manager's slide. Karam has no before and after counts, no time window and no method, and he cannot say how much came from his page. A number he cannot source cannot stay in the line as his own.",
       chips: ["source: manager's slide", "method: unknown"],
     },
     {
@@ -94,7 +95,7 @@ export const resumeLineAudit: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "Before step 2, read the line and guess which check it fails first. Then check your guess.",
+    "Before step 2, read the line and guess which check fails first. Then check your guess.",
     "At step 7, say the rewritten line aloud. Could you answer a founder's why about every word in it?",
   ],
   limits:

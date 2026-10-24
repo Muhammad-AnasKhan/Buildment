@@ -22,7 +22,7 @@ export const founderVersionFirst: SequenceSpec = {
       to: 1,
       label: "your best work?",
       title: "The question",
-      note: "The founder of a small payments team asks: What is the best technical thing you have done? Yazan has about a minute to answer.",
+      note: "The founder of a small team that builds an invoicing app for freelancers asks: What is the best technical thing you have done? Yazan has about a minute to answer. Before you press Next: what would you say first?",
     },
     {
       from: 1,
@@ -31,7 +31,7 @@ export const founderVersionFirst: SequenceSpec = {
       tone: "bad",
       outcome: "cannot follow",
       title: "Answer 1: the terms",
-      note: "Yazan says: I moved the monthly report to an async worker with a queue, and the retries are idempotent. Every term is correct. None of them is explained, so the founder cannot tell what problem was solved.",
+      note: "Yazan says: I moved the monthly report to an async worker with a queue, and the retries are idempotent. Every term is correct. None of them is explained, so the founder cannot tell what problem was solved. Before you press Next: what will the founder say?",
       chips: ["async worker", "queue", "idempotent retries"],
     },
     {
@@ -40,14 +40,14 @@ export const founderVersionFirst: SequenceSpec = {
       label: "I cannot follow",
       tone: "warn",
       title: "The founder stops following",
-      note: "The founder says: Sorry, I do not write code. What was the problem? The answer was true, but the founder has nothing to ask about except the words.",
+      note: "The founder says: Sorry, I do not write code. What was the problem? The answer was true, but the founder has nothing to ask about except the words. Before you press Next: which four things would you choose to say?",
     },
     {
       from: 1,
       to: 1,
       label: "four parts",
       title: "Yazan starts again",
-      note: "He picks four parts in user terms: the problem, what he built in one sentence, the key choice and the result. He leaves the terms out for now.",
+      note: "He picks four parts in user terms: the problem, what he built in one sentence, the key choice and the result. He leaves the terms out for now. Before you press Next: can you say the four parts in your own words?",
       chips: ["problem", "what I built", "key choice", "result"],
     },
     {
@@ -57,7 +57,7 @@ export const founderVersionFirst: SequenceSpec = {
       tone: "good",
       outcome: "founder follows",
       title: "Answer 2: the founder version",
-      note: "Our biggest merchants waited about 40 minutes for their monthly report, and it failed nine times last month. I changed it so the report is built in the background, in parts, and a link is emailed when it is ready. I chose that over a night run because merchants ask at any time. Now the biggest report takes about 6 minutes, with no failures in two months.",
+      note: "Our biggest merchants waited about 40 minutes for their monthly report, and it failed nine times last month. I changed it so the report is built in the background, in parts, and a link is emailed when it is ready. I chose that over a night run because merchants ask at any time. Now the biggest report takes about 6 minutes, with no failures in two months. Before you press Next: what will the founder ask now?",
       chips: ["about 40 min to about 6 min", "9 failures to none"],
     },
     {
@@ -65,7 +65,7 @@ export const founderVersionFirst: SequenceSpec = {
       to: 1,
       label: "do they wait?",
       title: "A business question",
-      note: "The founder asks: Does the merchant sit and wait while it builds? The founder now cares about the merchant, and that is the doorway Yazan wanted.",
+      note: "The founder asks: Does the merchant sit and wait while it builds? The founder now cares about the merchant, and that is the doorway Yazan wanted. Before you press Next: how would you answer, and when would you use the words background job?",
     },
     {
       from: 1,
@@ -74,11 +74,11 @@ export const founderVersionFirst: SequenceSpec = {
       tone: "good",
       outcome: "depth on request",
       title: "Yazan explains one term, in use",
-      note: "No. They can close the page, and an email brings the link. That is why it is a background job. Now the term means something, and the founder can ask the next question or hand the talk to an engineer.",
+      note: "No. They can close the page, and an email brings the link. That is why it is a background job. Now the term means something, and the founder can ask the next question or hand the talk to an engineer. What would you want to be asked next?",
     },
   ],
   tryThis: [
-    "Before step 5, say the four parts of a founder version in your own words. Then check them against Yazan's.",
+    "At step 4, say the four parts of a founder version in your own words before you look at step 5.",
     "At step 2, which words would a founder need explained? Which of them could Yazan leave out for now?",
   ],
   limits:

@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
-// Relative imports: the package export lines for these slugs are added by the orchestrator at registration.
-import { chooseTechnicalStory } from "../../../../packages/learning-ui/src/canvas/choose-technical-story/data";
-import { weaknessAnswerChoice } from "../../../../packages/learning-ui/src/canvas/weakness-answer-choice/data";
-import { founderVersionFirst } from "../../../../packages/learning-ui/src/canvas/founder-version-first/data";
-import { timeToThink } from "../../../../packages/learning-ui/src/canvas/time-to-think/data";
-import { engineerDepthLadder } from "../../../../packages/learning-ui/src/canvas/engineer-depth-ladder/data";
-import { broadToNarrowStrength } from "../../../../packages/learning-ui/src/canvas/broad-to-narrow-strength/data";
-import { defaultWeights, describeChange, scoreOptions, standing } from "../../../../packages/learning-ui/src/canvas/renderers/factor/model";
-import { sequenceGeometry } from "../../../../packages/learning-ui/src/canvas/renderers/sequence/geometry";
-import { machineGeometry } from "../../../../packages/learning-ui/src/canvas/renderers/state-machine/geometry";
-import type { FactorSpec } from "../../../../packages/learning-ui/src/canvas/renderers/factor/types";
+import { chooseTechnicalStory } from "@buildment/learning-ui/canvas/choose-technical-story/data";
+import { weaknessAnswerChoice } from "@buildment/learning-ui/canvas/weakness-answer-choice/data";
+import { founderVersionFirst } from "@buildment/learning-ui/canvas/founder-version-first/data";
+import { timeToThink } from "@buildment/learning-ui/canvas/time-to-think/data";
+import { engineerDepthLadder } from "@buildment/learning-ui/canvas/engineer-depth-ladder/data";
+import { broadToNarrowStrength } from "@buildment/learning-ui/canvas/broad-to-narrow-strength/data";
+import { defaultWeights, describeChange, scoreOptions, standing } from "@buildment/learning-ui/canvas/renderers/factor/model";
+import { sequenceGeometry } from "@buildment/learning-ui/canvas/renderers/sequence/geometry";
+import { machineGeometry } from "@buildment/learning-ui/canvas/renderers/state-machine/geometry";
+import type { FactorSpec } from "@buildment/learning-ui/canvas/renderers/factor/types";
 
 function totalsWith(spec: FactorSpec, changes: Record<string, number>) {
   const weights = { ...defaultWeights(spec), ...changes };
@@ -157,6 +156,32 @@ describe("state machine canvases fit a phone", () => {
       }
     });
   }
+});
+
+describe("think-first step-throughs", () => {
+  for (const spec of [founderVersionFirst, timeToThink, broadToNarrowStrength]) {
+    it(`${spec.title}: every step but the last ends with a question for the next step`, () => {
+      spec.steps.slice(0, -1).forEach((step, i) => {
+        expect(step.note.trim().endsWith("?"), `step ${i + 1}: ${step.title}`).toBe(true);
+      });
+    });
+  }
+});
+
+describe("course wording", () => {
+  it("names the option the chapter calls the events project", () => {
+    expect(chooseTechnicalStory.options.map((o) => o.name)).toEqual(["Report job", "Events project", "Weekend app"]);
+  });
+  it("says in the factor canvases that the scores are this example's", () => {
+    expect(chooseTechnicalStory.whatThisShows).toContain("this example");
+    expect(weaknessAnswerChoice.whatThisShows).toContain("this example");
+  });
+  it("matches 5.1: the founder leads an invoicing team", () => {
+    expect(founderVersionFirst.steps[0]!.note).toContain("invoicing");
+  });
+  it("uses steps, not rungs, in the engineer follow-ups", () => {
+    expect(JSON.stringify(engineerDepthLadder)).not.toMatch(/rung|ladder/i);
+  });
 });
 
 describe("canvas text has no em or en dashes", () => {

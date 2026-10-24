@@ -19,7 +19,7 @@ The chapter tells both answers in prose. Stepping through them in order shows th
 ## Model
 - Inputs: none beyond the step controls (Back, Next, Play, step chips).
 - Outputs: the highlighted arrow, the step note, chips and an outcome badge.
-- Rule: two actors, Founder and Yazan. Seven steps: the question, the jargon answer (bad), the founder cannot follow (warn), Yazan picks four parts, the founder version (good), the founder's business question, Yazan explains one term in use (good).
+- Rule: two actors, Founder and Yazan. The founder leads a small team that builds an invoicing app for freelancers (Yazan's old company is the payments startup). Seven steps: the question, the jargon answer (bad), the founder cannot follow (warn), Yazan picks four parts, the founder version (good), the founder's business question, Yazan explains one term in use (good).
 - Assumptions: the founder asks a helpful question at step 6.
 - Limitations: one founder, one conversation, Yazan's own numbers.
 
@@ -29,7 +29,7 @@ The chapter tells both answers in prose. Stepping through them in order shows th
 - Static fallback: chapter 5.3 writes both answers in prose before the canvas.
 
 ## Controls
-Shared stepper controls only. The claim is about order, not quantities.
+Shared stepper controls only. The claim is about order, not quantities. Each step's note ends with one short question that the next step answers ("Before you press Next: ..."), so the learner thinks before each step. The chapter prose does not retell the steps; its worked example builds the four parts from Yazan's notes and uses a second case (Wael, a support inbox).
 
 ## Visualisation
 Two lanes and seven numbered arrows. Tone: bad on the jargon answer, warn on the founder not following, good on the founder version and the final explanation, each with a text badge.
@@ -37,6 +37,7 @@ Two lanes and seven numbered arrows. Tone: bad on the jargon answer, warn on the
 ## Copy
 - What this shows: the same work, told twice; the second telling lets the listener lead.
 - Try this: 1. Say the four parts yourself before step 5. 2. At step 2, list the words a founder would need explained.
+- Under the canvas in the chapter: two or three sentences.
 - What changed: each step note says what the founder can or cannot do next.
 - Limits of the model: as in `limits`.
 

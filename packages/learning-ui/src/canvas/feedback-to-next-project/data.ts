@@ -1,77 +1,78 @@
 import type { StateMachineSpec } from "../renderers/state-machine/types";
 
 // The Founder Interview course, chapter 7.2 "Reading feedback and filling the gaps".
-// Tala reads the feedback card from her last practice interview line by line:
-// she finds her own words for each line, keeps the flag the transcript supports,
-// questions the praise it does not support, compares the card with her first one,
-// finds the gap in her story bank and plans how to fill it. See spec.md.
+// Tala tags her own answers with the five flag names before she opens the
+// feedback card, compares her tags with the card, keeps what her words support,
+// questions the praise they do not support, compares her first and last
+// interviews, finds the gap in her story bank and plans how to fill it.
+// Each step ends with a question that the next step answers. See spec.md.
 export const feedbackToNextProject: StateMachineSpec = {
   kind: "state-machine",
   title: "Tala reads her feedback card",
   purpose:
-    "Check each line of a practice interview card against your own words, keep what the transcript supports, question what it does not, and turn the gap you find into a plan.",
+    "Tag your own answers first, compare your tags with the card, keep what your words support, question what they do not, and turn the gap you find into a plan.",
   summary:
-    "Tala's last card has one flag, unsupported number, and praises a long answer as strong impact. She finds her own words for each line. The flag is supported: the only number she gave had no source. The praise is not: the long answer has no number at all. She compares the card with her first card, which had three flags. Then she finds the gap in her story bank, a number she can source, and plans to count failed bookings before and after her change.",
+    "Tala tags her last transcript with the five flag names and finds one, unsupported number. The card has no flags: it has strengths, a weakness with a fix and next steps. Its weakness matches her tag. Its praise, strong impact for a long answer, does not match her words: the answer has no number at all. She compares her tags from her first interview, three, with her last, one. Then she finds the gap in her story bank, a number she can source, and plans to ask her lead if she may count failed bookings before and after her change.",
   states: [
-    { id: "card", name: "The card", sub: "flags and praise", col: 0, row: 0 },
-    { id: "words", name: "Find your words", sub: "in the transcript", col: 1, row: 0 },
+    { id: "tag", name: "Tag first", sub: "your own answers", col: 0, row: 0 },
+    { id: "card", name: "Read the card", sub: "then compare", col: 1, row: 0 },
     { id: "verdict", name: "Keep or question", sub: "each line", col: 2, row: 0 },
-    { id: "compare", name: "Compare drills", sub: "same flag names", col: 2, row: 1 },
+    { id: "compare", name: "Compare drills", sub: "your tags, twice", col: 2, row: 1 },
     { id: "gap", name: "Find the gap", sub: "in your story bank", col: 1, row: 1 },
     { id: "plan", name: "Plan to fill it", sub: "a step and a date", col: 0, row: 1 },
   ],
   edges: [
-    { from: "card", to: "words", label: "check" },
-    { from: "words", to: "verdict", label: "decide" },
+    { from: "tag", to: "card", label: "then read" },
+    { from: "card", to: "verdict", label: "decide" },
     { from: "verdict", to: "compare", label: "so" },
     { from: "compare", to: "gap", label: "what is left" },
     { from: "gap", to: "plan", label: "fill it" },
   ],
   steps: [
     {
-      state: "card",
-      title: "Start with the card",
-      note: "Tala's last practice interview ended with one flag, unsupported number, and three strengths. One strength says: strong impact, her long answer about the offline mode was detailed. Do not believe or reject a line yet.",
-      chips: ["1 flag", "3 strengths"],
+      state: "tag",
+      title: "Tag your own answers first",
+      note: "Tala reads her last transcript before she opens the card. Beside each problem she writes a flag name and her own words. She finds one: unsupported number. She said crashes fell by about a third, and when asked where from, she said: I think it was on a dashboard. Before you press Next: where do you expect the card to agree with her tag?",
+      chips: ["1 tag", "her words, quoted"],
     },
     {
-      state: "words",
+      state: "card",
       edge: 0,
-      title: "Find your own words",
-      note: "For the flag, she searches her transcript. She said the app had about a third fewer crashes. Asked where that came from, she said: I think it was on a dashboard. She gave no source.",
-      chips: ["evidence: her own transcript"],
+      title: "Read the card, then compare",
+      note: "The card has no flags. It has three strengths, one weakness with a fix, notes for each area and three next steps. Its weakness says the crash number has no source, so it matches her tag. One strength says: strong impact, her long answer about the offline mode shows clear results. Her tags say nothing about that answer. Before you press Next: do her words support the praise?",
+      chips: ["tag and card agree: 1", "card line with no tag: 1"],
     },
     {
       state: "verdict",
       edge: 1,
       tone: "good",
-      outcome: "keep the flag",
-      title: "The flag is supported",
-      note: "Her words match the flag: a number with no before, no after and no source. She keeps it, and it goes on her list to fix.",
+      outcome: "keep it, act on it",
+      title: "Where tag and card agree",
+      note: "Her words and the card say the same thing about the number: no before, no after and no source. She keeps it and puts it on her list to fix. Before you press Next: what does she do with the praise?",
       chips: ["kept: unsupported number"],
     },
     {
       state: "verdict",
       tone: "warn",
       outcome: "question the praise",
-      title: "The praise is not supported",
-      note: "She searches the long offline-mode answer for a number, a before and after, or the words I did not measure that. It has none of them. It is long and detailed, but it does not show impact. She will ask her mentor about it.",
+      title: "Where only the card speaks",
+      note: "She searches the long answer, about 190 words, for a number, a before and after, or the words I did not measure that. It has none of them. Long and detailed is not the same as impact. She marks the line for her mentor. Before you press Next: her first interview had more tags. What will comparing them show?",
       chips: ["about 190 words", "0 numbers"],
     },
     {
       state: "compare",
       edge: 2,
       tone: "good",
-      outcome: "3 flags to 1",
-      title: "Compare with the first card",
-      note: "Her first card had three flags: vague ownership, pseudo-story and unsupported number. The last has one. The same flag names make this possible. Her transcript shows I for her own part, so two flags are gone for a reason she can point to.",
-      chips: ["first card: 3", "last card: 1"],
+      outcome: "3 tags to 1",
+      title: "Compare your tags across interviews",
+      note: "In her first interview she tagged vague ownership, pseudo-story and unsupported number. In her last she tagged one. Her tags use the same names each time, so she can compare them, and her words explain the change: I for her own part, one real time. Before you press Next: what is still missing from her story bank?",
+      chips: ["first interview: 3", "last interview: 1"],
     },
     {
       state: "gap",
       edge: 3,
       title: "Find the gap",
-      note: "She lists her five stories. None has an impact number she can source. The offline-mode story, her best one, has only the crash claim she could not source.",
+      note: "She lists her five stories. None has an impact number she can source. Her best story, the offline mode, has only the crash claim that she could not source. Before you press Next: how could she get a number honestly?",
       chips: ["gap: a number with a source"],
     },
     {
@@ -80,14 +81,14 @@ export const feedbackToNextProject: StateMachineSpec = {
       tone: "good",
       outcome: "a plan with a date",
       title: "Plan to fill it",
-      note: "She will ask her lead if she may count failed bookings in the logs, four weeks before and four weeks after the change. If the lead says no, she will say: I did not measure that, and here is how I would. She writes the date.",
+      note: "She will ask her lead if she may count failed bookings in the logs, four weeks before and four weeks after the change. If her lead says no, she will say: I did not measure that, and I would count failed bookings first. She writes the date: Friday.",
       chips: ["step: ask her lead", "by Friday"],
     },
   ],
   tryThis: [
-    "At step 3, check the prediction you made above the canvas. Did the transcript support the flag?",
-    "At step 4, count the numbers in the long answer. Why is a long answer not the same as a result?",
+    "At step 7, check the prediction you made above the canvas. What should Tala say if her lead says no?",
+    "At each question, answer in your own words before you press Next. At step 4, count the numbers in the long answer first.",
   ],
   limits:
-    "This is one card and one story. A real card has more lines, and you may find that the transcript is unclear: then keep the line for now and ask your mentor. The card is practice feedback, and it can be wrong in both directions: it can miss a real problem as well as praise a weak answer.",
+    "This is one card and one story. A real card has more lines, and a transcript can be unclear: then keep the line for now and ask your mentor. You can also be too kind to your own answers when you tag them, so a second reader helps. The card is practice feedback, and it can be wrong in both directions.",
 };

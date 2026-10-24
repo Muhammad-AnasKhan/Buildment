@@ -3,7 +3,7 @@ artifact: canvas-spec
 course: founder-interviews
 chapter: 04.02-clarify-and-assume
 slug: clarify-the-case
-version: 1
+version: 2
 owner: interaction-designer
 renderer: sequence (HTML controls, inline SVG lanes)
 ---
@@ -20,6 +20,7 @@ The chapter tells the exchange in prose. Stepping through it shows the order (sa
 - Inputs: none beyond the step controls.
 - Outputs: the active arrow, the step note, chips and an outcome badge.
 - Rule: three lanes (Founder, Mais, The facts); eight steps: the case, Mais says it back, question 1 and its answer (the drop is mostly in new customers), question 2 and its answer (the delivery fee on small orders rose from 1 dollar to 2 dollars), the assumption aloud, the narrowed answer.
+- Think before each step (revision 1): every note except the last ends with one short question that the next step answers.
 - Assumptions: the facts are the ones in chapters 4.1 and 4.2. A third clarifying question (one developer, about a week of work this month) is used in 4.3 and is not drawn here.
 - Limitations: a real founder may not know the facts.
 

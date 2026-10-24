@@ -3,7 +3,8 @@ import type { SequenceSpec } from "../renderers/sequence/types";
 // Founder Interview course, chapter 4.2 "Clarify and say your assumptions".
 // Mais asks two clarifying questions, learns that the drop is in new customers
 // and that the delivery fee rose two months ago, says her assumption aloud, and
-// her answer narrows. See spec.md.
+// her answer narrows. Each note ends with a short question that the next step
+// answers. See spec.md.
 export const clarifyTheCase: SequenceSpec = {
   kind: "sequence",
   title: "Two questions narrow Mais's answer",
@@ -21,7 +22,7 @@ export const clarifyTheCase: SequenceSpec = {
       to: 1,
       label: "repeat orders fell",
       title: "The case",
-      note: "The founder of a nine-person team that runs a food delivery app says: repeat orders fell from about 40 percent of customers to about 30 percent over two months. You start next week. What would you do?",
+      note: "The founder of a nine-person team that runs a food delivery app says: repeat orders fell from about 40 percent of customers to about 30 percent over two months. You start next week. What would you do? Before you press Next: what is the first thing Mais should do?",
       chips: ["40% to 30%", "two months"],
     },
     {
@@ -29,14 +30,14 @@ export const clarifyTheCase: SequenceSpec = {
       to: 1,
       label: "say it back",
       title: "Say the question back",
-      note: "Mais says it in her own words: so out of 100 customers who order, about 40 used to order again within 30 days, and now about 30 do. She is checking that she heard the right question. The founder says yes.",
+      note: "Mais says it in her own words: out of 100 customers who order, about 40 used to order again within 30 days, and now about 30 do. She checks that she heard the right question. The founder says yes. Before you press Next: who might the drop be about? Write down one question for the founder.",
     },
     {
       from: 1,
       to: 2,
       label: "new or returning?",
       title: "Clarifying question 1: who?",
-      note: "Mais asks whether the drop is in new customers, in customers who have ordered before, or in both. The answer would change what she looks at first.",
+      note: "Mais asks whether the drop is in new customers, in customers who have ordered before, or in both. The answer would change what she looks at first. Before you press Next: what do you expect the facts to say?",
     },
     {
       from: 2,
@@ -45,7 +46,7 @@ export const clarifyTheCase: SequenceSpec = {
       tone: "good",
       outcome: "narrows it",
       title: "The drop is in new customers",
-      note: "Customers who ordered for the first time in the last two months are ordering a second time less often. Customers who joined earlier order at about the same rate as before.",
+      note: "Customers who ordered for the first time in the last two months are ordering a second time less often. Customers who joined earlier order at about the same rate as before. Before you press Next: what second question would you ask, about time?",
       chips: ["new customers", "older ones steady"],
     },
     {
@@ -53,7 +54,7 @@ export const clarifyTheCase: SequenceSpec = {
       to: 2,
       label: "what changed?",
       title: "Clarifying question 2: when?",
-      note: "Mais asks whether anything changed in the app, the prices or the restaurants about two months ago. A change that lines up with the drop is the first thing to check.",
+      note: "Mais asks whether anything changed in the app, the prices or the restaurants about two months ago. A change that lines up with the drop is the first thing to check. Before you press Next: which change would you hope to hear about?",
     },
     {
       from: 2,
@@ -62,7 +63,7 @@ export const clarifyTheCase: SequenceSpec = {
       tone: "warn",
       outcome: "a lead",
       title: "The delivery fee went up",
-      note: "Two months ago the delivery fee on orders under 15 dollars went from 1 dollar to 2 dollars. This is a lead, not proof. Two things that happen at the same time are not always cause and effect.",
+      note: "Two months ago the delivery fee on orders under 15 dollars went from 1 dollar to 2 dollars. This is a lead, not proof. Two things that happen at the same time are not always cause and effect. Before you press Next: what should Mais say about what she still does not know?",
       chips: ["fee up, orders under $15"],
     },
     {
@@ -70,7 +71,7 @@ export const clarifyTheCase: SequenceSpec = {
       to: 1,
       label: "assume aloud",
       title: "Say the assumption",
-      note: "Mais says: I will assume the fee is one cause, not the only one. I will also assume the restaurants and the delivery times did not change, and I would check that first. She names what she does not know.",
+      note: "Mais says: I will assume the fee is one cause, not the only one. I will also assume the restaurants and the delivery times did not change, and I would check that first. She names what she does not know. Before you press Next: how narrow is her question now?",
       chips: ["fee: one cause", "check the rest first"],
     },
     {

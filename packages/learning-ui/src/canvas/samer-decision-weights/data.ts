@@ -34,5 +34,5 @@ export const samerDecisionWeights: FactorSpec = {
     "Set every weight to Matters a little. Flagging and fixing by hand tie at 12 points. When nothing matters more than anything else, the numbers cannot choose for you.",
   ],
   limits:
-    "The scores and weights are Samer's own judgments in this example, and the model treats them as exact. It cannot warn you about a criterion you left off the list, and a gap of one or two points means the options are close. A real decision also depends on facts the table does not hold, such as what dispatch said and how many days Samer had.",
+    "The scores and weights are Samer's own judgements in this example, and the model treats them as exact. It cannot warn you about a criterion you left off the list, and a gap of one or two points means the options are close. A real decision also depends on facts the table does not hold, such as what dispatch said and how many days Samer had.",
 };

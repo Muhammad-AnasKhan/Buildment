@@ -11,10 +11,10 @@ export const chooseTechnicalStory: FactorSpec = {
   title: "Yazan's story: change what matters",
   purpose: "See how the weight you give each question changes which technical story comes out ahead.",
   whatThisShows:
-    "Each story has a score from 1 to 5 on five questions. Each score is multiplied by how much that question matters, and the results are added up. The report job was Yazan's own decision and he can explain it five whys deep. The team project has the most impressive tools.",
+    "Each story has a score from 1 to 5 on five questions. Each score is multiplied by how much that question matters, and the results are added up. These scores are this example's: they are Yazan's own judgment, and yours would differ. The report job was his own decision and he can explain it five whys deep. The events project has the most impressive tools.",
   options: [
     { id: "report-job", name: "Report job" },
-    { id: "team-project", name: "Team project" },
+    { id: "team-project", name: "Events project" },
     { id: "weekend-app", name: "Weekend app" },
   ],
   criteria: [
@@ -32,8 +32,8 @@ export const chooseTechnicalStory: FactorSpec = {
   scoreScale: { min: 1, max: 5 },
   unit: "points",
   tryThis: [
-    "Before you change anything, predict which story leads. The report job leads with 36 points, against 31 for the team project and 27 for the weekend app.",
-    "Set Impressive tools to Very important. Now the team project wins, 41 to 38. This is the trap: the story with the best tools is the one Yazan can defend least.",
+    "Before you change anything, predict which story leads, and by how much. Then check the totals.",
+    "Set Impressive tools to Very important. Now the events project wins, 41 to 38. This is the trap: the story with the best tools is the one Yazan can defend least.",
     "Put Impressive tools back to Nice to have and set I can explain five whys to Very important. The report job leads by 7 points, 41 to 34.",
   ],
   limits:

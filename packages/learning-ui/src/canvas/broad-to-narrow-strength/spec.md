@@ -29,7 +29,7 @@ Narrowing is a sequence of questions: which part, what exactly, when, who saw it
 - Static fallback: chapter 6.2 tells the same steps in prose.
 
 ## Controls
-Shared stepper controls.
+Shared stepper controls. Each step's note ends with one short question that the next step answers ("Before you press Next: ..."), so the learner thinks before each step. The chapter prose does not retell Nour's steps; its worked example uses a different case (Wael, a support lead).
 
 ## Visualisation
 Six pills and five arrows, with a text badge on each toned step.
@@ -37,6 +37,7 @@ Six pills and five arrows, with a text badge on each toned step.
 ## Copy
 - What this shows: one strength narrowed until it can be checked.
 - Try this: 1. Write your own broad strength and narrow it with the same two questions. 2. Say why an honest gap beats a quote you invented.
+- Under the canvas in the chapter: two or three sentences.
 - What changed: each note says what the interviewer can now check.
 - Limits of the model: as in `limits`.
 

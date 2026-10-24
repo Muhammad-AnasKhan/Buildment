@@ -8,18 +8,18 @@ owner: interaction-designer
 renderer: state-machine (HTML controls, inline SVG states)
 ---
 
-# Canvas spec: The engineer's ladder: Yazan's report job
+# Canvas spec: The engineer's follow-ups: Yazan's report job
 
 ## Teaching claim
-An engineer goes down a ladder of follow-ups: what you built, why this way, why not the other way, what happens if it fails, how you tested it, what you would change. Each rung needs a decision or a test you can name, or an honest "I did not test that" with what you would do.
+An engineer asks a series of follow-ups: what you built, why this way, why not the other way, what happens if it fails, how you tested it, what you would change. Each step needs a decision or a test you can name, or an honest "I did not test that" with what you would do.
 
 ## Why a canvas
-The ladder is an order. Stepping down it one rung at a time lets the learner try to answer each question before the note shows Yazan's answer, which a list of questions does not make them do.
+The follow-ups come in an order. Stepping through them one step at a time lets the learner try to answer each question before the note shows Yazan's answer, which a list of questions does not make them do. The order is a walk, so it stays a plain step-through.
 
 ## Model
 - Inputs: none beyond the step controls.
 - Outputs: the lit state, the active edge, the note and chips.
-- Rule: six states in a snake (three across the top row, three back along the bottom row); five edges; six steps, one per rung.
+- Rule: six states in a snake (three across the top row, three back along the bottom row); five edges; six steps, one for each follow-up.
 - Assumptions: each answer uses only Yazan's facts from the chapter.
 - Limitations: real engineers ask in other orders and ask other questions.
 
@@ -32,19 +32,19 @@ The ladder is an order. Stepping down it one rung at a time lets the learner try
 Shared stepper controls.
 
 ## Visualisation
-Six pills and five arrows. Tone good on the trade-off rung and on the honest-gap rung, each with a text badge.
+Six pills and five arrows. Tone good on the trade-off step and on the honest-gap step, each with a text badge.
 
 ## Copy
 - What this shows: six follow-up questions and what each one needs.
-- Try this: 1. Name the option Yazan did not choose at rung 3. 2. Say why the answer at rung 5 is strong even without a test.
+- Try this: 1. Name the option Yazan did not choose at step 3. 2. Say why the answer at step 5 is strong even without a test.
 - What changed: each step note names the decision, the test or the gap.
 - Limits of the model: as in `limits`.
 
 ## Edge cases
-The last rung has no outgoing edge. Apostrophe in "What I'd change" is plain text.
+The last step has no outgoing edge. Apostrophe in "What I'd change" is plain text.
 
 ## Accessibility
-Shared stepper keyboard support and focus ring; the summary describes the ladder; tone always has a text badge.
+Shared stepper keyboard support and focus ring; the summary describes the six follow-ups; tone always has a text badge.
 
 ## Acceptance criteria
 - [x] The claim is testable: the quiz in 5.4 asks which answer to a "what if" question is honest.

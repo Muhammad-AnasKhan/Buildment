@@ -21,7 +21,7 @@ export const timeToThink: SequenceSpec = {
       to: 1,
       label: "asks a question",
       title: "The question",
-      note: "The hiring manager asks: How do you handle feedback? The words can mean feedback Nour gives to clients, or feedback she gets on her work.",
+      note: "The hiring manager asks: How do you handle feedback? The words can mean feedback Nour gives to clients, or feedback she gets on her work. Before you press Next: what would you do first?",
     },
     {
       from: 1,
@@ -30,7 +30,7 @@ export const timeToThink: SequenceSpec = {
       tone: "bad",
       outcome: "wrong question",
       title: "Version 1: answer at once",
-      note: "Nour starts talking about how she gives clear feedback to clients. It takes about a minute in this example. She is answering a question the manager did not ask.",
+      note: "Nour starts talking about how she gives clear feedback to clients. It takes about a minute in this example. She is answering a question the manager did not ask. Before you press Next: what will the manager say?",
     },
     {
       from: 0,
@@ -38,7 +38,7 @@ export const timeToThink: SequenceSpec = {
       label: "I meant on you",
       tone: "warn",
       title: "The manager corrects her",
-      note: "The manager says: I meant feedback on your work. The minute is gone, Nour feels more nervous, and her next answer starts from behind.",
+      note: "The manager says: I meant feedback on your work. The minute is gone, Nour feels more nervous, and her next answer starts with more worry. Before you press Next: what could Nour have done in the first five seconds?",
     },
     {
       from: 1,
@@ -46,7 +46,7 @@ export const timeToThink: SequenceSpec = {
       label: "let me think",
       tone: "good",
       title: "Version 2: ask for a moment",
-      note: "Now the same question again. Nour says: Let me think for a moment. She waits about five seconds in this example. A short, planned pause is one sentence and a breath.",
+      note: "Now the same question again. Nour says: Let me think for a moment. She waits about five seconds in this example. A short, planned pause is one sentence and a breath. Before you press Next: what should she ask next?",
     },
     {
       from: 1,
@@ -54,14 +54,14 @@ export const timeToThink: SequenceSpec = {
       label: "do you mean...?",
       tone: "good",
       title: "Check what was asked",
-      note: "She asks: Do you mean feedback I give to clients, or feedback I get on my work? The check takes a few seconds, and it makes sure she answers the right question.",
+      note: "She asks: Do you mean feedback I give to clients, or feedback I get on my work? The check takes a few seconds, and it makes sure she answers the right question. Before you press Next: what will the manager say?",
     },
     {
       from: 0,
       to: 1,
       label: "feedback on me",
       title: "The manager answers",
-      note: "The manager says: Feedback you get on your work. Now Nour has the real question and has used the pause to choose one time to talk about.",
+      note: "The manager says: Feedback you get on your work. Now Nour has the real question and has used the pause to choose one time to talk about. Before you press Next: what short answer would you give?",
     },
     {
       from: 1,
@@ -70,7 +70,7 @@ export const timeToThink: SequenceSpec = {
       tone: "good",
       outcome: "right question",
       title: "A short answer, one idea per sentence",
-      note: "A client said my first screens were too busy. I removed half of the buttons. They approved the second version. After that I show clients a rough version first. Short sentences are easier to say, and easier for the listener to follow.",
+      note: "A client said my first screens were too busy. I removed half of the buttons. They approved the second version. After that I show clients a rough version first. Short sentences are easier to say, and easier for the listener to follow. Before you press Next: the video freezes. What do you say?",
     },
     {
       from: 1,

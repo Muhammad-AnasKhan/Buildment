@@ -37,8 +37,8 @@ Four lanes with numbered arrows. Tone: good on the counts and the gap, warn on t
 
 ## Copy
 - What this shows: one question per source, each answer written down with where it came from.
-- Try this: 1. Before step 1, decide whether Bilal can still find a number if he never measured, then count how many sources gave him one. 2. At step 2, find the two rules Bilal followed before he read any data.
-- What changed: the log gave two counts, the inbox two more, and the bill nothing to claim.
+- Try this: 1. Before step 1, decide whether Bilal can still find a number if he never measured (the chapter predict), then count how many sources gave him one. 2. At step 2, find the two rules Bilal followed before he read any data.
+- What changed: the log gave two counts, the inbox two more, and the bill nothing to claim. Every note except the last ends with one short question that the next step answers ("Before you press Next: ..."). The chapter's worked example uses a different case (Salma's form report) and summarises Bilal's search in one sentence.
 - Limits of the model: as in `limits`.
 
 ## Edge cases

@@ -3,7 +3,7 @@ artifact: canvas-spec
 course: founder-interviews
 chapter: 03.02-how-a-why-chain-works
 slug: resume-line-why-chain
-version: 1
+version: 2
 owner: interaction-designer
 renderer: state-machine (HTML controls, inline SVG states)
 ---
@@ -19,9 +19,10 @@ The chapter tells Iyad's chain in prose. Stepping through it one why at a time m
 ## Model
 - Inputs: none beyond the step controls (Back, Next, Play, step chips).
 - Outputs: the highlighted state, the active edge, the step note and chips.
-- Rule: six states named for the role of each why (the line, reason to start, cause found, options weighed, number and source, honest limit); five "why" edges; eight steps. Steps 1 to 6 are Iyad's chain, step 7 revisits "Cause you found" as a chain that ends at blame, step 8 revisits it as Karam's chain breaking at the second why.
+- Rule: six states named for the role of each why (the line, reason to start, cause found, options weighed, number and source, honest limit); five "why" edges; eight steps. Steps 1 to 6 are Iyad's chain (a bus times app: about 10 seconds to about 6 seconds on the cheapest test phone, the middle of ten runs each time), step 7 revisits "Cause you found" as a chain that ends at blame, step 8 revisits it as Karam's chain breaking at the second why.
 - Assumptions: one chain only; every answer in the strong chain has a stated source.
-- Limitations: real problems have several causes; five is a habit; no study tests the five whys as an interview method.
+- Think before each step (revision 1): every note except the last ends with one short question that the next step answers, so the learner predicts before pressing Next.
+- Limitations: real problems have several causes; five is a habit; we did not find a study that tested the five whys as an interview method.
 
 ## Rendering
 - Primary: the shared state-machine renderer.
@@ -37,7 +38,7 @@ Six labelled pills and five arrows. Tone good on the honest-limit step, bad on t
 
 ## Copy
 - What this shows: one resume line asked five whys, and two chains that break.
-- Try this: 1. Predict where Iyad's chain stops before step 6. 2. At step 8, find one honest sentence Karam could say at why 2.
+- Try this: 1. Predict where Iyad's chain stops before step 6. 2. At step 8, find one honest sentence Karam could say at why 2. The chapter does not retell the steps; it summarises the chain in one paragraph.
 - What changed: each step note says what the answer was and where it came from.
 - Limits of the model: as in `limits`.
 

@@ -3,7 +3,7 @@ artifact: canvas-spec
 course: founder-interviews
 chapter: 03.03-real-reasons-not-tidy-ones
 slug: tidy-reason-breaks
-version: 1
+version: 2
 owner: interaction-designer
 renderer: sequence (HTML controls, inline SVG lanes)
 ---
@@ -20,6 +20,7 @@ The chapter explains why memory tidies up the past. Watching the same three whys
 - Inputs: none beyond the step controls.
 - Outputs: the active arrow, the step note, chips and an outcome badge.
 - Rule: three lanes (Founder, Karam, His notes); nine steps. Steps 1 to 6 are the tidy path (reduce friction, too many fields, then "my manager asked", which contradicts the first answer). Steps 7 to 9 are the repair: Karam reads his notes from that week, then gives the real reason and the decision he made inside it.
+- Think before each step (revision 1): every note except the last ends with one short question that the next step answers.
 - Assumptions: Karam's facts as in the chapter: the designer led the redesign, his manager asked him to build it, he chose one page over three steps, and he did not test which converts better.
 - Limitations: one conversation; notes written later can still be wrong.
 

@@ -22,7 +22,7 @@ The chapter explains the five questions in prose. A learner can say "tools shoul
 - Formula: total(story) = sum over criteria of weight x score. Scores run from 1 to 5.
 - Starting weights: own decision 3, five whys 2, result 2, recent 1, impressive tools 1.
 - Totals at the start: report job 36, team project 31, weekend app 27.
-- Assumptions: the scores are Yazan's own judgment and are exact in the model.
+- Assumptions: the scores are this example's. They are Yazan's own judgment and are exact in the model. The chapter asks the learner to score their own stories on paper with the same five questions.
 - Limitations: a simple illustration. A story that is not on the list cannot win. A gap of one or two points means two stories could both work.
 
 ## Rendering
@@ -37,13 +37,14 @@ Three-level weight buttons for each criterion, and Reset. No other controls.
 Three total cards, one bar per story, the current leader named. The weight rows show score times weight for each story.
 
 ## Copy
-- What this shows: three technical stories scored on five questions; the weight you give each question decides the winner.
-- Try this: 1. Predict the leader at the start. 2. Set Impressive tools to Very important and watch the team project pass the report job, 41 to 38. 3. Put tools back to Nice to have and set I can explain five whys to Very important: the report job leads 41 to 34.
+- What this shows: three technical stories scored on five questions; the weight you give each question decides the winner. The scores are this example's.
+- Try this: 1. Predict the leader at the start. 2. Set Impressive tools to Very important and watch the events project pass the report job, 41 to 38. 3. Put tools back to Nice to have and set I can explain five whys to Very important: the report job leads 41 to 34.
+- Under the canvas in the chapter: two or three sentences (what it shows, what to try first, the limit). The chapter does not state totals.
 - What changed: the renderer says which weight moved, how many points each story gained or lost, and whether the leader changed.
 - Limits of the model: as in `limits`.
 
 ## Edge cases
-Names are short so they fit the bar labels on a phone: Report job, Team project, Weekend app. A tie is shown by the renderer as a tie.
+Names are short so they fit the bar labels on a phone: Report job, Events project, Weekend app. A tie is shown by the renderer as a tie.
 
 ## Accessibility
 Shared factor renderer: radio buttons with labels, keyboard use, visible focus ring, bars with a text alternative that lists every total.

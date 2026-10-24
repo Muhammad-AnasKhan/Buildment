@@ -22,7 +22,7 @@ The pull of the safe answer is a feeling. Moving one weight and watching the saf
 - Formula: total(answer) = sum over criteria of weight x score. Scores run from 1 to 5.
 - Starting weights: all four at 1. Totals at the start: perfectionist 11, real with no plan 11, real with a plan 16.
 - Safe to say at 3: perfectionist 21, real with no plan 13, real with a plan 20. Safe at 3 and honest at 3: real with a plan 30, perfectionist 25, real with no plan 23.
-- Assumptions: scores are Nour's own judgment.
+- Assumptions: the scores are this example's, Nour's own judgment. The chapter asks the learner to score their own weakness answers on paper with the same four questions.
 - Limitations: a simple illustration that cannot say which weakness to name.
 
 ## Rendering
@@ -39,6 +39,7 @@ Three total cards and bars; the weight rows show score times weight.
 ## Copy
 - What this shows: three weakness answers scored on four questions.
 - Try this: 1. Predict the leader when all weights are equal. 2. Set Feels safe to say to Matters a lot. 3. Also set Honest to Matters a lot.
+- Under the canvas in the chapter: two or three sentences. The chapter does not state totals.
 - What changed: the renderer names the moved weight, the point changes and whether the leader changed.
 - Limits of the model: as in `limits`.
 

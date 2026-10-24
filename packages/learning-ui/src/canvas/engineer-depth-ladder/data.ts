@@ -1,13 +1,13 @@
 import type { StateMachineSpec } from "../renderers/state-machine/types";
 
 // The Founder Interview course, chapter 5.4 "The engineer version".
-// An engineer goes down a ladder of follow-ups on Yazan's report job. Each rung
+// An engineer asks a series of follow-ups on Yazan's report job. Each step
 // needs a decision or a test he can name, or an honest "I did not test that".
 // Facts match the chapter. See spec.md.
 export const engineerDepthLadder: StateMachineSpec = {
   kind: "state-machine",
-  title: "The engineer's ladder: Yazan's report job",
-  purpose: "Follow six follow-up questions down the ladder and see what each one needs from you.",
+  title: "The engineer's follow-ups: Yazan's report job",
+  purpose: "Follow six follow-up questions, one step at a time, and see what each one needs from you.",
   summary:
     "An engineer asks what Yazan built, why this way, why not run it at night, what happens if the job stops halfway, how he tested it, and what he would change. Each answer names a decision or a test, and one answer is an honest gap: he did not test ten times more merchants.",
   states: [
@@ -29,21 +29,21 @@ export const engineerDepthLadder: StateMachineSpec = {
     {
       state: "built",
       edge: 0,
-      title: "Rung 1: what you built",
+      title: "Step 1: what you built",
       note: "I moved the monthly merchant report into a background job that builds it in parts and emails a link. Before: about 40 minutes, and 9 timeouts last month for the 12 largest merchants. After: about 6 minutes for the largest, no timeouts in two months.",
       chips: ["one sentence", "numbers with a before"],
     },
     {
       state: "why",
       edge: 1,
-      title: "Rung 2: why this way",
+      title: "Step 2: why this way",
       note: "The report was built while the merchant waited, and for the largest merchants the wait was longer than the page allows. A background job lets the page answer at once, and building in parts means a failure costs one part, not the whole report.",
       chips: ["the problem I saw", "the reason then"],
     },
     {
       state: "night",
       edge: 2,
-      title: "Rung 3: why not run it at night?",
+      title: "Step 3: why not run it at night?",
       note: "Merchants ask for reports at any time, and some need today's numbers. A night run would give yesterday's. The price of my choice: more parts to watch than one night script.",
       chips: ["the other option", "what I gave up"],
       tone: "good",
@@ -52,14 +52,14 @@ export const engineerDepthLadder: StateMachineSpec = {
     {
       state: "stops",
       edge: 3,
-      title: "Rung 4: what if the job stops halfway?",
+      title: "Step 4: what if the job stops halfway?",
       note: "It restarts from the last finished part, and a report is never emailed twice. I tested this by stopping the job by hand.",
       chips: ["failure case", "a test I ran"],
     },
     {
       state: "tested",
       edge: 4,
-      title: "Rung 5: how you tested it",
+      title: "Step 5: how you tested it",
       note: "I stopped the job by hand and checked that it restarted and sent one email. I did not test ten times more merchants. If it came up, I would run the biggest merchant's report on a copy of the data with more than one job at a time.",
       chips: ["what I tested", "what I did not"],
       tone: "good",
@@ -67,15 +67,15 @@ export const engineerDepthLadder: StateMachineSpec = {
     },
     {
       state: "change",
-      title: "Rung 6: what you would change",
+      title: "Step 6: what you would change",
       note: "Today I find out about a stopped job by reading the logs. I would send the team a message when a job stops, so nobody waits for a report that is not coming.",
       chips: ["a change I would make"],
     },
   ],
   tryThis: [
-    "At rung 3, name the option Yazan did not choose and what he gave up by choosing his own.",
-    "At rung 5, read the answer about ten times more merchants. Why is it a strong answer even though he did not test it?",
+    "At step 3, name the option Yazan did not choose and what he gave up by choosing his own.",
+    "At step 5, read the answer about ten times more merchants. Why is it a strong answer even though he did not test it?",
   ],
   limits:
-    "A real engineer may ask these questions in another order, or ask one that is not on the ladder. The ladder is a practice order, not a script. Each answer uses only Yazan's own facts from the chapter, so every rung has a decision, a test or an honest gap behind it.",
+    "A real engineer may ask these questions in another order, or ask one that is not on this list. The order here is for practice, not a script. Each answer uses only Yazan's own facts from the chapter, so every step has a decision, a test or an honest gap behind it.",
 };

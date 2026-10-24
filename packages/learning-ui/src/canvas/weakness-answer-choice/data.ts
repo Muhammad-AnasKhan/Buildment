@@ -11,7 +11,7 @@ export const weaknessAnswerChoice: FactorSpec = {
   title: "Nour's weakness answer: change what matters",
   purpose: "See why many people choose the safe answer, and what the other answers offer.",
   whatThisShows:
-    "Each answer has a score from 1 to 5 on four questions. Each score is multiplied by how much that question matters, and the results are added up. All four questions start equal. Feeling safe is the only question where the humblebrag scores best.",
+    "Each answer has a score from 1 to 5 on four questions. Each score is multiplied by how much that question matters, and the results are added up. All four questions start equal. These scores are this example's: they are Nour's own judgment, and yours would differ. Feeling safe is the only question where the humblebrag scores best.",
   options: [
     { id: "humblebrag", name: "Perfectionist" },
     { id: "real-no-plan", name: "Real, no plan" },
@@ -31,7 +31,7 @@ export const weaknessAnswerChoice: FactorSpec = {
   scoreScale: { min: 1, max: 5 },
   unit: "points",
   tryThis: [
-    "Before you change anything, predict which answer leads when all four questions are equal. A real weakness with a plan leads with 16 points, against 11 and 11.",
+    "Before you change anything, predict which answer leads when all four questions are equal, and which two are close behind.",
     "Set Feels safe to say to Matters a lot. Now the humblebrag wins, 21 to 20. This is why people choose it: it feels safest in the moment.",
     "Keep Feels safe to say at Matters a lot and set Honest to Matters a lot. The real weakness with a plan leads again, 30 to 25.",
   ],
