@@ -7,6 +7,7 @@ import { LearningObjectivesComponent } from "./learning-objectives/Component";
 import { ChapterRecapComponent } from "./chapter-recap/Component";
 import { CodeExerciseComponent } from "./code/Component";
 import { PredictComponent } from "./predict/Component";
+import { AiInterviewComponent } from "./ai-interview/Component";
 import { MustReadComponent } from "./must-read/Component";
 import { VideoComponent } from "./video/Component";
 import { VisualWalkthroughComponent } from "./visual-walkthrough/Component";
@@ -34,4 +35,5 @@ export const blockRegistry = {
   CHAPTER_RECAP: { ...blockDefinitions.CHAPTER_RECAP, Component: ChapterRecapComponent },
   CODE: { ...blockDefinitions.CODE, Component: CodeExerciseComponent },
   PREDICT: { ...blockDefinitions.PREDICT, Component: PredictComponent },
+  AI_INTERVIEW: { ...blockDefinitions.AI_INTERVIEW, Component: AiInterviewComponent },
 } as const;

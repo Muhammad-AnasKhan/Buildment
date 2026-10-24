@@ -38,6 +38,13 @@ status: draft v1
   `Response`, create a `Review`, or recompute progress. Only the mentor's separate review submit
   action can do that.
 
+- **Learner AI keys are an explicit external transfer, on the learner's own account.** A learner's OpenRouter
+  key is stored only as AES-256-GCM ciphertext (server key `AI_KEY_ENCRYPTION_KEY`, user id as associated
+  data), decrypted in memory for one request, and never returned, logged or put in an error. The AI interview
+  sends the learner's answers, pasted context and the block's server-only rubric to OpenRouter; learner and
+  course text is delimited and treated as untrusted, and replies that repeat the rubric or the system prompt
+  are discarded. See [`13-ai-interview.mdx`](13-ai-interview.mdx).
+
 ## The sanitizer contract (required test)
 
 `mdx/sanitize.ts` is the single choke point between `Block.config` (server) and what the reader

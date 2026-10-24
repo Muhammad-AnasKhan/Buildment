@@ -11,6 +11,8 @@ export const COMPLETABLE_BLOCK_TYPES = new Set<BlockType>([
   "OPEN_QUESTION",
   "CODE",
   "PREDICT",
+  // Counts once a session has finished and its feedback is saved; never scored.
+  "AI_INTERVIEW",
 ]);
 
 export type BlockForProgress = {

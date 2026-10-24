@@ -145,6 +145,7 @@ enum BlockType {
   VISUAL_WALKTHROUGH
   VISUAL_DIAGRAM
   ROADMAP
+  AI_INTERVIEW
 }
 
 enum ResponseStatus {
@@ -170,6 +171,16 @@ enum StudySessionStatus {
   RUNNING
   PAUSED
   ENDED
+}
+
+enum AiProvider {
+  OPENROUTER
+}
+
+enum AiInterviewStatus {
+  ACTIVE
+  FINISHED
+  ABANDONED
 }
 
 enum InstructorAccessRequestStatus {
@@ -211,6 +222,55 @@ model User {
   organizationCourseRequestsReviewed OrganizationCourseRequest[] @relation("OrgCourseRequestReviewer")
   instructorAccessRequest       InstructorAccessRequest?
   instructorAccessReviews       InstructorAccessRequest[] @relation("InstructorAccessReviewer")
+  aiCredential                  AiCredential?
+  aiInterviewSessions           AiInterviewSession[]
+}
+
+/// A learner's own AI provider key for AI interviews. Only the AES-256-GCM
+/// ciphertext is stored (key from AI_KEY_ENCRYPTION_KEY, the user id as
+/// associated data); the plaintext key never leaves the server.
+model AiCredential {
+  id         String     @id @default(cuid())
+  userId     String     @unique
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider   AiProvider @default(OPENROUTER)
+  ciphertext String     @db.Text
+  iv         String     @db.VarChar(32)
+  authTag    String     @db.VarChar(32)
+  lastFour   String     @db.VarChar(4)
+  /// Model id chosen by the learner; null means the server default.
+  model      String?    @db.VarChar(120)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  lastUsedAt DateTime?
+}
+
+/// One run of an AI_INTERVIEW block. The transcript and feedback are the
+/// learner's own words plus the interviewer's questions; the rubric lives only
+/// in Block.config and is never copied here.
+model AiInterviewSession {
+  id         String            @id @default(cuid())
+  userId     String
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  blockId    String
+  block      Block             @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  status     AiInterviewStatus @default(ACTIVE)
+  /// Resume or project text the learner pasted, when the block asks for it.
+  context    String?           @db.Text
+  /// Ordered turns: [{ role: "interviewer" | "candidate", content, focus?, depth?, at }].
+  transcript Json              @default("[]")
+  /// Validated AiInterviewFeedback, set when the session finishes.
+  feedback   Json?
+  /// Answers the learner has given so far.
+  turnCount  Int               @default(0)
+  /// Model id used, kept so a mentor can see what produced the feedback.
+  model      String?           @db.VarChar(120)
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+  finishedAt DateTime?
+
+  @@index([userId, blockId, status])
+  @@index([blockId])
 }
 
 model InstructorAccessRequest {
@@ -440,6 +500,7 @@ model Block {
   createdAt  DateTime?  @default(now())
   responses  Response[]
   stats      BlockStats?
+  aiInterviewSessions AiInterviewSession[]
 
   @@index([chapterId, order])
 }

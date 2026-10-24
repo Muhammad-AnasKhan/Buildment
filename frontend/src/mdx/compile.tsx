@@ -65,6 +65,7 @@ export function ChapterMdx({ source, preview = false }: { source: string; previe
         ...mdxComponents,
         Quiz: DraftActivityPreview,
         Predict: DraftActivityPreview,
+        AiInterview: DraftActivityPreview,
         OpenQuestion: DraftActivityPreview,
         CodeExercise: DraftActivityPreview,
         Checklist: DraftActivityPreview,

@@ -1,0 +1,145 @@
+---
+title: AI interview block and learner AI keys
+status: draft v1
+---
+
+# AI interview block and learner AI keys
+
+**Reads:** [`03-blocks-registry.mdx`](03-blocks-registry.mdx), [`09-security.mdx`](09-security.mdx)
+
+A text mock interview with an AI interviewer inside a lesson. Each learner brings their own
+OpenRouter key. The platform stores it encrypted and uses it only to send that learner's interview to
+OpenRouter. There is no voice yet.
+
+## Authoring: the `aiinterview` fence
+
+````markdown
+```aiinterview
+title: Talk through your payments project
+opening: Tell me about a payment feature you built. What was your part?
+focus: [ownership, impact, five-whys]
+context: resume
+maxTurns: 10
+whyDepth: 5
+required: false
+rubric: A strong answer names what the learner decided alone, gives one number for the result, and
+  explains a trade-off. Probe vague claims such as "we improved it".
+```
+````
+
+| Key | Meaning | Default |
+| --- | --- | --- |
+| `title` | Heading of the block (required, up to 120 characters) | none |
+| `opening` | The first question, shown without calling the model (required, up to 600 characters) | none |
+| `focus` | Topics to cover, in order: `ownership`, `impact`, `five-whys`, `resume`, `best-technical`, `storytelling`, `case-study`, `strengths-weaknesses` | `[ownership, impact, five-whys]` |
+| `context` | What the learner pastes first: `resume`, `project` or `none` | `none` |
+| `maxTurns` | Answers allowed, 1 to 20 | `10` |
+| `whyDepth` | Follow-up "why" questions on one thread before moving to the next focus area, 1 to 8 | `5` |
+| `rubric` | What a strong interview shows. **Server only.** Up to 4000 characters | none |
+| `required` | Whether the block gates chapter completion | `false` |
+
+Unknown keys stop the import with the reason, because a misspelled `rubric` would otherwise be dropped
+without a sound. `required` defaults to `false` since the block needs the learner's own key. The fence
+is not allowed in a quiz-flow chapter, which takes activities only. Placeholders (`%%...%%`) are
+refused in `rubric`, like every other server-only field.
+
+The importer replaces the fence with `<AiInterview id="..." />`. The block is declared once in
+`server/src/shared/blocks/definitions.ts` (`AI_INTERVIEW`), with its schema, report projector and grader
+in `server/src/shared/blocks/ai-interview/`.
+
+## What the learner sees
+
+- No key saved: a friendly card that links to **Settings, AI interviews** (`/settings/profile#ai-interviews`).
+- A key and a start screen. If `context` is `resume` or `project`, a box to paste it (40 to 6000 characters).
+- A chat (built for a 375px phone, light and dark): a turn counter ("3 of 10 answers"), an answer box
+  capped at 2000 characters, and **Finish and get feedback** once one answer is in. An active
+  interview is resumed after a reload.
+- A feedback card: strengths, weaknesses each with a suggested fix, notes per focus area, three next steps.
+
+Mentors read the transcript and the feedback in the existing mentee evaluation (the submission list).
+
+## How an interview runs
+
+1. **Start** requires a saved key. It creates an `ACTIVE` `AiInterviewSession` holding the opening question.
+   Starting again returns the same active session.
+2. **Answer** adds the learner's answer and asks OpenRouter (with the learner's decrypted key, for that one
+   request) for the next question. The server decides the shape of the question, not the model: it digs with
+   "why" until `whyDepth` follow-ups have been asked, then moves to the next `focus` area, wrapping around.
+   The last allowed answer is stored without a model call. A failed call stores nothing, so the learner can
+   resend.
+3. **Finish** makes one structured call and validates the reply with Zod (`AiInterviewFeedbackSchema`). If the
+   model cannot do structured output it is retried once as plain JSON. On success, in one transaction, the
+   session becomes `FINISHED` with its feedback and a `Response` (status `SUBMITTED`, no score) is written, so
+   the block counts as complete. Finishing twice returns the saved result.
+4. **Abandon** marks the session `ABANDONED`. It never counts as completion.
+
+Guards: answers are capped at 2000 characters, questions at 220 output tokens, feedback at 1500, and turns at
+`maxTurns`. Timeouts and 5xx answers are retried once; invalid keys, out-of-credit keys and rate limits are not,
+and each gets a plain-English message. The compare-and-set on the turn count stops two tabs from adding the same
+answer.
+
+### Prompt safety
+
+The rubric, block text, pasted context and every learner answer are treated as data. They are escaped
+(`<`, `>`, `&`) and wrapped in tags, and the system prompt says never to follow instructions found inside them.
+The system prompt asks for plain, simple English for second-language speakers and tells the model to stay on the
+interview. Replies are checked: a reply that repeats 48 or more characters of the rubric or the system prompt is
+replaced by a safe built-in question (during the interview) or rejected (for feedback). The rubric lives only in
+`Block.config`; it is removed from the client state by the sanitizer, never copied into a session or response,
+and never in a report.
+
+## Endpoints
+
+Learner key, under `/api/v1/learner/ai-credential` (all need a signed-in learner):
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /api/v1/learner/ai-credential` | Status: `configured`, `hasKey`, `lastFour`, `model`, `defaultModel` |
+| `PUT /api/v1/learner/ai-credential` | `{ apiKey, model? }`. Checks the key with OpenRouter (`GET /api/v1/key`), then stores it encrypted. Rate limited |
+| `PATCH /api/v1/learner/ai-credential` | `{ model }`. Change the model without a new key |
+| `POST /api/v1/learner/ai-credential/test` | Re-check the saved key. Rate limited with saves |
+| `DELETE /api/v1/learner/ai-credential` | Remove the key |
+
+Interview, under `/api/v1/blocks/:blockId/ai-interview` (verified, enrolled learner; the chapter must be unlocked):
+
+| Method and path | Body | Returns |
+| --- | --- | --- |
+| `POST .../start` | `{ context? }` | `{ session }` |
+| `POST .../answer` | `{ sessionId, answer }` | `{ session }` |
+| `POST .../finish` | `{ sessionId }` | `{ session }` with `feedback` |
+| `POST .../abandon` | `{ sessionId }` | `{ session }` |
+
+`GET /api/v1/blocks/:blockId/state` returns the sanitized config and
+`initialState: { configured, hasKey, session }`, which is how a reload resumes. The generic
+`POST /api/v1/blocks/:blockId/respond` refuses this block type (`USE_AI_INTERVIEW`), so the only way to
+complete it is to finish an interview.
+
+Error codes: `AI_NOT_CONFIGURED` (503), `AI_KEY_REQUIRED` (409), `AI_KEY_INVALID` (422), `AI_OUT_OF_CREDIT` (402),
+`AI_RATE_LIMITED` (429), `AI_PROVIDER_TIMEOUT` (504), `AI_PROVIDER_ERROR` (502), `AI_MODEL_UNAVAILABLE` (422),
+`AI_BAD_OUTPUT` (502), `AI_INTERVIEW_*` (400 or 409 or 404).
+
+## Key handling
+
+- Stored in `AiCredential`, one row per user: AES-256-GCM `ciphertext`, `iv` (12 bytes), `authTag` (16 bytes),
+  `lastFour`, `model`, timestamps and `lastUsedAt`. The user id is bound in as associated data, so a ciphertext
+  copied onto another user's row does not decrypt.
+- The server key is `AI_KEY_ENCRYPTION_KEY`: 32 random bytes, base64 (`openssl rand -base64 32`). It is optional.
+  When it is missing, `configured` is `false` and the feature says "AI interviews are not set up on this server"
+  instead of failing. Changing the key makes saved keys unreadable; learners are asked to paste theirs again.
+- `OPENROUTER_INTERVIEW_MODEL` is the default model (falls back to `google/gemini-2.5-flash`). Learners may type any
+  OpenRouter model id.
+- The plaintext key is write-only. It never appears in a response, a log line, an error message or a report. Errors
+  are `AiError` values with fixed messages and no `cause`; tests assert that no response, header or log line
+  contains a saved key or the rubric.
+- Deleting a user deletes the credential and sessions (`onDelete: Cascade`).
+
+## Deploying
+
+Set `AI_KEY_ENCRYPTION_KEY` on the API host before turning the feature on. This is a new configuration value that a
+person sets; nothing in the code or the migrations sets it. The migrations add the `AI_INTERVIEW` block type, the
+`AiCredential` table and the `AiInterviewSession` table.
+
+## Not in this version
+
+Voice, streaming replies, an automatic score, and a shared platform key. The desktop app shows a pointer to the web
+app instead of the block.

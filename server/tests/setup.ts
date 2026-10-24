@@ -11,3 +11,6 @@ if (process.env.TEST_DATABASE_URL) {
 process.env.AUTH_RESEND_KEY = "";
 process.env.OPENROUTER_API_KEY = "";
 process.env.JOBS_ENABLED = "false";
+// A fixed test-only key so learner AI keys can be stored; tests that need the
+// "not set up" path clear it on the parsed env.
+process.env.AI_KEY_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString("base64");
