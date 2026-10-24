@@ -39,7 +39,7 @@ export const prefillDecodeSteps: SequenceSpec = {
       to: 3,
       label: "save 2,000 tokens",
       title: "The KV cache now holds the prompt",
-      note: "Prefill saves a key and a value for every prompt token in every layer. At 131,072 bytes per token, 2,000 tokens take 262,144,000 bytes, about 262 MB (2,000 x 0.13 MB).",
+      note: "Prefill saves the work done on every prompt token, in every layer. At 131,072 bytes per token, 2,000 tokens take 262,144,000 bytes, about 262 MB (2,000 x 0.13 MB).",
       chips: ["cache: 2,000 tokens", "2,000 x 131,072 = 262,144,000 bytes"],
     },
     {
@@ -66,15 +66,15 @@ export const prefillDecodeSteps: SequenceSpec = {
       to: 3,
       label: "read, add 1 token",
       title: "Decode also reads and extends the cache",
-      note: "The same step reads the whole cache so the new token can attend to every earlier token. It then adds one more entry of 131,072 bytes. The cache now holds 2,001 tokens.",
+      note: "The same step reads the whole cache so the new token can use every earlier token. It then adds one more entry of 131,072 bytes. The cache now holds 2,001 tokens.",
       chips: ["cache: 2,001 tokens", "added: 131,072 bytes"],
     },
     {
       from: 1,
       to: 2,
-      label: "step 2: read again",
+      label: "second decode",
       title: "The second decode does the same work",
-      note: "Step 2 reads the 16.06 GB of weights again and the 2,001-token cache, makes one token and adds one entry. The cache grows to 2,002 tokens. Nothing from step 1 is kept except the cache.",
+      note: "The second decode reads the 16.06 GB of weights again and the 2,001-token cache, makes one token and adds one entry. The cache grows to 2,002 tokens. Nothing from the first decode is kept except the cache.",
       chips: ["weights read: 16.06 GB", "cache: 2,002 tokens"],
     },
     {
@@ -107,8 +107,8 @@ export const prefillDecodeSteps: SequenceSpec = {
     },
   ],
   tryThis: [
-    "Before step 5, predict how much of the weights decode must read to make one token. Then check the chips: all 16.06 GB, the same amount as the whole prefill read.",
-    "Compare step 5 with step 9. The weights are read once in both. How many tokens does that one read make in each?",
+    "Before you open the message called The first decode reads every weight again, predict how much of the weights decode must read to make one token. Then check the chips: all 16.06 GB, the same amount as the whole prefill read.",
+    "Compare that message with the one called A batch of 8 shares one weight read. The weights are read once in both. How many tokens does that one read make in each?",
   ],
   limits:
     "This shows the order of work and the bytes for the running example, not real timings. It uses one GPU and leaves out activations, kernel overhead and the arithmetic itself, so it says nothing about how fast a real server runs. The 2,000-token prompt, the 500-token answer and the batch of 8 are the example's own numbers.",

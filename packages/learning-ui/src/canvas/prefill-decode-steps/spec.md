@@ -9,12 +9,12 @@
 
 The running example from the module 11 inference pack: an 8-billion-parameter open model with 32 layers, 8 KV heads and a head size of 128. Weights at 16-bit are 8,030,261,248 x 2 bytes = 16.06 GB. KV cache per token at 16-bit is 2 x 32 x 8 x 128 x 2 = 131,072 bytes (about 0.13 MB). Nothing is timed: the canvas shows order of work and bytes only.
 
-Steps (10): a 2,000-token prompt arrives; prefill reads the weights once for all 2,000 positions together; the cache saves 2,000 tokens (2,000 x 131,072 = 262,144,000 bytes, about 262 MB); the first token goes out (time to first token ends); decode step 1 reads all 16.06 GB for one token; it also reads the cache and adds one entry (2,001 tokens); step 2 does the same (2,002 tokens); the pattern repeats (a 500-token answer reads the weights 500 times, 8,030 GB, and the cache is 2,500 tokens, 327,680,000 bytes); a batch of 8 users shares one weight read for 8 tokens (8 x 131,072 = 1,048,576 new bytes); the answer ends. The 2,000-token prompt, the 500-token answer and the batch of 8 are the example's own numbers.
+Steps (10): a 2,000-token prompt arrives; prefill reads the weights once for all 2,000 positions together; the cache saves 2,000 tokens (2,000 x 131,072 = 262,144,000 bytes, about 262 MB); the first token goes out (time to first token ends); the first decode reads all 16.06 GB for one token; it also reads the cache and adds one entry (2,001 tokens); the second decode does the same (2,002 tokens); the pattern repeats (a 500-token answer reads the weights 500 times, 8,030 GB, and the cache is 2,500 tokens, 327,680,000 bytes); a batch of 8 users shares one weight read for 8 tokens (8 x 131,072 = 1,048,576 new bytes); the answer ends. The 2,000-token prompt, the 500-token answer and the batch of 8 are the example's own numbers.
 
 ## Learning interaction
 
 - **What this shows:** the two phases as messages between the app, the engine, the weights and the cache, with the bytes in chips.
-- **Try this:** predict how much of the weights decode reads for one token before step 5 (all 16.06 GB); compare step 5 with step 9 (same single read, 1 token versus 8 tokens).
+- **Try this:** predict how much of the weights decode reads for one token before opening the message called The first decode reads every weight again (all 16.06 GB); compare it with the message called A batch of 8 shares one weight read (same single read, 1 token versus 8 tokens). The lines name messages by title, because the renderer prints its own "Step N of 10" counter and the arrow labels do not use step numbers.
 - **What changed:** each step note says what was read, what was written and what is shared.
 - **Limits:** no real timings; one GPU; activations, kernel overhead and the arithmetic itself are ignored.
 

@@ -36,7 +36,7 @@ function computeAdmission(values: SliderValues): SliderResult {
 export const admissionControlTokens: SliderSpec = {
   kind: "slider",
   title: "How many requests to let in",
-  purpose: "Set a limit in tokens and see how many arriving requests the server admits, queues or would have crashed on.",
+  purpose: "Set a limit in tokens and see how many arriving requests the server admits and queues, and what no control would have done.",
   intro:
     "The server's KV cache holds a fixed number of tokens, about 420,000 in the running example (55.94 GB at 131,072 bytes a token). Admission control counts tokens, not requests: it admits a request only while the tokens already promised stay under a limit, a share of that capacity. The rest wait in a queue. Make the prediction above first, then move one slider.",
   inputs: [
@@ -49,9 +49,9 @@ export const admissionControlTokens: SliderSpec = {
   describeChange: describeAdmissionChange,
   barsTitle: "Tokens held",
   tryThis: [
-    "Lower the admission limit from 90% to 70%. The server will promise 294,000 tokens, so 17 are admitted and 13 queue, leaving more room for each request to keep growing.",
+    "Lower the admission limit from 90% to 70%. The server will promise 294,000 tokens, so 17 are admitted and 13 queue, leaving more spare room for counting errors.",
     "Halve the tokens each request holds, from 16,384 to 8,192. The limit now allows 46, which is more than the 30 that arrived, so all 30 are admitted and nobody queues.",
   ],
   limits:
-    "This is a snapshot: no request finishes while it is taken, and no preemption is modelled. Real engines also cap the number of sequences, and requests grow as they generate, which is why the limit is below 100%. The capacity is the running example's, rounded to 420,000 tokens.",
+    "This is a snapshot: no request finishes while it is taken, and no preemption is modelled. Real engines also cap the number of sequences. The limit sits below 100% because the token count is an estimate. The capacity is the running example's, rounded to 420,000 tokens.",
 };

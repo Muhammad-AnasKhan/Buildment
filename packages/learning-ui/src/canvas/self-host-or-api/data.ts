@@ -29,7 +29,7 @@ export const selfHostOrApi: FactorSpec = {
   scoreScale: { min: 1, max: 5 },
   unit: "points",
   tryThis: [
-    "Raise Data stays in network to 3. The self-hosted engine pulls ahead, 39 to 34, because it scores 5 where the hosted API scores 2.",
+    "Raise Data stays in network to 3. The self-hosted engine's lead grows, 39 to 34, because it scores 5 where the hosted API scores 2.",
     "Keep that, then raise Low team effort and Fast to launch to 3. Now the hosted API leads, 44 to 42: two criteria it wins outweigh the one you raised first.",
   ],
   limits:

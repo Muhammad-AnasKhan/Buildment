@@ -121,58 +121,105 @@ describe("module 11 sequence canvases", () => {
     expect(text).not.toMatch(/\d\s?(ms|milliseconds|tokens per second|tokens a second)\b/i);
   });
 
-  it("deployment-fit-steps: the five-step estimate uses the running example's numbers", () => {
+  it("prefill-decode-steps: one numbering scheme, messages are named by title", () => {
+    const labels = prefillDecodeSteps.steps.map((s) => s.label);
+    const titles = prefillDecodeSteps.steps.map((s) => s.title);
+    // Arrow labels and notes never number the decodes ("step 2"), because the renderer prints its own "Step N of M".
+    expect(labels).toContain("second decode");
+    expect(JSON.stringify(prefillDecodeSteps.steps.map((s) => [s.label, s.note]))).not.toMatch(/\bstep\s*\d/i);
+    for (const title of titles) expect(title, title).not.toMatch(/\bstep\s*\d/i);
+    const tries = prefillDecodeSteps.tryThis!;
+    for (const line of tries) expect(line).not.toMatch(/\bstep\s*\d/i);
+    expect(tries[0]).toContain("The first decode reads every weight again");
+    expect(tries[1]).toContain("A batch of 8 shares one weight read");
+    expect(titles).toContain("The first decode reads every weight again");
+    expect(titles).toContain("A batch of 8 shares one weight read");
+  });
+
+  it("deployment-fit-steps: the five-step estimate replays worked example 1 and checks two fixes", () => {
     const chips = chipsOf(deploymentFitSteps);
     const text = textOf(deploymentFitSteps);
+    // Worked example 1: 8,190,735,360 parameters, 36 layers, 8 KV heads, head size 128, 48 GB, 12 chats of 16,384 tokens.
+    const params = 8_190_735_360;
+    const weights = params * 2;
+    const kv = 2 * 36 * 8 * 128 * 2;
+    const chat = 16_384;
+    const tokens = 12 * chat;
+    const need = tokens * kv;
+    const left = 48 * 0.9 * GB - weights;
     expect(deploymentFitSteps.actors.map((a) => a.name)).toEqual(["You", "Model", "GPU", "Plan"]);
     expect(deploymentFitSteps.steps.length).toBeGreaterThanOrEqual(8);
     expect(deploymentFitSteps.steps.length).toBeLessThanOrEqual(11);
-    expect(chips).toContain("8,030,261,248 x 2 = 16.06 GB");
-    expect(text).toContain("16,060,522,496 bytes");
-    expect(WEIGHTS_BYTES).toBe(16_060_522_496);
-    expect(chips).toContain("2 x 32 x 8 x 128 x 2 = 131,072 bytes");
-    expect(chips).toContain("20 x 32,768 = 655,360 tokens");
-    expect(20 * CHAT_TOKENS).toBe(655_360);
-    expect(chips).toContain("needed: 85.9 GB");
-    expect(chips).toContain("80 x 0.9 = 72 GB");
-    expect(chips).toContain("72 - 16.06 = 55.94 GB");
-    expect(chips).toContain("room for 13 chats");
-    expect(13 * CHAT_TOKENS).toBe(425_984);
-    expect(chips).toContain("13 x 32,768 = 425,984 tokens");
-    expect(chips).toContain("85.9 - 55.94 = 29.96 GB short");
-    // FP8 KV: half the bytes per token, half the need, 26 chats.
-    expect(KV_PER_TOKEN / 2).toBe(65_536);
-    expect(chips).toContain("65,536 bytes per token");
-    expect(chips).toContain("need 42.95 GB");
-    expect((20 * CHAT_BYTES) / 2 / GB).toBeCloseTo(42.95, 2);
-    expect(55.94 - 42.95).toBeCloseTo(12.99, 2);
-    expect(chips).toContain("26 chats fit");
-    // The verdict step is the only "bad" one and says it does not fit; the fix says it fits.
+    expect(weights / GB).toBeCloseTo(16.38, 2);
+    expect(chips).toContain("8,190,735,360 x 2 = 16.38 GB");
+    expect(text).toContain("16,381,470,720 bytes");
+    expect(weights).toBe(16_381_470_720);
+    expect(kv).toBe(147_456);
+    expect(chips).toContain("2 x 36 x 8 x 128 x 2 = 147,456 bytes");
+    expect(tokens).toBe(196_608);
+    expect(chips).toContain("12 x 16,384 = 196,608 tokens");
+    expect((chat * kv) / GB).toBeCloseTo(2.42, 2);
+    expect(need / GB).toBeCloseTo(28.99, 2);
+    expect(chips).toContain("needed: 28.99 GB");
+    expect(chips).toContain("48 x 0.9 = 43.2 GB");
+    expect(left / GB).toBeCloseTo(26.82, 2);
+    expect(chips).toContain("43.2 - 16.38 = 26.82 GB");
+    expect(Math.floor(left / (chat * kv))).toBe(11);
+    expect(Math.floor(left / kv)).toBe(181_874);
+    expect(chips).toContain("room for 11 chats");
+    expect(11 * chat).toBe(180_224);
+    expect(chips).toContain("11 x 16,384 = 180,224 tokens");
+    expect((need - left) / GB).toBeCloseTo(2.17, 2);
+    expect(chips).toContain("28.99 - 26.82 = 2.17 GB short");
+    // First fix, FP8 cache: half the bytes per token, 14.50 GB, 12.32 GB spare, 22 chats.
+    expect(kv / 2).toBe(73_728);
+    expect(chips).toContain("73,728 bytes per token");
+    expect(need / 2 / GB).toBeCloseTo(14.5, 2);
+    expect(chips).toContain("need 14.50 GB");
+    expect((left - need / 2) / GB).toBeCloseTo(12.32, 2);
+    expect(chips).toContain("12.32 GB spare");
+    expect(Math.floor(left / (chat * (kv / 2)))).toBe(22);
+    // Second fix, 8-bit weights: 8.19 GB, 35.01 GB left, 6.02 GB spare.
+    const weights8 = params;
+    const left8 = 48 * 0.9 * GB - weights8;
+    expect(weights8 / GB).toBeCloseTo(8.19, 2);
+    expect(left8 / GB).toBeCloseTo(35.01, 2);
+    expect((left8 - need) / GB).toBeCloseTo(6.02, 2);
+    expect(chips).toContain("weights: 8.19 GB");
+    expect(chips).toContain("left: 35.01 GB");
+    expect(chips).toContain("6.02 GB spare");
+    // The FP8 cache leaves more spare room than 8-bit weights, because the cache is the larger cost.
+    expect(left - need / 2).toBeGreaterThan(left8 - need);
+    // The verdict step is the only "bad" one and says it does not fit; both fixes say they fit.
     const bad = deploymentFitSteps.steps.filter((s) => s.tone === "bad");
     expect(bad).toHaveLength(1);
     expect(bad[0]!.outcome).toBe("does not fit");
     expect(deploymentFitSteps.steps.find((s) => s.label === "choose FP8 KV")?.outcome).toBe("fits");
-    // All five fixes from the pack are listed.
+    expect(deploymentFitSteps.steps.find((s) => s.label === "8-bit weights")?.outcome).toBe("fits");
+    // All five fixes from the pack are listed, and admission control is described as a spike tool.
     const fixes = deploymentFitSteps.steps.find((s) => s.label === "five fixes")!;
     expect(fixes.chips).toEqual(["FP8 KV", "shorter context", "fewer users", "second GPU", "admission control"]);
+    expect(fixes.note).toMatch(/suits a spike, not a steady load/);
+    expect(text).not.toMatch(/safer second fix/i);
+    const last = deploymentFitSteps.steps[deploymentFitSteps.steps.length - 1]!;
+    expect(last.note).toMatch(/safety net for a spike/);
     // Titles are plain words: no "Step N:" prefix to clash with the renderer's own "Step N of M" counter.
     const titles = deploymentFitSteps.steps.map((s) => s.title);
     for (const title of titles) expect(title, title).not.toMatch(/\bstep\s*\d/i);
     expect(titles.slice(1, 5)).toEqual(["Weights", "KV cache per token", "Tokens held at once", "Memory left for the cache"]);
     expect(titles[6]).toBe("Compare and decide");
-    expect(deploymentFitSteps.steps[6]!.label).toBe("85.9 > 55.94 GB");
+    expect(deploymentFitSteps.steps[6]!.label).toBe("28.99 > 26.82 GB");
     // Try this names messages by title, never by step number, and the titles it names exist.
     const tries = deploymentFitSteps.tryThis!;
     for (const line of tries) expect(line).not.toMatch(/\bstep\s*\d/i);
-    expect(tries[0]).toContain("Compare and decide");
-    expect(tries[1]).toContain("Check the first fix with the same steps");
-    expect(titles).toContain("Compare and decide");
+    expect(titles).toContain("The GPU reports what is free");
     expect(titles).toContain("Check the first fix with the same steps");
+    expect(titles).toContain("Check the second fix the same way");
     expect(tries[0]).toBe(
-      "Before you open the message called Compare and decide, predict whether 20 chats of 32,768 tokens fit. Then compare 85.9 GB with the 55.94 GB left.",
+      "Before you open the message called The GPU reports what is free, predict how many chats of 16,384 tokens the memory left can hold. Then check the chips: 11. The twelfth does not fit.",
     );
     expect(tries[1]).toBe(
-      "At the message called Check the first fix with the same steps, the cache bytes per value drop from 2 to 1. Predict how many chats fit now, then check the chips: 26.",
+      "Open the messages called Check the first fix with the same steps and Check the second fix the same way, and compare the spare room: 12.32 GB for the FP8 cache and 6.02 GB for 8-bit weights.",
     );
     // The estimate is done in tokens, and the answer leads with the number.
     expect(text).toMatch(/tokens held at once/i);

@@ -51,7 +51,7 @@ describe("admission control tokens", () => {
 
   it("explains a lower admission limit in words", () => {
     expect(describeAdmissionChange(start, { ...start, limit: 70 })).toBe(
-      "Moving the admission limit from 90% to 70% of capacity changed the tokens the server will promise from 378,000 to 294,000, so admitted went from 23 to 17. A lower limit leaves more room for requests to grow while they run. Now 17 are admitted and 13 queued; without control, the server would be over capacity by 71,520 tokens.",
+      "Moving the admission limit from 90% to 70% of capacity changed the tokens the server will promise from 378,000 to 294,000, so admitted went from 23 to 17. A lower limit leaves more spare room for counting errors. Now 17 are admitted and 13 queued; without control, the server would be over capacity by 71,520 tokens.",
     );
   });
 

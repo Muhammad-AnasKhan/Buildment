@@ -3,7 +3,7 @@
 - **Slug:** `admission-control-tokens`
 - **Export:** `admissionControlTokens` in `data.ts`; arithmetic in `model.ts`.
 - **Course:** AI Engineering Interview, chapter 11.8 "Admission control and capacity in tokens".
-- **Teaching claim:** Admission control counts tokens, not requests: it admits a request only while the tokens already promised stay under a limit, and queues the rest instead of letting the server run out of memory.
+- **Teaching claim:** Admission control counts tokens, not requests: it admits a request only while the tokens already promised stay under a limit, and queues the rest instead of overfilling the cache.
 - **Renderer:** slider (`renderers/slider/`).
 
 ## Model
@@ -32,9 +32,9 @@ Stats: admitted now; queued; without admission control ("Fits" or "Over by X"). 
 ## Copy blocks
 
 - **What this shows:** how many of the arriving requests the server lets in under a token limit, how many wait, and how many tokens it would have needed if it let everyone in.
-- **Try this:** (1) Limit 90% to 70%: 17 admitted, 13 queued, more room to grow. (2) Tokens each 16,384 to 8,192: all 30 admitted, nobody queues.
+- **Try this:** (1) Limit 90% to 70%: 17 admitted, 13 queued, more spare room for counting errors. (2) Tokens each 16,384 to 8,192: all 30 admitted, nobody queues.
 - **What changed:** a live sentence names the input, says what it did to the token limit or the request size, and gives the new admitted, queued and no-control result.
-- **Limits:** a snapshot where no request finishes and no preemption is modelled; real engines also cap the number of sequences, and requests grow as they generate, which is why the limit sits below 100%.
+- **Limits:** a snapshot where no request finishes and no preemption is modelled; real engines also cap the number of sequences. The limit sits below 100% because the token count is an estimate (blocks round up, buffers take memory, a gateway may count tokens differently, a cap on output may not be enforced).
 
 The intro does not ask its own prediction: it says "Make the prediction above first, then move one slider." The chapter puts a Predict right before the canvas (how many of 30 requests of 16,384 tokens get in at a 90% limit) and a transfer MCQ after it.
 

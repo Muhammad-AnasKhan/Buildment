@@ -76,5 +76,5 @@ export function describeAdmissionChange(before: SliderValues, after: SliderValue
   if (a.capacity !== b.capacity) {
     return `Going from ${count(a.capacity)} to ${count(b.capacity)} tokens of capacity moved the limit from ${count(a.limitTokens)} to ${count(b.limitTokens)} tokens, so admitted went from ${count(a.admitted)} to ${count(b.admitted)}. ${now}`;
   }
-  return `Moving the admission limit from ${a.limit}% to ${b.limit}% of capacity changed the tokens the server will promise from ${count(a.limitTokens)} to ${count(b.limitTokens)}, so admitted went from ${count(a.admitted)} to ${count(b.admitted)}. A lower limit leaves more room for requests to grow while they run. ${now}`;
+  return `Moving the admission limit from ${a.limit}% to ${b.limit}% of capacity changed the tokens the server will promise from ${count(a.limitTokens)} to ${count(b.limitTokens)}, so admitted went from ${count(a.admitted)} to ${count(b.admitted)}. ${b.limit < a.limit ? "A lower limit leaves more spare room for counting errors." : "A higher limit leaves less spare room for counting errors."} ${now}`;
 }
