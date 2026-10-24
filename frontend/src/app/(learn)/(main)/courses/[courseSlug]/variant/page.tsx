@@ -34,9 +34,7 @@ export default async function CourseVariantPage({ params }: { params: Promise<{ 
             : "Each available variant teaches the course through its own product."}{" "}
           Each card shows how people reach the product and the hard problem you will solve. Your pick sets the product
           name and colour in the chapters and shows on your mentor&apos;s roster. Your choice is fixed when you start a chapter.
-       <ul className="grid gap-4 sm:grid-cols-2">
-        {choices.map((variant) => {
-         </p>
+        </p>
         {track.variantChosen && !available.some((variant) => variant.slug === track.variantSlug) && (
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             Your previous product choice is still recorded, but its own lessons are being prepared. Choose an available product before you start.
@@ -44,6 +42,8 @@ export default async function CourseVariantPage({ params }: { params: Promise<{ 
         )}
       </header>
 
+      <ul className="grid gap-4 sm:grid-cols-2">
+        {choices.map((variant) => {
           const current = track.variantChosen && track.variantSlug === variant.slug;
           return (
             <li key={variant.slug} className="flex">
