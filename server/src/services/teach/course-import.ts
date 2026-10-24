@@ -16,16 +16,23 @@ import { publishCourseRelease } from "./publish-course-release.js";
 import type { UpdateMapping } from "./course-update-matching.js";
 
 const execute = promisify(execFile);
-const MAX_EXPANDED = 20 * 1024 * 1024;
+// Only the backend release command may use the larger family package limit.
+// Dashboard ZIPs retain the existing HTTP and expansion bounds.
+export type CourseZipSource = "dashboard" | "repository";
+const ZIP_LIMITS = {
+  dashboard: { files: 1000, expanded: 20 * 1024 * 1024 },
+  repository: { files: 3000, expanded: 40 * 1024 * 1024 },
+} as const;
 
 /** Validate before extracting; never trust paths or declared expansion sizes in an upload. */
-export function readCourseZip(buffer: Buffer): Record<string, Uint8Array> {
+export function readCourseZip(buffer: Buffer, source: CourseZipSource = "dashboard"): Record<string, Uint8Array> {
+  const limit = ZIP_LIMITS[source];
   let total = 0;
   let count = 0;
   let files: Record<string, Uint8Array>;
   try {
     files = unzipSync(buffer, { filter: entry => {
-      if (++count > 1000 || (total += entry.originalSize) > MAX_EXPANDED) throw new Error("ZIP exceeds 1,000 entries or 20 MB expanded.");
+      if (++count > limit.files || (total += entry.originalSize) > limit.expanded) throw new Error(`ZIP exceeds ${limit.files.toLocaleString()} entries or ${limit.expanded / 1024 / 1024} MB expanded.`);
       if (entry.name.includes("\\") || entry.name.startsWith("/") || entry.name.split("/").some(p => p === ".." || p.includes(":"))) {
         throw new Error("ZIP contains an unsafe path.");
       }
@@ -41,7 +48,7 @@ export function readCourseZip(buffer: Buffer): Record<string, Uint8Array> {
   const result: Record<string, Uint8Array> = {};
   total = 0;
   for (const [name, bytes] of Object.entries(files)) {
-    if ((total += bytes.length) > MAX_EXPANDED) throw new BadRequestError("ZIP expands beyond 20 MB.");
+    if ((total += bytes.length) > limit.expanded) throw new BadRequestError(`ZIP expands beyond ${limit.expanded / 1024 / 1024} MB.`);
     if (!name.startsWith(prefix)) throw new BadRequestError("All files must be inside the course folder.");
     const relative = name.slice(prefix.length);
     if (!/^(course\.yaml|COURSE-OUTLINE\.md|(?:variants\/[a-z0-9-]+\/)?\d+-[a-z0-9-]+\/\d+\.\d+-[a-z0-9-]+\.md)$/.test(relative)) {
@@ -57,6 +64,7 @@ export type ImportPlan = {
     title: string; description: string; projectGoal: string; difficulty: string;
     estimatedHours: number; coverUrl?: string; family?: string; category?: "tech" | "soft-skills";
     variantFamily?: CourseFamily;
+    availableVariantSlugs?: string[];
     publication?: "create" | "update"; creatorEmail?: string;
   };
   modules: { key?: string; order?: number; title: string; lessons: {
@@ -65,30 +73,31 @@ export type ImportPlan = {
     isMilestone: boolean;
     blocks: { id: string; type: Prisma.BlockCreateManyInput["type"]; config: Prisma.InputJsonValue; required: boolean }[];
   }[] }[];
-  variants?: { slug: string; overrides: { lessonKey: string; lesson: ImportPlan["modules"][number]["lessons"][number] }[] }[];
+  variants?: { slug: string; overrides: { lessonKey: string; lesson: ImportPlan["modules"][number]["lessons"][number] }[];
+    modules?: ImportPlan["modules"]; omitLessonKeys?: string[]; moduleOrder?: string[] }[];
   remove?: { moduleKeys: string[]; lessonKeys: string[] };
 };
 
 let importing = false;
 let parsing = false;
 
-export async function importCourseZip(user: SessionUser, buffer: Buffer) {
+export async function importCourseZip(user: SessionUser, buffer: Buffer, source: CourseZipSource = "dashboard") {
   if (importing) throw new TooManyRequestsError("A course import is running. Please try again shortly.");
   importing = true;
-  try { return await runCourseImport(user, buffer); }
+  try { return await runCourseImport(user, buffer, source); }
   finally { importing = false; }
 }
 
-export async function parseCourseZip(buffer: Buffer) {
+export async function parseCourseZip(buffer: Buffer, source: CourseZipSource = "dashboard") {
   if (parsing) throw new TooManyRequestsError("A course ZIP is being validated. Please try again shortly.");
   parsing = true;
-  try { return await parseCourseZipFiles(buffer); }
+  try { return await parseCourseZipFiles(buffer, source); }
   finally { parsing = false; }
 }
 
-async function parseCourseZipFiles(buffer: Buffer) {
+async function parseCourseZipFiles(buffer: Buffer, source: CourseZipSource) {
   if (!Buffer.isBuffer(buffer) || !buffer.length) throw new BadRequestError("Upload a ZIP file.");
-  const files = readCourseZip(buffer);
+  const files = readCourseZip(buffer, source);
   let slug: string;
   try {
     const meta = loadYaml(Buffer.from(files["course.yaml"]).toString("utf8")) as { slug?: unknown };
@@ -109,7 +118,7 @@ async function parseCourseZipFiles(buffer: Buffer) {
     try {
       await execute(process.execPath, ["--import", "tsx", worker, "--course", slug, "--strict"], {
         env: { ...process.env, COURSE_IMPORT_SOURCE: source, COURSE_IMPORT_RESULT: result },
-        timeout: 120000, maxBuffer: 1024 * 1024,
+        timeout: source === "repository" ? 300000 : 120000, maxBuffer: 1024 * 1024,
       });
     } catch (error) {
       const failure = error as { stdout?: string; stderr?: string };
@@ -123,14 +132,15 @@ async function parseCourseZipFiles(buffer: Buffer) {
   }
 }
 
-async function runCourseImport(user: SessionUser, buffer: Buffer) {
-  const { slug, plan } = await parseCourseZip(buffer);
+async function runCourseImport(user: SessionUser, buffer: Buffer, source: CourseZipSource) {
+  const { slug, plan } = await parseCourseZip(buffer, source);
   if (plan.manifest.publication === "update") throw new BadRequestError("This package declares an update. Open the existing course and use Update from ZIP.");
   if (!plan.modules.length) throw new BadRequestError("A new course needs at least one module.");
   const { title, description, projectGoal, difficulty, estimatedHours, coverUrl, family, variantFamily } = plan.manifest;
   const category = plan.manifest.category === "soft-skills" ? "SOFT_SKILLS" as const : "TECH" as const;
   const metadata = { title, description, projectGoal, difficulty, estimatedHours, coverUrl, category,
-    familySlug: family ?? null, variantFamily: variantFamily as unknown as Prisma.InputJsonValue | undefined };
+    familySlug: family ?? null, variantFamily: variantFamily as unknown as Prisma.InputJsonValue | undefined,
+    availableVariantSlugs: plan.manifest.availableVariantSlugs ?? [] };
   try {
     const course = await prisma.$transaction(async tx => {
       const created = await tx.course.create({ data: { ...metadata, slug, mentorId: user.id, status: "DRAFT" } });
@@ -164,7 +174,7 @@ async function runCourseImport(user: SessionUser, buffer: Buffer) {
       if (blocks.length) await tx.block.createMany({ data: blocks });
       if (plan.variants?.length) await publishCourseRelease(tx, created.id, plan, mapping);
       return created;
-    }, { timeout: 120000, maxWait: 10000 });
+    }, { timeout: source === "repository" ? 300000 : 120000, maxWait: 10000 });
     return { courseSlug: course.slug };
   } catch (error) {
     if ((error as { code?: string }).code === "P2002") throw new ConflictError("A course with this slug already exists. Use Update from ZIP in its course settings, or change the slug to create a separate course.");

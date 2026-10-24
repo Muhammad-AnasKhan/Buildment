@@ -8,6 +8,9 @@ import { freshmarketMarkPacked } from "./freshmarket-mark-packed/data";
 import { freshmarketOrderStatus } from "./freshmarket-order-status/data";
 import { freshmarketCartSplit } from "./freshmarket-cart-split/data";
 import { freshmarketStockHolds } from "./freshmarket-stock-holds/data";
+import { skillSlotYourTimeTheirTime } from "./skill-slot-your-time-their-time/data";
+import { skillSlotBlockClaims } from "./skill-slot-block-claims/data";
+import { sufraWindowFillAndCutoff } from "./sufra-window-fill-and-cutoff/data";
 import { weightedMatrixTwoOffers } from "./weighted-matrix-two-offers/data";
 import { ticketlineSeatHoldRace } from "./ticketline-seat-hold-race/data";
 import { ragHybridRerank } from "./rag-hybrid-rerank/data";
@@ -75,6 +78,47 @@ import { littleAndOften } from "./little-and-often/data";
 import { startingAgainSteps } from "./starting-again-steps/data";
 import { helpPassesOn } from "./help-passes-on/data";
 import { whoToTell } from "./who-to-tell/data";
+import { aiMissingContext } from "./ai-missing-context/data";
+import { whoMakesTheCall } from "./who-makes-the-call/data";
+import { answersOrHints } from "./answers-or-hints/data";
+import { bigAppOrUnderstoodApp } from "./big-app-or-understood-app/data";
+import { beforeYouPaste } from "./before-you-paste/data";
+import { pickAToolForTheJob } from "./pick-a-tool-for-the-job/data";
+import { keepWorkInYourFiles } from "./keep-work-in-your-files/data";
+import { closeItAndRecall } from "./close-it-and-recall/data";
+import { fiveAnglesOnCaching } from "./five-angles-on-caching/data";
+import { aiQuizPartner } from "./ai-quiz-partner/data";
+import { listenThenRead } from "./listen-then-read/data";
+import { notePageLifecycle } from "./note-page-lifecycle/data";
+import { dailyLabLoop } from "./daily-lab-loop/data";
+import { planALabWithAi } from "./plan-a-lab-with-ai/data";
+import { urlShortenerStopAPart } from "./url-shortener-stop-a-part/data";
+import { labLogCommitPush } from "./lab-log-commit-push/data";
+import { sixMonthHoursSplit } from "./six-month-hours-split/data";
+import { weekPlanCheckResources } from "./week-plan-check-resources/data";
+import { twoOptionsTradeOff } from "./two-options-trade-off/data";
+import { reuseOpenSourceSafely } from "./reuse-open-source-safely/data";
+import { commitsToArticle } from "./commits-to-article/data";
+import { discloseAiHelp } from "./disclose-ai-help/data";
+import { ramiDecideOrCue } from "./rami-decide-or-cue/data";
+import { habitLoopRepeats } from "./habit-loop-repeats/data";
+import { habitStrengthCurve } from "./habit-strength-curve/data";
+import { motivationWaveHabitSize } from "./motivation-wave-habit-size/data";
+import { ifThenMoment } from "./if-then-moment/data";
+import { chooseAnAnchor } from "./choose-an-anchor/data";
+import { thirtyDayReview } from "./thirty-day-review/data";
+import { khaledEveningCues } from "./khaled-evening-cues/data";
+import { stepsToStart } from "./steps-to-start/data";
+import { powerCutBackupPlan } from "./power-cut-backup-plan/data";
+import { fewerTemptations } from "./fewer-temptations/data";
+import { mahaNightLoop } from "./maha-night-loop/data";
+import { phoneOutOfTheBedroom } from "./phone-out-of-the-bedroom/data";
+import { trackerWeekNotes } from "./tracker-week-notes/data";
+import { streakOrDoneCount } from "./streak-or-done-count/data";
+import { slipOrGiveUp } from "./slip-or-give-up/data";
+import { whichHabitFirst } from "./which-habit-first/data";
+import { dinaStudyBlock } from "./dina-study-block/data";
+import { prayerTimeAnchors } from "./prayer-time-anchors/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -97,6 +141,9 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "freshmarket-mark-packed": freshmarketMarkPacked,
   "freshmarket-cart-split": freshmarketCartSplit,
   "freshmarket-stock-holds": freshmarketStockHolds,
+  "skill-slot-your-time-their-time": skillSlotYourTimeTheirTime,
+  "skill-slot-block-claims": skillSlotBlockClaims,
+  "sufra-window-fill-and-cutoff": sufraWindowFillAndCutoff,
   "ticketline-seat-hold-race": ticketlineSeatHoldRace,
   "rag-hybrid-rerank": ragHybridRerank,
   "retrieval-metrics-at-k": retrievalMetricsAtK,
@@ -163,6 +210,47 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "starting-again-steps": startingAgainSteps,
   "help-passes-on": helpPassesOn,
   "who-to-tell": whoToTell,
+  "ai-missing-context": aiMissingContext,
+  "who-makes-the-call": whoMakesTheCall,
+  "answers-or-hints": answersOrHints,
+  "big-app-or-understood-app": bigAppOrUnderstoodApp,
+  "before-you-paste": beforeYouPaste,
+  "pick-a-tool-for-the-job": pickAToolForTheJob,
+  "keep-work-in-your-files": keepWorkInYourFiles,
+  "close-it-and-recall": closeItAndRecall,
+  "five-angles-on-caching": fiveAnglesOnCaching,
+  "ai-quiz-partner": aiQuizPartner,
+  "listen-then-read": listenThenRead,
+  "note-page-lifecycle": notePageLifecycle,
+  "daily-lab-loop": dailyLabLoop,
+  "plan-a-lab-with-ai": planALabWithAi,
+  "url-shortener-stop-a-part": urlShortenerStopAPart,
+  "lab-log-commit-push": labLogCommitPush,
+  "six-month-hours-split": sixMonthHoursSplit,
+  "week-plan-check-resources": weekPlanCheckResources,
+  "two-options-trade-off": twoOptionsTradeOff,
+  "reuse-open-source-safely": reuseOpenSourceSafely,
+  "commits-to-article": commitsToArticle,
+  "disclose-ai-help": discloseAiHelp,
+  "rami-decide-or-cue": ramiDecideOrCue,
+  "habit-loop-repeats": habitLoopRepeats,
+  "habit-strength-curve": habitStrengthCurve,
+  "motivation-wave-habit-size": motivationWaveHabitSize,
+  "if-then-moment": ifThenMoment,
+  "choose-an-anchor": chooseAnAnchor,
+  "thirty-day-review": thirtyDayReview,
+  "khaled-evening-cues": khaledEveningCues,
+  "steps-to-start": stepsToStart,
+  "power-cut-backup-plan": powerCutBackupPlan,
+  "fewer-temptations": fewerTemptations,
+  "maha-night-loop": mahaNightLoop,
+  "phone-out-of-the-bedroom": phoneOutOfTheBedroom,
+  "tracker-week-notes": trackerWeekNotes,
+  "streak-or-done-count": streakOrDoneCount,
+  "slip-or-give-up": slipOrGiveUp,
+  "which-habit-first": whichHabitFirst,
+  "dina-study-block": dinaStudyBlock,
+  "prayer-time-anchors": prayerTimeAnchors,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */

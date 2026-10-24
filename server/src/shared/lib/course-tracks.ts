@@ -54,6 +54,8 @@ export type VariantAssignment = (typeof VARIANT_ASSIGNMENTS)[number];
 /** What the reader and the course home need to know about the learner's track. */
 export type CourseTrack = {
   familySlug: string;
+  /** Empty means every family variant can be chosen; existing choices remain readable. */
+  availableVariantSlugs?: string[];
   /** Creator-defined catalog, carried with the API response for the picker and theme. */
   family?: CourseFamily;
   /** The learner's variant, or the family default while they have not picked. */
@@ -311,13 +313,15 @@ export function courseFinished(enrollment: { status: string; percentComplete: nu
 
 export function buildCourseTrack(
   familySlug: string | CourseFamily | null | undefined,
-  enrollment: { variantSlug: string | null; variantLockedAt?: Date | string | null; variantAssignedAt?: Date | string | null; specialisationSlug: string | null; status: string; percentComplete: number }
+  enrollment: { variantSlug: string | null; variantLockedAt?: Date | string | null; variantAssignedAt?: Date | string | null; specialisationSlug: string | null; status: string; percentComplete: number },
+  availableVariantSlugs: string[] = []
 ): CourseTrack | null {
   const family = typeof familySlug === "object" && familySlug ? familySlug : findCourseFamily(familySlug);
   if (!family) return null;
   const chosen = findVariant(family, enrollment.variantSlug);
   return {
     familySlug: family.slug,
+    ...(availableVariantSlugs.length ? { availableVariantSlugs } : {}),
     ...(typeof familySlug === "object" && familySlug ? { family } : {}),
     variantSlug: resolveVariant(family, enrollment.variantSlug).slug,
     variantChosen: chosen !== null,
