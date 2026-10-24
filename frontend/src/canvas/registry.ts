@@ -8,6 +8,9 @@ import { freshmarketMarkPacked } from "./freshmarket-mark-packed/data";
 import { freshmarketOrderStatus } from "./freshmarket-order-status/data";
 import { freshmarketCartSplit } from "./freshmarket-cart-split/data";
 import { freshmarketStockHolds } from "./freshmarket-stock-holds/data";
+import { skillSlotYourTimeTheirTime } from "./skill-slot-your-time-their-time/data";
+import { skillSlotBlockClaims } from "./skill-slot-block-claims/data";
+import { sufraWindowFillAndCutoff } from "./sufra-window-fill-and-cutoff/data";
 import { weightedMatrixTwoOffers } from "./weighted-matrix-two-offers/data";
 import { ticketlineSeatHoldRace } from "./ticketline-seat-hold-race/data";
 import { ragHybridRerank } from "./rag-hybrid-rerank/data";
@@ -78,6 +81,9 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "freshmarket-mark-packed": freshmarketMarkPacked,
   "freshmarket-cart-split": freshmarketCartSplit,
   "freshmarket-stock-holds": freshmarketStockHolds,
+  "skill-slot-your-time-their-time": skillSlotYourTimeTheirTime,
+  "skill-slot-block-claims": skillSlotBlockClaims,
+  "sufra-window-fill-and-cutoff": sufraWindowFillAndCutoff,
   "ticketline-seat-hold-race": ticketlineSeatHoldRace,
   "rag-hybrid-rerank": ragHybridRerank,
   "retrieval-metrics-at-k": retrievalMetricsAtK,

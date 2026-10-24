@@ -62,4 +62,24 @@ describe("repository course publishing selection", () => {
     fs.writeFileSync(path.join(dir, "notes.txt"), "extra");
     expect(() => packageZip(selectedPackages(root)[0]!, "create", "devweekends@gmail.com")).toThrow(/Unsupported course package file/);
   });
+
+  it("targets the existing legacy course slug in the transport ZIP", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "buildment-course-target-"));
+    temporary.push(root);
+    const dir = course(root, "source", "repositoryPublish: true\nrepositoryTargetSlug: published-course\n");
+    const selected = selectedPackages(root)[0]!;
+    expect(selected.slug).toBe("source");
+    const files = unzipSync(packageZip(selected, "update", "devweekends@gmail.com"));
+    const manifest = loadYaml(Buffer.from(files["course.yaml"]!).toString("utf8")) as Record<string, unknown>;
+    expect(manifest.slug).toBe("published-course");
+    expect(manifest.publication).toBe("update");
+    expect(fs.readFileSync(path.join(dir, "course.yaml"), "utf8")).toContain("slug: source");
+  });
+
+  it("keeps a partial marketplace release out of repository publishing", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "buildment-marketplace-gate-"));
+    temporary.push(root);
+    course(root, "multi-vendor-marketplace", "repositoryPublish: true\nfamily: multi-vendor-marketplace\navailableVariantSlugs:\n  - grocery\n");
+    expect(() => selectedPackages(root)).toThrow(/all marketplace variants must be available/);
+  });
 });

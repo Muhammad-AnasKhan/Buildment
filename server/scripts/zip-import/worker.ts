@@ -22,6 +22,17 @@ try {
         key: manifest.modules.find(m => m.dir === dirName)!.lessons.find(l => l.file === fileName)!.key })),
   }));
   const variants = (manifest.variants ?? []).map(variant => ({ slug: variant.slug,
+    moduleOrder: variant.moduleOrder,
+    omitLessonKeys: variant.omitLessonKeys,
+    modules: variant.modules.map(module => {
+      const moduleDir = `variants/${variant.slug}/${module.dir}`;
+      const moduleNum = Number(module.dir.match(/^(\d+)-/)![1]);
+      return { key: module.key, title: module.title, order: moduleNum,
+        lessons: readLessonFiles(moduleDir).map(({ fileName, lessonNum, slugPart }) => ({
+          ...parseLesson(moduleNum, moduleDir, fileName, lessonNum, slugPart),
+          key: module.lessons.find(lesson => lesson.file === fileName)!.key,
+        })) };
+    }),
     overrides: variant.overrides.map(override => {
       const shared = modules.flatMap(module => module.lessons).find(lesson => lesson.key === override.lessonKey);
       if (!shared && !override.file) throw new Error(`Unknown shared lesson key: ${override.lessonKey}`);

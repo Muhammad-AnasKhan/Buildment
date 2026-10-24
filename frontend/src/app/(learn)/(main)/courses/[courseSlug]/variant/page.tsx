@@ -18,23 +18,30 @@ export default async function CourseVariantPage({ params }: { params: Promise<{ 
   const { course, track } = overview;
   const family = track?.family ?? findCourseFamily(track?.familySlug);
   if (overview.access !== "active" || !track || !family || track.variantLocked) redirect(`/courses/${course.slug}`);
+  const available = family.variants.filter((variant) => !track.availableVariantSlugs?.length || track.availableVariantSlugs.includes(variant.slug));
+  const choices = family.variants.filter((variant) => available.includes(variant) || track.variantChosen && track.variantSlug === variant.slug);
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-5 py-8 sm:px-6 sm:py-10">
       <LearnerBreadcrumb courseSlug={course.slug} courseTitle={course.title} chapterTitle="Choose your variant" />
 
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Choose what you build</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{available.length === 1 ? "Your available product" : "Choose what you build"}</h1>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Every variant teaches the same skills through a different product. Your pick sets the product name and colour
-          in the chapters and shows on your mentor&apos;s roster. Your choice is fixed when you start a chapter.
+          {available.length === 1
+            ? `${available[0]!.productName} is the product with lessons available now. Your choice is fixed when you start a chapter.`
+            : "Each available variant teaches the course through its own product. Your choice is fixed when you start a chapter."}
         </p>
+        {track.variantChosen && !available.some((variant) => variant.slug === track.variantSlug) && (
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            Your previous product choice is still recorded, but its own lessons are being prepared. Choose an available product before you start.
+          </p>
+        )}
       </header>
 
       <ul className="divide-y divide-border rounded-xl border border-border bg-card">
-        {family.variants.map((variant) => {
+        {choices.map((variant) => {
           const current = track.variantChosen && track.variantSlug === variant.slug;
-          const general = variant.slug === family.defaultVariantSlug;
           return (
             <li key={variant.slug}>
               <VariantThemeScope variant={variant}>
@@ -50,7 +57,6 @@ export default async function CourseVariantPage({ params }: { params: Promise<{ 
                       {variant.productName}{" "}
                       <span className="text-sm font-normal text-muted-foreground">
                         {variant.label}
-                        {general ? ", the general course" : ""}
                       </span>
                     </h2>
                     <p className="mt-1 text-sm leading-6">{variant.summary}</p>
@@ -60,7 +66,7 @@ export default async function CourseVariantPage({ params }: { params: Promise<{ 
                   </div>
                   {current ? (
                     <p className="inline-flex shrink-0 items-center gap-1.5 text-sm font-medium text-primary sm:pt-0.5">
-                      <Check className="size-4" aria-hidden /> Your pick
+                      <Check className="size-4" aria-hidden /> {available.includes(variant) ? "Your pick" : "Previous choice"}
                     </p>
                   ) : (
                     <PendingSubmitButton pendingLabel="Saving" size="sm" variant="outline" className="shrink-0 self-start sm:self-auto">

@@ -4,11 +4,13 @@
 
 A course keeps one stable `Course.id`. A course may have no variants, use the built-in
 marketplace variants, or declare its own `variantFamily` in `course.yaml`.
-The package contains shared modules and lessons. Each variant lists only the lessons
-it changes. A variant can replace an entire lesson with a Markdown file or replace
-an exact passage within the shared lesson. Multiple lesson overrides cover a module.
-Unspecified lessons inherit the shared version. Stable module and lesson `key` values
-carry identity across titles, paths and ordering changes.
+The package contains shared modules and lessons. A variant can replace an entire
+lesson with a Markdown file or replace an exact passage within the shared lesson.
+It can add complete modules, omit inherited lessons, and declare an explicit
+`moduleOrder` for its full module path. A shared module absent from that order is
+omitted for that variant. Unspecified lessons in retained modules inherit the
+shared version. Stable module and lesson `key` values carry identity across
+titles, paths and ordering changes.
 
 Approved ZIP updates are **patches**. Omitting a key leaves it unchanged. Removing
 a lesson or module requires `remove.lessonKeys` or `remove.moduleKeys` in the manifest.
@@ -19,7 +21,7 @@ affected variants and active learner counts, then approves it. The preview is
 bound to the current content and expires after 30 minutes.
 
 Approval creates a `CourseRelease` with a complete curriculum for every variant.
-Shared lessons reference one chapter row. A variant override or changed lesson
+Shared lessons reference one chapter row. A variant override, variant-only module, or changed lesson
 gets a new chapter and activity IDs. The active release pointer changes in the
 same transaction. Repeating a package whose effective content is unchanged
 does not make another release. Old chapter rows, answers, notes and reviews remain.
@@ -63,6 +65,15 @@ variants:
         replacements:
           - { from: "Buyers order stock.", to: "Buyers reserve electricity capacity." }
       # Alternatively: file: variants/electricity/01-foundations/01.01-model.md
+    modules:
+      - key: electricity-holds
+        dir: 02-electricity-holds
+        title: Capacity holds
+        lessons:
+          - { key: electricity-holds-scene, file: 02.01-set-the-scene.md, title: Set the scene, goal: Explain capacity holds }
+          # Include the complete module, with its check and gate lessons.
+    omitLessonKeys: []
+    moduleOrder: [foundations, electricity-holds]
 remove:
   moduleKeys: []
   lessonKeys: []
@@ -70,14 +81,32 @@ remove:
 
 Replacement text must match exactly once in the transformed shared lesson.
 A replacement file is a full lesson and must pass the same MDX and activity checks
-as shared content. New graded work gets separate progress. Keep keys stable and
-review the effect on every variant before approval.
+as shared content. Variant-only files live at
+`variants/<slug>/<numbered-module>/<numbered-lesson>.md`; their module and lesson
+keys must be unique across the course. Keep new modules in separate directories
+from files that override shared lessons. `moduleOrder` is the complete ordered
+module sequence, including every variant-only module. `omitLessonKeys` removes
+inherited lessons from retained shared modules. New graded work gets separate
+progress. Keep keys stable and review the effect on every variant before approval.
 
-The older `multi-vendor-marketplace` source folder has no `course.yaml` yet.
-Its first repository update needs an explicit manifest with stable keys for the
-supplied lessons. The preview matches unchanged legacy content and adopts those
-keys while keeping its chapter IDs; review any ambiguous matches before approval.
-There is no need to list every old lesson in that first patch.
+The older `multi-vendor-marketplace` source folder now has a manifest with stable
+keys for all 385 lessons. Its `repositoryTargetSlug` points to the existing
+`freshmarket-multi-vendor-marketplace-v3` database course. The publisher requires
+that target to exist, so this package cannot create a duplicate course. A first
+release matches unchanged legacy content and keeps its chapter IDs; subsequent
+releases use the stable keys. The package currently makes only `grocery` available
+to new learners. Five other variant roadmaps are approved according to the course
+owner but do not yet have complete lessons. Historical learner choices remain
+readable. `legacySourceAudit: true` exempts the existing punctuation and missing
+per-option quiz explanations from newly introduced strict checks; the editorial
+audit remains advisory and its findings remain open. The package is not opted in
+to automatic publishing until the full variant release meets the course owner's
+completion requirement.
+
+While variant lessons are being written, CI compiles the planned MDX, runs the
+strict structure audit, checks repeated long prose across variant chapters, and
+sends the planned files through the trusted ZIP parser. Draft files outside the
+manifest fail the structure audit before this becomes a release candidate.
 
 ## Repository publishing
 
@@ -89,9 +118,23 @@ Heroku release phase runs migrations and then uses its existing `DATABASE_URL`
 to assign repository courses to the configured instructor and use the
 same ZIP import, preview, approval, and release services as the dashboard.
 New packages become published courses; updates make new immutable releases.
+`availableVariantSlugs` in a manifest controls which product tracks may be picked
+or randomly assigned for that course. Releasing a new track requires authored
+variant lessons, an explicit complete module path, and full learner-path review.
+The default track must remain
+available. A release updates the available list in the same transaction as the
+content pointer. An omitted list preserves the historical all-variant behavior.
+The Multi-vendor Marketplace package cannot opt into repository publishing until
+all six tracks are available. CI and the publisher reject an available non-grocery
+track that still inherits shared lessons containing grocery-specific details.
+These are release guards; instructors must review each whole path against its
+roadmap and agent-IP G5/G6 gates.
 The publisher records the package hash and active release, so unchanged packages
 skip another update preview. Packages without the opt-in flag stay
-in the repository and are not automatically published. The default
+in the repository and are not automatically published. The trusted
+repository path accepts up to 3,000 files, 40 MB expanded and 15 MB compressed
+for a complete course family. Dashboard ZIP uploads keep their 5 MB request,
+1,000-file and 20 MB expanded limits. The default
 `repositoryEditorialAudit: required` setting blocks publication when the
 course audit fails. An explicit `repositoryEditorialAudit: advisory` exception
 still runs and reports that audit while allowing source-valid, structurally
