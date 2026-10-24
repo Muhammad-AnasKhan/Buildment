@@ -20,6 +20,7 @@ export const BLOCK_TYPES = [
   "VISUAL_WALKTHROUGH",
   "VISUAL_DIAGRAM",
   "ROADMAP",
+  "AI_INTERVIEW",
 ] as const;
 export type BlockType = (typeof BLOCK_TYPES)[number];
 

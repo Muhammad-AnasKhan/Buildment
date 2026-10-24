@@ -1,3 +1,4 @@
+import { AI_INTERVIEW_FOCUS_LABELS, AiInterviewConfigSchema, AiInterviewPayloadSchema } from "../../shared/blocks/ai-interview/schema.js";
 import { CodeConfigSchema } from "../../shared/blocks/code/schema.js";
 import { OpenQuestionConfigSchema } from "../../shared/blocks/open-question/schema.js";
 import { PredictConfigSchema } from "../../shared/blocks/predict/schema.js";
@@ -54,7 +55,31 @@ export function submissionPreview(
     };
   }
 
+  if (type === "AI_INTERVIEW") return aiInterviewPreview(config, payload);
+
   return { prompt: null, answer: "Submitted" };
+}
+
+/** The transcript then the feedback, as plain text a mentor can read in the existing report. */
+function aiInterviewPreview(config: unknown, payload: unknown): { prompt: string | null; answer: string } {
+  const cfg = AiInterviewConfigSchema.safeParse(config);
+  const prompt = cfg.success ? cfg.data.title : null;
+  const parsed = AiInterviewPayloadSchema.safeParse(payload);
+  if (!parsed.success) return { prompt, answer: "Interview finished" };
+  const { transcript, feedback, turns } = parsed.data;
+  const lines = transcript.map((turn) => `${turn.role === "interviewer" ? "Interviewer" : "Learner"}: ${turn.content}`);
+  const bullets = (items: string[]) => items.map((item) => `- ${item}`).join("\n");
+  const sections = [
+    `Interview transcript (${turns} ${turns === 1 ? "answer" : "answers"})`,
+    lines.join("\n\n"),
+    `Strengths\n${bullets(feedback.strengths)}`,
+    `Weaknesses and fixes\n${bullets(feedback.weaknesses.map((item) => `${item.point} Fix: ${item.fix}`))}`,
+    ...(feedback.focusNotes.length > 0
+      ? [`Notes by focus area\n${bullets(feedback.focusNotes.map((item) => `${AI_INTERVIEW_FOCUS_LABELS[item.focus]}: ${item.note}`))}`]
+      : []),
+    `Next steps\n${feedback.nextSteps.map((item, index) => `${index + 1}. ${item}`).join("\n")}`,
+  ];
+  return { prompt, answer: sections.join("\n\n") };
 }
 
 function readString(payload: unknown, key: string): string {

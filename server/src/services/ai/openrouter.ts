@@ -22,7 +22,8 @@ export type AiErrorCode =
   | "AI_RATE_LIMITED"
   | "AI_PROVIDER_TIMEOUT"
   | "AI_PROVIDER_ERROR"
-  | "AI_MODEL_UNAVAILABLE";
+  | "AI_MODEL_UNAVAILABLE"
+  | "AI_BAD_OUTPUT";
 
 const AI_ERRORS: Record<AiErrorCode, { status: number; message: string }> = {
   AI_NOT_CONFIGURED: { status: 503, message: "AI interviews are not set up on this server." },
@@ -33,6 +34,7 @@ const AI_ERRORS: Record<AiErrorCode, { status: number; message: string }> = {
   AI_PROVIDER_TIMEOUT: { status: 504, message: "OpenRouter took too long to answer. Please try again." },
   AI_PROVIDER_ERROR: { status: 502, message: "OpenRouter could not answer right now. Please try again in a moment." },
   AI_MODEL_UNAVAILABLE: { status: 422, message: "OpenRouter could not use the chosen model. Check the model id in settings." },
+  AI_BAD_OUTPUT: { status: 502, message: "The interviewer sent a reply we could not use. Please try again." },
 };
 
 export class AiError extends AppError {

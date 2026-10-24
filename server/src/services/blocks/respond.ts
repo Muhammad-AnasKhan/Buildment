@@ -1,4 +1,4 @@
-import { blockDefinitions, isRegisteredBlockType } from "../../shared/blocks/definitions.js";
+import { blockDefinitions } from "../../shared/blocks/definitions.js";
 import type { GradeResult } from "../../shared/blocks/types.js";
 import { QuizPayloadSchema } from "../../shared/blocks/quiz/schema.js";
 import { PredictPayloadSchema } from "../../shared/blocks/predict/schema.js";
@@ -7,13 +7,11 @@ import { CodePayloadSchema } from "../../shared/blocks/code/schema.js";
 import { MustReadPayloadSchema } from "../../shared/blocks/must-read/schema.js";
 import { gradeCodeDetails } from "../../shared/blocks/code/grade.js";
 import { prisma } from "../../db/prisma.js";
-import { BadRequestError, ForbiddenError, NotFoundError, NotImplementedError } from "../../utils/errors.js";
+import { BadRequestError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
 import { applyTokens, contentTokenValues } from "../../shared/lib/content-tokens.js";
 import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
-import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
-import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
-import { ChapterLockedError, assertChapterUnlocked } from "../progress/gate.js";
+import { loadBlockForSubmission } from "./access.js";
 import { adjustEnrollmentPendingReviews, lockEnrollmentVariant, recomputeChapterProgress, recordBlockStats } from "../progress/compute.js";
 import { notifyMentorPendingReview } from "../email/event-notifications.js";
 import { queueEmail } from "../email/queue.js";
@@ -78,34 +76,14 @@ export async function submitBlockResponse(input: {
 }): Promise<BlockResponseResult> {
   const { blockId, user, payload } = input;
 
-  const block = await prisma.block.findUnique({
-    where: { id: blockId },
-    include: { chapter: { select: { archivedAt: true, id: true, courseId: true, readerMode: true, course: { select: { familySlug: true, variantFamily: true } } } } },
-  });
-  if (!block || block.archivedAt || block.chapter.archivedAt) throw new NotFoundError("Block not found");
-  if (!isRegisteredBlockType(block.type)) {
-    throw new NotImplementedError(`Block type ${block.type} has no grader yet`);
-  }
-  if (block.type === "QUIZ" && block.chapter.readerMode === "QUIZ") {
-    throw new BadRequestError("Submit this quiz from the final quiz step.", "QUIZ_CHAPTER");
-  }
-
-  const enrollment = await requireBlockSubmissionAccess(block.chapter.courseId, user);
-  const learner = user!;
-
-  try {
-    await assertChapterUnlocked({
-      courseId: block.chapter.courseId,
-      enrollmentId: enrollment.id,
-      chapterId: block.chapter.id,
-      bypassLocking: bypassProgressGatingForEmail(learner.email),
-    });
-  } catch (error) {
-    if (error instanceof ChapterLockedError) {
-      throw new ForbiddenError("This chapter is locked. Finish the previous chapter first.", "CHAPTER_LOCKED");
+  const { block, enrollment, learner } = await loadBlockForSubmission(blockId, user, (found) => {
+    if (found.type === "QUIZ" && found.chapter.readerMode === "QUIZ") {
+      throw new BadRequestError("Submit this quiz from the final quiz step.", "QUIZ_CHAPTER");
     }
-    throw error;
-  }
+    if (found.type === "AI_INTERVIEW") {
+      throw new BadRequestError("Finish the interview to complete this block.", "USE_AI_INTERVIEW");
+    }
+  });
 
   const graded = gradeBlock(block.type, block.config, payload);
 
