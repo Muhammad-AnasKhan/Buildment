@@ -14,7 +14,7 @@ renderer: sequence (HTML controls, inline SVG lanes)
 Each of five angles on one topic (a plain explanation in your own words, a picture, a worked example, a failure case, building or teaching it) catches a gap the others miss.
 
 ## Why a canvas
-The chapter teaches the five angles in prose and works them through on a different topic (Lina and DNS). The canvas shows Yara's week 7 on caching (her plan's caching week) one angle at a time, so the learner can predict which angle will find the click-count gap before it appears, and can see that each gap comes from a different angle.
+The chapter teaches the five angles in prose and works them through on a different topic (Lina and the library's laptop rule). The canvas shows Yara's week 7 on caching (her plan's caching week) one angle at a time, so the learner can predict which angle will find the click-count gap before it appears, and can see that each gap comes from a different angle.
 
 ## Model
 - Inputs: none beyond the shared step controls.

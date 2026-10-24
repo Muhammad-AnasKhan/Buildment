@@ -23,7 +23,7 @@ export const planALabWithAi: SequenceSpec = {
       to: 1,
       label: "ask for a plan",
       title: "Tell the AI what only she knows",
-      note: "Her goal: run Qasir with its app, database and cache, and open one short link. Her time: 40 minutes. Her level: new to containers. Her tools: GitHub Codespaces with Docker. She asks for study, build, break and write parts with minutes.",
+      note: "Her goal: run Qasir with its app, database and cache, and open one short link. Her time: 40 minutes. Her level: beginner, new to caching. Her tools: GitHub Codespaces with Docker. She asks for study, build, break and write parts with minutes.",
       chips: ["goal", "40 minutes", "beginner", "Codespaces", "what to break"],
     },
     {

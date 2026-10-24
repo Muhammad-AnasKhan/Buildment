@@ -70,7 +70,7 @@ export const labLogCommitPush: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "Go to step 3 to check your prediction: committing .env is refused, because the password would stay in the history even after a later delete.",
+    "Go to step 4 to check your prediction: once .env is in .gitignore, git status shows only the entry and .gitignore.",
     "At step 5, read only the commit message. What could a mentor learn about Yara's lab day 4 without opening the file?",
   ],
   limits:

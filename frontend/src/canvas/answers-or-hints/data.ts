@@ -1,8 +1,8 @@
 import type { StateMachineSpec } from "../renderers/state-machine/types";
 
 // Learn and Build with AI course, chapter 1.4 "AI can help or harm your learning".
-// Kinan and Asma practise the same 20 problems with the same chat assistant:
-// Kinan asks for answers, Asma asks for hints. Practice scores and test scores
+// Kinan and Lubna practise the same 20 problems with the same chat assistant:
+// Kinan asks for answers, Lubna asks for hints. Practice scores and test scores
 // point in opposite directions. A fellow's example, not study data; the chapter
 // reports the studies separately. See spec.md.
 export const answersOrHints: StateMachineSpec = {
@@ -10,12 +10,12 @@ export const answersOrHints: StateMachineSpec = {
   title: "Answers or hints: same AI, two results",
   purpose: "Follow two fellows who used the same chat assistant in two ways, and see what each practice score did and did not predict.",
   summary:
-    "Kinan asks the chat assistant for the answer to each of 20 practice problems, copies them and scores 20 of 20 in about two hours. Asma asks only for hints, tries each problem herself and scores 14 of 20 in about four hours. In the entry test with no AI, Kinan scores 9 of 20 and Asma scores 15 of 20. The difference is who did the thinking during practice. The numbers are an example, not study data.",
+    "Kinan asks the chat assistant for the answer to each of 20 practice problems, copies them and scores 20 of 20 in about two hours. Lubna asks only for hints, tries each problem herself and scores 14 of 20 in about four hours. In the entry test with no AI, Kinan scores 9 of 20 and Lubna scores 15 of 20. The difference is who did the thinking during practice. The numbers are an example, not study data.",
   states: [
     { id: "ask-answer", name: "Ask for answer", sub: "Kinan", col: 0, row: 0 },
     { id: "copy", name: "Copy", sub: "read, nod, next", col: 1, row: 0 },
     { id: "test-answers", name: "Exam alone", sub: "no AI", col: 2, row: 0 },
-    { id: "ask-hint", name: "Ask for a hint", sub: "Asma", col: 0, row: 1 },
+    { id: "ask-hint", name: "Ask for a hint", sub: "Lubna", col: 0, row: 1 },
     { id: "try", name: "Try it yourself", sub: "stuck, then fix", col: 1, row: 1 },
     { id: "test-hints", name: "Exam alone", sub: "no AI", col: 2, row: 1 },
   ],
@@ -44,8 +44,8 @@ export const answersOrHints: StateMachineSpec = {
     {
       state: "ask-hint",
       edge: 2,
-      title: "Asma asks for hints",
-      note: "Asma types: 'Do not give me the answer. Give me one hint.' Same chat assistant, same 20 problems.",
+      title: "Lubna asks for hints",
+      note: "Lubna types: 'Do not give me the answer. Give me one hint.' Same chat assistant, same 20 problems.",
       chips: ["same tool", "same 20 problems"],
     },
     {
@@ -68,7 +68,7 @@ export const answersOrHints: StateMachineSpec = {
       edge: 3,
       tone: "good",
       outcome: "15 of 20",
-      title: "Asma's test, alone",
+      title: "Lubna's test, alone",
       note: "She meets the same kinds of problems, and she has done the steps before, mistakes included. She scores 15 of 20: lower than Kinan's practice score, and higher than his test score.",
     },
     {

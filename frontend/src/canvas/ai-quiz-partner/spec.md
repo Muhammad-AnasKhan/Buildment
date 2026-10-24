@@ -20,10 +20,10 @@ The chapter builds the quiz prompt line by line and argues the case in prose. Th
 - Inputs: none beyond the shared step controls.
 - Outputs: the active arrow between lanes, the step note, outcome badge and chips.
 - Rule: three lanes (Lina, Chat assistant, Her notes); eight steps: explain (warn), the quiz prompt, question 1, a right answer, a mixed question answered wrongly, a hint and a right second try, the miss logged, two reviews planned.
-- Facts (checked twice, match chapter 3.4): video calls use UDP at this exam's level because late pieces are useless; a file needs every piece, so TCP; reviews on Wednesday (three days after Sunday) and the Wednesday after (a week later), following the course's rule of thumb.
-- Assumptions: the chat assistant follows the prompt; Lina's lecture notes agree with the answers.
-- Note: the chapter's predict asks about step 5, where the mixed-in file question shows Lina choosing by speed.
-- Limitations: a quiz partner can be wrong; real protocols are more complicated than the exam level; the review gaps are a rule of thumb.
+- Facts (checked twice, match chapter 3.4): the laptop rule from chapter 3.2 (a late return means no laptop loan for as many days as the delay, no fine) and an invented book rule (three books, 21 days, one shekel a day when late); reviews on Wednesday (three days after Sunday) and the Wednesday after (a week later), following the course's rule of thumb.
+- Assumptions: the chat assistant follows the prompt; the library's rule sheets agree with the answers.
+- Note: the chapter's predict asks about step 5, where the mixed-in late laptop question shows Lina carrying a habit over from the book rule.
+- Limitations: a quiz partner can be wrong; both rules are invented and a real library may differ; the review gaps are a rule of thumb.
 
 ## Rendering
 - Primary: the shared sequence renderer, narrow layout below `sm`.
@@ -39,7 +39,7 @@ Three lanes, one arrow per step. Warn tone on the explain step and on the wrong 
 
 ## Copy
 - What this shows: the same chat assistant used to explain, then to quiz.
-- Try this: 1. Compare steps 4 and 5: a right answer for the video call, then 'faster' as the reason for the file; read what the hint in step 6 changes (points at the steps that answer the chapter's predict about the mixed question). 2. Look at step 1 again: who produced the answer there?
+- Try this: 1. Compare steps 4 and 5: a right answer for the late book, then 'a fine' for the late laptop; read what the hint in step 6 changes (points at the steps that answer the chapter's predict about the mixed question). 2. Look at step 1 again: who produced the answer there?
 - What changed: each step note says who produced the answer.
 - Limits of the model: as in `limits`.
 

@@ -20,7 +20,7 @@ The chapter's worked example shows one problem asked two ways, and its studies s
 - Inputs: none beyond the shared step controls.
 - Outputs: the highlighted state, the active edge, the step note, chips and outcome badge.
 - Rule: two rows, three states each. Answers row: Ask for answer, Copy, Exam alone. Hints row: Ask for a hint, Try it yourself, Exam alone. Four edges, all left to right within a row. Seven steps: both practice paths first, then both tests, then a closing step.
-- Numbers (the fellow's example, stated as such in the chapter and in `limits`): Kinan 20 of 20 in practice in about 2 hours, 9 of 20 in the test; Asma 14 of 20 in practice in about 4 hours, 15 of 20 in the test.
+- Numbers (the fellow's example, stated as such in the chapter and in `limits`): Kinan 20 of 20 in practice in about 2 hours, 9 of 20 in the test; Lubna 14 of 20 in practice in about 4 hours, 15 of 20 in the test.
 - Grounding: the pattern follows the Bastani et al. study only as the dossier phrases it (C1): a normal AI chat raised practice scores and lowered exam scores without it; a hint version did not cause that harm. The canvas does not present its numbers as study data, and `limits` says the hint version in the study showed no clear exam gain.
 - Limitations: one made-up example; real results vary by person, subject and test.
 
@@ -34,7 +34,7 @@ The chapter's worked example shows one problem asked two ways, and its studies s
 Shared stepper controls only.
 
 ## Visualisation
-Six pills, four arrows. Tones: warn with "20 of 20" on Kinan's practice (a high score that measures the AI's work), bad with "9 of 20" on his test, good with "15 of 20" on Asma's test. Asma's practice has the badge "14 of 20" with no tone.
+Six pills, four arrows. Tones: warn with "20 of 20" on Kinan's practice (a high score that measures the AI's work), bad with "9 of 20" on his test, good with "15 of 20" on Lubna's test. Lubna's practice has the badge "14 of 20" with no tone.
 
 ## Copy
 - What this shows: two practice paths with the same tool, and what each practice score did and did not predict.
@@ -64,4 +64,4 @@ Shared stepper keyboard support and focus ring; `summary` gives both paths and a
 `frontend/src/canvas/answers-or-hints/data.ts`, export `answersOrHints` (StateMachineSpec). To be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.
 
 ## Placement
-Chapter 1.4, section "Kinan and Asma's test", after the predict and before "What the studies found".
+Chapter 1.4, section "Kinan and Lubna's test", after the predict and before "What the studies found".

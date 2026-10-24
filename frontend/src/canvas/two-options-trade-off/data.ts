@@ -30,7 +30,7 @@ export const twoOptionsTradeOff: FactorSpec = {
   scoreScale: { min: 1, max: 5 },
   unit: "points",
   tryThis: [
-    "Set 'Fast under many clicks' to 'Matters a lot' and the other three to 'Matters a little'. The cache counter wins, 21 to 20. It is the only setting where it does.",
+    "Find the settings where the cache counter wins. Set 'Fast under many clicks' to 'Matters a lot' and the other three to 'Matters a little': it wins, 21 to 20. It is the only one of the 81 settings where it does.",
     "Now put 'No clicks lost if a part stops' first instead, with the rest at 'Matters a little'. The database wins, 26 to 15.",
     "Set every weight to 'Matters'. Counting in the database leads, 32 to 22.",
   ],
