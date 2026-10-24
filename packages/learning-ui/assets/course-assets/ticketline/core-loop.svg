@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380" role="img" aria-labelledby="core-title core-desc">
+  <title id="core-title">Ticketline core loop</title>
+  <desc id="core-desc">An organizer publishes an event, a buyer picks a ticket type and holds inventory, pays with Stripe test mode, receives a QR ticket, and gate staff scans it once.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="380" fill="#ffffff"/>
+  <text x="40" y="42" font-family="Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#0f172a">The core loop</text>
+  <text x="40" y="68" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#475569">Publish → hold → pay → issue → scan. Every feature must make this loop more trustworthy.</text>
+
+  <g font-family="Helvetica, Arial, sans-serif">
+    <rect x="30" y="130" width="160" height="86" rx="10" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+    <text x="110" y="165" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Organizer</text>
+    <text x="110" y="186" text-anchor="middle" font-size="12" fill="#475569">publishes event</text>
+
+    <rect x="230" y="130" width="160" height="86" rx="10" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+    <text x="310" y="165" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Buyer</text>
+    <text x="310" y="186" text-anchor="middle" font-size="12" fill="#475569">picks ticket type</text>
+
+    <rect x="430" y="130" width="160" height="86" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="510" y="165" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">Hold</text>
+    <text x="510" y="186" text-anchor="middle" font-size="12" fill="#1d4ed8">claims capacity</text>
+
+    <rect x="630" y="130" width="160" height="86" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="710" y="165" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">Pay</text>
+    <text x="710" y="186" text-anchor="middle" font-size="12" fill="#1d4ed8">Stripe test mode</text>
+
+    <rect x="830" y="130" width="160" height="86" rx="10" fill="#ecfdf5" stroke="#15803d" stroke-width="1.5"/>
+    <text x="910" y="165" text-anchor="middle" font-size="14" font-weight="700" fill="#14532d">Ticket</text>
+    <text x="910" y="186" text-anchor="middle" font-size="12" fill="#166534">signed QR code</text>
+
+    <rect x="1030" y="130" width="140" height="86" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.5"/>
+    <text x="1100" y="165" text-anchor="middle" font-size="14" font-weight="700" fill="#78350f">Gate</text>
+    <text x="1100" y="186" text-anchor="middle" font-size="12" fill="#92400e">scan once</text>
+  </g>
+
+  <g stroke="#334155" stroke-width="1.5" marker-end="url(#arrow)">
+    <line x1="190" y1="173" x2="222" y2="173"/>
+    <line x1="390" y1="173" x2="422" y2="173"/>
+    <line x1="590" y1="173" x2="622" y2="173"/>
+    <line x1="790" y1="173" x2="822" y2="173"/>
+    <line x1="990" y1="173" x2="1022" y2="173"/>
+  </g>
+
+  <g font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#475569">
+    <text x="40" y="292">Invariant 1: sold + held ≤ capacity, always.</text>
+    <text x="40" y="314">Invariant 2: one paid order issues one set of tickets.</text>
+    <text x="40" y="336">Invariant 3: one ticket admits one attendee once.</text>
+  </g>
+</svg>

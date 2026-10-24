@@ -57,6 +57,8 @@ export function findBrokenChapters(): { total: number; failed: ChapterMdxFailure
           tokenInFieldProblem("course description", manifest.description),
           tokenInFieldProblem("course project goal", manifest.projectGoal),
           ...manifest.modules.map((mod) => tokenInFieldProblem(`module title for ${mod.dir}`, mod.title)),
+          ...(manifest.variants ?? []).flatMap(variant => variant.modules.map(mod =>
+            tokenInFieldProblem(`module title for ${variant.slug}/${mod.dir}`, mod.title))),
         ]
       : [];
     for (const problem of fieldProblems) if (problem) failed.push({ file: "course.yaml", error: problem });
@@ -76,6 +78,53 @@ export function findBrokenChapters(): { total: number; failed: ChapterMdxFailure
         failed.push({ file, error: message });
       }
     }
+  }
+
+  try {
+    const manifest = loadCourseManifest();
+    const files = new Set<string>();
+    for (const variant of manifest?.variants ?? []) {
+      for (const override of variant.overrides) if (override.file) files.add(override.file);
+      for (const module of variant.modules) for (const lesson of module.lessons) {
+        files.add(`variants/${variant.slug}/${module.dir}/${lesson.file}`);
+      }
+    }
+    for (const file of files) {
+      total += 1;
+      try {
+        const moduleDir = path.dirname(file);
+        const fileName = path.basename(file);
+        const match = fileName.match(/^(\d+)\.(\d+)-([a-z0-9-]+)\.md$/)!;
+        const lesson = parseLesson(Number(match[1]), moduleDir, fileName, Number(match[2]), match[3]);
+        validateParsedLesson(lesson);
+      } catch (err) {
+        failed.push({ file, error: err instanceof Error ? err.message.split("\n")[0] : String(err) });
+      }
+    }
+    for (const variant of manifest?.variants ?? []) for (const override of variant.overrides) if (override.replacements?.length) {
+      const file = `variants/${variant.slug}:${override.lessonKey}`;
+      total += 1;
+      try {
+        const module = manifest!.modules.find(item => item.lessons.some(lesson => lesson.key === override.lessonKey));
+        const planned = module?.lessons.find(lesson => lesson.key === override.lessonKey);
+        if (!module || !planned) throw new Error("Shared lesson key not found");
+        const match = planned.file.match(/^(\d+)\.(\d+)-([a-z0-9-]+)\.md$/)!;
+        const parsed = parseLesson(Number(match[1]), module.dir, planned.file, Number(match[2]), match[3]);
+        let source = parsed.source;
+        for (const replacement of override.replacements) {
+          const first = source.indexOf(replacement.from);
+          if (first < 0 || source.indexOf(replacement.from, first + replacement.from.length) >= 0) {
+            throw new Error("Text replacement must match exactly once in the transformed shared lesson");
+          }
+          source = source.slice(0, first) + replacement.to + source.slice(first + replacement.from.length);
+        }
+        validateParsedLesson({ ...parsed, source });
+      } catch (err) {
+        failed.push({ file, error: err instanceof Error ? err.message.split("\n")[0] : String(err) });
+      }
+    }
+  } catch (err) {
+    failed.push({ file: "course.yaml", error: err instanceof Error ? err.message : String(err) });
   }
 
   return { total, failed };

@@ -1,4 +1,5 @@
 import type { PrismaClient } from "../../generated/prisma/index.js";
+import { assignmentForNewEnrollment } from "../courses/variant-assignment.js";
 import { lifecycleForSignedInEnrollment } from "./lifecycle.js";
 
 export class SelfEnrollmentError extends Error {
@@ -54,8 +55,10 @@ export async function createSelfEnrollment(
   const lifecycle = lifecycleForSignedInEnrollment(course.pricingType);
 
   const enrollment = await db.$transaction(async (tx) => {
+    const assignment = await assignmentForNewEnrollment(tx, course.id);
     const row = await tx.enrollment.create({
       data: {
+        ...assignment,
         courseId: course.id,
         userId: input.userId,
         source: "SELF",

@@ -19,7 +19,7 @@ import {
   stillCursor,
   sweepAt,
   cycleSeconds,
-} from "@/canvas/models/drift-sync";
+} from "@buildment/learning-ui/canvas/models/drift-sync";
 import {
   MAX_ACTIONS as LAMPORT_MAX,
   SCRIPT,
@@ -34,7 +34,7 @@ import {
   sendAndReceive,
   startRun,
   wrongGuessText,
-} from "@/canvas/models/lamport-play";
+} from "@buildment/learning-ui/canvas/models/lamport-play";
 import {
   CONCURRENT_TOTAL,
   EVENTS,
@@ -45,7 +45,7 @@ import {
   deciders,
   pairKey,
   relation,
-} from "@/canvas/models/vector-compare";
+} from "@buildment/learning-ui/canvas/models/vector-compare";
 import {
   DEFAULT_OFFSETS,
   OPENING,
@@ -59,7 +59,7 @@ import {
   spread,
   stampText,
   type Action,
-} from "@/canvas/models/hlc-skewed";
+} from "@buildment/learning-ui/canvas/models/hlc-skewed";
 import {
   STEP_BACKS,
   bitsVerdict,
@@ -72,12 +72,12 @@ import {
   rollback,
   shortRate,
   split,
-} from "@/canvas/models/snowflake-bits";
-import { sysdesignM10DriftSync } from "@/canvas/sysdesign-m10-drift-sync/data";
-import { sysdesignM10LamportPlay } from "@/canvas/sysdesign-m10-lamport-play/data";
-import { sysdesignM10VectorCompare } from "@/canvas/sysdesign-m10-vector-compare/data";
-import { sysdesignM10HlcSkewed } from "@/canvas/sysdesign-m10-hlc-skewed/data";
-import { sysdesignM10SnowflakeBits } from "@/canvas/sysdesign-m10-snowflake-bits/data";
+} from "@buildment/learning-ui/canvas/models/snowflake-bits";
+import { sysdesignM10DriftSync } from "@buildment/learning-ui/canvas/sysdesign-m10-drift-sync/data";
+import { sysdesignM10LamportPlay } from "@buildment/learning-ui/canvas/sysdesign-m10-lamport-play/data";
+import { sysdesignM10VectorCompare } from "@buildment/learning-ui/canvas/sysdesign-m10-vector-compare/data";
+import { sysdesignM10HlcSkewed } from "@buildment/learning-ui/canvas/sysdesign-m10-hlc-skewed/data";
+import { sysdesignM10SnowflakeBits } from "@buildment/learning-ui/canvas/sysdesign-m10-snowflake-bits/data";
 
 const MAX_VERDICT = 38;
 const DASH = String.fromCharCode(0x2014);
@@ -435,7 +435,7 @@ describe("the five server-rendered pictures", () => {
 
   it("keeps the course wording free of em dashes and the drawing free of hex colours and banned SVG parts", () => {
     for (const spec of specs) expect(spec.title + spec.purpose + spec.limits).not.toContain(DASH);
-    const root = path.resolve(__dirname, "../../../src/canvas");
+    const root = path.resolve(__dirname, "../../../../packages/learning-ui/src/canvas");
     const files = [
       ...fs
         .readdirSync(root)

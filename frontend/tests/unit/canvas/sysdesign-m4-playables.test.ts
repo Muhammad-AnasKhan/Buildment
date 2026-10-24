@@ -1,9 +1,9 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { BALANCER_PRICE, busyTone, cheapestSurviving, clampCount, COUNT, countFromFraction, countToFraction, DEMAND, fleet, SIZES } from "@/canvas/models/fleet-sizing";
-import { MODES, sessionLoss, STUDENTS, type SessionState } from "@/canvas/models/session-loss";
-import { addEvent, detectionTime, failoverAt, settledAt, type FailEvent } from "@/canvas/models/failover";
+import { BALANCER_PRICE, busyTone, cheapestSurviving, clampCount, COUNT, countFromFraction, countToFraction, DEMAND, fleet, SIZES } from "@buildment/learning-ui/canvas/models/fleet-sizing";
+import { MODES, sessionLoss, STUDENTS, type SessionState } from "@buildment/learning-ui/canvas/models/session-loss";
+import { addEvent, detectionTime, failoverAt, settledAt, type FailEvent } from "@buildment/learning-ui/canvas/models/failover";
 import {
   ALIKE_MS,
   clampLoad,
@@ -19,13 +19,13 @@ import {
   REQUESTS,
   SLOW_MS,
   twoChoicesPick,
-} from "@/canvas/models/balancer-race";
-import { BOOT_LADDER, bootFromFraction, bootToFraction, clampBoot, spikeAt, spikeRun, spikeVerdict, startFleet } from "@/canvas/models/autoscale-gap";
-import { sysdesignM4InstancePicker } from "@/canvas/sysdesign-m4-instance-picker/data";
-import { sysdesignM4KillServer } from "@/canvas/sysdesign-m4-kill-server/data";
-import { sysdesignM4FailoverPlay } from "@/canvas/sysdesign-m4-failover-play/data";
-import { sysdesignM4AlgorithmRace } from "@/canvas/sysdesign-m4-algorithm-race/data";
-import { sysdesignM4SpikePlay } from "@/canvas/sysdesign-m4-spike-play/data";
+} from "@buildment/learning-ui/canvas/models/balancer-race";
+import { BOOT_LADDER, bootFromFraction, bootToFraction, clampBoot, spikeAt, spikeRun, spikeVerdict, startFleet } from "@buildment/learning-ui/canvas/models/autoscale-gap";
+import { sysdesignM4InstancePicker } from "@buildment/learning-ui/canvas/sysdesign-m4-instance-picker/data";
+import { sysdesignM4KillServer } from "@buildment/learning-ui/canvas/sysdesign-m4-kill-server/data";
+import { sysdesignM4FailoverPlay } from "@buildment/learning-ui/canvas/sysdesign-m4-failover-play/data";
+import { sysdesignM4AlgorithmRace } from "@buildment/learning-ui/canvas/sysdesign-m4-algorithm-race/data";
+import { sysdesignM4SpikePlay } from "@buildment/learning-ui/canvas/sysdesign-m4-spike-play/data";
 
 const MAX_VERDICT = 38;
 

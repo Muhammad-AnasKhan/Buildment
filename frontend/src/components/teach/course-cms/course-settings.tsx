@@ -26,6 +26,7 @@ function settingsFromCourse(course: CourseSettingsView): CourseSettingsInput {
     estimatedHours: course.estimatedHours == null ? "" : String(course.estimatedHours),
     category: course.category,
     sequential: course.sequential,
+    ...(course.hasVariants ? { variantAssignment: course.variantAssignment } : {}),
     pricingType: course.pricingType,
     priceDollars: course.pricingType === "PAID" && course.priceCents > 0 ? (course.priceCents / 100).toFixed(2) : "",
     currency: course.currency,
@@ -34,6 +35,7 @@ function settingsFromCourse(course: CourseSettingsView): CourseSettingsInput {
 
 function settingsFromForm(form: HTMLFormElement): CourseSettingsInput {
   const data = new FormData(form);
+  const variantAssignment = data.get("variantAssignment");
   return {
     title: String(data.get("title") ?? ""),
     description: String(data.get("description") ?? ""),
@@ -43,6 +45,7 @@ function settingsFromForm(form: HTMLFormElement): CourseSettingsInput {
     estimatedHours: String(data.get("estimatedHours") ?? ""),
     category: String(data.get("category") ?? "TECH"),
     sequential: data.get("sequential") === "on",
+    ...(variantAssignment === null ? {} : { variantAssignment: String(variantAssignment) }),
     pricingType: String(data.get("pricingType") ?? "FREE"),
     priceDollars: String(data.get("priceDollars") ?? ""),
     currency: String(data.get("currency") ?? "USD"),
@@ -51,13 +54,13 @@ function settingsFromForm(form: HTMLFormElement): CourseSettingsInput {
 
 function sectionChanged(current: CourseSettingsInput, saved: CourseSettingsInput, section: SettingsSection): boolean {
   if (section === "details") return current.title !== saved.title || current.description !== saved.description || current.coverUrl !== saved.coverUrl;
-  if (section === "learning") return current.projectGoal !== saved.projectGoal || current.difficulty !== saved.difficulty || current.estimatedHours !== saved.estimatedHours || current.category !== saved.category || current.sequential !== saved.sequential;
+  if (section === "learning") return current.projectGoal !== saved.projectGoal || current.difficulty !== saved.difficulty || current.estimatedHours !== saved.estimatedHours || current.category !== saved.category || current.sequential !== saved.sequential || current.variantAssignment !== saved.variantAssignment;
   return current.pricingType !== saved.pricingType || current.priceDollars !== saved.priceDollars || current.currency !== saved.currency;
 }
 
 function mergeSection(saved: CourseSettingsInput, current: CourseSettingsInput, section: SettingsSection): CourseSettingsInput {
   if (section === "details") return { ...saved, title: current.title, description: current.description, coverUrl: current.coverUrl };
-  if (section === "learning") return { ...saved, projectGoal: current.projectGoal, difficulty: current.difficulty, estimatedHours: current.estimatedHours, category: current.category, sequential: current.sequential };
+  if (section === "learning") return { ...saved, projectGoal: current.projectGoal, difficulty: current.difficulty, estimatedHours: current.estimatedHours, category: current.category, sequential: current.sequential, variantAssignment: current.variantAssignment };
   return { ...saved, pricingType: current.pricingType, priceDollars: current.priceDollars, currency: current.currency };
 }
 
@@ -215,6 +218,13 @@ export function CourseSettings({ course }: { course: CourseSettingsView }) {
             <input type="checkbox" name="sequential" defaultChecked={course.sequential} className="mt-1 size-4 accent-primary" />
             <span><span className="block text-sm font-medium">Require chapters in order</span><span className="mt-1 block text-xs leading-5 text-muted-foreground">Learners finish the previous chapter before opening the next one.</span></span>
           </label>
+          {course.hasVariants && (
+            <Field label="Course variant" htmlFor="course-variant-assignment" hint="New learners get a variant with the fewest learners and cannot change it. Existing learners keep their choice and progress.">
+              <select id="course-variant-assignment" name="variantAssignment" defaultValue={course.variantAssignment} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30">
+                <option value="SELF_SELECT">Learners choose their variant</option><option value="RANDOM">Assign a balanced variant</option>
+              </select>
+            </Field>
+          )}
         </div>
         {footer("learning")}
       </section>

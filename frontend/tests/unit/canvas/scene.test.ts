@@ -1,17 +1,17 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { InteractiveCanvas } from "@/canvas/InteractiveCanvas";
-import { canvasRegistry } from "@/canvas/registry";
-import { buildLagScene } from "@/canvas/models/replica-lag-scene";
-import { buildTrueTimeScene } from "@/canvas/models/truetime-scene";
-import { loopTime, sceneFrame } from "@/canvas/renderers/scene/frame";
-import { actorBox, actorsInside, BOX_H, chipBox, chipTops, frameCollisions, longestWaitLabel, MAX_SUB_CHARS, waitLabelBox, waitPillBox } from "@/canvas/renderers/scene/geometry";
-import type { Scene } from "@/canvas/renderers/scene/types";
-import { bandOverlap, clampB } from "@/canvas/sysdesign-band-overlap/model";
-import { clampEpsilon, clockBandFrame } from "@/canvas/sysdesign-clock-band/model";
-import { clampLag, replicaBehindFrame } from "@/canvas/sysdesign-replica-behind/model";
-import { twoClocksFrame } from "@/canvas/sysdesign-two-clocks/model";
+import { InteractiveCanvas } from "@buildment/learning-ui/canvas/InteractiveCanvas";
+import { canvasRegistry } from "@buildment/learning-ui/canvas/registry";
+import { buildLagScene } from "@buildment/learning-ui/canvas/models/replica-lag-scene";
+import { buildTrueTimeScene } from "@buildment/learning-ui/canvas/models/truetime-scene";
+import { loopTime, sceneFrame } from "@buildment/learning-ui/canvas/renderers/scene/frame";
+import { actorBox, actorsInside, BOX_H, chipBox, chipTops, frameCollisions, longestWaitLabel, MAX_SUB_CHARS, waitLabelBox, waitPillBox } from "@buildment/learning-ui/canvas/renderers/scene/geometry";
+import type { Scene } from "@buildment/learning-ui/canvas/renderers/scene/types";
+import { bandOverlap, clampB } from "@buildment/learning-ui/canvas/sysdesign-band-overlap/model";
+import { clampEpsilon, clockBandFrame } from "@buildment/learning-ui/canvas/sysdesign-clock-band/model";
+import { clampLag, replicaBehindFrame } from "@buildment/learning-ui/canvas/sysdesign-replica-behind/model";
+import { twoClocksFrame } from "@buildment/learning-ui/canvas/sysdesign-two-clocks/model";
 
 const SYSDESIGN = Object.keys(canvasRegistry).filter((slug) => slug.startsWith("sysdesign-"));
 

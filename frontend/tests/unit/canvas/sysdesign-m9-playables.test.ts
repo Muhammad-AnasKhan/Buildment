@@ -1,8 +1,8 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { HASH_SPACE, hash32 } from "@/canvas/models/hash32";
-import { stepByKey } from "@/canvas/models/picture-controls";
+import { HASH_SPACE, hash32 } from "@buildment/learning-ui/canvas/models/hash32";
+import { stepByKey } from "@buildment/learning-ui/canvas/models/picture-controls";
 import {
   START,
   SHARD_LIMIT as RANGE_LIMIT,
@@ -18,7 +18,7 @@ import {
   startToFraction,
   touchedShards,
   writesPerShard,
-} from "@/canvas/sysdesign-m9-range-vs-hash/model";
+} from "@buildment/learning-ui/canvas/sysdesign-m9-range-vs-hash/model";
 import {
   KEY_COUNT,
   NODE_NAMES,
@@ -42,21 +42,21 @@ import {
   ringArcs,
   sectorPaths,
   spreadVerdict,
-} from "@/canvas/sysdesign-m9-ring-play/model";
-import { SALTS, SHARD_LADDER, averageLoad, hottestVerdict, loadsFor, shardsFromFraction, shardsToFraction, subKeys } from "@/canvas/sysdesign-m9-celebrity-play/model";
-import { PROGRESS, bytesToMoveGB, describeProgress, durationText, moveSeconds, progressFromFraction, rebalance } from "@/canvas/sysdesign-m9-rebalance-play/model";
-import { askedShards, indexTile, scatterVerdict, searchChance, searchLoad, searchTally, writeCostText, writesPerOrder } from "@/canvas/sysdesign-m9-scatter-play/model";
-import { BACKEND_SNAPS, slowChance } from "@/canvas/models/fan-out";
-import { sysdesignM9RangeVsHash } from "@/canvas/sysdesign-m9-range-vs-hash/data";
-import { sysdesignM9RingPlay } from "@/canvas/sysdesign-m9-ring-play/data";
-import { sysdesignM9CelebrityPlay } from "@/canvas/sysdesign-m9-celebrity-play/data";
-import { sysdesignM9RebalancePlay } from "@/canvas/sysdesign-m9-rebalance-play/data";
-import { sysdesignM9ScatterPlay } from "@/canvas/sysdesign-m9-scatter-play/data";
-import { RangeVsHashCanvas } from "@/canvas/sysdesign-m9-range-vs-hash/RangeVsHashCanvas";
-import { RingPlayCanvas } from "@/canvas/sysdesign-m9-ring-play/RingPlayCanvas";
-import { CelebrityPlayCanvas } from "@/canvas/sysdesign-m9-celebrity-play/CelebrityPlayCanvas";
-import { RebalancePlayCanvas } from "@/canvas/sysdesign-m9-rebalance-play/RebalancePlayCanvas";
-import { ScatterPlayCanvas } from "@/canvas/sysdesign-m9-scatter-play/ScatterPlayCanvas";
+} from "@buildment/learning-ui/canvas/sysdesign-m9-ring-play/model";
+import { SALTS, SHARD_LADDER, averageLoad, hottestVerdict, loadsFor, shardsFromFraction, shardsToFraction, subKeys } from "@buildment/learning-ui/canvas/sysdesign-m9-celebrity-play/model";
+import { PROGRESS, bytesToMoveGB, describeProgress, durationText, moveSeconds, progressFromFraction, rebalance } from "@buildment/learning-ui/canvas/sysdesign-m9-rebalance-play/model";
+import { askedShards, indexTile, scatterVerdict, searchChance, searchLoad, searchTally, writeCostText, writesPerOrder } from "@buildment/learning-ui/canvas/sysdesign-m9-scatter-play/model";
+import { BACKEND_SNAPS, slowChance } from "@buildment/learning-ui/canvas/models/fan-out";
+import { sysdesignM9RangeVsHash } from "@buildment/learning-ui/canvas/sysdesign-m9-range-vs-hash/data";
+import { sysdesignM9RingPlay } from "@buildment/learning-ui/canvas/sysdesign-m9-ring-play/data";
+import { sysdesignM9CelebrityPlay } from "@buildment/learning-ui/canvas/sysdesign-m9-celebrity-play/data";
+import { sysdesignM9RebalancePlay } from "@buildment/learning-ui/canvas/sysdesign-m9-rebalance-play/data";
+import { sysdesignM9ScatterPlay } from "@buildment/learning-ui/canvas/sysdesign-m9-scatter-play/data";
+import { RangeVsHashCanvas } from "@buildment/learning-ui/canvas/sysdesign-m9-range-vs-hash/RangeVsHashCanvas";
+import { RingPlayCanvas } from "@buildment/learning-ui/canvas/sysdesign-m9-ring-play/RingPlayCanvas";
+import { CelebrityPlayCanvas } from "@buildment/learning-ui/canvas/sysdesign-m9-celebrity-play/CelebrityPlayCanvas";
+import { RebalancePlayCanvas } from "@buildment/learning-ui/canvas/sysdesign-m9-rebalance-play/RebalancePlayCanvas";
+import { ScatterPlayCanvas } from "@buildment/learning-ui/canvas/sysdesign-m9-scatter-play/ScatterPlayCanvas";
 
 const VERDICT_MAX = 38;
 

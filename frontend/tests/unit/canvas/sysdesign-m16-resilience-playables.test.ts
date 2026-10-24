@@ -1,12 +1,12 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import * as storm from "@/canvas/sysdesign-m16-retry-storm/model";
-import { sysdesignM16RetryStorm } from "@/canvas/sysdesign-m16-retry-storm/data";
-import * as herd from "@/canvas/sysdesign-m16-jitter-herd/model";
-import { sysdesignM16JitterHerd } from "@/canvas/sysdesign-m16-jitter-herd/data";
-import * as breaker from "@/canvas/sysdesign-m16-breaker-play/model";
-import { sysdesignM16BreakerPlay } from "@/canvas/sysdesign-m16-breaker-play/data";
+import * as storm from "@buildment/learning-ui/canvas/sysdesign-m16-retry-storm/model";
+import { sysdesignM16RetryStorm } from "@buildment/learning-ui/canvas/sysdesign-m16-retry-storm/data";
+import * as herd from "@buildment/learning-ui/canvas/sysdesign-m16-jitter-herd/model";
+import { sysdesignM16JitterHerd } from "@buildment/learning-ui/canvas/sysdesign-m16-jitter-herd/data";
+import * as breaker from "@buildment/learning-ui/canvas/sysdesign-m16-breaker-play/model";
+import { sysdesignM16BreakerPlay } from "@buildment/learning-ui/canvas/sysdesign-m16-breaker-play/data";
 
 const VERDICT_MAX = 38;
 

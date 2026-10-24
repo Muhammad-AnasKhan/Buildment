@@ -15,7 +15,7 @@ import {
   perSeat,
   perSecond,
   SEAT_STEPS,
-} from "@/canvas/models/ticket-drop";
+} from "@buildment/learning-ui/canvas/models/ticket-drop";
 import {
   ADMIT_STOPS,
   admittedBy,
@@ -32,7 +32,7 @@ import {
   soldBy,
   timesText,
   waitingRoom,
-} from "@/canvas/models/waiting-room";
+} from "@buildment/learning-ui/canvas/models/waiting-room";
 import {
   ACCOUNTS,
   ALL_IDS,
@@ -43,7 +43,7 @@ import {
   ENTRIES,
   entryText,
   shown,
-} from "@/canvas/models/ledger-entries";
+} from "@buildment/learning-ui/canvas/models/ledger-entries";
 import {
   arrivals,
   DEFAULT_ORDER,
@@ -55,11 +55,11 @@ import {
   orderValueText,
   orderVerdict,
   runOrder,
-} from "@/canvas/models/webhook-order";
-import { sysdesignM25EstimatePlay } from "@/canvas/sysdesign-m25-estimate-play/data";
-import { sysdesignM25WaitingRoom } from "@/canvas/sysdesign-m25-waiting-room/data";
-import { sysdesignM25PostEntries } from "@/canvas/sysdesign-m25-post-entries/data";
-import { sysdesignM25WebhookOrder } from "@/canvas/sysdesign-m25-webhook-order/data";
+} from "@buildment/learning-ui/canvas/models/webhook-order";
+import { sysdesignM25EstimatePlay } from "@buildment/learning-ui/canvas/sysdesign-m25-estimate-play/data";
+import { sysdesignM25WaitingRoom } from "@buildment/learning-ui/canvas/sysdesign-m25-waiting-room/data";
+import { sysdesignM25PostEntries } from "@buildment/learning-ui/canvas/sysdesign-m25-post-entries/data";
+import { sysdesignM25WebhookOrder } from "@buildment/learning-ui/canvas/sysdesign-m25-webhook-order/data";
 
 const MAX = 38;
 const ALL = new Set(ALL_IDS);

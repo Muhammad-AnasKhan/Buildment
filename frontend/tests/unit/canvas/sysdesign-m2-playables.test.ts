@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { compareRungs, formatCount as ladderCount, formatHuman, formatReal, humanSeconds, logPosition, nearestRung, raceFrame, roundTripAt, RACE_TRIP_S } from "@/canvas/models/latency-ladder";
+import { compareRungs, formatCount as ladderCount, formatHuman, formatReal, humanSeconds, logPosition, nearestRung, raceFrame, roundTripAt, RACE_TRIP_S } from "@buildment/learning-ui/canvas/models/latency-ladder";
 import {
   availabilityVerdict,
   chainAvailability,
@@ -11,11 +11,11 @@ import {
   redDays,
   seriesAvailability,
   spreadDay,
-} from "@/canvas/models/availability";
-import { drivingNumber, envelopeVerdict, estimateEnvelope, flowRate, formatBits, formatBytes, formatCount, sig3, stepValue } from "@/canvas/models/envelope-estimate";
-import { LATENCY_RUNGS, sysdesignM2LatencyLadder } from "@/canvas/sysdesign-m2-latency-ladder/data";
-import { SADA_ESTIMATE, sysdesignM2Estimator } from "@/canvas/sysdesign-m2-estimator/data";
-import { AVAILABILITY_PARTS, sysdesignM2AvailabilityBuilder } from "@/canvas/sysdesign-m2-availability-builder/data";
+} from "@buildment/learning-ui/canvas/models/availability";
+import { drivingNumber, envelopeVerdict, estimateEnvelope, flowRate, formatBits, formatBytes, formatCount, sig3, stepValue } from "@buildment/learning-ui/canvas/models/envelope-estimate";
+import { LATENCY_RUNGS, sysdesignM2LatencyLadder } from "@buildment/learning-ui/canvas/sysdesign-m2-latency-ladder/data";
+import { SADA_ESTIMATE, sysdesignM2Estimator } from "@buildment/learning-ui/canvas/sysdesign-m2-estimator/data";
+import { AVAILABILITY_PARTS, sysdesignM2AvailabilityBuilder } from "@buildment/learning-ui/canvas/sysdesign-m2-availability-builder/data";
 
 const rung = (id: string) => LATENCY_RUNGS.find((r) => r.id === id)!;
 

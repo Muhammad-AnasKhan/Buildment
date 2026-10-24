@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { checkDesign, designFrame, VERDICT_MAX } from "@/canvas/models/design-stepper";
+import { checkDesign, designFrame, VERDICT_MAX } from "@buildment/learning-ui/canvas/models/design-stepper";
 import {
   chainRates,
   crawlEstimate,
@@ -15,7 +15,7 @@ import {
   sitesText,
   terabytes,
   WAIT_STEPS,
-} from "@/canvas/models/crawl-estimate";
+} from "@buildment/learning-ui/canvas/models/crawl-estimate";
 import {
   checksRounded,
   checksText,
@@ -29,7 +29,7 @@ import {
   SHARD_CHOICES,
   TIMES_TOO_SLOW,
   WRITE_MB_PER_SECOND,
-} from "@/canvas/models/crawl-design";
+} from "@buildment/learning-ui/canvas/models/crawl-design";
 import {
   CAPACITY,
   daysText,
@@ -42,7 +42,7 @@ import {
   slotsFill,
   stopFraction,
   WAIT_STEPS as HOST_WAITS,
-} from "@/canvas/models/crawl-host-rate";
+} from "@buildment/learning-ui/canvas/models/crawl-host-rate";
 import {
   GAPS,
   gapText,
@@ -54,7 +54,7 @@ import {
   recrawlVerdict,
   strip,
   visitsText,
-} from "@/canvas/models/crawl-recrawl";
+} from "@buildment/learning-ui/canvas/models/crawl-recrawl";
 import {
   barShares,
   bitsText,
@@ -68,12 +68,12 @@ import {
   sizeText,
   skippedText,
   URL_STEPS,
-} from "@/canvas/models/crawl-bloom";
-import { sysdesignM26EstimatePlay } from "@/canvas/sysdesign-m26-estimate-play/data";
-import { sysdesignM26DesignStepper } from "@/canvas/sysdesign-m26-design-stepper/data";
-import { sysdesignM26HostRatePlay } from "@/canvas/sysdesign-m26-host-rate-play/data";
-import { sysdesignM26RecrawlPlay } from "@/canvas/sysdesign-m26-recrawl-play/data";
-import { sysdesignM26BloomPlay } from "@/canvas/sysdesign-m26-bloom-play/data";
+} from "@buildment/learning-ui/canvas/models/crawl-bloom";
+import { sysdesignM26EstimatePlay } from "@buildment/learning-ui/canvas/sysdesign-m26-estimate-play/data";
+import { sysdesignM26DesignStepper } from "@buildment/learning-ui/canvas/sysdesign-m26-design-stepper/data";
+import { sysdesignM26HostRatePlay } from "@buildment/learning-ui/canvas/sysdesign-m26-host-rate-play/data";
+import { sysdesignM26RecrawlPlay } from "@buildment/learning-ui/canvas/sysdesign-m26-recrawl-play/data";
+import { sysdesignM26BloomPlay } from "@buildment/learning-ui/canvas/sysdesign-m26-bloom-play/data";
 
 const MAX = 38;
 

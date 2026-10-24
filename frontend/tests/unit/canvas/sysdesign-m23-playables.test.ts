@@ -14,7 +14,7 @@ import {
   searchTail,
   searchVerdict,
   SHOPPER_STEPS,
-} from "@/canvas/models/search-estimate";
+} from "@buildment/learning-ui/canvas/models/search-estimate";
 import {
   askVerdict,
   buildIndex,
@@ -31,8 +31,8 @@ import {
   wordLabel,
   PRODUCTS,
   type QueryWord,
-} from "@/canvas/models/tiny-index";
-import { buildTrie, KEYS, MAX_TYPED, nextKeys, press, QUERIES, TRIE, trieVerdict, walk, walkSentence } from "@/canvas/models/trie-walk";
+} from "@buildment/learning-ui/canvas/models/tiny-index";
+import { buildTrie, KEYS, MAX_TYPED, nextKeys, press, QUERIES, TRIE, trieVerdict, walk, walkSentence } from "@buildment/learning-ui/canvas/models/trie-walk";
 import {
   amberTypos,
   bestHashes,
@@ -51,8 +51,8 @@ import {
   sharePercent,
   sizeValueText,
   wrongMaybe,
-} from "@/canvas/models/bloom-hashes";
-import { falsePositiveRate } from "@/canvas/models/bloom";
+} from "@buildment/learning-ui/canvas/models/bloom-hashes";
+import { falsePositiveRate } from "@buildment/learning-ui/canvas/models/bloom";
 import {
   band,
   bytesText,
@@ -68,12 +68,12 @@ import {
   registersValueText,
   standardError,
   wobble,
-} from "@/canvas/models/hll-registers";
-import { sysdesignM23EstimatePlay } from "@/canvas/sysdesign-m23-estimate-play/data";
-import { sysdesignM23TinyIndex } from "@/canvas/sysdesign-m23-tiny-index/data";
-import { sysdesignM23TrieWalk } from "@/canvas/sysdesign-m23-trie-walk/data";
-import { sysdesignM23BloomSize } from "@/canvas/sysdesign-m23-bloom-size/data";
-import { sysdesignM23HllRegisters } from "@/canvas/sysdesign-m23-hll-registers/data";
+} from "@buildment/learning-ui/canvas/models/hll-registers";
+import { sysdesignM23EstimatePlay } from "@buildment/learning-ui/canvas/sysdesign-m23-estimate-play/data";
+import { sysdesignM23TinyIndex } from "@buildment/learning-ui/canvas/sysdesign-m23-tiny-index/data";
+import { sysdesignM23TrieWalk } from "@buildment/learning-ui/canvas/sysdesign-m23-trie-walk/data";
+import { sysdesignM23BloomSize } from "@buildment/learning-ui/canvas/sysdesign-m23-bloom-size/data";
+import { sysdesignM23HllRegisters } from "@buildment/learning-ui/canvas/sysdesign-m23-hll-registers/data";
 
 const MAX = 38;
 
@@ -497,7 +497,7 @@ describe("m23 playable specs", () => {
   });
 
   it("use theme tokens only: no hex colours, no em dashes, no forbidden SVG parts", () => {
-    const canvas = path.resolve(__dirname, "../../../src/canvas");
+    const canvas = path.resolve(__dirname, "../../../../packages/learning-ui/src/canvas");
     const files = [
       ...["sysdesign-m23-estimate-play", "sysdesign-m23-tiny-index", "sysdesign-m23-trie-walk", "sysdesign-m23-bloom-size", "sysdesign-m23-hll-registers"].flatMap((d) =>
         fs.readdirSync(path.join(canvas, d)).map((f) => path.join(canvas, d, f))

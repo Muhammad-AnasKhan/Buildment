@@ -1,18 +1,18 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import * as iso from "@/canvas/sysdesign-m18-isolation-layers/model";
-import { sysdesignM18IsolationLayers } from "@/canvas/sysdesign-m18-isolation-layers/data";
-import * as cache from "@/canvas/sysdesign-m18-layer-cache/model";
-import { sysdesignM18LayerCache } from "@/canvas/sysdesign-m18-layer-cache/data";
-import * as cluster from "@/canvas/sysdesign-m18-cluster-play/model";
-import { sysdesignM18ClusterPlay } from "@/canvas/sysdesign-m18-cluster-play/data";
-import * as pipe from "@/canvas/sysdesign-m18-pipeline-step/model";
-import { sysdesignM18PipelineStep } from "@/canvas/sysdesign-m18-pipeline-step/data";
-import * as canary from "@/canvas/sysdesign-m18-canary-blast/model";
-import { sysdesignM18CanaryBlast } from "@/canvas/sysdesign-m18-canary-blast/data";
-import * as cloud from "@/canvas/sysdesign-m18-cloud-explorer/model";
-import { sysdesignM18CloudExplorer } from "@/canvas/sysdesign-m18-cloud-explorer/data";
+import * as iso from "@buildment/learning-ui/canvas/sysdesign-m18-isolation-layers/model";
+import { sysdesignM18IsolationLayers } from "@buildment/learning-ui/canvas/sysdesign-m18-isolation-layers/data";
+import * as cache from "@buildment/learning-ui/canvas/sysdesign-m18-layer-cache/model";
+import { sysdesignM18LayerCache } from "@buildment/learning-ui/canvas/sysdesign-m18-layer-cache/data";
+import * as cluster from "@buildment/learning-ui/canvas/sysdesign-m18-cluster-play/model";
+import { sysdesignM18ClusterPlay } from "@buildment/learning-ui/canvas/sysdesign-m18-cluster-play/data";
+import * as pipe from "@buildment/learning-ui/canvas/sysdesign-m18-pipeline-step/model";
+import { sysdesignM18PipelineStep } from "@buildment/learning-ui/canvas/sysdesign-m18-pipeline-step/data";
+import * as canary from "@buildment/learning-ui/canvas/sysdesign-m18-canary-blast/model";
+import { sysdesignM18CanaryBlast } from "@buildment/learning-ui/canvas/sysdesign-m18-canary-blast/data";
+import * as cloud from "@buildment/learning-ui/canvas/sysdesign-m18-cloud-explorer/model";
+import { sysdesignM18CloudExplorer } from "@buildment/learning-ui/canvas/sysdesign-m18-cloud-explorer/data";
 
 const VERDICT_MAX = 38;
 

@@ -1,9 +1,9 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { alongRoute, checkMap, cutOff, edgeFraction, effectsOf, failedLinks, linkKey, mapLinks, stopIndex } from "@/canvas/models/block-map";
-import { MAP_CARD_H, MAP_CARD_W } from "@/canvas/primitives/block-map";
-import { DAFTAR_BLOCKS, DAFTAR_EXTRA_LINKS, sysdesignM1BlockMap } from "@/canvas/sysdesign-m1-block-map/data";
+import { alongRoute, checkMap, cutOff, edgeFraction, effectsOf, failedLinks, linkKey, mapLinks, stopIndex } from "@buildment/learning-ui/canvas/models/block-map";
+import { MAP_CARD_H, MAP_CARD_W } from "@buildment/learning-ui/canvas/primitives/block-map";
+import { DAFTAR_BLOCKS, DAFTAR_EXTRA_LINKS, sysdesignM1BlockMap } from "@buildment/learning-ui/canvas/sysdesign-m1-block-map/data";
 
 const links = mapLinks(DAFTAR_BLOCKS, DAFTAR_EXTRA_LINKS);
 const keys = (pairs: [string, string][]) => new Set(pairs.map(([a, b]) => linkKey(a, b)));

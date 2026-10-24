@@ -13,7 +13,7 @@ import {
   styleVerdict,
   totals,
   type Weights,
-} from "@/canvas/models/api-style-weigh";
+} from "@buildment/learning-ui/canvas/models/api-style-weigh";
 import {
   CHANGES,
   changeFromFraction,
@@ -25,7 +25,7 @@ import {
   slotOf,
   type Change,
   type PagingMode,
-} from "@/canvas/models/paging-insert";
+} from "@buildment/learning-ui/canvas/models/paging-insert";
 import {
   KEY_MODES,
   PROVIDER,
@@ -38,9 +38,9 @@ import {
   runRetries,
   waitingAt,
   type KeyMode,
-} from "@/canvas/models/retry-key";
-import { B_LADDER, LIMITERS, allowedInB, burstVerdict, clock, leakyDelays, leakyQueued, limiterRows } from "@/canvas/models/limiter-burst";
-import { DEFAULT_JOBS, JOBS, gatewayOutcome, gatewayVerdict, toggleJob, type Jobs } from "@/canvas/models/gateway-jobs";
+} from "@buildment/learning-ui/canvas/models/retry-key";
+import { B_LADDER, LIMITERS, allowedInB, burstVerdict, clock, leakyDelays, leakyQueued, limiterRows } from "@buildment/learning-ui/canvas/models/limiter-burst";
+import { DEFAULT_JOBS, JOBS, gatewayOutcome, gatewayVerdict, toggleJob, type Jobs } from "@buildment/learning-ui/canvas/models/gateway-jobs";
 import {
   LANES,
   LIFETIME,
@@ -52,13 +52,13 @@ import {
   lifetimeFromFraction,
   lifetimeToFraction,
   revokeVerdict,
-} from "@/canvas/models/revoke-timeline";
-import { sysdesignM6ApiStyleWeigh } from "@/canvas/sysdesign-m6-api-style-weigh/data";
-import { sysdesignM6PagingInsert } from "@/canvas/sysdesign-m6-paging-insert/data";
-import { sysdesignM6RetryKey } from "@/canvas/sysdesign-m6-retry-key/data";
-import { sysdesignM6LimiterBurst } from "@/canvas/sysdesign-m6-limiter-burst/data";
-import { sysdesignM6GatewayJobs } from "@/canvas/sysdesign-m6-gateway-jobs/data";
-import { sysdesignM6RevokeTimeline } from "@/canvas/sysdesign-m6-revoke-timeline/data";
+} from "@buildment/learning-ui/canvas/models/revoke-timeline";
+import { sysdesignM6ApiStyleWeigh } from "@buildment/learning-ui/canvas/sysdesign-m6-api-style-weigh/data";
+import { sysdesignM6PagingInsert } from "@buildment/learning-ui/canvas/sysdesign-m6-paging-insert/data";
+import { sysdesignM6RetryKey } from "@buildment/learning-ui/canvas/sysdesign-m6-retry-key/data";
+import { sysdesignM6LimiterBurst } from "@buildment/learning-ui/canvas/sysdesign-m6-limiter-burst/data";
+import { sysdesignM6GatewayJobs } from "@buildment/learning-ui/canvas/sysdesign-m6-gateway-jobs/data";
+import { sysdesignM6RevokeTimeline } from "@buildment/learning-ui/canvas/sysdesign-m6-revoke-timeline/data";
 
 const MAX_VERDICT = 38;
 const DASH = String.fromCharCode(0x2014);
@@ -373,7 +373,7 @@ describe("the six server-rendered pictures", () => {
 
   it("keeps the course wording free of em dashes and the drawing free of hex colours and banned SVG parts", () => {
     for (const spec of specs) expect(spec.title + spec.purpose + spec.limits).not.toContain(DASH);
-    const root = path.resolve(__dirname, "../../../src/canvas");
+    const root = path.resolve(__dirname, "../../../../packages/learning-ui/src/canvas");
     const files = fs
       .readdirSync(root)
       .filter((d) => /^sysdesign-m6-(api-style-weigh|paging-insert|retry-key|limiter-burst|gateway-jobs|revoke-timeline)$/.test(d))

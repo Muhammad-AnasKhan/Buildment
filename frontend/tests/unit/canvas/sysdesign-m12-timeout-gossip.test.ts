@@ -18,7 +18,7 @@ import {
   timeoutToFraction,
   timeoutValueText,
   timeoutVerdict,
-} from "@/canvas/models/failure-timeout";
+} from "@buildment/learning-ui/canvas/models/failure-timeout";
 import {
   DEFAULT_FANOUT,
   DEFAULT_SIZE,
@@ -38,10 +38,10 @@ import {
   roundsToAll,
   roundsToHalf,
   suspicionRounds,
-} from "@/canvas/models/gossip-spread";
-import { ladderStep } from "@/canvas/primitives/picture-slider";
-import { sysdesignM12TimeoutSlider } from "@/canvas/sysdesign-m12-timeout-slider/data";
-import { sysdesignM12GossipSpread } from "@/canvas/sysdesign-m12-gossip-spread/data";
+} from "@buildment/learning-ui/canvas/models/gossip-spread";
+import { ladderStep } from "@buildment/learning-ui/canvas/primitives/picture-slider";
+import { sysdesignM12TimeoutSlider } from "@buildment/learning-ui/canvas/sysdesign-m12-timeout-slider/data";
+import { sysdesignM12GossipSpread } from "@buildment/learning-ui/canvas/sysdesign-m12-gossip-spread/data";
 
 const DASH = String.fromCharCode(0x2014);
 
@@ -242,7 +242,7 @@ describe("12.2 and 12.8 canvases", () => {
 
   it("keeps the wording free of em dashes and the drawing free of hex colours and banned SVG parts", () => {
     for (const spec of specs) expect(spec.title + spec.purpose + spec.limits).not.toContain(DASH);
-    const root = path.resolve(__dirname, "../../../src/canvas");
+    const root = path.resolve(__dirname, "../../../../packages/learning-ui/src/canvas");
     const files = [
       ...["sysdesign-m12-timeout-slider", "sysdesign-m12-gossip-spread"].flatMap((d) =>
         fs.readdirSync(path.join(root, d)).filter((f) => /\.(tsx|ts|md)$/.test(f)).map((f) => path.join(root, d, f))

@@ -8,6 +8,7 @@ import { UnprocessableError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
 import { notifyMenteeCourseEnrollment, notifyMentorNewEnrollment } from "../email/event-notifications.js";
 import { queueEmail } from "../email/queue.js";
+import { assignmentForNewEnrollment } from "../courses/variant-assignment.js";
 import { inviteAcceptUrl, sendEmail } from "../email/send.js";
 import { requireCourseById, type OwnedCourse } from "./access.js";
 
@@ -68,11 +69,16 @@ export async function assignByEmails(user: SessionUser, courseId: string, emails
     const existingUser = await prisma.user.findUnique({ where: { email }, select: { id: true } });
 
     if (existingUser) {
-      const enrollment = await prisma.enrollment.upsert({
-        where: { courseId_userId: { courseId: course.id, userId: existingUser.id } },
-        update: { status: "ASSIGNED" },
-        create: { courseId: course.id, userId: existingUser.id, status: "ASSIGNED", assignedById: user.id, source: "DIRECT", lifecycle: "ACTIVE" },
-        select: { id: true },
+      const enrollment = await prisma.$transaction(async tx => {
+        const old = await tx.enrollment.findUnique({ where: { courseId_userId: { courseId: course.id, userId: existingUser.id } }, select: { id: true } });
+        if (old) return old;
+        const assignment = await assignmentForNewEnrollment(tx, course.id);
+        return tx.enrollment.upsert({
+          where: { courseId_userId: { courseId: course.id, userId: existingUser.id } },
+          update: {},
+          create: { ...assignment, courseId: course.id, userId: existingUser.id, status: "ASSIGNED", assignedById: user.id, source: "DIRECT", lifecycle: "ACTIVE" },
+          select: { id: true },
+        });
       });
       queueEmail(() => notifyMenteeCourseEnrollment(enrollment.id));
       queueEmail(() => notifyMentorNewEnrollment(enrollment.id));

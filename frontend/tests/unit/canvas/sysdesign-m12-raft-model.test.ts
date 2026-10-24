@@ -1,8 +1,8 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { sysdesignM12RaftElectionPlay } from "@/canvas/sysdesign-m12-raft-election-play/data";
-import { sysdesignM12RaftLogPlay } from "@/canvas/sysdesign-m12-raft-log-play/data";
+import { sysdesignM12RaftElectionPlay } from "@buildment/learning-ui/canvas/sysdesign-m12-raft-election-play/data";
+import { sysdesignM12RaftLogPlay } from "@buildment/learning-ui/canvas/sysdesign-m12-raft-log-play/data";
 import {
   advance,
   cutHalf,
@@ -24,7 +24,7 @@ import {
   timerLeft,
   upCount,
   type Cluster,
-} from "@/canvas/models/raft-cluster";
+} from "@buildment/learning-ui/canvas/models/raft-cluster";
 
 const term = (c: Cluster, id: number) => c.servers[id].term;
 

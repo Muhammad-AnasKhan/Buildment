@@ -26,8 +26,8 @@ tests/
 └─ helpers/          fixtures that build and tear down their own course/org
 scripts/             course import/validation/audit, demo seeds, stats backfill, sync-shared (tsx)
 prisma/              schema, migrations, seed
-Dockerfile           production image, self-contained (build from this folder)
-Procfile             Heroku: release = migrate deploy, web = node dist/index.js
+Dockerfile           production image with courses/ (build from repository root)
+Procfile             Heroku APP_BASE=server: release = migrate and publish, web = node dist/index.js
 ```
 
 ## Conventions
@@ -64,17 +64,20 @@ Course creators can upload cover images in course settings and insert images fro
 | `pnpm test` | unit + API tests (`DATABASE_URL`, or `TEST_DATABASE_URL`, must point at Postgres) |
 | `pnpm typecheck` / `pnpm lint` | |
 | `pnpm db:migrate` / `db:ready` / `db:seed` / `db:studio` | Prisma |
-| `pnpm content:import` / `content:validate` / `content:validate:source` / `content:audit` | course content pipeline (`content/import/` → Postgres) |
+| `pnpm content:import` / `content:validate` / `content:validate:source` / `content:audit` | course content pipeline (`courses/` → Postgres) |
 | `pnpm db:seed:showcase` / `db:seed:integration` / `stats:backfill` | demo data and maintenance |
 | `pnpm sync-shared` / `sync-shared:check` | copy `src/shared` into the web app / verify the copy is current |
 
 ## Docker
 
 ```bash
-docker build -t buildment-api .                 # from this folder
-docker run --rm --env-file .env buildment-api pnpm exec prisma migrate deploy
-docker run -p 4000:4000 --env-file .env buildment-api
+docker build -f server/Dockerfile -t buildment-api . # from repository root
+docker run --rm --env-file server/.env buildment-api pnpm exec prisma migrate deploy
+docker run --rm --env-file server/.env buildment-api pnpm courses:publish
+docker run -p 4000:4000 --env-file server/.env buildment-api
 ```
 
 The image carries the compiled API, the Prisma schema and migrations, and the scripts, so
-`pnpm db:seed` works inside the container too (the course import reads `content/` from a checkout).
+`pnpm db:seed` works inside the container too. It also carries the repository course sources
+and the course auditor for release publishing. The production instructor account must exist
+before `pnpm courses:publish` runs.

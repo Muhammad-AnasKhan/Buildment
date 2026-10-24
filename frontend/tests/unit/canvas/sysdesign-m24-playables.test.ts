@@ -1,13 +1,13 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { sysdesignM24EstimatePlay } from "@/canvas/sysdesign-m24-estimate-play/data";
-import { sysdesignM24GeohashZoom } from "@/canvas/sysdesign-m24-geohash-zoom/data";
-import { sysdesignM24CellEdge } from "@/canvas/sysdesign-m24-cell-edge/data";
-import { sysdesignM24QuadtreeSplit } from "@/canvas/sysdesign-m24-quadtree-split/data";
-import { sysdesignM24UpdateLoad } from "@/canvas/sysdesign-m24-update-load/data";
-import { sysdesignM24BatchMatch } from "@/canvas/sysdesign-m24-batch-match/data";
-import { cellIndexAt, cellRect, mapTransform, moveInGrid } from "@/canvas/models/geohash-zoom";
+import { sysdesignM24EstimatePlay } from "@buildment/learning-ui/canvas/sysdesign-m24-estimate-play/data";
+import { sysdesignM24GeohashZoom } from "@buildment/learning-ui/canvas/sysdesign-m24-geohash-zoom/data";
+import { sysdesignM24CellEdge } from "@buildment/learning-ui/canvas/sysdesign-m24-cell-edge/data";
+import { sysdesignM24QuadtreeSplit } from "@buildment/learning-ui/canvas/sysdesign-m24-quadtree-split/data";
+import { sysdesignM24UpdateLoad } from "@buildment/learning-ui/canvas/sysdesign-m24-update-load/data";
+import { sysdesignM24BatchMatch } from "@buildment/learning-ui/canvas/sysdesign-m24-batch-match/data";
+import { cellIndexAt, cellRect, mapTransform, moveInGrid } from "@buildment/learning-ui/canvas/models/geohash-zoom";
 
 describe("m24 playable canvases render on the server", () => {
   const specs = [

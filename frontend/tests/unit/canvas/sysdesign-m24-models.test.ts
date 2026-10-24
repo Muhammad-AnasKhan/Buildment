@@ -10,8 +10,8 @@ import {
   perSecond,
   RIDER_STEPS,
   safarEstimate,
-} from "@/canvas/models/safar-estimate";
-import { formatBytes } from "@/canvas/models/envelope-estimate";
+} from "@buildment/learning-ui/canvas/models/safar-estimate";
+import { formatBytes } from "@buildment/learning-ui/canvas/models/envelope-estimate";
 import {
   boxMetres,
   boxSizeText,
@@ -22,7 +22,7 @@ import {
   nestedBoxes,
   pickKind,
   zoomVerdict,
-} from "@/canvas/models/geohash-zoom";
+} from "@buildment/learning-ui/canvas/models/geohash-zoom";
 import {
   BOX,
   cellEdge,
@@ -38,7 +38,7 @@ import {
   ringsToReach,
   viewFor,
   type Mode,
-} from "@/canvas/models/cell-edge";
+} from "@buildment/learning-ui/canvas/models/cell-edge";
 import {
   countIn,
   CROWD_STOPS,
@@ -50,7 +50,7 @@ import {
   quadVerdict,
   scatter,
   valueText as quadValueText,
-} from "@/canvas/models/quadtree-split";
+} from "@buildment/learning-ui/canvas/models/quadtree-split";
 import {
   DRIVER_STEPS as LOAD_DRIVERS,
   GAP_STEPS as LOAD_GAPS,
@@ -60,7 +60,7 @@ import {
   updateLoad,
   updateVerdict,
   valueText as loadValueText,
-} from "@/canvas/models/safar-update-load";
+} from "@buildment/learning-ui/canvas/models/safar-update-load";
 import {
   D1_MAX,
   D1_MIN,
@@ -71,7 +71,7 @@ import {
   savingText,
   tripProgress,
   valueText as matchValueText,
-} from "@/canvas/models/batch-match";
+} from "@buildment/learning-ui/canvas/models/batch-match";
 
 const MAX = 38;
 

@@ -1,10 +1,10 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import * as bulkhead from "@/canvas/sysdesign-m16-bulkhead-pools/model";
-import { sysdesignM16BulkheadPools } from "@/canvas/sysdesign-m16-bulkhead-pools/data";
-import * as degrade from "@/canvas/sysdesign-m16-degrade-menu/model";
-import { sysdesignM16DegradeMenu } from "@/canvas/sysdesign-m16-degrade-menu/data";
+import * as bulkhead from "@buildment/learning-ui/canvas/sysdesign-m16-bulkhead-pools/model";
+import { sysdesignM16BulkheadPools } from "@buildment/learning-ui/canvas/sysdesign-m16-bulkhead-pools/data";
+import * as degrade from "@buildment/learning-ui/canvas/sysdesign-m16-degrade-menu/model";
+import { sysdesignM16DegradeMenu } from "@buildment/learning-ui/canvas/sysdesign-m16-degrade-menu/data";
 
 const VERDICT_MAX = 38;
 

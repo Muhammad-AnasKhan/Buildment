@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Check } from "lucide-react";
-import type { CourseTrack } from "@/shared/lib/course-tracks";
+import { Check, ClipboardList, Mail, MessageSquare, MessagesSquare, Smartphone, type LucideIcon } from "lucide-react";
+import type { CourseTrack, CourseVariant, VariantChannel } from "@/shared/lib/course-tracks";
 import { findCourseFamily, resolveVariant, specialisationsFor } from "@/shared/lib/course-tracks";
 import { chooseCourseSpecialisationAction } from "@/server/actions/course-track";
 import { buttonVariants } from "@/components/ui/button";
@@ -15,12 +15,66 @@ export function VariantDot({ className }: { className?: string }) {
   return <span aria-hidden className={cn("inline-block size-2.5 shrink-0 rounded-full bg-primary", className)} />;
 }
 
+const CHANNEL_ICONS: Array<[RegExp, LucideIcon]> = [
+  [/team/i, MessagesSquare],
+  [/chat/i, MessageSquare],
+  [/mail/i, Mail],
+  [/form/i, ClipboardList],
+  [/messag|sms|phone/i, Smartphone],
+];
+
+function channelIcon(label: string): LucideIcon {
+  return CHANNEL_ICONS.find(([pattern]) => pattern.test(label))?.[1] ?? MessageSquare;
+}
+
+/** Channel chips for a variant card. A suggested extra channel gets a dashed outline and says "optional" in words. */
+export function VariantChannels({ channels }: { channels: VariantChannel[] }) {
+  return (
+    <ul aria-label="Channels" className="flex flex-wrap gap-1.5">
+      {channels.map((channel) => {
+        const Icon = channelIcon(channel.label);
+        return (
+          <li
+            key={channel.label}
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs leading-5 font-medium",
+              channel.optional ? "border-dashed border-border text-muted-foreground" : "border-border bg-muted text-foreground"
+            )}
+          >
+            <Icon aria-hidden className="size-3.5 shrink-0" />
+            <span>
+              {channel.label}
+              {channel.optional ? <span className="font-normal">, optional</span> : null}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** What a variant card says about the product: summary, channels and the hard problem. Must sit inside a VariantThemeScope. */
+export function VariantDetails({ variant }: { variant: CourseVariant }) {
+  return (
+    <div className="space-y-3">
+      <p className="text-sm leading-6">{variant.summary}</p>
+      {variant.channels?.length ? <VariantChannels channels={variant.channels} /> : null}
+      <div className="rounded-lg border-l-4 border-primary bg-muted/60 px-3 py-2">
+        <p className="text-xs font-semibold tracking-wide text-primary uppercase">Hard problem</p>
+        <p className="mt-0.5 text-sm leading-6">{variant.hardestConstraint}</p>
+      </div>
+    </div>
+  );
+}
+
 export function VariantBanner({ courseSlug, track }: { courseSlug: string; track: CourseTrack }) {
   const family = track.family ?? findCourseFamily(track.familySlug);
   if (!family) return null;
   const variant = resolveVariant(family, track.variantSlug);
   // Finished learners keep whatever they built, including the default.
   const settled = track.variantChosen || track.variantLocked;
+  const available = !track.availableVariantSlugs?.length || track.availableVariantSlugs.includes(variant.slug);
+  const onlyOneAvailable = track.availableVariantSlugs?.length === 1;
 
   return (
     <section
@@ -37,20 +91,21 @@ export function VariantBanner({ courseSlug, track }: { courseSlug: string; track
             </>
           ) : (
             <>
-              You are on the general course, building <strong className="font-semibold">{variant.productName}</strong>.{" "}
-              <span className="text-muted-foreground">You can pick a different product to build.</span>
+              Your starting product is <strong className="font-semibold">{variant.productName}</strong>.{" "}
+              <span className="text-muted-foreground">{onlyOneAvailable ? "This is the product currently available." : "You can pick a different product to build."}</span>
             </>
           )}
         </span>
       </p>
+      {!available && <p className="text-xs text-muted-foreground">This product&apos;s own lessons are still being prepared. Your earlier choice and work remain recorded.</p>}
       {track.variantLocked ? (
-        <p className="text-xs text-muted-foreground">Variant fixed after starting a chapter</p>
+        <p className="text-xs text-muted-foreground">{track.variantAssigned ? "Assigned to you for this course" : "Variant fixed after starting a chapter"}</p>
       ) : (
         <Link
           href={`/courses/${courseSlug}/variant`}
           className={cn(buttonVariants({ variant: settled ? "outline" : "default", size: "sm" }), "shrink-0")}
         >
-          {settled ? "Change" : "Choose a variant"}
+          {settled ? "Change" : onlyOneAvailable ? "Continue with this product" : "Choose a variant"}
         </Link>
       )}
     </section>

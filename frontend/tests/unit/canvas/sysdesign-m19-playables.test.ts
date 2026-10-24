@@ -1,19 +1,19 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import * as zones from "@/canvas/sysdesign-m19-add-zones/model";
-import { sysdesignM19AddZones } from "@/canvas/sysdesign-m19-add-zones/data";
-import * as cells from "@/canvas/sysdesign-m19-cells/model";
-import { sysdesignM19Cells } from "@/canvas/sysdesign-m19-cells/data";
-import * as failure from "@/canvas/sysdesign-m19-failure-time/model";
-import { sysdesignM19FailureTime } from "@/canvas/sysdesign-m19-failure-time/data";
-import * as region from "@/canvas/sysdesign-m19-fail-region/model";
-import { sysdesignM19FailRegion } from "@/canvas/sysdesign-m19-fail-region/data";
-import * as route from "@/canvas/sysdesign-m19-route-users/model";
-import { sysdesignM19RouteUsers } from "@/canvas/sysdesign-m19-route-users/data";
-import * as latency from "@/canvas/sysdesign-m19-write-latency/model";
-import { sysdesignM19WriteLatency } from "@/canvas/sysdesign-m19-write-latency/data";
-import { keyLayout, stepStarts, stepTotal, type BarStep } from "@/canvas/primitives/svg-step-bar";
+import * as zones from "@buildment/learning-ui/canvas/sysdesign-m19-add-zones/model";
+import { sysdesignM19AddZones } from "@buildment/learning-ui/canvas/sysdesign-m19-add-zones/data";
+import * as cells from "@buildment/learning-ui/canvas/sysdesign-m19-cells/model";
+import { sysdesignM19Cells } from "@buildment/learning-ui/canvas/sysdesign-m19-cells/data";
+import * as failure from "@buildment/learning-ui/canvas/sysdesign-m19-failure-time/model";
+import { sysdesignM19FailureTime } from "@buildment/learning-ui/canvas/sysdesign-m19-failure-time/data";
+import * as region from "@buildment/learning-ui/canvas/sysdesign-m19-fail-region/model";
+import { sysdesignM19FailRegion } from "@buildment/learning-ui/canvas/sysdesign-m19-fail-region/data";
+import * as route from "@buildment/learning-ui/canvas/sysdesign-m19-route-users/model";
+import { sysdesignM19RouteUsers } from "@buildment/learning-ui/canvas/sysdesign-m19-route-users/data";
+import * as latency from "@buildment/learning-ui/canvas/sysdesign-m19-write-latency/model";
+import { sysdesignM19WriteLatency } from "@buildment/learning-ui/canvas/sysdesign-m19-write-latency/data";
+import { keyLayout, stepStarts, stepTotal, type BarStep } from "@buildment/learning-ui/canvas/primitives/svg-step-bar";
 
 const VERDICT_MAX = 38;
 

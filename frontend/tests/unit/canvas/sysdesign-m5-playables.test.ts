@@ -1,9 +1,9 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { answeredAt, dotLife, dotPose, dotsAt, HIT_SNAPS, oneDecimal, pathNumbers, queriesText, type Hits, DEFAULT_HITS } from "@/canvas/models/cache-path";
-import { checkDesign, designFrame } from "@/canvas/models/design-stepper";
-import { PATTERNS, patternSpec, type PatternId } from "@/canvas/models/cache-pattern";
+import { answeredAt, dotLife, dotPose, dotsAt, HIT_SNAPS, oneDecimal, pathNumbers, queriesText, type Hits, DEFAULT_HITS } from "@buildment/learning-ui/canvas/models/cache-path";
+import { checkDesign, designFrame } from "@buildment/learning-ui/canvas/models/design-stepper";
+import { PATTERNS, patternSpec, type PatternId } from "@buildment/learning-ui/canvas/models/cache-pattern";
 import {
   CATALOGUE,
   doublingGain,
@@ -16,17 +16,17 @@ import {
   percentText,
   placeLabel,
   zipfPrefix,
-} from "@/canvas/models/hit-rate";
-import { cacheAt, flightProgress, flights, playhead, raceResult } from "@/canvas/models/stale-race";
-import { burstShape, chartSecond, DEFAULT_SETTINGS, peakText, queueAt, shoppersWaiting, spikeHeight, stampede, type Settings } from "@/canvas/models/stampede";
-import { cdnLoad, formatHit, formatPerMinute, formatSeconds, rFraction, rFromFraction, tFraction, tFromFraction } from "@/canvas/models/cdn-origin";
-import { roundToStep, snapTo, spread, stepByKey, withCommas } from "@/canvas/models/picture-controls";
-import { sysdesignM5CachePath } from "@/canvas/sysdesign-m5-cache-path/data";
-import { sysdesignM5PatternStepper } from "@/canvas/sysdesign-m5-pattern-stepper/data";
-import { sysdesignM5HitRateCurve } from "@/canvas/sysdesign-m5-hit-rate-curve/data";
-import { sysdesignM5StaleRace } from "@/canvas/sysdesign-m5-stale-race/data";
-import { sysdesignM5StampedeToggles } from "@/canvas/sysdesign-m5-stampede-toggles/data";
-import { sysdesignM5CdnOriginLoad } from "@/canvas/sysdesign-m5-cdn-origin-load/data";
+} from "@buildment/learning-ui/canvas/models/hit-rate";
+import { cacheAt, flightProgress, flights, playhead, raceResult } from "@buildment/learning-ui/canvas/models/stale-race";
+import { burstShape, chartSecond, DEFAULT_SETTINGS, peakText, queueAt, shoppersWaiting, spikeHeight, stampede, type Settings } from "@buildment/learning-ui/canvas/models/stampede";
+import { cdnLoad, formatHit, formatPerMinute, formatSeconds, rFraction, rFromFraction, tFraction, tFromFraction } from "@buildment/learning-ui/canvas/models/cdn-origin";
+import { roundToStep, snapTo, spread, stepByKey, withCommas } from "@buildment/learning-ui/canvas/models/picture-controls";
+import { sysdesignM5CachePath } from "@buildment/learning-ui/canvas/sysdesign-m5-cache-path/data";
+import { sysdesignM5PatternStepper } from "@buildment/learning-ui/canvas/sysdesign-m5-pattern-stepper/data";
+import { sysdesignM5HitRateCurve } from "@buildment/learning-ui/canvas/sysdesign-m5-hit-rate-curve/data";
+import { sysdesignM5StaleRace } from "@buildment/learning-ui/canvas/sysdesign-m5-stale-race/data";
+import { sysdesignM5StampedeToggles } from "@buildment/learning-ui/canvas/sysdesign-m5-stampede-toggles/data";
+import { sysdesignM5CdnOriginLoad } from "@buildment/learning-ui/canvas/sysdesign-m5-cdn-origin-load/data";
 
 const VERDICT_MAX = 38;
 

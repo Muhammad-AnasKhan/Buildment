@@ -9,5 +9,8 @@ export async function list(req: Request, res: Response) {
 
 // GET /api/v1/catalog/:courseSlug
 export async function detail(req: Request, res: Response) {
-  ok(res, await getCatalogCourse(req.params.courseSlug as string, req.user!.id));
+  ok(res, {
+    ...await getCatalogCourse(req.params.courseSlug as string, req.user?.id),
+    signedIn: Boolean(req.user),
+  });
 }

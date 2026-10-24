@@ -5,6 +5,7 @@ import {
 } from "../allocation.js";
 import { pathmentAssignmentId } from "./enrollment-idempotency.js";
 import { lifecycleForPathmentEnrollment } from "../../enrollment/lifecycle.js";
+import { assignmentForNewEnrollment } from "../../courses/variant-assignment.js";
 import {
   pathmentEnrollmentPatch,
   shouldAttachPathmentOrg,
@@ -128,9 +129,11 @@ export async function createPathmentEnrollment(
     });
 
     const lifecycle = lifecycleForPathmentEnrollment(course.pricingType, Boolean(linkedUser));
+    const assignment = await assignmentForNewEnrollment(tx, course.id);
 
     const enrollment = await tx.enrollment.create({
       data: {
+        ...assignment,
         courseId: course.id,
         userId: linkedUser?.id ?? null,
         learnerProfileId: learnerProfile.id,

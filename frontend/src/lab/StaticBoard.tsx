@@ -5,7 +5,7 @@
 
 import { COMPONENT_CATALOG } from "./catalog";
 import type { Board, BoardEdge, BoardNode } from "./types";
-import { LABEL_HALO, NEUTRAL } from "@/canvas/primitives/tones";
+import { LABEL_HALO, NEUTRAL } from "@buildment/learning-ui/canvas/primitives/tones";
 
 export interface StaticBoardModel {
   nodes: BoardNode[];

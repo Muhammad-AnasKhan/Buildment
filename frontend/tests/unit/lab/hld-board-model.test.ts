@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { Board } from "@/lab/types";
 import { applied, initialControls } from "@/lab/hld-board-model";
-import { runTieredModel } from "@/canvas/models/tiered-architecture";
+import { runTieredModel } from "@/lab/tiered-architecture";
 
 const board: Board = {
   nodes: [

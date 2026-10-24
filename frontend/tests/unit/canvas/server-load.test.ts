@@ -1,8 +1,8 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { ladderStep } from "@/canvas/primitives/picture-slider";
-import { curvePath, queueDots, QUEUE_CAP } from "@/canvas/primitives/traffic-playground";
+import { ladderStep } from "@buildment/learning-ui/canvas/primitives/picture-slider";
+import { curvePath, queueDots, QUEUE_CAP } from "@buildment/learning-ui/canvas/primitives/traffic-playground";
 import {
   arrivalsFromFraction,
   arrivalsToFraction,
@@ -21,9 +21,9 @@ import {
   studentsToFraction,
   timeAtBusy,
   twoFigures,
-} from "@/canvas/models/server-load";
-import { sysdesignM1LaunchDay } from "@/canvas/sysdesign-m1-launch-day/data";
-import { sysdesignM2KneePlay } from "@/canvas/sysdesign-m2-knee-play/data";
+} from "@buildment/learning-ui/canvas/models/server-load";
+import { sysdesignM1LaunchDay } from "@buildment/learning-ui/canvas/sysdesign-m1-launch-day/data";
+import { sysdesignM2KneePlay } from "@buildment/learning-ui/canvas/sysdesign-m2-knee-play/data";
 
 describe("M/M/1 server load", () => {
   it("matches the chapters' numbers", () => {

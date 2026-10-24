@@ -2,9 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { CANVAS_SLUGS } from "@/shared/canvas/slugs";
-import { canvasRegistry, getCanvasSpec } from "@/canvas/registry";
-import { sequenceGeometry } from "@/canvas/renderers/sequence/geometry";
-import { machineGeometry } from "@/canvas/renderers/state-machine/geometry";
+import { canvasRegistry, getCanvasSpec } from "@buildment/learning-ui/canvas/registry";
+import { sequenceGeometry } from "@buildment/learning-ui/canvas/renderers/sequence/geometry";
+import { machineGeometry } from "@buildment/learning-ui/canvas/renderers/state-machine/geometry";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 const specs = Object.entries(canvasRegistry);
 
@@ -30,7 +31,7 @@ describe("canvas registry", () => {
 
   it("has a spec.md next to every canvas", () => {
     for (const slug of CANVAS_SLUGS) {
-      expect(fs.existsSync(path.join("src/canvas", slug, "spec.md")), slug).toBe(true);
+      expect(fs.existsSync(path.join("../packages/learning-ui/src/canvas", slug, "spec.md")), slug).toBe(true);
     }
   });
 });
@@ -63,7 +64,8 @@ describe("canvas data is internally consistent", () => {
         const ids = new Set(spec.states.map((s) => s.id));
         for (const s of spec.states) {
           expect(s.col).toBeLessThanOrEqual(2);
-          expect(s.row).toBeLessThanOrEqual(2);
+          // The narrow layout puts rows 150px apart in a 340px picture, so a third row falls off.
+          expect(s.row, s.id).toBeLessThanOrEqual(1);
         }
         for (const e of spec.edges) {
           expect(ids.has(e.from), e.from).toBe(true);
@@ -88,6 +90,49 @@ describe("canvas data is internally consistent", () => {
             expect(box.y).toBeGreaterThanOrEqual(0);
             expect(box.y + box.h).toBeLessThanOrEqual(g.height);
           }
+          // Two edge labels on top of each other cannot be read (for example a diagonal
+          // beside a vertical edge in one square of the grid).
+          const boxes = spec.edges.map((e) => ({ label: e.label, ...g.labelBox(e, g.edge(e)!) }));
+          for (let i = 0; i < boxes.length; i++) {
+            for (let j = i + 1; j < boxes.length; j++) {
+              const a = boxes[i];
+              const b = boxes[j];
+              const overlap = a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+              expect(overlap, `${layout}: "${a.label}" overlaps "${b.label}"`).toBe(false);
+            }
+          }
+        }
+      });
+    }
+    if (spec.kind === "slider") {
+      it(`${slug}: inputs are well formed and every corner of the model is finite`, () => {
+        expect(spec.inputs.length).toBeGreaterThanOrEqual(1);
+        expect(spec.inputs.length).toBeLessThanOrEqual(4);
+        expect(spec.tryThis.length).toBeGreaterThanOrEqual(2);
+        for (const input of spec.inputs) {
+          expect(input.min, input.id).toBeLessThan(input.max);
+          expect(input.step, input.id).toBeGreaterThan(0);
+          expect(input.default, input.id).toBeGreaterThanOrEqual(input.min);
+          expect(input.default, input.id).toBeLessThanOrEqual(input.max);
+          expect(input.label.length, input.id).toBeLessThanOrEqual(28);
+        }
+        const start = defaultValues(spec);
+        const corners = [start, ...spec.inputs.flatMap((input) => [{ ...start, [input.id]: input.min }, { ...start, [input.id]: input.max }])];
+        corners.push(Object.fromEntries(spec.inputs.map((input) => [input.id, input.min])));
+        corners.push(Object.fromEntries(spec.inputs.map((input) => [input.id, input.max])));
+        for (const values of corners) {
+          const result = spec.compute(values);
+          expect(result.stats.length).toBeGreaterThanOrEqual(1);
+          expect(result.stats.length).toBeLessThanOrEqual(3);
+          expect(result.summary.length).toBeGreaterThan(10);
+          for (const stat of result.stats) expect(stat.value, JSON.stringify(values)).not.toMatch(/NaN|Infinity|undefined/);
+          for (const bar of result.bars ?? []) {
+            expect(Number.isFinite(bar.value), bar.label).toBe(true);
+            expect(bar.value, bar.label).toBeGreaterThanOrEqual(0);
+            expect(bar.display).not.toMatch(/NaN|Infinity|undefined/);
+          }
+          expect((result.bars ?? []).length).toBeLessThanOrEqual(4);
+          expect(spec.describeChange(start, values)).not.toMatch(/NaN|Infinity|undefined/);
         }
       });
     }
@@ -121,7 +166,7 @@ describe("canvas source stays inside the SVG rules", () => {
       else if (/\.(ts|tsx)$/.test(entry.name)) files.push(full);
     }
   };
-  walk("src/canvas");
+  walk("../packages/learning-ui/src/canvas");
 
   it("finds the canvas source", () => {
     expect(files.length).toBeGreaterThan(5);

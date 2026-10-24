@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 // registry ("Attempted to call X() from the server"). Rendering in vitest does
 // not see the client boundary, so this test reads the source instead.
 
-const CANVAS = path.resolve(__dirname, "../../../src/canvas");
+const CANVAS = path.resolve(__dirname, "../../../../packages/learning-ui/src/canvas");
 
 function clientModule(fromDir: string, spec: string): boolean {
   const base = path.resolve(fromDir, spec);

@@ -1,8 +1,8 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { checkDesign, designFrame, VERDICT_MAX } from "@/canvas/models/design-stepper";
-import { formatBytes } from "@/canvas/models/envelope-estimate";
+import { checkDesign, designFrame, VERDICT_MAX } from "@buildment/learning-ui/canvas/models/design-stepper";
+import { formatBytes } from "@buildment/learning-ui/canvas/models/envelope-estimate";
 import {
   chainRates,
   chatEstimate,
@@ -15,14 +15,14 @@ import {
   ONLINE_STEPS,
   ratePerSecond,
   USER_STEPS,
-} from "@/canvas/models/dardasha-estimate";
+} from "@buildment/learning-ui/canvas/models/dardasha-estimate";
 import {
   CHAT_SERVERS,
   GATEWAYS,
   OPEN_LINES,
   PEAK_DELIVERIES,
   PEAK_MESSAGES,
-} from "@/canvas/models/dardasha-numbers";
+} from "@buildment/learning-ui/canvas/models/dardasha-numbers";
 import {
   dardashaDesign,
   designNumbers,
@@ -32,7 +32,7 @@ import {
   planTone,
   PUSH_JOBS,
   REGISTRY_OPERATIONS,
-} from "@/canvas/models/dardasha-design";
+} from "@buildment/learning-ui/canvas/models/dardasha-design";
 import {
   dotCount,
   dotProgress,
@@ -44,7 +44,7 @@ import {
   returned,
   secondsText,
   SPREAD_STEPS,
-} from "@/canvas/models/gateway-restart";
+} from "@buildment/learning-ui/canvas/models/gateway-restart";
 import {
   DELAY_STEPS,
   finalOrder,
@@ -58,15 +58,15 @@ import {
   phoneRows,
   phonesAgree,
   simAt,
-} from "@/canvas/models/dardasha-order";
-import { GAP_STEPS, presenceRun, presenceValueText, presenceVerdict, storeTone, storeWritesText } from "@/canvas/models/dardasha-presence";
-import { LIMIT_STEPS, limitLine, OUTAGE_STEPS, outageRun, outageValueText, outageVerdict } from "@/canvas/models/dardasha-outage";
-import { sysdesignM22EstimatePlay } from "@/canvas/sysdesign-m22-estimate-play/data";
-import { sysdesignM22DesignStepper } from "@/canvas/sysdesign-m22-design-stepper/data";
-import { sysdesignM22ConnectionsPlay } from "@/canvas/sysdesign-m22-connections-play/data";
-import { sysdesignM22SequencePlay } from "@/canvas/sysdesign-m22-sequence-play/data";
-import { sysdesignM22PresencePlay } from "@/canvas/sysdesign-m22-presence-play/data";
-import { sysdesignM22OutagePlay } from "@/canvas/sysdesign-m22-outage-play/data";
+} from "@buildment/learning-ui/canvas/models/dardasha-order";
+import { GAP_STEPS, presenceRun, presenceValueText, presenceVerdict, storeTone, storeWritesText } from "@buildment/learning-ui/canvas/models/dardasha-presence";
+import { LIMIT_STEPS, limitLine, OUTAGE_STEPS, outageRun, outageValueText, outageVerdict } from "@buildment/learning-ui/canvas/models/dardasha-outage";
+import { sysdesignM22EstimatePlay } from "@buildment/learning-ui/canvas/sysdesign-m22-estimate-play/data";
+import { sysdesignM22DesignStepper } from "@buildment/learning-ui/canvas/sysdesign-m22-design-stepper/data";
+import { sysdesignM22ConnectionsPlay } from "@buildment/learning-ui/canvas/sysdesign-m22-connections-play/data";
+import { sysdesignM22SequencePlay } from "@buildment/learning-ui/canvas/sysdesign-m22-sequence-play/data";
+import { sysdesignM22PresencePlay } from "@buildment/learning-ui/canvas/sysdesign-m22-presence-play/data";
+import { sysdesignM22OutagePlay } from "@buildment/learning-ui/canvas/sysdesign-m22-outage-play/data";
 
 const MAX = 38;
 

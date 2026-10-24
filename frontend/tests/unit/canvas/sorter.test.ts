@@ -14,8 +14,8 @@ import {
   wrapWords,
   type SortBucket,
   type SortCard,
-} from "@/canvas/models/sorter";
-import { REQUIREMENT_BUCKETS, REQUIREMENT_CARDS, sysdesignM1RequirementSorter } from "@/canvas/sysdesign-m1-requirement-sorter/data";
+} from "@buildment/learning-ui/canvas/models/sorter";
+import { REQUIREMENT_BUCKETS, REQUIREMENT_CARDS, sysdesignM1RequirementSorter } from "@buildment/learning-ui/canvas/sysdesign-m1-requirement-sorter/data";
 
 const buckets: SortBucket[] = [
   { id: "a", label: "A", sub: "first" },

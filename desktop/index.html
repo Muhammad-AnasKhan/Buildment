@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' https: http://localhost:* http://127.0.0.1:* data:; media-src 'self' https:; frame-src https://www.youtube-nocookie.com https://player.vimeo.com https://www.loom.com https://fast.wistia.net; connect-src 'self' ws://localhost:* ws://127.0.0.1:*; object-src 'none'; base-uri 'none'"
+    />
+    <title>Buildment</title>
+    <!-- Critical first-paint styles: independent of Vite, Tailwind and React. -->
+    <style>
+      :root {
+        color-scheme: light;
+        --boot-bg: oklch(1 0 0);
+        --boot-fg: oklch(0.145 0 0);
+        --boot-muted: oklch(0.46 0 0);
+        --boot-track: oklch(0.922 0 0);
+        --boot-accent: #12a36b;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+          --boot-bg: oklch(0.155 0.012 78);
+          --boot-fg: oklch(0.935 0.012 88);
+          --boot-muted: oklch(0.8 0.016 82);
+          --boot-track: oklch(0.93 0.012 88 / 12%);
+          --boot-accent: #3ddc97;
+        }
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--boot-bg);
+        color: var(--boot-fg);
+      }
+      #startup-status {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+        box-sizing: border-box;
+        text-align: center;
+        background: var(--boot-bg);
+        color: var(--boot-fg);
+        font-family: 'Segoe UI', system-ui, sans-serif;
+      }
+      #startup-status[hidden] {
+        display: none;
+      }
+      #startup-status .boot-logo {
+        width: 64px;
+        height: 64px;
+        flex-shrink: 0;
+      }
+      #startup-status h1 {
+        margin: 18px 0 6px;
+        font-size: 25px;
+        font-weight: 650;
+        letter-spacing: -1px;
+      }
+      #startup-status .boot-caption {
+        margin: 0;
+        color: var(--boot-muted);
+        font-size: 10px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+      }
+      #startup-message {
+        max-width: 440px;
+        margin: 30px 0 18px;
+        color: var(--boot-muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+      .boot-progress {
+        width: 112px;
+        height: 3px;
+        overflow: hidden;
+        border-radius: 4px;
+        background: var(--boot-track);
+      }
+      .boot-progress::after {
+        content: '';
+        display: block;
+        width: 45%;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--boot-accent);
+        animation: boot-progress 1.3s ease-in-out infinite alternate;
+      }
+      @keyframes boot-progress {
+        from {
+          transform: translateX(-40%);
+        }
+        to {
+          transform: translateX(160%);
+        }
+      }
+      #startup-retry {
+        margin-top: 16px;
+        padding: 9px 16px;
+        border: 1px solid var(--boot-track);
+        border-radius: 8px;
+        background: var(--boot-fg);
+        color: var(--boot-bg);
+        font: inherit;
+        cursor: pointer;
+      }
+      #startup-retry:focus-visible {
+        outline: 2px solid var(--boot-accent);
+        outline-offset: 4px;
+      }
+      #startup-status[data-failed] .boot-progress {
+        display: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-progress::after {
+          animation: none;
+          width: 100%;
+          opacity: 0.6;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="startup-status"
+      role="status"
+      aria-label="Opening Buildment"
+      aria-live="polite"
+    >
+      <!-- Same vector mark as frontend/public/logo.svg; no network request. -->
+      <svg
+        class="boot-logo"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 64 64"
+        role="img"
+        aria-label="Buildment logo"
+      >
+        <rect width="64" height="64" rx="16" fill="#171717" />
+        <path
+          d="M17 15h8v11h11.5a11 11 0 0 1 0 22H17V15Zm8 19v7h10.5a3.5 3.5 0 1 0 0-7H25Z"
+          fill="#fff"
+        />
+        <rect x="28" y="15" width="17" height="6" rx="3" fill="#fff" />
+      </svg>
+      <h1>buildment</h1>
+      <p class="boot-caption">Learning workspace</p>
+      <p id="startup-message">Opening your learning workspace…</p>
+      <div class="boot-progress" aria-hidden="true"></div>
+      <button id="startup-retry" type="button" hidden>Reload workspace</button>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/startup.ts"></script>
+  </body>
+</html>

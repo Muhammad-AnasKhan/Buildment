@@ -1,5 +1,5 @@
 /**
- * Imports one course folder under content/import/ into the real Course /
+ * Imports one course folder under courses/ into the real Course /
  * Module / Chapter / Block tables. Pick it with `--course <slug>`; the default
  * is multi-vendor-marketplace (see course-source.ts).
  *
@@ -35,7 +35,7 @@ import { QuizConfigSchema, normalizeQuizConfig } from "../src/shared/blocks/quiz
 import { VisualWalkthroughConfigSchema } from "../src/shared/blocks/visual-walkthrough/schema.js";
 import { VisualDiagramConfigSchema } from "../src/shared/blocks/visual-diagram/schema.js";
 import { RoadmapConfigSchema } from "../src/shared/blocks/roadmap/schema.js";
-import { COURSE_OUTPUT_DIR, COURSE_SOURCE_DIR, loadCourseManifest, type CourseManifest } from "./course-source.js";
+import { COURSE_SOURCE_DIR, loadCourseManifest, type CourseManifest } from "./course-source.js";
 import { recomputeEnrollmentRollup } from "../src/services/progress/compute.js";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
@@ -402,14 +402,18 @@ function isGateChecklistChapter(fileName: string): boolean {
   return /-checklist\.md$/.test(fileName) || fileName.includes("production-env-checklist");
 }
 
-/** Gate/quiz chapters should stay focused — no glossary cards or optional reads. */
-function stripFocusChapterEnrichment(body: string): string {
-  return body
+/**
+ * Gate/quiz chapters should stay focused: no glossary cards or optional reads.
+ * A gate keeps its ChapterRecap, because agent-ip puts the module recap at the
+ * gate (02-course-architecture.md). A quiz chapter holds activities only.
+ */
+function stripFocusChapterEnrichment(body: string, keepRecap: boolean): string {
+  const focused = body
     .replace(/<BigWordAlert[\s\S]*?\/>/g, "")
     .replace(/<RealWorldEvent[\s\S]*?\/>/g, "")
     .replace(/<MustRead[\s\S]*?\/>/g, "")
-    .replace(/<InterestingRead[\s\S]*?<\/InterestingRead>/g, "")
-    .replace(/<ChapterRecap[\s\S]*?\/>/g, "")
+    .replace(/<InterestingRead[\s\S]*?<\/InterestingRead>/g, "");
+  return (keepRecap ? focused : focused.replace(/<ChapterRecap[\s\S]*?\/>/g, ""))
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
@@ -746,7 +750,7 @@ export function parseLesson(moduleNum: number, moduleDir: string, fileName: stri
   source = stripLeadingH1(source);
   source = unwrapArticleBreak(source);
   if (isFocusChapter(fileName)) {
-    source = stripFocusChapterEnrichment(source);
+    source = stripFocusChapterEnrichment(source, isGateChecklistChapter(fileName));
   }
   if (isGateChecklistChapter(fileName)) {
     source = normalizeGateLearningLog(source);
@@ -844,7 +848,6 @@ async function main() {
   const manifest = loadCourseManifest();
   const moduleTitles = new Map(manifest?.modules.map((m) => [m.dir, m.title]) ?? []);
   const course = await upsertCourse(manifest);
-  fs.rmSync(COURSE_OUTPUT_DIR, { recursive: true, force: true });
 
   let moduleCount = 0;
   let chapterCount = 0;
@@ -867,9 +870,6 @@ async function main() {
       create: { courseId: course.id, order: displayOrder, title, contentKey: plannedModule?.key },
     });
     moduleCount += 1;
-
-    const outputModuleDir = path.join(COURSE_OUTPUT_DIR, dirName);
-    fs.mkdirSync(outputModuleDir, { recursive: true });
 
     for (const { fileName, lessonNum, slugPart } of readLessonFiles(dirName)) {
       const contentKey = plannedModule?.lessons.find(l => l.file === fileName)?.key;
@@ -943,19 +943,6 @@ async function main() {
       }
       blockCount += lesson.blocks.length;
 
-      const frontmatter = [
-        `title: ${JSON.stringify(lesson.title)}`,
-        `module: ${displayOrder}`,
-        `lesson: ${lessonNum}`,
-        lesson.summary ? `summary: ${JSON.stringify(lesson.summary)}` : null,
-      ]
-        .filter(Boolean)
-        .join("\n");
-      fs.writeFileSync(
-        path.join(outputModuleDir, fileName.replace(/\.md$/, ".mdx")),
-        `---\n${frontmatter}\n---\n${lesson.source}`,
-        "utf8"
-      );
     }
   }
 

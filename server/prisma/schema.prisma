@@ -68,6 +68,11 @@ enum CourseStatus {
   ARCHIVED
 }
 
+enum VariantAssignment {
+  SELF_SELECT
+  RANDOM
+}
+
 enum CourseCategory {
   TECH
   SOFT_SKILLS
@@ -257,7 +262,11 @@ model Course {
   sequential     Boolean      @default(true)
   familySlug     String? // course family in src/shared/lib/course-tracks.ts; null = no variants
   variantFamily  Json? // creator-defined variant catalog; null uses a built-in family
+  availableVariantSlugs String[] @default([]) // empty means every family variant is available
+  variantAssignment VariantAssignment @default(SELF_SELECT)
   activeReleaseId String? // latest approved content release; set atomically with publication
+  repositorySourceHash String? // last repository package published by the backend release
+  repositoryReleaseId String? // release active when that package was published
   releases       CourseRelease[]
   /// Quiz camera photos are opt-in per course and never required; quiz integrity signals are always on.
   integritySnapshots Boolean  @default(false)
@@ -463,6 +472,7 @@ model Enrollment {
   variantSlug       String? // learner's variant in the course family; null = not picked yet
   variantChosenAt   DateTime?
   variantLockedAt   DateTime? // first chapter start fixes the learner's variant
+  variantAssignedAt DateTime? // assignment at enrollment, never inferred from the current course setting
   releaseId         String?
   release           CourseRelease? @relation(fields: [releaseId], references: [id], onDelete: SetNull)
   specialisationSlug     String? // follow-up track picked once the course is complete

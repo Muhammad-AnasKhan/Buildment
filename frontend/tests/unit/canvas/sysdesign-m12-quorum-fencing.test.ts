@@ -13,7 +13,7 @@ import {
   survivePill,
   timePill,
   toggleDown,
-} from "@/canvas/models/quorum-explorer";
+} from "@buildment/learning-ui/canvas/models/quorum-explorer";
 import {
   PAUSE,
   PAUSE_SNAPS,
@@ -24,10 +24,10 @@ import {
   pauseKey,
   pauseToFraction,
   wakeAt,
-} from "@/canvas/models/fencing-play";
-import { ladderStep } from "@/canvas/primitives/picture-slider";
-import { sysdesignM12QuorumExplorer } from "@/canvas/sysdesign-m12-quorum-explorer/data";
-import { sysdesignM12FencingPlay } from "@/canvas/sysdesign-m12-fencing-play/data";
+} from "@buildment/learning-ui/canvas/models/fencing-play";
+import { ladderStep } from "@buildment/learning-ui/canvas/primitives/picture-slider";
+import { sysdesignM12QuorumExplorer } from "@buildment/learning-ui/canvas/sysdesign-m12-quorum-explorer/data";
+import { sysdesignM12FencingPlay } from "@buildment/learning-ui/canvas/sysdesign-m12-fencing-play/data";
 
 const DASH = String.fromCharCode(0x2014);
 
@@ -258,7 +258,7 @@ describe("M12 quorum and fencing canvases", () => {
 
   it("keeps the wording free of em dashes and the drawing free of hex colours and banned SVG parts", () => {
     for (const spec of specs) expect(spec.title + spec.purpose + spec.limits).not.toContain(DASH);
-    const root = path.resolve(__dirname, "../../../src/canvas");
+    const root = path.resolve(__dirname, "../../../../packages/learning-ui/src/canvas");
     const files = [
       ...["sysdesign-m12-quorum-explorer", "sysdesign-m12-fencing-play"].flatMap((d) =>
         fs.readdirSync(path.join(root, d)).map((f) => path.join(root, d, f))

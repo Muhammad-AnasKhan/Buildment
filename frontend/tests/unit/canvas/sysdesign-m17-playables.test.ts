@@ -1,16 +1,16 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import * as trace from "@/canvas/sysdesign-m17-trace-request/model";
-import { sysdesignM17TraceRequest } from "@/canvas/sysdesign-m17-trace-request/data";
-import * as slo from "@/canvas/sysdesign-m17-slo-window/model";
-import { sysdesignM17SloWindow } from "@/canvas/sysdesign-m17-slo-window/data";
-import * as burn from "@/canvas/sysdesign-m17-burn-replay/model";
-import { sysdesignM17BurnReplay } from "@/canvas/sysdesign-m17-burn-replay/data";
-import * as avg from "@/canvas/sysdesign-m17-same-average/model";
-import { sysdesignM17SameAverage } from "@/canvas/sysdesign-m17-same-average/data";
-import * as inc from "@/canvas/sysdesign-m17-incident-stepper/model";
-import { sysdesignM17IncidentStepper } from "@/canvas/sysdesign-m17-incident-stepper/data";
+import * as trace from "@buildment/learning-ui/canvas/sysdesign-m17-trace-request/model";
+import { sysdesignM17TraceRequest } from "@buildment/learning-ui/canvas/sysdesign-m17-trace-request/data";
+import * as slo from "@buildment/learning-ui/canvas/sysdesign-m17-slo-window/model";
+import { sysdesignM17SloWindow } from "@buildment/learning-ui/canvas/sysdesign-m17-slo-window/data";
+import * as burn from "@buildment/learning-ui/canvas/sysdesign-m17-burn-replay/model";
+import { sysdesignM17BurnReplay } from "@buildment/learning-ui/canvas/sysdesign-m17-burn-replay/data";
+import * as avg from "@buildment/learning-ui/canvas/sysdesign-m17-same-average/model";
+import { sysdesignM17SameAverage } from "@buildment/learning-ui/canvas/sysdesign-m17-same-average/data";
+import * as inc from "@buildment/learning-ui/canvas/sysdesign-m17-incident-stepper/model";
+import { sysdesignM17IncidentStepper } from "@buildment/learning-ui/canvas/sysdesign-m17-incident-stepper/data";
 
 const VERDICT_MAX = 38;
 

@@ -4,233 +4,103 @@ import type { CatalogCourseSummary } from "@/shared/api/catalog";
 import { serverApiFetch } from "@/lib/api-server";
 import { Logo } from "@/components/brand/logo";
 import { CourseCatalog } from "@/components/marketing/course-catalog";
-import { FeatureTabs } from "@/components/marketing/feature-tabs";
+import { FeaturedProject } from "@/components/marketing/featured-project";
+import { MentorNote } from "@/components/marketing/feature-tabs";
 import { HeroStats, type HeroStat } from "@/components/marketing/hero-stats";
 import { HowItWorks } from "@/components/marketing/how-it-works";
 import { LandingHeader } from "@/components/marketing/landing-header";
 import { ProductFrame } from "@/components/marketing/product-frame";
-import { SectionHeader } from "@/components/marketing/section-header";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
-const SECTION = "px-4 py-16 sm:px-6 lg:px-8 lg:py-[84px]";
-
-function courseCatalogDescription(courseCount: number): string {
-  if (courseCount === 0) return "";
-  const noun = courseCount === 1 ? "course" : "courses";
-  return `${courseCount} published ${noun}. Sign in to enroll in a course, follow each chapter at your own pace, and track your progress as you move forward.`;
-}
+import styles from "./landing.module.css";
 
 export default async function MarketingHomePage() {
-  // Public catalog, fetched anonymously so the landing page renders the same for everyone.
   const { courses } = await serverApiFetch<{ courses: CatalogCourseSummary[] }>(
-    "/api/v1/catalog",
-    { token: null },
+    "/api/v1/catalog", { token: null },
   );
-
-  // Hero stats come straight from the catalog, so they can never drift from the real numbers.
-  const totalHours = courses.reduce(
-    (sum, c) => sum + (c.estimatedHours ?? 0),
-    0,
-  );
+  const featured = courses.find(course => course.slug === "multi-vendor-marketplace");
+  const otherCourses = courses.filter(course => course.id !== featured?.id);
+  const communication = courses.find(course => course.slug === "communication");
   const stats: HeroStat[] = [
-    {
-      value: courses.reduce((sum, c) => sum + c.chapterCount, 0),
-      label: "chapters",
-    },
-    {
-      value: courses.reduce((sum, c) => sum + c.moduleCount, 0),
-      label: "modules",
-    },
-    { value: totalHours, label: "of building", suffix: "h" },
-  ].filter((stat) => stat.value > 0);
-
-  // The "Choose a course" scene in How it works shows real courses (up to three).
-  const sceneCourses = courses.slice(0, 3).map((course) => ({
-    title: course.title,
-    meta: [
-      `${course.moduleCount} ${course.moduleCount === 1 ? "module" : "modules"}`,
-      course.estimatedHours !== null ? `${course.estimatedHours}h` : null,
-    ]
-      .filter(Boolean)
-      .join(" · "),
-    coverUrl: course.coverUrl,
-  }));
+    { value: courses.length, label: "courses to choose from" },
+    { value: courses.reduce((sum, course) => sum + course.chapterCount, 0), label: "chapters to work through" },
+    { value: courses.reduce((sum, course) => sum + (course.estimatedHours ?? 0), 0), suffix: "h", label: "estimated study" },
+  ].filter(stat => stat.value > 0);
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-background text-foreground">
+    <div className={cn(styles.page, "min-h-full bg-background text-foreground")}>
+      <a href="#main-content" className="sr-only z-50 bg-background p-4 focus:not-sr-only focus:absolute">Skip to content</a>
       <LandingHeader showCourses={courses.length > 0} />
-
-      <main className="flex-1">
-        {/* Hero: copy left, product preview right */}
-        <section aria-labelledby="hero-heading">
-          <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-[1fr_1.1fr] lg:gap-14 lg:px-8 lg:py-20">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Buildment
-              </p>
-              <h1
-                id="hero-heading"
-                className="mt-3 text-4xl font-bold leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl"
-              >
-                Learn by building{" "}
-                <span className="bg-gradient-to-r from-foreground to-foreground/50 bg-clip-text text-transparent">
-                  real projects
-                </span>
-              </h1>
-              <p className="mt-5 max-w-[46ch] text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
-                Learn through interactive courses that guide you from setup to
-                deployment with practical lessons, hands on exercises, and
-                mentor feedback.
-              </p>
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                {courses.length > 0 ? (
-                  <a
-                    href="#courses"
-                    className={cn(
-                      buttonVariants({ size: "lg" }),
-                      "h-11 gap-2 px-5 text-[0.95rem]",
-                    )}
-                  >
-                    Browse courses
-                    <ArrowRight className="size-4" aria-hidden="true" />
-                  </a>
-                ) : null}
-                <Link
-                  href="/login"
-                  className={cn(
-                    buttonVariants({
-                      variant: courses.length > 0 ? "outline" : "default",
-                      size: "lg",
-                    }),
-                    "h-11 gap-2 px-5 text-[0.95rem]",
-                  )}
-                >
-                  Sign in
-                  {courses.length === 0 ? (
-                    <ArrowRight className="size-4" aria-hidden="true" />
-                  ) : null}
-                </Link>
-              </div>
-
-              <HeroStats stats={stats} />
+      <main id="main-content">
+        <section aria-labelledby="hero-heading" className="mx-auto grid max-w-7xl gap-12 px-6 pb-16 pt-12 sm:px-8 lg:grid-cols-[1.2fr_1fr] lg:gap-16 lg:px-12 lg:pb-24 lg:pt-16">
+          <div className="min-w-0">
+            <p className={styles.eyebrow}>The Dev Weekends classroom</p>
+            <h1 id="hero-heading" className={cn(styles.display, "mt-7")}>
+              Make something<br /><em className={cn(styles.accent, "font-normal")}>you can show.</em>
+            </h1>
+            <p className="mt-7 max-w-[42ch] text-base leading-8 sm:text-lg">
+              A course should leave you with work you can call your own. Build a marketplace or practise a difficult conversation, with a mentor to help you improve.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-6">
+              {courses.length > 0 ? (
+                <a href="#courses" className={cn(buttonVariants(), styles.cta)}>
+                  Find your course <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+                </a>
+              ) : (
+                <Link href="/login" className={cn(buttonVariants(), styles.cta)}>Sign in to buildment</Link>
+              )}
+              {featured ? <a href="#project" className="inline-flex min-h-11 items-center text-sm underline underline-offset-4">Look inside FreshMarket</a> : null}
             </div>
-            <ProductFrame />
+            <HeroStats stats={stats} />
+            {stats.length > 0 ? <p className="mt-3 text-xs text-muted-foreground">Across the published catalog. Work at your own pace.</p> : null}
           </div>
+          {featured ? <ProductFrame /> : (
+            <p className="self-center border-l border-border pl-8 font-serif text-3xl leading-relaxed">Start with a question. Leave with something you made.</p>
+          )}
         </section>
 
-        {/* Catalog */}
-        {courses.length > 0 ? (
-          <section
-            id="courses"
-            className={cn("scroll-mt-16 border-t border-border", SECTION)}
-            aria-labelledby="courses-heading"
-          >
-            <div className="mx-auto max-w-7xl">
-              <SectionHeader
-                headingId="courses-heading"
-                label="Explore"
-                title="Course catalog"
-                description={courseCatalogDescription(courses.length)}
-                className="mb-9"
-              />
+        {featured ? <FeaturedProject course={featured} /> : null}
 
-              <CourseCatalog
-                courses={courses.map((course) => ({
-                  id: course.id,
-                  slug: course.slug,
-                  title: course.title,
-                  description: course.description,
-                  projectGoal: course.projectGoal,
-                  coverUrl: course.coverUrl,
-                  difficulty: course.difficulty,
-                  estimatedHours: course.estimatedHours,
-                  moduleCount: course.moduleCount,
-                  chapterCount: course.chapterCount,
-                }))}
-              />
+        <MentorNote course={communication} />
+
+        {courses.length > 0 ? (
+          <section id="courses" aria-labelledby="courses-heading" className="mx-auto max-w-7xl scroll-mt-8 px-6 py-16 sm:px-8 lg:px-12 lg:py-24">
+            <div className="mb-10 grid items-end gap-6 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
+              <div>
+                <p className={styles.eyebrow}>The course shelf</p>
+                <h2 id="courses-heading" className="mt-5 max-w-[16ch] font-serif text-4xl leading-[1.12] sm:text-5xl">What would you like to work on?</h2>
+              </div>
+              <div className="max-w-md">
+                <p className="text-base leading-7">Practise a skill you can use at work. Each course below ends with something to build, write or present.</p>
+                {featured ? (
+                  <p className="mt-3 text-sm leading-6 text-muted-foreground">{otherCourses.length} {otherCourses.length === 1 ? "course" : "courses"} below. For the full marketplace build, <a href="#project" className="text-foreground underline underline-offset-4">see FreshMarket above</a>.</p>
+                ) : null}
+              </div>
             </div>
+            <CourseCatalog courses={otherCourses} />
           </section>
         ) : null}
 
-        {/* Features: tabs left, panel right */}
-        <section
-          id="why"
-          className={cn("scroll-mt-16 border-t border-border", SECTION)}
-          aria-labelledby="why-heading"
-        >
-          <div className="mx-auto max-w-7xl">
-            <SectionHeader
-              headingId="why-heading"
-              label="Features"
-              title="Learning that goes beyond theory"
-              description="Combine lessons, practical exercises, and mentor feedback in one place to build real skills through real projects."
-              className="mb-9"
-            />
-            <FeatureTabs />
-          </div>
-        </section>
+        <div className="border-t border-border"><HowItWorks /></div>
 
-        {/* How it works: timeline left, stage right */}
-        <section
-          id="work"
-          className={cn(
-            "scroll-mt-16 border-t border-border bg-muted/20",
-            SECTION,
-          )}
-          aria-labelledby="work-heading"
-        >
-          <div className="mx-auto max-w-7xl">
-            <SectionHeader
-              headingId="work-heading"
-              label="How it works"
-              title="Three simple steps to get started"
-              description="Follow a clear learning path, practice your skills, and get guidance from mentors along the way."
-              className="mb-9"
-            />
-            <HowItWorks courses={sceneCourses} />
-          </div>
-        </section>
-
-        {/* CTA: full-width inverted block */}
-        <section
-          className="px-4 pb-16 sm:px-6 lg:px-8 lg:pb-[84px]"
-          aria-labelledby="cta-heading"
-        >
-          <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-7 rounded-[28px] bg-foreground p-8 text-background sm:p-12 lg:flex-row lg:items-center">
-            <div className="max-w-xl">
-              <p className="text-sm font-medium opacity-70">Get started</p>
-              <h2
-                id="cta-heading"
-                className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl"
-              >
-                Sign in and choose your course
-              </h2>
-              <p className="mt-3 text-sm leading-6 opacity-75 sm:text-base">
-                Create an account or sign in to start learning, track your
-                progress, and continue where you left off.
-              </p>
+        <section aria-labelledby="cta-heading" className="border-t border-border">
+          <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 px-6 py-14 sm:px-8 lg:flex-row lg:items-center lg:px-12 lg:py-20">
+            <div>
+              <p className={styles.eyebrow}>Bring your curiosity</p>
+              <h2 id="cta-heading" className="mt-4 font-serif text-4xl leading-tight sm:text-5xl">Start with the first chapter.</h2>
+              <p className="mt-4 max-w-lg text-base leading-7">Sign in to choose a course. If you have already started, your next chapter is waiting.</p>
             </div>
-            <Link
-              href="/login"
-              className={cn(
-                buttonVariants({ size: "lg" }),
-                "h-11 shrink-0 gap-2 bg-background px-5 text-[0.95rem] text-foreground hover:bg-background/90",
-              )}
-            >
-              Sign in
-              <ArrowRight className="size-4" aria-hidden="true" />
+            <Link href="/login" className={cn(buttonVariants(), styles.cta, "shrink-0")}>
+              Sign in to buildment <ArrowRight className="ml-2 size-4" aria-hidden="true" />
             </Link>
           </div>
         </section>
       </main>
-
       <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-5 px-6 py-7 sm:px-8 lg:px-12">
           <Logo size="sm" />
-          <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} DevWeekends. All rights reserved.
-          </p>
+          <p className="text-xs text-muted-foreground">Made for learning, by Dev Weekends.</p>
+          <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Dev Weekends</p>
         </div>
       </footer>
     </div>

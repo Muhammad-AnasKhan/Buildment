@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { checkDesign, designFrame, VERDICT_MAX } from "@/canvas/models/design-stepper";
+import { checkDesign, designFrame, VERDICT_MAX } from "@buildment/learning-ui/canvas/models/design-stepper";
 import {
   chainRates,
   driver,
@@ -12,8 +12,8 @@ import {
   READ_STEPS,
   waslaEstimate,
   YEAR_STEPS,
-} from "@/canvas/models/wasla-estimate";
-import { formatBytes, formatCount } from "@/canvas/models/envelope-estimate";
+} from "@buildment/learning-ui/canvas/models/wasla-estimate";
+import { formatBytes, formatCount } from "@buildment/learning-ui/canvas/models/envelope-estimate";
 import {
   APP_SERVERS,
   CACHED_OPERATIONS,
@@ -22,7 +22,7 @@ import {
   PEAK_OPERATIONS,
   timesPlanText,
   waslaDesign,
-} from "@/canvas/models/wasla-design";
+} from "@buildment/learning-ui/canvas/models/wasla-design";
 import {
   bigCount,
   collision,
@@ -38,7 +38,7 @@ import {
   oneInText,
   percentText,
   takenLabel,
-} from "@/canvas/models/wasla-collision";
+} from "@buildment/learning-ui/canvas/models/wasla-collision";
 import {
   HIT_LADDER,
   hitFromFraction,
@@ -49,11 +49,11 @@ import {
   readPathValueText,
   readPathVerdict,
   stillMissDots,
-} from "@/canvas/models/wasla-read-path";
-import { sysdesignM20EstimatePlay } from "@/canvas/sysdesign-m20-estimate-play/data";
-import { sysdesignM20DesignStepper } from "@/canvas/sysdesign-m20-design-stepper/data";
-import { sysdesignM20CollisionPlay } from "@/canvas/sysdesign-m20-collision-play/data";
-import { sysdesignM20HitRatePlay } from "@/canvas/sysdesign-m20-hit-rate-play/data";
+} from "@buildment/learning-ui/canvas/models/wasla-read-path";
+import { sysdesignM20EstimatePlay } from "@buildment/learning-ui/canvas/sysdesign-m20-estimate-play/data";
+import { sysdesignM20DesignStepper } from "@buildment/learning-ui/canvas/sysdesign-m20-design-stepper/data";
+import { sysdesignM20CollisionPlay } from "@buildment/learning-ui/canvas/sysdesign-m20-collision-play/data";
+import { sysdesignM20HitRatePlay } from "@buildment/learning-ui/canvas/sysdesign-m20-hit-rate-play/data";
 
 const MAX = 38;
 

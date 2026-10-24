@@ -29,7 +29,7 @@ import {
   type PaxosState,
   type ProposerId,
   type Step,
-} from "@/canvas/models/paxos-play";
+} from "@buildment/learning-ui/canvas/models/paxos-play";
 import {
   INTERVAL_LADDER,
   NAMES,
@@ -46,9 +46,9 @@ import {
   worstStale,
   type Config,
   type RegEvent,
-} from "@/canvas/models/registry-lease";
-import { sysdesignM12PaxosPlay } from "@/canvas/sysdesign-m12-paxos-play/data";
-import { sysdesignM12RegistryPlay } from "@/canvas/sysdesign-m12-registry-play/data";
+} from "@buildment/learning-ui/canvas/models/registry-lease";
+import { sysdesignM12PaxosPlay } from "@buildment/learning-ui/canvas/sysdesign-m12-paxos-play/data";
+import { sysdesignM12RegistryPlay } from "@buildment/learning-ui/canvas/sysdesign-m12-registry-play/data";
 
 const DASH = String.fromCharCode(0x2014);
 const ALL: AcceptorId[] = [...ACCEPTORS];
@@ -469,7 +469,7 @@ describe("the two server-rendered pictures", () => {
 
   it("keeps the course wording free of em dashes and the drawing free of hex colours and banned SVG parts", () => {
     for (const spec of specs) expect(spec.title + spec.purpose + spec.limits).not.toContain(DASH);
-    const root = path.resolve(__dirname, "../../../src/canvas");
+    const root = path.resolve(__dirname, "../../../../packages/learning-ui/src/canvas");
     const files = [
       ...["sysdesign-m12-paxos-play", "sysdesign-m12-registry-play"].flatMap((d) =>
         fs.readdirSync(path.join(root, d)).filter((f) => f.endsWith(".tsx") || f.endsWith(".ts") || f.endsWith(".md")).map((f) => path.join(root, d, f))

@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { checkDesign, designFrame, VERDICT_MAX } from "@/canvas/models/design-stepper";
+import { checkDesign, designFrame, VERDICT_MAX } from "@buildment/learning-ui/canvas/models/design-stepper";
 import {
   chainRates,
   driver,
@@ -13,9 +13,9 @@ import {
   UPLOAD_STEPS,
   viewersText,
   VIEW_STEPS,
-} from "@/canvas/models/lamha-estimate";
-import { formatBits, formatBytes } from "@/canvas/models/envelope-estimate";
-import { designNumbers, lamhaDesign, multipleText, tbitText } from "@/canvas/models/lamha-design";
+} from "@buildment/learning-ui/canvas/models/lamha-estimate";
+import { formatBits, formatBytes } from "@buildment/learning-ui/canvas/models/envelope-estimate";
+import { designNumbers, lamhaDesign, multipleText, tbitText } from "@buildment/learning-ui/canvas/models/lamha-design";
 import {
   backlogVerdict,
   chartMax,
@@ -25,14 +25,14 @@ import {
   runBacklog,
   valueText as backlogValueText,
   waitText,
-} from "@/canvas/models/lamha-backlog";
-import { harmonic, harmonicExact, CACHE_STOPS, SKEW_STOPS, skewPlay, skewVerdict, valueText as skewValueText } from "@/canvas/models/lamha-skew";
-import { boxLayout, boxTone, railFraction, SHARD_STOPS, shardsPlay, shardsVerdict, VIEW_STOPS as SHARD_VIEW_STOPS, valueText as shardsValueText } from "@/canvas/models/lamha-shards";
-import { sysdesignM27EstimatePlay } from "@/canvas/sysdesign-m27-estimate-play/data";
-import { sysdesignM27DesignStepper } from "@/canvas/sysdesign-m27-design-stepper/data";
-import { sysdesignM27BacklogPlay } from "@/canvas/sysdesign-m27-backlog-play/data";
-import { sysdesignM27SkewPlay } from "@/canvas/sysdesign-m27-skew-play/data";
-import { sysdesignM27ShardsPlay } from "@/canvas/sysdesign-m27-shards-play/data";
+} from "@buildment/learning-ui/canvas/models/lamha-backlog";
+import { harmonic, harmonicExact, CACHE_STOPS, SKEW_STOPS, skewPlay, skewVerdict, valueText as skewValueText } from "@buildment/learning-ui/canvas/models/lamha-skew";
+import { boxLayout, boxTone, railFraction, SHARD_STOPS, shardsPlay, shardsVerdict, VIEW_STOPS as SHARD_VIEW_STOPS, valueText as shardsValueText } from "@buildment/learning-ui/canvas/models/lamha-shards";
+import { sysdesignM27EstimatePlay } from "@buildment/learning-ui/canvas/sysdesign-m27-estimate-play/data";
+import { sysdesignM27DesignStepper } from "@buildment/learning-ui/canvas/sysdesign-m27-design-stepper/data";
+import { sysdesignM27BacklogPlay } from "@buildment/learning-ui/canvas/sysdesign-m27-backlog-play/data";
+import { sysdesignM27SkewPlay } from "@buildment/learning-ui/canvas/sysdesign-m27-skew-play/data";
+import { sysdesignM27ShardsPlay } from "@buildment/learning-ui/canvas/sysdesign-m27-shards-play/data";
 
 const MAX = 38;
 

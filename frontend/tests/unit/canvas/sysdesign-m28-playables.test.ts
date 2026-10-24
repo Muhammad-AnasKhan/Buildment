@@ -1,8 +1,8 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { checkDesign, designFrame, nextPhase, STATUS_MAX, VERDICT_MAX } from "@/canvas/models/design-stepper";
-import { BOXES, diveMinutes, interviewDesign, minuteAt, ROUND_MINUTES } from "@/canvas/models/interview-plan";
+import { checkDesign, designFrame, nextPhase, STATUS_MAX, VERDICT_MAX } from "@buildment/learning-ui/canvas/models/design-stepper";
+import { BOXES, diveMinutes, interviewDesign, minuteAt, ROUND_MINUTES } from "@buildment/learning-ui/canvas/models/interview-plan";
 import {
   appServers,
   copyReads,
@@ -14,11 +14,11 @@ import {
   probeDesign,
   sharePercent,
   timesText,
-} from "@/canvas/models/probe-design";
-import { placeCard, startSort } from "@/canvas/models/sorter";
-import { sysdesignM28InterviewStepper } from "@/canvas/sysdesign-m28-interview-stepper/data";
-import { sysdesignM28ProbeStepper } from "@/canvas/sysdesign-m28-probe-stepper/data";
-import { ANSWER_BUCKETS, ANSWER_CARDS, sysdesignM28AnswerSorter } from "@/canvas/sysdesign-m28-answer-sorter/data";
+} from "@buildment/learning-ui/canvas/models/probe-design";
+import { placeCard, startSort } from "@buildment/learning-ui/canvas/models/sorter";
+import { sysdesignM28InterviewStepper } from "@buildment/learning-ui/canvas/sysdesign-m28-interview-stepper/data";
+import { sysdesignM28ProbeStepper } from "@buildment/learning-ui/canvas/sysdesign-m28-probe-stepper/data";
+import { ANSWER_BUCKETS, ANSWER_CARDS, sysdesignM28AnswerSorter } from "@buildment/learning-ui/canvas/sysdesign-m28-answer-sorter/data";
 
 describe("m28 interview plan (28.2)", () => {
   it("fills 45 minutes with six boxes", () => {

@@ -13,7 +13,7 @@ import {
   HOPS,
   hopKey,
   speedClass,
-} from "@/canvas/models/feed-actions";
+} from "@buildment/learning-ui/canvas/models/feed-actions";
 import {
   chainRates,
   feedEstimate,
@@ -25,7 +25,7 @@ import {
   rateInWords,
   ring,
   USER_STEPS,
-} from "@/canvas/models/feed-estimate";
+} from "@buildment/learning-ui/canvas/models/feed-estimate";
 import {
   edgesOf,
   fanout,
@@ -38,12 +38,12 @@ import {
   slowestText,
   stopLabel,
   writesPerDay,
-} from "@/canvas/models/fanout-line";
-import { engagement, HALF_LIVES, rankPosts, rankValueText, rankVerdict } from "@/canvas/models/rank-score";
-import { sysdesignM21EstimatePlay } from "@/canvas/sysdesign-m21-estimate-play/data";
-import { sysdesignM21ActionMap } from "@/canvas/sysdesign-m21-action-map/data";
-import { sysdesignM21FanoutPlay } from "@/canvas/sysdesign-m21-fanout-play/data";
-import { sysdesignM21RankPlay } from "@/canvas/sysdesign-m21-rank-play/data";
+} from "@buildment/learning-ui/canvas/models/fanout-line";
+import { engagement, HALF_LIVES, rankPosts, rankValueText, rankVerdict } from "@buildment/learning-ui/canvas/models/rank-score";
+import { sysdesignM21EstimatePlay } from "@buildment/learning-ui/canvas/sysdesign-m21-estimate-play/data";
+import { sysdesignM21ActionMap } from "@buildment/learning-ui/canvas/sysdesign-m21-action-map/data";
+import { sysdesignM21FanoutPlay } from "@buildment/learning-ui/canvas/sysdesign-m21-fanout-play/data";
+import { sysdesignM21RankPlay } from "@buildment/learning-ui/canvas/sysdesign-m21-rank-play/data";
 
 const MAX = 38;
 

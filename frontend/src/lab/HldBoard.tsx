@@ -23,7 +23,7 @@ import type { ComponentKind } from "./catalog";
 import { COMPONENT_CATALOG, SIZE_CATALOG } from "./catalog";
 import type { Board, BoardNode, HldLabSpec } from "./types";
 import { applied, initialControls, type BoardControls } from "./hld-board-model";
-import { runTieredModel, type ModelResult } from "@/canvas/models/tiered-architecture";
+import { runTieredModel, type ModelResult } from "@/lab/tiered-architecture";
 
 const ICON: Partial<Record<ComponentKind, string>> = {
   client: "○",

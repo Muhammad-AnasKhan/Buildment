@@ -1,22 +1,22 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import * as backlog from "@/canvas/sysdesign-m15-backlog-play/model";
-import { sysdesignM15BacklogPlay } from "@/canvas/sysdesign-m15-backlog-play/data";
-import * as slow from "@/canvas/sysdesign-m15-slow-subscriber-play/model";
-import { sysdesignM15SlowSubscriberPlay } from "@/canvas/sysdesign-m15-slow-subscriber-play/data";
-import * as wmark from "@/canvas/sysdesign-m15-watermark-delay-play/model";
-import { sysdesignM15WatermarkDelayPlay } from "@/canvas/sysdesign-m15-watermark-delay-play/data";
-import * as shapes from "@/canvas/sysdesign-m15-window-shapes-play/model";
-import { sysdesignM15WindowShapesPlay } from "@/canvas/sysdesign-m15-window-shapes-play/data";
-import * as poison from "@/canvas/sysdesign-m15-poison-play/model";
-import { sysdesignM15PoisonPlay } from "@/canvas/sysdesign-m15-poison-play/data";
-import * as pkey from "@/canvas/sysdesign-m15-partition-key-play/model";
-import { sysdesignM15PartitionKeyPlay } from "@/canvas/sysdesign-m15-partition-key-play/data";
-import * as retry from "@/canvas/sysdesign-m15-retry-reorder-play/model";
-import { sysdesignM15RetryReorderPlay } from "@/canvas/sysdesign-m15-retry-reorder-play/data";
-import * as rebalance from "@/canvas/sysdesign-m15-rebalance-play/model";
-import { sysdesignM15RebalancePlay } from "@/canvas/sysdesign-m15-rebalance-play/data";
+import * as backlog from "@buildment/learning-ui/canvas/sysdesign-m15-backlog-play/model";
+import { sysdesignM15BacklogPlay } from "@buildment/learning-ui/canvas/sysdesign-m15-backlog-play/data";
+import * as slow from "@buildment/learning-ui/canvas/sysdesign-m15-slow-subscriber-play/model";
+import { sysdesignM15SlowSubscriberPlay } from "@buildment/learning-ui/canvas/sysdesign-m15-slow-subscriber-play/data";
+import * as wmark from "@buildment/learning-ui/canvas/sysdesign-m15-watermark-delay-play/model";
+import { sysdesignM15WatermarkDelayPlay } from "@buildment/learning-ui/canvas/sysdesign-m15-watermark-delay-play/data";
+import * as shapes from "@buildment/learning-ui/canvas/sysdesign-m15-window-shapes-play/model";
+import { sysdesignM15WindowShapesPlay } from "@buildment/learning-ui/canvas/sysdesign-m15-window-shapes-play/data";
+import * as poison from "@buildment/learning-ui/canvas/sysdesign-m15-poison-play/model";
+import { sysdesignM15PoisonPlay } from "@buildment/learning-ui/canvas/sysdesign-m15-poison-play/data";
+import * as pkey from "@buildment/learning-ui/canvas/sysdesign-m15-partition-key-play/model";
+import { sysdesignM15PartitionKeyPlay } from "@buildment/learning-ui/canvas/sysdesign-m15-partition-key-play/data";
+import * as retry from "@buildment/learning-ui/canvas/sysdesign-m15-retry-reorder-play/model";
+import { sysdesignM15RetryReorderPlay } from "@buildment/learning-ui/canvas/sysdesign-m15-retry-reorder-play/data";
+import * as rebalance from "@buildment/learning-ui/canvas/sysdesign-m15-rebalance-play/model";
+import { sysdesignM15RebalancePlay } from "@buildment/learning-ui/canvas/sysdesign-m15-rebalance-play/data";
 
 const VERDICT_MAX = 38;
 

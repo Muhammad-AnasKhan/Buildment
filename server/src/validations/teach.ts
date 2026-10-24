@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { isSafeAssetUrl } from "../shared/lib/asset-url.js";
+import { VARIANT_ASSIGNMENTS } from "../shared/lib/course-tracks.js";
 import { id, params } from "./common.js";
 
 export const courseIdParams = params("courseId");
@@ -48,6 +49,8 @@ export const courseSettingsBody = z.object({
   // Optional so older clients keep working; omitted means "leave the category as it is".
   category: z.enum(["TECH", "SOFT_SKILLS"]).optional(),
   sequential: z.boolean(),
+  // How learners get a variant in a course family. Optional; omitted leaves it as it is.
+  variantAssignment: z.enum(VARIANT_ASSIGNMENTS).optional(),
   pricingType: z.enum(["FREE", "PAID"]),
   priceDollars: z.union([z.literal(""), z.coerce.number().min(0).max(99999)]),
   currency: z.string().trim().length(3),

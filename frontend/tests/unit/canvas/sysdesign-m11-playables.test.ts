@@ -18,14 +18,14 @@ import {
   verdicts,
   withValue,
   type HistoryOp,
-} from "@/canvas/models/history";
-import { PLOT_X0, PLOT_X1, historyLayout, mayReturnWords, opWords, placeBars, snap, textWidth } from "@/canvas/models/history-layout";
-import { BUILD_AXIS, BUILD_CLIENTS, MAX_OPS, NOTICE_FULL, NOTICE_REFUSED, addBar, buildSummary, firstFreeStart, presetHistory, readOptions, removeBar } from "@/canvas/models/history-build";
-import { READ_STARTS, VERDICTS as OVERLAP_VERDICTS, allowed, chipText, historyAt, snapStart, zoneOf } from "@/canvas/models/overlap-or-not";
-import { LIN_AXIS, LIN_CLIENTS, analyse, flipRead, presetHistory as linPreset } from "@/canvas/models/linearizable-play";
-import { PRESETS, countCombinations, describe as describeHistory, presetById, tapRead, valueText } from "@/canvas/models/three-verdicts";
-import { READS, simulate, readName } from "@/canvas/models/session-reads";
-import { HOLD_WINDOW, nameAt, panel2, writesVerdict } from "@/canvas/models/session-writes";
+} from "@buildment/learning-ui/canvas/models/history";
+import { PLOT_X0, PLOT_X1, historyLayout, mayReturnWords, opWords, placeBars, snap, textWidth } from "@buildment/learning-ui/canvas/models/history-layout";
+import { BUILD_AXIS, BUILD_CLIENTS, MAX_OPS, NOTICE_FULL, NOTICE_REFUSED, addBar, buildSummary, firstFreeStart, presetHistory, readOptions, removeBar } from "@buildment/learning-ui/canvas/models/history-build";
+import { READ_STARTS, VERDICTS as OVERLAP_VERDICTS, allowed, chipText, historyAt, snapStart, zoneOf } from "@buildment/learning-ui/canvas/models/overlap-or-not";
+import { LIN_AXIS, LIN_CLIENTS, analyse, flipRead, presetHistory as linPreset } from "@buildment/learning-ui/canvas/models/linearizable-play";
+import { PRESETS, countCombinations, describe as describeHistory, presetById, tapRead, valueText } from "@buildment/learning-ui/canvas/models/three-verdicts";
+import { READS, simulate, readName } from "@buildment/learning-ui/canvas/models/session-reads";
+import { HOLD_WINDOW, nameAt, panel2, writesVerdict } from "@buildment/learning-ui/canvas/models/session-writes";
 import {
   AVERAGE_ROUNDS,
   COPIES,
@@ -38,18 +38,18 @@ import {
   ladderValue,
   partnerOf,
   syncVerdict,
-} from "@/canvas/models/sync-rate";
-import { MEND_DONE_S, SCRIPT, TRIP_S, accepted, buttonLabel, clashAt, copiesAfterScript, copiesAt, finalRows, nextPhase, rowsAt, verdictFor as cutVerdict, type Mode, type Phase } from "@/canvas/models/cut-network";
-import { FAR_ROWS, FAST_DONE_S, barFraction, doneAt, eastRead, eastUpdatesAt, formatMs, formatStale, staleMs, verdictFor as farVerdict, writeMs } from "@/canvas/models/far-copy";
-import { sysdesignM11BuildHistory } from "@/canvas/sysdesign-m11-build-history/data";
-import { sysdesignM11OverlapOrNot } from "@/canvas/sysdesign-m11-overlap-or-not/data";
-import { sysdesignM11IsItLinearizable } from "@/canvas/sysdesign-m11-is-it-linearizable/data";
-import { sysdesignM11OneHistoryThreeVerdicts } from "@/canvas/sysdesign-m11-one-history-three-verdicts/data";
-import { sysdesignM11SessionReads } from "@/canvas/sysdesign-m11-session-reads/data";
-import { sysdesignM11SessionWrites } from "@/canvas/sysdesign-m11-session-writes/data";
-import { sysdesignM11SyncRate } from "@/canvas/sysdesign-m11-sync-rate/data";
-import { sysdesignM11CutTheNetwork } from "@/canvas/sysdesign-m11-cut-the-network/data";
-import { sysdesignM11LatencyOrFresh } from "@/canvas/sysdesign-m11-latency-or-fresh/data";
+} from "@buildment/learning-ui/canvas/models/sync-rate";
+import { MEND_DONE_S, SCRIPT, TRIP_S, accepted, buttonLabel, clashAt, copiesAfterScript, copiesAt, finalRows, nextPhase, rowsAt, verdictFor as cutVerdict, type Mode, type Phase } from "@buildment/learning-ui/canvas/models/cut-network";
+import { FAR_ROWS, FAST_DONE_S, barFraction, doneAt, eastRead, eastUpdatesAt, formatMs, formatStale, staleMs, verdictFor as farVerdict, writeMs } from "@buildment/learning-ui/canvas/models/far-copy";
+import { sysdesignM11BuildHistory } from "@buildment/learning-ui/canvas/sysdesign-m11-build-history/data";
+import { sysdesignM11OverlapOrNot } from "@buildment/learning-ui/canvas/sysdesign-m11-overlap-or-not/data";
+import { sysdesignM11IsItLinearizable } from "@buildment/learning-ui/canvas/sysdesign-m11-is-it-linearizable/data";
+import { sysdesignM11OneHistoryThreeVerdicts } from "@buildment/learning-ui/canvas/sysdesign-m11-one-history-three-verdicts/data";
+import { sysdesignM11SessionReads } from "@buildment/learning-ui/canvas/sysdesign-m11-session-reads/data";
+import { sysdesignM11SessionWrites } from "@buildment/learning-ui/canvas/sysdesign-m11-session-writes/data";
+import { sysdesignM11SyncRate } from "@buildment/learning-ui/canvas/sysdesign-m11-sync-rate/data";
+import { sysdesignM11CutTheNetwork } from "@buildment/learning-ui/canvas/sysdesign-m11-cut-the-network/data";
+import { sysdesignM11LatencyOrFresh } from "@buildment/learning-ui/canvas/sysdesign-m11-latency-or-fresh/data";
 
 const MAX_VERDICT = 38;
 const DASH = String.fromCharCode(0x2014);
@@ -604,7 +604,7 @@ describe("the nine server-rendered pictures", () => {
 
   it("keeps the wording free of em dashes and the drawing free of hex colours and banned SVG parts", () => {
     for (const spec of specs) expect(spec.title + spec.purpose + spec.limits).not.toContain(DASH);
-    const root = path.resolve(__dirname, "../../../src/canvas");
+    const root = path.resolve(__dirname, "../../../../packages/learning-ui/src/canvas");
     const slugs = ["build-history", "overlap-or-not", "is-it-linearizable", "one-history-three-verdicts", "session-reads", "session-writes", "sync-rate", "cut-the-network", "latency-or-fresh"];
     const files = [
       ...slugs.flatMap((s) => {

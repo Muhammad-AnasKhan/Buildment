@@ -1,12 +1,12 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import * as split from "@/canvas/sysdesign-m16-split-or-not/model";
-import { sysdesignM16SplitOrNot } from "@/canvas/sysdesign-m16-split-or-not/data";
-import * as order from "@/canvas/sysdesign-m16-order-path/model";
-import { sysdesignM16OrderPath } from "@/canvas/sysdesign-m16-order-path/data";
-import * as timeout from "@/canvas/sysdesign-m16-timeout-line/model";
-import { sysdesignM16TimeoutLine } from "@/canvas/sysdesign-m16-timeout-line/data";
+import * as split from "@buildment/learning-ui/canvas/sysdesign-m16-split-or-not/model";
+import { sysdesignM16SplitOrNot } from "@buildment/learning-ui/canvas/sysdesign-m16-split-or-not/data";
+import * as order from "@buildment/learning-ui/canvas/sysdesign-m16-order-path/model";
+import { sysdesignM16OrderPath } from "@buildment/learning-ui/canvas/sysdesign-m16-order-path/data";
+import * as timeout from "@buildment/learning-ui/canvas/sysdesign-m16-timeout-line/model";
+import { sysdesignM16TimeoutLine } from "@buildment/learning-ui/canvas/sysdesign-m16-timeout-line/data";
 
 const VERDICT_MAX = 38;
 

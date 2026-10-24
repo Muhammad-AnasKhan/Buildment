@@ -1,2 +1,2 @@
 web: node dist/index.js
-release: pnpm exec prisma migrate deploy
+release: pnpm exec prisma migrate deploy && pnpm courses:publish

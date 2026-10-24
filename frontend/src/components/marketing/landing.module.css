@@ -1,0 +1,77 @@
+.page {
+  --landing-accent: #145c43;
+  color: var(--foreground);
+}
+:global(.dark) .page {
+  --landing-accent: #a1dfbf;
+}
+.page :is(a, button, summary):focus-visible {
+  outline: 2px solid var(--landing-accent);
+  outline-offset: 5px;
+}
+.page :is(h1, h2, h3, p, blockquote) {
+  overflow-wrap: break-word;
+}
+.accent {
+  color: var(--landing-accent);
+}
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.display {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(3.8rem, 6.8vw, 6.4rem);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 1.02;
+}
+.notebook {
+  position: relative;
+  padding: 1.75rem;
+  background: var(--card);
+  border-top: 3px solid var(--landing-accent);
+  border-bottom: 1px solid var(--border);
+}
+.notebook::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-left: 1px solid var(--border);
+}
+.marginNote {
+  margin-top: 1.5rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.1rem;
+  font-style: italic;
+  color: var(--landing-accent);
+}
+.cta {
+  background: var(--landing-accent);
+  color: var(--background);
+  border-radius: 2px;
+  min-height: 48px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: opacity 150ms ease;
+}
+.cta:hover {
+  background: var(--landing-accent);
+  opacity: 0.88;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page *, .page *::before, .page *::after {
+    transition: none !important;
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+@media (min-width: 1024px) {
+  .notebook {
+    margin-top: 3.5rem;
+    padding: 2rem 2.5rem;
+  }
+}

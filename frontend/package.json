@@ -47,7 +47,8 @@
     "ulid": "^3.0.2",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "@buildment/learning-ui": "file:../packages/learning-ui"
   },
   "devDependencies": {
     "@mdx-js/mdx": "3.1.1",

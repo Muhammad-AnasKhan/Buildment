@@ -11,9 +11,9 @@ import {
   nextPhase,
   VERDICT_MAX,
   type DesignSpec,
-} from "@/canvas/models/design-stepper";
-import { pasteBoxDesign } from "@/canvas/sysdesign-m1-design-loop/pastebox";
-import { sysdesignM1DesignLoop } from "@/canvas/sysdesign-m1-design-loop/data";
+} from "@buildment/learning-ui/canvas/models/design-stepper";
+import { pasteBoxDesign } from "@buildment/learning-ui/canvas/sysdesign-m1-design-loop/pastebox";
+import { sysdesignM1DesignLoop } from "@buildment/learning-ui/canvas/sysdesign-m1-design-loop/data";
 
 const ids = (xs: { id: string }[]) => xs.map((x) => x.id).sort();
 const step = (id: string) => pasteBoxDesign.steps.findIndex((s) => s.id === id);

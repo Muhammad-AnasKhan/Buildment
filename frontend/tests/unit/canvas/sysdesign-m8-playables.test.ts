@@ -3,16 +3,16 @@ import path from "node:path";
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import * as lf from "@/canvas/sysdesign-m8-leader-followers/model";
-import * as cc from "@/canvas/sysdesign-m8-confirm-count/model";
-import * as sb from "@/canvas/sysdesign-m8-split-brain/model";
-import * as tr from "@/canvas/sysdesign-m8-two-regions-edit/model";
-import * as qn from "@/canvas/sysdesign-m8-quorum-nodes/model";
-import { sysdesignM8LeaderFollowers } from "@/canvas/sysdesign-m8-leader-followers/data";
-import { sysdesignM8ConfirmCount } from "@/canvas/sysdesign-m8-confirm-count/data";
-import { sysdesignM8SplitBrain } from "@/canvas/sysdesign-m8-split-brain/data";
-import { sysdesignM8TwoRegionsEdit } from "@/canvas/sysdesign-m8-two-regions-edit/data";
-import { sysdesignM8QuorumNodes } from "@/canvas/sysdesign-m8-quorum-nodes/data";
+import * as lf from "@buildment/learning-ui/canvas/sysdesign-m8-leader-followers/model";
+import * as cc from "@buildment/learning-ui/canvas/sysdesign-m8-confirm-count/model";
+import * as sb from "@buildment/learning-ui/canvas/sysdesign-m8-split-brain/model";
+import * as tr from "@buildment/learning-ui/canvas/sysdesign-m8-two-regions-edit/model";
+import * as qn from "@buildment/learning-ui/canvas/sysdesign-m8-quorum-nodes/model";
+import { sysdesignM8LeaderFollowers } from "@buildment/learning-ui/canvas/sysdesign-m8-leader-followers/data";
+import { sysdesignM8ConfirmCount } from "@buildment/learning-ui/canvas/sysdesign-m8-confirm-count/data";
+import { sysdesignM8SplitBrain } from "@buildment/learning-ui/canvas/sysdesign-m8-split-brain/data";
+import { sysdesignM8TwoRegionsEdit } from "@buildment/learning-ui/canvas/sysdesign-m8-two-regions-edit/data";
+import { sysdesignM8QuorumNodes } from "@buildment/learning-ui/canvas/sysdesign-m8-quorum-nodes/data";
 
 const MAX_VERDICT = 38;
 const DASH = String.fromCharCode(0x2014);
@@ -358,7 +358,7 @@ describe("the five server-rendered pictures", () => {
 
   it("keeps the course wording free of em dashes and the drawing free of hex colours and banned SVG parts", () => {
     for (const spec of specs) expect(spec.title + spec.purpose + spec.limits).not.toContain(DASH);
-    const root = path.resolve(__dirname, "../../../src/canvas");
+    const root = path.resolve(__dirname, "../../../../packages/learning-ui/src/canvas");
     const files = fs
       .readdirSync(root)
       .filter((d) => /^sysdesign-m8-(leader-followers|confirm-count|split-brain|two-regions-edit|quorum-nodes)$/.test(d))

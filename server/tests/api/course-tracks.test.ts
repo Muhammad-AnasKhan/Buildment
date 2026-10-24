@@ -37,6 +37,7 @@ describe("course track", () => {
       variantSlug: "grocery",
       variantChosen: false,
       variantLocked: false,
+      variantAssigned: false,
       specialisationSlug: null,
       specialisationOpen: false,
     });
@@ -60,6 +61,22 @@ describe("course track", () => {
     } finally {
       await prisma.chapterProgress.deleteMany({ where: { enrollmentId: fx.enrollment.id } });
       await prisma.enrollment.update({ where: { id: fx.enrollment.id }, data: { variantLockedAt: null } });
+    }
+  });
+
+  it("limits new choices to variants with published lessons without changing an existing choice", async () => {
+    await prisma.course.update({ where: { id: fx.course.id }, data: { availableVariantSlugs: ["grocery"] } });
+    try {
+      const overview = await request(app).get(`/api/v1/courses/${fx.course.slug}/overview`).set(learner());
+      expect(overview.body.data.track).toMatchObject({ variantSlug: "books", availableVariantSlugs: ["grocery"] });
+      const unavailable = await chooseVariant("services");
+      expect(unavailable.status).toBe(409);
+      expect(unavailable.body.code).toBe("VARIANT_UNAVAILABLE");
+      expect((await prisma.enrollment.findUniqueOrThrow({ where: { id: fx.enrollment.id } })).variantSlug).toBe("books");
+      expect((await chooseVariant("grocery")).status).toBe(200);
+    } finally {
+      await prisma.course.update({ where: { id: fx.course.id }, data: { availableVariantSlugs: [] } });
+      await prisma.enrollment.update({ where: { id: fx.enrollment.id }, data: { variantSlug: "books", variantChosenAt: new Date() } });
     }
   });
 

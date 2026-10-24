@@ -4,7 +4,7 @@
 // plan. An unknown slug renders a quiet note, and the chapter prose still
 // carries the idea.
 
-import { CanvasFrame, CanvasNotes } from "@/canvas/primitives/canvas-frame";
+import { CanvasFrame, CanvasNotes } from "@buildment/learning-ui/canvas/primitives/canvas-frame";
 import { getLabSpec } from "./registry";
 import type { LabSpec } from "./types";
 import { HldBoard } from "./HldBoard";

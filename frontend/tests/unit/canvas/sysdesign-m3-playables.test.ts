@@ -10,7 +10,7 @@ import {
   segmentsOf,
   tripCount,
   tripPhase,
-} from "@/canvas/models/handshake-cost";
+} from "@buildment/learning-ui/canvas/models/handshake-cost";
 import {
   RESOLVERS,
   TIME_LADDER,
@@ -23,7 +23,7 @@ import {
   sweepPct,
   switchTime,
   timeAtPct,
-} from "@/canvas/models/ttl-spread";
+} from "@buildment/learning-ui/canvas/models/ttl-spread";
 import {
   FILES,
   VERSIONS,
@@ -36,7 +36,7 @@ import {
   timelines,
   usableTimes,
   type VersionId,
-} from "@/canvas/models/loss-compare";
+} from "@buildment/learning-ui/canvas/models/loss-compare";
 import {
   POLL_STEPS,
   USER_LADDER,
@@ -48,7 +48,7 @@ import {
   usersFromFraction,
   usersToFraction,
   wayCost,
-} from "@/canvas/models/realtime-cost";
+} from "@buildment/learning-ui/canvas/models/realtime-cost";
 import {
   B_LADDER,
   SHARES,
@@ -60,13 +60,13 @@ import {
   loopCeiling,
   poolCeiling,
   type Mode,
-} from "@/canvas/models/blocking-call";
-import { ladderStep } from "@/canvas/primitives/picture-slider";
-import { sysdesignM3HandshakeCost } from "@/canvas/sysdesign-m3-handshake-cost/data";
-import { sysdesignM3TtlSpread } from "@/canvas/sysdesign-m3-ttl-spread/data";
-import { sysdesignM3LossToggle } from "@/canvas/sysdesign-m3-loss-toggle/data";
-import { sysdesignM3ChatFourWays } from "@/canvas/sysdesign-m3-chat-four-ways/data";
-import { sysdesignM3BlockingCall } from "@/canvas/sysdesign-m3-blocking-call/data";
+} from "@buildment/learning-ui/canvas/models/blocking-call";
+import { ladderStep } from "@buildment/learning-ui/canvas/primitives/picture-slider";
+import { sysdesignM3HandshakeCost } from "@buildment/learning-ui/canvas/sysdesign-m3-handshake-cost/data";
+import { sysdesignM3TtlSpread } from "@buildment/learning-ui/canvas/sysdesign-m3-ttl-spread/data";
+import { sysdesignM3LossToggle } from "@buildment/learning-ui/canvas/sysdesign-m3-loss-toggle/data";
+import { sysdesignM3ChatFourWays } from "@buildment/learning-ui/canvas/sysdesign-m3-chat-four-ways/data";
+import { sysdesignM3BlockingCall } from "@buildment/learning-ui/canvas/sysdesign-m3-blocking-call/data";
 
 const MAX_VERDICT = 38;
 

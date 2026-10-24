@@ -12,15 +12,15 @@ import {
   queueOverflow,
   snapDowntime,
   snapPoint,
-} from "@/canvas/models/two-pc-crash";
-import { STEPS, cardCounter, sagaState, sagaSummary, stockCounter } from "@/canvas/models/saga-fail";
-import { CRASHES, APPROACHES, crashAllowed, fitCrash, outboxRun, type Approach, type Crash } from "@/canvas/models/outbox-crash";
-import { ACK_SNAPS, GAP_SNAPS, effects, flow, gapUsed, layoutDots, snapTo, type Consumer } from "@/canvas/models/dedupe-flow";
-import { nearestStop, stopXs } from "@/canvas/primitives/snap-stops-rail";
-import { sysdesignM14TwoPcCrash } from "@/canvas/sysdesign-m14-2pc-crash/data";
-import { sysdesignM14SagaFail } from "@/canvas/sysdesign-m14-saga-fail/data";
-import { sysdesignM14OutboxCrash } from "@/canvas/sysdesign-m14-outbox-crash/data";
-import { sysdesignM14DedupeFlow } from "@/canvas/sysdesign-m14-dedupe-flow/data";
+} from "@buildment/learning-ui/canvas/models/two-pc-crash";
+import { STEPS, cardCounter, sagaState, sagaSummary, stockCounter } from "@buildment/learning-ui/canvas/models/saga-fail";
+import { CRASHES, APPROACHES, crashAllowed, fitCrash, outboxRun, type Approach, type Crash } from "@buildment/learning-ui/canvas/models/outbox-crash";
+import { ACK_SNAPS, GAP_SNAPS, effects, flow, gapUsed, layoutDots, snapTo, type Consumer } from "@buildment/learning-ui/canvas/models/dedupe-flow";
+import { nearestStop, stopXs } from "@buildment/learning-ui/canvas/primitives/snap-stops-rail";
+import { sysdesignM14TwoPcCrash } from "@buildment/learning-ui/canvas/sysdesign-m14-2pc-crash/data";
+import { sysdesignM14SagaFail } from "@buildment/learning-ui/canvas/sysdesign-m14-saga-fail/data";
+import { sysdesignM14OutboxCrash } from "@buildment/learning-ui/canvas/sysdesign-m14-outbox-crash/data";
+import { sysdesignM14DedupeFlow } from "@buildment/learning-ui/canvas/sysdesign-m14-dedupe-flow/data";
 
 const DASH = String.fromCharCode(0x2014);
 const props = (spec: { title: string; purpose: string; limits: string }) => ({ title: spec.title, purpose: spec.purpose, limits: spec.limits });

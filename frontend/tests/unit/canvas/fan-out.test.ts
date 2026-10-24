@@ -12,10 +12,10 @@ import {
   slowChance,
   SLOW_MS,
   tallyLoads,
-} from "@/canvas/models/fan-out";
-import { AREA, backendGrid, CARD_MAX } from "@/canvas/models/fan-out-layout";
-import { backendCells, TALLY, TALLY_COLS, TALLY_KEEP } from "@/canvas/sysdesign-m2-fan-out-play/FanOutPlayCanvas";
-import { sysdesignM2FanOutPlay } from "@/canvas/sysdesign-m2-fan-out-play/data";
+} from "@buildment/learning-ui/canvas/models/fan-out";
+import { AREA, backendGrid, CARD_MAX } from "@buildment/learning-ui/canvas/models/fan-out-layout";
+import { backendCells, TALLY, TALLY_COLS, TALLY_KEEP } from "@buildment/learning-ui/canvas/sysdesign-m2-fan-out-play/FanOutPlayCanvas";
+import { sysdesignM2FanOutPlay } from "@buildment/learning-ui/canvas/sysdesign-m2-fan-out-play/data";
 
 describe("fan-out odds", () => {
   it("matches the chapter: 1%, 10%, 18%, 39%, 63%", () => {

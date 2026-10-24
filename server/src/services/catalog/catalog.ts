@@ -44,7 +44,7 @@ export async function listCatalog(userId: string | undefined): Promise<CatalogCo
   }));
 }
 
-export async function getCatalogCourse(courseSlug: string, userId: string): Promise<CatalogCourseDetail> {
+export async function getCatalogCourse(courseSlug: string, userId: string | undefined): Promise<CatalogCourseDetail> {
   const course = await prisma.course.findUnique({
     where: { slug: courseSlug },
     select: {
@@ -68,10 +68,12 @@ export async function getCatalogCourse(courseSlug: string, userId: string): Prom
   });
   if (!course || course.status !== "PUBLISHED") throw new NotFoundError("Course not found");
 
-  const enrollment = await prisma.enrollment.findUnique({
-    where: { courseId_userId: { courseId: course.id, userId } },
-    select: { lifecycle: true },
-  });
+  const enrollment = userId
+    ? await prisma.enrollment.findUnique({
+        where: { courseId_userId: { courseId: course.id, userId } },
+        select: { lifecycle: true },
+      })
+    : null;
   const { mentor, _count, status: _status, ...rest } = course;
 
   return {
