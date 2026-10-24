@@ -4,7 +4,7 @@
  * Pass `--course <slug>` (or `--course=<slug>`); the default is the FreshMarket
  * course so existing commands behave as before. A course folder can carry a
  * `course.yaml` with the course metadata and its planned modules and lessons.
- * FreshMarket predates that file and falls back to SEED_COURSE plus the module
+ * Legacy folders without a manifest fall back to SEED_COURSE plus the module
  * names in import-course.ts.
  */
 import fs from "node:fs";
@@ -64,6 +64,13 @@ const PlannedModuleSchema = z.object({
   lessons: z.array(PlannedLessonSchema).min(1),
 });
 
+const VariantModuleSchema = PlannedModuleSchema.extend({
+  key: z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/),
+  lessons: z.array(PlannedLessonSchema.extend({
+    key: z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/),
+  })).min(1),
+});
+
 const VariantOverrideSchema = z.object({
   lessonKey: z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/),
   // A complete replacement chapter, or exact text replacements within the shared chapter.
@@ -78,6 +85,10 @@ export const CourseManifestSchema = z.object({
   creatorEmail: z.email().optional(),
   /** Opt in to publishing this repository package after CI passes on main. */
   repositoryPublish: z.boolean().optional(),
+  /** Existing database slug when an older course was first published under a different name. */
+  repositoryTargetSlug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
+  /** Existing lesson punctuation and quiz explanations are migrated without rewriting learner content. */
+  legacySourceAudit: z.boolean().optional(),
   /** Explicit publication exception for content still below the editorial audit bar. */
   repositoryEditorialAudit: z.enum(["required", "advisory"]).default("required"),
   title: z.string().min(1),
@@ -90,6 +101,8 @@ export const CourseManifestSchema = z.object({
   coverUrl: z.string().url().optional(),
   /** Built-in family slug or the slug of variantFamily below. */
   family: z.string().optional(),
+  /** Explicitly released tracks. Omit for the historical all-variants behavior. */
+  availableVariantSlugs: z.array(z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)).min(1).optional(),
   variantFamily: z.object({
     slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
     label: z.string().min(1),
@@ -107,11 +120,23 @@ export const CourseManifestSchema = z.object({
     specialisations: z.array(z.object({ slug: z.string(), label: z.string(), summary: z.string() })).default([]),
   }).optional(),
   modules: z.array(PlannedModuleSchema),
-  variants: z.array(z.object({ slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/), overrides: z.array(VariantOverrideSchema).min(1) })).optional(),
+  variants: z.array(z.object({
+    slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+    overrides: z.array(VariantOverrideSchema).default([]),
+    /** Complete variant-only modules, stored under variants/<slug>/<dir>/. */
+    modules: z.array(VariantModuleSchema).default([]),
+    /** Shared lessons omitted from this variant's otherwise inherited modules. */
+    omitLessonKeys: z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)).default([]),
+    /** Complete ordered module path for this variant; absent shared keys are omitted. */
+    moduleOrder: z.array(z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/)).min(1).optional(),
+  })).optional(),
   remove: z.object({ moduleKeys: z.array(z.string()).default([]), lessonKeys: z.array(z.string()).default([]) }).optional(),
 }).superRefine((manifest, ctx) => {
+  if (manifest.legacySourceAudit && !manifest.repositoryTargetSlug) {
+    ctx.addIssue({ code: "custom", path: ["legacySourceAudit"], message: "Legacy audit exception requires an existing repository target slug" });
+  }
   if (!manifest.modules.length && !manifest.remove?.moduleKeys.length && !manifest.remove?.lessonKeys.length &&
-      !manifest.variants?.some(variant => variant.overrides.length)) {
+      !manifest.variants?.some(variant => variant.overrides.length || variant.modules.length || variant.omitLessonKeys.length || variant.moduleOrder)) {
     ctx.addIssue({ code: "custom", path: ["modules"], message: "Provide lessons, variant overrides, or explicit removals" });
   }
   if (manifest.publication === "create" && !manifest.modules.length) {
@@ -139,17 +164,79 @@ export const CourseManifestSchema = z.object({
       lessons.add(lesson.key);
     }
   }
+  const allModuleKeys = new Set(modules);
+  const allLessonKeys = new Set(lessons);
   const family = manifest.variantFamily ?? findCourseFamily(manifest.family);
+  if (manifest.availableVariantSlugs) {
+    if (!family) ctx.addIssue({ code: "custom", path: ["availableVariantSlugs"], message: "A variant family is required" });
+    else {
+      if (!manifest.availableVariantSlugs.includes(family.defaultVariantSlug)) {
+        ctx.addIssue({ code: "custom", path: ["availableVariantSlugs"], message: "Include the family default variant" });
+      }
+      for (const slug of manifest.availableVariantSlugs) if (!family.variants.some(variant => variant.slug === slug)) {
+        ctx.addIssue({ code: "custom", path: ["availableVariantSlugs"], message: `Unknown family variant ${slug}` });
+      }
+      for (const slug of manifest.availableVariantSlugs) if (slug !== family.defaultVariantSlug &&
+        !manifest.variants?.some(variant => variant.slug === slug && (variant.overrides.length || variant.modules.length))) {
+        ctx.addIssue({ code: "custom", path: ["availableVariantSlugs"], message: `Available variant ${slug} needs authored variant lessons` });
+      }
+      for (const slug of manifest.availableVariantSlugs) if (slug !== family.defaultVariantSlug &&
+        !manifest.variants?.some(variant => variant.slug === slug && variant.moduleOrder)) {
+        ctx.addIssue({ code: "custom", path: ["availableVariantSlugs"], message: `Available variant ${slug} needs its complete moduleOrder` });
+      }
+      if (new Set(manifest.availableVariantSlugs).size !== manifest.availableVariantSlugs.length) {
+        ctx.addIssue({ code: "custom", path: ["availableVariantSlugs"], message: "Variant slugs must be unique" });
+      }
+    }
+  }
   const variants = new Set<string>();
   for (const [vi, variant] of (manifest.variants ?? []).entries()) {
     if (!family || !family.variants.some(item => item.slug === variant.slug)) ctx.addIssue({ code: "custom", path: ["variants", vi, "slug"], message: "Variant must exist in the selected course family" });
     if (variants.has(variant.slug)) ctx.addIssue({ code: "custom", path: ["variants", vi, "slug"], message: "Duplicate variant" });
     variants.add(variant.slug);
     const overridden = new Set<string>();
+    const overrideFiles = new Set<string>();
     for (const [oi, override] of variant.overrides.entries()) {
       if (overridden.has(override.lessonKey)) ctx.addIssue({ code: "custom", path: ["variants", vi, "overrides", oi], message: "Duplicate lesson override" });
       overridden.add(override.lessonKey);
       if (override.file && !override.file.startsWith(`variants/${variant.slug}/`)) ctx.addIssue({ code: "custom", path: ["variants", vi, "overrides", oi, "file"], message: "Override file must belong to its variant" });
+      if (override.file && overrideFiles.has(override.file)) ctx.addIssue({ code: "custom", path: ["variants", vi, "overrides", oi, "file"], message: "Override files must be unique" });
+      if (override.file) overrideFiles.add(override.file);
+      if (!lessons.has(override.lessonKey)) ctx.addIssue({ code: "custom", path: ["variants", vi, "overrides", oi, "lessonKey"], message: `Unknown shared lesson key ${override.lessonKey}` });
+    }
+    if (variant.modules.length && !variant.moduleOrder) ctx.addIssue({ code: "custom", path: ["variants", vi, "moduleOrder"], message: "Variant-only modules need a complete moduleOrder" });
+    const knownOrderKeys = new Set([...modules, ...variant.modules.map(module => module.key)]);
+    if (variant.moduleOrder) {
+      const ordered = new Set(variant.moduleOrder);
+      if (ordered.size !== variant.moduleOrder.length) ctx.addIssue({ code: "custom", path: ["variants", vi, "moduleOrder"], message: "Module order has duplicate keys" });
+      for (const key of ordered) if (!knownOrderKeys.has(key)) ctx.addIssue({ code: "custom", path: ["variants", vi, "moduleOrder"], message: `Unknown module key ${key}` });
+      for (const module of variant.modules) if (!ordered.has(module.key)) ctx.addIssue({ code: "custom", path: ["variants", vi, "moduleOrder"], message: `Variant module ${module.key} is missing from moduleOrder` });
+      for (const override of variant.overrides) {
+        const parent = manifest.modules.find(module => module.lessons.some(lesson => lesson.key === override.lessonKey));
+        if (parent?.key && !ordered.has(parent.key)) ctx.addIssue({ code: "custom", path: ["variants", vi, "moduleOrder"], message: `Override ${override.lessonKey} targets an omitted module` });
+      }
+    }
+    if (new Set(variant.omitLessonKeys).size !== variant.omitLessonKeys.length) ctx.addIssue({ code: "custom", path: ["variants", vi, "omitLessonKeys"], message: "Omitted lesson keys must be unique" });
+    for (const key of variant.omitLessonKeys) {
+      if (!lessons.has(key)) ctx.addIssue({ code: "custom", path: ["variants", vi, "omitLessonKeys"], message: `Unknown shared lesson key ${key}` });
+      if (overridden.has(key)) ctx.addIssue({ code: "custom", path: ["variants", vi, "omitLessonKeys"], message: `Cannot omit and override lesson ${key}` });
+    }
+    const variantDirs = new Set<string>();
+    for (const [mi, module] of variant.modules.entries()) {
+      if (variantDirs.has(module.dir)) ctx.addIssue({ code: "custom", path: ["variants", vi, "modules", mi, "dir"], message: `Duplicate variant module directory ${module.dir}` });
+      variantDirs.add(module.dir);
+      if (variant.overrides.some(override => override.file?.startsWith(`variants/${variant.slug}/${module.dir}/`))) {
+        ctx.addIssue({ code: "custom", path: ["variants", vi, "modules", mi, "dir"], message: "Variant-only module folder cannot also hold shared lesson overrides" });
+      }
+      if (allModuleKeys.has(module.key)) ctx.addIssue({ code: "custom", path: ["variants", vi, "modules", mi, "key"], message: `Module key ${module.key} is already used` });
+      allModuleKeys.add(module.key);
+      for (const lesson of module.lessons) {
+        if (lesson.file.split(".")[0] !== module.dir.split("-")[0]) {
+          ctx.addIssue({ code: "custom", path: ["variants", vi, "modules", mi, "lessons"], message: `${lesson.file} must use module number ${module.dir.split("-")[0]}` });
+        }
+        if (allLessonKeys.has(lesson.key)) ctx.addIssue({ code: "custom", path: ["variants", vi, "modules", mi, "lessons"], message: `Lesson key ${lesson.key} is already used` });
+        allLessonKeys.add(lesson.key);
+      }
     }
   }
   for (const key of manifest.remove?.moduleKeys ?? []) if (modules.has(key)) ctx.addIssue({ code: "custom", path: ["remove", "moduleKeys"], message: `Cannot remove and update module ${key}` });

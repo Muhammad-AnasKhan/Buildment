@@ -18,7 +18,7 @@ import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js"
 // build, and which specialisation they take once the course is complete.
 
 async function loadFamilyEnrollment(courseSlug: string, user: SessionUser) {
-  const course = await prisma.course.findUnique({ where: { slug: courseSlug }, select: { id: true, slug: true, familySlug: true, variantFamily: true } });
+  const course = await prisma.course.findUnique({ where: { slug: courseSlug }, select: { id: true, slug: true, familySlug: true, variantFamily: true, availableVariantSlugs: true } });
   if (!course) throw new NotFoundError("Course not found");
   const family = resolveCourseFamily(course.familySlug, course.variantFamily);
   if (!family) throw new ConflictError("This course has no variants to choose from.", COURSE_TRACK_ERROR_CODES.NO_FAMILY);
@@ -26,14 +26,17 @@ async function loadFamilyEnrollment(courseSlug: string, user: SessionUser) {
   return { course, family, enrollment };
 }
 
-function result(courseSlug: string, family: CourseFamily, enrollment: Parameters<typeof buildCourseTrack>[1]): UpdateCourseTrackResult {
-  return { courseSlug, track: buildCourseTrack(findCourseFamily(family.slug) ? family.slug : family, enrollment)! };
+function result(courseSlug: string, family: CourseFamily, enrollment: Parameters<typeof buildCourseTrack>[1], availableVariantSlugs: string[]): UpdateCourseTrackResult {
+  return { courseSlug, track: buildCourseTrack(findCourseFamily(family.slug) ? family.slug : family, enrollment, availableVariantSlugs)! };
 }
 
 /** Pick or change the variant until the learner begins the course. */
 export async function chooseCourseVariant(courseSlug: string, user: SessionUser, variantSlug: string): Promise<UpdateCourseTrackResult> {
   const { course, family, enrollment } = await loadFamilyEnrollment(courseSlug, user);
   if (!findVariant(family, variantSlug)) throw new BadRequestError("Unknown variant for this course.");
+  if (course.availableVariantSlugs.length && !course.availableVariantSlugs.includes(variantSlug)) {
+    throw new ConflictError("This variant is not available for this course yet.", COURSE_TRACK_ERROR_CODES.VARIANT_UNAVAILABLE);
+  }
   if (courseFinished(enrollment)) {
     throw new ConflictError("The variant is fixed once the course is complete.", COURSE_TRACK_ERROR_CODES.COURSE_FINISHED);
   }
@@ -43,6 +46,10 @@ export async function chooseCourseVariant(courseSlug: string, user: SessionUser,
   let updated;
   try {
     updated = await prisma.$transaction(async tx => {
+      const availability = await tx.course.findUniqueOrThrow({ where: { id: course.id }, select: { availableVariantSlugs: true } });
+      if (availability.availableVariantSlugs.length && !availability.availableVariantSlugs.includes(variantSlug)) {
+        throw new ConflictError("This variant is not available for this course yet.", COURSE_TRACK_ERROR_CODES.VARIANT_UNAVAILABLE);
+      }
       const changed = await tx.enrollment.updateMany({
         where: { id: enrollment.id, variantLockedAt: null, status: { not: "COMPLETED" }, percentComplete: { lt: 100 } },
         data: { variantSlug, variantChosenAt: new Date() },
@@ -59,7 +66,7 @@ export async function chooseCourseVariant(courseSlug: string, user: SessionUser,
     }
     throw error;
   }
-  return result(course.slug, family, updated);
+  return result(course.slug, family, updated, course.availableVariantSlugs);
 }
 
 /** Pick the specialisation that follows the course. Opens once every chapter is complete. */
@@ -77,5 +84,5 @@ export async function chooseCourseSpecialisation(
     where: { id: enrollment.id },
     data: { specialisationSlug, specialisationChosenAt: new Date() },
   });
-  return result(course.slug, family, updated);
+  return result(course.slug, family, updated, course.availableVariantSlugs);
 }

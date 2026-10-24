@@ -5,7 +5,7 @@ import type { SessionUser } from "../../types/auth.js";
 import type { CourseUpdatePreview } from "../../shared/api/teach.js";
 import { BadRequestError, ConflictError } from "../../utils/errors.js";
 import { requireCourseById } from "./access.js";
-import { parseCourseZip, type ImportPlan } from "./course-import.js";
+import { parseCourseZip, type CourseZipSource, type ImportPlan } from "./course-import.js";
 import { canonical, matchCourseUpdate, type UpdateMapping } from "./course-update-matching.js";
 import { publishCourseRelease } from "./publish-course-release.js";
 import { type ReleaseContent, variantForRelease } from "../courses/releases.js";
@@ -31,9 +31,10 @@ async function snapshot(db: Prisma.TransactionClient, courseId: string) {
   };
 }
 
-export async function previewCourseZipUpdate(user: SessionUser, courseId: string, buffer: Buffer): Promise<CourseUpdatePreview> {
+export async function previewCourseZipUpdate(user: SessionUser, courseId: string, buffer: Buffer,
+  source: CourseZipSource = "dashboard"): Promise<CourseUpdatePreview> {
   const course = await requireCourseById(user, courseId);
-  const { slug, plan } = await parseCourseZip(buffer);
+  const { slug, plan } = await parseCourseZip(buffer, source);
   if (plan.manifest.publication === "create") throw new BadRequestError("This package declares course creation. Use the new-course import instead.");
   if (slug !== course.slug) throw new BadRequestError(`The ZIP slug must be "${course.slug}" to update this course.`);
   const current = await snapshot(prisma, courseId);
@@ -57,7 +58,11 @@ export async function previewCourseZipUpdate(user: SessionUser, courseId: string
       if (!priorId || !variantChapter || variantChapter.id === priorId) affected.add(lesson.key ?? lesson.title);
     }
     for (const key of plan.remove?.lessonKeys ?? []) affected.add(key);
-    for (const override of plan.variants?.find(variant => variant.slug === slug)?.overrides ?? []) affected.add(override.lessonKey);
+    const variantPlan = plan.variants?.find(variant => variant.slug === slug);
+    for (const override of variantPlan?.overrides ?? []) affected.add(override.lessonKey);
+    for (const key of variantPlan?.omitLessonKeys ?? []) affected.add(key);
+    for (const module of variantPlan?.modules ?? []) for (const lesson of module.lessons) affected.add(lesson.key ?? lesson.title);
+    if (variantPlan?.moduleOrder) affected.add("Module sequence");
     return { slug, affectedLessons: [...affected], activeLearners: learnerCounts.filter(row => (row.variantSlug ?? variantForRelease(resolveCourseFamily(current.familySlug, current.variantFamily), null)) === slug)
       .reduce((sum, row) => sum + row._count._all, 0) };
   });
@@ -65,6 +70,7 @@ export async function previewCourseZipUpdate(user: SessionUser, courseId: string
   const warnings = [
     "Only supplied keys change. Omitted content stays in the course; removals must be explicit.",
     "Shared edits reach inheriting variants. A variant override changes only that variant.",
+    "Variant-only modules, omitted lessons, and module order change only their named variant.",
     "Learners who already started stay on their release. New learners receive the new release.",
     "Changed chapters and activities get new progress identities; old submissions and history remain.",
     "Course details, pricing, ownership, and publication status are unchanged.",
@@ -79,7 +85,8 @@ export async function previewCourseZipUpdate(user: SessionUser, courseId: string
   return { previewId: preview.id, expiresAt: expiresAt.toISOString(), modules: result.modules, variants, warnings };
 }
 
-export async function approveCourseZipUpdate(user: SessionUser, courseId: string, previewId: string) {
+export async function approveCourseZipUpdate(user: SessionUser, courseId: string, previewId: string,
+  source: CourseZipSource = "dashboard") {
   await requireCourseById(user, courseId);
   try {
     return await prisma.$transaction(async tx => {
@@ -91,7 +98,7 @@ export async function approveCourseZipUpdate(user: SessionUser, courseId: string
       await publishCourseRelease(tx, courseId, content, mapping);
       await tx.courseImportPreview.update({ where: { id: preview.id }, data: { appliedAt: new Date() } });
       return { courseSlug: current.slug };
-    }, { isolationLevel: "Serializable", timeout: 60000, maxWait: 10000 });
+    }, { isolationLevel: "Serializable", timeout: source === "repository" ? 300000 : 60000, maxWait: 10000 });
   } catch (error) {
     if ((error as { code?: string }).code === "P2034") throw new ConflictError("The course changed during approval. Upload the ZIP again.");
     throw error;

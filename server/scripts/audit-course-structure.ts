@@ -59,11 +59,7 @@ function frontmatterStepType(body: string): string | null {
   return step?.[1]?.trim() ?? null;
 }
 
-function lessonCount(moduleDir: string): number {
-  return readLessonFiles(moduleDir).length;
-}
-
-function auditInteractiveFences(moduleNum: number, fileName: string, body: string): Issue[] {
+function auditInteractiveFences(moduleNum: number, fileName: string, body: string, legacyException = manifest?.legacySourceAudit ?? false): Issue[] {
   const issues: Issue[] = [];
   const predictFences = [...body.matchAll(/```predict\n([\s\S]*?)```/g)];
   const quizFences = [...body.matchAll(/```quiz\n([\s\S]*?)```/g)];
@@ -219,7 +215,7 @@ function auditInteractiveFences(moduleNum: number, fileName: string, body: strin
           }
         }
       }
-      if (manifest !== null && validMcq && !explainsEveryOption) {
+      if (manifest !== null && !legacyException && validMcq && !explainsEveryOption) {
         issues.push({
           level: "error",
           module: moduleNum,
@@ -286,10 +282,10 @@ function auditInteractiveFences(moduleNum: number, fileName: string, body: strin
   return issues;
 }
 
-function auditModule(moduleNum: number, dirName: string): Issue[] {
+function auditModule(moduleNum: number, dirName: string, prefix = "", legacyException = manifest?.legacySourceAudit ?? false): Issue[] {
   const issues: Issue[] = [];
-  const modulePath = path.join(COURSE_DIR, dirName);
-  const files = readLessonFiles(dirName).map((f) => f.fileName);
+  const modulePath = path.join(COURSE_DIR, prefix, dirName);
+  const files = readLessonFiles(path.join(prefix, dirName)).map((f) => f.fileName);
 
   const setScene = files.find(
     (f) =>
@@ -335,7 +331,7 @@ function auditModule(moduleNum: number, dirName: string): Issue[] {
   }
 
   const quiz = files.find((f) => f.endsWith("-quiz.md"));
-  const count = lessonCount(dirName);
+  const count = files.length;
   if (!quiz && count >= 8 && moduleNum !== 99 && moduleNum !== 1) {
     issues.push({
       level: "warn",
@@ -376,7 +372,7 @@ function auditModule(moduleNum: number, dirName: string): Issue[] {
 
   for (const fileName of files) {
     const body = readBody(path.join(modulePath, fileName));
-    issues.push(...auditInteractiveFences(moduleNum, fileName, body));
+    issues.push(...auditInteractiveFences(moduleNum, fileName, body, legacyException));
     const stepType = frontmatterStepType(body);
     if (fileName.endsWith("-checklist.md") && stepType !== "Gate") {
       issues.push({
@@ -396,7 +392,7 @@ function auditModule(moduleNum: number, dirName: string): Issue[] {
     }
 
     // New courses are written for second-language readers without em or en dashes.
-    if (manifest !== null && /[–—]/.test(body)) {
+    if (manifest !== null && !legacyException && /[–—]/.test(body)) {
       issues.push({
         level: "error",
         module: moduleNum,
@@ -452,6 +448,40 @@ function auditPlan(plan: CourseManifest): Issue[] {
     }
   }
 
+  const variantRoot = path.join(COURSE_DIR, "variants");
+  const plannedVariantFiles = new Set<string>();
+  for (const variant of plan.variants ?? []) {
+    for (const override of variant.overrides) if (override.file) plannedVariantFiles.add(override.file);
+    for (const module of variant.modules) for (const lesson of module.lessons) {
+      plannedVariantFiles.add(`variants/${variant.slug}/${module.dir}/${lesson.file}`);
+    }
+  }
+  for (const relative of plannedVariantFiles) if (!fs.existsSync(path.join(COURSE_DIR, relative))) {
+    issues.push({ level: "error", file: relative, message: "Planned variant lesson file does not exist" });
+  }
+  if (fs.existsSync(variantRoot)) for (const variant of fs.readdirSync(variantRoot, { withFileTypes: true })) {
+    if (!variant.isDirectory()) {
+      issues.push({ level: "error", file: `variants/${variant.name}`, message: "Variant source entry must be a directory" });
+      continue;
+    }
+    if (!plan.variants?.some(item => item.slug === variant.name)) {
+      issues.push({ level: "error", file: `variants/${variant.name}`, message: "Variant folder is not declared in course.yaml" });
+    }
+    for (const module of fs.readdirSync(path.join(variantRoot, variant.name), { withFileTypes: true })) {
+      if (!module.isDirectory()) {
+        issues.push({ level: "error", file: `variants/${variant.name}/${module.name}`, message: "Variant source entry must be a module directory" });
+        continue;
+      }
+      const modulePath = path.join(variantRoot, variant.name, module.name);
+      for (const file of fs.readdirSync(modulePath, { withFileTypes: true })) {
+        const relative = `variants/${variant.name}/${module.name}/${file.name}`;
+        if (!file.isFile() || !plannedVariantFiles.has(relative)) {
+          issues.push({ level: "error", file: relative, message: "Variant file is not planned in course.yaml" });
+        }
+      }
+    }
+  }
+
   return issues;
 }
 
@@ -462,6 +492,20 @@ function main() {
   for (const { dirName, moduleNum } of readModuleDirs()) {
     if (SKIP_DIRS.has(dirName)) continue;
     all.push(...auditModule(moduleNum, dirName));
+  }
+  for (const variant of manifest?.variants ?? []) {
+    for (const module of variant.modules) {
+      if (!fs.existsSync(path.join(COURSE_DIR, "variants", variant.slug, module.dir))) continue;
+      const moduleNum = Number(module.dir.match(/^(\d+)-/)![1]);
+      all.push(...auditModule(moduleNum, module.dir, path.join("variants", variant.slug), false));
+    }
+    for (const override of variant.overrides) if (override.file && fs.existsSync(path.join(COURSE_DIR, override.file))) {
+      const moduleNum = Number(path.basename(override.file).match(/^(\d+)\./)![1]);
+      const body = readBody(path.join(COURSE_DIR, override.file));
+      all.push(...auditInteractiveFences(moduleNum, override.file, body, false));
+      if (/[–—]/.test(body)) all.push({ level: "error", module: moduleNum, file: override.file,
+        message: "Contains an em or en dash; use a colon, a comma or two sentences" });
+    }
   }
   all.push(...auditCorrectPositions("prediction"), ...auditCorrectPositions("quiz"));
 
