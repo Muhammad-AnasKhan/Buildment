@@ -88,5 +88,8 @@ export const ACCENT_SELECTED =
 /** The accent on native controls such as a range slider's track and thumb. */
 export const ACCENT_CONTROL = "accent-blue-600 dark:accent-blue-400";
 
+/** A halo in the card colour behind SVG text, so lines that cross a label do not cut through its letters. */
+export const LABEL_HALO = "stroke-card [paint-order:stroke] [stroke-linejoin:round] [stroke-width:4px]";
+
 /** Colour changes on SVG shapes: short, and off when motion is reduced. */
 export const SHAPE_TRANSITION = "transition-colors duration-200 motion-reduce:transition-none";

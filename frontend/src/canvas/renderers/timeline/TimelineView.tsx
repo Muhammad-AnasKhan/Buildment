@@ -1,7 +1,7 @@
 import { useId } from "react";
 import { cn } from "@/lib/utils";
 import { itemsUpTo, type Trace, type TraceItem } from "../../sim";
-import { NEUTRAL, SHAPE_TRANSITION, TONES } from "../../primitives/tones";
+import { LABEL_HALO, NEUTRAL, SHAPE_TRANSITION, TONES } from "../../primitives/tones";
 import { timelineGeometry, type TimelineGeometry, type TimelineLayout } from "./geometry";
 
 type TimelineViewProps = {
@@ -63,8 +63,7 @@ export function TimelineView({ trace, upToStep, layout, title, className }: Time
 }
 
 const appear = "animate-in fade-in duration-200 motion-reduce:animate-none";
-/** A halo in the card colour behind each label, so lines that cross a label do not cut through its letters. */
-const halo = "stroke-card [paint-order:stroke] [stroke-linejoin:round] [stroke-width:4px]";
+const halo = LABEL_HALO;
 
 function Axis({ g, unit }: { g: TimelineGeometry; unit: string }) {
   return (

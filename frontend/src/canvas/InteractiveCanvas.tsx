@@ -1,6 +1,7 @@
 import { FactorCanvas } from "./renderers/factor/FactorCanvas";
 import { SequenceCanvas } from "./renderers/sequence/SequenceCanvas";
 import { StateMachineCanvas } from "./renderers/state-machine/StateMachineCanvas";
+import { SceneCanvas } from "./renderers/scene/SceneCanvas";
 import { getCanvasSpec, type CanvasSpec } from "./registry";
 
 /**
@@ -24,6 +25,8 @@ export function CanvasForSpec({ spec }: { spec: CanvasSpec }) {
       return <StateMachineCanvas spec={spec} />;
     case "factor":
       return <FactorCanvas spec={spec} />;
+    case "scene":
+      return <SceneCanvas spec={spec} />;
     case "custom": {
       const Component = spec.component;
       return <Component title={spec.title} purpose={spec.purpose} limits={spec.limits} />;
