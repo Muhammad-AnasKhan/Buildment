@@ -73,6 +73,8 @@ export interface ModelResult {
   allPass: boolean;
   /** Why the design is broken, when a component is down or unlinked. */
   failure?: string;
+  /** Request rate on each live link, keyed "from>to". */
+  edgeFlows: Record<string, number>;
 }
 
 function num(node: BoardNode, key: string, fallback: number): number {
@@ -156,6 +158,7 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
   // the same kind share it evenly; different kinds are different services and each
   // see the whole stream; a database next to a cache only sees the cache misses.
   const incoming = new Map<string, number>();
+  const edgeFlows: Record<string, number> = {};
   const clients = order.filter((id) => byId.get(id)!.kind === "client");
   for (const id of clients) incoming.set(id, load / clients.length);
   for (const id of order) {
@@ -167,7 +170,10 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     for (const k of kids) byKind.set(byId.get(k)!.kind, [...(byKind.get(byId.get(k)!.kind) ?? []), k]);
     for (const [kind, ids] of byKind) {
       const share = kind === "database" ? flow * missRate : flow;
-      for (const k of ids) incoming.set(k, (incoming.get(k) ?? 0) + share / ids.length);
+      for (const k of ids) {
+        incoming.set(k, (incoming.get(k) ?? 0) + share / ids.length);
+        edgeFlows[`${id}>${k}`] = share / ids.length;
+      }
     }
   }
 
@@ -242,6 +248,7 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     p99Ms: Math.round(p99),
     availability,
     failure,
+    edgeFlows,
     costPerHour: cost,
     tiers,
     pass,

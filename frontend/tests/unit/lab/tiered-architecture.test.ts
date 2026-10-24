@@ -92,6 +92,13 @@ describe("runTieredModel", () => {
     expect(r.tiers.find((t) => t.id === "lb2")!.utilisation).toBeCloseTo(1000 / 1600, 5);
   });
 
+  it("reports the request rate carried by each live link", () => {
+    const r = runTieredModel(board(2, 0.8), 1000, TARGETS);
+    expect(r.edgeFlows["client>lb"]).toBeCloseTo(1000, 5);
+    expect(r.edgeFlows["app>cache"]).toBeCloseTo(1000, 5);
+    expect(r.edgeFlows["app>db"]).toBeCloseTo(200, 5);
+  });
+
   it("names the down component in the failure", () => {
     const b = board(2, 0.8);
     b.nodes = b.nodes.map((n) => (n.id === "app" ? { ...n, props: { ...n.props, down: 1 } } : n));
