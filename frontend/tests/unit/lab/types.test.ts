@@ -44,7 +44,7 @@ describe("validateLabSpec", () => {
   });
 
   it("rejects an allowedComponents id that is not in the catalog", () => {
-    const bad = { ...hld, allowedComponents: ["app-server", "unicorn" as ComponentKind] };
+    const bad = { ...hld, allowedComponents: ["app-server", "unicorn"] as ComponentKind[] };
     expect(validateLabSpec(bad).some((m) => m.includes("unicorn"))).toBe(true);
   });
 
