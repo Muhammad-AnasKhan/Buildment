@@ -78,6 +78,8 @@ export const CourseManifestSchema = z.object({
   creatorEmail: z.email().optional(),
   /** Opt in to publishing this repository package after CI passes on main. */
   repositoryPublish: z.boolean().optional(),
+  /** Explicit publication exception for content still below the editorial audit bar. */
+  repositoryEditorialAudit: z.enum(["required", "advisory"]).default("required"),
   title: z.string().min(1),
   description: z.string().min(1),
   projectGoal: z.string().min(1),
