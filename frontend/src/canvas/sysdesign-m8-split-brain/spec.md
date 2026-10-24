@@ -1,0 +1,13 @@
+# Canvas spec: sysdesign-m8-split-brain
+
+- **Course and chapter:** system-design, 8.5 beat 3 ("Cut the link: two leaders").
+- **Renderer:** custom component on `BeatFrame` and `useBeatClock` (nodes, links, epoch badges, two linked histories); no existing primitive carries two histories, and the `scene` renderer cannot let the learner change the story. Taps use `SvgChip` and `SvgButton`.
+- **Claim:** a leader that is cut off keeps accepting writes while the followers elect another, so two histories grow. A database that checks the epoch number refuses the old leader.
+- **Model (`model.ts`):** nodes A (leader, epoch 1), B and C, and one shared Database. Cut: A is separated from B and C. After a made-up timeout (2 s of scene time standing for 10 s [S68, S60]) B is promoted with epoch 2; A does not know. Tapping A or B (the current leaders, at most 3 writes each) sends a write to the Database, which takes 0.6 s of scene time to arrive. Without fencing every write is accepted. With fencing the Database keeps the highest epoch seen and refuses any write with a lower one ("epoch 1 < 2"), judged in order of arrival.
+  - Healing before the timeout ends changes nothing: the followers heard A again. Healing after promotion demotes A to follower with epoch 2.
+  - Worked run, 2 writes each: no fencing: `a1, a2, b1, b2` all accepted; after the heal A's history is thrown away. Fencing on: `b1, b2` accepted; `a1` only if it arrived before `b1`; `a2` refused.
+- **Inputs:** Cut / Heal chip on the link; tap A (always) or B (once promoted) to write; outside the picture "Fencing: on / off" (changing it replays) and Replay.
+- **What moves:** the link is solid, dashed red when cut; a ring counts down on B and C during the timeout; epoch badges change; numbered dots travel to the Database; a refused write turns red and returns with a red "refused" chip and its reason; the Stored row shows what the Database holds, with thrown-away writes dashed red.
+- **Verdicts:** "One leader, one history"; "Followers wait out the timeout"; "Two leaders, two histories"; "One history must be thrown away"; "Old leader's write is refused"; "Only the new leader's writes remain". Extra: "Two leaders, but fencing is on"; "Old writes kept; later ones refused"; "Healed: no writes clashed".
+- **Accessibility:** group label summarises roles, epochs, link and stored writes; Cut/Heal, A and B are real buttons with Enter and Space; red is paired with words ("refused", "old leader").
+- **Sources:** [S38] STONITH and telling the old primary it is no longer primary; [S70] fencing tokens; [S71] Chubby sequencers; [S68] Raft terms and election timeouts; [S134] the 43-second partition at GitHub.

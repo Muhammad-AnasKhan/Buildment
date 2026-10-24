@@ -5,20 +5,65 @@ projectGoal: "Design, build, measure and defend one system against stated cost, 
 difficulty: Advanced
 estimatedHours: 191
 category: tech
-# G3 sample: only the two sample chapters are listed. Modules are added here
-# as they are written, in the order of agent-ip/work/system-design/02-curriculum-roadmap.md.
+# Modules are added here as they are written, in the order of
+# agent-ip/work/system-design/02-curriculum-roadmap.md.
 modules:
-  - dir: 08-replication
-    title: "Replication"
-    summary: "Copy data for safety and fast reads, and handle what replication lag and failover do to users."
+  - dir: 01-thinking-like-a-system-designer
+    title: "Thinking like a system designer"
+    summary: "See what system design is, learn the design loop, and set up the repository where you run every experiment."
     lessons:
-      - file: 08.04-replication-lag-and-its-anomalies.md
-        title: "Replication lag and its anomalies"
-        goal: "Reproduce read-your-writes and monotonic reads violations on lagging replicas, and fix each with a routing rule whose cost you can name."
-  - dir: 10-time-clocks-and-ordering
-    title: "Time, clocks and ordering"
-    summary: "See why 'which happened first?' is hard, and learn every tool from logical clocks to TrueTime."
+      - file: 01.01-set-the-scene-launch-day.md
+        title: "Set the scene: launch day"
+        goal: "Push more and more users onto one server, see where it breaks, and sketch a first fix."
+      - file: 01.02-requirements-first.md
+        title: "Requirements first"
+        goal: "Separate functional requirements, quality requirements and constraints, and find the number that drives the design."
+      - file: 01.03-the-building-blocks-map.md
+        title: "The building blocks map"
+        goal: "Name what each building block is for, and what breaks when it fails."
+      - file: 01.04-the-design-loop.md
+        title: "The design loop"
+        goal: "Run clarify, estimate, sketch, deep dive, trade-offs and failure on a small example."
+      - file: 01.05-set-up-your-challenges-repository.md
+        title: "Set up your system-design-challenges repository"
+        goal: "Create your repository, pass your first test locally and in GitHub Actions, and check that Docker runs."
+      - file: 01.06-quiz.md
+        title: "Thinking like a system designer"
+        goal: "Answer graded scenarios on requirements, building blocks, the design loop and failure."
+      - file: 01.07-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write the requirements and the one driving number for an app you use."
+  - dir: 02-numbers-estimation-and-probability
+    title: "Numbers, estimation and probability"
+    summary: "Feel the numbers that decide designs, and estimate quickly with units."
     lessons:
-      - file: 10.06-truetime-time-as-an-interval.md
-        title: "TrueTime: time as an interval"
-        goal: "Explain why a timestamp is a range, when two ranges overlap, and how commit wait makes the order safe at a cost of about two times the clock uncertainty."
+      - file: 02.01-set-the-scene.md
+        title: "Set the scene: will it fit?"
+        goal: "See a design fail because nobody did the maths."
+      - file: 02.02-latency-numbers-you-should-feel.md
+        title: "Latency numbers you should feel"
+        goal: "Order memory, SSD, network and cross-continent costs and use them in an argument."
+      - file: 02.03-back-of-the-envelope-estimation.md
+        title: "Back-of-the-envelope estimation"
+        goal: "Go from daily users to peak requests per second, storage per year and bandwidth, with units."
+      - file: 02.04-percentiles-and-tail-latency.md
+        title: "Percentiles and tail latency"
+        goal: "Explain why p99 matters more than the average, and why fan-out makes tails worse."
+      - file: 02.05-queues-utilisation-and-littles-law.md
+        title: "Queues, utilisation and Little's law"
+        goal: "Predict wait time from arrival rate and service rate, and find the knee near full utilisation."
+      - file: 02.06-availability-maths.md
+        title: "Availability maths: nines, series and parallel"
+        goal: "Compute the availability of a chain and of redundant copies, and convert nines to downtime."
+      - file: 02.07-code-percentiles-and-availability.md
+        title: "Code: percentiles and availability"
+        goal: "Implement percentile, seriesAvailability and parallelAvailability and pass the tests."
+      - file: 02.08-challenge-1-measure-a-server.md
+        title: "Challenge 1: measure a server"
+        goal: "Load-test a small Node server in your repository, find its knee, show p50 and p99 in a chart, and check Little's law on your own numbers."
+      - file: 02.09-quiz.md
+        title: "Numbers and estimation"
+        goal: "Answer graded scenarios on latency, estimation, percentiles, queues and availability."
+      - file: 02.10-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write an estimate for a photo-sharing app with the working shown and the driving number marked, and link your challenge 1 results."

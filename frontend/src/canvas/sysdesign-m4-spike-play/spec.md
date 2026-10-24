@@ -1,0 +1,14 @@
+# Canvas spec: sysdesign-m4-spike-play
+
+- **Course and chapter:** system-design, 4.6 "Autoscaling", beat "Set the delay, count the drops". New slug.
+- **Renderer:** custom beat canvas on `BeatFrame`, `DotGrid`, `VerdictBanner`, `useBeatClock`, and the new `primitives/rail-strip.tsx` for the boot-time rail.
+- **Claim:** Requests are dropped in the gap between a spike and new capacity. A faster boot cuts drops at no hourly cost; a lower target cuts them by paying for headroom every hour.
+- **Model** (`models/autoscale-gap.ts`, unit tested): 300 requests a second before 8 pm, 600 after. Each server does 100 a second. Starting fleet = ceil(300 / (100 x target)): 5 at 60%, 4 at 80%. Each second: drops = max(0, 600 - ready x 100). Every 15 seconds the autoscaler reads min(1, load / capacity), asks for ceil(ready x reading / target) servers and starts desired - ready - booting new ones, each ready after the boot time (a boot time of 0 still takes the rest of that second). Never scales in. The run is 600 seconds.
+- **Check numbers (all tested):** drops by boot time 0, 30, 60, 90, 120, 180 s: 1,600 / 4,500 / 7,500 / 10,500 / 13,500 / 19,500 at 60%; 4,700 / 12,000 / 21,000 / 30,000 / 39,000 / 57,000 at 80%. With no boot time the final fleet is 10 servers at 60% and 8 at 80%. The chapter's 90 s figures (10,500 and 30,000) and 30 s at 60% (4,500) match.
+- **Inputs:** a rail from 0 to 180 s, snapping every 30 s, drag or arrow keys, Page keys, Home and End (default 90 s); a toggle under the picture for the target, 60% or 80% (default 60%). Changing either restarts the cursor.
+- **Picture:** a time strip from 8 pm (0 s) to 400 s with the load line at 600, the capacity as a stepped blue line and the gap between them shaded red; a cursor sweeps the strip and the part it has passed turns stronger. Red crosses fall from the load line at the cursor while requests spill over. Ten server cards show ready (solid), booting (dashed amber with a filling bar) or not started (empty outline). Three chips: Ready, Booting, Dropped so far.
+- **Spec change:** the time strip runs to 400 s, not 300 s, because the 80% target with a 180 s boot has requests dropping until 375 s. The verdict and the "Dropped" chip are for the whole 600-second run, so they are final the moment the input changes.
+- **Verdicts:** "Dropped {n} requests in the gap" (34 characters at most, tested for every setting); "No spike drops: headroom covered it" if there were none (not reachable with these settings).
+- **Reduced motion:** the cursor sits at the end of the strip and every number is final.
+- **Accessibility:** the rail is one `role="slider"` with the verdict in its value text; the target toggle is two real buttons; the picture has a description of the settings and the result.
+- **Sources:** [S34]. The boot times are made up.

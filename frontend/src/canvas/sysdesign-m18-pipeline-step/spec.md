@@ -1,0 +1,13 @@
+# Canvas spec: sysdesign-m18-pipeline-step
+
+- **Course and chapter:** system-design, 18.5 "CI/CD pipelines", beat 2 ("Play: step through, then break a stage").
+- **Renderer:** custom beat canvas on `BeatFrame`, `SvgButton` (the stage cards), `BeatButton` (Step or Run again), `BeatChoice` (laptop or shared runner), `VerdictBanner`. `design-stepper` was not used: it steps through fixed scenes and has no tap-to-break; the conveyor here is small and local.
+- **Claim:** A red stage stops the pipeline and every later stage is skipped. The cost of a failure is the time up to the red stage, so the order of stages matters.
+- **Model:** `model.ts`, unit tested. Six stages with laptop times (cold cache, challenge 17; publish illustrative): lint 0.2 s, service tests 2.8 s, build image 38.0 s, smoke test 6.4 s, size gate 1.0 s, publish image 2.0 s (50.4 s in all, kept in tenths of a second). Shared runner: every time x10. Time until you know = sum of the stage times up to and including the first red stage, or all of them.
+- **Check points (tested):** none broken 50.4 s (8 min 24 s); lint 0.2 s (2 s); service tests 3.0 s (30 s); smoke test 47.4 s (7 min 54 s); size gate 48.4 s (8 min 4 s).
+- **Inputs:** tap a stage card to break or fix it (real buttons, `aria-pressed`); the Step button moves the commit one stage and becomes "Run again" when the run is over; outside the picture: Laptop or Shared runner.
+- **Motion:** a commit token slides down a rail beside the six cards (CSS transform transition). A passed stage turns green; a broken stage turns red; later stages turn grey with "skipped". A stage that is broken but not yet reached shows a dashed red "will fail". The "Waited" clock under the conveyor shows the time the commit has spent so far. The commit starts waiting at the start with every stage grey. No animation loop: all changes are CSS transitions, so a paused clock still shows the final state.
+- **Verdicts (all 38 characters or fewer):** "All gates passed: ready to ship"; "Red at <stage>: known in <time>" (stage names shortened: tests, build, smoke, size gate, publish); "Cheap check first: known at once" for a red lint; while running "Commit waiting: press Step to begin" and "Passed N of 6 stages so far".
+- **What to notice:** breaking lint costs 0.2 s, breaking the smoke test costs 47.4 s; on a shared runner the same two failures cost 2 s and 7 min 54 s.
+- **Limits (in the fold):** one cold-cache laptop run; the x10 runner is a guess; no queue time, caches or parallel stages.
+- **Sources:** course measurements from challenge 17 part 2 (cold-cache pipeline run of 48.4 s; the naive Dockerfile failing lint in 0.2 s in the fast-first order against 24.6 s in the slow-first order).
