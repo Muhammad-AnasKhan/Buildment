@@ -41,6 +41,23 @@ describe("course family catalogue", () => {
     ]);
   });
 
+  it("takes every AI capstone through web chat and email, with any extra channel marked optional", () => {
+    const capstones = findCourseFamily("ai-engineering-capstones")!;
+    expect(capstones.variants).toHaveLength(8);
+    for (const variant of capstones.variants) {
+      const channels = variant.channels ?? [];
+      expect(channels.filter((channel) => !channel.optional).map((channel) => channel.label)).toEqual(["Web chat", "Email"]);
+      expect(channels.length).toBeLessThanOrEqual(3);
+      expect(new Set(channels.map((channel) => channel.label)).size).toBe(channels.length);
+    }
+    expect(capstones.variants.filter((variant) => variant.channels?.some((channel) => channel.optional)).map((variant) => variant.slug)).toEqual([
+      "shop-support",
+      "runbook-bot",
+      "clinic-desk",
+      "onboarding",
+    ]);
+  });
+
   it.each(COURSE_FAMILIES.flatMap((family) => family.variants))("$slug accents pass WCAG AA in light and dark mode", ({ theme }) => {
     for (const surface of LIGHT_SURFACES) expect(contrastRatio(theme.accentLight, surface)).toBeGreaterThanOrEqual(AA_TEXT);
     for (const surface of DARK_SURFACES) expect(contrastRatio(theme.accentDark, surface)).toBeGreaterThanOrEqual(AA_TEXT);

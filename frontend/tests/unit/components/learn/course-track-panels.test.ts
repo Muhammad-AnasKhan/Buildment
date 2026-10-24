@@ -8,7 +8,8 @@ vi.mock("@/server/actions/course-track", () => ({
   chooseCourseSpecialisationAction: vi.fn(),
 }));
 
-const { VariantBanner } = await import("@/components/learn/course-track-panels");
+const { VariantBanner, VariantDetails } = await import("@/components/learn/course-track-panels");
+const { findCourseFamily, findVariant } = await import("@/shared/lib/course-tracks");
 
 const track: CourseTrack = {
   familySlug: "multi-vendor-marketplace",
@@ -41,5 +42,33 @@ describe("VariantBanner", () => {
   it("keeps an earlier learner free to choose after the course mode changes", () => {
     const html = render({ variantSlug: "grocery", variantChosen: false, variantAssigned: false });
     expect(html).toContain("Choose a variant");
+  });
+});
+
+describe("VariantDetails", () => {
+  const capstones = findCourseFamily("ai-engineering-capstones")!;
+  const renderVariant = (slug: string) => renderToStaticMarkup(createElement(VariantDetails, { variant: findVariant(capstones, slug)! }));
+
+  it("lists the channels and marks a suggested channel as optional in words", () => {
+    const html = renderVariant("runbook-bot");
+    expect(html).toContain('aria-label="Channels"');
+    expect(html).toContain("Web chat");
+    expect(html).toContain("Email");
+    expect(html).toMatch(/Team chat(<!-- -->)?<span[^>]*>, optional<\/span>/);
+    expect(html).toContain("Hard problem");
+    expect(html).toContain("Runbooks go stale");
+  });
+
+  it("shows no optional channel when the project has none", () => {
+    const html = renderVariant("policy-desk");
+    expect(html).toContain("Email");
+    expect(html).not.toContain("optional");
+  });
+
+  it("leaves out the channel list for a variant without channels", () => {
+    const marketplace = findCourseFamily("multi-vendor-marketplace")!;
+    const html = renderToStaticMarkup(createElement(VariantDetails, { variant: marketplace.variants[0]! }));
+    expect(html).not.toContain('aria-label="Channels"');
+    expect(html).toContain("Hard problem");
   });
 });
