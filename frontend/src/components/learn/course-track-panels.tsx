@@ -42,8 +42,10 @@ export function VariantChannels({ channels }: { channels: VariantChannel[] }) {
             )}
           >
             <Icon aria-hidden className="size-3.5 shrink-0" />
-            {channel.label}
-            {channel.optional ? <span className="font-normal">, optional</span> : null}
+            <span>
+              {channel.label}
+              {channel.optional ? <span className="font-normal">, optional</span> : null}
+            </span>
           </li>
         );
       })}

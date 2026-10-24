@@ -54,7 +54,7 @@ export default async function CourseVariantPage({ params }: { params: Promise<{ 
                       <span className="flex items-center gap-2">
                         <VariantDot />
                         {variant.productName}
-                      </span>
+                      </span>{" "}
                       <span className="mt-0.5 block text-sm font-normal text-muted-foreground">
                         {variant.label}
                         {general ? ", the general course" : ""}
