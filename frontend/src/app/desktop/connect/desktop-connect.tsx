@@ -17,13 +17,16 @@ export function DesktopConnect() {
     const state = params.get("state") || "";
     const port = Number(params.get("port"));
     if (!/^[A-Za-z0-9_-]{43}$/.test(challenge) || !/^[A-Za-z0-9_-]{43}$/.test(state) || !Number.isInteger(port) || port < 1024 || port > 65535) {
-      setStatus("error"); setMessage("This connection link is invalid. Start sign-in from the desktop app."); return;
+      queueMicrotask(() => {
+        if (active) { setStatus("error"); setMessage("This connection link is invalid. Start sign-in from the desktop app."); }
+      });
+      return () => { active = false; };
     }
-    setConnection({ challenge, state, port });
     const returnTo = `/desktop/connect?${new URLSearchParams({ challenge, state, port: String(port) })}`;
-    setLoginHref(`/login?redirectTo=${encodeURIComponent(returnTo)}`);
     void fetch("/api/v1/auth/me", { credentials: "same-origin", cache: "no-store", signal: AbortSignal.timeout(15_000) }).then(async response => {
       if (!active) return;
+      setConnection({ challenge, state, port });
+      setLoginHref(`/login?redirectTo=${encodeURIComponent(returnTo)}`);
       if (response.status === 401) { setStatus("login"); return; }
       const body = await response.json();
       if (!response.ok || !body.success) throw new Error("Unable to check your account. Please refresh and try again.");

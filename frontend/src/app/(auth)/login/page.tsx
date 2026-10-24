@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { AuthCard, AuthPageShell } from "@/components/auth/auth-page-shell";
 import { LoginCardTabs } from "@/components/auth/login-card-tabs";
+import { TestAccountPicker } from "@/components/auth/test-account-picker";
+import { devTestAccounts } from "@/server/auth/dev-test-accounts";
 import { safeRedirectTo } from "@/shared/lib/safe-redirect";
 import { loginErrorMessage } from "@/lib/auth-errors";
 
@@ -21,6 +23,7 @@ export default async function LoginPage({
     params.verified === "1"
       ? `Email verified${params.email ? ` for ${params.email}` : ""}. Sign in to continue.`
       : null;
+  const testAccounts = devTestAccounts();
 
   return (
     <AuthPageShell>
@@ -55,6 +58,9 @@ export default async function LoginPage({
           }
         />
       </AuthCard>
+      {testAccounts ? (
+        <TestAccountPicker testAccounts={testAccounts} redirectTo={redirectTo} />
+      ) : null}
     </AuthPageShell>
   );
 }
