@@ -4,7 +4,7 @@ import { Lab } from "@/lab/Lab";
 // Delete after review.
 export default function LabPreviewPage() {
   return (
-    <main className="mx-auto max-w-6xl px-6 py-8">
+    <main className="mx-auto w-full max-w-6xl px-6 py-8">
       <h1 className="mb-4 text-xl font-semibold">Lab preview</h1>
       <Lab slug="hld-m2-utilisation-knee" />
     </main>
