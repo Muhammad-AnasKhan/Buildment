@@ -67,3 +67,145 @@ modules:
       - file: 02.10-checklist.md
         title: "Checklist and learning log"
         goal: "Write an estimate for a photo-sharing app with the working shown and the driving number marked, and link your challenge 1 results."
+  - dir: 03-networking-for-system-designers
+    title: "Networking for system designers"
+    summary: "Know what a request costs on the wire, how names resolve, and how real-time connections work, plus the Linux basics under every service."
+    lessons:
+      - file: 03.01-set-the-scene-opening-a-link.md
+        title: "Set the scene: what happens when you open a link"
+        goal: "Follow one request from the browser to a server and back."
+      - file: 03.02-tcp-udp-and-the-cost-of-a-handshake.md
+        title: "TCP, UDP and the cost of a handshake"
+        goal: "Count round trips for TCP plus TLS 1.2, TLS 1.3 and QUIC, and price them by distance."
+      - file: 03.03-dns-and-routing.md
+        title: "DNS and routing"
+        goal: "Explain resolution, caching, TTLs, anycast and GeoDNS, and why a DNS change is slow to spread."
+      - file: 03.04-http-1-1-http-2-and-http-3.md
+        title: "HTTP/1.1, HTTP/2 and HTTP/3"
+        goal: "Explain head-of-line blocking and what each version fixed."
+      - file: 03.05-real-time-connections.md
+        title: "Real-time connections: polling, long polling, SSE, WebSockets"
+        goal: "Choose a real-time approach by delay, request count and connections per server."
+      - file: 03.06-linux-under-your-service.md
+        title: "Linux under your service"
+        goal: "Explain processes, threads, file descriptors, ports and the event loop, and why one blocking call hurts."
+      - file: 03.07-code-a-dns-style-ttl-cache.md
+        title: "Code: a DNS-style TTL cache"
+        goal: "Implement a resolver cache with TTL and a fake clock."
+      - file: 03.08-challenge-2-network-costs.md
+        title: "Challenge 2: network costs"
+        goal: "Measure handshake and keep-alive costs, and polling versus WebSocket message counts."
+      - file: 03.09-quiz.md
+        title: "Networking for system designers"
+        goal: "Graded scenarios."
+      - file: 03.10-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a real-time choice for a delivery tracking screen, with numbers."
+  - dir: 04-scaling-out-load-balancing-and-statelessness
+    title: "Scaling out: load balancing and statelessness"
+    summary: "Grow past one server, spread load fairly, and survive a server dying."
+    lessons:
+      - file: 04.01-set-the-scene-one-server-is-full.md
+        title: "Set the scene: one server is full"
+        goal: "See why buying a bigger server stops working."
+      - file: 04.02-vertical-versus-horizontal-scaling.md
+        title: "Vertical versus horizontal scaling"
+        goal: "Compare one large instance with many small ones on capacity, cost and failure."
+      - file: 04.03-stateless-services-and-where-state-goes.md
+        title: "Stateless services and where state goes"
+        goal: "Move sessions out of the server and explain the cost of sticky sessions."
+      - file: 04.04-load-balancers-l4-l7-and-health-checks.md
+        title: "Load balancers: L4, L7 and health checks"
+        goal: "Explain what each layer sees and how health checks remove a bad server."
+      - file: 04.05-balancing-algorithms.md
+        title: "Balancing algorithms"
+        goal: "Compare round robin, least connections, power of two choices and hashing under uneven requests."
+      - file: 04.06-autoscaling.md
+        title: "Autoscaling"
+        goal: "Explain scaling signals, warm-up, cooldown and why scaling lags a spike."
+      - file: 04.07-code-load-balancing-pickers.md
+        title: "Code: load balancing pickers"
+        goal: "Implement round robin, least connections and power of two choices and pass the tests."
+      - file: 04.08-challenge-3-a-load-balancer.md
+        title: "Challenge 3: a load balancer"
+        goal: "Build an L7 proxy with health checks, kill a backend and record the p99."
+      - file: 04.10-quiz.md
+        title: "Scaling out"
+        goal: "Answer graded scenarios on sizing for failure, state, health checks, algorithms and routing."
+      - file: 04.11-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a defence of a three-tier design for 10,000 requests a second."
+  - dir: 05-caching-and-cdns
+    title: "Caching and CDNs"
+    summary: "Make reads cheap without serving wrong data, and keep the database alive when a cache fails."
+    lessons:
+      - file: 05.01-set-the-scene.md
+        title: "Set the scene: the sale that melted the database"
+        goal: "See a cache expiry take a database down."
+      - file: 05.02-where-caches-live.md
+        title: "Where caches live"
+        goal: "Place caches from browser to database and add up the latency and database load along the path."
+      - file: 05.03-cache-patterns.md
+        title: "Cache patterns"
+        goal: "Compare cache-aside, read-through, write-through, write-back and write-around, including what each loses on a crash."
+      - file: 05.04-eviction-and-hit-rate.md
+        title: "Eviction and hit rate"
+        goal: "Explain LRU, LFU and TTL, working-set size, and why a small cache can still help."
+      - file: 05.05-cache-invalidation.md
+        title: "Cache invalidation"
+        goal: "Find the stale window for TTL, delete-on-write and versioned keys, including the delete-then-stale-set race."
+      - file: 05.06-stampedes-and-hot-keys.md
+        title: "Stampedes and hot keys"
+        goal: "Stop a thundering herd with request coalescing, a shared lease, stale-while-revalidate and random TTLs."
+      - file: 05.07-cdn-and-edge.md
+        title: "CDN and edge"
+        goal: "Use Cache-Control, origin shield, purge and signed URLs, and predict origin load from hit rate and TTL."
+      - file: 05.08-code-an-lru-cache-with-ttl.md
+        title: "Code: an LRU cache with TTL"
+        goal: "Implement an LRU cache with expiry and an injected clock, and pass the tests."
+      - file: 05.09-challenge-4-a-cache-in-front.md
+        title: "Challenge 4: a cache in front"
+        goal: "Put Valkey in front of a slow database with cache-aside, measure hit rate and stale reads against TTL, and reproduce and fix a stampede."
+      - file: 05.11-quiz.md
+        title: "Caching and CDNs"
+        goal: "Answer graded scenarios on cache placement, invalidation, stampedes, CDN headers and write patterns."
+      - file: 05.12-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a cache plan for a product page: what, where, TTL and invalidation, and link your challenge 4 results."
+  - dir: 06-apis-the-front-door-and-protecting-it
+    title: "APIs, the front door and protecting it"
+    summary: "Design APIs that are safe to retry, and protect them with gateways, rate limits and authentication."
+    lessons:
+      - file: 06.01-set-the-scene-a-retry-charged-twice.md
+        title: "Set the scene: a retry charged a customer twice"
+        goal: "See a timeout plus a retry cause a double charge."
+      - file: 06.02-api-styles-rest-grpc-graphql.md
+        title: "API styles: REST, gRPC, GraphQL"
+        goal: "Choose a style by client, payload and round trips."
+      - file: 06.03-good-api-design.md
+        title: "Good API design: resources, pagination, versioning, errors"
+        goal: "Choose cursor over offset pagination and explain why, version without breaking clients, and write errors a client can act on."
+      - file: 06.04-idempotency-and-safe-retries.md
+        title: "Idempotency and safe retries"
+        goal: "Make a write safe to retry with an idempotency key claimed before the work."
+      - file: 06.05-rate-limiting-algorithms.md
+        title: "Rate limiting algorithms"
+        goal: "Compare token bucket, leaky bucket, fixed window, sliding log and sliding window counter under a burst."
+      - file: 06.06-api-gateways.md
+        title: "API gateways"
+        goal: "Decide what belongs in a gateway: routing, authentication, limits, aggregation, and what stays in the services."
+      - file: 06.07-authentication-and-authorization-at-scale.md
+        title: "Authentication and authorization at scale"
+        goal: "Compare sessions and signed tokens, revocation, OAuth and OIDC roles, and service-to-service authentication."
+      - file: 06.08-code-token-bucket-and-sliding-window.md
+        title: "Code: token bucket and sliding window"
+        goal: "Implement a token bucket and a sliding window counter against a fake clock and pass the tests."
+      - file: 06.09-challenge-5-a-rate-limiter.md
+        title: "Challenge 5: a rate limiter"
+        goal: "Run in-memory limiters, share one limit across two servers in Valkey with an atomic script, and stop double charges with idempotency keys, with your own measurements."
+      - file: 06.11-quiz.md
+        title: "APIs and the front door"
+        goal: "Answer graded scenarios on safe retries, shared rate limits, pagination, token revocation and choosing a limiter."
+      - file: 06.12-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write the API design for a payments endpoint, with idempotency, rate limits and errors, and link your challenge 5 results."
