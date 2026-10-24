@@ -146,14 +146,11 @@ async function publish(packages: Package[], instructorEmail: string) {
       throw new Error(`${instructorEmail} must be a verified instructor with ZIP import access before repository publishing runs`);
     }
     const user: SessionUser = owner;
-    for (const pkg of packages) if (pkg.manifest.repositoryTargetSlug &&
-      !await prisma.course.findUnique({ where: { slug: pkg.manifest.repositoryTargetSlug }, select: { id: true } })) {
-      throw new Error(`${pkg.slug}: existing target course ${pkg.manifest.repositoryTargetSlug} was not found; refusing to create a duplicate`);
-    }
     // Bind every existing repository course, including the legacy FreshMarket
     // package. The previous owner keeps COURSE_CREATOR access.
     for (const entry of fs.readdirSync(COURSES_ROOT, { withFileTypes: true }).filter(item => item.isDirectory())) {
-      const slugs = [entry.name, ...(LEGACY_COURSE_SLUGS[entry.name] ?? [])];
+      const target = packages.find(pkg => pkg.slug === entry.name)?.manifest.repositoryTargetSlug;
+      const slugs = [entry.name, ...(LEGACY_COURSE_SLUGS[entry.name] ?? []), ...(target ? [target] : [])];
       const courses = await prisma.course.findMany({ where: { slug: { in: slugs } }, select: { id: true, slug: true, mentorId: true } });
       for (const course of courses) {
         if (course.mentorId === user.id) continue;
@@ -176,9 +173,6 @@ async function publish(packages: Package[], instructorEmail: string) {
       const prior = await prisma.course.findUnique({ where: { slug: targetSlug }, select: {
         id: true, status: true, activeReleaseId: true, repositorySourceHash: true, repositoryReleaseId: true,
       } });
-      if (pkg.manifest.repositoryTargetSlug && !prior) {
-        throw new Error(`${pkg.slug}: existing target course ${targetSlug} was not found; refusing to create a duplicate`);
-      }
       if (prior?.status === "PUBLISHED" && prior.repositorySourceHash === sourceHash &&
           prior.repositoryReleaseId === prior.activeReleaseId) {
         console.log(`${pkg.slug}: repository package is already current`);

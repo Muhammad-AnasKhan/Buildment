@@ -74,6 +74,10 @@ describe("repository course publishing selection", () => {
     expect(manifest.slug).toBe("published-course");
     expect(manifest.publication).toBe("update");
     expect(fs.readFileSync(path.join(dir, "course.yaml"), "utf8")).toContain("slug: source");
+    const createFiles = unzipSync(packageZip(selected, "create", "devweekends@gmail.com"));
+    const createManifest = loadYaml(Buffer.from(createFiles["course.yaml"]!).toString("utf8")) as Record<string, unknown>;
+    expect(createManifest.slug).toBe("published-course");
+    expect(createManifest.publication).toBe("create");
   });
 
   it("keeps a partial marketplace release out of repository publishing", () => {
