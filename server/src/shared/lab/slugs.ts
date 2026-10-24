@@ -5,6 +5,10 @@
 // a new slug, so chapters that already use the old one keep working.
 export const LAB_SLUGS = [
   "hld-m2-utilisation-knee",
+  "aws-web-tier",
+  "k8s-web-app",
+  "docker-compose-stack",
+  "linux-single-host",
 ] as const;
 
 export type LabSlug = (typeof LAB_SLUGS)[number];

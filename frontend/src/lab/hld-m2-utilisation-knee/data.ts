@@ -1,3 +1,4 @@
+import { kindsInFamily } from "../catalog";
 import type { HldLabSpec } from "../types";
 
 export const hldM2UtilisationKnee: HldLabSpec = {
@@ -8,7 +9,7 @@ export const hldM2UtilisationKnee: HldLabSpec = {
   limits:
     "A steady-state model, not a real cloud. No cold starts, no noisy neighbours, illustrative prices only.",
   hints: ["Add a second app server before the first one passes about 70% busy."],
-  allowedComponents: ["client", "load-balancer", "app-server", "database"],
+  allowedComponents: kindsInFamily("hld"),
   startingBoard: {
     nodes: [
       { id: "client", kind: "client", x: 0, y: 1 },
