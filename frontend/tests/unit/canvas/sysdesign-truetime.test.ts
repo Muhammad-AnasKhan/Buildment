@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeTrueTimeChange, simulateTrueTime, trueTimeTrace, TRUETIME_DEFAULTS, type ClockErrors } from "@/canvas/sysdesign-truetime-commit-wait/model";
+import { describeTrueTimeChange, simulateTrueTime, trueTimeTrace, TRUETIME_DEFAULTS, type ClockErrors } from "@/canvas/models/truetime";
 import { overlappingLabels } from "@/canvas/renderers/timeline/geometry";
 
 describe("TrueTime commit wait", () => {
