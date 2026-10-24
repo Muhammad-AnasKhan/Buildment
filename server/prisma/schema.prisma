@@ -257,6 +257,8 @@ model AiInterviewSession {
   status     AiInterviewStatus @default(ACTIVE)
   /// Resume or project text the learner pasted, when the block asks for it.
   context    String?           @db.Text
+  /// The "important work" box, when the block asks for a resume and work together.
+  contextWork String?          @db.Text
   /// Ordered turns: [{ role: "interviewer" | "candidate", content, focus?, depth?, at }].
   transcript Json              @default("[]")
   /// Validated AiInterviewFeedback, set when the session finishes.
