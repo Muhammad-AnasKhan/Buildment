@@ -5,6 +5,7 @@ import {
   collectContentTokenProblems,
   contentTokenValues,
   findContentTokens,
+  isSafeProductName,
   tokenInFieldProblem,
 } from "../../../../src/shared/lib/content-tokens.js";
 import { COURSE_FAMILIES } from "../../../../src/shared/lib/course-tracks.js";
@@ -23,6 +24,14 @@ describe("contentTokenValues", () => {
     expect(contentTokenValues("multi-vendor-marketplace", "retired-variant")["product.name"]).toBe("FreshMarket");
     expect(contentTokenValues(null, "books")["product.name"]).toBe("FreshMarket");
     expect(contentTokenValues("unknown-family", "books")["product.name"]).toBe("FreshMarket");
+  });
+
+  it("keeps custom product names from injecting MDX or quoted attributes", () => {
+    expect(isSafeProductName("GridMarket 2.0")).toBe(true);
+    expect(isSafeProductName('GridMarket" onClick="alert(1)')).toBe(false);
+    const family = structuredClone(COURSE_FAMILIES[0]);
+    family.variants[0].productName = '<script>alert(1)</script>';
+    expect(contentTokenValues(family, family.defaultVariantSlug)["product.name"]).toBe("FreshMarket");
   });
 });
 

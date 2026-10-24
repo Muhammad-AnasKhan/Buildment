@@ -92,7 +92,7 @@ export function CourseManagementMenu({ course, chapterCount }: { course: Pick<Co
     <>
       <div className="flex flex-wrap items-center gap-2">
         {course.status === "PUBLISHED" && <Button type="button" size="lg" variant="outline" onClick={() => setMode("archive")} disabled={pending}><Archive className="size-4" aria-hidden />{archiveLabel}</Button>}
-        {course.status === "ARCHIVED" && <Button type="button" size="lg" variant="outline" onClick={() => void restore()} disabled={pending} loading={pending}><RotateCcw className="size-4" aria-hidden />Move to draft</Button>}
+        {course.status === "ARCHIVED" && course.enrollmentCount === 0 && <Button type="button" size="lg" variant="outline" onClick={() => void restore()} disabled={pending} loading={pending}><RotateCcw className="size-4" aria-hidden />Move to draft</Button>}
         <Button type="button" size="lg" variant="destructive" onClick={() => setMode("delete")} disabled={pending}><Trash2 className="size-4" aria-hidden />Delete course</Button>
         {error && !mode && <p role="alert" className="w-full text-xs text-destructive">{error}</p>}
       </div>

@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import type { ChapterEditorView, ChapterIdResult, SavedAtResult } from "../../shared/api/teach.js";
 import { TEACH_ERROR_CODES } from "../../shared/api/teach.js";
 import { blockDefinitions, isRegisteredBlockType } from "../../shared/blocks/definitions.js";
+import { normalizeQuizConfig } from "../../shared/blocks/quiz/schema.js";
 import { collectContentTokenProblems, tokenInFieldProblem } from "../../shared/lib/content-tokens.js";
 import { slugify } from "../../shared/lib/mdx-headings.js";
 import { mdxComponentAllowlist } from "../../shared/mdx/component-allowlist.js";
@@ -22,15 +23,45 @@ import type { SessionUser } from "../../types/auth.js";
 import type { ChapterSettingsBody, CreateChapterBody, MoveDirection } from "../../validations/teach.js";
 import { requireCourseById } from "./access.js";
 import { applyBlockSyncPlans, planChapterBlockSync, prepareChapterBlockSync, syncChapterBlocksFromSource, type ExistingSyncBlock } from "./sync-blocks.js";
+import { ensureBaselineRelease, type ReleaseContent, variantForRelease } from "../courses/releases.js";
+import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
+import { publishDashboardChapterRelease, publishDashboardNewChapterRelease, removeChapterFromRelease } from "./publish-course-release.js";
 
-// Mentor-facing chapter mutations. Draft saves write Chapter.source only;
-// learners read Chapter.compiled, which publish snapshots after validation.
+// Mentor-facing chapter mutations. Published edits use CourseChapterDraft;
+// learners read the chapter pinned in their release until a new one is approved.
 
 async function requireChapter(user: SessionUser, chapterId: string) {
   const chapter = await prisma.chapter.findUnique({ where: { id: chapterId, archivedAt: null } });
   if (!chapter) throw new NotFoundError("Chapter not found");
   const course = await requireCourseById(user, chapter.courseId);
+  if ((course.status === "PUBLISHED" || course.status === "ARCHIVED") && chapter.publishedAt) {
+    const active = await prisma.course.findUniqueOrThrow({ where: { id: chapter.courseId }, select: { activeReleaseId: true } });
+    if (active.activeReleaseId) {
+      const release = await prisma.courseRelease.findUniqueOrThrow({ where: { id: active.activeReleaseId } });
+      const family = await prisma.course.findUniqueOrThrow({ where: { id: chapter.courseId },
+        select: { familySlug: true, variantFamily: true } });
+      const defaultSlug = variantForRelease(resolveCourseFamily(family.familySlug, family.variantFamily), null);
+      const visible = ((release.content as unknown as ReleaseContent).variants[defaultSlug] ?? [])
+        .some(module => module.chapters.some(item => item.id === chapter.id));
+      if (!visible) throw new NotFoundError("Chapter not found");
+    }
+  }
   return { chapter, course };
+}
+
+async function releasedChapterDraft(chapter: { id: string; courseId: string; title: string; summary: string | null;
+  estimatedMinutes: number | null; readerMode: "DEFAULT" | "QUIZ"; isMilestone: boolean; source: string; compiled: string | null },
+  status: string) {
+  if (status !== "PUBLISHED" && status !== "ARCHIVED") return null;
+  const release = await prisma.$transaction(tx => ensureBaselineRelease(tx, chapter.courseId));
+  const course = await prisma.course.findUniqueOrThrow({ where: { id: chapter.courseId }, select: { familySlug: true, variantFamily: true } });
+  const shared = (release.content as unknown as ReleaseContent).variants[variantForRelease(resolveCourseFamily(course.familySlug, course.variantFamily), null)] ?? [];
+  if (!shared.some(module => module.chapters.some(item => item.id === chapter.id))) return null;
+  return prisma.courseChapterDraft.upsert({ where: { chapterId: chapter.id },
+    create: { chapterId: chapter.id, courseId: chapter.courseId, baseReleaseId: release.id,
+      title: chapter.title, summary: chapter.summary, estimatedMinutes: chapter.estimatedMinutes,
+      readerMode: chapter.readerMode, isMilestone: chapter.isMilestone, source: chapter.compiled ?? chapter.source },
+    update: {} });
 }
 
 /** Titles and summaries show in navigation, the catalogue and emails, where placeholders never resolve. */
@@ -40,7 +71,8 @@ function rejectTokensInChapterFields(fields: { title: string; summary?: string |
 }
 
 export async function createChapter(user: SessionUser, courseId: string, input: CreateChapterBody): Promise<ChapterIdResult> {
-  await requireCourseById(user, courseId);
+  const owned = await requireCourseById(user, courseId);
+  if (owned.status === "PUBLISHED" || owned.status === "ARCHIVED") await prisma.$transaction(tx => ensureBaselineRelease(tx, courseId));
   rejectTokensInChapterFields(input);
   const moduleId = input.moduleId ?? null;
   if (moduleId) {
@@ -68,12 +100,24 @@ async function uniqueChapterSlug(courseId: string, base: string): Promise<string
 
 /** Swaps the chapter with its neighbour inside the same module; 409 at the edge. */
 export async function moveChapter(user: SessionUser, chapterId: string, direction: MoveDirection): Promise<void> {
-  const { chapter } = await requireChapter(user, chapterId);
+  const { chapter, course } = await requireChapter(user, chapterId);
+  let activeIds: string[] | null = null;
+  if (course.status === "PUBLISHED" || course.status === "ARCHIVED") {
+    const current = await prisma.course.findUniqueOrThrow({ where: { id: course.id },
+      select: { activeReleaseId: true, familySlug: true, variantFamily: true } });
+    if (current.activeReleaseId) {
+      const release = await prisma.courseRelease.findUniqueOrThrow({ where: { id: current.activeReleaseId } });
+      const defaultSlug = variantForRelease(resolveCourseFamily(current.familySlug, current.variantFamily), null);
+      activeIds = ((release.content as unknown as ReleaseContent).variants[defaultSlug] ?? [])
+        .flatMap(module => module.chapters.map(item => item.id));
+    }
+  }
   const neighbor = await prisma.chapter.findFirst({
     where: {
       courseId: chapter.courseId,
       moduleId: chapter.moduleId,
       archivedAt: null,
+      ...(activeIds ? { OR: [{ id: { in: activeIds } }, { publishedAt: null }] } : {}),
       order: direction === "up" ? { lt: chapter.order } : { gt: chapter.order },
     },
     orderBy: { order: direction === "up" ? "desc" : "asc" },
@@ -89,31 +133,37 @@ export async function moveChapter(user: SessionUser, chapterId: string, directio
 /** The editor's initial state. Escaped block placeholders are restored so the editor sees real JSX. */
 export async function loadChapterEditor(user: SessionUser, chapterId: string): Promise<ChapterEditorView> {
   const { chapter, course } = await requireChapter(user, chapterId);
+  const draft = await prisma.courseChapterDraft.findUnique({ where: { chapterId: chapter.id } });
   const blocks = await prisma.block.findMany({ where: { chapterId: chapter.id, archivedAt: null }, select: { id: true, config: true } });
   return {
     chapterId: chapter.id,
     courseId: course.id,
     courseSlug: course.slug,
-    title: chapter.title,
-    summary: chapter.summary,
-    estimatedMinutes: chapter.estimatedMinutes,
-    readerMode: chapter.readerMode,
-    isMilestone: chapter.isMilestone,
+    title: draft?.title ?? chapter.title,
+    summary: draft?.summary ?? chapter.summary,
+    estimatedMinutes: draft?.estimatedMinutes ?? chapter.estimatedMinutes,
+    readerMode: draft?.readerMode ?? chapter.readerMode,
+    isMilestone: draft?.isMilestone ?? chapter.isMilestone,
     publishedAt: chapter.publishedAt?.toISOString() ?? null,
-    hasUnpublishedChanges: chapter.publishedAt !== null && chapter.compiled !== chapter.source,
-    source: restoreInteractiveBlockTags(chapter.source),
+    hasUnpublishedChanges: Boolean(draft) || (chapter.publishedAt !== null && chapter.compiled !== chapter.source),
+    source: restoreInteractiveBlockTags(draft?.source ?? chapter.source),
     lastPublishedSource: chapter.compiled,
     blockConfigs: Object.fromEntries(blocks.map((block) => [block.id, block.config])),
   };
 }
 
 export async function updateChapterSettings(user: SessionUser, chapterId: string, input: ChapterSettingsBody): Promise<SavedAtResult> {
-  const { chapter } = await requireChapter(user, chapterId);
+  const { chapter, course } = await requireChapter(user, chapterId);
   rejectTokensInChapterFields(input);
   if (input.readerMode !== "QUIZ" && chapter.compiled && hasQuizBlocks(restoreInteractiveBlockTags(chapter.compiled))) {
     throw new UnprocessableError("Published quizzes require Quiz flow. Remove the quizzes and publish before changing the reader experience.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE);
   }
-  await prisma.chapter.update({
+  const draft = await releasedChapterDraft(chapter, course.status);
+  if (draft) await prisma.courseChapterDraft.update({ where: { chapterId: chapter.id }, data: {
+    title: input.title, summary: input.summary || null, estimatedMinutes: input.estimatedMinutes,
+    readerMode: input.readerMode, isMilestone: input.isMilestone,
+  } });
+  else await prisma.chapter.update({
     where: { id: chapter.id },
     data: {
       title: input.title,
@@ -127,9 +177,13 @@ export async function updateChapterSettings(user: SessionUser, chapterId: string
 }
 
 export async function saveChapterDraft(user: SessionUser, chapterId: string, source: string): Promise<SavedAtResult> {
-  const { chapter } = await requireChapter(user, chapterId);
-  await prisma.chapter.update({ where: { id: chapter.id }, data: { source } });
-  await syncChapterBlocksFromSource(chapter.id, source);
+  const { chapter, course } = await requireChapter(user, chapterId);
+  const draft = await releasedChapterDraft(chapter, course.status);
+  if (draft) await prisma.courseChapterDraft.update({ where: { chapterId: chapter.id }, data: { source } });
+  else {
+    await prisma.chapter.update({ where: { id: chapter.id }, data: { source } });
+    await syncChapterBlocksFromSource(chapter.id, source);
+  }
   return { savedAt: new Date().toISOString() };
 }
 
@@ -138,7 +192,41 @@ export async function saveChapterDraft(user: SessionUser, chapterId: string, sou
  * never on read: the reader renders the Chapter.compiled snapshot.
  */
 export async function publishChapter(user: SessionUser, chapterId: string): Promise<void> {
-  const { chapter } = await requireChapter(user, chapterId);
+  const { chapter, course } = await requireChapter(user, chapterId);
+  let draft = await prisma.courseChapterDraft.findUnique({ where: { chapterId } });
+  if (!draft && (course.status === "PUBLISHED" || course.status === "ARCHIVED")) {
+    const release = await prisma.$transaction(tx => ensureBaselineRelease(tx, course.id));
+    const familyCourse = await prisma.course.findUniqueOrThrow({ where: { id: course.id }, select: { familySlug: true, variantFamily: true } });
+    const shared = (release.content as unknown as ReleaseContent).variants[variantForRelease(resolveCourseFamily(familyCourse.familySlug, familyCourse.variantFamily), null)] ?? [];
+    if (shared.some(module => module.chapters.some(item => item.id === chapterId))) {
+      if (chapter.source === chapter.compiled) return;
+      draft = await releasedChapterDraft(chapter, course.status);
+      if (draft) draft = await prisma.courseChapterDraft.update({ where: { chapterId }, data: { source: chapter.source } });
+    }
+  }
+  if (draft) {
+    const renderable = restoreInteractiveBlockTags(draft.source);
+    const reasons = await collectPublishProblems({ id: chapter.id, title: draft.title, summary: draft.summary, readerMode: draft.readerMode }, renderable);
+    if (reasons.length) throw new UnprocessableError("The chapter cannot be published yet.", TEACH_ERROR_CODES.CHAPTER_NOT_PUBLISHABLE, reasons);
+    const prepared = prepareChapterBlockSync(renderable);
+    const oldBlocks = await prisma.block.findMany({ where: { chapterId, archivedAt: null } });
+    const oldById = new Map(oldBlocks.map(block => [block.id, block]));
+    const blocks = prepared.extracted.map(block => ({ id: block.id,
+      type: (block.blockType ?? "QUIZ") as Prisma.BlockCreateManyInput["type"],
+      config: (blockConfigFromSource(block, prepared.configs) ?? oldById.get(block.id)?.config ?? {}) as Prisma.InputJsonValue,
+      required: oldById.get(block.id)?.required ?? true }));
+    await prisma.$transaction(async tx => {
+      const current = await tx.courseChapterDraft.findUniqueOrThrow({ where: { chapterId } });
+      if (!isDeepStrictEqual(current, draft)) throw new ConflictError("Chapter draft changed during publishing. Review and try again.");
+      await publishDashboardChapterRelease(tx, chapter.courseId, chapter.id, draft.baseReleaseId, {
+        key: chapter.contentKey ?? undefined, lessonNum: chapter.order, slugPart: chapter.slug,
+        title: draft.title, summary: draft.summary, estimatedMinutes: draft.estimatedMinutes,
+        readerMode: draft.readerMode, isMilestone: draft.isMilestone, source: draft.source, blocks,
+      });
+      await tx.courseChapterDraft.delete({ where: { chapterId } });
+    }, { isolationLevel: "Serializable", timeout: 60000 });
+    return;
+  }
   const renderable = restoreInteractiveBlockTags(chapter.source);
   const reasons = await collectPublishProblems(chapter, renderable);
   if (reasons.length > 0) {
@@ -146,23 +234,29 @@ export async function publishChapter(user: SessionUser, chapterId: string): Prom
   }
 
   await syncChapterBlocksFromSource(chapter.id, renderable);
+  const quizzes = await prisma.block.findMany({ where: { chapterId: chapter.id, type: "QUIZ", archivedAt: null }, select: { id: true, config: true } });
+  for (const quiz of quizzes) {
+    const normalized = normalizeQuizConfig(quiz.config);
+    if (!isDeepStrictEqual(normalized, quiz.config)) await prisma.block.update({ where: { id: quiz.id }, data: { config: normalized as Prisma.InputJsonValue } });
+  }
   await prisma.chapter.update({
     where: { id: chapter.id },
     data: { compiled: chapter.source, publishedAt: new Date() },
   });
+  if (course.status === "PUBLISHED" || course.status === "ARCHIVED") await prisma.$transaction(async tx => {
+    await ensureBaselineRelease(tx, course.id);
+    await publishDashboardNewChapterRelease(tx, course.id, chapter.id);
+  });
 }
 
-/**
- * Permanently deletes a chapter with its blocks and learner history. Chapters
- * with progress or submissions need an explicit confirmation flag. Ordering
- * gaps are harmless — new chapters use the highest order + 1.
- */
+/** Remove a published chapter from future releases, or delete an unpublished draft. */
 export async function removeChapter(
   user: SessionUser,
   chapterId: string,
   options: { confirmedWithProgress?: boolean }
 ): Promise<void> {
-  const { chapter } = await requireChapter(user, chapterId);
+  const { chapter, course } = await requireChapter(user, chapterId);
+  if (course.status === "PUBLISHED" || course.status === "ARCHIVED") await prisma.$transaction(tx => ensureBaselineRelease(tx, course.id));
 
   const [progress, responses] = await Promise.all([
     prisma.chapterProgress.count({ where: { chapterId: chapter.id } }),
@@ -170,11 +264,17 @@ export async function removeChapter(
   ]);
   if ((progress > 0 || responses > 0) && !options.confirmedWithProgress) {
     throw new ConflictError(
-      "This chapter has learner progress or submissions. Confirm you want to remove it and their history.",
+      (course.status === "PUBLISHED" || course.status === "ARCHIVED")
+        ? "This chapter has learner work. Confirm removal from future releases; current learners keep their progress."
+        : "This draft chapter has learner work. Confirm deletion of its history.",
       TEACH_ERROR_CODES.CHAPTER_PROGRESS_CONFIRMATION_REQUIRED
     );
   }
 
+  if (course.status === "PUBLISHED" || course.status === "ARCHIVED") {
+    const removed = await prisma.$transaction(tx => removeChapterFromRelease(tx, course.id, chapter.id), { isolationLevel: "Serializable" });
+    if (removed) return;
+  }
   await prisma.chapter.delete({ where: { id: chapter.id } });
 }
 
@@ -231,6 +331,9 @@ async function collectPublishProblems(
     const inlineConfig = blockConfigFromSource(block, configs);
 
     if (created.has(block.id)) {
+      for (const field of secretFieldsWithTokens(inlineConfig ?? {})) {
+        problems.push(`${block.tagName} block "${block.id}" uses a placeholder in "${field}". Answer keys, rubrics, tests and solutions must be the same for every learner.`);
+      }
       if (!schema.safeParse(inlineConfig ?? {}).success) {
         problems.push(`Block "${block.id}" (<${block.tagName}>) is missing valid content — edit it in the rich UI or source before publishing.`);
       }
@@ -267,7 +370,23 @@ export async function publishChapters(user: SessionUser, scope: { courseId: stri
     courseId = module.courseId;
     moduleId = scope.moduleId;
   } else courseId = scope.courseId;
-  await requireCourseById(user, courseId);
+  const owned = await requireCourseById(user, courseId);
+  if (owned.status === "PUBLISHED" || owned.status === "ARCHIVED") {
+    const baseline = await prisma.$transaction(tx => ensureBaselineRelease(tx, courseId));
+    const drafts = await prisma.courseChapterDraft.findMany({ where: { courseId,
+      ...(moduleId ? { chapter: { moduleId } } : {}) }, orderBy: { updatedAt: "asc" }, select: { chapterId: true, baseReleaseId: true } });
+    for (const [index, draft] of drafts.entries()) {
+      if (index > 0 && draft.baseReleaseId === baseline.id) {
+        const active = await prisma.course.findUniqueOrThrow({ where: { id: courseId }, select: { activeReleaseId: true } });
+        await prisma.courseChapterDraft.updateMany({ where: { chapterId: draft.chapterId, baseReleaseId: baseline.id }, data: { baseReleaseId: active.activeReleaseId! } });
+      }
+      await publishChapter(user, draft.chapterId);
+    }
+    const unpublished = await prisma.chapter.findMany({ where: { courseId, archivedAt: null, publishedAt: null,
+      ...(moduleId ? { moduleId } : {}) }, select: { id: true } });
+    for (const chapter of unpublished) await publishChapter(user, chapter.id);
+    return;
+  }
 
   const selection = {
     where: { courseId, archivedAt: null, ...(moduleId ? { moduleId } : {}) },

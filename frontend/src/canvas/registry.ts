@@ -596,6 +596,9 @@ import { sysdesignM18PipelineStep } from "./sysdesign-m18-pipeline-step/data";
 import { sysdesignM18CanaryBlast } from "./sysdesign-m18-canary-blast/data";
 import { sysdesignM18CloudExplorer } from "./sysdesign-m18-cloud-explorer/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
+import { freelanceJobFlowchart } from "./freelance-job-flowchart/data";
+import { jobApplicationStatus } from "./job-application-status/data";
+import { checkTheAiAnswer } from "./check-the-ai-answer/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the three
@@ -1205,6 +1208,9 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m18-pipeline-step": sysdesignM18PipelineStep,
   "sysdesign-m18-canary-blast": sysdesignM18CanaryBlast,
   "sysdesign-m18-cloud-explorer": sysdesignM18CloudExplorer,
+  "freelance-job-flowchart": freelanceJobFlowchart,
+  "job-application-status": jobApplicationStatus,
+  "check-the-ai-answer": checkTheAiAnswer,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */

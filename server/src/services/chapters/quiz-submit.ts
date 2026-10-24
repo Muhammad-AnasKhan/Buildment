@@ -7,7 +7,8 @@ import type { QuizSubmitBody } from "../../validations/chapters.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
 import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
 import { ChapterLockedError, assertChapterUnlocked } from "../progress/gate.js";
-import { recomputeChapterProgress, recordBlockStats } from "../progress/compute.js";
+import { lockEnrollmentVariant, recomputeChapterProgress, recordBlockStats } from "../progress/compute.js";
+import { assertEnrollmentChapter } from "../courses/releases.js";
 
 type Grade = { blockId: string; score: number | null; maxScore: number | null; isCorrect: boolean | null };
 
@@ -79,6 +80,8 @@ export async function submitChapterQuiz(input: {
   });
 
   const grades = await prisma.$transaction(async (tx) => {
+    await lockEnrollmentVariant(tx, enrollment.id);
+    await assertEnrollmentChapter(tx, enrollment.id, chapterId);
     const results: Grade[] = [];
 
     for (const { block, config, normalized } of prepared) {
