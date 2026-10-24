@@ -1,0 +1,12 @@
+# Canvas spec: sysdesign-m4-kill-server
+
+- **Course and chapter:** system-design, 4.3 "Stateless services and where state goes", beat "Kill a server, count the logouts". New slug.
+- **Renderer:** custom beat canvas on `BeatFrame`, `SvgNode`, `DotGrid`, `VerdictBanner`, `useBeatClock`, and the new `primitives/svg-button.tsx` for the tap targets.
+- **Claim:** In-memory sessions break as soon as there is a second server. Sticky sessions lose a server's users when it dies. A shared store loses nobody, until the store itself fails.
+- **Model** (`models/session-loss.ts`, unit tested): 4 app servers, 1,200 students, 300 each. In memory with no stickiness, 3 requests in 4 miss their session (round robin over 4; with L servers alive, L - 1 in L). Sticky: killing k servers logs out 300 x k. Shared store: killing app servers logs out 0; killing the store logs out all 1,200. In memory, a killed server also loses its 300 sessions.
+- **Inputs:** a mode toggle under the picture ("In memory", "Sticky", "Shared store"); tap a server tile to kill it or bring it back; in shared-store mode tap the store card. Kills are kept when the mode changes, so the same kill can be compared across modes.
+- **Picture:** a balancer sends request dots to the live servers in turn; each server tile holds a crowd of 30 dots (ten students each). A killed server in memory or sticky mode turns its dots red and they fall away; in shared-store mode they stay, because the sessions are not there. In memory mode, requests that reach the wrong server flash "who is this?". A counter shows "Logged out: N".
+- **Verdicts (38 characters or fewer, tested for every mode and every kill):** in memory "Every 3 in 4 requests miss a session"; sticky before a kill "Each server down: its users log out"; sticky after one kill "Sticky: 300 students logged out"; shared store "Shared store: nobody logged out"; store killed "Store down: all 1,200 logged out". Extra cases: fewer live servers in memory mode, all servers down, no app server left with a live store.
+- **Reduced motion:** a still picture with one dot on its way and one "who is this?"; counters, colours and the verdict follow the inputs. State changes use CSS transitions that are off under reduced motion.
+- **Accessibility:** every tile and the store are real buttons (`aria-pressed`) with Enter and Space; the picture has a full description that includes the logged-out count.
+- **Sources:** stateless servers (dossier domain model); [S46, S49] for "sticky".

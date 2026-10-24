@@ -19,6 +19,7 @@ import { RoadmapComponent } from "@/blocks/roadmap/Component";
 import { MermaidDiagram } from "@/components/learn/mermaid-diagram";
 import { Callout } from "@/components/learn/callout";
 import { FaqGroup, FaqItem } from "@/components/learn/faq-group";
+import { GoDeeper } from "@/components/learn/go-deeper";
 import { CheckpointIntro } from "@/components/learn/checkpoint-intro";
 import { BigWordAlert } from "@/components/learn/big-word-alert";
 import { InterestingRead } from "@/components/learn/interesting-read";
@@ -38,6 +39,7 @@ import {
   TraceStep,
 } from "@/components/learn/content-blocks";
 import { InteractiveCanvas } from "@buildment/learning-ui/canvas/InteractiveCanvas";
+import { Lab } from "@/lab/Lab";
 import { EcosystemGallery } from "@/components/learn/ecosystem-gallery";
 import { Checklist } from "@/components/learn/checklist";
 import { LearningLog } from "@/components/learn/learning-log";
@@ -81,6 +83,7 @@ export const mdxComponents: MDXComponents = {
   Callout,
   FaqGroup,
   FaqItem,
+  GoDeeper,
   CheckpointIntro,
   BigWordAlert,
   InterestingRead,
@@ -99,6 +102,7 @@ export const mdxComponents: MDXComponents = {
   TraceRequest,
   TraceStep,
   InteractiveCanvas,
+  Lab,
   EcosystemGallery,
   h2: ({ children, ...props }: React.ComponentProps<"h2">) => {
     const text = typeof children === "string" ? children : undefined;

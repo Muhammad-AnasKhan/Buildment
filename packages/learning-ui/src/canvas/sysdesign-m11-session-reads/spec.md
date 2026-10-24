@@ -1,0 +1,12 @@
+# Canvas spec: sysdesign-m11-session-reads
+
+- **Course and chapter:** system-design, 11.5, beat 2 "Switch each promise on and watch".
+- **Renderer:** custom timeline canvas on `BeatFrame` and `use-beat-clock.ts`; model in `models/session-reads.ts`; toggles are `BeatButton` with `aria-pressed`. (`BeatToggle` named in the spec does not exist in `beat-frame.tsx`; the pressed `BeatButton` is the same 44 px pill.)
+- **Claim:** Each session guarantee stops its own anomaly and nothing else. Read-your-writes protects the writer, monotonic reads protects any reader, and the sure way to get either is sometimes the leader.
+- **Model:** leader and two replicas on a time axis of 0 to 700 ms. Amna's comment is position 1; the leader has it from 0, replica 1 from 150 ms, replica 2 from 600 ms (course numbers). Five reads: Amna 100 ms (replica 1) and 350 ms (replica 2); Omar 200 ms (replica 1), 350 ms (replica 2), 500 ms (replica 1). Amna's token: wrote = 1; Omar's: wrote = 0; seen starts at 0 and rises to what each read showed. With "my own writes" a read needs a node at `wrote`; with "no going back" a node at `seen`. The read goes to its default replica if that is far enough ahead, otherwise the lowest-numbered replica that is, otherwise the leader.
+- **Check points (tested):** none: Amna missed 2, Omar went back 1, leader reads 0 (Amna R1, R2; Omar R1, R2, R1). My own writes: 0, 1, 1 (Amna leader, R1). No going back: 2, 0, 0 (Omar R1, R1, R1). Both: 0, 0, 1.
+- **Inputs:** two 44 px toggles outside the picture, "My own writes" and "No going back" (both off). Hint: "Switch each promise on and compare."
+- **What moves:** a cursor sweeps 0 to 700 ms and loops; the leader and replica strips fill at 0, 150 and 600 ms; each read lands on its node in time order, green with a tick when it shows the comment, amber with a cross when it does not; a read sent to the leader draws a longer arrow (the leader is the farthest strip). Fades are CSS transitions; with reduced motion the cursor rests at 700 ms and everything is shown.
+- **Verdicts:** "2 missed own write, 1 went back", "Writer fixed; Omar went back once", "Omar fixed; Amna missed twice", "No anomaly; leader took 1 read".
+- **Accessibility:** the SVG description lists every read, its node and whether it showed the comment; the toggles are real buttons.
+- **Sources:** [S50] session guarantees; [S38] replication lag; chapter 8.4.

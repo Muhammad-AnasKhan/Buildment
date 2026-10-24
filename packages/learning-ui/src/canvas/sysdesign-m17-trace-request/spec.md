@@ -1,0 +1,13 @@
+# Canvas spec: sysdesign-m17-trace-request
+
+- **Course and chapter:** system-design, 17.2 ("Logs, metrics and traces"), beat 4, "Tap the span that holds the time". Playable; new slug.
+- **Renderer:** custom beat canvas on `BeatFrame`. The order toggle is a radio group of `SvgRadioChip`s inside the picture; the seven span rows are buttons (44 units high) drawn as a waterfall; `DotGrid`, `VerdictBanner`. `lane-sequence`, `log-ruler` and `beat-segmented` were not used: the waterfall needs indented rows with bars on a shared time axis, which none of them draws.
+- **Claim:** A trace puts one request's calls on a timeline, each inside its parent. The slow part is the span with the most time of its own, and a trace shows it where an average cannot.
+- **Input:** "Fast order | Slow order" (default Slow); tap or press a row to select it; arrow keys (and Home and End) move the selection.
+- **Model** (`model.ts`): each span has a service, a name, a start and an end in ms and a parent. Self time = duration minus the durations of its children (children never overlap here). Share = self time / trace total.
+- **Numbers to check** (tested): slow order, total 780 ms, self times 7, 4, 2, 12, 5, 8, 742 (sum 780); provider.charge 95%. Fast order, total 95 ms, self times 3, 4, 2, 11, 4, 5, 66 (sum 95); provider.charge 69%. Between the orders the total grows by 685 ms and provider.charge by 676 ms.
+- **Picture:** rows indented by depth with a thin tree guide to the parent; a service pill (api, menu, payments, each its own quiet colour) and the span name; the duration at the right; a bar placed on a 0 to total axis (bars slide to their new place with a CSS transition). The selected row gets a tinted outline and a card under the waterfall: the service and span, "self 742 ms, 95% of the order", and a share meter.
+- **Verdicts:** nothing selected "Tap the span that holds the time"; a span under 50% "Only 12 of 780 ms are here" (warn, numbers filled in); 50% or more in the slow order "95% of the wait is in this call" (good); provider.charge in the fast order "69% of 95 ms, and that is normal" (good).
+- **Reduced motion:** the bars are drawn in place, no sliding (the transition is off).
+- **Accessibility:** each row is a `role="button"` with `aria-pressed` and a label such as "payments provider.charge, starts 24 ms, lasts 742 ms, own time 742 ms, 95 percent of the order"; the order chips are a radio group; the verdict is also in a polite live region; the SVG has a title and a description that lists every span.
+- **Sources:** span and trace definitions (OpenTelemetry traces concept page, source needed in the dossier; S98 is the signals page). The self-time view is course material. All timings are course numbers.

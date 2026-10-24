@@ -1,0 +1,13 @@
+# Canvas spec: sysdesign-m16-retry-storm
+
+- **Course and chapter:** system-design, 16.4 beat 4, "Retries can keep a system down". Playable; new slug.
+- **Renderer:** custom beat canvas on `BeatFrame`: Clients and Server cards with attempt dots, a 60 second strip, two number cards, a three-way chip row (`RadioChipRow`) for the retry rule, a `SnapStopsRail` for the retries, `VerdictBanner`. One control outside the picture: Replay.
+- **Claim:** A short blip can leave a system down for good when clients retry, because each failed request comes back and the load stays above capacity. Waiting between retries does not change that; only fewer attempts do, for example a retry budget.
+- **Input:** retries per request 0, 1, 2, 3 (default 3); rule At once, Backoff and jitter, Budget 10% (default At once).
+- **Model** (`model.ts`, `simulate`): the fluid cohort model of the module 16 specs. Steps of 0.1 s, a FIFO queue, capacity 100 a second, 80 original requests a second, a blip from 5 s to 10 s that cuts capacity to 30, clients that give up after 1 s and retry, a server that still spends work on a request whose client has left. Backoff waits 0.5 s times 2 to the power (attempt minus 1), spread over 10 equal parts. Budget earns 0.1 token per original request (cap 10) and a retry costs 1. Two speed-ups only: cohorts due in the same step with the same attempt number are merged, and the give-up check walks a pointer along the queue. Results equal the reference to rounding.
+- **Numbers to check** (tested): 0 retries recovered at 20 s, peak 80, queue 0; 1, 2, 3 retries at once or with jitter never recover, peak 160, 240, 320, queue at 60 s 3,517, 7,696, 11,787 (at once) and 3,504, 7,637, 11,609 (jitter); budget with 1, 2 or 3 retries recovers at 27 s, peak 92, queue 0, peak queue 286. Recovered means goodput stays at 76 a second or more for the rest of the run.
+- **Picture:** bars are answers in time each second, the line is attempts each second, the dashed line is capacity 100, the shaded band is the blip. A sweeping cursor drives the Clients and Server cards (attempts a second, waiting). The whole strip is always drawn.
+- **Verdicts:** 0 retries "Back to normal 10 s after the blip" (good); stuck "Still down a minute later" (bad); budget "Back 17 s after the blip" (good).
+- **Reduced motion:** no cursor and no dots; the cards show the state at 60 s.
+- **Accessibility:** the retries rail is a `role="slider"` reading "3 retries, system still down after 60 seconds"; the rule chips are a radio group.
+- **Sources:** metastable failure and work amplification from retries [S94]; retry budgets [S91]. The numbers come from the course model, made up to show the shape.
