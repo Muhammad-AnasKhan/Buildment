@@ -253,6 +253,96 @@ import { sysdesignM7BloomBits } from "./sysdesign-m7-bloom-bits/data";
 import { sysdesignM7IsolationLab } from "./sysdesign-m7-isolation-lab/data";
 import { sysdesignM7TwoWriters } from "./sysdesign-m7-two-writers/data";
 import { sysdesignM7ScalingPath } from "./sysdesign-m7-scaling-path/data";
+import { sysdesignM12ElectionAfterCrash } from "./sysdesign-m12-election-after-crash/data";
+import { sysdesignM12GossipRumor } from "./sysdesign-m12-gossip-rumor/data";
+import { sysdesignM12LeaseHandover } from "./sysdesign-m12-lease-handover/data";
+import { sysdesignM12LogCommit } from "./sysdesign-m12-log-commit/data";
+import { sysdesignM12LogOverwritten } from "./sysdesign-m12-log-overwritten/data";
+import { sysdesignM12MajoritySurvives } from "./sysdesign-m12-majority-survives/data";
+import { sysdesignM12OldLeaderCutOff } from "./sysdesign-m12-old-leader-cut-off/data";
+import { sysdesignM12OldLeaderStepsDown } from "./sysdesign-m12-old-leader-steps-down/data";
+import { sysdesignM12PausedWakes } from "./sysdesign-m12-paused-wakes/data";
+import { sysdesignM12PaxosDuel } from "./sysdesign-m12-paxos-duel/data";
+import { sysdesignM12QuorumOverlap } from "./sysdesign-m12-quorum-overlap/data";
+import { sysdesignM12RegistryWatch } from "./sysdesign-m12-registry-watch/data";
+import { sysdesignM12SlowOrDead } from "./sysdesign-m12-slow-or-dead/data";
+import { sysdesignM12SplitVote } from "./sysdesign-m12-split-vote/data";
+import { sysdesignM12StaleWrite } from "./sysdesign-m12-stale-write/data";
+import { sysdesignM12SwimIndirect } from "./sysdesign-m12-swim-indirect/data";
+import { sysdesignM12SwimSuspect } from "./sysdesign-m12-swim-suspect/data";
+import { sysdesignM12TwoReaders } from "./sysdesign-m12-two-readers/data";
+import { sysdesignM12TwoSchedulers } from "./sysdesign-m12-two-schedulers/data";
+import { sysdesignM11BalanceBack } from "./sysdesign-m11-balance-back/data";
+import { sysdesignM11CartLost } from "./sysdesign-m11-cart-lost/data";
+import { sysdesignM11Eventually } from "./sysdesign-m11-eventually/data";
+import { sysdesignM11NoDeadline } from "./sysdesign-m11-no-deadline/data";
+import { sysdesignM11OneAtATime } from "./sysdesign-m11-one-at-a-time/data";
+import { sysdesignM11OneOperation } from "./sysdesign-m11-one-operation/data";
+import { sysdesignM11QuorumNotEnough } from "./sysdesign-m11-quorum-not-enough/data";
+import { sysdesignM11ReplyFirst } from "./sysdesign-m11-reply-first/data";
+import { sysdesignM11ReplyWaits } from "./sysdesign-m11-reply-waits/data";
+import { sysdesignM11StaleReplicaRead } from "./sysdesign-m11-stale-replica-read/data";
+import { sysdesignM11TwoDevices } from "./sysdesign-m11-two-devices/data";
+import { sysdesignM11TwoOrders } from "./sysdesign-m11-two-orders/data";
+import { sysdesignM11UsernameTwice } from "./sysdesign-m11-username-twice/data";
+import { sysdesignM12QuorumExplorer } from "./sysdesign-m12-quorum-explorer/data";
+import { sysdesignM12FencingPlay } from "./sysdesign-m12-fencing-play/data";
+import { sysdesignM13CartAccepts } from "./sysdesign-m13-cart-accepts/data";
+import { sysdesignM13CartRefuses } from "./sysdesign-m13-cart-refuses/data";
+import { sysdesignM13CartResurrect } from "./sysdesign-m13-cart-resurrect/data";
+import { sysdesignM13CounterNaive } from "./sysdesign-m13-counter-naive/data";
+import { sysdesignM13CrdtLimit } from "./sysdesign-m13-crdt-limit/data";
+import { sysdesignM13DdbConditional } from "./sysdesign-m13-ddb-conditional/data";
+import { sysdesignM13DdbReads } from "./sysdesign-m13-ddb-reads/data";
+import { sysdesignM13DdbWrite } from "./sysdesign-m13-ddb-write/data";
+import { sysdesignM13Gcounter } from "./sysdesign-m13-gcounter/data";
+import { sysdesignM13HintLost } from "./sysdesign-m13-hint-lost/data";
+import { sysdesignM13HintedHandoff } from "./sysdesign-m13-hinted-handoff/data";
+import { sysdesignM13LwwSkewStory } from "./sysdesign-m13-lww-skew-story/data";
+import { sysdesignM13LwwWholeItem } from "./sysdesign-m13-lww-whole-item/data";
+import { sysdesignM13Orset } from "./sysdesign-m13-orset/data";
+import { sysdesignM13Pncounter } from "./sysdesign-m13-pncounter/data";
+import { sysdesignM13SiblingContext } from "./sysdesign-m13-sibling-context/data";
+import { sysdesignM13StrictFails } from "./sysdesign-m13-strict-fails/data";
+import { sysdesignM13WritePath } from "./sysdesign-m13-write-path/data";
+import { sysdesignM12TimeoutSlider } from "./sysdesign-m12-timeout-slider/data";
+import { sysdesignM12GossipSpread } from "./sysdesign-m12-gossip-spread/data";
+import { sysdesignM12PaxosPlay } from "./sysdesign-m12-paxos-play/data";
+import { sysdesignM12RegistryPlay } from "./sysdesign-m12-registry-play/data";
+import { sysdesignM14TwoPcHappy } from "./sysdesign-m14-2pc-happy/data";
+import { sysdesignM14TwoPcStuck } from "./sysdesign-m14-2pc-stuck/data";
+import { sysdesignM14AckLost } from "./sysdesign-m14-ack-lost/data";
+import { sysdesignM14DedupeForgot } from "./sysdesign-m14-dedupe-forgot/data";
+import { sysdesignM14DedupeTxn } from "./sysdesign-m14-dedupe-txn/data";
+import { sysdesignM14DualWrite } from "./sysdesign-m14-dual-write/data";
+import { sysdesignM14OutboxRelay } from "./sysdesign-m14-outbox-relay/data";
+import { sysdesignM14OutboxTwice } from "./sysdesign-m14-outbox-twice/data";
+import { sysdesignM14PaidNotReserved } from "./sysdesign-m14-paid-not-reserved/data";
+import { sysdesignM14SagaChorus } from "./sysdesign-m14-saga-chorus/data";
+import { sysdesignM14SagaNotIsolated } from "./sysdesign-m14-saga-not-isolated/data";
+import { sysdesignM14SagaOrchestra } from "./sysdesign-m14-saga-orchestra/data";
+import { sysdesignM14SagaSteps } from "./sysdesign-m14-saga-steps/data";
+import { sysdesignM11BuildHistory } from "./sysdesign-m11-build-history/data";
+import { sysdesignM12RaftElectionPlay } from "./sysdesign-m12-raft-election-play/data";
+import { sysdesignM12RaftLogPlay } from "./sysdesign-m12-raft-log-play/data";
+import { sysdesignM11OverlapOrNot } from "./sysdesign-m11-overlap-or-not/data";
+import { sysdesignM11IsItLinearizable } from "./sysdesign-m11-is-it-linearizable/data";
+import { sysdesignM11OneHistoryThreeVerdicts } from "./sysdesign-m11-one-history-three-verdicts/data";
+import { sysdesignM14TwoPcCrash } from "./sysdesign-m14-2pc-crash/data";
+import { sysdesignM14SagaFail } from "./sysdesign-m14-saga-fail/data";
+import { sysdesignM14OutboxCrash } from "./sysdesign-m14-outbox-crash/data";
+import { sysdesignM14DedupeFlow } from "./sysdesign-m14-dedupe-flow/data";
+import { sysdesignM11SessionReads } from "./sysdesign-m11-session-reads/data";
+import { sysdesignM11SessionWrites } from "./sysdesign-m11-session-writes/data";
+import { sysdesignM13RingWrite } from "./sysdesign-m13-ring-write/data";
+import { sysdesignM13ClusterHeal } from "./sysdesign-m13-cluster-heal/data";
+import { sysdesignM13HotPartition } from "./sysdesign-m13-hot-partition/data";
+import { sysdesignM13LwwSkew } from "./sysdesign-m13-lww-skew/data";
+import { sysdesignM13CartMerge } from "./sysdesign-m13-cart-merge/data";
+import { sysdesignM13CrdtPlay } from "./sysdesign-m13-crdt-play/data";
+import { sysdesignM11SyncRate } from "./sysdesign-m11-sync-rate/data";
+import { sysdesignM11CutTheNetwork } from "./sysdesign-m11-cut-the-network/data";
+import { sysdesignM11LatencyOrFresh } from "./sysdesign-m11-latency-or-fresh/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
@@ -521,6 +611,96 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m7-isolation-lab": sysdesignM7IsolationLab,
   "sysdesign-m7-two-writers": sysdesignM7TwoWriters,
   "sysdesign-m7-scaling-path": sysdesignM7ScalingPath,
+  "sysdesign-m12-election-after-crash": sysdesignM12ElectionAfterCrash,
+  "sysdesign-m12-gossip-rumor": sysdesignM12GossipRumor,
+  "sysdesign-m12-lease-handover": sysdesignM12LeaseHandover,
+  "sysdesign-m12-log-commit": sysdesignM12LogCommit,
+  "sysdesign-m12-log-overwritten": sysdesignM12LogOverwritten,
+  "sysdesign-m12-majority-survives": sysdesignM12MajoritySurvives,
+  "sysdesign-m12-old-leader-cut-off": sysdesignM12OldLeaderCutOff,
+  "sysdesign-m12-old-leader-steps-down": sysdesignM12OldLeaderStepsDown,
+  "sysdesign-m12-paused-wakes": sysdesignM12PausedWakes,
+  "sysdesign-m12-paxos-duel": sysdesignM12PaxosDuel,
+  "sysdesign-m12-quorum-overlap": sysdesignM12QuorumOverlap,
+  "sysdesign-m12-registry-watch": sysdesignM12RegistryWatch,
+  "sysdesign-m12-slow-or-dead": sysdesignM12SlowOrDead,
+  "sysdesign-m12-split-vote": sysdesignM12SplitVote,
+  "sysdesign-m12-stale-write": sysdesignM12StaleWrite,
+  "sysdesign-m12-swim-indirect": sysdesignM12SwimIndirect,
+  "sysdesign-m12-swim-suspect": sysdesignM12SwimSuspect,
+  "sysdesign-m12-two-readers": sysdesignM12TwoReaders,
+  "sysdesign-m12-two-schedulers": sysdesignM12TwoSchedulers,
+  "sysdesign-m11-balance-back": sysdesignM11BalanceBack,
+  "sysdesign-m11-cart-lost": sysdesignM11CartLost,
+  "sysdesign-m11-eventually": sysdesignM11Eventually,
+  "sysdesign-m11-no-deadline": sysdesignM11NoDeadline,
+  "sysdesign-m11-one-at-a-time": sysdesignM11OneAtATime,
+  "sysdesign-m11-one-operation": sysdesignM11OneOperation,
+  "sysdesign-m11-quorum-not-enough": sysdesignM11QuorumNotEnough,
+  "sysdesign-m11-reply-first": sysdesignM11ReplyFirst,
+  "sysdesign-m11-reply-waits": sysdesignM11ReplyWaits,
+  "sysdesign-m11-stale-replica-read": sysdesignM11StaleReplicaRead,
+  "sysdesign-m11-two-devices": sysdesignM11TwoDevices,
+  "sysdesign-m11-two-orders": sysdesignM11TwoOrders,
+  "sysdesign-m11-username-twice": sysdesignM11UsernameTwice,
+  "sysdesign-m12-quorum-explorer": sysdesignM12QuorumExplorer,
+  "sysdesign-m12-fencing-play": sysdesignM12FencingPlay,
+  "sysdesign-m13-cart-accepts": sysdesignM13CartAccepts,
+  "sysdesign-m13-cart-refuses": sysdesignM13CartRefuses,
+  "sysdesign-m13-cart-resurrect": sysdesignM13CartResurrect,
+  "sysdesign-m13-counter-naive": sysdesignM13CounterNaive,
+  "sysdesign-m13-crdt-limit": sysdesignM13CrdtLimit,
+  "sysdesign-m13-ddb-conditional": sysdesignM13DdbConditional,
+  "sysdesign-m13-ddb-reads": sysdesignM13DdbReads,
+  "sysdesign-m13-ddb-write": sysdesignM13DdbWrite,
+  "sysdesign-m13-gcounter": sysdesignM13Gcounter,
+  "sysdesign-m13-hint-lost": sysdesignM13HintLost,
+  "sysdesign-m13-hinted-handoff": sysdesignM13HintedHandoff,
+  "sysdesign-m13-lww-skew-story": sysdesignM13LwwSkewStory,
+  "sysdesign-m13-lww-whole-item": sysdesignM13LwwWholeItem,
+  "sysdesign-m13-orset": sysdesignM13Orset,
+  "sysdesign-m13-pncounter": sysdesignM13Pncounter,
+  "sysdesign-m13-sibling-context": sysdesignM13SiblingContext,
+  "sysdesign-m13-strict-fails": sysdesignM13StrictFails,
+  "sysdesign-m13-write-path": sysdesignM13WritePath,
+  "sysdesign-m12-timeout-slider": sysdesignM12TimeoutSlider,
+  "sysdesign-m12-gossip-spread": sysdesignM12GossipSpread,
+  "sysdesign-m12-paxos-play": sysdesignM12PaxosPlay,
+  "sysdesign-m12-registry-play": sysdesignM12RegistryPlay,
+  "sysdesign-m14-2pc-happy": sysdesignM14TwoPcHappy,
+  "sysdesign-m14-2pc-stuck": sysdesignM14TwoPcStuck,
+  "sysdesign-m14-ack-lost": sysdesignM14AckLost,
+  "sysdesign-m14-dedupe-forgot": sysdesignM14DedupeForgot,
+  "sysdesign-m14-dedupe-txn": sysdesignM14DedupeTxn,
+  "sysdesign-m14-dual-write": sysdesignM14DualWrite,
+  "sysdesign-m14-outbox-relay": sysdesignM14OutboxRelay,
+  "sysdesign-m14-outbox-twice": sysdesignM14OutboxTwice,
+  "sysdesign-m14-paid-not-reserved": sysdesignM14PaidNotReserved,
+  "sysdesign-m14-saga-chorus": sysdesignM14SagaChorus,
+  "sysdesign-m14-saga-not-isolated": sysdesignM14SagaNotIsolated,
+  "sysdesign-m14-saga-orchestra": sysdesignM14SagaOrchestra,
+  "sysdesign-m14-saga-steps": sysdesignM14SagaSteps,
+  "sysdesign-m11-build-history": sysdesignM11BuildHistory,
+  "sysdesign-m12-raft-election-play": sysdesignM12RaftElectionPlay,
+  "sysdesign-m12-raft-log-play": sysdesignM12RaftLogPlay,
+  "sysdesign-m11-overlap-or-not": sysdesignM11OverlapOrNot,
+  "sysdesign-m11-is-it-linearizable": sysdesignM11IsItLinearizable,
+  "sysdesign-m11-one-history-three-verdicts": sysdesignM11OneHistoryThreeVerdicts,
+  "sysdesign-m14-2pc-crash": sysdesignM14TwoPcCrash,
+  "sysdesign-m14-saga-fail": sysdesignM14SagaFail,
+  "sysdesign-m14-outbox-crash": sysdesignM14OutboxCrash,
+  "sysdesign-m14-dedupe-flow": sysdesignM14DedupeFlow,
+  "sysdesign-m11-session-reads": sysdesignM11SessionReads,
+  "sysdesign-m11-session-writes": sysdesignM11SessionWrites,
+  "sysdesign-m13-ring-write": sysdesignM13RingWrite,
+  "sysdesign-m13-cluster-heal": sysdesignM13ClusterHeal,
+  "sysdesign-m13-hot-partition": sysdesignM13HotPartition,
+  "sysdesign-m13-lww-skew": sysdesignM13LwwSkew,
+  "sysdesign-m13-cart-merge": sysdesignM13CartMerge,
+  "sysdesign-m13-crdt-play": sysdesignM13CrdtPlay,
+  "sysdesign-m11-sync-rate": sysdesignM11SyncRate,
+  "sysdesign-m11-cut-the-network": sysdesignM11CutTheNetwork,
+  "sysdesign-m11-latency-or-fresh": sysdesignM11LatencyOrFresh,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */

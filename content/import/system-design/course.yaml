@@ -352,3 +352,152 @@ modules:
       - file: 10.11-checklist.md
         title: "Checklist and learning log"
         goal: "Write how you would order two writes 1 ms apart on different servers, what it costs, and link your challenge 9 results."
+  - dir: 11-consistency-models
+    title: "Consistency models"
+    summary: "Know exactly what each consistency promise guarantees, check it against recorded histories, and choose one for each feature of an app."
+    lessons:
+      - file: 11.01-set-the-scene-the-balance-that-went-back-in-time.md
+        title: "Set the scene: the balance that went back in time"
+        goal: "See a bank app show a newer balance and then an older one, and meet the question this module answers."
+      - file: 11.02-a-consistency-model-is-a-contract-on-histories.md
+        title: "A consistency model is a contract on histories"
+        goal: "Read a history of reads and writes drawn as bars, tell ordered pairs from overlapping ones, and say what a model allows."
+      - file: 11.03-linearizability.md
+        title: "Linearizability"
+        goal: "Decide whether a history is linearizable, and explain why compare-and-set, locks and unique usernames need it."
+      - file: 11.04-sequential-and-causal-consistency.md
+        title: "Sequential and causal consistency"
+        goal: "Judge one history under three models, reproduce a reply shown before its question, and fix it."
+      - file: 11.05-session-guarantees-in-code.md
+        title: "Session guarantees in code"
+        goal: "Give each of the four session guarantees a number in a session token and see which anomaly each one stops."
+      - file: 11.06-eventual-consistency-and-convergence.md
+        title: "Eventual consistency and convergence"
+        goal: "Explain what eventual consistency promises, what sets the time to agree, and why agreeing is not the same as being right."
+      - file: 11.07-cap-and-pacelc-read-correctly.md
+        title: "CAP and PACELC, read correctly"
+        goal: "Explain the choice during a partition and the latency against consistency choice when there is none."
+      - file: 11.08-code-a-linearizability-checker.md
+        title: "Code: a linearizability checker"
+        goal: "Write findLinearization to check small single-register histories by search and return a legal order or null."
+      - file: 11.09-challenge-10-consistency-in-practice.md
+        title: "Challenge 10: consistency in practice"
+        goal: "Count three anomalies on lagging replicas, remove them with a session-token client, and measure what that costs the leader."
+      - file: 11.10-quiz.md
+        title: "Consistency models"
+        goal: "Answer graded scenarios on histories, unique names, session tokens, the choice in a network cut and the price of waiting."
+      - file: 11.11-checklist-and-learning-log.md
+        title: "Checklist and learning log"
+        goal: "Write a consistency choice for the likes, posts, balance and username of a social app, and link your challenge 10 results."
+  - dir: 12-consensus-leader-election-and-coordination
+    title: "Consensus, leader election and coordination"
+    summary: "Get many machines to agree, elect one leader safely, and keep track of who is alive."
+    lessons:
+      - file: 12.01-set-the-scene-two-schedulers-in-charge.md
+        title: "Set the scene: two schedulers in charge"
+        goal: "See a standby scheduler take over from a main one that only looked dead, and a customer billed twice."
+      - file: 12.02-why-agreement-is-hard.md
+        title: "Why agreement is hard"
+        goal: "Explain why a slow node and a dead node look the same, and what a short and a long timeout each cost."
+      - file: 12.03-quorums.md
+        title: "Quorums"
+        goal: "Use majorities and W + R > N, and count the failures a cluster survives."
+      - file: 12.04-leader-election-leases-and-fencing-tokens.md
+        title: "Leader election, leases and fencing tokens"
+        goal: "Stop an old leader after a long pause with a fencing token that storage checks."
+      - file: 12.05-raft-part-1-terms-and-elections.md
+        title: "Raft, part 1: terms and elections"
+        goal: "Explain terms, votes, randomised timeouts and split votes."
+      - file: 12.06-raft-part-2-log-replication-and-commit.md
+        title: "Raft, part 2: log replication and commit"
+        goal: "Explain how entries commit and why a partitioned old leader's entries are overwritten."
+      - file: 12.07-paxos-and-multi-leader-setups.md
+        title: "Paxos and multi-leader setups"
+        goal: "Walk single-decree Paxos with two proposers, and compare Multi-Paxos with Raft and with multi-leader replication."
+      - file: 12.08-gossip-and-failure-detection.md
+        title: "Gossip and failure detection"
+        goal: "Explain how gossip spreads in about log N rounds, how SWIM checks before it blames, and why it suspects before it declares death."
+      - file: 12.09-service-discovery-and-coordination-services.md
+        title: "Service discovery and coordination services"
+        goal: "Explain registration, leases, heartbeats and watches with etcd, ZooKeeper or Consul, and where plain DNS fits."
+      - file: 12.10-code-raft-voting-rules.md
+        title: "Code: Raft voting rules"
+        goal: "Implement handleRequestVote, the up-to-date check, the quorum maths and the commit rule, and pass the scenario tests."
+      - file: 12.11-challenge-11-raft.md
+        title: "Challenge 11: Raft"
+        goal: "Run a five-node Raft cluster on the simulated network, measure election time and commit time, and see which writes survive a partition."
+      - file: 12.12-quiz.md
+        title: "Consensus and coordination"
+        goal: "Answer graded scenarios on majorities, leases and fencing, terms, commits and the choice between gossip and consensus."
+      - file: 12.13-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write how your job scheduler makes sure only one copy runs, and link your challenge 11 results."
+  - dir: 13-leaderless-stores-dynamo-and-conflict-resolution
+    title: "Leaderless stores, Dynamo and conflict resolution"
+    summary: "Build an always-writable store and settle the conflicts it creates: quorums, sloppy quorums and hints, last write wins and the data it loses, siblings, and CRDTs."
+    lessons:
+      - file: 13.01-set-the-scene-the-cart-that-must-always-accept.md
+        title: "Set the scene: the cart that must always accept"
+        goal: "See a cart with one leader refuse an add during a failure, and a cart with no leader accept two adds and end with two versions."
+      - file: 13.02-the-dynamo-design-end-to-end.md
+        title: "The Dynamo design end to end"
+        goal: "Walk a key through the ring, the preference list that skips repeated machines, the coordinator, W confirmations and R answers, and choose N, R and W for a job."
+      - file: 13.03-sloppy-quorums-hinted-handoff-read-repair-and-merkle-trees.md
+        title: "Sloppy quorums, hinted handoff, read repair and Merkle trees"
+        goal: "Explain how a store keeps writing through failures, why a read can then miss a write, and how hints, read repair and Merkle trees heal the copies."
+      - file: 13.04-dynamodb-today-versus-the-dynamo-paper.md
+        title: "DynamoDB today versus the Dynamo paper"
+        goal: "Explain how the managed service differs from the 2007 paper: a leader per partition, two kinds of read, conditional writes, and a hot partition that stays capped."
+      - file: 13.05-last-write-wins-and-lost-data.md
+        title: "Last-write-wins and lost data"
+        goal: "Show how last write wins with a slow clock silently drops the later write, count the wrong winners, and say when the rule is still fine."
+      - file: 13.06-siblings-and-application-merges.md
+        title: "Siblings and application merges"
+        goal: "Keep concurrent versions with vector clocks, merge them with the context, see a deleted item come back, and compare four merge rules."
+      - file: 13.07-crdts.md
+        title: "CRDTs"
+        goal: "Explain why a G-Counter, a PN-Counter and an OR-Set merge to the same result in any order, and what no CRDT can promise."
+      - file: 13.08-code-crdts.md
+        title: "Code: CRDTs"
+        goal: "Implement a G-Counter, a PN-Counter and an OR-Set, and pass exact tests and property tests for commutative, associative and idempotent merges."
+      - file: 13.09-challenge-12-a-leaderless-key-value-store.md
+        title: "Challenge 12: a leaderless key-value store"
+        goal: "Build a leaderless store on the simulated network, measure stale reads for N, R and W, keep writing through failures with hints, compare last write wins with siblings, and run an OR-Set cart."
+      # 13.10 (Lab: a distributed key-value store) is skipped until the sandbox exists.
+      - file: 13.11-quiz.md
+        title: "Leaderless stores and conflicts"
+        goal: "Answer graded scenarios on N, R and W, sloppy quorums, DynamoDB against the paper, last write wins with a slow clock, and a cart that merges itself."
+      - file: 13.12-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write which conflict strategy you choose for a cart, a like counter and a delivery address, with a number, a cost and a trigger to change."
+  - dir: 14-distributed-transactions-and-exactly-once
+    title: "Distributed transactions and exactly-once"
+    summary: "Keep data correct across services without a single database: two-phase commit and why it blocks, sagas with compensations, the outbox pattern, and exactly-once as at-least-once plus idempotency."
+    lessons:
+      - file: 14.01-set-the-scene-paid-but-never-reserved.md
+        title: "Set the scene: paid but never reserved"
+        goal: "See a checkout charge a card and crash before it reserves the stock, and see the four tools this module uses."
+      - file: 14.02-two-phase-commit-and-why-it-blocks.md
+        title: "Two-phase commit and why it blocks"
+        goal: "Walk two-phase commit across two databases, explain why a prepared database cannot decide alone, and find where a coordinator crash blocks everyone."
+      - file: 14.03-sagas.md
+        title: "Sagas"
+        goal: "Break a cross-service order into local commits, run compensations newest first when a step fails, compare orchestration with choreography, and name what a saga gives up."
+      - file: 14.04-the-outbox-pattern-and-change-data-capture.md
+        title: "The outbox pattern and change data capture"
+        goal: "Replace a dual write with an outbox row saved in the same transaction, explain why the relay can publish twice, and compare polling with change data capture."
+      - file: 14.05-exactly-once-is-at-least-once-plus-idempotency.md
+        title: "Exactly-once is at-least-once plus idempotency"
+        goal: "Make a consumer safe to run twice by saving the message id in the same transaction as the work, and choose how long to remember ids."
+      - file: 14.06-code-idempotent-consumer-and-saga-runner.md
+        title: "Code: idempotent consumer and saga runner"
+        goal: "Implement a dedupe store with an expiry, a handler that runs once per message id, and a saga runner that compensates in reverse order and passes the tests."
+      - file: 14.07-challenge-13-an-order-saga.md
+        title: "Challenge 13: an order saga"
+        goal: "Crash an order service on PostgreSQL and fix it with an outbox, an idempotent consumer and a saga with compensations, then audit the database to prove no order is half done."
+      - file: 14.08-quiz.md
+        title: "Distributed transactions"
+        goal: "Answer graded scenarios on two-phase commit, saga undo order, the outbox, idempotent consumers and what exactly-once really means."
+      - file: 14.09-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a failure walk-through of a checkout saga, with the undo order, where the state lives and what stops a repeated step from doing harm, and link your challenge 13 results."
