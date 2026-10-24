@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { computeSampling, describeSamplingChange, sampleTraces, traceSampling } from "@/canvas/trace-sampling/data";
-import { defaultValues } from "@/canvas/renderers/slider/model";
+import { computeSampling, describeSamplingChange, sampleTraces, traceSampling } from "@buildment/learning-ui/canvas/trace-sampling/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 const start = defaultValues(traceSampling);
 

@@ -1,6 +1,6 @@
 import { requireTeachSurface } from "@/server/auth/guards";
-import { CanvasForSpec, InteractiveCanvas } from "@/canvas/InteractiveCanvas";
-import { CANVAS_SLUGS, canvasRegistry } from "@/canvas/registry";
+import { CanvasForSpec, InteractiveCanvas } from "@buildment/learning-ui/canvas/InteractiveCanvas";
+import { CANVAS_SLUGS, canvasRegistry } from "@buildment/learning-ui/canvas/registry";
 
 export const metadata = { title: "Interactive canvases" };
 

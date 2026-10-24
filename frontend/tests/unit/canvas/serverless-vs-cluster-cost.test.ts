@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { cheaper, computeCost, dailyCost, describeCostChange, serverlessVsClusterCost } from "@/canvas/serverless-vs-cluster-cost/data";
-import { defaultValues } from "@/canvas/renderers/slider/model";
+import { cheaper, computeCost, dailyCost, describeCostChange, serverlessVsClusterCost } from "@buildment/learning-ui/canvas/serverless-vs-cluster-cost/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 const start = defaultValues(serverlessVsClusterCost);
 

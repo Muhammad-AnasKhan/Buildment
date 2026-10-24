@@ -33,6 +33,23 @@ for (const file of walk(SOURCE)) {
 }
 
 const actual = new Map();
+// The shared UI ships only the browser-safe contracts it consumes.
+const uiRoot = path.resolve(here, '../../packages/learning-ui');
+const uiContracts = JSON.parse(fs.readFileSync(path.join(uiRoot, 'contracts.json'), 'utf8'));
+for (const rel of uiContracts) {
+  const source = expected.get(rel.split('/').join(path.sep));
+  if (source === undefined) throw new Error(`Unknown learning-ui contract: ${rel}`);
+  const destination = path.join(uiRoot, 'src/shared', rel);
+  const existing = fs.existsSync(destination) ? fs.readFileSync(destination, 'utf8') : null;
+  if (existing !== source) {
+    if (check) {
+      console.error(`learning-ui contract is stale: ${rel}. Run pnpm sync-shared in server/.`);
+      process.exit(1);
+    }
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.writeFileSync(destination, source);
+  }
+}
 if (fs.existsSync(TARGET)) {
   for (const file of walk(TARGET)) actual.set(path.relative(TARGET, file), fs.readFileSync(file, "utf8"));
 }

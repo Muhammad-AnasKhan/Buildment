@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { defaultValues } from "@/canvas/renderers/slider/model";
-import { chance, describeSamplingChange, sampling, samplingTemperature } from "@/canvas/sampling-temperature/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
+import { chance, describeSamplingChange, sampling, samplingTemperature } from "@buildment/learning-ui/canvas/sampling-temperature/data";
 
 const sum = (values: number[]) => values.reduce((a, b) => a + b, 0);
 

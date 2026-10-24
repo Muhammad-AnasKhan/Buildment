@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { defaultValues } from "@/canvas/renderers/slider/model";
-import { describeTokenCostChange, llmTokenCost, tokenCost } from "@/canvas/llm-token-cost/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
+import { describeTokenCostChange, llmTokenCost, tokenCost } from "@buildment/learning-ui/canvas/llm-token-cost/data";
 
 const start = defaultValues(llmTokenCost);
 

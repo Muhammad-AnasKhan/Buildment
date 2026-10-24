@@ -9,8 +9,8 @@ import {
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
 import { backendBase, fetchCatalog } from './api';
-import { createPreviewClient } from './preview-api';
-import { createBrowserAuth } from './browser-auth';
+import { createPreviewClient } from './api';
+import { createBrowserAuth } from './auth/browser-auth';
 
 let mainWindow: BrowserWindow | null = null;
 const apiBase = process.env.BUILDMENT_API_URL || 'http://localhost:4000';
@@ -24,7 +24,9 @@ function cancelBrowserAuth() {
   previewClient.cancelSignIn();
   browserAuth.cancel();
 }
-app.on('before-quit', cancelBrowserAuth);
+app.on('before-quit', () => {
+  cancelBrowserAuth();
+});
 function requireRenderer(event: IpcMainInvokeEvent) {
   if (
     !mainWindow ||
@@ -56,12 +58,33 @@ function createWindow() {
   window.once('ready-to-show', () => {
     if (!window.isDestroyed()) window.show();
   });
-  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    // Reading references open in the browser; no remote Electron windows.
+    if (/^https:\/\//i.test(url)) void shell.openExternal(url);
+    return { action: 'deny' };
+  });
   mainWindow.webContents.on('will-navigate', (event) => event.preventDefault());
+  // Camera access is requested only by the quiz's explicit opt-in control.
   mainWindow.webContents.session.setPermissionRequestHandler(
-    (_contents, _permission, callback) => callback(false),
+    (contents, permission, callback, details) => {
+      const trusted =
+        contents === mainWindow?.webContents && details.isMainFrame;
+      const videoOnly =
+        'mediaTypes' in details &&
+        details.mediaTypes?.length === 1 &&
+        details.mediaTypes[0] === 'video';
+      callback(Boolean(trusted && permission === 'media' && videoOnly));
+    },
   );
-  mainWindow.webContents.session.setPermissionCheckHandler(() => false);
+  mainWindow.webContents.session.setPermissionCheckHandler(
+    (contents, permission, _origin, details) => {
+      return (
+        contents === mainWindow?.webContents &&
+        permission === 'media' &&
+        details.mediaType === 'video'
+      );
+    },
+  );
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -89,6 +112,54 @@ function createWindow() {
 if (started) app.quit();
 else {
   app.whenReady().then(() => {
+    ipcMain.handle('course:start-learning', (event, slug) => {
+      requireRenderer(event);
+      return previewClient.nextLesson(slug);
+    });
+    ipcMain.handle('learning:integrity', (event, path, method, body) => {
+      requireRenderer(event);
+      return previewClient.integrityRequest(path, method, body);
+    });
+    ipcMain.handle('learning:lesson', (event, course, chapter) => {
+      requireRenderer(event);
+      return previewClient.learning.lesson(course, chapter);
+    });
+    ipcMain.handle('learning:overview', (event, course) => {
+      requireRenderer(event);
+      return previewClient.learning.overview(course);
+    });
+    ipcMain.handle('learning:block', (event, id) => {
+      requireRenderer(event);
+      return previewClient.learning.block(id);
+    });
+    ipcMain.handle('learning:answer', (event, id, payload) => {
+      requireRenderer(event);
+      return previewClient.learning.answer(id, payload);
+    });
+    ipcMain.handle('learning:quiz', (event, id) => {
+      requireRenderer(event);
+      return previewClient.learning.quiz(id);
+    });
+    ipcMain.handle('learning:submit-quiz', (event, id, answers) => {
+      requireRenderer(event);
+      return previewClient.learning.submitQuiz(id, answers);
+    });
+    ipcMain.handle('learning:complete', (event, id) => {
+      requireRenderer(event);
+      return previewClient.learning.complete(id);
+    });
+    ipcMain.handle('learning:save-log', (event, id, answers) => {
+      requireRenderer(event);
+      return previewClient.learning.saveLog(id, answers);
+    });
+    ipcMain.handle('learning:checklist', (event, id, item, checked) => {
+      requireRenderer(event);
+      return previewClient.learning.checklist(id, item, checked);
+    });
+    ipcMain.handle('enrollment:create', (event, courseId) => {
+      requireRenderer(event);
+      return previewClient.enroll(courseId);
+    });
     ipcMain.handle('catalog:detail', (event, slug) => {
       requireRenderer(event);
       return previewClient.courseDetail(slug);

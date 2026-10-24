@@ -1,8 +1,8 @@
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { InteractiveCanvas } from "@/canvas/InteractiveCanvas";
-import { DEFAULT_INPUT, GRID_END, START_BOUNDS, simulateClaims } from "@/canvas/skill-slot-block-claims/model";
+import { InteractiveCanvas } from "@buildment/learning-ui/canvas/InteractiveCanvas";
+import { DEFAULT_INPUT, GRID_END, START_BOUNDS, simulateClaims } from "@buildment/learning-ui/canvas/skill-slot-block-claims/model";
 
 describe("SkillSlot block claims", () => {
   it("shows five occupied blocks and the default 09:45 collision", () => {

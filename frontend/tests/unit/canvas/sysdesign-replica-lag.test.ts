@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { describeLagChange, lagTrace, LAG_DEFAULTS, simulateLag } from "@/canvas/sysdesign-replica-lag/model";
-import { overlappingLabels, timelineGeometry } from "@/canvas/renderers/timeline/geometry";
+import { describeLagChange, lagTrace, LAG_DEFAULTS, simulateLag } from "@buildment/learning-ui/canvas/sysdesign-replica-lag/model";
+import { overlappingLabels, timelineGeometry } from "@buildment/learning-ui/canvas/renderers/timeline/geometry";
 
 describe("replica lag", () => {
   it("shows the comment, loses it, then shows it again by default", () => {

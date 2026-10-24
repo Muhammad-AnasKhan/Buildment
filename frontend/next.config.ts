@@ -7,6 +7,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 const apiUrl = (process.env.API_URL ?? "http://localhost:4000").replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
+  transpilePackages: ['@buildment/learning-ui'],
   // Self-contained server for the Docker image (frontend/Dockerfile); no effect on `next dev`.
   output: "standalone",
   // This folder is the whole app (the API's contract code is copied into src/shared), so

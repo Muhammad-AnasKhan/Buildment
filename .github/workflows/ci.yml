@@ -101,7 +101,8 @@ jobs:
           cache-to: type=gha,scope=api,mode=max
       - uses: docker/build-push-action@v6
         with:
-          context: frontend
+          context: .
+          file: frontend/Dockerfile
           push: false
           cache-from: type=gha,scope=web
           cache-to: type=gha,scope=web,mode=max

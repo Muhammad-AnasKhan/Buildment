@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { computeSteps, describeStepsChange, ENERGY, stepsOutcome, stepsToStart } from "@/canvas/steps-to-start/data";
-import { defaultValues } from "@/canvas/renderers/slider/model";
+import { computeSteps, describeStepsChange, ENERGY, stepsOutcome, stepsToStart } from "@buildment/learning-ui/canvas/steps-to-start/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 const start = defaultValues(stepsToStart);
 

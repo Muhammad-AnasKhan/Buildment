@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { defaultValues } from "@/canvas/renderers/slider/model";
-import { chunkLengths, chunkSizeOverlap, chunking, cutShare, describeChunkingChange } from "@/canvas/chunk-size-overlap/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
+import { chunkLengths, chunkSizeOverlap, chunking, cutShare, describeChunkingChange } from "@buildment/learning-ui/canvas/chunk-size-overlap/data";
 
 const start = defaultValues(chunkSizeOverlap);
 

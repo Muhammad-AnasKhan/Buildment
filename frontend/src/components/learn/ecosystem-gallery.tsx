@@ -29,7 +29,7 @@ import {
   ArchitectureDiagram, ArchNode, CompareColumn, ComparePanel, DiffBlock,
   FileTree, FileTreeItem, TerminalBlock, TerminalLine, TraceRequest, TraceStep,
 } from "@/components/learn/content-blocks";
-import { InteractiveCanvas } from "@/canvas/InteractiveCanvas";
+import { InteractiveCanvas } from "@buildment/learning-ui/canvas/InteractiveCanvas";
 import { CANVAS_SLUGS } from "@/shared/canvas/slugs";
 import { MDX_COMPONENT_NAMES } from "@/shared/mdx/component-allowlist";
 

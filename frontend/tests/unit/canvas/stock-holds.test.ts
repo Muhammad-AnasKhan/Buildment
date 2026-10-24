@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateStockHold } from "@/canvas/freshmarket-stock-holds/model";
+import { calculateStockHold } from "@buildment/learning-ui/canvas/freshmarket-stock-holds/model";
 
 describe("FreshMarket stock holds", () => {
   it("holds units before payment, then decrements stock and the new hold together", () => {

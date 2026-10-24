@@ -6,8 +6,8 @@ import {
   scoreOptions,
   snapWeight,
   standing,
-} from "@/canvas/renderers/factor/model";
-import { weightedMatrixTwoOffers as spec } from "@/canvas/weighted-matrix-two-offers/data";
+} from "@buildment/learning-ui/canvas/renderers/factor/model";
+import { weightedMatrixTwoOffers as spec } from "@buildment/learning-ui/canvas/weighted-matrix-two-offers/data";
 
 const all = (w: number) => Object.fromEntries(spec.criteria.map((c) => [c.id, w]));
 
