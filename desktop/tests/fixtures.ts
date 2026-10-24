@@ -1,4 +1,4 @@
-import type { Course, CourseDetail } from '../src/catalog';
+import type { Course, CourseDetail } from '../src/domain/catalog';
 
 export const courses: Course[] = [
   {
@@ -42,6 +42,7 @@ export const courses: Course[] = [
 ];
 
 export const courseDetail: CourseDetail = {
+  signedIn: true,
   ...courses[0],
   access: 'active',
   modules: [

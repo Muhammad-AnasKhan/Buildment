@@ -54,7 +54,13 @@ describe("catalog", () => {
     expect(res.status).toBe(200);
     const mine = res.body.data.courses.find((c: { slug: string }) => c.slug === fx.course.slug);
     expect(mine).toMatchObject({ enrollmentLifecycle: null, chapterCount: 2 });
-    expect((await request(app).get(`/api/v1/catalog/${fx.course.slug}`)).status).toBe(401);
+    const detail = await request(app).get(`/api/v1/catalog/${fx.course.slug}`);
+    expect(detail.status).toBe(200);
+    expect(detail.body.data).toMatchObject({ signedIn: false, access: "none", enrollmentLifecycle: null });
+    expect(detail.body.data.modules[0].chapters.map((c: { title: string }) => c.title)).toEqual(["Chapter A", "Chapter B"]);
+    expect(Object.keys(detail.body.data.modules[0].chapters[0]).sort()).toEqual(["estimatedMinutes", "id", "order", "title"]);
+    expect((await request(app).post("/api/v1/enrollments").send({ courseId: fx.course.id })).status).toBe(401);
+    expect((await request(app).get(`/api/v1/courses/${fx.course.slug}/chapters/chapter-a`)).status).toBe(401);
   });
 
   it("describes one course with curriculum and access", async () => {

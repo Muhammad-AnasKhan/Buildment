@@ -1,6 +1,6 @@
 # Buildment desktop
 
-Electron Forge + React + TypeScript + Tailwind CSS. Includes the public course catalog, dedicated course previews, protected curriculum outlines, browser sign-in, and a branded startup loader. No IDE or labs are included yet.
+Electron Forge + React + TypeScript + Tailwind CSS. Includes the public course catalog, dedicated course previews, public curriculum outlines, browser sign-in, and a branded startup loader. No IDE or labs are included yet.
 
 From the repository root:
 
@@ -37,3 +37,19 @@ npm --prefix desktop run package
 On Windows, after packaging, `cd desktop` and run `npx tsx tests/desktop-smoke.mts` to check the packaged application's real preload and HTTP connection against a temporary local test API. It closes the app when finished.
 
 UI tests use isolated backend fixtures through a mocked desktop bridge and require a locally installed Chrome. They do not validate a live backend. Packaging produces an application in `desktop/out/`; `npm --prefix desktop run make` creates a platform-specific distributable. Signing and publishing are not configured.
+
+## Source organization
+
+- `src/api/`: backend clients; session tokens stay in the main process.
+- `src/ui/layout/`: workspace header and sidebar.
+- `src/ui/auth/`: session hook, account menu, and sign-in prompt.
+- `src/ui/courses/`: catalog and preview views, course cards, summary, and curriculum.
+- `src/ui/App.tsx`: composes views and preserves catalog filters and navigation state.
+
+Keep backend calls in the API clients. Pass data and callbacks into display components; keep shared session state in the session hook.
+
+Support files live in src/auth/ (browser sign-in), src/domain/ (course types and helpers), src/types/ (build declarations), and src/styles/ (CSS). The root keeps only Electron and renderer entry points: main.ts, preload.ts, renderer.tsx, and startup.ts.
+
+Start learning opens a native React reader in the desktop app, with course curriculum replacing the catalog sidebar. Lessons, quizzes, grading, and progress use the backend through authenticated IPC. Browser sign-in still uses BUILDMENT_WEB_URL; reading does not embed the website. MDX is parsed as literal data without executing expressions. Callouts, diagrams, visual walkthroughs, media, roadmaps, file trees, request traces, and interactive canvases use the same rendering components as web.
+
+Reader components live in src/ui/learning/, quiz components in src/ui/learning/quiz/, and content parsing in src/learning/. Reusable UI lives in ../packages/learning-ui; both apps install it as @buildment/learning-ui. After editing the package, run install in each app to refresh its local snapshot. Desktop quizzes use the shared integrity hook through an IPC transport: focus and clipboard events, fullscreen reminders, and optional camera snapshots follow the web rules. Signals are advisory mentor notes and never automatically fail a learner. Snapshot capture requires consent; screenshot detection is best effort.

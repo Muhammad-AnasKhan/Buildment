@@ -1,0 +1,130 @@
+import type { Result } from '../domain/catalog';
+import type { Lesson, BlockState, AnswerResult } from '../domain/learning';
+import { parseLesson } from '../learning/parse-lesson';
+import { isRecord } from './validation';
+type Request = (
+  path: string,
+  method?: string,
+  body?: unknown,
+) => Promise<Result<unknown>>;
+const segment = (value: string) => encodeURIComponent(value);
+function valid(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0 && value.length <= 200;
+}
+const invalid = {
+  ok: false as const,
+  code: 'INVALID_INPUT',
+  message: 'Invalid lesson request.',
+};
+export function createLearningClient(request: Request) {
+  return {
+    async lesson(course: string, chapter: string): Promise<Result<Lesson>> {
+      if (!valid(course) || !valid(chapter)) return invalid;
+      const result = await request(
+        '/api/v1/courses/' + segment(course) + '/chapters/' + segment(chapter),
+      );
+      if (!result.ok) return result;
+      const data = result.data;
+      if (
+        !isRecord(data) ||
+        !isRecord(data.chapter) ||
+        !Array.isArray(data.modules) ||
+        (data.content !== null &&
+          (!isRecord(data.content) || typeof data.content.source !== 'string'))
+      )
+        return {
+          ok: false,
+          code: 'INVALID_RESPONSE',
+          message: 'The lesson could not be read.',
+        };
+      try {
+        const document = parseLesson(
+          isRecord(data.content) ? String(data.content.source) : '',
+        );
+        return { ok: true, data: { ...data, document } as Lesson };
+      } catch {
+        return {
+          ok: false,
+          code: 'INVALID_CONTENT',
+          message:
+            'This lesson has invalid content. Please contact your instructor.',
+        };
+      }
+    },
+    async overview(course: string) {
+      if (!valid(course)) return invalid;
+      return request('/api/v1/courses/' + segment(course) + '/overview');
+    },
+    async block(id: string): Promise<Result<BlockState>> {
+      if (!valid(id)) return invalid;
+      const result = await request('/api/v1/blocks/' + segment(id) + '/state');
+      if (!result.ok) return result;
+      if (
+        !isRecord(result.data) ||
+        typeof result.data.type !== 'string' ||
+        !isRecord(result.data.config)
+      )
+        return {
+          ok: false,
+          code: 'INVALID_RESPONSE',
+          message: 'Could not load this exercise.',
+        };
+      return { ok: true, data: result.data as BlockState };
+    },
+    async answer(
+      id: string,
+      payload: Record<string, unknown>,
+    ): Promise<Result<AnswerResult>> {
+      if (!valid(id) || !isRecord(payload)) return invalid;
+      const result = await request(
+        '/api/v1/blocks/' + segment(id) + '/respond',
+        'POST',
+        payload,
+      );
+      if (!result.ok) return result;
+      if (!isRecord(result.data))
+        return {
+          ok: false,
+          code: 'INVALID_RESPONSE',
+          message: 'Could not confirm your answer.',
+        };
+      return { ok: true, data: result.data as AnswerResult };
+    },
+    async quiz(id: string) {
+      if (!valid(id)) return invalid;
+      return request('/api/v1/chapters/' + segment(id) + '/quiz');
+    },
+    async submitQuiz(
+      id: string,
+      answers: Array<{ blockId: string; selected: string[] }>,
+    ) {
+      if (!valid(id) || !Array.isArray(answers)) return invalid;
+      return request(
+        '/api/v1/chapters/' + segment(id) + '/quiz/submit',
+        'POST',
+        { answers },
+      );
+    },
+    async complete(id: string) {
+      if (!valid(id)) return invalid;
+      return request('/api/v1/chapters/' + segment(id) + '/complete', 'POST');
+    },
+    async saveLog(id: string, answers: Record<string, string>) {
+      if (!valid(id) || !isRecord(answers)) return invalid;
+      return request(
+        '/api/v1/chapters/' + segment(id) + '/learning-log',
+        'PUT',
+        { answers },
+      );
+    },
+    async checklist(id: string, item: string, checked: boolean) {
+      if (!valid(id) || !valid(item) || typeof checked !== 'boolean')
+        return invalid;
+      return request(
+        '/api/v1/chapters/' + segment(id) + '/checklist/' + segment(item),
+        'PUT',
+        { checked },
+      );
+    },
+  };
+}

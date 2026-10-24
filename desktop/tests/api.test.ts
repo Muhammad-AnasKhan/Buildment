@@ -1,10 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { backendBase, fetchCatalog } from '../src/api';
-import { filterCourses } from '../src/catalog';
+import { filterCourses } from '../src/domain/catalog';
 import { courses, courseDetail } from './fixtures';
-import { createPreviewClient } from '../src/preview-api';
-import { createBrowserAuth } from '../src/browser-auth';
+import { createPreviewClient } from '../src/api';
+import { createBrowserAuth } from '../src/auth/browser-auth';
 import { createHash } from 'node:crypto';
 
 test('catalog uses the existing envelope and fixed endpoint', async () => {
@@ -91,7 +91,9 @@ test('preview login keeps bearer token private and sign-out clears it', async ()
       }
       assert.equal(
         new Headers(init?.headers).get('Authorization'),
-        'Bearer private-session',
+        calls.length === 1 || calls.length === 5
+          ? null
+          : 'Bearer private-session',
       );
       return Response.json({
         success: true,
@@ -101,8 +103,8 @@ test('preview login keeps bearer token private and sign-out clears it', async ()
       });
     },
   );
-  assert.equal((await client.courseDetail('systems')).ok, false);
-  assert.equal(calls.length, 0);
+  assert.equal((await client.courseDetail('systems')).ok, true);
+  assert.equal(calls.length, 1);
   assert.deepEqual(await client.exchange('c'.repeat(43), 'v'.repeat(43)), {
     ok: true,
     data: { signedIn: true },
@@ -115,8 +117,8 @@ test('preview login keeps bearer token private and sign-out clears it', async ()
     ok: true,
     data: { signedIn: false },
   });
-  assert.equal((await client.courseDetail('systems')).ok, false);
-  assert.equal(calls.length, 3);
+  assert.equal((await client.courseDetail('systems')).ok, true);
+  assert.equal(calls.length, 5);
 });
 
 test('expired sessions and unverified accounts respect backend access rules', async () => {
@@ -143,7 +145,7 @@ test('expired sessions and unverified accounts respect backend access rules', as
   const expired = await client.courseDetail('systems');
   assert.equal(!expired.ok && expired.code, 'AUTH_REQUIRED');
   const next = await client.courseDetail('systems');
-  assert.equal(!next.ok && next.message, 'Sign in to view the curriculum.');
+  assert.equal(!next.ok && next.code, 'AUTH_REQUIRED');
 });
 
 test('malformed curriculum fails safely and offline logout still clears local session', async () => {
@@ -162,7 +164,7 @@ test('malformed curriculum fails safely and offline logout still clears local se
   const logout = await client.signOut();
   assert.equal(!logout.ok && logout.code, 'LOCAL_SIGN_OUT');
   const next = await client.courseDetail('systems');
-  assert.equal(!next.ok && next.code, 'AUTH_REQUIRED');
+  assert.equal(!next.ok && next.code, 'INVALID_RESPONSE');
 });
 test('rejects malformed courses without rendering broken data', async () => {
   for (const body of [
@@ -222,4 +224,188 @@ test('search and category selection work together', () => {
   assert.equal(filterCourses(courses, '  LINUX ', 'TECH').length, 1);
   assert.equal(filterCourses(courses, 'Linux', 'SOFT_SKILLS').length, 0);
   assert.equal(filterCourses(courses, 'mentor', 'all')[0]?.id, 'two');
+});
+
+test('enrollment requires login and sends the course ID with the private session', async () => {
+  let calls = 0;
+  let lifecycle = 'ACTIVE';
+  const client = createPreviewClient(
+    'http://localhost:4000',
+    async (url, init) => {
+      calls++;
+      if (String(url).endsWith('/exchange'))
+        return Response.json({
+          success: true,
+          data: { session: { token: 'private' } },
+        });
+      assert.equal(String(url), 'http://localhost:4000/api/v1/enrollments');
+      assert.equal(init?.method, 'POST');
+      assert.equal(
+        new Headers(init?.headers).get('Authorization'),
+        'Bearer private',
+      );
+      assert.deepEqual(JSON.parse(String(init?.body)), {
+        courseId: 'course-id',
+      });
+      return Response.json({ success: true, data: { lifecycle } });
+    },
+  );
+  const anonymous = await client.enroll('course-id');
+  assert.equal(!anonymous.ok && anonymous.code, 'AUTH_REQUIRED');
+  assert.equal(calls, 0);
+  await client.exchange('c'.repeat(43), 'v'.repeat(43));
+  assert.deepEqual(await client.enroll('course-id'), {
+    ok: true,
+    data: { lifecycle: 'ACTIVE' },
+  });
+  lifecycle = 'PAYMENT_REQUIRED';
+  assert.deepEqual(await client.enroll('course-id'), {
+    ok: true,
+    data: { lifecycle: 'PAYMENT_REQUIRED' },
+  });
+  lifecycle = 'invalid';
+  const malformed = await client.enroll('course-id');
+  assert.equal(!malformed.ok && malformed.code, 'INVALID_RESPONSE');
+});
+
+test('next lesson requires login and rejects unsafe lesson addresses', async () => {
+  let href: string | null = '/courses/systems/first-lesson';
+  const client = createPreviewClient('http://localhost:4000', async (url) => {
+    if (String(url).endsWith('/exchange'))
+      return Response.json({
+        success: true,
+        data: { session: { token: 'private' } },
+      });
+    assert.equal(
+      String(url),
+      'http://localhost:4000/api/v1/courses/systems/continue',
+    );
+    return Response.json({ success: true, data: { href } });
+  });
+  const anonymous = await client.nextLesson('systems');
+  assert.equal(!anonymous.ok && anonymous.code, 'AUTH_REQUIRED');
+  await client.exchange('c'.repeat(43), 'v'.repeat(43));
+  assert.deepEqual(await client.nextLesson('systems'), {
+    ok: true,
+    data: { href },
+  });
+  for (const unsafe of [
+    'https://example.com',
+    '/courses/other/lesson',
+    '/courses/systems/../admin',
+  ]) {
+    href = unsafe;
+    const result = await client.nextLesson('systems');
+    assert.equal(!result.ok && result.code, 'INVALID_RESPONSE');
+  }
+  href = null;
+  assert.deepEqual(await client.nextLesson('systems'), {
+    ok: true,
+    data: { href: null },
+  });
+});
+
+test('native lesson API requires auth, parses content and handles 204 completion', async () => {
+  const requests: string[] = [];
+  const client = createPreviewClient(
+    'http://localhost:4000',
+    async (url, init) => {
+      const path = String(url);
+      requests.push(path);
+      if (path.endsWith('/exchange'))
+        return Response.json({
+          success: true,
+          data: { session: { token: 'private' } },
+        });
+      assert.equal(
+        new Headers(init?.headers).get('Authorization'),
+        'Bearer private',
+      );
+      if (path.endsWith('/complete'))
+        return new Response(null, { status: 204 });
+      return Response.json({
+        success: true,
+        data: {
+          chapter: { id: 'chapter' },
+          modules: [],
+          content: { source: '# Lesson\n\n<Quiz id="q1" />' },
+        },
+      });
+    },
+  );
+  const anonymous = await client.learning.lesson('systems', 'intro');
+  assert.equal(!anonymous.ok && anonymous.code, 'AUTH_REQUIRED');
+  assert.equal(requests.length, 0);
+  await client.exchange('c'.repeat(43), 'v'.repeat(43));
+  const lesson = await client.learning.lesson('systems', 'intro');
+  assert.equal(lesson.ok && lesson.data.document.type, 'root');
+  assert.deepEqual(await client.learning.complete('chapter'), {
+    ok: true,
+    data: null,
+  });
+});
+
+test('integrity bridge limits routes and snapshot uploads', async () => {
+  let uploads = 0;
+  const client = createPreviewClient(
+    'http://localhost:4000',
+    async (url, init) => {
+      if (String(url).endsWith('/exchange'))
+        return Response.json({
+          success: true,
+          data: { session: { token: 'private' } },
+        });
+      uploads++;
+      assert.equal(
+        new Headers(init?.headers).get('Authorization'),
+        'Bearer private',
+      );
+      assert.equal(
+        new Headers(init?.headers).get('Content-Type'),
+        'image/jpeg',
+      );
+      return Response.json({ success: true, data: {} });
+    },
+  );
+  const path = '/api/v1/integrity/attempts/attempt-1/snapshots';
+  assert.equal((await client.integrityRequest(path, 'POST')).ok, false);
+  await client.exchange('c'.repeat(43), 'v'.repeat(43));
+  for (const [route, method, body] of [
+    ['/api/v1/admin/users', 'POST', {}],
+    [path, 'DELETE', {}],
+    [path, 'POST', {}],
+    [path, 'POST', new Uint8Array(48 * 1024 + 1)],
+  ] as const) {
+    const result = await client.integrityRequest(route, method, body);
+    assert.equal(!result.ok && result.code, 'INVALID_INPUT');
+  }
+  assert.equal(uploads, 0);
+  assert.equal(
+    (await client.integrityRequest(path, 'POST', new Uint8Array([1, 2]))).ok,
+    true,
+  );
+  assert.equal(uploads, 1);
+});
+
+test('native parser keeps JavaScript inert and uses consistent reflection IDs', async () => {
+  const { parseLesson } = await import('../src/learning/parse-lesson');
+  const tree = parseLesson(
+    '# Lesson\n\n{globalThis.untrustedCode()}\n\n<Quiz id="q1" config={globalThis.untrustedCode()} />\n\n## Learning log\n\n1. What did you learn?\n',
+  );
+  const json = JSON.stringify(tree);
+  assert.ok(json.includes('LearningLog'));
+  assert.ok(json.includes('q1'));
+  assert.equal(json.includes('"config"'), false);
+});
+
+test('native parser reads literal object props but never calls code', async () => {
+  const { parseLesson } = await import('../src/learning/parse-lesson');
+  const tree = parseLesson(
+    "<Roadmap milestones={[{title: 'Build', order: -1}]} enabled /><Callout content={process.exit()} />",
+  );
+  assert.deepEqual(tree.children?.[0].attributes?.milestones, [
+    { title: 'Build', order: -1 },
+  ]);
+  assert.equal(tree.children?.[0].attributes?.enabled, true);
+  assert.equal(JSON.stringify(tree).includes('process.exit'), false);
 });

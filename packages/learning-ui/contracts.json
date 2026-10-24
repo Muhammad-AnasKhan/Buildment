@@ -1,0 +1,9 @@
+[
+  "lib/video-embed.ts",
+  "blocks/visual-diagram/schema.ts",
+  "lib/asset-url.ts",
+  "blocks/visual-walkthrough/schema.ts",
+  "blocks/roadmap/schema.ts",
+  "canvas/slugs.ts",
+  "api/integrity.ts"
+]
