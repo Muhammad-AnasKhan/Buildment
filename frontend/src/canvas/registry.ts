@@ -449,6 +449,18 @@ import { sysdesignM22PrefsFilter } from "./sysdesign-m22-prefs-filter/data";
 import { sysdesignM22DedupeKey } from "./sysdesign-m22-dedupe-key/data";
 import { sysdesignM22RetryBackoff } from "./sysdesign-m22-retry-backoff/data";
 import { sysdesignM22CollapseLimit } from "./sysdesign-m22-collapse-limit/data";
+import { sysdesignM24RequestARide } from "./sysdesign-m24-request-a-ride/data";
+import { sysdesignM24ScanAllRows } from "./sysdesign-m24-scan-all-rows/data";
+import { sysdesignM24NineCells } from "./sysdesign-m24-nine-cells/data";
+import { sysdesignM24WriteEveryPing } from "./sysdesign-m24-write-every-ping/data";
+import { sysdesignM24LatestOnly } from "./sysdesign-m24-latest-only/data";
+import { sysdesignM24CrossCellEdge } from "./sysdesign-m24-cross-cell-edge/data";
+import { sysdesignM24StadiumNight } from "./sysdesign-m24-stadium-night/data";
+import { sysdesignM24IndexRestart } from "./sysdesign-m24-index-restart/data";
+import { sysdesignM24OfferOneDriver } from "./sysdesign-m24-offer-one-driver/data";
+import { sysdesignM24TwoRidersOneDriver } from "./sysdesign-m24-two-riders-one-driver/data";
+import { sysdesignM24ClaimFirst } from "./sysdesign-m24-claim-first/data";
+import { sysdesignM24BatchWindow } from "./sysdesign-m24-batch-window/data";
 import { sysdesignM21TwoFeeds } from "./sysdesign-m21-two-feeds/data";
 import { sysdesignM21OneQueryFeed } from "./sysdesign-m21-one-query-feed/data";
 import { sysdesignM21TimelineCache } from "./sysdesign-m21-timeline-cache/data";
@@ -463,16 +475,98 @@ import { sysdesignM17SloWindow } from "./sysdesign-m17-slo-window/data";
 import { sysdesignM17BurnReplay } from "./sysdesign-m17-burn-replay/data";
 import { sysdesignM17SameAverage } from "./sysdesign-m17-same-average/data";
 import { sysdesignM17IncidentStepper } from "./sysdesign-m17-incident-stepper/data";
+import { sysdesignM25DropOpens } from "./sysdesign-m25-drop-opens/data";
+import { sysdesignM25HoldLockQueue } from "./sysdesign-m25-hold-lock-queue/data";
+import { sysdesignM25HoldAtomic } from "./sysdesign-m25-hold-atomic/data";
+import { sysdesignM25LatePayment } from "./sysdesign-m25-late-payment/data";
+import { sysdesignM25BalanceNoTrail } from "./sysdesign-m25-balance-no-trail/data";
+import { sysdesignM25Reversal } from "./sysdesign-m25-reversal/data";
+import { sysdesignM25SameEventTwice } from "./sysdesign-m25-same-event-twice/data";
+import { sysdesignM25CentsNotFloats } from "./sysdesign-m25-cents-not-floats/data";
+import { sysdesignM25WebhookInbox } from "./sysdesign-m25-webhook-inbox/data";
+import { sysdesignM25MissingWebhook } from "./sysdesign-m25-missing-webhook/data";
+import { sysdesignM25Reconcile } from "./sysdesign-m25-reconcile/data";
+import { sysdesignM25VoidNotRefund } from "./sysdesign-m25-void-not-refund/data";
+import { sysdesignM23TypeAndSearch } from "./sysdesign-m23-type-and-search/data";
+import { sysdesignM23ScanVsIndex } from "./sysdesign-m23-scan-vs-index/data";
+import { sysdesignM23Intersect } from "./sysdesign-m23-intersect/data";
+import { sysdesignM23RareWords } from "./sysdesign-m23-rare-words/data";
+import { sysdesignM23RefreshLag } from "./sysdesign-m23-refresh-lag/data";
+import { sysdesignM23Budget } from "./sysdesign-m23-budget/data";
+import { sysdesignM23PrefixCache } from "./sysdesign-m23-prefix-cache/data";
+import { sysdesignM23SuggestTimeout } from "./sysdesign-m23-suggest-timeout/data";
+import { sysdesignM23TypoFilter } from "./sysdesign-m23-typo-filter/data";
+import { sysdesignM23SketchCount } from "./sysdesign-m23-sketch-count/data";
 import { sysdesignM21EstimatePlay } from "./sysdesign-m21-estimate-play/data";
 import { sysdesignM21ActionMap } from "./sysdesign-m21-action-map/data";
 import { sysdesignM21FanoutPlay } from "./sysdesign-m21-fanout-play/data";
 import { sysdesignM21RankPlay } from "./sysdesign-m21-rank-play/data";
+import { sysdesignM25EstimatePlay } from "./sysdesign-m25-estimate-play/data";
+import { sysdesignM25WaitingRoom } from "./sysdesign-m25-waiting-room/data";
+import { sysdesignM25PostEntries } from "./sysdesign-m25-post-entries/data";
+import { sysdesignM25WebhookOrder } from "./sysdesign-m25-webhook-order/data";
 import { sysdesignM22EstimatePlay } from "./sysdesign-m22-estimate-play/data";
 import { sysdesignM22DesignStepper } from "./sysdesign-m22-design-stepper/data";
 import { sysdesignM22ConnectionsPlay } from "./sysdesign-m22-connections-play/data";
 import { sysdesignM22SequencePlay } from "./sysdesign-m22-sequence-play/data";
 import { sysdesignM22PresencePlay } from "./sysdesign-m22-presence-play/data";
 import { sysdesignM22OutagePlay } from "./sysdesign-m22-outage-play/data";
+import { sysdesignM26FollowLinks } from "./sysdesign-m26-follow-links/data";
+import { sysdesignM26OnePage } from "./sysdesign-m26-one-page/data";
+import { sysdesignM26DnsCache } from "./sysdesign-m26-dns-cache/data";
+import { sysdesignM26HostShards } from "./sysdesign-m26-host-shards/data";
+import { sysdesignM26WorkerLease } from "./sysdesign-m26-worker-lease/data";
+import { sysdesignM26OneQueueHammer } from "./sysdesign-m26-one-queue-hammer/data";
+import { sysdesignM26PriorityPick } from "./sysdesign-m26-priority-pick/data";
+import { sysdesignM26RobotsCheck } from "./sysdesign-m26-robots-check/data";
+import { sysdesignM26UrlNormalize } from "./sysdesign-m26-url-normalize/data";
+import { sysdesignM26BloomFalseYes } from "./sysdesign-m26-bloom-false-yes/data";
+import { sysdesignM26ContentHash } from "./sysdesign-m26-content-hash/data";
+import { sysdesignM26SimhashNear } from "./sysdesign-m26-simhash-near/data";
+import { sysdesignM26TrapCalendar } from "./sysdesign-m26-trap-calendar/data";
+import { sysdesignM23EstimatePlay } from "./sysdesign-m23-estimate-play/data";
+import { sysdesignM23TinyIndex } from "./sysdesign-m23-tiny-index/data";
+import { sysdesignM23TrieWalk } from "./sysdesign-m23-trie-walk/data";
+import { sysdesignM23BloomSize } from "./sysdesign-m23-bloom-size/data";
+import { sysdesignM23HllRegisters } from "./sysdesign-m23-hll-registers/data";
+import { sysdesignM24EstimatePlay } from "./sysdesign-m24-estimate-play/data";
+import { sysdesignM24GeohashZoom } from "./sysdesign-m24-geohash-zoom/data";
+import { sysdesignM24CellEdge } from "./sysdesign-m24-cell-edge/data";
+import { sysdesignM24QuadtreeSplit } from "./sysdesign-m24-quadtree-split/data";
+import { sysdesignM24UpdateLoad } from "./sysdesign-m24-update-load/data";
+import { sysdesignM24BatchMatch } from "./sysdesign-m24-batch-match/data";
+import { sysdesignM27PressPlay } from "./sysdesign-m27-press-play/data";
+import { sysdesignM27BytesBypass } from "./sysdesign-m27-bytes-bypass/data";
+import { sysdesignM27ResumeUpload } from "./sysdesign-m27-resume-upload/data";
+import { sysdesignM27JobRetry } from "./sysdesign-m27-job-retry/data";
+import { sysdesignM27Segments } from "./sysdesign-m27-segments/data";
+import { sysdesignM27AbrSwitch } from "./sysdesign-m27-abr-switch/data";
+import { sysdesignM27PopularEdge } from "./sysdesign-m27-popular-edge/data";
+import { sysdesignM27LongTail } from "./sysdesign-m27-long-tail/data";
+import { sysdesignM27HotRow } from "./sysdesign-m27-hot-row/data";
+import { sysdesignM27ShardsSplit } from "./sysdesign-m27-shards-split/data";
+import { sysdesignM27MergeTotal } from "./sysdesign-m27-merge-total/data";
+import { sysdesignM28SilentBoxes } from "./sysdesign-m28-silent-boxes/data";
+import { sysdesignM28TalkThenDraw } from "./sysdesign-m28-talk-then-draw/data";
+import { sysdesignM28ClarifyAloud } from "./sysdesign-m28-clarify-aloud/data";
+import { sysdesignM28EstimateAloud } from "./sysdesign-m28-estimate-aloud/data";
+import { sysdesignM28CloseTheRound } from "./sysdesign-m28-close-the-round/data";
+import { sysdesignM28RedoTheMaths } from "./sysdesign-m28-redo-the-maths/data";
+import { sysdesignM28PushbackEvidence } from "./sysdesign-m28-pushback-evidence/data";
+import { sysdesignM28OwnTheFlaw } from "./sysdesign-m28-own-the-flaw/data";
+import { sysdesignM26EstimatePlay } from "./sysdesign-m26-estimate-play/data";
+import { sysdesignM26DesignStepper } from "./sysdesign-m26-design-stepper/data";
+import { sysdesignM26HostRatePlay } from "./sysdesign-m26-host-rate-play/data";
+import { sysdesignM26RecrawlPlay } from "./sysdesign-m26-recrawl-play/data";
+import { sysdesignM26BloomPlay } from "./sysdesign-m26-bloom-play/data";
+import { sysdesignM28InterviewStepper } from "./sysdesign-m28-interview-stepper/data";
+import { sysdesignM28ProbeStepper } from "./sysdesign-m28-probe-stepper/data";
+import { sysdesignM28AnswerSorter } from "./sysdesign-m28-answer-sorter/data";
+import { sysdesignM27EstimatePlay } from "./sysdesign-m27-estimate-play/data";
+import { sysdesignM27DesignStepper } from "./sysdesign-m27-design-stepper/data";
+import { sysdesignM27BacklogPlay } from "./sysdesign-m27-backlog-play/data";
+import { sysdesignM27SkewPlay } from "./sysdesign-m27-skew-play/data";
+import { sysdesignM27ShardsPlay } from "./sysdesign-m27-shards-play/data";
 import { sysdesignM18LaptopVsServer } from "./sysdesign-m18-laptop-vs-server/data";
 import { sysdesignM18SameImage } from "./sysdesign-m18-same-image/data";
 import { sysdesignM18OomKill } from "./sysdesign-m18-oom-kill/data";
@@ -965,6 +1059,18 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m22-dedupe-key": sysdesignM22DedupeKey,
   "sysdesign-m22-retry-backoff": sysdesignM22RetryBackoff,
   "sysdesign-m22-collapse-limit": sysdesignM22CollapseLimit,
+  "sysdesign-m24-request-a-ride": sysdesignM24RequestARide,
+  "sysdesign-m24-scan-all-rows": sysdesignM24ScanAllRows,
+  "sysdesign-m24-nine-cells": sysdesignM24NineCells,
+  "sysdesign-m24-write-every-ping": sysdesignM24WriteEveryPing,
+  "sysdesign-m24-latest-only": sysdesignM24LatestOnly,
+  "sysdesign-m24-cross-cell-edge": sysdesignM24CrossCellEdge,
+  "sysdesign-m24-stadium-night": sysdesignM24StadiumNight,
+  "sysdesign-m24-index-restart": sysdesignM24IndexRestart,
+  "sysdesign-m24-offer-one-driver": sysdesignM24OfferOneDriver,
+  "sysdesign-m24-two-riders-one-driver": sysdesignM24TwoRidersOneDriver,
+  "sysdesign-m24-claim-first": sysdesignM24ClaimFirst,
+  "sysdesign-m24-batch-window": sysdesignM24BatchWindow,
   "sysdesign-m21-two-feeds": sysdesignM21TwoFeeds,
   "sysdesign-m21-one-query-feed": sysdesignM21OneQueryFeed,
   "sysdesign-m21-timeline-cache": sysdesignM21TimelineCache,
@@ -979,16 +1085,98 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m17-burn-replay": sysdesignM17BurnReplay,
   "sysdesign-m17-same-average": sysdesignM17SameAverage,
   "sysdesign-m17-incident-stepper": sysdesignM17IncidentStepper,
+  "sysdesign-m25-drop-opens": sysdesignM25DropOpens,
+  "sysdesign-m25-hold-lock-queue": sysdesignM25HoldLockQueue,
+  "sysdesign-m25-hold-atomic": sysdesignM25HoldAtomic,
+  "sysdesign-m25-late-payment": sysdesignM25LatePayment,
+  "sysdesign-m25-balance-no-trail": sysdesignM25BalanceNoTrail,
+  "sysdesign-m25-reversal": sysdesignM25Reversal,
+  "sysdesign-m25-same-event-twice": sysdesignM25SameEventTwice,
+  "sysdesign-m25-cents-not-floats": sysdesignM25CentsNotFloats,
+  "sysdesign-m25-webhook-inbox": sysdesignM25WebhookInbox,
+  "sysdesign-m25-missing-webhook": sysdesignM25MissingWebhook,
+  "sysdesign-m25-reconcile": sysdesignM25Reconcile,
+  "sysdesign-m25-void-not-refund": sysdesignM25VoidNotRefund,
+  "sysdesign-m23-type-and-search": sysdesignM23TypeAndSearch,
+  "sysdesign-m23-scan-vs-index": sysdesignM23ScanVsIndex,
+  "sysdesign-m23-intersect": sysdesignM23Intersect,
+  "sysdesign-m23-rare-words": sysdesignM23RareWords,
+  "sysdesign-m23-refresh-lag": sysdesignM23RefreshLag,
+  "sysdesign-m23-budget": sysdesignM23Budget,
+  "sysdesign-m23-prefix-cache": sysdesignM23PrefixCache,
+  "sysdesign-m23-suggest-timeout": sysdesignM23SuggestTimeout,
+  "sysdesign-m23-typo-filter": sysdesignM23TypoFilter,
+  "sysdesign-m23-sketch-count": sysdesignM23SketchCount,
   "sysdesign-m21-estimate-play": sysdesignM21EstimatePlay,
   "sysdesign-m21-action-map": sysdesignM21ActionMap,
   "sysdesign-m21-fanout-play": sysdesignM21FanoutPlay,
   "sysdesign-m21-rank-play": sysdesignM21RankPlay,
+  "sysdesign-m25-estimate-play": sysdesignM25EstimatePlay,
+  "sysdesign-m25-waiting-room": sysdesignM25WaitingRoom,
+  "sysdesign-m25-post-entries": sysdesignM25PostEntries,
+  "sysdesign-m25-webhook-order": sysdesignM25WebhookOrder,
   "sysdesign-m22-estimate-play": sysdesignM22EstimatePlay,
   "sysdesign-m22-design-stepper": sysdesignM22DesignStepper,
   "sysdesign-m22-connections-play": sysdesignM22ConnectionsPlay,
   "sysdesign-m22-sequence-play": sysdesignM22SequencePlay,
   "sysdesign-m22-presence-play": sysdesignM22PresencePlay,
   "sysdesign-m22-outage-play": sysdesignM22OutagePlay,
+  "sysdesign-m26-follow-links": sysdesignM26FollowLinks,
+  "sysdesign-m26-one-page": sysdesignM26OnePage,
+  "sysdesign-m26-dns-cache": sysdesignM26DnsCache,
+  "sysdesign-m26-host-shards": sysdesignM26HostShards,
+  "sysdesign-m26-worker-lease": sysdesignM26WorkerLease,
+  "sysdesign-m26-one-queue-hammer": sysdesignM26OneQueueHammer,
+  "sysdesign-m26-priority-pick": sysdesignM26PriorityPick,
+  "sysdesign-m26-robots-check": sysdesignM26RobotsCheck,
+  "sysdesign-m26-url-normalize": sysdesignM26UrlNormalize,
+  "sysdesign-m26-bloom-false-yes": sysdesignM26BloomFalseYes,
+  "sysdesign-m26-content-hash": sysdesignM26ContentHash,
+  "sysdesign-m26-simhash-near": sysdesignM26SimhashNear,
+  "sysdesign-m26-trap-calendar": sysdesignM26TrapCalendar,
+  "sysdesign-m23-estimate-play": sysdesignM23EstimatePlay,
+  "sysdesign-m23-tiny-index": sysdesignM23TinyIndex,
+  "sysdesign-m23-trie-walk": sysdesignM23TrieWalk,
+  "sysdesign-m23-bloom-size": sysdesignM23BloomSize,
+  "sysdesign-m23-hll-registers": sysdesignM23HllRegisters,
+  "sysdesign-m24-estimate-play": sysdesignM24EstimatePlay,
+  "sysdesign-m24-geohash-zoom": sysdesignM24GeohashZoom,
+  "sysdesign-m24-cell-edge": sysdesignM24CellEdge,
+  "sysdesign-m24-quadtree-split": sysdesignM24QuadtreeSplit,
+  "sysdesign-m24-update-load": sysdesignM24UpdateLoad,
+  "sysdesign-m24-batch-match": sysdesignM24BatchMatch,
+  "sysdesign-m27-press-play": sysdesignM27PressPlay,
+  "sysdesign-m27-bytes-bypass": sysdesignM27BytesBypass,
+  "sysdesign-m27-resume-upload": sysdesignM27ResumeUpload,
+  "sysdesign-m27-job-retry": sysdesignM27JobRetry,
+  "sysdesign-m27-segments": sysdesignM27Segments,
+  "sysdesign-m27-abr-switch": sysdesignM27AbrSwitch,
+  "sysdesign-m27-popular-edge": sysdesignM27PopularEdge,
+  "sysdesign-m27-long-tail": sysdesignM27LongTail,
+  "sysdesign-m27-hot-row": sysdesignM27HotRow,
+  "sysdesign-m27-shards-split": sysdesignM27ShardsSplit,
+  "sysdesign-m27-merge-total": sysdesignM27MergeTotal,
+  "sysdesign-m28-silent-boxes": sysdesignM28SilentBoxes,
+  "sysdesign-m28-talk-then-draw": sysdesignM28TalkThenDraw,
+  "sysdesign-m28-clarify-aloud": sysdesignM28ClarifyAloud,
+  "sysdesign-m28-estimate-aloud": sysdesignM28EstimateAloud,
+  "sysdesign-m28-close-the-round": sysdesignM28CloseTheRound,
+  "sysdesign-m28-redo-the-maths": sysdesignM28RedoTheMaths,
+  "sysdesign-m28-pushback-evidence": sysdesignM28PushbackEvidence,
+  "sysdesign-m28-own-the-flaw": sysdesignM28OwnTheFlaw,
+  "sysdesign-m26-estimate-play": sysdesignM26EstimatePlay,
+  "sysdesign-m26-design-stepper": sysdesignM26DesignStepper,
+  "sysdesign-m26-host-rate-play": sysdesignM26HostRatePlay,
+  "sysdesign-m26-recrawl-play": sysdesignM26RecrawlPlay,
+  "sysdesign-m26-bloom-play": sysdesignM26BloomPlay,
+  "sysdesign-m28-interview-stepper": sysdesignM28InterviewStepper,
+  "sysdesign-m28-probe-stepper": sysdesignM28ProbeStepper,
+  "sysdesign-m28-answer-sorter": sysdesignM28AnswerSorter,
+  "sysdesign-m27-estimate-play": sysdesignM27EstimatePlay,
+  "sysdesign-m27-design-stepper": sysdesignM27DesignStepper,
+  "sysdesign-m27-backlog-play": sysdesignM27BacklogPlay,
+  "sysdesign-m27-skew-play": sysdesignM27SkewPlay,
+  "sysdesign-m27-shards-play": sysdesignM27ShardsPlay,
   "sysdesign-m18-laptop-vs-server": sysdesignM18LaptopVsServer,
   "sysdesign-m18-same-image": sysdesignM18SameImage,
   "sysdesign-m18-oom-kill": sysdesignM18OomKill,

@@ -746,3 +746,169 @@ modules:
       - file: 22.10-checklist.md
         title: "Checklist and learning log"
         goal: "Write a design for a delivery app's rider chat and order alerts with one defended trade-off."
+  - dir: 23-search-typeahead-and-probabilistic-data-structures
+    title: "Search, typeahead and probabilistic data structures"
+    summary: "Run the design loop on a marketplace search box: estimate the load, build an inverted index and rank with rare words, shard it and live with refresh lag, serve suggestions with a trie that stores the best queries on each node, and use Bloom filters, count-min sketches and HyperLogLog to trade a little accuracy for a lot of memory."
+    lessons:
+      - file: 23.01-set-the-scene-and-requirements.md
+        title: "Set the scene and requirements"
+        goal: "Turn shoppers a day into searches, suggestion calls and index size, and find the numbers that shape the design."
+      - file: 23.02-inverted-indexes-and-ranking-basics.md
+        title: "Inverted indexes and ranking basics"
+        goal: "Explain how a search engine finds and orders products, and how the index is sharded and kept fresh."
+      - file: 23.03-typeahead.md
+        title: "Typeahead"
+        goal: "Serve prefixes within 100 ms with a trie that stores the best queries on each node, a cache for short prefixes and a plan for slow or stale suggestions."
+      - file: 23.04-bloom-filters-hyperloglog-and-count-min-sketch.md
+        title: "Bloom filters, HyperLogLog and count-min sketch"
+        goal: "Trade a little accuracy for a lot of memory: size a Bloom filter, count with a sketch, count different items with HyperLogLog, and know when not to."
+      - file: 23.05-code-a-bloom-filter-and-a-count-min-sketch.md
+        title: "Code: a Bloom filter and a count-min sketch"
+        goal: "Implement bloomSize, createBloomFilter, sketchSize and createCountMinSketch and pass the tests."
+      - file: 23.07-quiz.md
+        title: "Search and probabilistic structures"
+        goal: "Answer graded scenarios on query analysis, rare-word scoring, scatter-gather tails, fresh suggestions and approximate structures."
+      - file: 23.08-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a search and suggestion design for a job board with one defended trade-off."
+  - dir: 24-geospatial-search-and-ride-matching
+    title: "Geospatial search and ride matching"
+    summary: "Run the design loop on a ride service: estimate the location updates, searches and matches, cut the map into geohash, quadtree and hexagon cells, keep the latest driver places in memory, calm a hot box such as a stadium at night, and match riders to drivers with a claim so nobody gets two."
+    lessons:
+      - file: 24.01-set-the-scene-and-requirements.md
+        title: "Set the scene and requirements"
+        goal: "Turn a busy evening into location updates, searches and ride requests a second, and find the number that drives the design."
+      - file: 24.02-geohashes-quadtrees-and-hexagon-grids.md
+        title: "Geohashes, quadtrees and hexagon grids"
+        goal: "Find nearby points with cells, handle the cell edge by reading neighbours, split crowded cells, and compare squares, hexagons and S2."
+      - file: 24.03-location-updates-at-scale.md
+        title: "Location updates at scale"
+        goal: "Keep millions of location updates off the database with an in-memory map sharded by cell, and calm a hot cell."
+      - file: 24.04-matching-and-dispatch.md
+        title: "Matching and dispatch"
+        goal: "Offer rides to one driver at a time, rank by travel time, claim a driver so two riders cannot get one, and match riders together."
+      - file: 24.05-code-geohash-encode-and-neighbours.md
+        title: "Code: geohash encode and neighbours"
+        goal: "Implement geohashEncode, geohashBounds and geohashNeighbours and pass the tests."
+      - file: 24.07-quiz.md
+        title: "Geospatial search and ride matching"
+        goal: "Answer graded scenarios on update load, cell counts, hot cells, claims and a restarted map."
+      - file: 24.08-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a design for a same-day parcel courier with one defended trade-off."
+  - dir: 25-booking-and-payments-contention-and-money
+    title: "Booking and payments: contention and money"
+    summary: "Run the design loop on a concert ticket drop: estimate the rush, hold seats safely with one conditional update and an expiry, admit fans at a steady rate, keep money in an append-only double-entry ledger, and handle duplicate, late and missing payment webhooks with reconciliation."
+    lessons:
+      - file: 25.01-set-the-scene-and-requirements.md
+        title: "Set the scene and requirements"
+        goal: "Turn a ticket drop into requests a second, fans per seat, the share of holds that must fail and payments a second, and find the two numbers that drive the design."
+      - file: 25.02-holds-inventory-and-fairness.md
+        title: "Holds, inventory and fairness"
+        goal: "Hold a seat with one conditional update and an expiry, compare it with a lock, stop a late payment, and size a waiting room with Little's law."
+      - file: 25.03-ledgers-and-double-entry.md
+        title: "Ledgers and double-entry"
+        goal: "Keep money in append-only entries whose debits equal credits, undo by adding, make a repeated event harmless, and count whole cents."
+      - file: 25.04-payment-providers-webhooks-and-reconciliation.md
+        title: "Payment providers, webhooks and reconciliation"
+        goal: "Order authorize, confirm and capture around a seat, take webhooks safely, survive duplicate, late and missing events, and reconcile with the provider."
+      - file: 25.05-code-a-double-entry-ledger.md
+        title: "Code: a double-entry ledger"
+        goal: "Implement createLedger with post, balanceOf, trialBalance, reverse and entries, and pass the tests."
+      - file: 25.07-quiz.md
+        title: "Booking and payments"
+        goal: "Answer graded scenarios on failed holds, lock queues, late payments, unbalanced books and out-of-order webhooks."
+      - file: 25.08-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a design for a hotel booking site with one defended trade-off."
+  - dir: 26-web-crawler
+    title: "Web crawler"
+    summary: "Run the design loop on a web crawler: estimate the load and find that politeness, not bandwidth, drives it, sketch the crawl loop, build a polite URL frontier with a queue and a wait for each host, read robots.txt, set revisit gaps, and stop duplicates and crawler traps with URL cleaning, Bloom filters and content fingerprints."
+    lessons:
+      - file: 26.01-set-the-scene-and-requirements.md
+        title: "Set the scene and requirements"
+        goal: "Turn two billion pages a month into pages a second, bandwidth, storage and the number of sites that must be ready at once, and find the number that drives the design."
+      - file: 26.02-high-level-design.md
+        title: "High-level design"
+        goal: "Draw the crawl loop, size the fetcher fleet, add a DNS cache, split the frontier by host so one worker owns each site, and make fetchers disposable with leases."
+      - file: 26.03-deep-dive-the-url-frontier-politeness-and-priority.md
+        title: "Deep dive: the URL frontier, politeness and priority"
+        goal: "Build a two-layer frontier with a queue and a ready time for each host, compute crawl speed from sites and the wait, read robots.txt, and set revisit gaps by how fast pages change."
+      - file: 26.04-deep-dive-duplicates-and-crawler-traps.md
+        title: "Deep dive: duplicates and crawler traps"
+        goal: "Clean URLs, size a Bloom filter for the seen check and name what its error costs, find exact and near copies with fingerprints, and stop traps with a budget for each host."
+      - file: 26.05-code-a-polite-frontier.md
+        title: "Code: a polite frontier"
+        goal: "Implement createFrontier with per-host queues, a wait between calls to a host, three priorities and a budget per host, and pass the tests."
+      - file: 26.07-quiz.md
+        title: "Web crawler"
+        goal: "Answer graded scenarios on sites needed at once, Bloom filter memory and cost, an unreadable robots.txt, and ending a crawler trap."
+      - file: 26.08-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a design for a price-comparison crawler with one defended trade-off."
+  - dir: 27-video-platform-at-scale
+    title: "Video platform at scale"
+    summary: "Run the design loop on a video platform with a billion views a day: estimate the bandwidth, storage and transcoding, upload in resumable chunks, turn each video into several qualities with a graph of jobs on a queue, stream short pieces that the player picks quality for, keep the CDN hit rate honest when views are skewed, and count views with sharded counters."
+    lessons:
+      - file: 27.01-set-the-scene-and-requirements.md
+        title: "Set the scene and requirements"
+        goal: "Turn a billion views a day into views a second, viewers at once, Tbit/s sent, storage and transcoding work, and find the number that drives the design."
+      - file: 27.02-high-level-design.md
+        title: "High-level design"
+        goal: "Draw the upload path and the play path, explain why the bytes skip the API servers, size the blocks for 12.5 Tbit/s at peak, and sketch the small data model."
+      - file: 27.03-deep-dive-uploads-and-transcoding.md
+        title: "Deep dive: uploads and transcoding"
+        goal: "Resume a chunked upload, run transcoding as a graph of jobs on a queue with safe retries, and size the workers so the backlog stays short in the busiest hour."
+      - file: 27.04-deep-dive-streaming-and-the-cdn.md
+        title: "Deep dive: streaming and the CDN"
+        goal: "Serve adaptive bitrate pieces that the player chooses, and predict how the skew of views and the cache size set the hit rate, the origin load and the cost of the long tail."
+      - file: 27.05-deep-dive-view-counts-and-metadata.md
+        title: "Deep dive: view counts and metadata"
+        goal: "Count views with sharded counters and a periodic merge, accept a bounded error on the page while keeping an exact count for pay, and read the small watch page record."
+      - file: 27.06-code-sharded-counters.md
+        title: "Code: sharded counters"
+        goal: "Implement shardsNeeded and createShardedCounter with a merge that loses no view that lands during it, and pass the tests."
+      - file: 27.08-quiz.md
+        title: "Video platform"
+        goal: "Answer graded scenarios on peak bandwidth, resuming an upload, draining a backlog, a quality ladder, and fast versus exact counts."
+      - file: 27.09-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a design for a lecture platform with one defended trade-off."
+  - dir: 28-the-system-design-interview
+    title: "The system design interview"
+    summary: "Turn the whole course into interview skill: split 45 minutes into six time boxes, ask short questions and estimate out loud, let the biggest number pick one deep dive, name a cost and a failure, answer follow-ups such as 10 times the traffic with numbers, hold your ground with evidence, avoid six common mistakes, and rehearse with eight timed prompts, one for each case study."
+    lessons:
+      - file: 28.01-set-the-scene-45-minutes-one-blank-board.md
+        title: "Set the scene: 45 minutes, one blank board"
+        goal: "See what an interviewer can write down about a silent candidate and about one who talks first, and how the round is scored."
+      - file: 28.02-a-framework-that-fits-the-clock.md
+        title: "A framework that fits the clock"
+        goal: "Give the design loop six time boxes for 45 minutes, ask four short questions, estimate out loud with units, let the driving number pick one deep dive, close with a cost and a failure, and recover when you fall behind."
+      - file: 28.03-follow-up-probes-and-how-to-answer-them.md
+        title: "Follow-up probes and how to answer them"
+        goal: "Answer 'what if traffic grows 10 times?' and 'what breaks first?' in four moves with numbers, answer pushback with evidence, own a flaw, say a trade-off with a cost and a switch point, avoid six common mistakes, and rehearse with eight timed prompts with model answers."
+      - file: 28.06-quiz.md
+        title: "Interview craft"
+        goal: "Choose the stronger answer in graded scenarios on a late start, a spoken estimate, the first part to break, a hard follow-up and a closing trade-off."
+      - file: 28.07-checklist.md
+        title: "Checklist and learning log"
+        goal: "Run one timed mock round from the practice bank with one assumption changed, and write it up in about 300 words or record it."
+  - dir: 29-capstone-design-it-build-it-break-it-defend-it
+    title: "Capstone: design it, build it, break it, defend it"
+    summary: "Pick one of three fictional systems, design it against cost, p99 latency and availability targets, build its core in your repository on a seeded simulated network with tests in CI, break it once on purpose with a prediction and a chart, and defend it in a five-minute recording and three probes."
+    lessons:
+      - file: 29.01-choose-your-system-and-read-the-rubric.md
+        title: "Choose your system and read the rubric"
+        goal: "Pick one of three systems, each built on a case study, and read the five deliverables, the design document template, the rubric and the defence format."
+      - file: 29.03-build-the-core.md
+        title: "Build the core"
+        goal: "Build the core of your system on the toolkit's simulated boxes, with tests that check the targets and the promises, and meet them on three seeds."
+      - file: 29.04-break-it-on-purpose.md
+        title: "Break it on purpose"
+        goal: "Predict, then kill, slow or cut something during the busiest moment, chart the result second by second, and explain the gap."
+      - file: 29.05-record-your-defence.md
+        title: "Record your defence"
+        goal: "Check every claim against a fresh measurement, write a five-part script, prepare three probe answers and record the defence."
+      - file: 29.06-checklist-and-learning-log.md
+        title: "Checklist and learning log"
+        goal: "Confirm the capstone is complete and compare your Daftar sketch from module 1 with how you would design it now."
