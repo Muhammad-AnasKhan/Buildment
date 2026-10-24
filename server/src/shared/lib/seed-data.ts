@@ -24,22 +24,18 @@ export function isSeedTestEmail(email: string): boolean {
 // upsert against.
 export const SEED_COURSE = {
   slug: "multi-vendor-marketplace",
-  title: "FreshMarket — Multi-Vendor Grocery Marketplace",
+  title: "Multi-vendor Marketplace",
   description:
-    "Build a local grocery marketplace where multiple vendors sell through one shared platform: " +
-    "vendor onboarding with photo uploads, a searchable customer catalogue, a cart that splits " +
-    "into per-vendor orders at checkout, inventory reservations, server-priced promotions, " +
-    "Stripe test-mode payments, Redis-backed caching, background jobs, and a live HTTPS deploy. " +
-    "MERN stack (MongoDB, Express, React, Node) plus " +
-    "Redis, BullMQ, Cloudinary, and Stripe.",
+    "Build and deploy a multi-vendor marketplace through a product-specific track. " +
+    "Your assigned or selected track determines the data model, build steps, assessments, and capstone you see.",
   projectGoal:
-    "Ship a live, deployed multi-vendor marketplace with vendor onboarding, a multi-vendor cart, " +
-    "split checkout with price snapshots, inventory reservations that prevent overselling, " +
-    "server-priced promotions, and Stripe test-mode payments.",
+    "Ship a live marketplace with independent sellers or providers, a safe customer journey, " +
+    "and reliability evidence for the chosen product track.",
   difficulty: "Medium",
   estimatedHours: 240,
   coverUrl:
     "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80",
-  // FreshMarket is the general course of this family; see shared/lib/course-tracks.ts.
+  // FreshMarket is the initial product track; see shared/lib/course-tracks.ts.
   family: "multi-vendor-marketplace",
+  availableVariantSlugs: ["grocery"],
 };

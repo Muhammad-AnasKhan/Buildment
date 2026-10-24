@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { INITIAL_STEPPER, stepperActionForKey, stepperReducer } from "@/canvas/primitives/stepper";
+import { INITIAL_STEPPER, stepperActionForKey, stepperReducer } from "@buildment/learning-ui/canvas/primitives/stepper";
 
 const reduce = stepperReducer(4);
 

@@ -6,7 +6,7 @@ import {
   describeTrend,
   simulatePile,
   waitDays,
-} from "@/canvas/order-pile-stock-flow/model";
+} from "@buildment/learning-ui/canvas/order-pile-stock-flow/model";
 
 describe("order pile stock and flow", () => {
   it("matches chapter 6.3 by default: 7 in, 6 out, 12 waiting, so 18 after one week", () => {

@@ -50,6 +50,11 @@ jobs:
       - run: pnpm test
       - run: pnpm build
       - run: pnpm courses:check
+      - run: pnpm content:validate:source --course multi-vendor-marketplace
+      - run: pnpm content:audit --course multi-vendor-marketplace --strict
+      - run: pnpm exec tsx scripts/audit-marketplace-inheritance.ts
+      - run: node ../agent-ip/scripts/audit-variant-repetition.mjs ../courses/multi-vendor-marketplace/variants
+      - run: pnpm courses:package:check
 
   frontend:
     name: Web — typecheck, lint, test, build
@@ -96,7 +101,8 @@ jobs:
           cache-to: type=gha,scope=api,mode=max
       - uses: docker/build-push-action@v6
         with:
-          context: frontend
+          context: .
+          file: frontend/Dockerfile
           push: false
           cache-from: type=gha,scope=web
           cache-to: type=gha,scope=web,mode=max

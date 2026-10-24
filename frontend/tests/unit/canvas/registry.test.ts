@@ -2,10 +2,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { CANVAS_SLUGS } from "@/shared/canvas/slugs";
-import { canvasRegistry, getCanvasSpec } from "@/canvas/registry";
-import { sequenceGeometry } from "@/canvas/renderers/sequence/geometry";
-import { machineGeometry } from "@/canvas/renderers/state-machine/geometry";
-import { defaultValues } from "@/canvas/renderers/slider/model";
+import { canvasRegistry, getCanvasSpec } from "@buildment/learning-ui/canvas/registry";
+import { sequenceGeometry } from "@buildment/learning-ui/canvas/renderers/sequence/geometry";
+import { machineGeometry } from "@buildment/learning-ui/canvas/renderers/state-machine/geometry";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 const specs = Object.entries(canvasRegistry);
 
@@ -31,7 +31,7 @@ describe("canvas registry", () => {
 
   it("has a spec.md next to every canvas", () => {
     for (const slug of CANVAS_SLUGS) {
-      expect(fs.existsSync(path.join("src/canvas", slug, "spec.md")), slug).toBe(true);
+      expect(fs.existsSync(path.join("../packages/learning-ui/src/canvas", slug, "spec.md")), slug).toBe(true);
     }
   });
 });
@@ -166,7 +166,7 @@ describe("canvas source stays inside the SVG rules", () => {
       else if (/\.(ts|tsx)$/.test(entry.name)) files.push(full);
     }
   };
-  walk("src/canvas");
+  walk("../packages/learning-ui/src/canvas");
 
   it("finds the canvas source", () => {
     expect(files.length).toBeGreaterThan(5);

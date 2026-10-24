@@ -6,8 +6,8 @@ import {
   habitStrengthCurve,
   lastSevenDays,
   weekGain,
-} from "@/canvas/habit-strength-curve/data";
-import { defaultValues } from "@/canvas/renderers/slider/model";
+} from "@buildment/learning-ui/canvas/habit-strength-curve/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 const start = defaultValues(habitStrengthCurve);
 

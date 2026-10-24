@@ -14,6 +14,7 @@ import { zipSync } from "fflate";
 import { load as loadYaml, dump as dumpYaml } from "js-yaml";
 import { z } from "zod";
 import { CourseManifestSchema, coursesRootForServer } from "./course-source.js";
+import { findCourseFamily } from "../src/shared/lib/course-tracks.js";
 import type { SessionUser } from "../src/types/auth.js";
 
 const SERVER_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -43,6 +44,14 @@ export function selectedPackages(root = COURSES_ROOT): Package[] {
       if (!raw?.repositoryPublish) return null;
       const manifest = CourseManifestSchema.parse(raw);
       if (manifest.slug !== entry.name) throw new Error(`${manifestPath}: slug must match the folder name`);
+      if (manifest.slug === "multi-vendor-marketplace") {
+        const family = findCourseFamily(manifest.family);
+        const missing = family?.variants.map(variant => variant.slug)
+          .filter(slug => !manifest.availableVariantSlugs?.includes(slug)) ?? [];
+        if (!family || missing.length) {
+          throw new Error(`${manifestPath}: all marketplace variants must be available before repository publishing; missing ${missing.join(", ") || "family"}`);
+        }
+      }
       return { slug: entry.name, dir, manifest };
     })
     .filter((item): item is Package => item !== null)
@@ -65,9 +74,9 @@ function filesForZip(dir: string): Record<string, Uint8Array> {
     }
   }
   visit(dir);
-  if (Object.keys(files).length > 1000) throw new Error("Course package exceeds 1,000 files");
+  if (Object.keys(files).length > 3000) throw new Error("Course package exceeds 3,000 files");
   const bytes = Object.values(files).reduce((sum, file) => sum + file.length, 0);
-  if (bytes > 20 * 1024 * 1024) throw new Error("Course package exceeds 20 MB expanded");
+  if (bytes > 40 * 1024 * 1024) throw new Error("Course package exceeds 40 MB expanded");
   return files;
 }
 
@@ -83,9 +92,10 @@ export function packageZip(pkg: Package, publication: "create" | "update", instr
   const files = filesForZip(pkg.dir);
   // The database decides create versus update. Keep the reviewed source manifest
   // unchanged; only the action hint in the transport ZIP is set here.
-  files["course.yaml"] = Buffer.from(dumpYaml({ ...pkg.manifest, publication, creatorEmail: instructorEmail }), "utf8");
+  files["course.yaml"] = Buffer.from(dumpYaml({ ...pkg.manifest, slug: pkg.manifest.repositoryTargetSlug ?? pkg.slug,
+    publication, creatorEmail: instructorEmail }), "utf8");
   const zip = Buffer.from(zipSync(files, { level: 6 }));
-  if (zip.length > 5 * 1024 * 1024) throw new Error(`${pkg.slug}: ZIP exceeds the 5 MB import limit`);
+  if (zip.length > 15 * 1024 * 1024) throw new Error(`${pkg.slug}: repository ZIP exceeds the 15 MB import limit`);
   return zip;
 }
 
@@ -102,6 +112,11 @@ function validate(pkg: Package, instructorEmail: string) {
   };
   run("scripts/validate-course-source.ts", ["--course", pkg.slug]);
   run("scripts/audit-course-structure.ts", ["--course", pkg.slug, "--strict"]);
+  if (pkg.slug === "multi-vendor-marketplace") {
+    run("scripts/audit-marketplace-inheritance.ts", ["--course", pkg.slug]);
+    execFileSync(process.execPath, ["agent-ip/scripts/audit-variant-repetition.mjs",
+      path.join("courses", pkg.slug, "variants")], { cwd: REPO_ROOT, env, stdio: "inherit", timeout: 180000 });
+  }
   const auditArgs = ["agent-ip/scripts/audit-course.mjs", path.join("courses", pkg.slug)];
   if (pkg.manifest.repositoryEditorialAudit === "required") {
     execFileSync(process.execPath, auditArgs, { cwd: REPO_ROOT, env, stdio: "inherit", timeout: 180000 });
@@ -131,6 +146,10 @@ async function publish(packages: Package[], instructorEmail: string) {
       throw new Error(`${instructorEmail} must be a verified instructor with ZIP import access before repository publishing runs`);
     }
     const user: SessionUser = owner;
+    for (const pkg of packages) if (pkg.manifest.repositoryTargetSlug &&
+      !await prisma.course.findUnique({ where: { slug: pkg.manifest.repositoryTargetSlug }, select: { id: true } })) {
+      throw new Error(`${pkg.slug}: existing target course ${pkg.manifest.repositoryTargetSlug} was not found; refusing to create a duplicate`);
+    }
     // Bind every existing repository course, including the legacy FreshMarket
     // package. The previous owner keeps COURSE_CREATOR access.
     for (const entry of fs.readdirSync(COURSES_ROOT, { withFileTypes: true }).filter(item => item.isDirectory())) {
@@ -152,10 +171,14 @@ async function publish(packages: Package[], instructorEmail: string) {
       }
     }
     for (const pkg of packages) {
+      const targetSlug = pkg.manifest.repositoryTargetSlug ?? pkg.slug;
       const sourceHash = courseSourceHash(pkg);
-      const prior = await prisma.course.findUnique({ where: { slug: pkg.slug }, select: {
+      const prior = await prisma.course.findUnique({ where: { slug: targetSlug }, select: {
         id: true, status: true, activeReleaseId: true, repositorySourceHash: true, repositoryReleaseId: true,
       } });
+      if (pkg.manifest.repositoryTargetSlug && !prior) {
+        throw new Error(`${pkg.slug}: existing target course ${targetSlug} was not found; refusing to create a duplicate`);
+      }
       if (prior?.status === "PUBLISHED" && prior.repositorySourceHash === sourceHash &&
           prior.repositoryReleaseId === prior.activeReleaseId) {
         console.log(`${pkg.slug}: repository package is already current`);
@@ -164,7 +187,7 @@ async function publish(packages: Package[], instructorEmail: string) {
       const zip = packageZip(pkg, prior ? "update" : "create", instructorEmail);
       const hash = createHash("sha256").update(zip).digest("hex").slice(0, 12);
       if (!prior) {
-        const created = await importCourseZip(user, zip);
+        const created = await importCourseZip(user, zip, "repository");
         const course = await prisma.course.findUniqueOrThrow({ where: { slug: created.courseSlug }, select: { id: true } });
         await publishCourse(user, course.id);
         const release = await prisma.course.findUniqueOrThrow({ where: { id: course.id }, select: { activeReleaseId: true } });
@@ -174,9 +197,9 @@ async function publish(packages: Package[], instructorEmail: string) {
         console.log(`${pkg.slug}: created and published (${hash})`);
         continue;
       }
-      const preview = await previewCourseZipUpdate(user, prior.id, zip);
+      const preview = await previewCourseZipUpdate(user, prior.id, zip, "repository");
       console.log(`${pkg.slug}: preview ${preview.modules.length} module changes, ${preview.variants?.length ?? 0} variants (${hash})`);
-      await approveCourseZipUpdate(user, prior.id, preview.previewId);
+      await approveCourseZipUpdate(user, prior.id, preview.previewId, "repository");
       if (prior.status !== "PUBLISHED") await publishCourse(user, prior.id);
       const after = await prisma.course.findUniqueOrThrow({ where: { id: prior.id }, select: { activeReleaseId: true } });
       await prisma.course.update({ where: { id: prior.id }, data: {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { asyncConcurrencyLimit, computeBatch, describeBatchChange, runBatch } from "@/canvas/async-concurrency-limit/data";
-import { defaultValues } from "@/canvas/renderers/slider/model";
+import { asyncConcurrencyLimit, computeBatch, describeBatchChange, runBatch } from "@buildment/learning-ui/canvas/async-concurrency-limit/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 const start = defaultValues(asyncConcurrencyLimit);
 

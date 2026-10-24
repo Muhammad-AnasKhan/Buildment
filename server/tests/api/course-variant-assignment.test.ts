@@ -75,6 +75,17 @@ describe("variant assignment on new enrollment", () => {
     expect(saved.variantAssignedAt).toBeInstanceOf(Date);
   });
 
+  it("assigns only variants released for this course", async () => {
+    await prisma.course.update({ where: { id: fx.course.id }, data: { variantAssignment: "RANDOM", availableVariantSlugs: ["grocery"] } });
+    try {
+      const assigned = await enroll((await newLearner()).auth);
+      expect(assigned.variantSlug).toBe("grocery");
+      expect(assigned.variantLockedAt).toBeInstanceOf(Date);
+    } finally {
+      await prisma.course.update({ where: { id: fx.course.id }, data: { availableVariantSlugs: [], variantAssignment: "SELF_SELECT" } });
+    }
+  });
+
   it("uses creator-defined variants and assigns mentor-added learners", async () => {
     const custom = { ...family, slug: `custom-${randomUUID()}`, variants: family.variants.slice(0, 2), defaultVariantSlug: family.variants[0]!.slug };
     await prisma.course.update({ where: { id: fx.course.id }, data: { familySlug: custom.slug, variantFamily: custom, variantAssignment: "RANDOM" } });

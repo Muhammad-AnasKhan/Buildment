@@ -169,6 +169,9 @@ importers:
       '@base-ui/react':
         specifier: ^1.6.0
         version: 1.9.0(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@buildment/learning-ui':
+        specifier: file:../packages/learning-ui
+        version: file:../packages/learning-ui(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(supports-color@8.1.1)
       '@mdxeditor/editor':
         specifier: ^4.2.0
         version: 4.3.3(@codemirror/language@6.13.1)(@lezer/highlight@1.2.5)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(supports-color@8.1.1)(typescript@5.9.3)(yjs@13.6.33)
@@ -486,6 +489,12 @@ packages:
 
   '@braintree/sanitize-url@7.1.2':
     resolution: {integrity: sha512-jigsZK+sMF/cuiB7sERuo9V7N9jx+dhmHHnQyDSVdpZwVutaBu7WvNYqMDLSgFgfB30n452TP3vjDAvFC973mA==}
+
+  '@buildment/learning-ui@file:../packages/learning-ui':
+    resolution: {directory: ../packages/learning-ui, type: directory}
+    peerDependencies:
+      react: ^19.2.0
+      react-dom: ^19.2.0
 
   '@chevrotain/types@11.1.2':
     resolution: {integrity: sha512-U+HFai5+zmJCkK86QsaJtoITlboZHBqrVketcO2ROv865xfCMSFpELQoz1GkX5GzME8pTa+3kbKrZHQtI0gdbw==}
@@ -6271,6 +6280,29 @@ snapshots:
       '@types/react': 19.3.0
 
   '@braintree/sanitize-url@7.1.2': {}
+
+  '@buildment/learning-ui@file:../packages/learning-ui(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(supports-color@8.1.1)':
+    dependencies:
+      '@base-ui/react': 1.9.0(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@base-ui/utils': 0.5.0(@types/react@19.3.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@types/d3-scale': 4.0.9
+      class-variance-authority: 0.7.1
+      clsx: 2.1.1
+      d3-scale: 4.0.2
+      diff: 9.0.0
+      lucide-react: 1.56.0(@types/react@19.3.0)(react@19.2.4)
+      react: 19.2.4
+      react-dom: 19.2.4(react@19.2.4)
+      remark-gfm: 4.0.1(supports-color@8.1.1)
+      remark-parse: 11.0.0(supports-color@8.1.1)
+      tailwind-merge: 3.7.0
+      unified: 11.0.5
+      zod: 4.6.7
+    transitivePeerDependencies:
+      - '@date-fns/tz'
+      - '@types/react'
+      - date-fns
+      - supports-color
 
   '@chevrotain/types@11.1.2': {}
 

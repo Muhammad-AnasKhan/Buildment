@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { SequenceSpec } from "@/canvas/renderers/sequence/types";
-import { sequenceGeometry } from "@/canvas/renderers/sequence/geometry";
-import { hitlInterruptResume } from "@/canvas/hitl-interrupt-resume/data";
-import { mcpToolCall } from "@/canvas/mcp-tool-call/data";
-import { indirectInjectionTrace } from "@/canvas/indirect-injection-trace/data";
+import type { SequenceSpec } from "@buildment/learning-ui/canvas/renderers/sequence/types";
+import { sequenceGeometry } from "@buildment/learning-ui/canvas/renderers/sequence/geometry";
+import { hitlInterruptResume } from "@buildment/learning-ui/canvas/hitl-interrupt-resume/data";
+import { mcpToolCall } from "@buildment/learning-ui/canvas/mcp-tool-call/data";
+import { indirectInjectionTrace } from "@buildment/learning-ui/canvas/indirect-injection-trace/data";
 
 // The label-fit loop from tests/unit/canvas/registry.test.ts, run on these
 // three specs until the orchestrator registers them.

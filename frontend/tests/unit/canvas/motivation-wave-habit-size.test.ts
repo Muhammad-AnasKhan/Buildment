@@ -6,8 +6,8 @@ import {
   listDays,
   motivationSeries,
   motivationWaveHabitSize,
-} from "@/canvas/motivation-wave-habit-size/data";
-import { defaultValues } from "@/canvas/renderers/slider/model";
+} from "@buildment/learning-ui/canvas/motivation-wave-habit-size/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 const start = defaultValues(motivationWaveHabitSize);
 

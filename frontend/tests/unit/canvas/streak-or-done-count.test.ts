@@ -5,8 +5,8 @@ import {
   describeStreakChange,
   missedDaysFor,
   streakOrDoneCount,
-} from "@/canvas/streak-or-done-count/data";
-import { defaultValues } from "@/canvas/renderers/slider/model";
+} from "@buildment/learning-ui/canvas/streak-or-done-count/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 const start = defaultValues(streakOrDoneCount);
 

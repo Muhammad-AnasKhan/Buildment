@@ -73,6 +73,8 @@ export function VariantBanner({ courseSlug, track }: { courseSlug: string; track
   const variant = resolveVariant(family, track.variantSlug);
   // Finished learners keep whatever they built, including the default.
   const settled = track.variantChosen || track.variantLocked;
+  const available = !track.availableVariantSlugs?.length || track.availableVariantSlugs.includes(variant.slug);
+  const onlyOneAvailable = track.availableVariantSlugs?.length === 1;
 
   return (
     <section
@@ -89,12 +91,13 @@ export function VariantBanner({ courseSlug, track }: { courseSlug: string; track
             </>
           ) : (
             <>
-              You are on the general course, building <strong className="font-semibold">{variant.productName}</strong>.{" "}
-              <span className="text-muted-foreground">You can pick a different product to build.</span>
+              Your starting product is <strong className="font-semibold">{variant.productName}</strong>.{" "}
+              <span className="text-muted-foreground">{onlyOneAvailable ? "This is the product currently available." : "You can pick a different product to build."}</span>
             </>
           )}
         </span>
       </p>
+      {!available && <p className="text-xs text-muted-foreground">This product&apos;s own lessons are still being prepared. Your earlier choice and work remain recorded.</p>}
       {track.variantLocked ? (
         <p className="text-xs text-muted-foreground">{track.variantAssigned ? "Assigned to you for this course" : "Variant fixed after starting a chapter"}</p>
       ) : (
@@ -102,7 +105,7 @@ export function VariantBanner({ courseSlug, track }: { courseSlug: string; track
           href={`/courses/${courseSlug}/variant`}
           className={cn(buttonVariants({ variant: settled ? "outline" : "default", size: "sm" }), "shrink-0")}
         >
-          {settled ? "Change" : "Choose a variant"}
+          {settled ? "Change" : onlyOneAvailable ? "Continue with this product" : "Choose a variant"}
         </Link>
       )}
     </section>

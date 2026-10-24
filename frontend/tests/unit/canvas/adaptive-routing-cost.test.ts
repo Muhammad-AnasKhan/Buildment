@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { adaptiveRoutingCost } from "@/canvas/adaptive-routing-cost/data";
-import { describeRoutingChange, formatDollars, formatMs, routeMix, routingResult } from "@/canvas/adaptive-routing-cost/model";
-import { defaultValues } from "@/canvas/renderers/slider/model";
+import { adaptiveRoutingCost } from "@buildment/learning-ui/canvas/adaptive-routing-cost/data";
+import { describeRoutingChange, formatDollars, formatMs, routeMix, routingResult } from "@buildment/learning-ui/canvas/adaptive-routing-cost/model";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 describe("adaptive routing cost", () => {
   it("starts at Omar's 30/55/15 mix: 1,960 ms and $4.30 per 1,000 questions", () => {

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" role="img" aria-labelledby="auth-title auth-desc">
+  <title id="auth-title">Ticketline session authentication flow</title>
+  <desc id="auth-desc">The browser sends login credentials to the API. The API verifies the password, stores a hash of a new session token, and sets an HttpOnly cookie. A later request sends the cookie; the API hashes it, looks up the session, and returns the user.</desc>
+  <rect width="1200" height="700" fill="#ffffff"/>
+  <text x="40" y="42" font-family="Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#0f172a">Session authentication</text>
+  <text x="40" y="68" font-family="Helvetica, Arial, sans-serif" font-size="14" fill="#475569">The raw token lives only in the browser cookie. The database stores a SHA-256 hash.</text>
+
+  <g font-family="Helvetica, Arial, sans-serif">
+    <rect x="80" y="100" width="180" height="48" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="170" y="130" text-anchor="middle" font-size="14" font-weight="700" fill="#1e3a8a">Browser</text>
+
+    <rect x="360" y="100" width="180" height="48" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+    <text x="450" y="130" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Next.js</text>
+
+    <rect x="640" y="100" width="180" height="48" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+    <text x="730" y="130" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">Express API</text>
+
+    <rect x="920" y="100" width="200" height="48" rx="8" fill="#ecfdf5" stroke="#15803d" stroke-width="1.5"/>
+    <text x="1020" y="130" text-anchor="middle" font-size="14" font-weight="700" fill="#14532d">Postgres</text>
+  </g>
+
+  <g stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 5">
+    <line x1="170" y1="148" x2="170" y2="650"/>
+    <line x1="450" y1="148" x2="450" y2="650"/>
+    <line x1="730" y1="148" x2="730" y2="650"/>
+    <line x1="1020" y1="148" x2="1020" y2="650"/>
+  </g>
+
+  <g font-family="Helvetica, Arial, sans-serif" font-size="13" fill="#0f172a">
+    <text x="190" y="188">1. POST /auth/login</text>
+    <text x="470" y="188">email + password</text>
+
+    <text x="470" y="238">2. proxy request</text>
+    <text x="750" y="238">POST /api/v1/auth/login</text>
+
+    <text x="750" y="288">3. find user, verify Argon2id</text>
+    <text x="940" y="288">SELECT user</text>
+
+    <text x="750" y="338">4. insert session</text>
+    <text x="940" y="338">token_hash, expires_at</text>
+
+    <text x="470" y="388">5. Set-Cookie: tl_session</text>
+    <text x="190" y="388">HttpOnly; SameSite=Lax</text>
+
+    <text x="190" y="468">6. GET /auth/me + cookie</text>
+    <text x="470" y="468">proxy + cookie</text>
+
+    <text x="750" y="518">7. hash cookie, look up session</text>
+    <text x="940" y="518">SELECT session + user</text>
+
+    <text x="470" y="588">8. 200 user</text>
+    <text x="190" y="588">render signed-in state</text>
+  </g>
+
+  <g stroke="#2563eb" stroke-width="1.8" marker-end="url(#arrow-blue)">
+    <defs>
+      <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+      </marker>
+    </defs>
+    <line x1="170" y1="200" x2="450" y2="200"/>
+    <line x1="450" y1="250" x2="730" y2="250"/>
+    <line x1="730" y1="300" x2="1020" y2="300"/>
+    <line x1="730" y1="350" x2="1020" y2="350"/>
+    <line x1="730" y1="400" x2="170" y2="400"/>
+    <line x1="170" y1="480" x2="450" y2="480"/>
+    <line x1="450" y1="530" x2="730" y2="530"/>
+    <line x1="730" y1="600" x2="450" y2="600"/>
+    <line x1="450" y1="600" x2="170" y2="600"/>
+  </g>
+</svg>
