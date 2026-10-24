@@ -501,3 +501,142 @@ modules:
       - file: 14.09-checklist.md
         title: "Checklist and learning log"
         goal: "Write a failure walk-through of a checkout saga, with the undo order, where the state lives and what stops a repeated step from doing harm, and link your challenge 13 results."
+  - dir: 15-queues-logs-and-stream-processing
+    title: "Queues, logs and stream processing"
+    summary: "Move slow work off the request path with queues and logs, keep order and survive failures, and count events in windows when they arrive late."
+    lessons:
+      - file: 15.01-set-the-scene-slow-and-doubled-emails.md
+        title: "Set the scene: slow and doubled emails"
+        goal: "See a signup wait 3 seconds for an email and then send it twice after a retry."
+      - file: 15.02-why-queues.md
+        title: "Why queues"
+        goal: "Use a queue to decouple, buffer and smooth spikes, size the workers with Little's law, and make a full queue push back."
+      - file: 15.03-queue-versus-log.md
+        title: "Queue versus log"
+        goal: "Compare an SQS-style queue with a Kafka-style log, explain offsets, consumer groups and partitions, and choose between them."
+      - file: 15.04-delivery-ordering-and-partition-keys.md
+        title: "Delivery, ordering and partition keys"
+        goal: "Explain how the moment of the ack decides between loss and repeats, why a retry reorders events, and how a partition key keeps order per key."
+      - file: 15.05-retries-dead-letter-queues-and-poison-messages.md
+        title: "Retries, dead letter queues and poison messages"
+        goal: "Stop one bad message from blocking a partition with retry limits, backoff, jitter and a dead letter queue."
+      - file: 15.06-stream-processing-windows-watermarks-and-late-events.md
+        title: "Stream processing: windows, watermarks, late events"
+        goal: "Choose tumbling, sliding or session windows, explain event time and watermarks, and decide how to treat late events."
+      - file: 15.07-publish-and-subscribe-and-fan-out.md
+        title: "Publish and subscribe, and fan-out"
+        goal: "Fan one event out to many subscribers with a queue each, and join the outbox, the topic and idempotent consumers into one design."
+      - file: 15.08-code-a-windowed-aggregator.md
+        title: "Code: a windowed aggregator"
+        goal: "Implement tumbling windows with a watermark, allowed lateness and a drop rule, and pass the out-of-order tests."
+      - file: 15.09-challenge-14-a-queue-worker.md
+        title: "Challenge 14: a queue worker"
+        goal: "Run a consumer group on Valkey streams, crash workers on purpose, add backoff, jitter and a dead letter queue, and chart the backlog."
+      - file: 15.10-quiz.md
+        title: "Queues and streams"
+        goal: "Answer graded scenarios on queues and logs, partitions, backoff and jitter, ordering with retries, and late events."
+      - file: 15.11-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write the async design for order emails and receipts, and link your challenge 14 results."
+  - dir: 16-microservices-and-resilience
+    title: "Microservices and resilience"
+    summary: "Decide when to split a system into services, and keep it standing when a part is slow or broken."
+    lessons:
+      - file: 16.01-set-the-scene-one-slow-service-took-the-site-down.md
+        title: "Set the scene: one slow service took the site down"
+        goal: "See a slow optional service use up every worker in a checkout server, and say what you would try first."
+      - file: 16.02-monolith-modular-monolith-microservices.md
+        title: "Monolith, modular monolith, microservices"
+        goal: "Choose a shape by team size, release collisions and how stable the boundaries are."
+      - file: 16.03-service-boundaries-and-data-ownership.md
+        title: "Service boundaries and data ownership"
+        goal: "Draw service lines, give each service one owner for its data, and choose between waiting for an answer and sending a message."
+      - file: 16.04-timeouts-retries-backoff-and-jitter.md
+        title: "Timeouts, retries, backoff and jitter"
+        goal: "Choose a time limit from latency percentiles, and prevent retry storms with one retrying layer, full jitter and a retry budget."
+      - file: 16.05-circuit-breakers-bulkheads-and-load-shedding.md
+        title: "Circuit breakers, bulkheads and load shedding"
+        goal: "Contain a failing dependency with a breaker, separate worker pools and load shedding, and pick the right tool for each failure."
+      - file: 16.06-fault-tolerance-and-graceful-degradation.md
+        title: "Fault tolerance and graceful degradation"
+        goal: "Decide which features degrade and what the fallback is, and keep enough spare capacity for redundancy to work."
+      - file: 16.07-code-a-circuit-breaker-and-a-retry-budget.md
+        title: "Code: a circuit breaker and a retry budget"
+        goal: "Implement fullJitterDelay, createRetryBudget and createBreaker with closed, open and half-open states, and pass the edge-case tests."
+      - file: 16.08-challenge-15-resilience.md
+        title: "Challenge 15: resilience"
+        goal: "Run a checkout service against a slow and failing dependency and measure what timeouts, a jittered retry budget, a breaker and bulkheads do to p99, to the load on the dependency and to payments."
+      - file: 16.09-quiz.md
+        title: "Microservices and resilience"
+        goal: "Answer graded scenarios on shared tables, retry amplification, the breaker's probe, load shedding and fallbacks."
+      - file: 16.10-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a split-or-not decision for a growing product, with its protections, and link your challenge 15 results."
+  - dir: 17-observability-and-reliability-targets
+    title: "Observability and reliability targets"
+    summary: "See inside a running system with logs, metrics and traces, agree what reliable enough means with SLIs and SLOs, alert on error budget burn without waking people for noise, build dashboards with RED and USE, and run an incident that ends in a blameless postmortem."
+    lessons:
+      - file: 17.01-set-the-scene-it-is-slow-and-nobody-can-say-where.md
+        title: "Set the scene: it is slow, and nobody can say where"
+        goal: "See a delivery app slow down while the team has one CPU graph and a pile of log files, and meet the five tools this module adds."
+      - file: 17.02-logs-metrics-and-traces.md
+        title: "Logs, metrics and traces"
+        goal: "Say which question each signal answers, follow one slow order across three services with a trace, and see how a forgotten header splits a trace."
+      - file: 17.03-slis-slos-and-slas.md
+        title: "SLIs, SLOs and SLAs"
+        goal: "Write an SLI as good over valid requests, set an SLO with a target and a window, see the allowed bad minutes, and see what an SLA adds."
+      - file: 17.04-error-budgets-and-burn-rate-alerts.md
+        title: "Error budgets and burn-rate alerts"
+        goal: "Compute a burn rate, page with a long and a short window together, and decide what deserves a page and what only a ticket."
+      - file: 17.05-dashboards-that-help.md
+        title: "Dashboards that help"
+        goal: "Use RED for services and USE for resources, see why the same average hides a slow tail, and merge histograms instead of averaging percentiles."
+      - file: 17.06-incidents-and-postmortems.md
+        title: "Incidents and postmortems"
+        goal: "Run an incident in order, mitigate before hunting the cause, and write a blameless postmortem with actions that have owners."
+      - file: 17.07-code-sli-and-burn-rate.md
+        title: "Code: SLI and burn rate"
+        goal: "Implement computeSli, burnRate, errorBudgetLeft and shouldPage, and pass the scenario tests for blips, outages, slow leaks and empty windows."
+      - file: 17.08-challenge-16-observability.md
+        title: "Challenge 16: observability"
+        goal: "Add traces, metrics and logs to a three-service app, find the slow call, and replay a day of traffic through a naive alert and your burn-rate alert."
+      - file: 17.09-quiz.md
+        title: "Observability and reliability"
+        goal: "Answer graded scenarios on choosing a signal, counting an SLI, reading a burn-rate alert, deciding what to page and writing a postmortem."
+      - file: 17.10-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write SLOs and a paging rule for your capstone idea, and link your challenge 16 results."
+  - dir: 18-running-it-linux-containers-kubernetes-ci-cd-and-the-cloud
+    title: "Running it: Linux, containers, Kubernetes, CI/CD and the cloud"
+    summary: "Package, ship and run a service: what a container really is, small images, Kubernetes basics, pipelines, release strategies and the cloud blocks behind them."
+    lessons:
+      - file: 18.01-set-the-scene-works-on-my-machine.md
+        title: "Set the scene: works on my machine"
+        goal: "See a deploy break because two machines differ, and the idea of one image run everywhere."
+      - file: 18.02-linux-under-containers-namespaces-cgroups-limits-and-signals.md
+        title: "Linux under containers: namespaces, cgroups, limits, signals"
+        goal: "Explain what a container really is, how memory and CPU limits differ, and how graceful shutdown works."
+      - file: 18.03-docker-images-and-containers.md
+        title: "Docker images and containers"
+        goal: "Build small images with good layer caching, a non-root user and a health check."
+      - file: 18.04-kubernetes-essentials.md
+        title: "Kubernetes essentials"
+        goal: "Explain pods, deployments, services, probes, rolling updates and autoscaling."
+      - file: 18.05-ci-cd-pipelines.md
+        title: "CI/CD pipelines"
+        goal: "Design a pipeline with ordered stages, gates, one built image and a smoke test."
+      - file: 18.06-deployment-strategies.md
+        title: "Deployment strategies"
+        goal: "Compare rolling, blue-green, canary and feature flags by blast radius and rollback time."
+      - file: 18.07-cloud-building-blocks.md
+        title: "Cloud building blocks"
+        goal: "Map compute, storage, networking, managed data and queues to AWS names, and use local emulators."
+      - file: 18.08-challenge-17-ship-it.md
+        title: "Challenge 17: ship it"
+        goal: "Containerise a service, run a pipeline, deploy to a local Kubernetes cluster, and try S3 and SQS locally."
+      - file: 18.09-quiz.md
+        title: "Running it"
+        goal: "Answer graded scenarios on containers, Kubernetes, pipelines, releases and cloud blocks."
+      - file: 18.10-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a deploy and rollback plan for a service."

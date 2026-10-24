@@ -343,6 +343,96 @@ import { sysdesignM13CrdtPlay } from "./sysdesign-m13-crdt-play/data";
 import { sysdesignM11SyncRate } from "./sysdesign-m11-sync-rate/data";
 import { sysdesignM11CutTheNetwork } from "./sysdesign-m11-cut-the-network/data";
 import { sysdesignM11LatencyOrFresh } from "./sysdesign-m11-latency-or-fresh/data";
+import { sysdesignM15AckFirst } from "./sysdesign-m15-ack-first/data";
+import { sysdesignM15AckLast } from "./sysdesign-m15-ack-last/data";
+import { sysdesignM15BackoffWaits } from "./sysdesign-m15-backoff-waits/data";
+import { sysdesignM15DlqParks } from "./sysdesign-m15-dlq-parks/data";
+import { sysdesignM15EmailTwice } from "./sysdesign-m15-email-twice/data";
+import { sysdesignM15EventVsArrival } from "./sysdesign-m15-event-vs-arrival/data";
+import { sysdesignM15FanoutIsolated } from "./sysdesign-m15-fanout-isolated/data";
+import { sysdesignM15FanoutOneEvent } from "./sysdesign-m15-fanout-one-event/data";
+import { sysdesignM15FullQueue } from "./sysdesign-m15-full-queue/data";
+import { sysdesignM15IdlePartition } from "./sysdesign-m15-idle-partition/data";
+import { sysdesignM15KeyRoutes } from "./sysdesign-m15-key-routes/data";
+import { sysdesignM15LateRule } from "./sysdesign-m15-late-rule/data";
+import { sysdesignM15LogOffsets } from "./sysdesign-m15-log-offsets/data";
+import { sysdesignM15LogReplay } from "./sysdesign-m15-log-replay/data";
+import { sysdesignM15OrderPerKey } from "./sysdesign-m15-order-per-key/data";
+import { sysdesignM15PoisonBlocks } from "./sysdesign-m15-poison-blocks/data";
+import { sysdesignM15QueueDecouples } from "./sysdesign-m15-queue-decouples/data";
+import { sysdesignM15QueueHandout } from "./sysdesign-m15-queue-handout/data";
+import { sysdesignM15RetryHerd } from "./sysdesign-m15-retry-herd/data";
+import { sysdesignM15RetryJitter } from "./sysdesign-m15-retry-jitter/data";
+import { sysdesignM15SignupWaits } from "./sysdesign-m15-signup-waits/data";
+import { sysdesignM15SpikeAbsorbed } from "./sysdesign-m15-spike-absorbed/data";
+import { sysdesignM15TwoGroups } from "./sysdesign-m15-two-groups/data";
+import { sysdesignM15WatermarkAdvances } from "./sysdesign-m15-watermark-advances/data";
+import { sysdesignM15BacklogPlay } from "./sysdesign-m15-backlog-play/data";
+import { sysdesignM15RebalancePlay } from "./sysdesign-m15-rebalance-play/data";
+import { sysdesignM16SlowPicks } from "./sysdesign-m16-slow-picks/data";
+import { sysdesignM16CallCanFail } from "./sysdesign-m16-call-can-fail/data";
+import { sysdesignM16SharedTable } from "./sysdesign-m16-shared-table/data";
+import { sysdesignM16TimeoutFires } from "./sysdesign-m16-timeout-fires/data";
+import { sysdesignM16RetryBudget } from "./sysdesign-m16-retry-budget/data";
+import { sysdesignM16SharedPool } from "./sysdesign-m16-shared-pool/data";
+import { sysdesignM16ShedLoad } from "./sysdesign-m16-shed-load/data";
+import { sysdesignM16FallbackCache } from "./sysdesign-m16-fallback-cache/data";
+import { sysdesignM16NoHeadroom } from "./sysdesign-m16-no-headroom/data";
+import { sysdesignM15RetryReorderPlay } from "./sysdesign-m15-retry-reorder-play/data";
+import { sysdesignM15PartitionKeyPlay } from "./sysdesign-m15-partition-key-play/data";
+import { sysdesignM15PoisonPlay } from "./sysdesign-m15-poison-play/data";
+import { sysdesignM15WindowShapesPlay } from "./sysdesign-m15-window-shapes-play/data";
+import { sysdesignM17BlindOutage } from "./sysdesign-m17-blind-outage/data";
+import { sysdesignM17LogLines } from "./sysdesign-m17-log-lines/data";
+import { sysdesignM17MetricScrape } from "./sysdesign-m17-metric-scrape/data";
+import { sysdesignM17PropagateId } from "./sysdesign-m17-propagate-id/data";
+import { sysdesignM17SliRatio } from "./sysdesign-m17-sli-ratio/data";
+import { sysdesignM17BudgetSpend } from "./sysdesign-m17-budget-spend/data";
+import { sysdesignM17UseQueue } from "./sysdesign-m17-use-queue/data";
+import { sysdesignM17RollbackFirst } from "./sysdesign-m17-rollback-first/data";
+import { sysdesignM15WatermarkDelayPlay } from "./sysdesign-m15-watermark-delay-play/data";
+import { sysdesignM15SlowSubscriberPlay } from "./sysdesign-m15-slow-subscriber-play/data";
+import { sysdesignM16SplitOrNot } from "./sysdesign-m16-split-or-not/data";
+import { sysdesignM16OrderPath } from "./sysdesign-m16-order-path/data";
+import { sysdesignM16TimeoutLine } from "./sysdesign-m16-timeout-line/data";
+import { sysdesignM16RetryStorm } from "./sysdesign-m16-retry-storm/data";
+import { sysdesignM16JitterHerd } from "./sysdesign-m16-jitter-herd/data";
+import { sysdesignM16BreakerPlay } from "./sysdesign-m16-breaker-play/data";
+import { sysdesignM16BulkheadPools } from "./sysdesign-m16-bulkhead-pools/data";
+import { sysdesignM16DegradeMenu } from "./sysdesign-m16-degrade-menu/data";
+import { sysdesignM17TraceRequest } from "./sysdesign-m17-trace-request/data";
+import { sysdesignM17SloWindow } from "./sysdesign-m17-slo-window/data";
+import { sysdesignM17BurnReplay } from "./sysdesign-m17-burn-replay/data";
+import { sysdesignM17SameAverage } from "./sysdesign-m17-same-average/data";
+import { sysdesignM17IncidentStepper } from "./sysdesign-m17-incident-stepper/data";
+import { sysdesignM18LaptopVsServer } from "./sysdesign-m18-laptop-vs-server/data";
+import { sysdesignM18SameImage } from "./sysdesign-m18-same-image/data";
+import { sysdesignM18OomKill } from "./sysdesign-m18-oom-kill/data";
+import { sysdesignM18CpuThrottle } from "./sysdesign-m18-cpu-throttle/data";
+import { sysdesignM18SigtermIgnored } from "./sysdesign-m18-sigterm-ignored/data";
+import { sysdesignM18GracefulDrain } from "./sysdesign-m18-graceful-drain/data";
+import { sysdesignM18ImagePullWeakLine } from "./sysdesign-m18-image-pull-weak-line/data";
+import { sysdesignM18DockerHealth } from "./sysdesign-m18-docker-health/data";
+import { sysdesignM18VolumeSurvives } from "./sysdesign-m18-volume-survives/data";
+import { sysdesignM18PodReplaced } from "./sysdesign-m18-pod-replaced/data";
+import { sysdesignM18ServiceLabels } from "./sysdesign-m18-service-labels/data";
+import { sysdesignM18ProbeSplit } from "./sysdesign-m18-probe-split/data";
+import { sysdesignM18RollingSurge } from "./sysdesign-m18-rolling-surge/data";
+import { sysdesignM18HpaScale } from "./sysdesign-m18-hpa-scale/data";
+import { sysdesignM18FailFast } from "./sysdesign-m18-fail-fast/data";
+import { sysdesignM18BuildOnce } from "./sysdesign-m18-build-once/data";
+import { sysdesignM18SmokeRollback } from "./sysdesign-m18-smoke-rollback/data";
+import { sysdesignM18MixedVersions } from "./sysdesign-m18-mixed-versions/data";
+import { sysdesignM18BlueGreen } from "./sysdesign-m18-blue-green/data";
+import { sysdesignM18CanaryCompare } from "./sysdesign-m18-canary-compare/data";
+import { sysdesignM18FlagFlip } from "./sysdesign-m18-flag-flip/data";
+import { sysdesignM18ManagedFailover } from "./sysdesign-m18-managed-failover/data";
+import { sysdesignM18IsolationLayers } from "./sysdesign-m18-isolation-layers/data";
+import { sysdesignM18LayerCache } from "./sysdesign-m18-layer-cache/data";
+import { sysdesignM18ClusterPlay } from "./sysdesign-m18-cluster-play/data";
+import { sysdesignM18PipelineStep } from "./sysdesign-m18-pipeline-step/data";
+import { sysdesignM18CanaryBlast } from "./sysdesign-m18-canary-blast/data";
+import { sysdesignM18CloudExplorer } from "./sysdesign-m18-cloud-explorer/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
@@ -701,6 +791,96 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m11-sync-rate": sysdesignM11SyncRate,
   "sysdesign-m11-cut-the-network": sysdesignM11CutTheNetwork,
   "sysdesign-m11-latency-or-fresh": sysdesignM11LatencyOrFresh,
+  "sysdesign-m15-ack-first": sysdesignM15AckFirst,
+  "sysdesign-m15-ack-last": sysdesignM15AckLast,
+  "sysdesign-m15-backoff-waits": sysdesignM15BackoffWaits,
+  "sysdesign-m15-dlq-parks": sysdesignM15DlqParks,
+  "sysdesign-m15-email-twice": sysdesignM15EmailTwice,
+  "sysdesign-m15-event-vs-arrival": sysdesignM15EventVsArrival,
+  "sysdesign-m15-fanout-isolated": sysdesignM15FanoutIsolated,
+  "sysdesign-m15-fanout-one-event": sysdesignM15FanoutOneEvent,
+  "sysdesign-m15-full-queue": sysdesignM15FullQueue,
+  "sysdesign-m15-idle-partition": sysdesignM15IdlePartition,
+  "sysdesign-m15-key-routes": sysdesignM15KeyRoutes,
+  "sysdesign-m15-late-rule": sysdesignM15LateRule,
+  "sysdesign-m15-log-offsets": sysdesignM15LogOffsets,
+  "sysdesign-m15-log-replay": sysdesignM15LogReplay,
+  "sysdesign-m15-order-per-key": sysdesignM15OrderPerKey,
+  "sysdesign-m15-poison-blocks": sysdesignM15PoisonBlocks,
+  "sysdesign-m15-queue-decouples": sysdesignM15QueueDecouples,
+  "sysdesign-m15-queue-handout": sysdesignM15QueueHandout,
+  "sysdesign-m15-retry-herd": sysdesignM15RetryHerd,
+  "sysdesign-m15-retry-jitter": sysdesignM15RetryJitter,
+  "sysdesign-m15-signup-waits": sysdesignM15SignupWaits,
+  "sysdesign-m15-spike-absorbed": sysdesignM15SpikeAbsorbed,
+  "sysdesign-m15-two-groups": sysdesignM15TwoGroups,
+  "sysdesign-m15-watermark-advances": sysdesignM15WatermarkAdvances,
+  "sysdesign-m15-backlog-play": sysdesignM15BacklogPlay,
+  "sysdesign-m15-rebalance-play": sysdesignM15RebalancePlay,
+  "sysdesign-m16-slow-picks": sysdesignM16SlowPicks,
+  "sysdesign-m16-call-can-fail": sysdesignM16CallCanFail,
+  "sysdesign-m16-shared-table": sysdesignM16SharedTable,
+  "sysdesign-m16-timeout-fires": sysdesignM16TimeoutFires,
+  "sysdesign-m16-retry-budget": sysdesignM16RetryBudget,
+  "sysdesign-m16-shared-pool": sysdesignM16SharedPool,
+  "sysdesign-m16-shed-load": sysdesignM16ShedLoad,
+  "sysdesign-m16-fallback-cache": sysdesignM16FallbackCache,
+  "sysdesign-m16-no-headroom": sysdesignM16NoHeadroom,
+  "sysdesign-m15-retry-reorder-play": sysdesignM15RetryReorderPlay,
+  "sysdesign-m15-partition-key-play": sysdesignM15PartitionKeyPlay,
+  "sysdesign-m15-poison-play": sysdesignM15PoisonPlay,
+  "sysdesign-m15-window-shapes-play": sysdesignM15WindowShapesPlay,
+  "sysdesign-m17-blind-outage": sysdesignM17BlindOutage,
+  "sysdesign-m17-log-lines": sysdesignM17LogLines,
+  "sysdesign-m17-metric-scrape": sysdesignM17MetricScrape,
+  "sysdesign-m17-propagate-id": sysdesignM17PropagateId,
+  "sysdesign-m17-sli-ratio": sysdesignM17SliRatio,
+  "sysdesign-m17-budget-spend": sysdesignM17BudgetSpend,
+  "sysdesign-m17-use-queue": sysdesignM17UseQueue,
+  "sysdesign-m17-rollback-first": sysdesignM17RollbackFirst,
+  "sysdesign-m15-watermark-delay-play": sysdesignM15WatermarkDelayPlay,
+  "sysdesign-m15-slow-subscriber-play": sysdesignM15SlowSubscriberPlay,
+  "sysdesign-m16-split-or-not": sysdesignM16SplitOrNot,
+  "sysdesign-m16-order-path": sysdesignM16OrderPath,
+  "sysdesign-m16-timeout-line": sysdesignM16TimeoutLine,
+  "sysdesign-m16-retry-storm": sysdesignM16RetryStorm,
+  "sysdesign-m16-jitter-herd": sysdesignM16JitterHerd,
+  "sysdesign-m16-breaker-play": sysdesignM16BreakerPlay,
+  "sysdesign-m16-bulkhead-pools": sysdesignM16BulkheadPools,
+  "sysdesign-m16-degrade-menu": sysdesignM16DegradeMenu,
+  "sysdesign-m17-trace-request": sysdesignM17TraceRequest,
+  "sysdesign-m17-slo-window": sysdesignM17SloWindow,
+  "sysdesign-m17-burn-replay": sysdesignM17BurnReplay,
+  "sysdesign-m17-same-average": sysdesignM17SameAverage,
+  "sysdesign-m17-incident-stepper": sysdesignM17IncidentStepper,
+  "sysdesign-m18-laptop-vs-server": sysdesignM18LaptopVsServer,
+  "sysdesign-m18-same-image": sysdesignM18SameImage,
+  "sysdesign-m18-oom-kill": sysdesignM18OomKill,
+  "sysdesign-m18-cpu-throttle": sysdesignM18CpuThrottle,
+  "sysdesign-m18-sigterm-ignored": sysdesignM18SigtermIgnored,
+  "sysdesign-m18-graceful-drain": sysdesignM18GracefulDrain,
+  "sysdesign-m18-image-pull-weak-line": sysdesignM18ImagePullWeakLine,
+  "sysdesign-m18-docker-health": sysdesignM18DockerHealth,
+  "sysdesign-m18-volume-survives": sysdesignM18VolumeSurvives,
+  "sysdesign-m18-pod-replaced": sysdesignM18PodReplaced,
+  "sysdesign-m18-service-labels": sysdesignM18ServiceLabels,
+  "sysdesign-m18-probe-split": sysdesignM18ProbeSplit,
+  "sysdesign-m18-rolling-surge": sysdesignM18RollingSurge,
+  "sysdesign-m18-hpa-scale": sysdesignM18HpaScale,
+  "sysdesign-m18-fail-fast": sysdesignM18FailFast,
+  "sysdesign-m18-build-once": sysdesignM18BuildOnce,
+  "sysdesign-m18-smoke-rollback": sysdesignM18SmokeRollback,
+  "sysdesign-m18-mixed-versions": sysdesignM18MixedVersions,
+  "sysdesign-m18-blue-green": sysdesignM18BlueGreen,
+  "sysdesign-m18-canary-compare": sysdesignM18CanaryCompare,
+  "sysdesign-m18-flag-flip": sysdesignM18FlagFlip,
+  "sysdesign-m18-managed-failover": sysdesignM18ManagedFailover,
+  "sysdesign-m18-isolation-layers": sysdesignM18IsolationLayers,
+  "sysdesign-m18-layer-cache": sysdesignM18LayerCache,
+  "sysdesign-m18-cluster-play": sysdesignM18ClusterPlay,
+  "sysdesign-m18-pipeline-step": sysdesignM18PipelineStep,
+  "sysdesign-m18-canary-blast": sysdesignM18CanaryBlast,
+  "sysdesign-m18-cloud-explorer": sysdesignM18CloudExplorer,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
