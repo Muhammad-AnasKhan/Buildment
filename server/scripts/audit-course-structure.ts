@@ -1,5 +1,5 @@
 /**
- * Structural audit for one course folder under content/import/.
+ * Structural audit for one course folder under courses/.
  * Run: pnpm content:audit [--course <slug>] [--strict]
  * FreshMarket: exit 1 if demo modules (01-03) have errors; warnings only elsewhere unless --strict.
  * Courses with a course.yaml: every module is held to the demo-module bar, and the lesson files

@@ -1,7 +1,4 @@
 import { describe, expect, it } from "vitest";
-import fs from "node:fs";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import { unified } from "unified";
 import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
@@ -9,9 +6,11 @@ import remarkMdx from "remark-mdx";
 import { visit } from "unist-util-visit";
 import { remarkChecklist } from "../../../../src/shared/mdx/remark-checklist.js";
 import { remarkLearningLog } from "../../../../src/shared/mdx/remark-learning-log.js";
+import { parseLesson } from "../../../../scripts/import-course.js";
 
-// Course fixtures live at the repo root, not inside this package.
-const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../..");
+function gateSource(moduleNum: number, moduleDir: string, fileName: string, lessonNum: number): string {
+  return parseLesson(moduleNum, moduleDir, fileName, lessonNum, fileName.replace(/^\d+\.\d+-|\.md$/g, "")).source;
+}
 
 function jsxElements(source: string): Array<{ name: string; attrs: Record<string, unknown> }> {
   const elements: Array<{ name: string; attrs: Record<string, unknown> }> = [];
@@ -51,31 +50,23 @@ function jsxElements(source: string): Array<{ name: string; attrs: Record<string
 
 describe("remarkLearningLog on gate chapters", () => {
   it("transforms ## Learning log on 3-11 checklist", () => {
-    const file = path.join(
-      REPO_ROOT,
-      "content/transformed/multi-vendor-marketplace/03-why-mongodb/03.11-checklist.mdx"
-    );
-    const body = fs.readFileSync(file, "utf8").replace(/^---[\s\S]*?---\n/, "");
+    const body = gateSource(3, "03-why-mongodb", "03.11-checklist.md", 11);
     expect(jsxElements(body).some((e) => e.name === "LearningLog")).toBe(true);
   });
 
   it("uses default learning-log styling on gate checklist chapters", () => {
-    for (const rel of [
-      "content/transformed/multi-vendor-marketplace/03-why-mongodb/03.11-checklist.mdx",
-      "content/transformed/multi-vendor-marketplace/04-config-and-database/04.17-checklist.mdx",
+    for (const { moduleNum, moduleDir, fileName, lessonNum } of [
+      { moduleNum: 3, moduleDir: "03-why-mongodb", fileName: "03.11-checklist.md", lessonNum: 11 },
+      { moduleNum: 4, moduleDir: "04-config-and-database", fileName: "04.17-checklist.md", lessonNum: 17 },
     ]) {
-      const body = fs.readFileSync(path.join(REPO_ROOT, rel), "utf8").replace(/^---[\s\S]*?---\n/, "");
+      const body = gateSource(moduleNum, moduleDir, fileName, lessonNum);
       const log = jsxElements(body).find((e) => e.name === "LearningLog");
-      expect(log?.attrs.variant, rel).toBe("default");
+      expect(log?.attrs.variant, fileName).toBe("default");
     }
   });
 
   it("places learning log before All boxes ticked on 4-17", () => {
-    const file = path.join(
-      REPO_ROOT,
-      "content/transformed/multi-vendor-marketplace/04-config-and-database/04.17-checklist.mdx"
-    );
-    const body = fs.readFileSync(file, "utf8").replace(/^---[\s\S]*?---\n/, "");
+    const body = gateSource(4, "04-config-and-database", "04.17-checklist.md", 17);
     expect(body).not.toMatch(/### Learning log/i);
     expect(body).toMatch(/## Learning log[\s\S]*## All boxes ticked/i);
     expect(body).not.toMatch(/BigWordAlert|InterestingRead|RealWorldEvent/);

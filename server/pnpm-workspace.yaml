@@ -9,3 +9,7 @@ allowBuilds:
 # (CI, Docker, Vercel, Heroku) then fails whenever a transitive dependency released in the last
 # day is the only match, so the delay is off; the lockfile pins exact versions and hashes.
 minimumReleaseAge: 0
+
+# Release images run as a non-root user with dependencies installed at build time.
+# Commands must use that fixed install instead of trying to rewrite node_modules.
+verifyDepsBeforeRun: false

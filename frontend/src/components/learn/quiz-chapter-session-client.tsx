@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -134,13 +134,10 @@ export function QuizChapterSessionClient({
     }
   }, [initialScoreSummary, individualActivityCount]);
 
-  const go = useCallback(
-    (nextPosition: number) => {
-      const boundedPosition = Math.max(0, Math.min(visibleIndices.length - 1, nextPosition));
-      setIndex(visibleIndices[boundedPosition] ?? 0);
-    },
-    [visibleIndices]
-  );
+  const go = (nextPosition: number) => {
+    const boundedPosition = Math.max(0, Math.min(visibleIndices.length - 1, nextPosition));
+    setIndex(visibleIndices[boundedPosition] ?? 0);
+  };
 
   useEffect(() => {
     const onAnswerChange = (event: Event) => {

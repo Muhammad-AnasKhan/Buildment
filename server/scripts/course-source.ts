@@ -1,5 +1,5 @@
 /**
- * Resolves which course under content/import/ a content script works on.
+ * Resolves which course under courses/ a content script works on.
  *
  * Pass `--course <slug>` (or `--course=<slug>`); the default is the FreshMarket
  * course so existing commands behave as before. A course folder can carry a
@@ -17,6 +17,17 @@ import { isSafeProductName } from "../src/shared/lib/content-tokens.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_COURSE_SLUG = "multi-vendor-marketplace";
+const SERVER_ROOT = path.resolve(__dirname, "..");
+
+/** Support a root checkout and Heroku's APP_BASE=server slug layout. */
+export function coursesRootForServer(serverRoot: string): string {
+  const nested = path.join(serverRoot, "courses");
+  return fs.existsSync(path.join(nested, "publishing.yaml"))
+    ? nested
+    : path.resolve(serverRoot, "../courses");
+}
+
+const COURSES_ROOT = coursesRootForServer(SERVER_ROOT);
 
 function courseSlugFromArgs(argv: string[]): string {
   const index = argv.indexOf("--course");
@@ -24,19 +35,18 @@ function courseSlugFromArgs(argv: string[]): string {
   const slug = index >= 0 ? argv[index + 1] : inline?.slice("--course=".length);
   if (slug === undefined) return DEFAULT_COURSE_SLUG;
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-    throw new Error(`--course expects a kebab-case folder name under content/import/, got "${slug}"`);
+    throw new Error(`--course expects a kebab-case folder name under courses/, got "${slug}"`);
   }
   return slug;
 }
 
 export const COURSE_SLUG = courseSlugFromArgs(process.argv);
 // ZIP validation runs the same scripts against an isolated temporary folder.
-export const COURSE_SOURCE_DIR = process.env.COURSE_IMPORT_SOURCE ?? path.resolve(__dirname, "../../content/import", COURSE_SLUG);
-export const COURSE_OUTPUT_DIR = path.resolve(__dirname, "../../content/transformed", COURSE_SLUG);
+export const COURSE_SOURCE_DIR = process.env.COURSE_IMPORT_SOURCE ?? path.join(COURSES_ROOT, COURSE_SLUG);
 export const COURSE_MANIFEST_PATH = path.join(COURSE_SOURCE_DIR, "course.yaml");
 
 if (!fs.existsSync(COURSE_SOURCE_DIR)) {
-  throw new Error(`No course folder at content/import/${COURSE_SLUG}/`);
+  throw new Error(`No course folder at courses/${COURSE_SLUG}/`);
 }
 
 const PlannedLessonSchema = z.object({
@@ -66,6 +76,8 @@ export const CourseManifestSchema = z.object({
   /** Repository publishing requires this explicit intent; dashboard ZIPs may omit it. */
   publication: z.enum(["create", "update"]).optional(),
   creatorEmail: z.email().optional(),
+  /** Opt in to publishing this repository package after CI passes on main. */
+  repositoryPublish: z.boolean().optional(),
   title: z.string().min(1),
   description: z.string().min(1),
   projectGoal: z.string().min(1),

@@ -18,7 +18,7 @@ import {
 } from "./course-enrichment-data.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const COURSE_DIR = path.resolve(__dirname, "../../content/import/multi-vendor-marketplace");
+const COURSE_DIR = path.resolve(__dirname, "../../courses/multi-vendor-marketplace");
 
 type AnchorKind =
   | "afterIntro"

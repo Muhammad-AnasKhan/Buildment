@@ -79,16 +79,26 @@ supplied lessons. The preview matches unchanged legacy content and adopts those
 keys while keeping its chapter IDs; review any ambiguous matches before approval.
 There is no need to list every old lesson in that first patch.
 
-## Repository packages for now
+## Repository publishing
 
-Adding or changing `content/import/<slug>/` in a PR only changes the source
-files. GitHub Actions does not create a course, publish a version, or connect to
-the course database. After reviewing a new package, the creator can upload a ZIP
-from the dashboard to create a draft, then publish it there. For an existing
-course, the creator uses **Update from ZIP** to preview the affected lessons and
-variants before approval. Keep stable keys on modules and lessons so later
-updates can match content correctly. A repository-to-course agent should also
-produce a draft package for this review path. Do not use
+Repository course packages stay under `courses/<slug>/`. The default instructor
+for these packages is `devweekends@gmail.com`, set in `courses/publishing.yaml`.
+After human review, add `repositoryPublish: true` to the package's `course.yaml`.
+CI validates all opted-in packages. On a backend deployment of `main`, the
+Heroku release phase runs migrations and then uses its existing `DATABASE_URL`
+to assign repository courses to the configured instructor and use the
+same ZIP import, preview, approval, and release services as the dashboard.
+New packages become published courses; updates make new immutable releases.
+The publisher records the package hash and active release, so unchanged packages
+skip another update preview. Packages without the opt-in flag stay
+in the repository and are not automatically published.
+
+The instructor account must exist, be verified, have a Mentor or Admin role,
+and have ZIP import access. Existing course owners retain course-creator access
+when ownership moves to that instructor. Keep stable keys on modules and lessons
+so later updates can match content correctly. FreshMarket requires a manifest
+before it can enter this workflow; its existing database course can still be
+bound to the instructor. Dashboard ZIP import remains available. Do not use
 `scripts/import-course.ts` to update a published course: that legacy seeder
 edits live rows.
 
