@@ -12,7 +12,7 @@ export const feedbackToNextProject: StateMachineSpec = {
   purpose:
     "Tag your own answers first, compare your tags with the card, keep what your words support, question what they do not, and turn the gap you find into a plan.",
   summary:
-    "Tala tags her last transcript with the five flag names and finds one, unsupported number. The card has no flags: it has strengths, a weakness with a fix and next steps. Its weakness matches her tag. Its praise, strong impact for a long answer, does not match her words: the answer has no number at all. She compares her tags from her first interview, three, with her last, one. Then she finds the gap in her story bank, a number she can source, and plans to ask her lead if she may count failed bookings before and after her change.",
+    "Tala tags her last transcript with the five flag names and finds one, unsupported number. The card's Things to watch list names the same flag, and its weakness matches her tag. Its praise, strong impact for a long answer, does not match her words: the answer has no number at all. She compares her tags from her first interview, three, with her last, one. Then she finds the gap in her story bank, a number she can source, and plans to ask her lead if she may count failed bookings before and after her change.",
   states: [
     { id: "tag", name: "Tag first", sub: "your own answers", col: 0, row: 0 },
     { id: "card", name: "Read the card", sub: "then compare", col: 1, row: 0 },
@@ -39,7 +39,7 @@ export const feedbackToNextProject: StateMachineSpec = {
       state: "card",
       edge: 0,
       title: "Read the card, then compare",
-      note: "The card has no flags. It has three strengths, one weakness with a fix, notes for each area and three next steps. Its weakness says the crash number has no source, so it matches her tag. One strength says: strong impact, her long answer about the offline mode shows clear results. Her tags say nothing about that answer. Before you press Next: do her words support the praise?",
+      note: "The card has three strengths, one weakness with a fix, notes for each area, Things to watch and three next steps. Things to watch names unsupported number with her words, and the weakness says the crash number has no source, so both match her tag. One strength says: strong impact, her long answer about the offline mode shows clear results. Her tags say nothing about that answer. Before you press Next: do her words support the praise?",
       chips: ["tag and card agree: 1", "card line with no tag: 1"],
     },
     {

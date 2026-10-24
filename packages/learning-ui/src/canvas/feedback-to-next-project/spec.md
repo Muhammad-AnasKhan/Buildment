@@ -11,7 +11,7 @@ renderer: state-machine (HTML controls, inline SVG states)
 # Canvas spec: Tala reads her feedback card
 
 ## Teaching claim
-Practice feedback is evidence to check, not a verdict: tag your own answers with the five flag names first (the platform card has no flags field), compare your tags with the card, keep the lines your own words support, question the ones they do not (AI tools tend to agree with you and to like long answers), compare your tags across practice interviews, and turn the gap you find in your story bank into a plan with a step and a date.
+Practice feedback is evidence to check, not a verdict: tag your own answers with the five flag names first (the card's Things to watch list can miss a flag), compare your tags with the card, keep the lines your own words support, question the ones they do not (AI tools tend to agree with you and to like long answers), compare your tags across practice interviews, and turn the gap you find in your story bank into a plan with a step and a date.
 
 ## Why a canvas
 The chapter explains the method in prose and works it through on a different case (Fares). The canvas makes the learner think before each step: every step note ends with one short question that the next step answers, so the learner decides whether the transcript supports a line before the canvas says so. Steps 3 and 4 put a line both sources support and a line only the card makes side by side on the same state, which a static diagram would flatten. It is not a replay of the chapter text: the chapter does not retell Tala's steps.
