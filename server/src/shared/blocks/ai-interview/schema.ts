@@ -53,7 +53,7 @@ export const AiInterviewConfigSchema = z.object({
   focus: z
     .array(AiInterviewFocusSchema)
     .min(1)
-    .max(AI_INTERVIEW_FOCUS_AREAS.length)
+    .max(AI_INTERVIEW_FOCUS_AREAS.length * 2)
     .transform((areas) => [...new Set(areas)])
     .default(["ownership", "impact", "five-whys"]),
   /** What the learner pastes before starting: a resume, a project write-up, or nothing. */
