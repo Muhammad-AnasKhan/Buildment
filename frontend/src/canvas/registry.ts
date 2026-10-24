@@ -59,6 +59,25 @@ import { symptomFixLoop } from "./symptom-fix-loop/data";
 import { targetLooksGood } from "./target-looks-good/data";
 import { weakStrongFixes } from "./weak-strong-fixes/data";
 import { whoGotTheSurvey } from "./who-got-the-survey/data";
+import { worryOrNextStep } from "./worry-or-next-step/data";
+import { aHardWeekTwoReadings } from "./a-hard-week-two-readings/data";
+import { actNotIfOnly } from "./act-not-if-only/data";
+import { birdsGoOut } from "./birds-go-out/data";
+import { interviewPowerPlan } from "./interview-power-plan/data";
+import { hijraPlannedSteps } from "./hijra-planned-steps/data";
+import { sabrKeepsMoving } from "./sabr-keeps-moving/data";
+import { wordsForTheDay } from "./words-for-the-day/data";
+import { yusufWaitingWell } from "./yusuf-waiting-well/data";
+import { gratitudeThreeWays } from "./gratitude-three-ways/data";
+import { twoWingsBalance } from "./two-wings-balance/data";
+import { raniaTwoOffers } from "./rania-two-offers/data";
+import { raniaAsksTheRightPeople } from "./rania-asks-the-right-people/data";
+import { istikharaInOrder } from "./istikhara-in-order/data";
+import { sameWorkTwoIntentions } from "./same-work-two-intentions/data";
+import { littleAndOften } from "./little-and-often/data";
+import { startingAgainSteps } from "./starting-again-steps/data";
+import { helpPassesOn } from "./help-passes-on/data";
+import { whoToTell } from "./who-to-tell/data";
 import { aiMissingContext } from "./ai-missing-context/data";
 import { whoMakesTheCall } from "./who-makes-the-call/data";
 import { answersOrHints } from "./answers-or-hints/data";
@@ -172,6 +191,25 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "target-looks-good": targetLooksGood,
   "weak-strong-fixes": weakStrongFixes,
   "who-got-the-survey": whoGotTheSurvey,
+  "worry-or-next-step": worryOrNextStep,
+  "a-hard-week-two-readings": aHardWeekTwoReadings,
+  "act-not-if-only": actNotIfOnly,
+  "birds-go-out": birdsGoOut,
+  "interview-power-plan": interviewPowerPlan,
+  "hijra-planned-steps": hijraPlannedSteps,
+  "sabr-keeps-moving": sabrKeepsMoving,
+  "words-for-the-day": wordsForTheDay,
+  "yusuf-waiting-well": yusufWaitingWell,
+  "gratitude-three-ways": gratitudeThreeWays,
+  "two-wings-balance": twoWingsBalance,
+  "rania-two-offers": raniaTwoOffers,
+  "rania-asks-the-right-people": raniaAsksTheRightPeople,
+  "istikhara-in-order": istikharaInOrder,
+  "same-work-two-intentions": sameWorkTwoIntentions,
+  "little-and-often": littleAndOften,
+  "starting-again-steps": startingAgainSteps,
+  "help-passes-on": helpPassesOn,
+  "who-to-tell": whoToTell,
   "ai-missing-context": aiMissingContext,
   "who-makes-the-call": whoMakesTheCall,
   "answers-or-hints": answersOrHints,
