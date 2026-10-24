@@ -9,7 +9,7 @@
 
 import type { Board, BoardNode } from "@/lab/types";
 import type { ComponentKind } from "@/lab/catalog";
-import { SIZE_CATALOG } from "@/lab/catalog";
+import { COMPONENT_CATALOG, SIZE_CATALOG } from "@/lab/catalog";
 
 const PER_VCPU: Record<string, number> = { general: 800, compute: 1200, memory: 600 };
 const NETWORK_MS = 10;
@@ -51,6 +51,8 @@ export interface TierLoad {
   kind: ComponentKind;
   capacity: number;
   utilisation: number;
+  down: boolean;
+  reachable: boolean;
 }
 
 export interface Targets {
@@ -69,6 +71,8 @@ export interface ModelResult {
   tiers: TierLoad[];
   pass: { rps: boolean; p99: boolean; availability: boolean; budget: boolean };
   allPass: boolean;
+  /** Why the design is broken, when a component is down or unlinked. */
+  failure?: string;
 }
 
 function num(node: BoardNode, key: string, fallback: number): number {
@@ -89,8 +93,32 @@ function unitsOf(node: BoardNode): number {
   return num(node, "count", 1);
 }
 
+const isDown = (node: BoardNode) => Boolean(node.props?.down);
+
+/** Nodes a request can reach from any live client, following the links and skipping down nodes. */
+function reachableFrom(board: Board): Set<string> {
+  const byId = new Map(board.nodes.map((n) => [n.id, n]));
+  const next = new Map<string, string[]>();
+  for (const e of board.edges) next.set(e.from, [...(next.get(e.from) ?? []), e.to]);
+  const seen = new Set<string>();
+  const queue = board.nodes.filter((n) => n.kind === "client" && !isDown(n)).map((n) => n.id);
+  for (const id of queue) seen.add(id);
+  while (queue.length > 0) {
+    const id = queue.shift()!;
+    for (const to of next.get(id) ?? []) {
+      const node = byId.get(to);
+      if (node && !isDown(node) && !seen.has(to)) {
+        seen.add(to);
+        queue.push(to);
+      }
+    }
+  }
+  return seen;
+}
+
 export function runTieredModel(board: Board, load: number, targets: Targets): ModelResult {
-  const cacheNode = board.nodes.find((n) => n.kind === "cache");
+  const reachable = reachableFrom(board);
+  const cacheNode = board.nodes.find((n) => n.kind === "cache" && reachable.has(n.id));
   const cacheHit = cacheNode ? num(cacheNode, "hitRate", 0) : 0;
 
   const tiers: TierLoad[] = [];
@@ -99,16 +127,31 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
   let p99 = NETWORK_MS;
   let availability = 1;
   let cost = 0;
+  let failure: string | undefined;
 
   for (const node of board.nodes) {
     if (!CAPACITY_KINDS.has(node.kind)) continue;
     const { vcpu, family, price } = tierOf(node);
     const units = unitsOf(node);
-    const capacity = vcpu * (PER_VCPU[family] ?? 800) * units;
-    const incoming = node.kind === "database" ? load * (1 - cacheHit) : load;
-    const utilisation = capacity > 0 ? incoming / capacity : Number.POSITIVE_INFINITY;
+    const down = isDown(node);
+    const onPath = reachable.has(node.id);
+    const capacity = down ? 0 : vcpu * (PER_VCPU[family] ?? 800) * units;
+    const incoming = !onPath ? 0 : node.kind === "database" ? load * (1 - cacheHit) : load;
+    const utilisation = capacity > 0 ? incoming / capacity : 0;
 
-    tiers.push({ id: node.id, kind: node.kind, capacity, utilisation });
+    tiers.push({ id: node.id, kind: node.kind, capacity, utilisation, down, reachable: onPath });
+    cost += price * units; // placed hardware costs money whether or not it is serving
+
+    if (down) {
+      // A down component on the request path takes the path with it.
+      if (board.edges.some((e) => e.to === node.id || e.from === node.id)) {
+        ceiling = 0;
+        availability = 0;
+        failure ??= `${COMPONENT_CATALOG[node.kind].label} is down: requests through it fail.`;
+      }
+      continue;
+    }
+    if (!onPath) continue;
 
     // Max load this tier can take, expressed back at the system's offered load.
     const loadFactor = incoming > 0 ? load / incoming : 1;
@@ -121,11 +164,16 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
 
     const single = SINGLE_AVAIL[node.kind] ?? 0.99;
     availability *= 1 - Math.pow(1 - single, Math.max(units, 1));
-
-    cost += price * units;
   }
 
-  if (!Number.isFinite(ceiling)) ceiling = tiers.length > 0 ? 0 : 0;
+  // A placed database that requests cannot reach means nothing is served.
+  const databases = board.nodes.filter((n) => n.kind === "database");
+  if (databases.length > 0 && !databases.some((n) => reachable.has(n.id))) {
+    ceiling = 0;
+    failure ??= "The database is not linked into the request path.";
+  }
+
+  if (!Number.isFinite(ceiling)) ceiling = 0;
 
   const pass = {
     rps: targets.rps == null ? true : ceiling >= targets.rps,
@@ -139,6 +187,7 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     p50Ms: Math.round(p50),
     p99Ms: Math.round(p99),
     availability,
+    failure,
     costPerHour: cost,
     tiers,
     pass,

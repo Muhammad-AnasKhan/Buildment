@@ -52,4 +52,30 @@ describe("runTieredModel", () => {
     const four = runTieredModel(board(4, 0.8), 4000, TARGETS).tiers.find((t) => t.id === "app");
     expect(four!.utilisation).toBeLessThan(two!.utilisation);
   });
+
+  it("serves nothing when the database is not linked into the request path", () => {
+    const b = board(2, 0.8);
+    b.edges = b.edges.filter((e) => e.to !== "db");
+    const r = runTieredModel(b, 1000, TARGETS);
+    expect(r.capacityCeiling).toBe(0);
+    expect(r.tiers.find((t) => t.id === "db")?.reachable).toBe(false);
+    expect(r.pass.rps).toBe(false);
+  });
+
+  it("takes the system down when the only load balancer is down", () => {
+    const b = board(2, 0.8);
+    b.nodes = b.nodes.map((n) => (n.id === "lb" ? { ...n, props: { ...n.props, down: 1 } } : n));
+    const r = runTieredModel(b, 1000, TARGETS);
+    expect(r.tiers.find((t) => t.id === "lb")?.down).toBe(true);
+    expect(r.capacityCeiling).toBe(0);
+    expect(r.availability).toBe(0);
+    expect(r.allPass).toBe(false);
+  });
+
+  it("names the down component in the failure", () => {
+    const b = board(2, 0.8);
+    b.nodes = b.nodes.map((n) => (n.id === "app" ? { ...n, props: { ...n.props, down: 1 } } : n));
+    const r = runTieredModel(b, 1000, TARGETS);
+    expect(r.failure).toContain("App server");
+  });
 });
