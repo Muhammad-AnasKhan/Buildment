@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { defaultValues } from "@/canvas/renderers/slider/model";
-import { describeProjectHoursChange, projectHours, sixMonthHoursSplit } from "@/canvas/six-month-hours-split/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
+import { describeProjectHoursChange, projectHours, sixMonthHoursSplit } from "@buildment/learning-ui/canvas/six-month-hours-split/data";
 
 const start = defaultValues(sixMonthHoursSplit);
 

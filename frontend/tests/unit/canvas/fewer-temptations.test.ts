@@ -6,8 +6,8 @@ import {
   fewerTemptations,
   giveInsPerWeek,
   resistanceToMatchHalving,
-} from "@/canvas/fewer-temptations/data";
-import { defaultValues } from "@/canvas/renderers/slider/model";
+} from "@buildment/learning-ui/canvas/fewer-temptations/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 const start = defaultValues(fewerTemptations);
 

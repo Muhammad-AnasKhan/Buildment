@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { defaultValues } from "@/canvas/renderers/slider/model";
-import { describePowerPlanChange, interviewPowerPlan, powerPlan } from "@/canvas/interview-power-plan/data";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
+import { describePowerPlanChange, interviewPowerPlan, powerPlan } from "@buildment/learning-ui/canvas/interview-power-plan/data";
 
 const start = defaultValues(interviewPowerPlan);
 

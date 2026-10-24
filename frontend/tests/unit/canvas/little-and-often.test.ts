@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { defaultValues } from "@/canvas/renderers/slider/model";
+import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 import {
   describeLittleAndOftenChange,
   formatSessions,
   formatTime,
   littleAndOften,
   practiceTotals,
-} from "@/canvas/little-and-often/data";
+} from "@buildment/learning-ui/canvas/little-and-often/data";
 
 const start = defaultValues(littleAndOften);
 

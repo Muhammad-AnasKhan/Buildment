@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { initialTimeInputs, resolveMondayNine, timeComparison } from "@/canvas/skill-slot-your-time-their-time/model";
+import { initialTimeInputs, resolveMondayNine, timeComparison } from "@buildment/learning-ui/canvas/skill-slot-your-time-their-time/model";
 
 describe("SkillSlot time-zone canvas", () => {
   it("moves Berlin's UTC instant when the week crosses its spring clock change", () => {

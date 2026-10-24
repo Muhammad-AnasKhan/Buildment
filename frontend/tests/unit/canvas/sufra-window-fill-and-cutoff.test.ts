@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { renderToString } from "react-dom/server";
-import { InteractiveCanvas } from "@/canvas/InteractiveCanvas";
-import { BOUNDS, DEFAULT_INPUT, WINDOW_START, dishCutoff, simulateWindow } from "@/canvas/sufra-window-fill-and-cutoff/model";
+import { InteractiveCanvas } from "@buildment/learning-ui/canvas/InteractiveCanvas";
+import { BOUNDS, DEFAULT_INPUT, WINDOW_START, dishCutoff, simulateWindow } from "@buildment/learning-ui/canvas/sufra-window-fill-and-cutoff/model";
 
 describe("Sufra window fill and cutoff", () => {
   it("renders through the reader registry with visible limits and text decisions", () => {
