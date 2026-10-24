@@ -209,3 +209,146 @@ modules:
       - file: 06.12-checklist.md
         title: "Checklist and learning log"
         goal: "Write the API design for a payments endpoint, with idempotency, rate limits and errors, and link your challenge 5 results."
+  - dir: 07-databases-and-concurrency-control
+    title: "Databases and concurrency control"
+    summary: "Choose a database, understand indexes and transactions, and stop two writers from corrupting data."
+    lessons:
+      - file: 07.01-set-the-scene-two-people-buy-the-last-ticket.md
+        title: "Set the scene: two people buy the last ticket"
+        goal: "See a lost update sell the last ticket twice."
+      - file: 07.02-choosing-a-database.md
+        title: "Choosing a database"
+        goal: "Match relational, key-value, document, wide-column, time-series, graph and search stores to the way data is read, and sort workloads to the store that fits."
+      - file: 07.03-indexes-b-trees-and-lsm-trees.md
+        title: "Indexes: B-trees and LSM trees"
+        goal: "Explain why an index cuts page reads, why a B-tree changes pages in place while an LSM tree appends and merges later, and where a Bloom filter saves reads."
+      - file: 07.04-transactions-and-isolation-levels.md
+        title: "Transactions and isolation levels"
+        goal: "Wrap steps in a transaction, and name the anomaly each isolation level allows: dirty read, lost update and write skew."
+      - file: 07.05-locks-mvcc-and-compare-and-set.md
+        title: "Locks, MVCC and compare-and-set"
+        goal: "Fix a lost update with a row lock, with a version check and bounded retries, and with one statement, and choose by how often writers collide."
+      - file: 07.06-the-database-scaling-path.md
+        title: "The database scaling path"
+        goal: "Order the steps of indexes, cache, read replicas, partitioning and special stores, and add each one when its bottleneck appears."
+      - file: 07.07-code-compare-and-set-inventory.md
+        title: "Code: compare-and-set inventory"
+        goal: "Implement a versioned store and a reserveSeats function with a bounded retry loop, and pass the race tests."
+      - file: 07.08-challenge-6-the-last-ticket.md
+        title: "Challenge 6: the last ticket"
+        goal: "Reproduce a lost update in PostgreSQL, fix it with a row lock, compare-and-set and SERIALIZABLE with retries, and measure the cost of each."
+      - file: 07.09-quiz.md
+        title: "Databases and concurrency"
+        goal: "Answer graded scenarios on store choice, indexes, isolation levels, locks and compare-and-set, and the scaling path."
+      - file: 07.10-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write the store and the concurrency control for an inventory service, with its cost and a number to measure, and link your challenge 6 results."
+  - dir: 08-replication
+    title: "Replication"
+    summary: "Copy data for safety and fast reads, and handle what replication lag and failover do to users."
+    lessons:
+      - file: 08.01-set-the-scene-my-comment-disappeared.md
+        title: "Set the scene: my comment disappeared"
+        goal: "See a user post a comment, reload, find it missing and post again, and meet the leader and replicas behind it."
+      - file: 08.02-single-leader-replication.md
+        title: "Single-leader replication"
+        goal: "Follow writes from the leader to its followers in log order, send reads to any copy, and explain why followers add room for reads but not for writes."
+      - file: 08.03-synchronous-and-asynchronous-replication.md
+        title: "Synchronous and asynchronous replication"
+        goal: "Trade write latency against the data lost on failover, and choose how many followers must confirm a write."
+      - file: 08.04-replication-lag-and-its-anomalies.md
+        title: "Replication lag and its anomalies"
+        goal: "Reproduce read-your-writes and monotonic reads violations on lagging replicas, and fix each with a routing rule whose cost you can name."
+      - file: 08.05-failover-and-split-brain.md
+        title: "Failover and split brain"
+        goal: "Explain detection, promotion, lost writes and two leaders, and how a fencing number stops the old one."
+      - file: 08.06-multi-leader-replication.md
+        title: "Multi-leader replication"
+        goal: "Explain why two regions writing the same record conflict, how last writer wins loses an edit, and where multi-leader fits."
+      - file: 08.07-leaderless-replication-a-first-look.md
+        title: "Leaderless replication, a first look"
+        goal: "See writes go to many nodes with no leader, and say when R + W is enough for a read to see the newest write."
+      - file: 08.08-code-a-read-your-writes-router.md
+        title: "Code: a read-your-writes router"
+        goal: "Write createRouter: route reads to a replica at or above the user's token, raise the token on reads, cap leader fallback, and quarantine a replica whose position moves backwards."
+      - file: 08.09-challenge-7-replicas-and-lag.md
+        title: "Challenge 7: replicas and lag"
+        goal: "Run a PostgreSQL primary and replica in Docker, induce lag, reproduce the read-your-writes bug, and fix it with log position tokens."
+      - file: 08.10-quiz.md
+        title: "Replication"
+        goal: "Answer graded scenarios on synchronous waits, position tokens, promotion, conflicts between regions and quorums."
+      - file: 08.11-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write a replication plan for a social app: which writes wait for a copy, where each read goes, and what happens when the leader dies."
+  - dir: 09-partitioning-and-sharding
+    title: "Partitioning and sharding"
+    summary: "Split data across machines, keep load even, and survive a celebrity."
+    lessons:
+      - file: 09.01-set-the-scene-one-table-too-big.md
+        title: "Set the scene: one table too big for one machine"
+        goal: "See a database run out of disk and write capacity, and why copies do not help but slices do."
+      - file: 09.02-range-and-hash-partitioning.md
+        title: "Range and hash partitioning"
+        goal: "Compare even spread against fast range scans, and see why hash mod N moves most keys when a shard is added."
+      - file: 09.03-consistent-hashing-and-virtual-nodes.md
+        title: "Consistent hashing and virtual nodes"
+        goal: "Explain why adding a node moves few keys, and what virtual nodes fix."
+      - file: 09.04-hot-partitions-and-skew.md
+        title: "Hot partitions and skew"
+        goal: "Find a hot key and fix it with salting, splitting, caching or a shard of its own."
+      - file: 09.05-rebalancing-and-request-routing.md
+        title: "Rebalancing and request routing"
+        goal: "Compare fixed partitions and dynamic splits, move data safely, and choose where the partition map lives."
+      - file: 09.06-secondary-indexes-and-cross-shard-queries.md
+        title: "Secondary indexes and cross-shard queries"
+        goal: "Compare local and global indexes, and see scatter-gather tail latency grow with the shard count."
+      - file: 09.07-code-a-consistent-hash-ring.md
+        title: "Code: a consistent hash ring"
+        goal: "Implement a ring with virtual nodes and pass tests for exact positions, spread and minimal movement."
+      - file: 09.08-challenge-8-sharding.md
+        title: "Challenge 8: sharding"
+        goal: "Shard a key-value store, measure keys moved when a node joins, and find and fix a hot key on real shard servers."
+      # 09.09 (Lab: 100 million keys on a hash ring) is skipped until the sandbox exists.
+      - file: 09.10-quiz.md
+        title: "Partitioning and sharding"
+        goal: "Answer graded scenarios on partition keys, keys moved, hot keys, safe rebalancing and queries off the key."
+      - file: 09.11-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write the partition key choice for a product of your own with the hot-key plan."
+  - dir: 10-time-clocks-and-ordering
+    title: "Time, clocks and ordering"
+    summary: "See why 'which happened first?' is hard, and learn every tool from logical clocks to TrueTime."
+    lessons:
+      - file: 10.01-set-the-scene-which-came-first.md
+        title: "Set the scene: which came first?"
+        goal: "See two servers' logs disagree about the order of two events."
+      - file: 10.02-physical-clocks-lie.md
+        title: "Physical clocks lie"
+        goal: "Explain drift, time sync, leap seconds, and wall-clock versus monotonic time, and say which clock to use for which job."
+      - file: 10.03-lamport-clocks.md
+        title: "Lamport clocks"
+        goal: "Order events with counters, and say what a Lamport number cannot tell you."
+      - file: 10.04-vector-clocks.md
+        title: "Vector clocks"
+        goal: "Tell 'happened before' from 'concurrent' by comparing two vectors, and keep both versions when neither is newer."
+      - file: 10.05-hybrid-logical-clocks.md
+        title: "Hybrid logical clocks"
+        goal: "Combine wall time and a counter so stamps stay close to real time and still put every effect after its cause."
+      - file: 10.06-truetime-time-as-an-interval.md
+        title: "TrueTime: time as an interval"
+        goal: "Explain why a timestamp is a range, when two ranges overlap, and how commit wait makes the order safe at a cost of about two times the clock uncertainty."
+      - file: 10.07-id-generation-at-scale.md
+        title: "ID generation at scale"
+        goal: "Compare a counter, UUIDv4, UUIDv7 and Snowflake-style IDs, spend the bits of an ID, and handle a clock going backwards."
+      - file: 10.08-code-lamport-vector-and-hybrid-clocks.md
+        title: "Code: Lamport, vector and hybrid clocks"
+        goal: "Implement send, receive and compare for each of the three clocks and pass the tests."
+      - file: 10.09-challenge-9-clocks.md
+        title: "Challenge 9: clocks"
+        goal: "Simulate drifting clocks, run your three clocks on a chat workload and count what each gets right, and build a Snowflake ID generator that survives a clock step back."
+      - file: 10.10-quiz.md
+        title: "Time, clocks and ordering"
+        goal: "Answer graded scenarios on drift, logical, vector and hybrid clocks, IDs and commit wait."
+      - file: 10.11-checklist.md
+        title: "Checklist and learning log"
+        goal: "Write how you would order two writes 1 ms apart on different servers, what it costs, and link your challenge 9 results."

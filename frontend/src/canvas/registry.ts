@@ -162,12 +162,97 @@ import { sysdesignM5HitRateCurve } from "./sysdesign-m5-hit-rate-curve/data";
 import { sysdesignM5StaleRace } from "./sysdesign-m5-stale-race/data";
 import { sysdesignM5StampedeToggles } from "./sysdesign-m5-stampede-toggles/data";
 import { sysdesignM5CdnOriginLoad } from "./sysdesign-m5-cdn-origin-load/data";
+import { sysdesignM10DriftApart } from "./sysdesign-m10-drift-apart/data";
+import { sysdesignM10HlcCatchUp } from "./sysdesign-m10-hlc-catch-up/data";
+import { sysdesignM10HlcRule } from "./sysdesign-m10-hlc-rule/data";
+import { sysdesignM10IdCounter } from "./sysdesign-m10-id-counter/data";
+import { sysdesignM10IdRandom } from "./sysdesign-m10-id-random/data";
+import { sysdesignM10IdRollback } from "./sysdesign-m10-id-rollback/data";
+import { sysdesignM10LamportNoCause } from "./sysdesign-m10-lamport-no-cause/data";
+import { sysdesignM10LamportRule } from "./sysdesign-m10-lamport-rule/data";
+import { sysdesignM10LamportSort } from "./sysdesign-m10-lamport-sort/data";
+import { sysdesignM10LogMerge } from "./sysdesign-m10-log-merge/data";
+import { sysdesignM10SyncPullsBack } from "./sysdesign-m10-sync-pulls-back/data";
+import { sysdesignM10VectorBuild } from "./sysdesign-m10-vector-build/data";
+import { sysdesignM10VectorConcurrent } from "./sysdesign-m10-vector-concurrent/data";
+import { sysdesignM10VectorMerge } from "./sysdesign-m10-vector-merge/data";
+import { sysdesignM10WallBreaksCause } from "./sysdesign-m10-wall-breaks-cause/data";
+import { sysdesignM10WallVsMonotonic } from "./sysdesign-m10-wall-vs-monotonic/data";
+import { sysdesignM8AsyncLoss } from "./sysdesign-m8-async-loss/data";
+import { sysdesignM8CommentTwice } from "./sysdesign-m8-comment-twice/data";
+import { sysdesignM8Detect } from "./sysdesign-m8-detect/data";
+import { sysdesignM8FencingToken } from "./sysdesign-m8-fencing-token/data";
+import { sysdesignM8LogOrder } from "./sysdesign-m8-log-order/data";
+import { sysdesignM8LwwLoses } from "./sysdesign-m8-lww-loses/data";
+import { sysdesignM8PromoteLoss } from "./sysdesign-m8-promote-loss/data";
+import { sysdesignM8ReadRepair } from "./sysdesign-m8-read-repair/data";
+import { sysdesignM8ReadSpread } from "./sysdesign-m8-read-spread/data";
+import { sysdesignM8SyncWait } from "./sysdesign-m8-sync-wait/data";
+import { sysdesignM8TwoLeaders } from "./sysdesign-m8-two-leaders/data";
+import { sysdesignM8WriteMany } from "./sysdesign-m8-write-many/data";
+import { sysdesignM8WritePath } from "./sysdesign-m8-write-path/data";
+import { sysdesignM9CelebrityKey } from "./sysdesign-m9-celebrity-key/data";
+import { sysdesignM9DynamicSplit } from "./sysdesign-m9-dynamic-split/data";
+import { sysdesignM9FixedPartitions } from "./sysdesign-m9-fixed-partitions/data";
+import { sysdesignM9GlobalIndexLag } from "./sysdesign-m9-global-index-lag/data";
+import { sysdesignM9HashSpread } from "./sysdesign-m9-hash-spread/data";
+import { sysdesignM9ModNReshuffle } from "./sysdesign-m9-mod-n-reshuffle/data";
+import { sysdesignM9OneTable } from "./sysdesign-m9-one-table/data";
+import { sysdesignM9RangeHotTail } from "./sysdesign-m9-range-hot-tail/data";
+import { sysdesignM9RingAddNode } from "./sysdesign-m9-ring-add-node/data";
+import { sysdesignM9RingLookup } from "./sysdesign-m9-ring-lookup/data";
+import { sysdesignM9RingNodeFails } from "./sysdesign-m9-ring-node-fails/data";
+import { sysdesignM9RingUneven } from "./sysdesign-m9-ring-uneven/data";
+import { sysdesignM9SaltedKey } from "./sysdesign-m9-salted-key/data";
+import { sysdesignM9ScatterGather } from "./sysdesign-m9-scatter-gather/data";
+import { sysdesignM9StaleMap } from "./sysdesign-m9-stale-map/data";
 import { sysdesignM6ApiStyleWeigh } from "./sysdesign-m6-api-style-weigh/data";
 import { sysdesignM6PagingInsert } from "./sysdesign-m6-paging-insert/data";
 import { sysdesignM6RetryKey } from "./sysdesign-m6-retry-key/data";
 import { sysdesignM6LimiterBurst } from "./sysdesign-m6-limiter-burst/data";
 import { sysdesignM6GatewayJobs } from "./sysdesign-m6-gateway-jobs/data";
 import { sysdesignM6RevokeTimeline } from "./sysdesign-m6-revoke-timeline/data";
+import { sysdesignM7BloomSkip } from "./sysdesign-m7-bloom-skip/data";
+import { sysdesignM7BtreeSplit } from "./sysdesign-m7-btree-split/data";
+import { sysdesignM7DirtyRead } from "./sysdesign-m7-dirty-read/data";
+import { sysdesignM7FixCas } from "./sysdesign-m7-fix-cas/data";
+import { sysdesignM7FixLock } from "./sysdesign-m7-fix-lock/data";
+import { sysdesignM7IndexScan } from "./sysdesign-m7-index-scan/data";
+import { sysdesignM7LastTicket } from "./sysdesign-m7-last-ticket/data";
+import { sysdesignM7LostUpdate } from "./sysdesign-m7-lost-update/data";
+import { sysdesignM7LsmWrite } from "./sysdesign-m7-lsm-write/data";
+import { sysdesignM7MvccVersions } from "./sysdesign-m7-mvcc-versions/data";
+import { sysdesignM7PathCache } from "./sysdesign-m7-path-cache/data";
+import { sysdesignM7PathIndex } from "./sysdesign-m7-path-index/data";
+import { sysdesignM7PathReplica } from "./sysdesign-m7-path-replica/data";
+import { sysdesignM7PathShard } from "./sysdesign-m7-path-shard/data";
+import { sysdesignM7StoreJoin } from "./sysdesign-m7-store-join/data";
+import { sysdesignM7StoreKeyed } from "./sysdesign-m7-store-keyed/data";
+import { sysdesignM7StoreSpecial } from "./sysdesign-m7-store-special/data";
+import { sysdesignM7StoreStream } from "./sysdesign-m7-store-stream/data";
+import { sysdesignM7TxnCrash } from "./sysdesign-m7-txn-crash/data";
+import { sysdesignM7WriteSkew } from "./sysdesign-m7-write-skew/data";
+import { sysdesignM10DriftSync } from "./sysdesign-m10-drift-sync/data";
+import { sysdesignM10LamportPlay } from "./sysdesign-m10-lamport-play/data";
+import { sysdesignM10VectorCompare } from "./sysdesign-m10-vector-compare/data";
+import { sysdesignM10HlcSkewed } from "./sysdesign-m10-hlc-skewed/data";
+import { sysdesignM10SnowflakeBits } from "./sysdesign-m10-snowflake-bits/data";
+import { sysdesignM8LeaderFollowers } from "./sysdesign-m8-leader-followers/data";
+import { sysdesignM8ConfirmCount } from "./sysdesign-m8-confirm-count/data";
+import { sysdesignM8SplitBrain } from "./sysdesign-m8-split-brain/data";
+import { sysdesignM8TwoRegionsEdit } from "./sysdesign-m8-two-regions-edit/data";
+import { sysdesignM8QuorumNodes } from "./sysdesign-m8-quorum-nodes/data";
+import { sysdesignM9RangeVsHash } from "./sysdesign-m9-range-vs-hash/data";
+import { sysdesignM9RingPlay } from "./sysdesign-m9-ring-play/data";
+import { sysdesignM9CelebrityPlay } from "./sysdesign-m9-celebrity-play/data";
+import { sysdesignM9RebalancePlay } from "./sysdesign-m9-rebalance-play/data";
+import { sysdesignM9ScatterPlay } from "./sysdesign-m9-scatter-play/data";
+import { sysdesignM7StoreSorter } from "./sysdesign-m7-store-sorter/data";
+import { sysdesignM7LsmStepper } from "./sysdesign-m7-lsm-stepper/data";
+import { sysdesignM7BloomBits } from "./sysdesign-m7-bloom-bits/data";
+import { sysdesignM7IsolationLab } from "./sysdesign-m7-isolation-lab/data";
+import { sysdesignM7TwoWriters } from "./sysdesign-m7-two-writers/data";
+import { sysdesignM7ScalingPath } from "./sysdesign-m7-scaling-path/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
@@ -345,12 +430,97 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m5-stale-race": sysdesignM5StaleRace,
   "sysdesign-m5-stampede-toggles": sysdesignM5StampedeToggles,
   "sysdesign-m5-cdn-origin-load": sysdesignM5CdnOriginLoad,
+  "sysdesign-m10-drift-apart": sysdesignM10DriftApart,
+  "sysdesign-m10-hlc-catch-up": sysdesignM10HlcCatchUp,
+  "sysdesign-m10-hlc-rule": sysdesignM10HlcRule,
+  "sysdesign-m10-id-counter": sysdesignM10IdCounter,
+  "sysdesign-m10-id-random": sysdesignM10IdRandom,
+  "sysdesign-m10-id-rollback": sysdesignM10IdRollback,
+  "sysdesign-m10-lamport-no-cause": sysdesignM10LamportNoCause,
+  "sysdesign-m10-lamport-rule": sysdesignM10LamportRule,
+  "sysdesign-m10-lamport-sort": sysdesignM10LamportSort,
+  "sysdesign-m10-log-merge": sysdesignM10LogMerge,
+  "sysdesign-m10-sync-pulls-back": sysdesignM10SyncPullsBack,
+  "sysdesign-m10-vector-build": sysdesignM10VectorBuild,
+  "sysdesign-m10-vector-concurrent": sysdesignM10VectorConcurrent,
+  "sysdesign-m10-vector-merge": sysdesignM10VectorMerge,
+  "sysdesign-m10-wall-breaks-cause": sysdesignM10WallBreaksCause,
+  "sysdesign-m10-wall-vs-monotonic": sysdesignM10WallVsMonotonic,
+  "sysdesign-m8-async-loss": sysdesignM8AsyncLoss,
+  "sysdesign-m8-comment-twice": sysdesignM8CommentTwice,
+  "sysdesign-m8-detect": sysdesignM8Detect,
+  "sysdesign-m8-fencing-token": sysdesignM8FencingToken,
+  "sysdesign-m8-log-order": sysdesignM8LogOrder,
+  "sysdesign-m8-lww-loses": sysdesignM8LwwLoses,
+  "sysdesign-m8-promote-loss": sysdesignM8PromoteLoss,
+  "sysdesign-m8-read-repair": sysdesignM8ReadRepair,
+  "sysdesign-m8-read-spread": sysdesignM8ReadSpread,
+  "sysdesign-m8-sync-wait": sysdesignM8SyncWait,
+  "sysdesign-m8-two-leaders": sysdesignM8TwoLeaders,
+  "sysdesign-m8-write-many": sysdesignM8WriteMany,
+  "sysdesign-m8-write-path": sysdesignM8WritePath,
+  "sysdesign-m9-celebrity-key": sysdesignM9CelebrityKey,
+  "sysdesign-m9-dynamic-split": sysdesignM9DynamicSplit,
+  "sysdesign-m9-fixed-partitions": sysdesignM9FixedPartitions,
+  "sysdesign-m9-global-index-lag": sysdesignM9GlobalIndexLag,
+  "sysdesign-m9-hash-spread": sysdesignM9HashSpread,
+  "sysdesign-m9-mod-n-reshuffle": sysdesignM9ModNReshuffle,
+  "sysdesign-m9-one-table": sysdesignM9OneTable,
+  "sysdesign-m9-range-hot-tail": sysdesignM9RangeHotTail,
+  "sysdesign-m9-ring-add-node": sysdesignM9RingAddNode,
+  "sysdesign-m9-ring-lookup": sysdesignM9RingLookup,
+  "sysdesign-m9-ring-node-fails": sysdesignM9RingNodeFails,
+  "sysdesign-m9-ring-uneven": sysdesignM9RingUneven,
+  "sysdesign-m9-salted-key": sysdesignM9SaltedKey,
+  "sysdesign-m9-scatter-gather": sysdesignM9ScatterGather,
+  "sysdesign-m9-stale-map": sysdesignM9StaleMap,
   "sysdesign-m6-api-style-weigh": sysdesignM6ApiStyleWeigh,
   "sysdesign-m6-paging-insert": sysdesignM6PagingInsert,
   "sysdesign-m6-retry-key": sysdesignM6RetryKey,
   "sysdesign-m6-limiter-burst": sysdesignM6LimiterBurst,
   "sysdesign-m6-gateway-jobs": sysdesignM6GatewayJobs,
   "sysdesign-m6-revoke-timeline": sysdesignM6RevokeTimeline,
+  "sysdesign-m7-bloom-skip": sysdesignM7BloomSkip,
+  "sysdesign-m7-btree-split": sysdesignM7BtreeSplit,
+  "sysdesign-m7-dirty-read": sysdesignM7DirtyRead,
+  "sysdesign-m7-fix-cas": sysdesignM7FixCas,
+  "sysdesign-m7-fix-lock": sysdesignM7FixLock,
+  "sysdesign-m7-index-scan": sysdesignM7IndexScan,
+  "sysdesign-m7-last-ticket": sysdesignM7LastTicket,
+  "sysdesign-m7-lost-update": sysdesignM7LostUpdate,
+  "sysdesign-m7-lsm-write": sysdesignM7LsmWrite,
+  "sysdesign-m7-mvcc-versions": sysdesignM7MvccVersions,
+  "sysdesign-m7-path-cache": sysdesignM7PathCache,
+  "sysdesign-m7-path-index": sysdesignM7PathIndex,
+  "sysdesign-m7-path-replica": sysdesignM7PathReplica,
+  "sysdesign-m7-path-shard": sysdesignM7PathShard,
+  "sysdesign-m7-store-join": sysdesignM7StoreJoin,
+  "sysdesign-m7-store-keyed": sysdesignM7StoreKeyed,
+  "sysdesign-m7-store-special": sysdesignM7StoreSpecial,
+  "sysdesign-m7-store-stream": sysdesignM7StoreStream,
+  "sysdesign-m7-txn-crash": sysdesignM7TxnCrash,
+  "sysdesign-m7-write-skew": sysdesignM7WriteSkew,
+  "sysdesign-m10-drift-sync": sysdesignM10DriftSync,
+  "sysdesign-m10-lamport-play": sysdesignM10LamportPlay,
+  "sysdesign-m10-vector-compare": sysdesignM10VectorCompare,
+  "sysdesign-m10-hlc-skewed": sysdesignM10HlcSkewed,
+  "sysdesign-m10-snowflake-bits": sysdesignM10SnowflakeBits,
+  "sysdesign-m8-leader-followers": sysdesignM8LeaderFollowers,
+  "sysdesign-m8-confirm-count": sysdesignM8ConfirmCount,
+  "sysdesign-m8-split-brain": sysdesignM8SplitBrain,
+  "sysdesign-m8-two-regions-edit": sysdesignM8TwoRegionsEdit,
+  "sysdesign-m8-quorum-nodes": sysdesignM8QuorumNodes,
+  "sysdesign-m9-range-vs-hash": sysdesignM9RangeVsHash,
+  "sysdesign-m9-ring-play": sysdesignM9RingPlay,
+  "sysdesign-m9-celebrity-play": sysdesignM9CelebrityPlay,
+  "sysdesign-m9-rebalance-play": sysdesignM9RebalancePlay,
+  "sysdesign-m9-scatter-play": sysdesignM9ScatterPlay,
+  "sysdesign-m7-store-sorter": sysdesignM7StoreSorter,
+  "sysdesign-m7-lsm-stepper": sysdesignM7LsmStepper,
+  "sysdesign-m7-bloom-bits": sysdesignM7BloomBits,
+  "sysdesign-m7-isolation-lab": sysdesignM7IsolationLab,
+  "sysdesign-m7-two-writers": sysdesignM7TwoWriters,
+  "sysdesign-m7-scaling-path": sysdesignM7ScalingPath,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
