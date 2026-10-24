@@ -12,18 +12,22 @@ import type { DragEvent } from "react";
 import {
   Background,
   BackgroundVariant,
+  BaseEdge,
   ConnectionMode,
   Controls,
+  EdgeLabelRenderer,
   Handle,
   MarkerType,
   Position,
   ReactFlow,
   ReactFlowProvider,
+  getSmoothStepPath,
   useEdgesState,
   useNodesState,
   useReactFlow,
   type Connection,
   type Edge,
+  type EdgeProps,
   type Node,
   type NodeProps,
 } from "@xyflow/react";
@@ -44,18 +48,23 @@ const TYPE_LABEL: Partial<Record<ComponentKind, string>> = {
   "app-server": "Compute", cache: "Redis", database: "PostgreSQL", queue: "Broker",
   worker: "Worker", "object-storage": "S3",
 };
-const TINT: Partial<Record<ComponentKind, string>> = {
-  client: "bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-300",
-  cdn: "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-300",
-  "load-balancer": "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300",
-  "api-gateway": "bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300",
-  "app-server": "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300",
-  worker: "bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300",
-  cache: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300",
-  database: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
-  queue: "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300",
-  "object-storage": "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300",
+// One color per kind of component. A component's chip, top bar and dots use it,
+// and so does every link that leaves it, so a violet line always means "from a
+// load balancer". Red is kept for trouble: down, unreachable or overloaded.
+const KIND_COLOR: Record<ComponentKind, string> = {
+  client: "#64748b",
+  dns: "#78716c",
+  cdn: "#0ea5e9",
+  "load-balancer": "#8b5cf6",
+  "api-gateway": "#c026d3",
+  "app-server": "#3b82f6",
+  worker: "#6366f1",
+  cache: "#f59e0b",
+  queue: "#14b8a6",
+  database: "#10b981",
+  "object-storage": "#84cc16",
 };
+const chipStyle = (kind: ComponentKind) => ({ backgroundColor: `${KIND_COLOR[kind]}22`, color: KIND_COLOR[kind] });
 const PALETTE: { group: string; kinds: ComponentKind[] }[] = [
   { group: "Edge", kinds: ["client", "cdn", "load-balancer", "api-gateway"] },
   { group: "Compute", kinds: ["app-server", "worker"] },
@@ -63,7 +72,6 @@ const PALETTE: { group: string; kinds: ComponentKind[] }[] = [
 ];
 
 const DRAG_TYPE = "application/x-lab-kind";
-const BLUE = "#3b82f6";
 const RED = "#ef4444";
 const NODE_W = 158;
 const NODE_H = 92;
@@ -80,8 +88,12 @@ type Ctx = {
   reachable: Set<string>;
   selected: string | null;
   pulse: string | null;
+  /** While hovering, the components related to the hovered one; others dim. */
+  focus: Set<string> | null;
 };
 const BoardCtx = createContext<Ctx | null>(null);
+
+const HANDLE = "!h-3.5 !w-3.5 !border-2 !border-card transition-transform hover:!scale-150 after:absolute after:-inset-3 after:rounded-full after:content-['']";
 
 function TierNode({ id, data }: NodeProps<Node<TierData>>) {
   const ctx = useContext(BoardCtx)!;
@@ -102,15 +114,19 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
         ? "border-blue-500 bg-card ring-2 ring-blue-500/30"
         : "border-border bg-card";
 
+  const color = KIND_COLOR[data.kind];
+  const dimmed = ctx.focus != null && !ctx.focus.has(id);
+
   return (
     <div
-      className={`w-[158px] rounded-xl border px-3 py-2 text-card-foreground transition-shadow ${frame} ${
+      className={`w-[158px] rounded-xl border px-3 py-2 text-card-foreground transition-[box-shadow,opacity] duration-200 ${frame} ${
         ctx.pulse === id ? "shadow-[0_0_0_4px_rgba(59,130,246,0.4)]" : "shadow-sm"
-      }`}
+      } ${dimmed ? "opacity-30" : ""}`}
+      style={down ? undefined : { borderTopColor: color, borderTopWidth: 3 }}
     >
-      <Handle type="target" position={Position.Top} className="!h-3.5 !w-3.5 !border-2 !border-card !bg-blue-500 transition-transform hover:!scale-150 after:absolute after:-inset-3 after:rounded-full after:content-['']" />
+      <Handle type="target" position={Position.Top} className={HANDLE} style={{ backgroundColor: color }} />
       <div className="flex items-center gap-2">
-        <span aria-hidden className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[13px] ${TINT[data.kind]} ${down ? "opacity-50" : ""}`}>{ICON[data.kind]}</span>
+        <span aria-hidden className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[13px] ${down ? "opacity-50" : ""}`} style={chipStyle(data.kind)}>{ICON[data.kind]}</span>
         <div className="min-w-0 flex-1">
           <div className={`truncate text-[13px] font-medium leading-tight ${down ? "text-red-600 line-through dark:text-red-400" : ""}`}>{def.label}</div>
           <div className="truncate text-[10px] text-muted-foreground">
@@ -130,18 +146,60 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
           <span className={`text-[10px] font-semibold tabular-nums ${utilText(u)}`}>{Math.round(u * 100)}%</span>
         </div>
       ) : null}
-      <Handle type="source" position={Position.Bottom} className="!h-3.5 !w-3.5 !border-2 !border-card !bg-blue-500 transition-transform hover:!scale-150 after:absolute after:-inset-3 after:rounded-full after:content-['']" />
+      <Handle type="source" position={Position.Bottom} className={HANDLE} style={{ backgroundColor: color }} />
     </div>
   );
 }
 const nodeTypes = { tier: TierNode };
 
-const edgeLook = (live: boolean) => ({
-  type: "smoothstep" as const,
-  animated: live,
-  style: live ? { stroke: BLUE, strokeWidth: 1.75 } : { stroke: RED, strokeWidth: 1.5, strokeDasharray: "5 4" },
-  markerEnd: { type: MarkerType.ArrowClosed, color: live ? BLUE : RED, width: 16, height: 16 },
-});
+type FlowData = { color: string; state: "live" | "hot" | "dead"; flow: number; dim: boolean };
+
+/**
+ * A link drawn in the color of the component it leaves, in layers: a wide
+ * invisible stroke that is easy to grab, a soft glow, the dashed line with its
+ * arrowhead (marching while traffic flows), and the request rate it carries.
+ */
+function FlowEdge({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, markerEnd, selected, data }: EdgeProps<Edge<FlowData>>) {
+  const [path, labelX, labelY] = getSmoothStepPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, borderRadius: 14 });
+  const state = data?.state ?? "live";
+  const color = state === "live" ? data?.color ?? "#3b82f6" : RED;
+  const fade = (data?.dim ? 0.15 : 1) * (state === "dead" ? 0.6 : 1);
+  return (
+    <>
+      <path d={path} fill="none" stroke={color} strokeWidth={selected ? 11 : 7} opacity={0.16 * fade} style={{ filter: "blur(3px)" }} aria-hidden />
+      <BaseEdge
+        path={path}
+        markerEnd={markerEnd}
+        interactionWidth={22}
+        className={state === "dead" ? undefined : "lab-edge-live"}
+        style={{
+          stroke: color,
+          strokeWidth: selected ? 3 : state === "hot" ? 2.5 : 2,
+          strokeDasharray: state === "dead" ? "4 5" : "8 5",
+          opacity: fade,
+          transition: "opacity 0.2s ease, stroke 0.3s ease",
+        }}
+      />
+      {state !== "dead" && data && data.flow > 0 ? (
+        <EdgeLabelRenderer>
+          <div
+            className="nodrag nopan pointer-events-none absolute rounded-full border bg-card px-1.5 py-px text-[10px] font-semibold tabular-nums shadow-sm transition-opacity"
+            style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`, color, borderColor: `${color}55`, opacity: fade }}
+          >
+            {Math.round(data.flow).toLocaleString()}/s
+          </div>
+        </EdgeLabelRenderer>
+      ) : null}
+    </>
+  );
+}
+const edgeTypes = { flow: FlowEdge };
+
+const EDGE_CSS = `
+@keyframes lab-edge-flow { from { stroke-dashoffset: 26; } to { stroke-dashoffset: 0; } }
+.lab-edge-live { animation: lab-edge-flow 0.9s linear infinite; }
+@media (prefers-reduced-motion: reduce) { .lab-edge-live { animation: none; } }
+`;
 
 function Stat({ label, value, ok, hint }: { label: string; value: string; ok: boolean; hint: string }) {
   return (
@@ -166,7 +224,7 @@ function Editor({ spec }: { spec: HldLabSpec }) {
   const seq = useRef(0);
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<TierData>>(
-    start.nodes.map((n, i) => ({ id: n.id, type: "tier", position: { x: 80, y: i * 120 }, width: NODE_W, height: NODE_H, data: { kind: n.kind } })),
+    start.nodes.map((n, i) => ({ id: n.id, type: "tier", position: { x: 80, y: i * 175 }, width: NODE_W, height: NODE_H, data: { kind: n.kind } })),
   );
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(
     start.edges.map((e) => ({ id: `${e.from}-${e.to}`, source: e.from, target: e.to })),
@@ -204,12 +262,41 @@ function Editor({ spec }: { spec: HldLabSpec }) {
     return seen;
   }, [board, controls.perNode]);
 
+  // Hovering a component or link focuses it and its direct neighbours; the rest dims.
+  const [hover, setHover] = useState<{ node?: string; edge?: string } | null>(null);
+  const focus = useMemo(() => {
+    if (!hover) return null;
+    const ids = new Set<string>();
+    for (const e of edges) {
+      if (hover.edge === e.id || hover.node === e.source || hover.node === e.target) {
+        ids.add(e.source);
+        ids.add(e.target);
+      }
+    }
+    if (hover.node) ids.add(hover.node);
+    return ids;
+  }, [hover, edges]);
+
   const ctx: Ctx = useMemo(
-    () => ({ tiers: new Map(result.tiers.map((t) => [t.id, t])), cfg: controls.perNode, reachable, selected, pulse }),
-    [result, controls.perNode, reachable, selected, pulse],
+    () => ({ tiers: new Map(result.tiers.map((t) => [t.id, t])), cfg: controls.perNode, reachable, selected, pulse, focus }),
+    [result, controls.perNode, reachable, selected, pulse, focus],
   );
 
-  const shownEdges = edges.map((e) => ({ ...e, ...edgeLook(reachable.has(e.source) && reachable.has(e.target)) }));
+  const shownEdges: Edge<FlowData>[] = edges.map((e) => {
+    const live = reachable.has(e.source) && reachable.has(e.target);
+    const target = result.tiers.find((t) => t.id === e.target);
+    const state: FlowData["state"] = !live ? "dead" : target && target.utilisation >= 0.9 ? "hot" : "live";
+    const sourceKind = nodes.find((n) => n.id === e.source)?.data.kind ?? "app-server";
+    const color = state === "live" ? KIND_COLOR[sourceKind] : RED;
+    const related = !hover || hover.edge === e.id || hover.node === e.source || hover.node === e.target;
+    return {
+      ...e,
+      type: "flow",
+      data: { color, state, flow: result.edgeFlows[`${e.source}>${e.target}`] ?? 0, dim: !related },
+      markerEnd: { type: MarkerType.ArrowClosed, color, width: 18, height: 18 },
+    };
+  });
+  const kindsOnBoard = [...new Set(nodes.map((n) => n.data.kind))];
 
   function addNode(kind: ComponentKind, position?: { x: number; y: number }) {
     seq.current += 1;
@@ -304,6 +391,7 @@ function Editor({ spec }: { spec: HldLabSpec }) {
 
   return (
     <BoardCtx.Provider value={ctx}>
+      <style>{EDGE_CSS}</style>
       <div className="not-prose @container my-6 overflow-hidden rounded-2xl border border-border bg-card">
         <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
           <div className="flex items-center gap-2">
@@ -333,7 +421,7 @@ function Editor({ spec }: { spec: HldLabSpec }) {
                       onClick={() => addNode(k)}
                       className="mb-1 flex w-full cursor-grab items-center gap-2 rounded-lg border border-border bg-background px-2 py-1.5 text-left transition-colors hover:border-blue-400 hover:bg-muted/40 active:cursor-grabbing"
                     >
-                      <span aria-hidden className={`flex h-5 w-5 items-center justify-center rounded text-[11px] ${TINT[k]}`}>{ICON[k]}</span>
+                      <span aria-hidden className="flex h-5 w-5 items-center justify-center rounded text-[11px]" style={chipStyle(k)}>{ICON[k]}</span>
                       <span className="flex-1 truncate text-[12px] font-medium">{COMPONENT_CATALOG[k].label}</span>
                       {price ? <span className="text-[10px] tabular-nums text-muted-foreground">${price.pricePerHour}</span> : null}
                     </button>
@@ -364,6 +452,11 @@ function Editor({ spec }: { spec: HldLabSpec }) {
               onEdgeDoubleClick={(_, e) => setEdges((es) => es.filter((x) => x.id !== e.id))}
               onNodesDelete={(deleted) => { if (deleted.some((n) => n.id === selected)) setSelected(null); }}
               onPaneClick={() => setSelected(null)}
+              edgeTypes={edgeTypes}
+              onNodeMouseEnter={(_, n) => setHover({ node: n.id })}
+              onNodeMouseLeave={() => setHover(null)}
+              onEdgeMouseEnter={(_, e) => setHover({ edge: e.id })}
+              onEdgeMouseLeave={() => setHover(null)}
               deleteKeyCode={["Backspace", "Delete"]}
               minZoom={0.35}
               maxZoom={1.5}
@@ -378,6 +471,20 @@ function Editor({ spec }: { spec: HldLabSpec }) {
               <span><span className="font-medium text-foreground">Link</span> drag from any dot to another component</span>
               <span><span className="font-medium text-foreground">Take down</span> double-click a component</span>
               <span><span className="font-medium text-foreground">Remove</span> select it, press Delete</span>
+              <span><span className="font-medium text-foreground">Trace</span> hover a component or link</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border px-3 py-1.5 text-[11px] text-muted-foreground">
+              <span>Link color = the component it leaves:</span>
+              {kindsOnBoard.map((k) => (
+                <span key={k} className="inline-flex items-center gap-1">
+                  <span aria-hidden className="inline-block h-[3px] w-4 rounded-full" style={{ backgroundColor: KIND_COLOR[k] }} />
+                  {COMPONENT_CATALOG[k].label}
+                </span>
+              ))}
+              <span className="inline-flex items-center gap-1">
+                <span aria-hidden className="inline-block h-[3px] w-4 rounded-full" style={{ backgroundColor: RED }} />
+                down, unlinked or overloaded
+              </span>
             </div>
           </div>
 
