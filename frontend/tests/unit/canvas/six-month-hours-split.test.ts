@@ -55,7 +55,7 @@ describe("six month hours split", () => {
 
   it("explains a shorter plan in words", () => {
     expect(describeProjectHoursChange(start, { ...start, months: 1 })).toBe(
-      "Going from 6 to 1 months changed the total from 192 hours to 32 hours. Now 2 of the 12 areas are ready, and learning time runs out first.",
+      "Going from 6 months to 1 month changed the total from 192 hours to 32 hours. Now 2 of the 12 areas are ready, and learning time runs out first.",
     );
   });
 

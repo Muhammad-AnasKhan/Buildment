@@ -53,6 +53,7 @@ export function projectHours(values: SliderValues): ProjectHours {
 }
 
 export const hoursText = (value: number) => `${Math.round(value).toLocaleString("en-US")} hours`;
+const monthsText = (value: number) => `${value} ${value === 1 ? "month" : "months"}`;
 
 const LEARNING_NEEDED = AREAS_NEEDED * LEARN_HOURS_PER_AREA;
 const BUILDING_NEEDED = AREAS_NEEDED * BUILD_HOURS_PER_AREA;
@@ -78,7 +79,7 @@ function computeProjectHours(values: SliderValues): SliderResult {
       { label: "Building hours you have", value: r.buildingHours, display: hoursText(r.buildingHours), tone: r.buildingHours + 1e-9 >= BUILDING_NEEDED ? "good" : "warn" },
       { label: "Building needed for 12 areas", value: BUILDING_NEEDED, display: hoursText(BUILDING_NEEDED) },
     ],
-    summary: `${r.hoursPerWeek} hours a week for ${r.months} months gives ${hoursText(r.totalHours)}: ${hoursText(r.learningHours)} of learning and ${hoursText(r.buildingHours)} of building. ${r.areasReady} of the ${AREAS_NEEDED} areas are ready, and ${limitText(r)}.`,
+    summary: `${r.hoursPerWeek} hours a week for ${monthsText(r.months)} gives ${hoursText(r.totalHours)}: ${hoursText(r.learningHours)} of learning and ${hoursText(r.buildingHours)} of building. ${r.areasReady} of the ${AREAS_NEEDED} areas are ready, and ${limitText(r)}.`,
   };
 }
 
@@ -91,7 +92,7 @@ export function describeProjectHoursChange(before: SliderValues, after: SliderVa
   const result = `Now ${b.areasReady} of the ${AREAS_NEEDED} areas are ready, and ${limitText(b)}.`;
   if (changed > 1) return `The total went from ${hoursText(a.totalHours)} to ${hoursText(b.totalHours)}. ${result}`;
   if (a.months !== b.months) {
-    return `Going from ${a.months} to ${b.months} months changed the total from ${hoursText(a.totalHours)} to ${hoursText(b.totalHours)}. ${result}`;
+    return `Going from ${monthsText(a.months)} to ${monthsText(b.months)} changed the total from ${hoursText(a.totalHours)} to ${hoursText(b.totalHours)}. ${result}`;
   }
   if (a.hoursPerWeek !== b.hoursPerWeek) {
     return `Going from ${a.hoursPerWeek} to ${b.hoursPerWeek} hours a week changed the total from ${hoursText(a.totalHours)} to ${hoursText(b.totalHours)}. ${result}`;
