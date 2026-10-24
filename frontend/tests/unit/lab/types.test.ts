@@ -60,6 +60,22 @@ describe("validateLabSpec", () => {
     expect(validateLabSpec(bad).some((m) => m.includes("cannot connect"))).toBe(true);
   });
 
+  it("reports, rather than throwing on, a board node whose kind is not a catalog kind", () => {
+    const bad: HldLabSpec = {
+      ...hld,
+      allowedComponents: ["client"],
+      startingBoard: {
+        nodes: [{ id: "a", kind: "ghost" as ComponentKind, x: 0, y: 0 }, n("b", "client")],
+        edges: [{ from: "a", to: "b" }],
+      },
+    };
+    let problems: string[] = [];
+    expect(() => {
+      problems = validateLabSpec(bad);
+    }).not.toThrow();
+    expect(problems.some((m) => m.includes("ghost"))).toBe(true);
+  });
+
   it("passes a well-formed hld and db spec", () => {
     expect(validateLabSpec(hld)).toEqual([]);
     expect(validateLabSpec(db)).toEqual([]);

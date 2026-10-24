@@ -72,8 +72,13 @@ function validateBoard(board: Board, allowed: ComponentKind[]): string[] {
     const to = byId.get(edge.to);
     if (!from) problems.push(`startingBoard edge from unknown node "${edge.from}"`);
     if (!to) problems.push(`startingBoard edge to unknown node "${edge.to}"`);
-    if (from && to && !canConnect(from.kind, to.kind)) {
-      problems.push(`startingBoard edge ${from.kind} -> ${to.kind} cannot connect: no matching port`);
+    if (from && to) {
+      if (!isComponentKind(from.kind) || !isComponentKind(to.kind)) {
+        // An unknown kind is already reported by the node loop; skip canConnect
+        // so the validator reports rather than throwing on a bad catalog lookup.
+      } else if (!canConnect(from.kind, to.kind)) {
+        problems.push(`startingBoard edge ${from.kind} -> ${to.kind} cannot connect: no matching port`);
+      }
     }
   }
   return problems;

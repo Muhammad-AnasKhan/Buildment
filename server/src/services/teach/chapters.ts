@@ -10,6 +10,7 @@ import { slugify } from "../../shared/lib/mdx-headings.js";
 import { mdxComponentAllowlist } from "../../shared/mdx/component-allowlist.js";
 import { collectUnknownComponents, diffBlocks } from "../../shared/mdx/extract.js";
 import { collectCanvasProblems } from "../../shared/mdx/canvas-tags.js";
+import { collectLabProblems } from "../../shared/mdx/lab-tags.js";
 import { blockConfigFromSource, hasQuizBlocks, isActivityOnlySource } from "../../shared/mdx/extract-block-config.js";
 import { remarkChecklist } from "../../shared/mdx/remark-checklist.js";
 import { remarkLearningLog } from "../../shared/mdx/remark-learning-log.js";
@@ -205,6 +206,7 @@ async function collectPublishProblems(
   }
 
   problems.push(...collectCanvasProblems(renderable));
+  problems.push(...collectLabProblems(renderable));
   problems.push(...collectContentTokenProblems(renderable));
 
   if (readerMode !== "QUIZ" && hasQuizBlocks(renderable)) {
