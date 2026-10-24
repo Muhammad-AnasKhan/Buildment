@@ -49,11 +49,11 @@ Steps 1, 2 and 4 light a state with no edge. Steps 6 and 7 both end at Both wing
 Shared stepper keyboard support; `summary` gives the whole map for screen readers; tone always has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (quiz items after the canvas ask about fear as care about choices, and sadness versus despair, in new cases).
-- [x] The model is tested (registry consistency and label-fit tests, once registered).
-- [x] The design is simple and legible.
-- [x] Prediction before, transfer check after.
-- [x] Reader fallback exists (prose and mermaid in 4.3).
+- [ ] The claim is testable (quiz items after the canvas ask about fear as care about choices, and sadness versus despair, in new cases).
+- [ ] The model is tested (registry consistency and label-fit tests, once registered).
+- [ ] The design is simple and legible.
+- [ ] Prediction before, transfer check after.
+- [ ] Reader fallback exists (prose and mermaid in 4.3).
 
 ## Build plan
 `frontend/src/canvas/two-wings-balance/data.ts` (export `twoWingsBalance`), to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.

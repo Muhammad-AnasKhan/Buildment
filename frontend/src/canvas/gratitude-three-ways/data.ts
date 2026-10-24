@@ -22,7 +22,7 @@ export const gratitudeThreeWays: SequenceSpec = {
       to: 0,
       label: "notices",
       title: "In the heart: notice",
-      note: "Before the data hour, Ahmad writes three blessings from this week: Yousef's data, two clients who paid $105 in total, and the falafel menu that customers ask about. He sees them as gifts from Allah, not luck. Whoever is grateful is grateful for his own good (Quran 31:12).",
+      note: "Ahmad does not feel grateful tonight, and he starts anyway. Before the data hour, he writes three blessings from this week: Yousef's data, two clients who paid $105 in total, and the falafel menu that customers ask about. He sees them as gifts from Allah, not luck. Whoever is grateful is grateful for his own good (Quran 31:12).",
       chips: ["three blessings", "Quran 31:12"],
     },
     {
@@ -48,7 +48,7 @@ export const gratitudeThreeWays: SequenceSpec = {
       tone: "good",
       outcome: "8 to 11 pieces",
       title: "In action: use the blessing",
-      note: "He uses the data hour to add the falafel menu and the two new logos to his portfolio: eight pieces become eleven. The Prophet showed gratitude in action when he asked: should I not be a grateful servant? (Sahih al-Bukhari 4836).",
+      note: "He uses the data hour to add the falafel menu and the two new logos to his portfolio: eight pieces become eleven. The Prophet, peace be upon him, showed gratitude in action when he asked: should I not be a grateful servant? (Sahih al-Bukhari 4836).",
       chips: ["Sahih al-Bukhari 4836"],
     },
     {
@@ -68,7 +68,7 @@ export const gratitudeThreeWays: SequenceSpec = {
     },
   ],
   tryThis: [
-    "At step 3, check the prediction you made above the canvas: was Ahmad's gratitude complete before he thanked Yousef?",
+    "At step 1, check the prediction you made above the canvas: did Ahmad wait to feel grateful before he started?",
     "Count the steps that happen in the Hands lane. Which of them could you do this week with a blessing of your own?",
   ],
   limits:

@@ -14,7 +14,7 @@ renderer: sequence (HTML controls, inline SVG lanes)
 Gratitude lives in the heart, the tongue and action, including thanking the people who helped.
 
 ## Why a canvas
-Learners often treat gratitude as a feeling they either have or lack. Drawing the heart, the tongue and the hands as three lanes, with a fourth lane for the person who helped, shows gratitude as movement between places: noticed, said, thanked, used and passed on. The lanes make it visible that a thank you to Yousef and a CV for Yousef are both gratitude.
+Learners often treat gratitude as a feeling they either have or lack, and wait for it before they act. Step 1 starts on a flat evening on purpose. Drawing the heart, the tongue and the hands as three lanes, with a fourth lane for the person who helped, shows gratitude as movement between places: noticed, said, thanked, used and passed on. The lanes make it visible that a thank you to Yousef and a CV for Yousef are both gratitude.
 
 ## Model
 - Inputs: none beyond the step controls.
@@ -38,7 +38,7 @@ Four lanes and six arrows or loops. Tone: good on "use it well" with the badge "
 ## Copy
 - What this shows: one evening of Ahmad's gratitude, from heart to tongue to hands, and to his brother.
 - Try this:
-  1. At step 3, check the prediction: was Ahmad's gratitude complete before he thanked Yousef?
+  1. At step 1, check the prediction: did Ahmad wait to feel grateful before he started?
   2. Count the steps in the Hands lane, and pick one you could do this week.
 - What changed: each note names the place, the action and the source.
 - Limits of the model: as in `limits`.
@@ -50,11 +50,11 @@ Loops draw work inside one lane. "Look at those below you" is shown only as a to
 Shared stepper keyboard support; `summary` describes the whole evening; the tone has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable (quiz items after the canvas ask about thanking a person who helps, and the right use of "look at those below you").
-- [x] The model is tested (registry label-fit tests, once registered).
-- [x] The design is simple and legible.
-- [x] Prediction before, transfer check after.
-- [x] Reader fallback exists (prose and mermaid in 4.2).
+- [ ] The claim is testable (quiz items after the canvas ask about thanking a person who helps, and the right use of "look at those below you").
+- [ ] The model is tested (registry label-fit tests, once registered).
+- [ ] The design is simple and legible.
+- [ ] Prediction before, transfer check after.
+- [ ] Reader fallback exists (prose and mermaid in 4.2).
 
 ## Build plan
 `frontend/src/canvas/gratitude-three-ways/data.ts` (export `gratitudeThreeWays`), to be registered by the orchestrator in `frontend/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.

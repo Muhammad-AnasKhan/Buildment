@@ -31,7 +31,7 @@ export const sabrKeepsMoving: StateMachineSpec = {
     {
       state: "shock",
       title: "The first shock",
-      note: "After a year of work, Mariam reads a four-line email: the scholarship committee cannot offer her a place this year. She cries, and her mother sits beside her. Patience is at the first shock (Sahih al-Bukhari 1283). That does not mean no tears: the Prophet's eyes filled with tears at his son's death, and he called it mercy (Sahih al-Bukhari 1303).",
+      note: "After a year of work, Mariam reads a four-line email: the scholarship committee cannot offer her a place this year. She cries, and her mother sits beside her. Patience is at the first shock (Sahih al-Bukhari 1283). That does not mean no tears: the Prophet, peace be upon him, wept at his son's death and called his tears mercy (Sahih al-Bukhari 1303).",
       chips: ["tears are human", "Sahih al-Bukhari 1283"],
     },
     {
@@ -89,7 +89,7 @@ export const sabrKeepsMoving: StateMachineSpec = {
     },
   ],
   tryThis: [
-    "At step 3, check the prediction you made above the canvas: is asking for help still sabr?",
+    "At step 6, check the prediction you made above the canvas: can patience grow in a person who keeps trying?",
     "Compare step 4 with step 7. Both can look calm from outside. What is the difference you could see in a week?",
   ],
   limits:
