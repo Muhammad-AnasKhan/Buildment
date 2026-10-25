@@ -173,6 +173,9 @@ import { sysdesignM2KneePlay } from "./sysdesign-m2-knee-play/data";
 import { sysdesignM2FanOutPlay } from "./sysdesign-m2-fan-out-play/data";
 import { sysdesignM1DesignLoop } from "./sysdesign-m1-design-loop/data";
 import { sysdesignM2LatencyLadder } from "./sysdesign-m2-latency-ladder/data";
+import { netM2ByteBits } from "./net-m2-byte-bits/data";
+import { netM2AddressBits } from "./net-m2-address-bits/data";
+import { netM2AddressDrill } from "./net-m2-address-drill/data";
 import { sysdesignM2Estimator } from "./sysdesign-m2-estimator/data";
 import { sysdesignM2AvailabilityBuilder } from "./sysdesign-m2-availability-builder/data";
 import { sysdesignM1LaunchDayIllustrated } from "./sysdesign-m1-launch-day-illustrated/data";
@@ -1428,6 +1431,9 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m18-pipeline-step": sysdesignM18PipelineStep,
   "sysdesign-m18-canary-blast": sysdesignM18CanaryBlast,
   "sysdesign-m18-cloud-explorer": sysdesignM18CloudExplorer,
+  "net-m2-byte-bits": netM2ByteBits,
+  "net-m2-address-bits": netM2AddressBits,
+  "net-m2-address-drill": netM2AddressDrill,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
