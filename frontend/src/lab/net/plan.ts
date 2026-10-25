@@ -53,7 +53,7 @@ export function checkPlan(spec: PlanSpec, answers: Record<string, string>): Plan
       problems.push(`It is not inside ${spec.parent}.`);
     }
     if (usableHosts(block.prefix) < need.hosts) {
-      problems.push(`A /${block.prefix} has ${usableHosts(block.prefix)} usable addresses; ${need.label} needs ${need.hosts}. The smallest block that fits is a /${smallestPrefixFor(need.hosts)}.`);
+      problems.push(`A /${block.prefix} has ${usableHosts(block.prefix)} usable addresses; ${need.label} needs ${need.hosts}.`);
     }
     parsed.set(need.id, { addr: networkOf(block), prefix: block.prefix });
     return { id: need.id, ok: problems.length === 0, problems, block };
@@ -70,9 +70,18 @@ export function checkPlan(spec: PlanSpec, answers: Record<string, string>): Plan
       }
     }
   }
-  const used = [...parsed.values()]
+  // Count each address once, even where two blocks overlap.
+  const spans = [...parsed.values()]
     .filter((b) => b.prefix >= parent.prefix && contains(parent, b.addr))
-    .reduce((sum, b) => sum + 2 ** (32 - b.prefix), 0);
+    .map((b) => [b.addr, b.addr + 2 ** (32 - b.prefix)] as const)
+    .sort((x, y) => x[0] - y[0]);
+  let used = 0;
+  let reached = -1;
+  for (const [from, to] of spans) {
+    const start = Math.max(from, reached);
+    if (to > start) used += to - start;
+    reached = Math.max(reached, to);
+  }
   return { needs, allPass: needs.every((n) => n.ok), free: Math.max(0, 2 ** (32 - parent.prefix) - used) };
 }
 

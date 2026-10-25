@@ -28,8 +28,8 @@ interface Stepper {
   index: number;
 }
 
-const NODE_W = 128;
-const NODE_H = 54;
+const NODE_W = 140;
+const NODE_H = 60;
 
 const KIND_TONE: Record<NetDeviceSpec["kind"], { box: string; tag: string }> = {
   host: { box: "fill-sky-50 stroke-sky-500 dark:fill-sky-950/60 dark:stroke-sky-400", tag: "fill-sky-700 dark:fill-sky-300" },
@@ -133,15 +133,20 @@ function Topology({
           const dx = other.x - self.x;
           const dy = other.y - self.y;
           const len = Math.hypot(dx, dy) || 1;
-          const reach = Math.min(len / 2 - 6, Math.abs(dx) / len > 0.6 ? NODE_W / 2 + 46 : NODE_H / 2 + 26);
-          const x = self.x + (dx / len) * reach;
-          const y = self.y + (dy / len) * reach;
+          const reach = Math.min(len / 2, Math.abs(dx) / len > 0.6 ? NODE_W / 2 + 66 : NODE_H / 2 + 34);
+          // Offset each label to the left of the line as seen from its own
+          // device, so the two ends of one cable sit on opposite sides and
+          // never collide on a short link.
+          const nx = dy / len;
+          const ny = -dx / len;
+          const x = self.x + (dx / len) * reach + nx * 20;
+          const y = self.y + (dy / len) * reach + ny * 20;
           return (
             <g key={`i${i}-${side}`} className="pointer-events-none">
-              <text x={x} y={y - 4} textAnchor="middle" className="fill-muted-foreground font-mono text-[10px]">
+              <text x={x} y={y - 6} textAnchor="middle" className="fill-muted-foreground font-mono text-[12px]">
                 {end.iface}
               </text>
-              <text x={x} y={y + 9} textAnchor="middle" className="fill-foreground font-mono text-[11px] font-medium">
+              <text x={x} y={y + 9} textAnchor="middle" className="fill-foreground font-mono text-[14px] font-medium">
                 {iface?.addrs[0] ? formatCidr(iface.addrs[0]) : "no address"}
               </text>
             </g>
@@ -158,7 +163,7 @@ function Topology({
             key={d.id}
             role="button"
             tabIndex={0}
-            aria-label={`${d.label}, open its terminal`}
+            aria-label={d.kind === "switch" ? `${d.label} (no terminal)` : `${d.label}, open its terminal`}
             onClick={() => onSelect(d.id)}
             onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onSelect(d.id)}
             className="cursor-pointer outline-none"
@@ -175,10 +180,10 @@ function Topology({
               strokeWidth={isSelected ? 3 : 1.5}
               className={tone.box}
             />
-            <text x={d.x} y={d.y - 3} textAnchor="middle" className="fill-foreground text-[13px] font-semibold">
+            <text x={d.x} y={d.y - 3} textAnchor="middle" className="fill-foreground text-[16px] font-semibold">
               {d.label}
             </text>
-            <text x={d.x} y={d.y + 14} textAnchor="middle" className={`${tone.tag} text-[10px] uppercase tracking-wide`}>
+            <text x={d.x} y={d.y + 16} textAnchor="middle" className={`${tone.tag} text-[11px] uppercase tracking-wide`}>
               {device ? kindLine(device) : d.kind}
             </text>
             {isFocus && focus && (
@@ -333,11 +338,13 @@ export function NetBoard({ spec }: { spec: NetLabSpec }) {
           Every check passes. The network works.
         </div>
       )}
-      <div className="grid gap-3 @4xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+      <div className="mb-3 overflow-x-auto rounded-xl border border-border bg-card p-2">
+        <div className="min-w-[36rem]">
+          <Topology spec={topology} world={world} selected={selected} focus={focus} onSelect={(id) => world.devices[id]?.kind !== "switch" && setSelected(id)} />
+        </div>
+      </div>
+      <div className="grid gap-3 @4xl:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
         <div className="space-y-3">
-          <div className="rounded-xl border border-border bg-card p-2">
-            <Topology spec={topology} world={world} selected={selected} focus={focus} onSelect={(id) => world.devices[id]?.kind !== "switch" && setSelected(id)} />
-          </div>
           {stepper && (
             <section className="rounded-xl border border-border bg-card p-3" aria-label="Packet steps">
               <div className="mb-2 flex flex-wrap items-center gap-2">

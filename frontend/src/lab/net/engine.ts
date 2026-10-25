@@ -214,8 +214,8 @@ function receiveArp(world: World, run: Run, at: Endpoint, arp: ArpPayload) {
     return;
   }
   rememberNeighbour(device, iface.name, arp.senderIp, arp.senderMac, "STALE");
-  run.events.push({ kind: "arp-reply", device: device.id, text: `${device.label} answers: ${ip(arp.targetIp)} is at ${iface.mac}.` });
   const reply: Frame = { srcMac: iface.mac, dstMac: arp.senderMac, arp: { op: "reply", senderIp: arp.targetIp, senderMac: iface.mac, targetIp: arp.senderIp } };
+  run.events.push({ kind: "arp-reply", device: device.id, link: linkIndexOf(world, at), frame: reply, text: `${device.label} answers: ${ip(arp.targetIp)} is at ${iface.mac}.` });
   for (const to of transmit(world, run, at, reply)) {
     receiveFrame(world, run, to, reply);
   }
@@ -233,8 +233,14 @@ function resolve(world: World, run: Run, device: DeviceState, iface: IfaceState,
   if (known?.mac) return known.mac;
   const sender = iface.addrs.find((a) => contains(a, hop)) ?? iface.addrs[0];
   if (!sender) return null;
-  run.events.push({ kind: "arp-request", device: device.id, text: `${device.label} needs the MAC for ${ip(hop)}, so it asks everyone on ${iface.name}: who has ${ip(hop)}?` });
   const request: Frame = { srcMac: iface.mac, dstMac: BROADCAST_MAC, arp: { op: "request", senderIp: sender.addr, senderMac: iface.mac, targetIp: hop } };
+  run.events.push({
+    kind: "arp-request",
+    device: device.id,
+    link: linkIndexOf(world, { dev: device.id, iface: iface.name }),
+    frame: request,
+    text: `${device.label} needs the MAC for ${ip(hop)}, so it asks everyone on ${iface.name}: who has ${ip(hop)}?`,
+  });
   for (const to of transmit(world, run, { dev: device.id, iface: iface.name }, request)) {
     receiveFrame(world, run, to, request);
   }
@@ -271,6 +277,8 @@ function emit(world: World, run: Run, device: DeviceState, packet: IpPacket, dev
   run.events.push({
     kind: "forward",
     device: device.id,
+    link: linkIndexOf(world, { dev: device.id, iface: dev }),
+    frame,
     text: `${device.label} sends the ${describe(packet)} out of ${dev} to ${hop === packet.dst ? ip(hop) : `its next hop ${ip(hop)}`} (MAC ${mac}).`,
   });
   for (const to of transmit(world, run, { dev: device.id, iface: dev }, frame)) {
