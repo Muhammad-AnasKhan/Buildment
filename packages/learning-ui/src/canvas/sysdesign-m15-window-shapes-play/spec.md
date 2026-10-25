@@ -1,0 +1,13 @@
+# Canvas spec: sysdesign-m15-window-shapes-play
+
+- **Course and chapter:** system-design, 15.6 ("Stream processing: windows, watermarks and late events"), beat 2, "Three ways to cut time into windows". Playable; new slug.
+- **Renderer:** custom beat canvas on `BeatFrame`: the three shapes are `SvgRadioChip`s inside the picture (a radio group), a linear time axis drawn in the picture, bars for the windows, `DotGrid`, `VerdictBanner`. `beat-segmented.tsx` was not used because its pills sit outside the picture, and `log-ruler.tsx` was not used because it is a log-scale ruler of named rungs. No control outside the picture.
+- **Claim:** The same events give different counts under tumbling, sliding and session windows. Tumbling puts each event in one window, sliding in several, and session follows activity.
+- **Input:** shape: tumbling (60 s), sliding (60 s window, 20 s slide), session (40 s gap). Default tumbling.
+- **Model** (`model.ts`): eight events at seconds 5, 20, 50, 70, 75, 130, 140 and 200. Tumbling windows start at multiples of 60; sliding windows start at multiples of 20 and last 60 s, and an event is in every window that contains it; a session ends when the gap to the next event is more than 40 s.
+- **Numbers to check** (tested): tumbling 0-60: 3, 60-120: 2, 120-180: 2, 180-240: 1, one window per event. Sliding: 13 windows from -40 to 200 with counts 1, 2, 3, 4, 3, 2, 1, 2, 2, 1, 1, 1, 1; every event in 3 windows, 24 counts for 8 events. Session: 5 to 75 has 5, 130 to 140 has 2, 200 has 1; gaps of 55 and 60 s.
+- **Picture:** the axis from 0 to 240 s with the events as dots; a number over each dot says how many windows it is in; the windows are bars in rows under the axis (sliding windows use three rows so overlapping ones sit one under another; the ones that start before 0 or end after 240 are cut at the axis), each with its count inside; session bars show the silences between them as "55 s gap". A playhead sweeps the axis: events fill in as it passes, the window it is inside gets a thick outline. Under the bars, the cost: "24 counts for 8 events: 3 times the work".
+- **Verdicts:** "Each event is in one window" (good), "Each event is in 3 windows" (warn), "Windows follow activity: 3 sessions" (good).
+- **Reduced motion:** the bars are drawn in place, every event filled and every window closed; no sweep.
+- **Accessibility:** a visually hidden text table lists the windows and their counts; the shape chips are a radio group with keyboard support; the SVG description lists every window.
+- **Sources:** Flink windows [S87]. The event times are course numbers.

@@ -53,6 +53,8 @@ export function restoreInteractiveBlockTags(source: string): string {
     "FaqGroup",
     "FaqItem",
     "InteractiveCanvas",
+    "Lab",
+    "GoDeeper",
   ].join("|");
 
   // 1. Self-closing tags: &lt;Tag ... /&gt; or &lt;Tag ... />

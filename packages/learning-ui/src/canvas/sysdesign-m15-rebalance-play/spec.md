@@ -1,0 +1,13 @@
+# Canvas spec: sysdesign-m15-rebalance-play
+
+- **Course and chapter:** system-design, 15.3 ("Queue versus log"), beat 3, "Add a consumer, watch the partitions move". Playable; new slug.
+- **Renderer:** custom beat canvas on `BeatFrame` with `SnapStopsRail` (the consumers rail, inside the picture), `DotGrid` and `VerdictBanner`. The six partitions are drawn in the picture as blocks coloured by owner, and each consumer is a compact column card holding its partitions as chips. `primitives/block-map.tsx` and `SvgNode` were not used: the block map is a tap-for-details architecture map, and eight 112 unit cards would not fit a phone. No toggle.
+- **Claim:** In a consumer group each partition has exactly one consumer. The group's top speed is set by the consumer that holds the most partitions, so it rises in steps, and consumers beyond the partition count sit idle. A change of membership moves partitions (a rebalance).
+- **Input:** consumers 1 to 8 on a snap rail (default 3); arrow keys step 1. A change turns the moved partitions grey for 1 second (illustrative).
+- **Model** (`model.ts`): 6 partitions, one sixth of the load each (75 of 450 events a second); partition p goes to consumer p mod c; each consumer does 100 events a second. Largest share k = ceil(6 / c) up to 6, else 1; group limit = 600 / k; idle = max(0, c - 6); partitions moved when c becomes c + 1 = number of p with p mod c different from p mod (c + 1).
+- **Numbers to check** (tested): c = 1 to 8 gives limits 100, 200, 300, 300, 300, 600, 600, 600; idle 0 to 0, then 1 and 2; moves when one joins 3, 4, 3, 2, 1, 0, 0, none. Assignments: 012345, 024 / 135, 03 / 14 / 25, 04 / 15 / 2 / 3, 05 / 1 / 2 / 3 / 4.
+- **Picture:** six partition blocks (P0 to P5) coloured by owner with the owner's name in each; below, one column for each consumer with its partitions stacked (a red outline when it would need more than 100 events a second, green when not; a dashed "idle" column past six); a bar of the group limit against the dashed 450 offered line; a pause pill while partitions move.
+- **Verdicts:** "Behind: handles 300 of 450" (bad), "Keeps up: one partition each" (good, 6 consumers), "2 consumers sit idle" (warn; "1 consumer sits idle" for 7).
+- **Reduced motion:** colours change at once; no grey pause; chip dots stay lit.
+- **Accessibility:** each partition block is an image with the label "Partition 2, held by consumer 3"; the rail is a `role="slider"` with value text "4 consumers, limit 300 events per second, none idle".
+- **Sources:** Kafka design: one consumer per partition per group [S82]; Kinesis shards [S132]. The 100 events a second, the 450 load and the 1 second pause are course numbers.

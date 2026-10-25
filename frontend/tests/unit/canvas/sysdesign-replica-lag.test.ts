@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeLagChange, lagTrace, LAG_DEFAULTS, simulateLag } from "@buildment/learning-ui/canvas/sysdesign-replica-lag/model";
+import { describeLagChange, lagTrace, LAG_DEFAULTS, simulateLag } from "@buildment/learning-ui/canvas/models/replica-lag";
 import { overlappingLabels, timelineGeometry } from "@buildment/learning-ui/canvas/renderers/timeline/geometry";
 
 describe("replica lag", () => {
