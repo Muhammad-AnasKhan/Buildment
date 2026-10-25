@@ -184,6 +184,45 @@ describe("course wording", () => {
   });
 });
 
+// The technical-founder canvases (chapters 5.5 and 5.7). Relative imports: their package export lines are added at registration.
+import { whyNotThatChoice } from "@buildment/learning-ui/canvas/why-not-that-choice/data";
+import { demoTheyCanOpen } from "@buildment/learning-ui/canvas/demo-they-can-open/data";
+
+describe("technical founder sequence canvases fit a phone and make the learner think first", () => {
+  for (const spec of [whyNotThatChoice, demoTheyCanOpen]) {
+    it(`${spec.title}: lanes, labels and questions`, () => {
+      expect(spec.actors.length).toBeGreaterThanOrEqual(2);
+      expect(spec.actors.length).toBeLessThanOrEqual(4);
+      for (const layout of ["narrow", "wide"] as const) {
+        const g = sequenceGeometry(spec, layout);
+        spec.steps.forEach((step, i) => {
+          expect(step.from).toBeGreaterThanOrEqual(0);
+          expect(step.to).toBeLessThan(spec.actors.length);
+          expect(step.label.length, step.label).toBeLessThanOrEqual(18);
+          const { label } = g.arrow(step, i);
+          const w = step.label.length * g.charW;
+          const left = label.anchor === "start" ? label.x : label.anchor === "end" ? label.x - w : label.x - w / 2;
+          expect(left, `${layout} ${step.label}`).toBeGreaterThanOrEqual(0);
+          expect(left + w, `${layout} ${step.label}`).toBeLessThanOrEqual(g.width);
+        });
+      }
+      spec.steps.slice(0, -1).forEach((step, i) => {
+        expect(step.note.trim().endsWith("?"), `step ${i + 1}: ${step.title}`).toBe(true);
+      });
+    });
+  }
+  it("tells the weak path from the strong one with tones", () => {
+    expect(whyNotThatChoice.steps.some((s) => s.tone === "bad")).toBe(true);
+    expect(whyNotThatChoice.steps.at(-1)!.outcome).toBe("the choice holds");
+    expect(demoTheyCanOpen.steps.some((s) => s.tone === "bad")).toBe(true);
+    expect(demoTheyCanOpen.steps.some((s) => s.tone === "good")).toBe(true);
+  });
+  it("has no dashes and no product names in its text", () => {
+    const text = JSON.stringify([whyNotThatChoice, demoTheyCanOpen]);
+    expect(text.includes(String.fromCharCode(0x2013)) || text.includes(String.fromCharCode(0x2014))).toBe(false);
+  });
+});
+
 describe("canvas text has no em or en dashes", () => {
   it("is plain", () => {
     const all = JSON.stringify([chooseTechnicalStory, weaknessAnswerChoice, founderVersionFirst, timeToThink, engineerDepthLadder, broadToNarrowStrength]);

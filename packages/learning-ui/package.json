@@ -590,7 +590,10 @@
     "./canvas/broad-to-narrow-strength/data": "./src/canvas/broad-to-narrow-strength/data.ts",
     "./canvas/weakness-answer-choice/data": "./src/canvas/weakness-answer-choice/data.ts",
     "./canvas/time-to-think/data": "./src/canvas/time-to-think/data.ts",
-    "./canvas/feedback-to-next-project/data": "./src/canvas/feedback-to-next-project/data.ts"
+    "./canvas/feedback-to-next-project/data": "./src/canvas/feedback-to-next-project/data.ts",
+    "./canvas/why-not-that-choice/data": "./src/canvas/why-not-that-choice/data.ts",
+    "./canvas/fifty-times-test/data": "./src/canvas/fifty-times-test/data.ts",
+    "./canvas/demo-they-can-open/data": "./src/canvas/demo-they-can-open/data.ts"
   },
   "files": [
     "src",

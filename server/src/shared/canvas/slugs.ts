@@ -726,6 +726,9 @@ export const CANVAS_SLUGS = [
   "weakness-answer-choice",
   "time-to-think",
   "feedback-to-next-project",
+  "why-not-that-choice",
+  "fifty-times-test",
+  "demo-they-can-open",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];

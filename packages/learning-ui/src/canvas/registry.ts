@@ -727,6 +727,9 @@ import { broadToNarrowStrength } from "./broad-to-narrow-strength/data";
 import { weaknessAnswerChoice } from "./weakness-answer-choice/data";
 import { timeToThink } from "./time-to-think/data";
 import { feedbackToNextProject } from "./feedback-to-next-project/data";
+import { whyNotThatChoice } from "./why-not-that-choice/data";
+import { fiftyTimesTest } from "./fifty-times-test/data";
+import { demoTheyCanOpen } from "./demo-they-can-open/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -1466,6 +1469,9 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "weakness-answer-choice": weaknessAnswerChoice,
   "time-to-think": timeToThink,
   "feedback-to-next-project": feedbackToNextProject,
+  "why-not-that-choice": whyNotThatChoice,
+  "fifty-times-test": fiftyTimesTest,
+  "demo-they-can-open": demoTheyCanOpen,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
