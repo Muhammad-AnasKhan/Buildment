@@ -41,7 +41,7 @@ export type SpecBlock =
       font?: SpecFont;
       caps?: boolean;
       /**
-       * A literal colour such as "#767676", only for teaching contrast, on a
+       * A literal colour in hex (a hash and six digits), only for teaching contrast, on a
        * screen with background "paper" so the ratio stays true in dark mode.
        */
       color?: string;
