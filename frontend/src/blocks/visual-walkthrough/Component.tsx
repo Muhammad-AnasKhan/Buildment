@@ -1,7 +1,7 @@
 import { fetchBlockState } from "@/blocks/block-state";
 import type { VisualWalkthroughConfig } from "@/shared/blocks/visual-walkthrough/schema";
-import { VisualWalkthroughClient } from "./VisualWalkthroughClient";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { VisualWalkthroughClient } from "@buildment/learning-ui/blocks/visual-walkthrough/VisualWalkthroughClient";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 
 export async function VisualWalkthroughComponent({
   id,

@@ -5,8 +5,6 @@ import { AiInterviewComponent } from "@/blocks/ai-interview/Component";
 import { OpenQuestionComponent } from "@/blocks/open-question/Component";
 import { CodeExerciseComponent } from "@/blocks/code/Component";
 import { StepsComponent } from "@/blocks/steps/Component";
-import { Step } from "@/blocks/steps/Step";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
 import { ProjectPreviewComponent } from "@/blocks/project-preview/Component";
 import { LearningObjectivesComponent } from "@/blocks/learning-objectives/Component";
 import { ChapterRecapComponent } from "@/blocks/chapter-recap/Component";
@@ -16,38 +14,15 @@ import { VideoComponent } from "@/blocks/video/Component";
 import { VisualWalkthroughComponent } from "@/blocks/visual-walkthrough/Component";
 import { VisualDiagramComponent } from "@/blocks/visual-diagram/Component";
 import { RoadmapComponent } from "@/blocks/roadmap/Component";
-import { MermaidDiagram } from "@/components/learn/mermaid-diagram";
-import { Callout } from "@/components/learn/callout";
-import { FaqGroup, FaqItem } from "@/components/learn/faq-group";
-import { GoDeeper } from "@/components/learn/go-deeper";
-import { CheckpointIntro } from "@/components/learn/checkpoint-intro";
-import { BigWordAlert } from "@/components/learn/big-word-alert";
-import { InterestingRead } from "@/components/learn/interesting-read";
-import { RealWorldEvent } from "@/components/learn/real-world-event";
-import { ApiRequest, ApiRequestPanel } from "@/components/learn/api-request-panel";
-import {
-  ArchitectureDiagram,
-  ArchNode,
-  CompareColumn,
-  ComparePanel,
-  DiffBlock,
-  FileTree,
-  FileTreeItem,
-  TerminalBlock,
-  TerminalLine,
-  TraceRequest,
-  TraceStep,
-} from "@/components/learn/content-blocks";
-import { InteractiveCanvas } from "@buildment/learning-ui/canvas/InteractiveCanvas";
-import { Lab } from "@/lab/Lab";
+import { MermaidDiagram } from "@buildment/learning-ui/components/learn/mermaid-diagram";
 import { EcosystemGallery } from "@/components/learn/ecosystem-gallery";
 import { Checklist } from "@/components/learn/checklist";
 import { LearningLog } from "@/components/learn/learning-log";
-import { GlossaryTerm } from "@/components/learn/glossary-term";
 import { cn } from "@/lib/utils";
 import { slugify } from "@/shared/lib/mdx-headings";
 import { MdxCodeElement, MdxCodeFigure, MdxCodePre } from "@/mdx/code-block";
 import { HeadingNoteButton } from "@/components/learn/heading-note";
+import { sharedLessonBlocks } from "@buildment/learning-ui/lesson-blocks";
 
 const cellBorder = "border border-border";
 
@@ -56,15 +31,13 @@ const cellBorder = "border border-border";
 // map are reachable from compiled MDX, so a compromised/careless mentor
 // account can add prose, not arbitrary JS.
 export const mdxComponents: MDXComponents = {
+  ...sharedLessonBlocks,
   Quiz: QuizComponent,
   Predict: PredictComponent,
   AiInterview: AiInterviewComponent,
   OpenQuestion: OpenQuestionComponent,
   CodeExercise: CodeExerciseComponent,
   Steps: StepsComponent,
-  Step,
-  PendingBlock: PendingBlockCard,
-  PendingBlockCard,
   ProjectPreview: ProjectPreviewComponent,
   LearningObjectives: LearningObjectivesComponent,
   ChapterRecap: ChapterRecapComponent,
@@ -72,7 +45,6 @@ export const mdxComponents: MDXComponents = {
   MandatoryReadCard,
   Checklist,
   LearningLog,
-  GlossaryTerm,
   VideoBlock: VideoComponent,
   VisualWalkthrough: VisualWalkthroughComponent,
   VisualDiagram: VisualDiagramComponent,
@@ -80,29 +52,6 @@ export const mdxComponents: MDXComponents = {
   MermaidDiagram,
   StateMachine: MermaidDiagram,
   EntityDiagram: MermaidDiagram,
-  Callout,
-  FaqGroup,
-  FaqItem,
-  GoDeeper,
-  CheckpointIntro,
-  BigWordAlert,
-  InterestingRead,
-  RealWorldEvent,
-  ApiRequestPanel,
-  ApiRequest,
-  ComparePanel,
-  CompareColumn,
-  FileTree,
-  FileTreeItem,
-  TerminalBlock,
-  TerminalLine,
-  DiffBlock,
-  ArchitectureDiagram,
-  ArchNode,
-  TraceRequest,
-  TraceStep,
-  InteractiveCanvas,
-  Lab,
   EcosystemGallery,
   h2: ({ children, ...props }: React.ComponentProps<"h2">) => {
     const text = typeof children === "string" ? children : undefined;

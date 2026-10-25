@@ -1,0 +1,34 @@
+---
+phase: M8
+title: Shared learning UI
+status: in progress
+---
+
+# M8 — Shared learning UI
+
+**Demo:** Open the same course lesson on web and desktop and see the same course-block UI.
+
+**Reads:** [`../07-architecture.mdx`](../07-architecture.mdx), [`../../packages/learning-ui/README.md`](../../packages/learning-ui/README.md)
+
+## Goal
+
+Keep course-block presentation and interaction in `packages/learning-ui`. Web and desktop use the
+same renderers; each app supplies its own initial state and persistence callbacks. This phase covers
+course blocks only. General app form controls remain in their host apps.
+
+## Tasks
+
+- [x] Use `packages/learning-ui/src/lesson-blocks.tsx` as the shared block registry for web and
+  desktop.
+- [x] Keep labs, course content blocks, exercises, and interactive canvases in `learning-ui`.
+- [x] Move Checklist and Learning Log renderers into `learning-ui`; keep web server actions and
+  desktop IPC calls in thin host adapters.
+- [x] Keep duplicated visual block implementations out of `frontend/` and `desktop/`.
+- [ ] Complete frontend and desktop typechecks and reader checks after the package changes.
+
+## Acceptance criteria
+
+- The web reader and desktop reader render shared course blocks from `@buildment/learning-ui`.
+- Saving learner state continues through each app's own API or IPC adapter.
+- Course-block presentation is implemented once; app files contain only host integration code.
+- General app inputs and unrelated forms stay outside this package.

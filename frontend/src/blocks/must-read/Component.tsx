@@ -1,6 +1,6 @@
 import { fetchBlockState } from "@/blocks/block-state";
 import { MandatoryReadCard } from "@/components/learn/mandatory-read-card";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 
 export async function MustReadComponent({
   id,

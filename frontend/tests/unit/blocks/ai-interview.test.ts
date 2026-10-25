@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AiInterviewView, type AiInterviewViewProps } from "@/blocks/ai-interview/AiInterviewView";
+import { AiInterviewView, type AiInterviewViewProps } from "@buildment/learning-ui/blocks/ai-interview/AiInterviewView";
 import {
   AI_SETTINGS_HREF,
   checkAnswer,
@@ -9,7 +9,7 @@ import {
   friendlyError,
   interviewStage,
   turnCounter,
-} from "@/blocks/ai-interview/interview-model";
+} from "@buildment/learning-ui/blocks/ai-interview/interview-model";
 import type { AiInterviewSessionView } from "@/shared/api/ai";
 import type { SanitizedAiInterviewConfig } from "@/shared/blocks/ai-interview/schema";
 

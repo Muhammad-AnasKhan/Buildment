@@ -3,32 +3,32 @@ import { QuizComponent } from "@/blocks/quiz/Component";
 import { PredictComponent } from "@/blocks/predict/Component";
 import { OpenQuestionComponent } from "@/blocks/open-question/Component";
 import { CodeExerciseComponent } from "@/blocks/code/Component";
-import { StepsComponent } from "@/blocks/steps/Component";
-import { Step } from "@/blocks/steps/Step";
-import { ProjectPreviewComponent } from "@/blocks/project-preview/Component";
-import { LearningObjectivesComponent } from "@/blocks/learning-objectives/Component";
-import { ChapterRecapComponent } from "@/blocks/chapter-recap/Component";
-import { MustReadComponent } from "@/blocks/must-read/Component";
-import { VideoComponent } from "@/blocks/video/Component";
-import { VisualWalkthroughComponent } from "@/blocks/visual-walkthrough/Component";
-import { VisualDiagramComponent } from "@/blocks/visual-diagram/Component";
-import { RoadmapComponent } from "@/blocks/roadmap/Component";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { Steps } from "@buildment/learning-ui/blocks/steps/Steps";
+import { Step } from "@buildment/learning-ui/blocks/steps/Step";
+import { ProjectPreview } from "@buildment/learning-ui/blocks/project-preview/ProjectPreview";
+import { LearningObjectives } from "@buildment/learning-ui/blocks/learning-objectives/LearningObjectives";
+import { ChapterRecap } from "@buildment/learning-ui/blocks/chapter-recap/ChapterRecap";
+import { MustReadCard } from "@buildment/learning-ui/blocks/must-read/MustReadCard";
+import { Video } from "@buildment/learning-ui/components/learn/video-embed";
+import { VisualWalkthroughClient } from "@buildment/learning-ui/blocks/visual-walkthrough/VisualWalkthroughClient";
+import { VisualDiagramClient } from "@buildment/learning-ui/blocks/visual-diagram/VisualDiagramClient";
+import { RoadmapClient } from "@buildment/learning-ui/blocks/roadmap/RoadmapClient";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 import { Checklist } from "@/components/learn/checklist";
 import { LearningLog } from "@/components/learn/learning-log";
-import { GlossaryTerm } from "@/components/learn/glossary-term";
-import { MermaidDiagram } from "@/components/learn/mermaid-diagram";
-import { Callout } from "@/components/learn/callout";
-import { FaqGroup, FaqItem } from "@/components/learn/faq-group";
-import { CheckpointIntro } from "@/components/learn/checkpoint-intro";
-import { BigWordAlert } from "@/components/learn/big-word-alert";
-import { InterestingRead } from "@/components/learn/interesting-read";
-import { RealWorldEvent } from "@/components/learn/real-world-event";
-import { ApiRequestPanel, ApiRequest } from "@/components/learn/api-request-panel";
+import { GlossaryTerm } from "@buildment/learning-ui/components/learn/glossary-term";
+import { MermaidDiagram } from "@buildment/learning-ui/components/learn/mermaid-diagram";
+import { Callout } from "@buildment/learning-ui/components/learn/callout";
+import { FaqGroup, FaqItem } from "@buildment/learning-ui/components/learn/faq-group";
+import { CheckpointIntro } from "@buildment/learning-ui/components/learn/checkpoint-intro";
+import { BigWordAlert } from "@buildment/learning-ui/components/learn/big-word-alert";
+import { InterestingRead } from "@buildment/learning-ui/components/learn/interesting-read";
+import { RealWorldEvent } from "@buildment/learning-ui/components/learn/real-world-event";
+import { ApiRequestPanel, ApiRequest } from "@buildment/learning-ui/components/learn/api-request-panel";
 import {
   ArchitectureDiagram, ArchNode, CompareColumn, ComparePanel, DiffBlock,
   FileTree, FileTreeItem, TerminalBlock, TerminalLine, TraceRequest, TraceStep,
-} from "@/components/learn/content-blocks";
+} from "@buildment/learning-ui/components/learn/content-blocks";
 import { InteractiveCanvas } from "@buildment/learning-ui/canvas/InteractiveCanvas";
 import { CANVAS_SLUGS } from "@/shared/canvas/slugs";
 import { MDX_COMPONENT_NAMES } from "@/shared/mdx/component-allowlist";
@@ -80,20 +80,20 @@ export function EcosystemGallery() {
         <Sample name="Predict"><PredictComponent prompt="A browser sends an event request. Which service reads Postgres?" options={[{ id: "web", label: "Next.js" }, { id: "api", label: "Express API" }]} correctOptionId="api" explanation="The API owns database access." /></Sample>
         <Sample name="OpenQuestion"><OpenQuestionComponent prompt="Describe where you would validate an event publish request." minWords={5} /></Sample>
         <Sample name="CodeExercise"><CodeExerciseComponent prompt="Try the editor and hints for a capacity check." language="javascript" mode="exercise" starterCode="const capacity = 100;\nconst sold = 72;\nconst held = 8;\nmodule.exports = sold + held <= capacity;" hints={["Add sold and held, then compare the total with capacity."]} /></Sample>
-        <Sample name="Steps + Step"><StepsComponent title="Request path"><ol><Step stepNumber={1} title="Browser">Send a same-origin API request.</Step><Step stepNumber={2} title="API">Validate, authorize, and query Postgres.</Step></ol></StepsComponent></Sample>
+        <Sample name="Steps + Step"><Steps title="Request path"><ol><Step stepNumber={1} title="Browser">Send a same-origin API request.</Step><Step stepNumber={2} title="API">Validate, authorize, and query Postgres.</Step></ol></Steps></Sample>
         <Sample name="Checklist"><Checklist section="Review this architecture" items={[{ id: "gallery-trust", label: "Find the trust boundary" }, { id: "gallery-data", label: "Find the data owner" }]} /></Sample>
         <Sample name="LearningLog"><LearningLog title="Review notes" instruction="Try saving a note while inspecting these components." questions={[{ id: "gallery-note", title: "What would you change?" }]} /></Sample>
       </GalleryGroup>
 
       <GalleryGroup title="Registered presentation blocks" description="Project context, objectives, recap, media, diagrams, and roadmap.">
-        <Sample name="ProjectPreview"><ProjectPreviewComponent title="Ticketline" description="An event ticketing app with inventory and checkout." features={["Organizer workspace", "Seat holds", "Ticket scanning"]} techStack={["Next.js", "Express", "PostgreSQL"]} /></Sample>
-        <Sample name="LearningObjectives"><LearningObjectivesComponent objectives={["Trace a browser request from the Next.js app through the API to Postgres.", "Identify which service validates input and enforces ticket capacity.", "Explain why database credentials stay outside the browser."]} /></Sample>
-        <Sample name="ChapterRecap"><ChapterRecapComponent points={["Secrets stay on the server.", "The API owns business rules and data access."]} /></Sample>
-        <Sample name="MustRead + MandatoryReadCard"><p className="text-sm text-muted-foreground"><code>MustRead</code> loads the reading and saved progress. <code>MandatoryReadCard</code> renders the card you see below.</p><MustReadComponent title="The Twelve-Factor App — Config" url="https://12factor.net/config" description="A sample required reading card. Its checkbox is local to this gallery." source="12factor.net" readMinutes={8} /></Sample>
-        <Sample name="VideoBlock"><VideoComponent title="Video player preview" sourceUrl="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" caption="Sample media for checking the player layout; replace it with course media." /></Sample>
-        <Sample name="VisualWalkthrough"><VisualWalkthroughComponent title="Ticketline visual walkthrough" steps={[{ id: "request", title: "Request path", description: "Follow a browser request through the API to Postgres. The API owns rules and secrets.", imageUrl: "/course-assets/ticketline/walkthrough-request.svg", alt: "Browser to API to Postgres request path with the API trust boundary highlighted" }, { id: "capacity", title: "Capacity rule", description: "See how sold and held tickets fit within the ticket type capacity.", imageUrl: "/course-assets/ticketline/walkthrough-capacity.svg", alt: "Ticket capacity diagram showing 72 sold plus 8 held is within 100 seats" }]} /></Sample>
-        <Sample name="VisualDiagram"><VisualDiagramComponent title="Ticketline data model" imageUrl="/course-assets/ticketline/er-model.svg" alt="Ticketline data model" caption="Use Expand to inspect the full diagram." kind="system" /></Sample>
-        <Sample name="Roadmap"><RoadmapComponent title="Ticketline build path" milestones={[{ id: "foundation", title: "Foundation", description: "Architecture and schema", state: "current" }, { id: "checkout", title: "Checkout", description: "Inventory and payments", state: "upcoming" }, { id: "ship", title: "Ship", description: "Verification and deployment", state: "goal" }]} /></Sample>
+        <Sample name="ProjectPreview"><ProjectPreview title="Ticketline" description="An event ticketing app with inventory and checkout." features={["Organizer workspace", "Seat holds", "Ticket scanning"]} techStack={["Next.js", "Express", "PostgreSQL"]} /></Sample>
+        <Sample name="LearningObjectives"><LearningObjectives objectives={["Trace a browser request from the Next.js app through the API to Postgres.", "Identify which service validates input and enforces ticket capacity.", "Explain why database credentials stay outside the browser."]} /></Sample>
+        <Sample name="ChapterRecap"><ChapterRecap points={["Secrets stay on the server.", "The API owns business rules and data access."]} /></Sample>
+        <Sample name="MustRead + MandatoryReadCard"><p className="text-sm text-muted-foreground"><code>MustRead</code> loads the reading and saved progress. <code>MustReadCard</code> is the shared view.</p><MustReadCard title="The Twelve-Factor App — Config" href="https://12factor.net/config" summary="A sample required reading card. Its checkbox is local to this gallery." source="12factor.net" readMinutes={8} /></Sample>
+        <Sample name="VideoBlock"><Video title="Video player preview" src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" caption="Sample media for checking the player layout; replace it with course media." /></Sample>
+        <Sample name="VisualWalkthrough"><VisualWalkthroughClient title="Ticketline visual walkthrough" steps={[{ id: "request", title: "Request path", description: "Follow a browser request through the API to Postgres. The API owns rules and secrets.", imageUrl: "/course-assets/ticketline/walkthrough-request.svg", alt: "Browser to API to Postgres request path with the API trust boundary highlighted" }, { id: "capacity", title: "Capacity rule", description: "See how sold and held tickets fit within the ticket type capacity.", imageUrl: "/course-assets/ticketline/walkthrough-capacity.svg", alt: "Ticket capacity diagram showing 72 sold plus 8 held is within 100 seats" }]} /></Sample>
+        <Sample name="VisualDiagram"><VisualDiagramClient title="Ticketline data model" imageUrl="/course-assets/ticketline/er-model.svg" alt="Ticketline data model" caption="Use Expand to inspect the full diagram." kind="system" /></Sample>
+        <Sample name="Roadmap"><RoadmapClient title="Ticketline build path" milestones={[{ id: "foundation", title: "Foundation", description: "Architecture and schema", state: "current" }, { id: "checkout", title: "Checkout", description: "Inventory and payments", state: "upcoming" }, { id: "ship", title: "Ship", description: "Verification and deployment", state: "goal" }]} /></Sample>
       </GalleryGroup>
 
       <GalleryGroup title="Explanation and reference cards" description="Reading aids, diagrams, API examples, and status cards.">

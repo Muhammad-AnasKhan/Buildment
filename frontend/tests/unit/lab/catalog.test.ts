@@ -6,7 +6,7 @@ import {
   canConnect,
   isComponentKind,
   sizesFor,
-} from "@/lab/catalog";
+} from "@buildment/learning-ui/labs/catalog";
 
 describe("component catalog", () => {
   it("gives every component at least one port and every property a default and unit", () => {
