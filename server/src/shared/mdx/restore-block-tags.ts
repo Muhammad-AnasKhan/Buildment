@@ -52,6 +52,7 @@ export function restoreInteractiveBlockTags(source: string): string {
     "FaqGroup",
     "FaqItem",
     "InteractiveCanvas",
+    "Lab",
     "GoDeeper",
   ].join("|");
 
