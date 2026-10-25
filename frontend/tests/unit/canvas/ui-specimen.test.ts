@@ -3,6 +3,7 @@ import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import {
   blockIds,
+  contrastRatio,
   layoutScreen,
   overflowingText,
   textWidth,
@@ -118,5 +119,21 @@ describe("specimen beats render on the server", () => {
       createElement(SpecimenSkim, { ...base, screen: card, seconds: 10, question: "Q?", options: [{ id: "x", label: "X" }], answer: "x", why: { x: "y" }, hint: "Press Start." })
     );
     expect(skim).toContain("You get 10 seconds");
+  });
+});
+
+describe("contrast and motion", () => {
+  it("computes WCAG contrast ratios the dossier quotes", () => {
+    expect(contrastRatio("#000000", "#ffffff")).toBeCloseTo(21, 5);
+    expect(contrastRatio("#767676", "#ffffff")).toBeCloseTo(4.54, 2);
+    expect(contrastRatio("#777777", "#ffffff")).toBeCloseTo(4.48, 2);
+    expect(contrastRatio("#999999", "#ffffff")).toBeCloseTo(2.85, 2);
+    expect(contrastRatio("#ffffff", "#767676")).toBeCloseTo(contrastRatio("#767676", "#ffffff"), 10);
+  });
+  it("gives a block's motion to every shape inside it", () => {
+    const layout = layoutScreen({ alt: "x", blocks: [{ kind: "box", motion: "bounce", children: [{ kind: "text", text: "Hi" }] }, { kind: "text", text: "Still" }] });
+    const moving = layout.items.filter((p) => p.motion === "bounce");
+    expect(moving.length).toBe(2);
+    expect(layout.items.filter((p) => !p.motion).length).toBe(1);
   });
 });

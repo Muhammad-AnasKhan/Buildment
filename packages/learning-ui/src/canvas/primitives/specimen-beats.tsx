@@ -52,6 +52,8 @@ export type CompareVersion = {
   label: string;
   screen: SpecScreen;
   verdict: SpecVerdict;
+  /** Show this version blurred, as when you squint at a screen. */
+  blur?: boolean;
 };
 
 export type SpecimenCompareConfig = {
@@ -82,7 +84,7 @@ export function SpecimenCompare({ title, limits, choiceLabel, versions, hint, st
     <BeatFrame label={title} controls={control} hint={hint} limits={limits}>
       <Picture height={height} title={`${v.label}: ${v.screen.alt} ${v.verdict.text}.`}>
         <VerdictBanner width={SPECIMEN_PICTURE_WIDTH} text={v.verdict.text} tone={v.verdict.tone} />
-        <SpecimenSvg layout={layout} x={screenX(layout)} y={BANNER_SPACE} frame={v.screen.frame ?? "phone"} background={v.screen.background} />
+        <SpecimenSvg layout={layout} x={screenX(layout)} y={BANNER_SPACE} frame={v.screen.frame ?? "phone"} background={v.screen.background} blur={v.blur} />
       </Picture>
       <p className="sr-only" aria-live="polite">{`${v.label}. ${v.screen.alt} ${v.verdict.text}.`}</p>
     </BeatFrame>

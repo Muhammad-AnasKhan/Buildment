@@ -19,13 +19,33 @@ export type SpecGlyph =
 
 export type SpecArt = "photo" | "chart" | "list" | "map" | "receipt" | "blank";
 
+/** Motion on a block, for teaching motion: decorative loops or one that shows a change. */
+export type SpecMotion = "bounce" | "pulse" | "spin" | "ping";
+
 type Base = {
   /** Give a block an id when a canvas needs to point at it (spot mode). */
   id?: string;
+  /** Animate this block and everything inside it. Turned off when the reader asks for reduced motion. */
+  motion?: SpecMotion;
 };
 
 export type SpecBlock =
-  | (Base & { kind: "text"; text: string; size?: number; weight?: 400 | 500 | 600 | 700 | 800; tone?: SpecTone; align?: "start" | "center"; lineHeight?: number; font?: SpecFont; caps?: boolean })
+  | (Base & {
+      kind: "text";
+      text: string;
+      size?: number;
+      weight?: 400 | 500 | 600 | 700 | 800;
+      tone?: SpecTone;
+      align?: "start" | "center";
+      lineHeight?: number;
+      font?: SpecFont;
+      caps?: boolean;
+      /**
+       * A literal colour such as "#767676", only for teaching contrast, on a
+       * screen with background "paper" so the ratio stays true in dark mode.
+       */
+      color?: string;
+    })
   | (Base & { kind: "button"; label: string; variant?: "primary" | "secondary" | "ghost" | "glow" | "danger"; full?: boolean; size?: number; align?: "start" | "center" })
   | (Base & { kind: "field"; label?: string; placeholder?: string; value?: string; hint?: string; error?: string; focus?: boolean })
   | (Base & { kind: "image"; height: number; art: SpecArt; caption?: string })
@@ -53,12 +73,15 @@ export type SpecScreen = {
   pad?: number;
   /** Space between top-level blocks; defaults to 12. */
   gap?: number;
-  background?: "card" | "muted" | "glow" | "ink";
+  /** "paper" is white in both themes, for screens that use literal colours. */
+  background?: "card" | "muted" | "glow" | "ink" | "paper";
   blocks: SpecBlock[];
 };
 
 export type PlacedText = {
   type: "text";
+  /** Literal colour, when the block set one. */
+  color?: string;
   x: number;
   /** Baseline of the first line. */
   y: number;
@@ -92,7 +115,7 @@ export type PlacedArt = { type: "art"; x: number; y: number; w: number; h: numbe
 export type PlacedSpinner = { type: "spinner"; cx: number; cy: number; r: number; owner?: string };
 export type PlacedLine = { type: "line"; x1: number; y1: number; x2: number; y2: number; owner?: string };
 
-export type Placed = PlacedText | PlacedRect | PlacedGlyph | PlacedArt | PlacedSpinner | PlacedLine;
+export type Placed = (PlacedText | PlacedRect | PlacedGlyph | PlacedArt | PlacedSpinner | PlacedLine) & { motion?: SpecMotion };
 
 /** The box a block with an id occupies, for pointing at it and tapping it. */
 export type Region = { id: string; x: number; y: number; w: number; h: number };
@@ -172,6 +195,7 @@ function placeText(ctx: Ctx, b: Extract<SpecBlock, { kind: "text" }>, x: number,
     font,
     maxWidth: w,
     owner,
+    color: b.color,
   });
   return size * 0.95 + (lines.length - 1) * lh + size * 0.3;
 }
@@ -180,6 +204,7 @@ function placeBlock(ctx: Ctx, b: SpecBlock, x: number, y: number, w: number, inh
   const owner = b.id ?? inherited;
   const start = ctx.items.length;
   const h = placeInner(ctx, b, x, y, w, owner);
+  if (b.motion) for (let i = start; i < ctx.items.length; i++) ctx.items[i].motion ??= b.motion;
   if (b.id) {
     // The region is the block's own box; for text and buttons that is narrower than the column.
     let right = x;
@@ -406,4 +431,21 @@ export function blockIds(blocks: SpecBlock[]): string[] {
  */
 export function overflowingText(layout: ScreenLayout): PlacedText[] {
   return layout.items.filter((p): p is PlacedText => p.type === "text" && p.lines.some((l) => textWidth(l, p.size, p.weight, p.font) > p.maxWidth + 0.5));
+}
+
+/** Relative luminance of a "#rrggbb" colour, as WCAG 2.2 defines it. */
+export function relativeLuminance(hex: string): number {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) throw new Error(`Not a #rrggbb colour: ${hex}`);
+  const channel = (i: number) => {
+    const c = parseInt(m[1].slice(i, i + 2), 16) / 255;
+    return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+}
+
+/** WCAG contrast ratio between two colours, from 1 to 21. */
+export function contrastRatio(a: string, b: string): number {
+  const [hi, lo] = [relativeLuminance(a), relativeLuminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
 }

@@ -81,8 +81,8 @@ function SpecText({ p }: { p: PlacedText }) {
       x={p.x}
       y={p.y}
       textAnchor={p.anchor}
-      className={cn(TEXT_TONE[p.tone], FONT[p.font])}
-      style={{ fontSize: p.size, fontWeight: p.weight }}
+      className={cn(!p.color && TEXT_TONE[p.tone], FONT[p.font])}
+      style={{ fontSize: p.size, fontWeight: p.weight, fill: p.color }}
     >
       {p.lines.map((line, i) => (
         <tspan key={i} x={p.x} dy={i === 0 ? 0 : p.lineHeight}>
@@ -156,7 +156,20 @@ function Art({ x, y, w, h, art }: { x: number; y: number; w: number; h: number; 
   }
 }
 
+const MOTION: Record<string, string> = {
+  bounce: "motion-safe:animate-bounce",
+  pulse: "motion-safe:animate-pulse",
+  spin: "motion-safe:animate-spin",
+  ping: "motion-safe:animate-ping",
+};
+
+/** Wraps a shape in its motion class; transform-box keeps a spin centred on the shape. */
 function Item({ p, glowId }: { p: Placed; glowId: string }) {
+  const shape = <Shape p={p} glowId={glowId} />;
+  return p.motion ? <g className={cn(MOTION[p.motion], "[transform-box:fill-box] [transform-origin:center]")}>{shape}</g> : shape;
+}
+
+function Shape({ p, glowId }: { p: Placed; glowId: string }) {
   switch (p.type) {
     case "text":
       return <SpecText p={p} />;
@@ -188,18 +201,26 @@ type SpecimenSvgProps = {
   x?: number;
   y?: number;
   frame: "phone" | "browser" | "none";
-  background?: "card" | "muted" | "glow" | "ink";
+  background?: "card" | "muted" | "glow" | "ink" | "paper";
+  /** Blur the screen, as when you squint at it to see what stands out. */
+  blur?: boolean;
   /** Lower the screen's opacity, for example while it is hidden in a skim test. */
   dim?: boolean;
 };
 
 /** The screen with its frame, as a group to place inside a larger SVG. */
-export function SpecimenSvg({ layout, x = 0, y = 0, frame, background = "card", dim }: SpecimenSvgProps) {
+export function SpecimenSvg({ layout, x = 0, y = 0, frame, background = "card", blur, dim }: SpecimenSvgProps) {
   const uid = useId().replace(/:/g, "");
   const glowId = `glow-${uid}`;
   const clipId = `page-${uid}`;
+  const blurId = `squint-${uid}`;
   const { page } = layout;
-  const bg = background === "glow" ? { fill: `url(#${glowId})` } : { className: background === "muted" ? "fill-muted" : background === "ink" ? "fill-foreground" : "fill-card" };
+  const bg =
+    background === "glow"
+      ? { fill: `url(#${glowId})` }
+      : background === "paper"
+        ? { fill: "white" }
+        : { className: background === "muted" ? "fill-muted" : background === "ink" ? "fill-foreground" : "fill-card" };
   return (
     <g transform={`translate(${x} ${y})`} opacity={dim ? 0.12 : 1} className="transition-opacity duration-200 motion-reduce:transition-none">
       <defs>
@@ -207,6 +228,9 @@ export function SpecimenSvg({ layout, x = 0, y = 0, frame, background = "card", 
           <stop offset="0%" className="[stop-color:var(--color-violet-500)]" />
           <stop offset="100%" className="[stop-color:var(--color-fuchsia-400)]" />
         </linearGradient>
+        <filter id={blurId} x="-5%" y="-5%" width="110%" height="110%">
+          <feGaussianBlur stdDeviation={4} />
+        </filter>
         <clipPath id={clipId}>
           <rect x={page.x} y={page.y} width={page.w} height={page.h} rx={frame === "phone" ? 18 : 0} />
         </clipPath>
@@ -226,7 +250,7 @@ export function SpecimenSvg({ layout, x = 0, y = 0, frame, background = "card", 
           <rect x={52} y={6} width={layout.width - 64} height={14} rx={7} className="fill-card" />
         </>
       ) : null}
-      <g clipPath={`url(#${clipId})`}>
+      <g clipPath={`url(#${clipId})`} filter={blur ? `url(#${blurId})` : undefined}>
         <rect x={page.x} y={page.y} width={page.w} height={page.h} {...bg} />
         {layout.items.map((p, i) => (
           <Item key={i} p={p} glowId={glowId} />
