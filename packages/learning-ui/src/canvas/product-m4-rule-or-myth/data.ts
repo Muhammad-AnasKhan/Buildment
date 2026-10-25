@@ -3,15 +3,17 @@ import type { SortBucket, SortCard } from "../models/sorter";
 import { makeSorterCanvas } from "../primitives/canvas-factories";
 
 // Product Sense, chapter 4.5: nine popular design rules, checked against the
-// evidence the course's research found. Supported rules have a standard, a
-// study or a documented practice behind them. A misread rule has a true core
-// that is used in the wrong place or with the wrong meaning. An unsupported
-// rule failed its test, has mixed evidence, or was dropped by its own source.
+// evidence the course's research found. One rule separates the buckets.
+// Supported: a standard, a study or written practice backs the rule as it is
+// stated. Misread: a real finding is used where it was not tested. Unsupported:
+// no test backs the rule as stated (it failed, the evidence is mixed, or its
+// author took it back). The surface cues conflict on purpose: digits appear in
+// supported, misread and unsupported cards alike.
 
 export const RULE_BUCKETS: SortBucket[] = [
-  { id: "supported", label: "Supported", sub: "evidence backs it" },
-  { id: "misread", label: "Misread", sub: "true core, wrong use" },
-  { id: "unsupported", label: "Unsupported", sub: "test failed or mixed" },
+  { id: "supported", label: "Supported", sub: "backed as stated" },
+  { id: "misread", label: "Misread", sub: "real, wrong place" },
+  { id: "unsupported", label: "Unsupported", sub: "failed or mixed" },
 ];
 
 export const RULE_CARDS: SortCard[] = [
@@ -20,8 +22,8 @@ export const RULE_CARDS: SortCard[] = [
     text: "Normal text needs a contrast ratio of at least 4.5 to 1.",
     answer: "supported",
     why: {
-      misread: "This is the WCAG AA standard as written. Nothing is stretched.",
-      unsupported: "It is a published standard, not a popular guess.",
+      misread: "Rule: Misread means a real finding used in the wrong place. This is a standard.",
+      unsupported: "Rule: Unsupported has no test behind it. WCAG publishes this one.",
     },
   },
   {
@@ -29,8 +31,8 @@ export const RULE_CARDS: SortCard[] = [
     text: "Most viewing time is near the top of a page.",
     answer: "supported",
     why: {
-      misread: "The card states the finding itself: 57% of viewing time in the first screen.",
-      unsupported: "A 2018 study of 120 people backs it. It is evidence, not a guess.",
+      misread: "Rule: Misread means a real finding used in the wrong place. This card is the finding.",
+      unsupported: "Rule: Unsupported has no test. A 2018 study of 120 people backs this.",
     },
   },
   {
@@ -38,8 +40,8 @@ export const RULE_CARDS: SortCard[] = [
     text: "A form label should stay visible above its field.",
     answer: "supported",
     why: {
-      misread: "NN/g and GOV.UK both give reasons: a placeholder vanishes when you type.",
-      unsupported: "Expert guidance and a maker's written reasons back it.",
+      misread: "Rule: Misread means a real finding used in the wrong place. NN/g and GOV.UK back this.",
+      unsupported: "Rule: Unsupported has no backing. Expert advice and written reasons back this.",
     },
   },
   {
@@ -47,8 +49,8 @@ export const RULE_CARDS: SortCard[] = [
     text: "Five users find all the problems.",
     answer: "misread",
     why: {
-      supported: "The model says about 85% of one group's problems per round, not all.",
-      unsupported: "The model is real. The claim 'all' and the missing rounds are wrong.",
+      supported: "Rule: Supported holds as stated. The card says 'all'; the model says about 85%.",
+      unsupported: "Rule: Unsupported has no test. The model is real; the word 'all' is wrong.",
     },
   },
   {
@@ -56,8 +58,8 @@ export const RULE_CARDS: SortCard[] = [
     text: "A menu should hold seven items, plus or minus two.",
     answer: "misread",
     why: {
-      supported: "Miller wrote about memory span, not about menus.",
-      unsupported: "Miller's finding is real. It is used where it was never tested.",
+      supported: "Rule: Supported holds as stated. Miller wrote about memory span, not menus.",
+      unsupported: "Rule: Unsupported was never backed. Miller's finding is real but is about memory.",
     },
   },
   {
@@ -65,8 +67,8 @@ export const RULE_CARDS: SortCard[] = [
     text: "Lay out your page to follow the F-pattern.",
     answer: "misread",
     why: {
-      supported: "NN/g calls the F-pattern a failure to avoid, not a layout to copy.",
-      unsupported: "People do scan this way. The advice to copy it is what is wrong.",
+      supported: "Rule: Supported holds as stated. NN/g calls the F-pattern a failure to avoid.",
+      unsupported: "Rule: Unsupported has no test. People do scan this way; copying it is the error.",
     },
   },
   {
@@ -74,8 +76,8 @@ export const RULE_CARDS: SortCard[] = [
     text: "Every page must be reachable in three clicks.",
     answer: "unsupported",
     why: {
-      supported: "A test with 44 people and 620 tasks found no link to click count.",
-      misread: "There is no true core to misuse. The test itself did not support it.",
+      supported: "Rule: Supported holds as stated. A test of 44 people and 620 tasks found no link.",
+      misread: "Rule: Misread has a real finding at its core. This test itself found no link.",
     },
   },
   {
@@ -83,8 +85,8 @@ export const RULE_CARDS: SortCard[] = [
     text: "The golden ratio makes a design beautiful.",
     answer: "unsupported",
     why: {
-      supported: "The evidence is mixed, and the author says it is no universal rule.",
-      misread: "The studies themselves disagree, so the rule has no firm core.",
+      supported: "Rule: Supported holds as stated. The evidence is mixed. It is no universal rule.",
+      misread: "Rule: Misread has a real finding at its core. Here the studies disagree.",
     },
   },
   {
@@ -92,8 +94,8 @@ export const RULE_CARDS: SortCard[] = [
     text: "Blue makes people trust you.",
     answer: "unsupported",
     why: {
-      supported: "A review found effects depend on context and called advice premature.",
-      misread: "The research on colour is young, so a general rule is not backed.",
+      supported: "Rule: Supported holds as stated. A review found effects depend on context.",
+      misread: "Rule: Misread has a real finding at its core. The review calls advice premature.",
     },
   },
 ];

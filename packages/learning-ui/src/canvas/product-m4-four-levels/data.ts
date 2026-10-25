@@ -4,9 +4,12 @@ import { makeSorterCanvas } from "../primitives/canvas-factories";
 
 // Product Sense, chapter 4.2: place nine statements about screens on the
 // course's four-level scale. Each card states facts. A card goes at the
-// highest level whose checks the facts show are met. Remarkable cards name a
-// choice and a reason, so the canvas can check that a reason is stated; whether
-// the choice is right for the job is a judgment the learner defends in words.
+// highest level whose checks the facts show are met, and one failed check
+// keeps it at the level below. Remarkable cards name a choice and a reason, so
+// the canvas checks only that a reason is stated; whether the choice is right
+// for the job is a judgment the learner defends in words. Three cards pull the
+// surface cue the wrong way: tests that do not repair a failed check, and a
+// page with many Best features that nobody has tried.
 
 export const LEVEL_BUCKETS: SortBucket[] = [
   { id: "average", label: "Average", sub: "works, defaults kept" },
@@ -21,9 +24,9 @@ export const LEVEL_CARDS: SortCard[] = [
     text: "It works from start to finish. Every default is unchanged.",
     answer: "average",
     why: {
-      good: "Nothing says contrast, labels, focus, targets or states were checked.",
-      best: "Best needs the Good checks first, and nothing says they were done.",
-      remarkable: "No choice with a reason is named, and no check is stated.",
+      good: "Rule: Good needs the standards checked and passed. None is stated here.",
+      best: "Rule: Best needs every Good check first. None is stated here.",
+      remarkable: "Rule: Remarkable needs a named choice with a reason. None is named.",
     },
   },
   {
@@ -31,19 +34,19 @@ export const LEVEL_CARDS: SortCard[] = [
     text: "Soft shadows and rounded cards. Hint text is pale grey and fails contrast.",
     answer: "average",
     why: {
-      good: "Pale hint text fails the contrast check, so Good is out of reach.",
-      best: "Best needs every Good check, and the contrast check already fails.",
-      remarkable: "A look with no named choice and a failed check is not Remarkable.",
+      good: "Rule: one failed Good check keeps a screen at Average. Contrast fails.",
+      best: "Rule: Best needs every Good check, and contrast already fails.",
+      remarkable: "Rule: a look is not a choice with a reason, and a check fails.",
     },
   },
   {
-    id: "blank-error",
-    text: "Every Good check passes except the error state, which is a blank page.",
+    id: "tested-pale",
+    text: "4 of 5 people finished after fixes. Hint text is pale grey and fails contrast.",
     answer: "average",
     why: {
-      good: "Good needs every check, and a blank error state fails the states check.",
-      best: "Best builds on Good, and one Good check still fails here.",
-      remarkable: "Remarkable builds on Best, and a Good check still fails here.",
+      good: "Rule: Good needs every standard to pass. Pale hint text fails contrast.",
+      best: "Rule: Best builds on Good. Testing does not repair a failed check.",
+      remarkable: "Rule: Remarkable builds on Best, and a Good check still fails.",
     },
   },
   {
@@ -51,19 +54,19 @@ export const LEVEL_CARDS: SortCard[] = [
     text: "Contrast, labels, focus, targets and all three states pass. Nobody has tried it.",
     answer: "good",
     why: {
-      average: "Every standard passes, so this is above Average.",
-      best: "Best needs a small check with people and fixes made. Nobody has tried it.",
-      remarkable: "No choice with a reason is named, and no one has tried it.",
+      average: "Rule: Average means a Good check fails or is unchecked. All pass here.",
+      best: "Rule: Best needs a check with people and fixes. Nobody has tried it.",
+      remarkable: "Rule: Remarkable needs Best first, and a named choice with a reason.",
     },
   },
   {
-    id: "three-compete",
-    text: "Good checks pass. Blurred, three things compete. No one has tried it.",
+    id: "clear-untried",
+    text: "Good checks pass. One thing leads, spacing is steady, extras are cut. No one has tried it.",
     answer: "good",
     why: {
-      average: "The Good checks pass, so it is above Average.",
-      best: "Blurred, three things compete, so the hierarchy check for Best fails.",
-      remarkable: "Remarkable builds on Best, and the Best checks fail here.",
+      average: "Rule: Average means a Good check fails or is unchecked. All pass here.",
+      best: "Rule: Best needs a check with people and fixes. Many Best features are not enough.",
+      remarkable: "Rule: Remarkable needs Best first, and a named choice with a reason.",
     },
   },
   {
@@ -71,9 +74,9 @@ export const LEVEL_CARDS: SortCard[] = [
     text: "Good checks pass. Spacing is steady, extras are cut and one thing leads. 4 of 5 finished after fixes.",
     answer: "best",
     why: {
-      average: "The Good checks pass and more, so it is well above Average.",
-      good: "It also leads with one thing and was tested and fixed. That is Best.",
-      remarkable: "It names no choice for the job and no reason, so it stops at Best.",
+      average: "Rule: Average means a Good check fails. Every Good check passes here.",
+      good: "Rule: Best adds one clear first thing and a tested, fixed check. Both are here.",
+      remarkable: "Rule: Remarkable needs a named choice with a reason. None is named.",
     },
   },
   {
@@ -81,9 +84,9 @@ export const LEVEL_CARDS: SortCard[] = [
     text: "Best checks pass. The header is bright orange, and no reason is given.",
     answer: "best",
     why: {
-      average: "Every Best check passes, so it is far above Average.",
-      good: "It passes the Good and Best checks. Good is the level below.",
-      remarkable: "A choice needs a reason a reader can name. 'Bright orange' has none.",
+      average: "Rule: Average means a Good check fails. Every Best check passes here.",
+      good: "Rule: Good is the level below. Every Best check passes here.",
+      remarkable: "Rule: a choice needs a reason a reader can name. Orange has none.",
     },
   },
   {
@@ -91,9 +94,9 @@ export const LEVEL_CARDS: SortCard[] = [
     text: "Best checks pass. Seats left is the largest text: seats decide the join.",
     answer: "remarkable",
     why: {
-      average: "All Best checks pass, so this is far above Average.",
-      good: "It passes the Good and Best checks, and it names a choice and a reason.",
-      best: "Seats first is a named choice, and 'seats decide the join' is its reason.",
+      average: "Rule: Remarkable is Best plus a named choice and reason. Both are stated.",
+      good: "Rule: Remarkable is Best plus a named choice and reason. Both are stated.",
+      best: "Rule: a named choice with a reason is Remarkable. Seats first has one.",
     },
   },
   {
@@ -101,9 +104,9 @@ export const LEVEL_CARDS: SortCard[] = [
     text: "Best checks pass. Rooms open on today's free hours: students book the same day.",
     answer: "remarkable",
     why: {
-      average: "All Best checks pass, so this is far above Average.",
-      good: "It passes the Good and Best checks, and it names a choice and a reason.",
-      best: "Opening on free hours is a named choice, and 'students book the same day' is its reason.",
+      average: "Rule: Remarkable is Best plus a named choice and reason. Both are stated.",
+      good: "Rule: Remarkable is Best plus a named choice and reason. Both are stated.",
+      best: "Rule: a named choice with a reason is Remarkable. Free hours first has one.",
     },
   },
 ];
@@ -113,7 +116,7 @@ export const productM4FourLevels: CustomCanvasSpec = {
   title: "Place each screen on the scale",
   purpose: "Sort nine statements about screens into Average, Good, Best and Remarkable, using the checks that each level adds to the one below.",
   limits:
-    "The scale is this course's own, not an industry standard. The canvas checks that a Remarkable card states a choice and a reason. It cannot say whether the choice is right for the job: you defend that in words. The screens are made up.",
+    "The scale is this course's own, not an industry standard. The canvas checks only that a reason is stated for a choice. You defend whether it fits the job. The screens are made up.",
   component: makeSorterCanvas({
     buckets: LEVEL_BUCKETS,
     cards: LEVEL_CARDS,
