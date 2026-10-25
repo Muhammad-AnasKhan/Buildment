@@ -3,7 +3,7 @@ artifact: canvas-spec
 course: build-with-ai (v2)
 chapter: 6.4
 slug: cache-choice-context
-version: 1
+version: 2
 owner: interaction-designer
 ---
 
@@ -24,9 +24,9 @@ Data for the shared context picker. First matching rule wins; `checkContextConfi
 
 | Rule | When | Pick | Dossier ids behind it |
 |---|---|---|---|
-| 0 | sell hosting and Redis 8 types | Redis | B32 (types in Redis 8 core), B31 (RSALv2 forbids managed service; SSPLv1 copyleft; AGPLv3 third option) |
+| 0 | sell hosting and Redis 8 types | Redis | B32 (types in Redis 8 core), B34 (Valkey forked before them), B31 (RSALv2 forbids managed service; SSPLv1 copyleft; AGPLv3 third option); the reason says to read the licences |
 | 1 | sell hosting | Valkey | B31, B34 (BSD 3-clause, no field-of-use limit) |
-| 2 | Redis 8 types | Redis | B32, B34 (Valkey forked at Redis 7.2.4) |
+| 2 | Redis 8 types | Redis | B32 (types in Redis 8 core), B34 (Valkey forked at Redis 7.2.4, before them); the reason says to check for a Valkey module, which this course did not check |
 | 3 | AWS or Google | Valkey | B38 (AWS lists Valkey 20% lower for node-based, 33% for serverless), B39 (Memorystore for Valkey) |
 | 4 | Redis's own service | Redis | the course's reading of B29 to B31 |
 | fallback | internal, plain cache, own machine | Either | the course's reading of B29 to B41: commands overlap |

@@ -7,6 +7,7 @@ export const likelyNextWordAgrees: SceneSpec = {
   kind: "scene",
   title: "A leaning question invites a yes",
   purpose: "Ask an assistant whether Redis is best and it may simply agree. Ask when Redis would be wrong and you get reasons to check.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   limits: "An illustration of a tendency called sycophancy, not a recording. Assistants differ, answers vary from one ask to the next, and a neutral question helps but does not make an answer true.",
   scene: {
     width: 420,

@@ -28,7 +28,7 @@ A scene (`kind: "scene"`, renderer `renderers/scene`). Watch-only; Replay.
 The shared scene player in a `BeatFrame` with Replay. 420 by 260 viewBox, two actors, loop 9.5 seconds. Checked: no overlap at any moment.
 
 ## Controls
-Replay only.
+Replay only. The scene sets a one-line hint: "Watch: it plays on its own. Press Replay to see it again."
 
 ## Copy
 - What this shows: the same idea asked two ways.

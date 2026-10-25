@@ -7,6 +7,7 @@ export const twoTeamsSameAnswer: SceneSpec = {
   kind: "scene",
   title: "Two teams, one question, one answer",
   purpose: "Tala and Munir each ask an assistant which cache to use. Both hear Redis. For Tala it is fine; for Munir it needs a licence check first.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   limits: "A made-up story with two fictional people. The assistant's words are an illustration, not a recording of a real tool. The licence facts are in the chapter's sources.",
   scene: {
     width: 420,

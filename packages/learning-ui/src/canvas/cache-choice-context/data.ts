@@ -5,7 +5,9 @@ import { makeContextPickerCanvas } from "../primitives/canvas-factories";
 // Course 13 v2, chapter 6.4: Redis or Valkey. Rules read from licence pages,
 // release notes and cloud pages (dossier B29 to B41), checked 2026-10-25. The
 // start context is Tala's (an internal tool); Munir's company is the second
-// "Your use" choice. No rule uses a speed claim as a fact (B36, B37, B40).
+// "Your use" choice. No rule uses a speed claim as a fact (B36, B37, B40). The
+// Redis 8 types are in Redis 8 core (B32) and Valkey forked before them (B34);
+// whether a Valkey module covers them was not checked, and the reasons say so.
 export const CACHE_CHOICE_CONTEXT: ContextPickerConfig = {
   question: "Which cache fits?",
   factors: [
@@ -41,9 +43,9 @@ export const CACHE_CHOICE_CONTEXT: ContextPickerConfig = {
     { id: "either", label: "Either", sub: "licence and price" },
   ],
   rules: [
-    { when: { use: "sell", features: "types" }, pick: "redis", why: "Only Redis has these types. Read its licences against selling it as a service." },
+    { when: { use: "sell", features: "types" }, pick: "redis", why: "Redis 8 has these types in core; Valkey forked before them. Read Redis's licences first." },
     { when: { use: "sell" }, pick: "valkey", why: "Selling hosting needs clear terms. Valkey is BSD 3-clause; read Redis's licences." },
-    { when: { features: "types" }, pick: "redis", why: "These types are in Redis 8. Valkey forked at Redis 7.2.4 and lacks them." },
+    { when: { features: "types" }, pick: "redis", why: "Redis 8 has these types in core. Valkey forked before them: check for a Valkey module." },
     { when: { host: "cloud" }, pick: "valkey", why: "Both clouds list Valkey, and AWS prices it lower (vendor page, checked 2026-10-25)." },
     { when: { host: "redis" }, pick: "redis", why: "You buy Redis's own managed service or support, so that means Redis." },
   ],
@@ -57,6 +59,6 @@ export const cacheChoiceContext: CustomCanvasSpec = {
   title: "The cache depends on your context",
   purpose: "Set your use, the features you need and where the cache runs, and see whether Redis, Valkey or either fits, with the reason.",
   limits:
-    "The rules are the course's reading of licence pages, release notes and cloud pages checked on 2026-10-25. They are not legal advice and not a speed ranking: speed claims on both sides are the projects' own. Licences, versions and prices change, so read each page again before you decide.",
+    "The rules are the course's reading of licence pages, release notes and cloud pages checked on 2026-10-25. They are not legal advice and not a speed ranking: speed claims on both sides are the projects' own. This course did not check whether a Valkey module covers the Redis 8 types. Licences, versions and prices change, so read each page again before you decide.",
   component: makeContextPickerCanvas(CACHE_CHOICE_CONTEXT),
 };
