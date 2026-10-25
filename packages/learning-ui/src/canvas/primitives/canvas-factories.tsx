@@ -1,5 +1,8 @@
 import type { ComponentType } from "react";
 import { BlockMap, type BlockMapConfig } from "./block-map";
+import { BudgetStack, type BudgetStackConfig } from "./budget-stack";
+import { PhraseFixer, type PhraseFixerConfig } from "./phrase-fixer";
+import { SlotCard, type SlotCardConfig } from "./slot-card";
 import { Sorter, type SorterConfig } from "./sorter";
 
 // Factories that turn a course's data into a registry component, so its
@@ -23,4 +26,28 @@ export function makeBlockMapCanvas(config: BlockMapConfig): ComponentType<Canvas
   }
   BlockMapCanvas.displayName = "BlockMapCanvas";
   return BlockMapCanvas;
+}
+
+export function makePhraseFixerCanvas(config: PhraseFixerConfig): ComponentType<CanvasProps> {
+  function PhraseFixerCanvas({ title, limits }: CanvasProps) {
+    return <PhraseFixer title={title} limits={limits} {...config} />;
+  }
+  PhraseFixerCanvas.displayName = "PhraseFixerCanvas";
+  return PhraseFixerCanvas;
+}
+
+export function makeBudgetStackCanvas(config: BudgetStackConfig): ComponentType<CanvasProps> {
+  function BudgetStackCanvas({ title, limits }: CanvasProps) {
+    return <BudgetStack title={title} limits={limits} {...config} />;
+  }
+  BudgetStackCanvas.displayName = "BudgetStackCanvas";
+  return BudgetStackCanvas;
+}
+
+export function makeSlotCardCanvas(config: SlotCardConfig): ComponentType<CanvasProps> {
+  function SlotCardCanvas({ title, limits }: CanvasProps) {
+    return <SlotCard title={title} limits={limits} {...config} />;
+  }
+  SlotCardCanvas.displayName = "SlotCardCanvas";
+  return SlotCardCanvas;
 }

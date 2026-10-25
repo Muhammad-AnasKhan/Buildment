@@ -707,6 +707,9 @@ import { sysdesignM18ClusterPlay } from "./sysdesign-m18-cluster-play/data";
 import { sysdesignM18PipelineStep } from "./sysdesign-m18-pipeline-step/data";
 import { sysdesignM18CanaryBlast } from "./sysdesign-m18-canary-blast/data";
 import { sysdesignM18CloudExplorer } from "./sysdesign-m18-cloud-explorer/data";
+import { careerM6EmptyPhrases } from "./career-m6-empty-phrases/data";
+import { careerM1FirstLook } from "./career-m1-first-look/data";
+import { careerM3ClaimCard } from "./career-m3-claim-card/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
@@ -1428,6 +1431,9 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m18-pipeline-step": sysdesignM18PipelineStep,
   "sysdesign-m18-canary-blast": sysdesignM18CanaryBlast,
   "sysdesign-m18-cloud-explorer": sysdesignM18CloudExplorer,
+  "career-m6-empty-phrases": careerM6EmptyPhrases,
+  "career-m1-first-look": careerM1FirstLook,
+  "career-m3-claim-card": careerM3ClaimCard,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
