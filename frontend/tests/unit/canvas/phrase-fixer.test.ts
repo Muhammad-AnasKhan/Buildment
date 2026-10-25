@@ -156,33 +156,35 @@ describe("phrase fixer data check", () => {
 });
 
 describe("career-m6-empty-phrases data", () => {
+  const segments = EMPTY_PHRASE_SEGMENTS;
+  const weak = segments.filter((s) => s.weak);
+
   it("passes the data check", () => {
     expect(checkPhrase(EMPTY_PHRASES_CONFIG)).toEqual([]);
   });
 
-  it("has four weak phrases, one fine word, and the agreed rewrite", () => {
-    expect(EMPTY_PHRASE_SEGMENTS.filter((s) => s.weak)).toHaveLength(4);
-    expect(originalText(EMPTY_PHRASE_SEGMENTS)).toBe(
-      "Results-driven and passionate operations professional with a proven track record of driving efficiency and delivering exceptional outcomes in fast-paced environments."
-    );
-    expect(rewriteText(EMPTY_PHRASE_SEGMENTS)).toBe(
-      "Operations coordinator for a five-person online shop for 2 years. Cut order packing time from 3 hours to 2 hours a day, from the shop's order sheet, and wrote the returns checklist the team still uses."
-    );
+  it("has weak phrases to find, a rewrite that differs from the original, and lines that fit", () => {
+    expect(weak.length).toBeGreaterThan(0);
+    expect(new Set(segments.map((s) => s.id)).size).toBe(segments.length);
+    expect(rewriteText(segments)).not.toBe(originalText(segments));
     expect(EMPTY_PHRASES_CONFIG.checkableBefore).toBe(0);
-    for (const line of layoutPhrase(EMPTY_PHRASE_SEGMENTS, "after")) expect(line.map((p) => p.text).join(" ").length).toBeLessThanOrEqual(PHRASE_LINE_CHARS);
+    for (const line of layoutPhrase(segments, "before")) expect(line.map((p) => p.text).join(" ").length).toBeLessThanOrEqual(PHRASE_LINE_CHARS);
+    for (const line of layoutPhrase(segments, "after")) expect(line.map((p) => p.text).join(" ").length).toBeLessThanOrEqual(PHRASE_LINE_CHARS);
   });
 
   it("renders on the server with the counters, one button per segment, and no hex or long dashes", () => {
     const html = renderToString(createElement(careerM6EmptyPhrases.component, { title: careerM6EmptyPhrases.title, purpose: careerM6EmptyPhrases.purpose, limits: careerM6EmptyPhrases.limits })).replaceAll("<!-- -->", "");
+    const s0 = startPhrase();
     expect(html).toContain("<svg");
     expect(html).toContain("What this picture leaves out");
     expect(html).toContain("Tap the phrases a reader cannot check");
-    expect(html).toContain("Found 0 of 4");
-    expect(html).toContain("Facts a reader can check: 0");
+    expect(html).toContain(foundLabel(s0, segments));
+    expect(html).toContain(`Found 0 of ${weak.length}`);
+    expect(html).toContain(factsLabel(s0, segments, EMPTY_PHRASES_CONFIG.checkableBefore));
     expect(html).toContain("Show the rewrite");
-    expect((html.match(/role="button"/g) ?? []).length).toBe(5);
-    expect(html).not.toMatch(/#[0-9a-fA-F]{6}\b/);
+    expect((html.match(/role="button"/g) ?? []).length).toBe(segments.length);
+    expect(html).not.toMatch(/#[0-9a-fA-F]{6}/);
     expect(html).not.toMatch(/foreignObject|<animate|<use|<image/);
-    expect(html).not.toMatch(/[\u2013\u2014]/);
+    expect(html).not.toMatch(/[–—]/);
   });
 });

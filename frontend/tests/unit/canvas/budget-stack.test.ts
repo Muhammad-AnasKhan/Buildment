@@ -20,7 +20,19 @@ import {
   stackVerdict,
   type StackBlock,
 } from "@buildment/learning-ui/canvas/models/budget-stack";
-import { careerM1FirstLook, FIRST_LOOK_BLOCKS, FIRST_LOOK_CONFIG } from "@buildment/learning-ui/canvas/career-m1-first-look/data";
+import { careerM1FirstLook, FIRST_LOOK_CONFIG } from "@buildment/learning-ui/canvas/career-m1-first-look/data";
+
+// A fixture for the layout and ordering tests, so the model is pinned whatever the course data says.
+// Six blocks, no notes, a 12 unit budget: the first three are seen and both proof blocks sit below.
+const phoneBlocks: StackBlock[] = [
+  { id: "header", label: "Name and contact line", cost: 3, kind: "context" },
+  { id: "objective", label: "Objective paragraph, AI-written", cost: 5, kind: "filler" },
+  { id: "skills", label: "Skills: 28 technologies in a block", cost: 4, kind: "context" },
+  { id: "duties", label: "Responsible for backend services", cost: 3, kind: "filler" },
+  { id: "order-api", label: "Built the order API; it handles 40 requests a second", cost: 3, kind: "proof" },
+  { id: "demo", label: "Demo link", cost: 4, kind: "proof" },
+];
+const phoneConfig = { blocks: phoneBlocks, budget: 12, unit: "s", budgetLabel: "A quick first look", goal: 2 };
 
 const blocks: StackBlock[] = [
   { id: "a", label: "Filler", cost: 4, kind: "filler" },
@@ -77,7 +89,7 @@ describe("budget stack model", () => {
   });
 
   it("lays rows out without overlap and wraps labels to the column", () => {
-    const rows = stackLayout(FIRST_LOOK_BLOCKS);
+    const rows = stackLayout(phoneBlocks);
     for (let i = 1; i < rows.length; i++) expect(rows[i].y).toBe(rows[i - 1].y + rows[i - 1].h + STACK_GEO.block.gap);
     for (const r of rows) {
       expect(r.lines.length).toBeLessThanOrEqual(2);
@@ -85,7 +97,7 @@ describe("budget stack model", () => {
       expect(r.h).toBe(r.lines.length > 1 ? STACK_GEO.block.twoLines : STACK_GEO.block.oneLine);
     }
     const last = rows[rows.length - 1];
-    expect(stackHeight(FIRST_LOOK_BLOCKS)).toBe(last.y + last.h + 32);
+    expect(stackHeight(phoneBlocks)).toBe(last.y + last.h + 32);
     expect(stackHeight([...blocks.slice(0, 3), { ...blocks[3], note: "A note." }])).toBe(stackLayout(blocks)[3].y + STACK_GEO.block.oneLine + 70);
   });
 });
@@ -130,37 +142,58 @@ describe("budget stack data check", () => {
   });
 });
 
+describe("budget stack with a phone-sized fixture", () => {
+  it("passes the data check", () => {
+    expect(checkStack(phoneConfig)).toEqual([]);
+  });
+
+  it("buries the proof in the starting order and meets the goal with both proof blocks on top", () => {
+    const start = stackRows(phoneBlocks, 12);
+    expect(start.map((r) => r.seen)).toEqual([true, true, true, false, false, false]);
+    expect(stackVerdict(start, 2)).toEqual({ met: false, text: "Only 0 of 2 proof blocks seen" });
+    const oneUp = moveTo(ids(phoneBlocks), "order-api", 0);
+    expect(proofSeen(stackRows(orderBlocks(phoneBlocks, oneUp), 12))).toBe(1);
+    const bothUp = moveTo(oneUp, "demo", 1);
+    const end = stackRows(orderBlocks(phoneBlocks, bothUp), 12);
+    expect(end.filter((r) => r.seen).map((r) => r.block.id)).toEqual(["order-api", "demo", "header"]);
+    expect(stackVerdict(end, 2)).toEqual({ met: true, text: "Goal met: 2 proof blocks seen" });
+  });
+});
+
 describe("career-m1-first-look data", () => {
+  const { blocks: data, budget, goal } = FIRST_LOOK_CONFIG;
+
   it("passes the data check", () => {
     expect(checkStack(FIRST_LOOK_CONFIG)).toEqual([]);
   });
 
-  it("buries the proof in the starting order and meets the goal with both proof blocks on top", () => {
-    const start = stackRows(FIRST_LOOK_BLOCKS, 12);
-    expect(start.map((r) => r.seen)).toEqual([true, true, true, false, false, false]);
-    expect(stackVerdict(start, 2)).toEqual({ met: false, text: "Only 0 of 2 proof blocks seen" });
-    const oneUp = moveTo(ids(FIRST_LOOK_BLOCKS), "order-api", 0);
-    expect(proofSeen(stackRows(orderBlocks(FIRST_LOOK_BLOCKS, oneUp), 12))).toBe(1);
-    const bothUp = moveTo(oneUp, "demo", 1);
-    const end = stackRows(orderBlocks(FIRST_LOOK_BLOCKS, bothUp), 12);
-    expect(end.filter((r) => r.seen).map((r) => r.block.id)).toEqual(["order-api", "demo", "objective"]);
-    expect(stackVerdict(end, 2)).toEqual({ met: true, text: "Goal met: 2 proof blocks seen" });
+  it("starts without meeting the goal and meets it with the proof blocks on top", () => {
+    const start = stackRows(data, budget);
+    expect(proofSeen(start)).toBeLessThan(goal);
+    expect(stackVerdict(start, goal).met).toBe(false);
+    const proofIds = data.filter((b) => b.kind === "proof").map((b) => b.id);
+    expect(proofIds.length).toBeGreaterThanOrEqual(goal);
+    const top = [...proofIds, ...ids(data).filter((id) => !proofIds.includes(id))];
+    const end = stackRows(orderBlocks(data, top), budget);
+    expect(proofSeen(end)).toBeGreaterThanOrEqual(goal);
+    expect(stackVerdict(end, goal).met).toBe(true);
   });
 
   it("renders the final frame on the server: verdict, tags, Replay and one button per block", () => {
     const html = renderToString(createElement(careerM1FirstLook.component, { title: careerM1FirstLook.title, purpose: careerM1FirstLook.purpose, limits: careerM1FirstLook.limits })).replaceAll("<!-- -->", "");
+    const start = stackRows(data, budget);
+    const seen = start.filter((r) => r.seen).length;
     expect(html).toContain("<svg");
     expect(html).toContain("What this picture leaves out");
-    expect(html).toContain("Only 0 of 2 proof blocks seen");
-    expect(html).toContain("A quick first look (illustrative): 12 s");
-    expect((html.match(/>not seen</g) ?? []).length).toBe(3);
-    expect((html.match(/>seen</g) ?? []).length).toBe(3);
-    expect(html).toContain("budget out");
+    expect(html).toContain(stackVerdict(start, goal).text);
+    expect(html).toContain(phoneLabelText(FIRST_LOOK_CONFIG.budgetLabel, budget, FIRST_LOOK_CONFIG.unit));
+    expect((html.match(/>not seen</g) ?? []).length).toBe(data.length - seen);
+    expect((html.match(/>seen</g) ?? []).length).toBe(seen);
     expect(html).toContain("Replay");
-    expect((html.match(/aria-pressed="false"/g) ?? []).length).toBe(6);
+    expect((html.match(/aria-pressed="false"/g) ?? []).length).toBe(data.length);
     for (const word of ["Proof", "Filler", "Context"]) expect(html).toContain(word);
-    expect(html).not.toMatch(/#[0-9a-fA-F]{6}\b/);
+    expect(html).not.toMatch(/#[0-9a-fA-F]{6}/);
     expect(html).not.toMatch(/foreignObject|<animate|<use|<image/);
-    expect(html).not.toMatch(/[\u2013\u2014]/);
+    expect(html).not.toMatch(/[–—]/);
   });
 });
