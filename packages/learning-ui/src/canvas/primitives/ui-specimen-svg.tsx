@@ -68,6 +68,8 @@ function fillClass(fill: SpecFill, glowId: string): { className?: string; fill?:
   }
 }
 
+const SOFT_FILLS = new Set<SpecFill>(["accentSoft", "goodSoft", "warnSoft", "badSoft"]);
+
 const STROKE: Record<string, string> = {
   border: "stroke-border",
   accent: "stroke-blue-600 dark:stroke-blue-400",
@@ -175,7 +177,16 @@ function Shape({ p, glowId }: { p: Placed; glowId: string }) {
       return <SpecText p={p} />;
     case "rect": {
       const f = fillClass(p.fill, glowId);
-      return <rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.r} {...f} className={cn(f.className, p.stroke && STROKE[p.stroke])} strokeWidth={p.stroke ? 1.25 : 0} />;
+      const shape = <rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.r} {...f} className={cn(f.className, p.stroke && STROKE[p.stroke])} strokeWidth={p.stroke ? 1.25 : 0} />;
+      // Soft tints are see-through in dark mode; an opaque card under them keeps their text readable on a glow or a photo.
+      return SOFT_FILLS.has(p.fill) ? (
+        <g>
+          <rect x={p.x} y={p.y} width={p.w} height={p.h} rx={p.r} className="fill-card" />
+          {shape}
+        </g>
+      ) : (
+        shape
+      );
     }
     case "glyph": {
       const G = GLYPHS[p.glyph];
