@@ -3,24 +3,24 @@ import type { SpecBlock, SpecScreen } from "../models/ui-specimen";
 import { makeSpecimenCompareCanvas } from "../primitives/canvas-factories";
 
 // Product Sense, chapter 1.3: Halaqa's home screen (fictional) as built, then
-// shaped for two different jobs: "find a group tonight before an exam" and
+// shaped for two different jobs (the feature names are the course canon): "find a group tonight before an exam" and
 // "keep a weekly study habit". The same app changes shape with the job.
 
 const FEATURES = [
-  "Search groups",
+  "Group search",
   "Create group",
   "Chat",
-  "Files",
+  "File sharing",
   "Polls",
   "Voice rooms",
   "Streaks",
   "Badges",
   "Leaderboard",
-  "Themes",
+  "Profile themes",
   "Dark mode",
   "Calendar sync",
-  "Alerts",
-  "AI notes",
+  "Notifications",
+  "AI summary of notes",
 ];
 
 const BUILT: SpecScreen = {
@@ -84,7 +84,7 @@ const WEEKLY: SpecScreen = {
       gap: 4,
       children: [
         { kind: "text", text: "Next: Statistics 101 revision", size: 13.5, weight: 600 },
-        { kind: "text", text: "Tuesday 5 pm", size: 12.5, tone: "muted" },
+        { kind: "text", text: "Tomorrow 5 pm, online", size: 12.5, tone: "muted" },
       ],
     },
   ],

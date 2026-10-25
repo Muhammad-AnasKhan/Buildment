@@ -1,6 +1,6 @@
 # Canvas spec: product-m1-the-cheaper-fix
 
-- **Course and chapter:** product-sense, 1.2 "Start from the problem, not the feature", the beat after the sort: the small fix under "add voice rooms".
+- **Course and chapter:** product-sense, 1.2 "Start from the problem, not the feature", beat 3, after the two questions: the small fix under "add voice rooms".
 - **Renderer:** custom, on the reusable specimen compare beat (`primitives/specimen-beats.tsx`, model `models/ui-specimen.ts`). This folder holds only data. Reason: the claim is about a screen, so the learner should see the screen before and after the fix, not read about it.
 - **Claim:** The request "add voice rooms" hid a smaller problem: Adel could not tell how to join an online group. Once the problem is named, a much smaller fix can answer it. This is the same move as in the Shape Up example, where a request for complex permission rules became a warning on one action.
 - **Model:** two phone screens of one online study group (Statistics 101 revision, tomorrow 5 pm, 4 seats left). "Before": the group is marked Online and has a Join group button, but no way to reach the call. "After": the group's creator added a call link, and a Join call button shows.
