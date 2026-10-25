@@ -173,6 +173,14 @@ import { sysdesignM2KneePlay } from "./sysdesign-m2-knee-play/data";
 import { sysdesignM2FanOutPlay } from "./sysdesign-m2-fan-out-play/data";
 import { sysdesignM1DesignLoop } from "./sysdesign-m1-design-loop/data";
 import { sysdesignM2LatencyLadder } from "./sysdesign-m2-latency-ladder/data";
+import { netM1PacketDns } from "./net-m1-packet-dns/data";
+import { netM1PacketEcho } from "./net-m1-packet-echo/data";
+import { netM1PacketOwnLines } from "./net-m1-packet-own-lines/data";
+import { netM1PacketChange } from "./net-m1-packet-change/data";
+import { netM1PacketJobs } from "./net-m1-packet-jobs/data";
+import { netM1PacketWrap } from "./net-m1-packet-wrap/data";
+import { netM1PacketUnwrap } from "./net-m1-packet-unwrap/data";
+import { netM1SceneBroadcastMac } from "./net-m1-scene-broadcast-mac/data";
 import { netM2ByteBits } from "./net-m2-byte-bits/data";
 import { netM2AddressBits } from "./net-m2-address-bits/data";
 import { netM2AddressDrill } from "./net-m2-address-drill/data";
@@ -1431,6 +1439,14 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m18-pipeline-step": sysdesignM18PipelineStep,
   "sysdesign-m18-canary-blast": sysdesignM18CanaryBlast,
   "sysdesign-m18-cloud-explorer": sysdesignM18CloudExplorer,
+  "net-m1-packet-dns": netM1PacketDns,
+  "net-m1-packet-echo": netM1PacketEcho,
+  "net-m1-packet-own-lines": netM1PacketOwnLines,
+  "net-m1-packet-change": netM1PacketChange,
+  "net-m1-packet-jobs": netM1PacketJobs,
+  "net-m1-packet-wrap": netM1PacketWrap,
+  "net-m1-packet-unwrap": netM1PacketUnwrap,
+  "net-m1-scene-broadcast-mac": netM1SceneBroadcastMac,
   "net-m2-byte-bits": netM2ByteBits,
   "net-m2-address-bits": netM2AddressBits,
   "net-m2-address-drill": netM2AddressDrill,
