@@ -1,5 +1,6 @@
 import { kindsInFamily } from "../catalog";
 import type { HldLabSpec } from "../types";
+import { threeTiersSolution } from "./solution";
 
 export const hldM4ThreeTiers: HldLabSpec = {
   slug: "hld-m4-three-tiers",
@@ -13,6 +14,7 @@ export const hldM4ThreeTiers: HldLabSpec = {
     "Reads can go to read replicas; every write still lands on the primary.",
     "Spread the app servers over two zones and give the database a standby in a second zone, or one bad zone takes Daftar down.",
   ],
+  solution: threeTiersSolution,
   allowedComponents: kindsInFamily("hld"),
   startingBoard: {
     nodes: [

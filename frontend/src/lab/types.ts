@@ -18,6 +18,8 @@ export interface BoardNode {
 export interface BoardEdge {
   from: string;
   to: string;
+  /** Which dot each end uses (t, r, b, l); the board picks bottom to top when absent. */
+  via?: [string, string];
 }
 
 export interface Board {
@@ -84,6 +86,27 @@ export interface ChallengeDef {
   checks: CheckDef[];
 }
 
+// ---- solution: a reference design a learner can open and compare with ----------
+
+/** Why one part is in the reference design. */
+export interface SolutionPart {
+  /** Plain words: what this part does in the design. */
+  why: string;
+  /** Ids of the checks this part helps pass. */
+  checks: string[];
+  /** What goes wrong without it, with numbers from the model. */
+  without: string;
+}
+
+export interface SolutionDef {
+  /** The reference design. It must pass every check of the lab. */
+  board: Board;
+  /** One or two plain sentences: the idea behind the design. */
+  summary: string;
+  /** Keyed by node id in `board`. */
+  parts: Record<string, SolutionPart>;
+}
+
 export interface LabBase {
   slug: string;
   family: LabFamily;
@@ -102,6 +125,8 @@ export interface HldLabSpec extends LabBase {
   levels: LabLevel[];
   /** A visual challenge: functional and non-functional checks and the scenarios that test them. */
   challenge?: ChallengeDef;
+  /** A reference design the learner can open after pressing Run, and compare with their own. */
+  solution?: SolutionDef;
 }
 
 export interface DbLabSpec extends LabBase {
@@ -160,6 +185,29 @@ export function validateChallenge(challenge: ChallengeDef): string[] {
   return problems;
 }
 
+/** The check ids a lab scores: its challenge's, or the four target checks. */
+export function checkIdsOf(spec: HldLabSpec): string[] {
+  if (spec.challenge) return spec.challenge.checks.map((c) => c.id);
+  return ["capacity", "p99", "availability", "cost"];
+}
+
+function validateSolution(spec: HldLabSpec): string[] {
+  const solution = spec.solution!;
+  const problems = validateBoard(solution.board, spec.allowedComponents).map((p) => p.replace("startingBoard", "solution board"));
+  const ids = new Set(solution.board.nodes.map((n) => n.id));
+  const checks = new Set(checkIdsOf(spec));
+  if (solution.summary.trim().length === 0) problems.push("solution needs a summary");
+  for (const node of solution.board.nodes) {
+    if (node.kind !== "client" && !solution.parts[node.id]) problems.push(`solution has no explanation for part "${node.id}"`);
+  }
+  for (const [id, part] of Object.entries(solution.parts)) {
+    if (!ids.has(id)) problems.push(`solution explains unknown part "${id}"`);
+    if (part.why.trim().length === 0 || part.without.trim().length === 0) problems.push(`solution part "${id}" needs why and without`);
+    for (const c of part.checks) if (!checks.has(c)) problems.push(`solution part "${id}" names unknown check "${c}"`);
+  }
+  return problems;
+}
+
 export function validateLabSpec(spec: LabSpec): string[] {
   const problems: string[] = [];
   if (spec.limits.length <= 20) problems.push("limits must be longer than 20 characters");
@@ -173,6 +221,7 @@ export function validateLabSpec(spec: LabSpec): string[] {
     if (spec.levels.length === 0) problems.push("an hld lab needs at least one level");
     if (spec.startingBoard) problems.push(...validateBoard(spec.startingBoard, spec.allowedComponents));
     if (spec.challenge) problems.push(...validateChallenge(spec.challenge));
+    if (spec.solution) problems.push(...validateSolution(spec));
   } else {
     if (spec.startingDbml.trim().length === 0) problems.push("a db lab needs startingDbml");
     if (spec.query.trim().length === 0) problems.push("a db lab needs a query");

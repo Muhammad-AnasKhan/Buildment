@@ -25,3 +25,7 @@ Level 2 (20,000 req/s) passes with an extra-large balancer, 14 app servers and a
 1. Add app servers only. Expected: the ceiling does not move, because the load balancer is the busiest part.
 2. Size up the balancer, then watch the database turn amber. Expected: a read replica or a bigger size brings p99 back under 200 ms.
 3. Turn off the database standby. Expected: availability drops below 99.9% while cost falls by $0.60 an hour.
+
+## Solution
+
+The reference design is in `solution.ts`: a large balancer in 2 zones, 8 app servers in 2 zones, and a large database with 1 replica and a standby. It passes all four targets at level 1 (ceiling 12,000 a second, p99 109 ms, above 99.99% available, $3.56 an hour). The board offers it through the Solution button after one Run, read-only, with a short explanation per part and a "Compare with mine" list.

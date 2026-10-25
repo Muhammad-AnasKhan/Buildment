@@ -1,5 +1,6 @@
 import { kindsInFamily } from "../catalog";
 import type { HldLabSpec } from "../types";
+import { waslaRedirectsSolution } from "./solution";
 
 export const hldM20WaslaRedirects: HldLabSpec = {
   slug: "hld-m20-wasla-redirects",
@@ -13,6 +14,7 @@ export const hldM20WaslaRedirects: HldLabSpec = {
     "Each cache node serves about 30,000 requests a second at the default size, so count the nodes as well as the hit rate.",
     "At a 95% hit rate, 5,000 misses a second still reach the database. Give it read replicas or a bigger size.",
   ],
+  solution: waslaRedirectsSolution,
   allowedComponents: kindsInFamily("hld"),
   startingBoard: {
     nodes: [

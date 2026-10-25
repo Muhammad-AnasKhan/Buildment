@@ -1,4 +1,5 @@
 import type { HldLabSpec } from "../types";
+import { urlShortenerSolution } from "./solution";
 
 export const hldVisualUrlShortener: HldLabSpec = {
   slug: "hld-visual-url-shortener",
@@ -33,6 +34,7 @@ export const hldVisualUrlShortener: HldLabSpec = {
   levels: [
     { id: "l1", load: 3_000, targets: { rps: 3_000, p99Ms: 65, availability: 0.999, budgetPerHour: 2.5 } },
   ],
+  solution: urlShortenerSolution,
   challenge: {
     peakLoad: 3_000,
     inlineClicks: true,

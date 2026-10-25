@@ -92,3 +92,17 @@ The cheapest passing design found is about $2.39 an hour, and the budget is $2.5
 1. Run the starting board. Expected: 5 of 11 pass. Shortening, redirecting and counting (inline) work, and the board says why the rest fail, starting with the load balancer at 188% busy.
 2. Add a queue and a worker, link app server to queue to worker to database, and set the worker's batch size to 500. Expected: the database drops from over 100% busy (inline writes) to near idle. Set the batch size back to 1 and watch it become the busiest part again.
 3. Add a cache at 95% hits, then run. Expected: p99 drops under 65 ms. Take the database's read replica away and run again: the cache-dies checks fail, because without the cache one database carries all 3,000 reads a second.
+
+## Solution
+
+The reference design is in `solution.ts` next to this file, and it passes all 11 checks at $2.39 an hour (the design recorded in the table above). The board offers it through a Solution button, after the learner has pressed Run once and confirmed. It opens read-only, labelled "Reference solution", with a button to copy it onto the learner's board and one to go back. Each part has a short explanation: why it is there, which checks it helps pass, and what happens without it.
+
+| Part | Why it is there | Checks it helps pass |
+|---|---|---|
+| Load balancer, 3 zones | One small zone carries about 1,600 a second, so three carry the 3,000 | capacity, p99, every fault check |
+| App servers, 3 in 2 zones | N+1: losing one leaves two at 63% | capacity, p99, app server dies, availability |
+| Cache, 95% hits | Answers 2,850 of 3,000 reads, so a hit never asks the database | p99, both cache-dies checks |
+| Database with standby and one replica | The replica carries all 3,000 reads if the cache dies; the standby keeps it up if its zone fails | availability, both cache-dies checks |
+| Queue and 2 workers at batch 500 | Clicks wait safely and reach the database in about 6 writes a second | clicks counted, worker dies, p99 |
+
+"Compare with mine" lists, in plain words, which parts, settings and links differ from the learner's design and which failing checks each one helps explain. It gives directions ("lower", "smaller") and no numbers, so it does not hand over the answer.
