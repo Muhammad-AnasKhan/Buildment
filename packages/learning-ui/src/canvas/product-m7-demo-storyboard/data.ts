@@ -3,8 +3,8 @@ import type { SpecBlock, SpecScreen } from "../models/ui-specimen";
 import { makeSpecimenCompareCanvas } from "../primitives/canvas-factories";
 
 // Product Sense, chapter 7.2: a demo of Halaqa (fictional) planned as a tour
-// of menus and settings, and planned as one story with the result early. A
-// third version shows one frame of the story with the sound off.
+// of menus and settings, and planned as one story with the result early. The
+// muted frame has its own canvas, product-m7-muted-frame.
 
 function shot(time: string, what: string): SpecBlock {
   return {
@@ -56,37 +56,10 @@ const STORY: SpecScreen = {
   ],
 };
 
-const ONE_FRAME: SpecScreen = {
-  alt: "One frame of the story with the sound off: a large group card with a Join button, and a caption bar that says what to do.",
-  blocks: [
-    { kind: "text", text: "Tonight's groups", size: 18, weight: 700 },
-    {
-      kind: "box",
-      border: true,
-      pad: 12,
-      gap: 8,
-      children: [
-        { kind: "text", text: "Data structures, exam Thursday", size: 15, weight: 600 },
-        { kind: "text", text: "Tonight 8 pm, library room 2", size: 13, tone: "muted" },
-        { kind: "text", text: "2 seats left", size: 13, weight: 600, tone: "accent" },
-        { kind: "button", label: "Join", full: true, size: 15 },
-      ],
-    },
-    {
-      kind: "box",
-      fill: "ink",
-      pad: 10,
-      radius: 8,
-      children: [{ kind: "text", text: "Tap Join. You are in a group for tonight.", size: 14, weight: 600, tone: "inverse" }],
-    },
-    { kind: "pill", text: "Sound: off", tone: "warn" },
-  ],
-};
-
 export const productM7DemoStoryboard: CustomCanvasSpec = {
   kind: "custom",
   title: "Tour or story",
-  purpose: "Switch between two storyboards of the same app, a tour and one story, and then look at one frame of the story with the sound off.",
+  purpose: "Switch between two storyboards of the same app, a tour and one story, and see when the join happens in each.",
   limits:
     "The times and captions are a plan for a fictional app, not a rule. Your own story will have different shots; what matters is that the person, the job and the result come early. Halaqa is fictional.",
   component: makeSpecimenCompareCanvas({
@@ -94,8 +67,7 @@ export const productM7DemoStoryboard: CustomCanvasSpec = {
     versions: [
       { id: "tour", label: "Tour", screen: TOUR, verdict: { text: "The join comes at 1:40", tone: "bad" } },
       { id: "story", label: "Story", screen: STORY, verdict: { text: "The join comes at 0:10", tone: "good" } },
-      { id: "frame", label: "One frame", screen: ONE_FRAME, verdict: { text: "Clear with the sound off", tone: "good" } },
     ],
-    hint: "Touch each plan. Look at when the join happens.",
+    hint: "Touch each plan. Look at the time of the join.",
   }),
 };

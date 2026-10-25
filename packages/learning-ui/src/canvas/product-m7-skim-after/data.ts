@@ -24,12 +24,13 @@ const FIRST_SCREEN: SpecScreen = {
 export const productM7SkimAfter: CustomCanvasSpec = {
   kind: "custom",
   title: "Ten seconds on the new page",
-  purpose: "Look at the first screen of Maryam's rewritten case study for ten seconds, then say what the page told you first.",
+  purpose: "Look at the first screen of Maryam's rewritten case study for ten or twenty seconds, then say what the page told you first.",
   limits:
     "The picture shows only the first screen. The number comes from a check with five classmates, which finds problems and does not prove the design is good. Maryam and Halaqa are fictional.",
   component: makeSpecimenSkimCanvas({
     screen: FIRST_SCREEN,
     seconds: 10,
+    slowerSeconds: 20,
     question: "What was the first thing the page told you?",
     options: [
       { id: "result", label: "That the redesign worked, with a number" },
@@ -42,8 +43,8 @@ export const productM7SkimAfter: CustomCanvasSpec = {
       result: "Right. The biggest thing on the page is the result: 4 of 5 joined, up from 2 of 5. The job and her role follow in the same screen.",
       author: "Her role is on the page, in a small tag. The page leads with the result, not with who she is.",
       problem: "The job is there in one sentence, but it comes second. The first thing is the number at the top.",
-      none: "Ten seconds were enough. The big number at the top is easy to read, which is what the rewrite is for.",
+      none: "Choose 20 seconds and try again. The big number at the top is the first thing to read, which is what the rewrite is for.",
     },
-    hint: "Press Start. You get 10 seconds to look at the page.",
+    hint: "Choose 10 or 20 seconds, then press Start.",
   }),
 };

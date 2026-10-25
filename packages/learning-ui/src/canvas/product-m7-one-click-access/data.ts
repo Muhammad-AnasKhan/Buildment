@@ -3,7 +3,8 @@ import type { SpecScreen } from "../models/ui-specimen";
 import { makeSpecimenCompareCanvas } from "../primitives/canvas-factories";
 
 // Product Sense, chapter 7.4: the same Halaqa link (fictional) behind a login
-// wall, behind a guest button, and when the live demo is down and a video and
+// wall, behind a guest button that opens an empty app, behind a guest button
+// that opens sample data, and when the live demo is down and a video and
 // screenshots take its place.
 
 const LOGIN_WALL: SpecScreen = {
@@ -15,6 +16,19 @@ const LOGIN_WALL: SpecScreen = {
     { kind: "field", label: "Password", placeholder: "Your password" },
     { kind: "button", label: "Log in", full: true },
     { kind: "text", text: "No account? Sign up with your university email.", size: 12, tone: "muted" },
+  ],
+};
+
+const EMPTY_GUEST: SpecScreen = {
+  alt: "Halaqa opened as a guest with no sample data: a Guest mode pill, the heading Tonight's groups, an inbox icon and the line No groups yet, and a Start a group button.",
+  blocks: [
+    { kind: "nav", title: "Halaqa" },
+    { kind: "pill", text: "Guest mode", tone: "accent" },
+    { kind: "text", text: "Tonight's groups", size: 18, weight: 700 },
+    { kind: "space", height: 20 },
+    { kind: "icon", glyph: "inbox", size: 28, tone: "muted" },
+    { kind: "text", text: "No groups yet.", size: 14, weight: 600, align: "center" },
+    { kind: "button", label: "Start a group", full: true, variant: "secondary" },
   ],
 };
 
@@ -55,15 +69,16 @@ const FALLBACK: SpecScreen = {
 
 export const productM7OneClickAccess: CustomCanvasSpec = {
   kind: "custom",
-  title: "Three ways a link can open",
-  purpose: "Switch between a login wall, a guest button and a fallback page for a paused demo, and see what a reviewer gets from each.",
+  title: "Four ways a link can open",
+  purpose: "Switch between a login wall, a guest button that opens an empty app, a guest button with sample groups and a fallback page for a paused demo, and see what a reviewer gets from each.",
   limits:
-    "These are three designs, not a ranking of hosting tools. Any live demo can go down, which is why the fallback matters. Halaqa is fictional, and guest mode shows sample data, never real students.",
+    "These are four designs, not a ranking of hosting tools. Any live demo can go down, which is why the fallback matters. Halaqa is fictional, and guest mode shows sample data, never real students.",
   component: makeSpecimenCompareCanvas({
     choiceLabel: "How the link opens",
     versions: [
       { id: "wall", label: "Login wall", screen: LOGIN_WALL, verdict: { text: "A reviewer stops here", tone: "bad" } },
-      { id: "guest", label: "Guest", screen: GUEST, verdict: { text: "The core opens in one tap", tone: "good" } },
+      { id: "empty", label: "Empty", screen: EMPTY_GUEST, verdict: { text: "One tap, but nothing to see", tone: "warn" } },
+      { id: "guest", label: "Sample", screen: GUEST, verdict: { text: "The core opens in one tap", tone: "good" } },
       { id: "fallback", label: "Fallback", screen: FALLBACK, verdict: { text: "A down demo still shows value", tone: "good" } },
     ],
     hint: "Touch each way. Ask what a busy reviewer sees.",
