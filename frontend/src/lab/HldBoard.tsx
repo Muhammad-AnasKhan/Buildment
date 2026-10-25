@@ -13,7 +13,7 @@
 // then each failure), shows the traffic, saturation and failures on the board,
 // and lists every check as pass or fail with the value measured.
 
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { DragEvent, KeyboardEvent } from "react";
 import {
   Background,
@@ -38,7 +38,7 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Settings } from "lucide-react";
+import { Info, Settings } from "lucide-react";
 import type { ComponentKind } from "./catalog";
 import { COMPONENT_CATALOG, SIZE_CATALOG, canConnect, isComponentKind, roleOf } from "./catalog";
 import type { Board, HldLabSpec } from "./types";
@@ -47,6 +47,8 @@ import type { EdgePart, ModelResult, TierLoad } from "@/lab/tiered-architecture"
 import { runChallenge, runModel } from "./challenge";
 import { RunPanel, PhaseStrip, type RunState } from "./RunPanel";
 import { SettingsDrawer, cacheSentence } from "./SettingsDrawer";
+import { CompareView, ConfirmBar, PartExplainer, PartList } from "./SolutionPanel";
+import { compareDesigns, type CompareResult } from "./solution";
 import { RED, ROLE_COLOR, ROLE_LABEL, chipStyle, colorOf, iconOf, paletteFor, utilBar, utilText } from "./board-style";
 
 const DRAG_TYPE = "application/x-lab-kind";
@@ -65,6 +67,8 @@ type Ctx = {
   /** Components the current scenario took down or thinned out. */
   hit: Set<string>;
   locked: boolean;
+  /** The reference solution: the icon explains a part instead of opening its settings. */
+  readOnly: boolean;
   openSettings: (id: string) => void;
   /** While hovering, the components related to the hovered one; others dim. */
   focus: Set<string> | null;
@@ -108,7 +112,7 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
       <button
         type="button"
         data-settings-for={id}
-        aria-label={`Settings for ${def.label}`}
+        aria-label={ctx.readOnly ? `Why ${def.label} is in the solution` : `Settings for ${def.label}`}
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={open ? "lab-settings-drawer" : undefined}
@@ -116,7 +120,7 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
         onClick={(e) => { e.stopPropagation(); ctx.openSettings(id); }}
         className={`nodrag nopan absolute -right-2.5 -top-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 bg-slate-900 text-slate-100 shadow transition-opacity hover:bg-slate-700 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 disabled:hidden group-focus-within/node:opacity-100 group-hover/node:opacity-100 [@media(hover:none)]:opacity-100 ${open || ctx.selected === id ? "opacity-100" : "opacity-0"}`}
       >
-        <Settings className="h-3.5 w-3.5" aria-hidden />
+        {ctx.readOnly ? <Info className="h-3.5 w-3.5" aria-hidden /> : <Settings className="h-3.5 w-3.5" aria-hidden />}
       </button>
       {/* A dot on every side. The board runs in loose mode, so any dot can start or end a link. */}
       <Handle type="source" id="t" position={Position.Top} className={HANDLE} style={{ backgroundColor: color }} />
@@ -249,7 +253,27 @@ function startPositions(nodes: Board["nodes"]): Map<string, { x: number; y: numb
   return new Map(nodes.map((n, i) => [n.id, grid ? { x: n.x * 200 + 40, y: n.y * 135 + 20 } : { x: 80, y: i * 140 }]));
 }
 
-function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
+interface EditorProps {
+  spec: HldLabSpec;
+  onReset: () => void;
+  /** The reference solution view: read-only, with an explanation per part. */
+  solutionMode?: boolean;
+  /** Called when the learner presses Run. */
+  onRun?: () => void;
+  /** Reports the learner's design as it changes, for the comparison. */
+  onSnapshot?: (board: Board, load: number) => void;
+  canOpenSolution?: boolean;
+  onOpenSolution?: () => void;
+  onBack?: () => void;
+  onCopy?: () => void;
+  onCompare?: () => void;
+  compare?: CompareResult | null;
+  onHideCompare?: () => void;
+}
+
+function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpenSolution = false, onOpenSolution, onBack, onCopy, onCompare, compare, onHideCompare }: EditorProps) {
+  const readOnly = solutionMode;
+  const [confirm, setConfirm] = useState<"solution" | "copy" | null>(null);
   const start: Board = spec.startingBoard ?? { nodes: [], edges: [] };
   const targets = useMemo(() => spec.levels[0]?.targets ?? {}, [spec]);
   const { screenToFlowPosition, fitView } = useReactFlow();
@@ -262,7 +286,7 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
   });
   const [nodes, setNodes, onNodesChange] = useNodesState<Node<TierData>>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(
-    start.edges.map((e) => ({ id: `${e.from}-${e.to}`, source: e.from, target: e.to, sourceHandle: "b", targetHandle: "t" })),
+    start.edges.map((e) => ({ id: `${e.from}-${e.to}`, source: e.from, target: e.to, sourceHandle: e.via?.[0] ?? "b", targetHandle: e.via?.[1] ?? "t" })),
   );
   const [controls, setControls] = useState<BoardControls>(() => initialControls(start, spec.levels[0]?.load ?? 1000));
   const [selected, setSelected] = useState<string | null>(null);
@@ -294,7 +318,10 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
 
   const runState: RunState = runPhase !== null ? "running" : ranKey === null ? "idle" : ranKey === designKey ? "done" : "stale";
 
+  useEffect(() => { onSnapshot?.(board, load); }, [board, load, onSnapshot]);
+
   function startRun() {
+    onRun?.();
     clearTimers();
     setDrawerId(null);
     setPreviewId(null);
@@ -372,9 +399,9 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
   const ctx: Ctx = useMemo(
     () => ({
       tiers: new Map(shownResult.tiers.map((t) => [t.id, t])), cfg: shownCfg, reachable, selected, drawerId, hit,
-      locked: runPhase !== null, openSettings, focus,
+      locked: runPhase !== null, readOnly, openSettings, focus,
     }),
-    [shownResult, shownCfg, reachable, selected, drawerId, hit, runPhase, focus],
+    [shownResult, shownCfg, reachable, selected, drawerId, hit, runPhase, focus, readOnly],
   );
 
   const shownEdges: Edge<FlowData>[] = edges.map((e) => {
@@ -396,7 +423,9 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
   });
   const rolesOnBoard = [...new Set(nodes.map((n) => roleOf(n.data.kind)))];
   const palette = useMemo(() => paletteFor(spec.allowedComponents), [spec]);
-  const locked = runPhase !== null;
+  const running = runPhase !== null;
+  /** No editing while a run plays, and none at all in the reference solution. */
+  const locked = running || readOnly;
 
   function addNode(kind: ComponentKind, position?: { x: number; y: number }) {
     if (locked) return;
@@ -492,6 +521,8 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
   const drawerNode = drawerId ? nodes.find((n) => n.id === drawerId) : null;
   const ran = runState === "done";
   const challengeLabel = spec.challenge ? "Visual challenge" : "LVL 1";
+  const solution = spec.solution;
+  const checkLabels = useMemo(() => Object.fromEntries(report.checks.map((c) => [c.id, c.label])), [report]);
 
   return (
     <BoardCtx.Provider value={ctx}>
@@ -499,7 +530,11 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
       <div ref={rootRef} onKeyDown={onRootKeyDown} className="not-prose @container my-6 overflow-hidden rounded-2xl border border-border bg-card">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5">
           <div className="flex min-w-0 items-center gap-2">
-            <span className="shrink-0 rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">{challengeLabel}</span>
+            {readOnly ? (
+              <span className="shrink-0 rounded-md bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/20 dark:text-amber-200" data-testid="solution-badge">Reference solution</span>
+            ) : (
+              <span className="shrink-0 rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">{challengeLabel}</span>
+            )}
             <span className="truncate text-[13px] font-medium">{spec.title}</span>
           </div>
           <div className="flex items-center gap-2">
@@ -508,10 +543,32 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
                 {report.passed}/{report.total} checks
               </span>
             ) : null}
-            <button type="button" onClick={onReset} disabled={locked} className="rounded-md px-2 py-1 text-[12px] text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40">
-              Reset
-            </button>
-            {locked ? (
+            {readOnly ? (
+              <>
+                <button type="button" onClick={onBack} className="rounded-md px-2 py-1 text-[12px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground">Back to my design</button>
+                <button type="button" onClick={onCompare} className="rounded-md px-2 py-1 text-[12px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground" data-testid="compare-button">Compare with mine</button>
+                <button type="button" onClick={() => setConfirm("copy")} disabled={running} className="rounded-md border border-border px-2 py-1 text-[12px] font-medium hover:bg-muted disabled:opacity-40" data-testid="copy-button">Copy to my board</button>
+              </>
+            ) : (
+              <>
+                <button type="button" onClick={onReset} disabled={running} className="rounded-md px-2 py-1 text-[12px] text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40">
+                  Reset
+                </button>
+                {solution && onOpenSolution ? (
+                  <button
+                    type="button"
+                    onClick={() => setConfirm("solution")}
+                    disabled={!canOpenSolution || running}
+                    title={canOpenSolution ? "See how this lab is solved" : "Press Run once first, then you can see a solution"}
+                    className="rounded-md border border-border px-2.5 py-1 text-[12px] font-medium hover:bg-muted disabled:opacity-40"
+                    data-testid="solution-button"
+                  >
+                    Solution
+                  </button>
+                ) : null}
+              </>
+            )}
+            {running ? (
               <button type="button" onClick={skipRun} className="rounded-lg border border-border px-3 py-1.5 text-[13px] font-medium hover:bg-muted">
                 Skip to results
               </button>
@@ -519,21 +576,43 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
             <button
               type="button"
               onClick={startRun}
-              disabled={locked}
+              disabled={running}
               data-testid="run-button"
               className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-1.5 text-[13px] font-semibold text-white transition-transform hover:bg-emerald-700 active:scale-95 disabled:opacity-60"
             >
-              <span aria-hidden>{"▶"}</span> {locked ? "Running..." : runState === "idle" ? "Run" : "Run again"}
+              <span aria-hidden>{"▶"}</span> {running ? "Running..." : runState === "idle" ? "Run" : "Run again"}
             </button>
           </div>
         </div>
+
+        {confirm === "solution" ? (
+          <ConfirmBar
+            message="Try once more, or see how it is solved?"
+            no="Try once more"
+            yes="Show the solution"
+            onNo={() => setConfirm(null)}
+            onYes={() => { setConfirm(null); onOpenSolution?.(); }}
+          />
+        ) : null}
+        {confirm === "copy" ? (
+          <ConfirmBar
+            message="Replace your own design with the solution? Your board will be lost."
+            no="Keep mine"
+            yes="Replace my design"
+            onNo={() => setConfirm(null)}
+            onYes={() => { setConfirm(null); onCopy?.(); }}
+          />
+        ) : null}
 
         {runState !== "idle" ? (
           <PhaseStrip report={report} running={runPhase} previewId={previewId} onPick={setPreviewId} onBack={() => setPreviewId(null)} />
         ) : null}
 
         <div className="grid grid-cols-1 @2xl:grid-cols-[190px_minmax(0,1fr)]">
-          {/* Palette: a row you scroll on a phone, a column on a wider board. */}
+          {/* Palette: a row you scroll on a phone, a column on a wider board. In the solution view, the list of parts. */}
+          {readOnly && solution ? (
+            <PartList solution={solution} nodes={nodes.map((n) => ({ id: n.id, kind: n.data.kind }))} openId={drawerId} onOpen={openSettings} />
+          ) : (
           <div className="border-b border-border p-3 @2xl:border-b-0 @2xl:border-r" role="group" aria-label="Components">
             <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Components</div>
             <div className="mb-2 text-[10px] text-muted-foreground">Drag onto the board, or tap to add.</div>
@@ -564,6 +643,7 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
               ))}
             </div>
           </div>
+          )}
 
           {/* Canvas, with the settings drawer laid over its right edge (or bottom, on a phone). */}
           <div className="flex min-w-0 flex-col">
@@ -608,7 +688,17 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
                 <Background variant={BackgroundVariant.Dots} gap={18} size={1} className="!bg-transparent" />
                 <Controls showInteractive={false} position="bottom-left" />
               </ReactFlow>
-              {drawerNode ? (
+              {drawerNode && readOnly ? (
+                <PartExplainer
+                  id={drawerNode.id}
+                  kind={drawerNode.data.kind}
+                  part={solution?.parts[drawerNode.id]}
+                  cfg={controls.perNode[drawerNode.id] ?? {}}
+                  tier={result.tiers.find((t) => t.id === drawerNode.id)}
+                  checkLabels={checkLabels}
+                  onClose={closeDrawer}
+                />
+              ) : drawerNode ? (
                 <SettingsDrawer
                   id={drawerNode.id}
                   kind={drawerNode.data.kind}
@@ -623,9 +713,15 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-0.5 border-t border-border px-3 py-1.5 text-[11px] text-muted-foreground">
               {notice ? <span className="font-medium text-red-600 dark:text-red-400">{notice}</span> : null}
-              <span><span className="font-medium text-foreground">Settings</span> hover or tap a component, then its icon</span>
-              <span><span className="font-medium text-foreground">Link</span> drag from any dot to another component</span>
-              <span><span className="font-medium text-foreground">Remove</span> select it, press Delete</span>
+              {readOnly ? (
+                <span><span className="font-medium text-foreground">Read only</span> hover or tap a part, then its icon, to see why it is there</span>
+              ) : (
+                <>
+                  <span><span className="font-medium text-foreground">Settings</span> hover or tap a component, then its icon</span>
+                  <span><span className="font-medium text-foreground">Link</span> drag from any dot to another component</span>
+                  <span><span className="font-medium text-foreground">Remove</span> select it, press Delete</span>
+                </>
+              )}
               {hasCache ? (
                 <span>
                   <span className="font-medium text-foreground">Cache</span> the app server asks it first. A cache hit means the database is never asked; only misses go on. Linking the cache to the database too is optional: it then loads from it on a miss.
@@ -648,6 +744,8 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
           </div>
         </div>
 
+        {readOnly && compare ? <CompareView compare={compare} onClose={() => onHideCompare?.()} /> : null}
+
         <RunPanel
           spec={spec}
           result={result}
@@ -666,9 +764,48 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
 
 export function HldBoard({ spec }: { spec: HldLabSpec }) {
   const [generation, setGeneration] = useState(0);
+  const [mode, setMode] = useState<"mine" | "solution">("mine");
+  // The learner's own board, if they copied the solution onto it.
+  const [seed, setSeed] = useState<Board | null>(null);
+  const [everRan, setEverRan] = useState(false);
+  const [compare, setCompare] = useState<CompareResult | null>(null);
+  const mine = useRef<{ board: Board; load: number } | null>(null);
+  const onSnapshot = useCallback((board: Board, load: number) => { mine.current = { board, load }; }, []);
+
+  const mineSpec = useMemo(() => (seed ? { ...spec, startingBoard: seed } : spec), [spec, seed]);
+  const solutionSpec = useMemo(() => (spec.solution ? { ...spec, startingBoard: spec.solution.board } : spec), [spec]);
+
   return (
-    <ReactFlowProvider key={generation}>
-      <Editor spec={spec} onReset={() => setGeneration((g) => g + 1)} />
-    </ReactFlowProvider>
+    <>
+      {/* The learner's board stays mounted while the solution is open, so their work is never lost. */}
+      <div hidden={mode === "solution"}>
+        <ReactFlowProvider key={generation}>
+          <Editor
+            spec={mineSpec}
+            onReset={() => { setSeed(null); setGeneration((g) => g + 1); }}
+            onRun={() => setEverRan(true)}
+            onSnapshot={onSnapshot}
+            canOpenSolution={everRan}
+            onOpenSolution={() => { setCompare(null); setMode("solution"); }}
+          />
+        </ReactFlowProvider>
+      </div>
+      {mode === "solution" && spec.solution ? (
+        <ReactFlowProvider>
+          <Editor
+            spec={solutionSpec}
+            solutionMode
+            onReset={() => undefined}
+            onBack={() => setMode("mine")}
+            onCopy={() => { setSeed(spec.solution!.board); setGeneration((g) => g + 1); setMode("mine"); }}
+            onCompare={() => {
+              if (mine.current) setCompare(compareDesigns(spec, mine.current.board, runChallenge(spec, mine.current.board, mine.current.load)));
+            }}
+            compare={compare}
+            onHideCompare={() => setCompare(null)}
+          />
+        </ReactFlowProvider>
+      ) : null}
+    </>
   );
 }
