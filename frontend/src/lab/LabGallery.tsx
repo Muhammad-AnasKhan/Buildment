@@ -31,7 +31,7 @@ function Specimen({ title, note, children, wide = false }: { title: string; note
         <div className="lab-display text-[13px] font-semibold text-foreground">{title}</div>
         {note ? <div className="text-[11.5px] leading-snug text-muted-foreground">{note}</div> : null}
       </figcaption>
-      <div className="flex flex-wrap items-start gap-4">{children}</div>
+      <div className="flex flex-wrap items-start gap-4 pt-5">{children}</div>
     </figure>
   );
 }

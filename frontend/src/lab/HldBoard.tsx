@@ -475,7 +475,9 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
   };
 
   useEffect(() => {
-    const t = setTimeout(() => fitView({ padding: 0.12, maxZoom: 1 }), 50);
+    // On a phone a wide design would shrink to unreadable text, so keep it readable and let the learner pan.
+    const narrow = (rootRef.current?.clientWidth ?? 1000) < 520;
+    const t = setTimeout(() => fitView({ padding: 0.12, maxZoom: 1, minZoom: narrow ? 0.55 : 0.35 }), 50);
     return () => clearTimeout(t);
   }, [fitView]);
 

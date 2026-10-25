@@ -95,7 +95,7 @@ export function NodeCard(p: NodeCardProps) {
           aria-controls={open ? "lab-settings-drawer" : undefined}
           disabled={p.tuneDisabled}
           onClick={(e) => { e.stopPropagation(); p.onTune?.(); }}
-          className={`nodrag nopan lab-mono absolute right-0 top-0 z-10 flex h-5 items-center gap-1 rounded-bl-[5px] rounded-tr-[4px] border-b border-l border-[color:var(--lab-grid)] bg-[color:var(--lab-inspector)] px-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-100 transition-opacity hover:bg-[color:var(--lab-inspector-2)] focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--lab-accent)] disabled:hidden group-focus-within/node:opacity-100 group-hover/node:opacity-100 [@media(hover:none)]:opacity-100 ${open || selected ? "opacity-100" : "opacity-0"}`}
+          className={`nodrag nopan lab-mono absolute -top-5 right-3 z-10 flex h-5 items-center gap-1 rounded-t-[5px] border-x border-t border-[color:var(--lab-grid)] bg-[color:var(--lab-inspector)] px-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-100 transition-opacity hover:bg-[color:var(--lab-inspector-2)] focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--lab-accent)] disabled:hidden group-focus-within/node:opacity-100 group-hover/node:opacity-100 [@media(hover:none)]:opacity-100 ${open || selected ? "opacity-100" : "opacity-0"}`}
         >
           {p.readOnly ? <Info className="h-3 w-3" aria-hidden /> : <SlidersHorizontal className="h-3 w-3" aria-hidden />}
           {p.readOnly ? "Why" : "Tune"}
