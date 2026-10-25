@@ -43,10 +43,10 @@ import type { ComponentKind } from "./catalog";
 import { COMPONENT_CATALOG, SIZE_CATALOG, canConnect, isComponentKind, roleOf } from "./catalog";
 import type { Board, HldLabSpec } from "./types";
 import { initialControls, type BoardControls, type NodeConfig } from "./hld-board-model";
-import type { ModelResult, TierLoad } from "@/lab/tiered-architecture";
+import type { EdgePart, ModelResult, TierLoad } from "@/lab/tiered-architecture";
 import { runChallenge, runModel } from "./challenge";
 import { RunPanel, PhaseStrip, type RunState } from "./RunPanel";
-import { SettingsDrawer } from "./SettingsDrawer";
+import { SettingsDrawer, cacheSentence } from "./SettingsDrawer";
 import { RED, ROLE_COLOR, ROLE_LABEL, chipStyle, colorOf, iconOf, paletteFor, utilBar, utilText } from "./board-style";
 
 const DRAG_TYPE = "application/x-lab-kind";
@@ -100,6 +100,7 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
 
   return (
     <div
+      title={tier?.cacheStats && linked && !down ? cacheSentence(tier.cacheStats) : undefined}
       className={`group/node relative w-[158px] rounded-xl border px-3 py-2 text-card-foreground shadow-sm transition-[box-shadow,opacity] duration-200 ${frame} ${dimmed ? "opacity-30" : ""}`}
       style={down ? undefined : { borderTopColor: color, borderTopWidth: 3 }}
     >
@@ -155,7 +156,7 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
 }
 const nodeTypes = { tier: TierNode };
 
-type FlowData = { color: string; state: "live" | "hot" | "dead"; flow: number; dim: boolean };
+type FlowData = { color: string; state: "live" | "hot" | "dead"; flow: number; dim: boolean; parts: EdgePart[] };
 
 /** How many traffic dots ride a link: one for a trickle, up to four for a flood. */
 function dotsFor(flow: number): number {
@@ -200,10 +201,18 @@ function FlowEdge({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPo
       {state !== "dead" && data && data.flow > 0 ? (
         <EdgeLabelRenderer>
           <div
-            className="nodrag nopan pointer-events-none absolute rounded-full border bg-card px-1.5 py-px text-[10px] font-semibold tabular-nums shadow-sm transition-opacity"
-            style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`, color, borderColor: `${color}55`, opacity: fade }}
+            className="nodrag nopan pointer-events-none absolute flex flex-col items-center gap-0.5 transition-opacity"
+            style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`, opacity: fade }}
           >
-            {Math.round(data.flow).toLocaleString()}/s
+            {(data.parts.length > 0 ? data.parts : [{ label: "", rate: data.flow }]).map((part) => (
+              <div
+                key={part.label}
+                className="whitespace-nowrap rounded-full border bg-card px-1.5 py-px text-[10px] font-semibold tabular-nums shadow-sm"
+                style={{ color, borderColor: `${color}55` }}
+              >
+                {Math.round(part.rate).toLocaleString()}/s{part.label ? ` ${part.label}` : ""}
+              </div>
+            ))}
           </div>
         </EdgeLabelRenderer>
       ) : null}
@@ -378,7 +387,10 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
     return {
       ...e,
       type: "flow",
-      data: { color, state, flow: shownResult.edgeFlows[`${e.source}>${e.target}`] ?? 0, dim: !related },
+      data: {
+        color, state, flow: shownResult.edgeFlows[`${e.source}>${e.target}`] ?? 0, dim: !related,
+        parts: shownResult.edgeParts[`${e.source}>${e.target}`] ?? [],
+      },
       markerEnd: { type: MarkerType.ArrowClosed, color, width: 18, height: 18 },
     };
   });
@@ -476,6 +488,7 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
     if (e.key === "Escape" && drawerId) { e.stopPropagation(); closeDrawer(); }
   };
 
+  const hasCache = nodes.some((n) => roleOf(n.data.kind) === "cache");
   const drawerNode = drawerId ? nodes.find((n) => n.id === drawerId) : null;
   const ran = runState === "done";
   const challengeLabel = spec.challenge ? "Visual challenge" : "LVL 1";
@@ -613,6 +626,11 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
               <span><span className="font-medium text-foreground">Settings</span> hover or tap a component, then its icon</span>
               <span><span className="font-medium text-foreground">Link</span> drag from any dot to another component</span>
               <span><span className="font-medium text-foreground">Remove</span> select it, press Delete</span>
+              {hasCache ? (
+                <span>
+                  <span className="font-medium text-foreground">Cache</span> the app server asks it first. A cache hit means the database is never asked; only misses go on. Linking the cache to the database too is optional: it then loads from it on a miss.
+                </span>
+              ) : null}
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border px-3 py-1.5 text-[11px] text-muted-foreground">
               <span>Link color = the component it leaves:</span>

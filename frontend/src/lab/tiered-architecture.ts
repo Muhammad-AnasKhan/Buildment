@@ -50,6 +50,14 @@ export interface TierLoad {
   cost: number;
   /** Milliseconds a request spends waiting in line here, on top of its service time. Zero off the request path. */
   waitMs: number;
+  /** For a cache: what it was asked, what it answered itself, and what went on to the database. */
+  cacheStats?: { hitRate: number; reads: number; hits: number; misses: number };
+}
+
+/** One labelled share of the traffic on a link, such as "cache misses" or "click writes". */
+export interface EdgePart {
+  label: string;
+  rate: number;
 }
 
 /** Optional rules a lab can switch on for the whole run. */
@@ -81,6 +89,8 @@ export interface ModelResult {
   failure?: string;
   /** Request rate on each live link, keyed "from>to". */
   edgeFlows: Record<string, number>;
+  /** What the traffic on a link is made of, where that is worth saying (cache reads, misses, writes). */
+  edgeParts: Record<string, EdgePart[]>;
   /** Requests rejected by rate limits and throttles, per second. */
   dropped: number;
   /** Requests filtered out by firewalls, per second. */
@@ -204,6 +214,8 @@ function passOn(node: BoardNode): number {
   const role = roleOf(node.kind);
   if (role === "cdn") return 1 - num(node, "hitRate", 0);
   if (role === "firewall") return 1 - num(node, "blockRate", 0);
+  // A cache answers its hits itself; only the misses go on to a database linked behind it.
+  if (role === "cache") return 1 - num(node, "hitRate", 0);
   return 1;
 }
 function lambdaCapacity(node: BoardNode): number {
@@ -346,6 +358,8 @@ export function runTieredModel(board: Board, load: number, targets: Targets, opt
   const incoming = new Map<string, number>();
   const inlineWrites = new Map<string, number>();
   const edgeFlows: Record<string, number> = {};
+  const edgeParts: Record<string, EdgePart[]> = {};
+  const addPart = (key: string, label: string, rate: number) => { (edgeParts[key] ??= []).push({ label, rate }); };
   let dropped = 0;
   let blocked = 0;
   const clients = order.filter((id) => byId.get(id)!.kind === "client");
@@ -362,25 +376,42 @@ export function runTieredModel(board: Board, load: number, targets: Targets, opt
     const kids = (children.get(id) ?? []).map((k) => byId.get(k)!);
     const cache = kids.find((n) => roleOf(n.kind) === "cache");
     const missRate = cache ? 1 - num(cache, "hitRate", 0) : 1;
+    // Read-through: a store that the cache itself links to is loaded by the cache on a miss,
+    // so the app server's own link to it carries no reads (it never counts twice).
+    const behindCache = new Set(cache ? children.get(cache.id) ?? [] : []);
     const byRole = new Map<Role, string[]>();
-    for (const kid of kids) byRole.set(roleOf(kid.kind), [...(byRole.get(roleOf(kid.kind)) ?? []), kid.id]);
+    for (const kid of kids) {
+      if (behindCache.has(kid.id)) continue;
+      byRole.set(roleOf(kid.kind), [...(byRole.get(roleOf(kid.kind)) ?? []), kid.id]);
+    }
     for (const [role, ids] of byRole) {
       const stores = role === "database" || role === "nosql";
       // A worker batches its writes: one trip to the store carries `batchSize` events.
       const batch = node.kind === "worker" && stores ? Math.max(1, num(node, "batchSize", 1)) : 1;
       const share = stores ? (out * missRate) / batch : out;
       for (const k of ids) {
-        incoming.set(k, (incoming.get(k) ?? 0) + share / ids.length);
-        edgeFlows[`${id}>${k}`] = share / ids.length;
+        const key = `${id}>${k}`;
+        const rate = share / ids.length;
+        incoming.set(k, (incoming.get(k) ?? 0) + rate);
+        edgeFlows[key] = (edgeFlows[key] ?? 0) + rate;
+        if (role === "cache") addPart(key, `reads, ${Math.round(num(byId.get(k)!, "hitRate", 0) * 100)}% answered by the cache`, rate);
+        else if (stores && node.kind === "worker" && batch > 1) addPart(key, `click writes, ${batch} per trip`, rate);
+        else if (stores && cache) addPart(key, "cache misses", rate);
+        else if (stores && roleOf(node.kind) === "cache") addPart(key, "cache misses", rate);
       }
     }
     if (options.inlineWrites && roleOf(node.kind) === "compute") {
-      const stores = kids.filter((k) => roleOf(k.kind) === "database");
+      // The click write goes to the store whether the app server reaches it directly or through its cache.
+      const direct = kids.filter((k) => roleOf(k.kind) === "database");
+      const through = (cache ? children.get(cache.id) ?? [] : []).map((k) => byId.get(k)!).filter((k) => roleOf(k.kind) === "database");
+      const stores = [...new Map([...direct, ...through].map((k) => [k.id, k])).values()];
       for (const store of stores) {
         const writes = out / stores.length;
+        const key = direct.some((d) => d.id === store.id) ? `${id}>${store.id}` : `${cache!.id}>${store.id}`;
         incoming.set(store.id, (incoming.get(store.id) ?? 0) + writes);
         inlineWrites.set(store.id, (inlineWrites.get(store.id) ?? 0) + writes);
-        edgeFlows[`${id}>${store.id}`] = (edgeFlows[`${id}>${store.id}`] ?? 0) + writes;
+        edgeFlows[key] = (edgeFlows[key] ?? 0) + writes;
+        addPart(key, direct.some((d) => d.id === store.id) ? "click writes" : "click writes, written directly", writes);
       }
     }
   }
@@ -400,6 +431,9 @@ export function runTieredModel(board: Board, load: number, targets: Targets, opt
     tiers.push({
       id: node.id, kind: node.kind, capacity, utilisation: capacity > 0 ? flow / capacity : 0,
       down, reachable: onPath, units: ev.units, managed: ev.managed, note: ev.note, cost: ev.cost, waitMs: 0,
+      cacheStats: roleOf(node.kind) === "cache" && onPath
+        ? { hitRate: num(node, "hitRate", 0), reads: flow, hits: flow * num(node, "hitRate", 0), misses: flow * (1 - num(node, "hitRate", 0)) }
+        : undefined,
     });
   }
   const tierById = new Map(tiers.map((t) => [t.id, t]));
@@ -480,6 +514,7 @@ export function runTieredModel(board: Board, load: number, targets: Targets, opt
     availability,
     failure,
     edgeFlows,
+    edgeParts,
     dropped,
     blocked,
     backlog,

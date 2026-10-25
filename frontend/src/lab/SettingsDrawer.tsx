@@ -14,6 +14,12 @@ import type { NodeConfig } from "./hld-board-model";
 import type { TierLoad } from "./tiered-architecture";
 import { chipStyle, iconOf } from "./board-style";
 
+/** Plain words for what a cache did with the reads it was asked. */
+export function cacheSentence(s: { hitRate: number; reads: number; hits: number; misses: number }): string {
+  const n = (v: number) => Math.round(v).toLocaleString();
+  return `Asked ${n(s.reads)}/s. Answered itself ${n(s.hits)}/s (${Math.round(s.hitRate * 100)}% hits). Went on to the database ${n(s.misses)}/s. A cache hit means the database is never asked.`;
+}
+
 const GROUP_ORDER: PropertyGroup[] = ["Capacity", "Scaling", "Resilience", "Behaviour"];
 const SCALING_FIELDS = new Set(["minCount", "maxCount", "targetUtil"]);
 
@@ -127,6 +133,15 @@ export function SettingsDrawer({
           "Not linked into the request path yet."
         )}
       </div>
+
+      {tier?.cacheStats && !cfg.down ? (
+        <div className="mb-2 rounded-lg bg-slate-800 px-2.5 py-1.5 text-[11px] leading-snug text-slate-300" data-testid="cache-stats">
+          <div>Reads asked of the cache: <span className="font-semibold text-slate-100">{Math.round(tier.cacheStats.reads).toLocaleString()}/s</span></div>
+          <div>Answered by the cache (hits): <span className="font-semibold text-emerald-400">{Math.round(tier.cacheStats.hits).toLocaleString()}/s</span> ({Math.round(tier.cacheStats.hitRate * 100)}%)</div>
+          <div>Reached the database (misses): <span className="font-semibold text-amber-400">{Math.round(tier.cacheStats.misses).toLocaleString()}/s</span></div>
+          <div className="mt-0.5 text-slate-400">A cache hit means the database is never asked.</div>
+        </div>
+      ) : null}
 
       {GROUP_ORDER.map((group) => {
         const fields = def.properties.filter(

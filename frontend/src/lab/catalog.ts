@@ -153,7 +153,9 @@ const ROLE_NEXT: Record<Role, Role[]> = {
   worker: ["cache", "database", "nosql", "search", "queue", "storage"],
   queue: ["worker", "function"],
   stream: ["worker", "function"],
-  cache: [],
+  // A cache may load from a database on a miss (read-through). Linking it is optional:
+  // an app server linked to both a cache and a database is cache-aside, with the same maths.
+  cache: ["database", "nosql"],
   database: [],
   nosql: [],
   search: [],
