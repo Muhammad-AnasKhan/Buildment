@@ -46,7 +46,7 @@ describe("reference solutions", () => {
 
   it("never uses an em or en dash in the explanations", () => {
     const text = labsWithSolution.map((s) => JSON.stringify(s.solution)).join(" ");
-    expect(text).not.toMatch(/—|–/);
+    expect(text).not.toMatch(new RegExp(`${String.fromCharCode(0x2014)}|${String.fromCharCode(0x2013)}`));
   });
 
   it("is rejected when a part is missing its explanation or names an unknown check", () => {

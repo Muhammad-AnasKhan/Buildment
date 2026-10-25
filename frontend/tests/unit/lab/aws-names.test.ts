@@ -36,7 +36,7 @@ describe("AWS names: parts", () => {
   });
 
   it("never uses an em or en dash", () => {
-    expect(JSON.stringify(AWS_PARTS) + JSON.stringify(AWS_PROPS)).not.toMatch(/—|–/);
+    expect(JSON.stringify(AWS_PARTS) + JSON.stringify(AWS_PROPS)).not.toMatch(new RegExp(`${String.fromCharCode(0x2014)}|${String.fromCharCode(0x2013)}`));
   });
 });
 
