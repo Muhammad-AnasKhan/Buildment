@@ -12,6 +12,9 @@ import { awsWebTier } from "./aws-web-tier/data";
 import { k8sWebApp } from "./k8s-web-app/data";
 import { dockerComposeStack } from "./docker-compose-stack/data";
 import { linuxSingleHost } from "./linux-single-host/data";
+import { netExploreOffice } from "./net-explore-office/data";
+import { netLabFixOffice } from "./net-lab-fix-office/data";
+import { netLabPlanSchool } from "./net-lab-plan-school/data";
 
 export const labRegistry: Record<LabSlug, LabSpec> = {
   "hld-m2-utilisation-knee": hldM2UtilisationKnee,
@@ -21,6 +24,9 @@ export const labRegistry: Record<LabSlug, LabSpec> = {
   "k8s-web-app": k8sWebApp,
   "docker-compose-stack": dockerComposeStack,
   "linux-single-host": linuxSingleHost,
+  "net-explore-office": netExploreOffice,
+  "net-lab-fix-office": netLabFixOffice,
+  "net-lab-plan-school": netLabPlanSchool,
 };
 
 export function getLabSpec(slug: string): LabSpec | null {

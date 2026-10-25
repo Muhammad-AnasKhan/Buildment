@@ -12,6 +12,9 @@ export const LAB_SLUGS = [
   "k8s-web-app",
   "docker-compose-stack",
   "linux-single-host",
+  "net-explore-office",
+  "net-lab-fix-office",
+  "net-lab-plan-school",
 ] as const;
 
 export type LabSlug = (typeof LAB_SLUGS)[number];
