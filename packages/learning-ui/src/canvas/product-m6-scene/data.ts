@@ -6,6 +6,8 @@ import { makeSpecimenCompareCanvas } from "../primitives/canvas-factories";
 // Halaqa (fictional) and the screen that each of three AI critiques would
 // make. The three critiques are invented for the case. All four verdicts are
 // neutral on purpose: the chapter asks who decides, not which one is right.
+// The form follows the course canon: Course, When, Where (with a hint), Seats,
+// and a button that says "Start the group".
 
 const COURSE: SpecBlock = { kind: "field", label: "Course", value: "Data structures" };
 const WHEN: SpecBlock = { kind: "field", label: "When", value: "Tonight, 8 pm" };
@@ -13,13 +15,13 @@ const WHERE: SpecBlock = { kind: "field", label: "Where", value: "Library room 2
 const SEATS: SpecBlock = { kind: "field", label: "Seats", value: "4" };
 
 const NOW: SpecScreen = {
-  alt: "Halaqa's create-group screen as it is now: four labelled fields and a Create group button.",
-  blocks: [{ kind: "nav", title: "New group" }, COURSE, WHEN, WHERE, SEATS, { kind: "button", label: "Create group" }],
+  alt: "Halaqa's create-group screen as it is now: four labelled fields and a Start the group button.",
+  blocks: [{ kind: "nav", title: "New group" }, COURSE, WHEN, WHERE, SEATS, { kind: "button", label: "Start the group" }],
 };
 
 const ONE: SpecScreen = {
-  alt: "Tool one's version: only the Course and When fields are left, with the Create group button.",
-  blocks: [{ kind: "nav", title: "New group" }, COURSE, WHEN, { kind: "button", label: "Create group" }],
+  alt: "Tool one's version: only the Course and When fields are left, with the Start the group button.",
+  blocks: [{ kind: "nav", title: "New group" }, COURSE, WHEN, { kind: "button", label: "Start the group" }],
 };
 
 const TWO: SpecScreen = {
@@ -31,7 +33,7 @@ const TWO: SpecScreen = {
     { kind: "field", label: "Where", value: "Library room 2" },
     { kind: "text", text: "Library, online or cafe", size: 13 },
     SEATS,
-    { kind: "button", label: "Create group" },
+    { kind: "button", label: "Start the group" },
   ],
 };
 
