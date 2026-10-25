@@ -45,6 +45,7 @@ export const mdxComponents: MDXComponents = {
   MandatoryReadCard,
   Checklist,
   LearningLog,
+  Video: VideoComponent,
   VideoBlock: VideoComponent,
   VisualWalkthrough: VisualWalkthroughComponent,
   VisualDiagram: VisualDiagramComponent,
