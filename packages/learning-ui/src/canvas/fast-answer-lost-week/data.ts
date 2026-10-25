@@ -7,6 +7,7 @@ import type { SceneSpec } from "../renderers/scene/SceneCanvas";
 export const fastAnswerLostWeek: SceneSpec = {
   kind: "scene",
   title: "One fast answer, then five lost days",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   purpose:
     "Hadi asks an assistant which library to use. The answer comes at once. He builds on it for 2 days, the build breaks on day 3, and he spends days 3 to 7 replacing the library. The strip counts the working days.",
   limits:

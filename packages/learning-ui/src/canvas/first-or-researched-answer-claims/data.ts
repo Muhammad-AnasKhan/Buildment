@@ -7,6 +7,7 @@ import type { SceneSpec } from "../renderers/scene/SceneCanvas";
 export const firstOrResearchedAnswerClaims: SceneSpec = {
   kind: "scene",
   title: "A fast answer with two claims to check",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   purpose:
     "Yara asks how to join an open source program. The assistant answers at once with two claims: four pull requests earn a reward, and Google Summer of Code is for students only. Yara checks both on the programs' own pages, and the pages change both claims.",
   limits:

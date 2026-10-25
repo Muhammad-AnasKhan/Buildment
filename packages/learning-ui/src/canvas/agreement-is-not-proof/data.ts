@@ -103,6 +103,6 @@ export const agreementIsNotProof: CustomCanvasSpec = {
     deckLabel: "Two answers",
     prompt: "What do the two answers tell Yara?",
     hint: "Tap the bucket this pair of answers belongs in, or drag the card onto it.",
-    endNote: "Differ: look there first. Agree on a fact: read the page. Agree on wording: it can stand.",
+    endNote: "Differ: look there first. Agree on a fact: read the page. Agree on wording: it is a draft.",
   }),
 };

@@ -8,6 +8,7 @@ import type { SceneSpec } from "../renderers/scene/SceneCanvas";
 export const agreementIsNotProofTwo: SceneSpec = {
   kind: "scene",
   title: "Two assistants differ, then agree",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   purpose:
     "Yara asks assistants A and B the same question in two fresh chats. They disagree on who may join Google Summer of Code, so she knows where to look first. Then both repeat the same out of date reward rule, so agreement does not prove it.",
   limits:

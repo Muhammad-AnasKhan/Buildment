@@ -7,6 +7,7 @@ import type { SceneSpec } from "../renderers/scene/SceneCanvas";
 export const agreementIsNotProofLeftOut: SceneSpec = {
   kind: "scene",
   title: "Ask what was left out, then check it",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   purpose:
     "Yara asks one assistant what it left out, what would change its answer and the strongest case against it. It names two things the first answers skipped. She checks both on the program's FAQ page.",
   limits:

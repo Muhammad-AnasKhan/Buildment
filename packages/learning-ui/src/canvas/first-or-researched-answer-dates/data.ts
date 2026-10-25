@@ -7,6 +7,7 @@ import type { SceneSpec } from "../renderers/scene/SceneCanvas";
 export const firstOrResearchedAnswerDates: SceneSpec = {
   kind: "scene",
   title: "The rule is newer than the answer",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   purpose:
     "An example assistant learned from text that ends in 2025. Hacktoberfest 2026 changed its rules in 2026. A question asked in October 2026 gets an answer from the older text, while the program's page shows the 2026 rule.",
   limits:
