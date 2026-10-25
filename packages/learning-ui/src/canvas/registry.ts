@@ -707,6 +707,51 @@ import { sysdesignM18ClusterPlay } from "./sysdesign-m18-cluster-play/data";
 import { sysdesignM18PipelineStep } from "./sysdesign-m18-pipeline-step/data";
 import { sysdesignM18CanaryBlast } from "./sysdesign-m18-canary-blast/data";
 import { sysdesignM18CloudExplorer } from "./sysdesign-m18-cloud-explorer/data";
+import { actOnFeedback } from "./act-on-feedback/data";
+import { adoptAToolLoopSources } from "./adopt-a-tool-loop-sources/data";
+import { adoptAToolLoop } from "./adopt-a-tool-loop/data";
+import { agreementIsNotProofLeftOut } from "./agreement-is-not-proof-left-out/data";
+import { agreementIsNotProofTwo } from "./agreement-is-not-proof-two/data";
+import { agreementIsNotProof } from "./agreement-is-not-proof/data";
+import { cacheChoiceContext } from "./cache-choice-context/data";
+import { claimTypeSorterDevin } from "./claim-type-sorter-devin/data";
+import { claimTypeSorter } from "./claim-type-sorter/data";
+import { detectorMyths } from "./detector-myths/data";
+import { dumpOrStory } from "./dump-or-story/data";
+import { fastAnswerLostWeek } from "./fast-answer-lost-week/data";
+import { fastestDatabaseDepends } from "./fastest-database-depends/data";
+import { fearVersusDataGains } from "./fear-versus-data-gains/data";
+import { fearVersusData } from "./fear-versus-data/data";
+import { firstOrResearchedAnswerClaims } from "./first-or-researched-answer-claims/data";
+import { firstOrResearchedAnswerDates } from "./first-or-researched-answer-dates/data";
+import { firstOrResearchedAnswer } from "./first-or-researched-answer/data";
+import { growLaithFortyRepos } from "./grow-laith-forty-repos/data";
+import { humansReminderMistake } from "./humans-reminder-mistake/data";
+import { leastAccessPicker } from "./least-access-picker/data";
+import { likelyNextWordAgrees } from "./likely-next-word-agrees/data";
+import { likelyNextWord } from "./likely-next-word/data";
+import { metricsStoreContext } from "./metrics-store-context/data";
+import { outboxOrNot } from "./outbox-or-not/data";
+import { ownTheIncidentCodeFreeze } from "./own-the-incident-code-freeze/data";
+import { ownTheIncident } from "./own-the-incident/data";
+import { pickAVisualTool } from "./pick-a-visual-tool/data";
+import { shortLessonLoop } from "./short-lesson-loop/data";
+import { showsThinkingOrNoise } from "./shows-thinking-or-noise/data";
+import { toolbeltHiddenInstruction } from "./toolbelt-hidden-instruction/data";
+import { toolbeltOneLineReadme } from "./toolbelt-one-line-readme/data";
+import { trustOrErode } from "./trust-or-erode/data";
+import { twoTeamsSameAnswer } from "./two-teams-same-answer/data";
+import { useAiOrNotLoginCode } from "./use-ai-or-not-login-code/data";
+import { useAiOrNotQuickYes } from "./use-ai-or-not-quick-yes/data";
+import { useAiOrNot } from "./use-ai-or-not/data";
+import { usefulOrBait } from "./useful-or-bait/data";
+import { voiceUseCheck } from "./voice-use-check/data";
+import { whichTeamProjectFits } from "./which-team-project-fits/data";
+import { whoLeadsThisCallLateDate } from "./who-leads-this-call-late-date/data";
+import { whoLeadsThisCallLayouts } from "./who-leads-this-call-layouts/data";
+import { whoLeadsThisCallQuery } from "./who-leads-this-call-query/data";
+import { whoLeadsThisCall } from "./who-leads-this-call/data";
+import { whoTheSmallerTeamKeeps } from "./who-the-smaller-team-keeps/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
@@ -1428,6 +1473,51 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m18-pipeline-step": sysdesignM18PipelineStep,
   "sysdesign-m18-canary-blast": sysdesignM18CanaryBlast,
   "sysdesign-m18-cloud-explorer": sysdesignM18CloudExplorer,
+  "act-on-feedback": actOnFeedback,
+  "adopt-a-tool-loop-sources": adoptAToolLoopSources,
+  "adopt-a-tool-loop": adoptAToolLoop,
+  "agreement-is-not-proof-left-out": agreementIsNotProofLeftOut,
+  "agreement-is-not-proof-two": agreementIsNotProofTwo,
+  "agreement-is-not-proof": agreementIsNotProof,
+  "cache-choice-context": cacheChoiceContext,
+  "claim-type-sorter-devin": claimTypeSorterDevin,
+  "claim-type-sorter": claimTypeSorter,
+  "detector-myths": detectorMyths,
+  "dump-or-story": dumpOrStory,
+  "fast-answer-lost-week": fastAnswerLostWeek,
+  "fastest-database-depends": fastestDatabaseDepends,
+  "fear-versus-data-gains": fearVersusDataGains,
+  "fear-versus-data": fearVersusData,
+  "first-or-researched-answer-claims": firstOrResearchedAnswerClaims,
+  "first-or-researched-answer-dates": firstOrResearchedAnswerDates,
+  "first-or-researched-answer": firstOrResearchedAnswer,
+  "grow-laith-forty-repos": growLaithFortyRepos,
+  "humans-reminder-mistake": humansReminderMistake,
+  "least-access-picker": leastAccessPicker,
+  "likely-next-word-agrees": likelyNextWordAgrees,
+  "likely-next-word": likelyNextWord,
+  "metrics-store-context": metricsStoreContext,
+  "outbox-or-not": outboxOrNot,
+  "own-the-incident-code-freeze": ownTheIncidentCodeFreeze,
+  "own-the-incident": ownTheIncident,
+  "pick-a-visual-tool": pickAVisualTool,
+  "short-lesson-loop": shortLessonLoop,
+  "shows-thinking-or-noise": showsThinkingOrNoise,
+  "toolbelt-hidden-instruction": toolbeltHiddenInstruction,
+  "toolbelt-one-line-readme": toolbeltOneLineReadme,
+  "trust-or-erode": trustOrErode,
+  "two-teams-same-answer": twoTeamsSameAnswer,
+  "use-ai-or-not-login-code": useAiOrNotLoginCode,
+  "use-ai-or-not-quick-yes": useAiOrNotQuickYes,
+  "use-ai-or-not": useAiOrNot,
+  "useful-or-bait": usefulOrBait,
+  "voice-use-check": voiceUseCheck,
+  "which-team-project-fits": whichTeamProjectFits,
+  "who-leads-this-call-late-date": whoLeadsThisCallLateDate,
+  "who-leads-this-call-layouts": whoLeadsThisCallLayouts,
+  "who-leads-this-call-query": whoLeadsThisCallQuery,
+  "who-leads-this-call": whoLeadsThisCall,
+  "who-the-smaller-team-keeps": whoTheSmallerTeamKeeps,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
