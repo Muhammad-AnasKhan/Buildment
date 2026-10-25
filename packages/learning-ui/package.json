@@ -8,6 +8,7 @@
     "./package.json": "./package.json",
     "./styles.css": "./styles.css",
     "./assets/*": "./assets/*",
+    "./lab-ui": "./src/lab-ui/index.ts",
     "./blocks/roadmap/RoadmapClient": "./src/blocks/roadmap/RoadmapClient.tsx",
     "./blocks/steps/Step": "./src/blocks/steps/Step.tsx",
     "./blocks/visual-diagram/VisualDiagramClient": "./src/blocks/visual-diagram/VisualDiagramClient.tsx",

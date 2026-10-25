@@ -23,7 +23,7 @@ const FOCUS = "focus-visible:outline focus-visible:outline-2 focus-visible:outli
 
 /** Why one part is in the reference design, in the same cassette as the settings. */
 export function PartExplainer({
-  id, kind, part, cfg, tier, checkLabels, anchor, onClose,
+  id, kind, part, cfg, tier, checkLabels, anchor, floating, onClose,
 }: {
   id: string;
   kind: ComponentKind;
@@ -32,7 +32,8 @@ export function PartExplainer({
   tier?: TierLoad;
   checkLabels: Record<string, string>;
   anchor?: CSSProperties;
-  onClose: () => void;
+  floating?: boolean;
+  onClose?: () => void;
 }) {
   const def = COMPONENT_CATALOG[kind];
   const { mode, nameOf, text } = useNames();
@@ -55,6 +56,7 @@ export function PartExplainer({
       title={nameOf(kind)}
       subtitle="Reference solution"
       anchor={anchor}
+      floating={floating}
       onClose={onClose}
     >
       <div data-testid="part-explainer">
@@ -128,7 +130,7 @@ export function PartList({
             className={`flex shrink-0 items-center gap-2 rounded-[6px] border-[1.5px] bg-card px-2 py-1.5 text-left text-[12px] font-medium shadow-[0_2px_0_0_var(--lab-edge-shadow)] transition-colors hover:bg-muted @2xl:mb-1 @2xl:w-full ${FOCUS} ${openId === n.id ? "border-[color:var(--lab-accent)]" : "border-border"}`}
           >
             <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-[4px]" style={{ backgroundColor: tint(colorOf(n.kind), 14), color: colorOf(n.kind) }}><KindGlyph kind={n.kind} size={16} /></span>
-            <span className="whitespace-nowrap @2xl:truncate">{nameOf(n.kind)}</span>
+            <span className="whitespace-nowrap leading-tight @2xl:whitespace-normal">{nameOf(n.kind)}</span>
           </button>
         ))}
       </div>

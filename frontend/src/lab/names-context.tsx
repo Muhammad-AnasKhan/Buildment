@@ -46,3 +46,12 @@ export function NamesProvider({ children }: { children: ReactNode }) {
   );
   return <NamesContext.Provider value={value}>{children}</NamesContext.Provider>;
 }
+
+/** A fixed mode with no storage: for specimen sheets that show both naming modes at once. */
+export function StaticNames({ mode, children }: { mode: NameMode; children: ReactNode }) {
+  const value = useMemo<Names>(
+    () => ({ mode, setMode: () => undefined, nameOf: (k) => partName(k, mode), sizeText: (k, s) => sizeLabel(k, s, mode).label, text: (s) => localize(s, mode) }),
+    [mode],
+  );
+  return <NamesContext.Provider value={value}>{children}</NamesContext.Provider>;
+}

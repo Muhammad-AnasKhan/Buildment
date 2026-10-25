@@ -39,7 +39,6 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Info, SlidersHorizontal } from "lucide-react";
 import type { ComponentKind } from "./catalog";
 import { COMPONENT_CATALOG, SIZE_CATALOG, canConnect, isComponentKind, roleOf } from "./catalog";
 import type { Board, HldLabSpec } from "./types";
@@ -50,9 +49,10 @@ import { RunPanel, PhaseStrip, PHASE_MS, type RunState } from "./RunPanel";
 import { SettingsDrawer, anchorStyle, cacheSentence } from "./SettingsDrawer";
 import { CompareView, ConfirmBar, PartExplainer, PartList } from "./SolutionPanel";
 import { compareDesigns, type CompareResult } from "./solution";
-import { BOARD_CSS, FAMILY_LABEL, RED, ROLE_LABEL, colorOf, familyColor, familyOf, loadState, paletteFor, tint } from "./board-style";
-import { KindGlyph } from "./Glyph";
+import { BOARD_CSS, FAMILY_LABEL, RED, ROLE_LABEL, colorOf, familyColor, familyOf, paletteFor, tint } from "./board-style";
 import { NamesProvider, useNames } from "./names-context";
+import { KindGlyph } from "./Glyph";
+import { NodeCard, WireTag } from "@buildment/learning-ui/lab-ui";
 import type { GhostState } from "./solution";
 
 const DRAG_TYPE = "application/x-lab-kind";
@@ -87,139 +87,48 @@ const BoardCtx = createContext<Ctx | null>(null);
 const PORT =
   "!h-2 !w-2 !rounded-[2px] !border !border-[color:var(--lab-ink2)] transition-transform hover:!scale-[1.6] after:absolute after:-inset-3 after:content-['']";
 
-/**
- * The replica core matrix: one cell per running instance, each filling with the load
- * the instances share, so adding a replica visibly lowers every cell. A single
- * instance shows an eight-segment rack. A lost instance is a crossed-out cell.
- */
-function CoreMatrix({ units, u, lost }: { units: number; u: number; lost: boolean }) {
-  const state = loadState(u);
-  const single = units <= 1;
-  const cells = single ? 8 : Math.min(units, 8);
-  return (
-    <div className="flex min-w-0 flex-1 items-center gap-[3px]" aria-hidden>
-      {Array.from({ length: cells }, (_, i) => {
-        // A single instance fills its rack segment by segment; replicas each fill their own height.
-        const fill = single ? Math.max(0, Math.min(1, u * 8 - i)) : Math.min(1, u);
-        return (
-          <span key={i} className="relative h-3 min-w-[6px] flex-1 overflow-hidden rounded-[3px] border border-[color:var(--lab-grid)] bg-[color:var(--lab-recessed)]">
-            <span className="absolute inset-x-0 bottom-0 transition-all duration-300" style={{ height: `${fill * 100}%`, backgroundColor: state.fill }} />
-          </span>
-        );
-      })}
-      {!single && units > cells ? <span className="lab-mono text-[9px] text-muted-foreground">+{units - cells}</span> : null}
-      {lost ? (
-        <span className="relative flex h-3 min-w-[6px] flex-1 items-center justify-center rounded-[3px] border border-[color:var(--lab-down)] bg-[color:var(--lab-down-fill)] text-[color:var(--lab-down-ink)]">
-          <svg viewBox="0 0 8 8" className="h-2 w-2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square"><path d="M1 1l6 6M7 1 1 7" /></svg>
-        </span>
-      ) : null}
-    </div>
-  );
-}
-
 function TierNode({ id, data }: NodeProps<Node<TierData>>) {
   const ctx = useContext(BoardCtx)!;
-  const def = COMPONENT_CATALOG[data.kind];
   const cfg = ctx.cfg[id] ?? {};
   const tier = ctx.tiers.get(id);
   const down = Boolean(cfg.down);
   const linked = ctx.reachable.has(id);
-  const size = typeof cfg.size === "string" ? cfg.size.replace(/^(compute|memory|general)-/, "") : null;
+  const size = typeof cfg.size === "string" ? cfg.size : null;
   const count = typeof cfg.count === "number" ? cfg.count : typeof cfg.replicas === "number" ? cfg.replicas + 1 : typeof cfg.zones === "number" ? cfg.zones : 1;
-  const u = tier && linked && !down && !tier.managed ? tier.utilisation : null;
+  const load = tier && linked && !down && !tier.managed ? tier.utilisation : null;
   const units = tier && !tier.managed && linked ? tier.units : count;
-  const lost = ctx.hit.has(id) && !down;
-  const open = ctx.drawerId === id;
-  const selected = ctx.selected === id;
   const color = colorOf(data.kind);
-  const dimmed = ctx.focus != null && !ctx.focus.has(id);
-  const state = u != null ? loadState(u) : null;
-  const ghost = ctx.ghost?.[id];
-
-  const border = down
-    ? "border-[color:var(--lab-down)]"
-    : selected
-      ? "border-[color:var(--lab-accent)] ring-[3px] ring-[color:var(--lab-accent)]/25"
-      : ghost?.state === "missing"
-        ? "border-dashed border-[color:var(--lab-accent)]"
-        : ghost?.state === "matched"
-          ? "border-[color:var(--lab-ok)]"
-          : state?.key === "hot"
-            ? "border-[color:var(--lab-hot)]"
-            : !linked
-              ? "border-dashed border-[color:var(--lab-ink2)]/60"
-              : "border-[color:var(--lab-grid)]";
-
+  const subtitle = size ? `${ctx.sizeLabel(data.kind, size)}${units > 1 ? ` x${units}` : ""}` : ROLE_LABEL[roleOf(data.kind)];
   return (
-    <div
+    <NodeCard
+      name={ctx.nameOf(data.kind)}
+      subtitle={subtitle}
+      role={roleOf(data.kind)}
+      color={color}
+      units={units}
+      load={load}
+      lost={ctx.hit.has(id) && !down}
+      down={down}
+      linked={linked}
+      managed={Boolean(tier?.managed)}
+      selected={ctx.selected === id}
+      dimmed={ctx.focus != null && !ctx.focus.has(id)}
+      open={ctx.drawerId === id}
+      readOnly={ctx.readOnly}
+      shaking={ctx.running && down}
+      ghost={ctx.ghost?.[id]}
+      note={tier?.note}
+      caption={data.kind === "client" ? "where requests start" : undefined}
       title={tier?.cacheStats && linked && !down ? cacheSentence(tier.cacheStats) : undefined}
-      className={`group/node relative min-h-[104px] w-[176px] rounded-[6px] border-[1.5px] bg-card py-2 pl-[13px] pr-2.5 text-card-foreground shadow-[0_2px_0_0_var(--lab-edge-shadow)] transition-[box-shadow,opacity,transform] duration-200 hover:-translate-y-px hover:shadow-[0_4px_0_0_var(--lab-edge-shadow)] ${border} ${dimmed ? "opacity-40" : ""} ${ctx.running && down ? "lab-shake" : ""} ${ghost?.state === "missing" ? "bg-[color:var(--lab-accent)]/10" : ""}`}
+      tuneFor={id}
+      tuneDisabled={ctx.locked}
+      onTune={() => ctx.openSettings(id)}
     >
-      <span aria-hidden className="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-[4px]" style={{ backgroundColor: down ? "var(--lab-down)" : color }} />
-      {down ? <span aria-hidden className="lab-hatch absolute inset-x-[3px] top-0 h-[5px] opacity-70" /> : null}
-
-      {/* The tune keycap: only on hover or focus (always on touch screens). It opens the cassette, never anything bigger. */}
-      <button
-        type="button"
-        data-settings-for={id}
-        aria-label={ctx.readOnly ? `Why ${def.label} is in the solution` : `Settings for ${def.label}`}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-controls={open ? "lab-settings-drawer" : undefined}
-        disabled={ctx.locked}
-        onClick={(e) => { e.stopPropagation(); ctx.openSettings(id); }}
-        className={`nodrag nopan lab-mono absolute right-0 top-0 z-10 flex h-5 items-center gap-1 rounded-bl-[5px] rounded-tr-[4px] border-b border-l border-[color:var(--lab-grid)] bg-[color:var(--lab-inspector)] px-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-100 transition-opacity hover:bg-[color:var(--lab-inspector-2)] focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--lab-accent)] disabled:hidden group-focus-within/node:opacity-100 group-hover/node:opacity-100 [@media(hover:none)]:opacity-100 ${open || selected ? "opacity-100" : "opacity-0"}`}
-      >
-        {ctx.readOnly ? <Info className="h-3 w-3" aria-hidden /> : <SlidersHorizontal className="h-3 w-3" aria-hidden />}
-        {ctx.readOnly ? "Why" : "Tune"}
-      </button>
-
       <Handle type="source" id="t" position={Position.Top} className={PORT} style={{ backgroundColor: color }} />
       <Handle type="source" id="r" position={Position.Right} className={PORT} style={{ backgroundColor: color }} />
       <Handle type="source" id="l" position={Position.Left} className={PORT} style={{ backgroundColor: color }} />
       <Handle type="source" id="b" position={Position.Bottom} className={PORT} style={{ backgroundColor: color }} />
-
-      <div className="flex items-center gap-2">
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[4px] bg-[color:var(--lab-recessed)]" style={{ color }}>
-          <KindGlyph kind={data.kind} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <div title={ctx.nameOf(data.kind)} className={`lab-display truncate text-[13.5px] font-semibold leading-tight ${down ? "line-through" : ""}`}>{ctx.nameOf(data.kind)}</div>
-          <div className="lab-mono truncate text-[9.5px] uppercase tracking-wide text-muted-foreground">
-            {size ? `${ctx.sizeLabel(data.kind, String(cfg.size))}${units > 1 ? ` x${units}` : ""}` : ROLE_LABEL[roleOf(data.kind)]}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-2 min-h-[20px]">
-        {down ? (
-          <span className="lab-mono inline-block -rotate-2 rounded-[3px] border-2 border-[color:var(--lab-down)] px-1.5 py-px text-[10px] font-bold uppercase tracking-widest text-[color:var(--lab-down-ink)]">Offline</span>
-        ) : !linked ? (
-          <span className="text-[10px] text-muted-foreground">Not linked: link it into the path</span>
-        ) : u != null ? (
-          <div className="flex items-center gap-2">
-            <CoreMatrix units={units} u={u} lost={lost} />
-            <span className="lab-mono shrink-0 text-[11px] font-bold tabular-nums" style={{ color: state!.ink }}>{Math.round(u * 100)}%</span>
-          </div>
-        ) : data.kind === "client" ? (
-          <span className="lab-mono text-[10px] uppercase tracking-wide text-muted-foreground">where requests start</span>
-        ) : (
-          <span className="lab-mono text-[10px] uppercase tracking-wide text-muted-foreground">managed, scales for you</span>
-        )}
-      </div>
-      <div className="mt-1 flex min-h-[13px] items-center gap-1.5">
-        {state?.tag ? <span className="lab-mono rounded-[3px] px-1 text-[9px] font-bold tracking-wider text-white" style={{ backgroundColor: state.key === "hot" ? "var(--lab-hot-ink)" : "var(--lab-warm-ink)" }}>{state.tag}</span> : null}
-        {lost ? <span className="lab-mono rounded-[3px] bg-[color:var(--lab-ok-ink)] px-1 text-[9px] font-bold tracking-wider text-white">1 LOST, FAILOVER OK</span> : null}
-        {ghost?.state === "missing" ? <span className="lab-mono rounded-[3px] bg-[color:var(--lab-accent)] px-1 text-[9px] font-bold tracking-wider text-white">MISSING IN YOUR DESIGN</span> : null}
-        {ghost?.state === "matched" ? <span className="lab-mono text-[10px] font-bold text-[color:var(--lab-ok-ink)]">✓ matches yours</span> : null}
-        {!down && linked && !state?.tag && !lost && !ghost && tier?.note ? <span className="truncate text-[10px] text-muted-foreground" title={tier.note}>{tier.note}</span> : null}
-      </div>
-      {ghost?.state === "diff" ? (
-        <div className="lab-mono absolute -bottom-2.5 left-2 max-w-[160px] truncate rounded-[4px] border border-[color:var(--lab-warm)] bg-[color:var(--lab-warm-ink)] px-1.5 py-px text-[9px] font-bold text-white" title={ghost.notes.join("; ")}>
-          {ghost.notes[0]}{ghost.notes.length > 1 ? ` +${ghost.notes.length - 1}` : ""}
-        </div>
-      ) : null}
-    </div>
+    </NodeCard>
   );
 }
 const nodeTypes = { tier: TierNode };
@@ -230,17 +139,6 @@ type FlowData = { color: string; state: "live" | "hot" | "dead"; flow: number; d
 function dotsFor(flow: number): number {
   if (flow < 1) return 0;
   return Math.min(4, Math.max(1, Math.ceil(Math.log10(flow + 1)) - 1));
-}
-
-/** One part of a wire tag: a glyph that tells reads, cache misses and writes apart without colour. */
-function partKind(label: string): { glyph: React.ReactNode; word: string } {
-  if (label.startsWith("reads")) {
-    const hit = label.match(/(\d+)% answered/)?.[1];
-    return { glyph: <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-[color:var(--lab-ok)]" />, word: hit ? `read, ${hit}% hit` : "read" };
-  }
-  if (label.startsWith("cache miss")) return { glyph: <span aria-hidden className="inline-block h-1.5 w-1.5 rotate-45 border border-[color:var(--lab-warm)]" />, word: "miss" };
-  if (label.startsWith("click writes")) return { glyph: <span aria-hidden className="text-[8px] leading-none text-[color:var(--lab-routing)]">▸</span>, word: "write" };
-  return { glyph: null, word: label };
 }
 
 /**
@@ -281,21 +179,10 @@ function FlowEdge({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPo
       {state !== "dead" && data && data.flow > 0 ? (
         <EdgeLabelRenderer>
           <div
-            className="nodrag nopan lab-mono pointer-events-none absolute flex items-stretch overflow-hidden whitespace-nowrap rounded-[4px] border-[1.5px] border-[color:var(--lab-grid)] bg-card text-[10px] font-medium text-card-foreground shadow-[0_1px_0_0_var(--lab-edge-shadow)] transition-opacity"
+            className="nodrag nopan pointer-events-none absolute transition-opacity"
             style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`, opacity: fade }}
           >
-            <span aria-hidden className="w-[3px] shrink-0" style={{ backgroundColor: color }} />
-            {(data.parts.length > 0 ? data.parts : [{ label: "", rate: data.flow }]).map((part, i) => {
-              const k = part.label ? partKind(part.label) : null;
-              return (
-                <span key={part.label || i} className={`flex items-center gap-1 px-1.5 py-0.5 ${i > 0 ? "border-l border-[color:var(--lab-grid)]" : ""}`}>
-                  {k?.glyph}
-                  <span className="font-bold">{Math.round(part.rate).toLocaleString()}/s</span>
-                  {k ? <span className="text-muted-foreground">{k.word}</span> : null}
-                  {part.label ? <span className="sr-only">{part.label}</span> : null}
-                </span>
-              );
-            })}
+            <WireTag color={color} flow={data.flow} parts={data.parts} />
           </div>
         </EdgeLabelRenderer>
       ) : null}
@@ -319,7 +206,7 @@ function startPositions(nodes: Board["nodes"]): Map<string, { x: number; y: numb
   const columns = new Set(nodes.map((n) => n.x)).size;
   const rows = new Set(nodes.map((n) => n.y)).size;
   const grid = columns > 1 && rows > 1;
-  return new Map(nodes.map((n, i) => [n.id, grid ? { x: n.x * 200 + 40, y: n.y * 135 + 20 } : { x: 80, y: i * 140 }]));
+  return new Map(nodes.map((n, i) => [n.id, grid ? { x: n.x * 250 + 30, y: n.y * 160 + 20 } : { x: 80, y: i * 140 }]));
 }
 
 interface EditorProps {
@@ -637,7 +524,7 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
             </div>
             {ran ? (
               <span key={report.passed} className={`lab-stamp lab-mono rounded-[4px] border-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${report.allPass ? "border-emerald-300 text-emerald-300" : "border-red-300 text-red-300"}`} data-testid="score-chip">
-                {report.allPass ? `${report.total}/${report.total} verified` : `${report.passed}/${report.total} checks`}
+                {report.allPass ? `${report.total}/${report.total} passed` : `${report.passed}/${report.total} checks`}
               </span>
             ) : null}
             {readOnly ? (
@@ -727,7 +614,7 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
                         className="flex shrink-0 cursor-grab items-center gap-2 rounded-[6px] border-[1.5px] border-border bg-card px-2 py-1.5 text-left shadow-[0_2px_0_0_var(--lab-edge-shadow)] transition-colors hover:bg-muted active:translate-y-px active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--lab-accent)] @2xl:mb-1 @2xl:w-full"
                       >
                         <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-[4px]" style={{ backgroundColor: tint(colorOf(k), 14), color: colorOf(k) }}><KindGlyph kind={k} size={16} /></span>
-                        <span className="flex-1 whitespace-nowrap text-[12px] font-medium @2xl:truncate">{names.nameOf(k)}</span>
+                        <span className="flex-1 whitespace-nowrap text-[12px] font-medium leading-tight @2xl:whitespace-normal">{names.nameOf(k)}</span>
                         {price ? <span className="hidden text-[10px] tabular-nums text-muted-foreground @2xl:inline">${price.pricePerHour}</span> : null}
                       </button>
                     );
@@ -741,7 +628,7 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
           {/* Canvas, with the settings drawer laid over its right edge (or bottom, on a phone). */}
           <div className="flex min-w-0 flex-col">
             <div
-              className="relative h-[520px] overflow-hidden bg-[color:var(--lab-canvas)] @2xl:h-[500px]"
+              className="relative h-[520px] overflow-hidden bg-[color:var(--lab-canvas)] @2xl:h-[580px]"
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; }}
               onDrop={onDrop}
             >
@@ -819,7 +706,7 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
               )}
               {hasCache ? (
                 <span>
-                  <span className="font-medium text-foreground">Cache</span> the app server asks it first. A cache hit means the database is never asked; only misses go on. Linking the cache to the database too is optional: it then loads from it on a miss.
+                  <span className="font-medium text-foreground">Cache</span> the server asks it first. If the answer is there (a cache hit), the database is never asked. Only misses go on. Linking the cache to the database too is optional: the cache then loads from it on a miss.
                 </span>
               ) : null}
             </div>
