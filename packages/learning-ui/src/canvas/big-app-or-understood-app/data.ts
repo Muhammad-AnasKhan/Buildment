@@ -1,6 +1,6 @@
 import type { FactorSpec } from "../renderers/factor/types";
 
-// Learn and Build with AI course, chapter 1.5 "Plenty of AI, few strong projects".
+// Learn and Build with AI course, chapter 1.8 "Plenty of AI, few strong projects".
 // Khaled's 14-feature store built in a weekend against Yara's small, understood
 // first slice of Qasir, scored on what a reviewer checks. Only when "Number of
 // features" matters most does the big app win. The scores are the course's own

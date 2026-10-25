@@ -47,7 +47,7 @@ The chapter computes Yara's totals in prose. What prose cannot make felt is that
 ## Rendering
 - Primary: the shared factor renderer (HTML weight controls, SVG bars).
 - Why this renderer: the claim is a weighted comparison the learner changes.
-- Static fallback: chapter 5.4 shows the score table and works Yara's totals (40 and 21) in prose under "Worked example: weighing the two options".
+- Static fallback: chapter 7.4 shows the score table and works Yara's totals (40 and 21) in prose under "Worked example: weighing the two options".
 
 ## Controls
 Four weight controls with three levels each ("Matters a little", "Matters", "Matters a lot"). Each exists because each test is one of the angles in the chapter.
@@ -78,7 +78,7 @@ Weight controls are native HTML controls with visible labels; totals are text, n
 - [x] Reader fallback exists (score table and totals in 5.4).
 
 ## Placement
-In chapter 5.4, after the worked example and the predict ("at how many of the 81 settings does the cache counter win?"), and before "The explain-back rule, line by line". Names and numbers match the chapter.
+In chapter 7.4, after the worked example and the predict ("at how many of the 81 settings does the cache counter win?"), and before "The explain-back rule, line by line". Names and numbers match the chapter.
 
 ## Build plan
 `packages/learning-ui/src/canvas/two-options-trade-off/data.ts` exporting `twoOptionsTradeOff`; the orchestrator registers it in `packages/learning-ui/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`.

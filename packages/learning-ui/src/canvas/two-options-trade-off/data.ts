@@ -1,6 +1,6 @@
 import type { FactorSpec } from "../renderers/factor/types";
 
-// Learn and Build with AI course, chapter 5.4 "Slow down for trade-offs".
+// Learn and Build with AI course, chapter 7.4 "Slow down for trade-offs".
 // Where should Qasir count clicks: in the database on every click, or in a
 // cache counter saved to the database every minute (the AI's suggestion)?
 // The scores are Yara's own illustrative judgement for her project, and the

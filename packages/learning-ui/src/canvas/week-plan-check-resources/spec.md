@@ -26,7 +26,7 @@ The chapter's resource table shows the result of the checks all at once. Steppin
 ## Rendering
 - Primary: the shared sequence renderer, narrow layout below `sm`.
 - Arrow labels are at most 17 characters ("ask what to learn", "open the articles").
-- Static fallback: chapter 5.3 walks through the same checks in prose ("A week, step by step") and shows the resulting resource table before the canvas.
+- Static fallback: chapter 7.3 walks through the same checks in prose ("A week, step by step") and shows the resulting resource table before the canvas.
 
 ## Controls
 Shared stepper controls only. No numeric inputs: the claim is about the order and the kind of check, not about quantities.
@@ -57,7 +57,7 @@ Shared stepper keyboard support and focus ring; `summary` gives the whole sequen
 - [x] Reader fallback exists (prose and table in 5.3).
 
 ## Placement
-In chapter 5.3, under "Check before you plan", after the predict and before "Where it goes wrong". The first `tryThis` line points at the step that answers the predict, without restating it. Names and numbers match the chapter: six suggestions (three videos, one book chapter, two articles), the nine-year-old video, the three places searched for the book, the official docs as the replacement, week 7 in month 2.
+In chapter 7.3, under "Check before you plan", after the predict and before "Where it goes wrong". The first `tryThis` line points at the step that answers the predict, without restating it. Names and numbers match the chapter: six suggestions (three videos, one book chapter, two articles), the nine-year-old video, the three places searched for the book, the official docs as the replacement, week 7 in month 2.
 
 ## Build plan
 `packages/learning-ui/src/canvas/week-plan-check-resources/data.ts` exporting `weekPlanCheckResources`; the orchestrator registers it in `packages/learning-ui/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`.
