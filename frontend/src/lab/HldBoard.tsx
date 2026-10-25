@@ -31,6 +31,7 @@ import {
   useEdgesState,
   useNodesState,
   useReactFlow,
+  useViewport,
   type Connection,
   type Edge,
   type EdgeProps,
@@ -38,24 +39,26 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { Info, Settings } from "lucide-react";
+import { Info, SlidersHorizontal } from "lucide-react";
 import type { ComponentKind } from "./catalog";
 import { COMPONENT_CATALOG, SIZE_CATALOG, canConnect, isComponentKind, roleOf } from "./catalog";
 import type { Board, HldLabSpec } from "./types";
 import { initialControls, type BoardControls, type NodeConfig } from "./hld-board-model";
 import type { EdgePart, ModelResult, TierLoad } from "@/lab/tiered-architecture";
 import { runChallenge, runModel } from "./challenge";
-import { RunPanel, PhaseStrip, type RunState } from "./RunPanel";
-import { SettingsDrawer, cacheSentence } from "./SettingsDrawer";
+import { RunPanel, PhaseStrip, PHASE_MS, type RunState } from "./RunPanel";
+import { SettingsDrawer, anchorStyle, cacheSentence } from "./SettingsDrawer";
 import { CompareView, ConfirmBar, PartExplainer, PartList } from "./SolutionPanel";
 import { compareDesigns, type CompareResult } from "./solution";
-import { RED, ROLE_COLOR, ROLE_LABEL, chipStyle, colorOf, iconOf, paletteFor, utilBar, utilText } from "./board-style";
+import { BOARD_CSS, FAMILY_LABEL, RED, ROLE_LABEL, colorOf, familyColor, familyOf, loadState, paletteFor, tint } from "./board-style";
+import { KindGlyph } from "./Glyph";
+import { NamesProvider, useNames } from "./names-context";
+import type { GhostState } from "./solution";
 
 const DRAG_TYPE = "application/x-lab-kind";
-const NODE_W = 158;
-const NODE_H = 92;
-/** How long the run stays on each scenario. */
-const PHASE_MS = 2600;
+const HEAD_BTN = "lab-mono rounded-[4px] px-2 py-1 text-[10.5px] font-bold uppercase tracking-wide text-slate-200 hover:bg-white/10 hover:text-white disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300";
+const NODE_W = 176;
+const NODE_H = 104;
 
 type TierData = { kind: ComponentKind };
 type Ctx = {
@@ -67,6 +70,12 @@ type Ctx = {
   /** Components the current scenario took down or thinned out. */
   hit: Set<string>;
   locked: boolean;
+  /** A run is playing. */
+  running: boolean;
+  /** The blueprint ghost: how each reference part stands against the learner's design. */
+  ghost?: Record<string, GhostState>;
+  nameOf: (kind: ComponentKind) => string;
+  sizeLabel: (kind: ComponentKind, sizeId: string) => string;
   /** The reference solution: the icon explains a part instead of opening its settings. */
   readOnly: boolean;
   openSettings: (id: string) => void;
@@ -75,7 +84,38 @@ type Ctx = {
 };
 const BoardCtx = createContext<Ctx | null>(null);
 
-const HANDLE = "!h-3.5 !w-3.5 !border-2 !border-card transition-transform hover:!scale-150 after:absolute after:-inset-3 after:rounded-full after:content-['']";
+const PORT =
+  "!h-2 !w-2 !rounded-[2px] !border !border-[color:var(--lab-ink2)] transition-transform hover:!scale-[1.6] after:absolute after:-inset-3 after:content-['']";
+
+/**
+ * The replica core matrix: one cell per running instance, each filling with the load
+ * the instances share, so adding a replica visibly lowers every cell. A single
+ * instance shows an eight-segment rack. A lost instance is a crossed-out cell.
+ */
+function CoreMatrix({ units, u, lost }: { units: number; u: number; lost: boolean }) {
+  const state = loadState(u);
+  const single = units <= 1;
+  const cells = single ? 8 : Math.min(units, 8);
+  return (
+    <div className="flex min-w-0 flex-1 items-center gap-[3px]" aria-hidden>
+      {Array.from({ length: cells }, (_, i) => {
+        // A single instance fills its rack segment by segment; replicas each fill their own height.
+        const fill = single ? Math.max(0, Math.min(1, u * 8 - i)) : Math.min(1, u);
+        return (
+          <span key={i} className="relative h-3 min-w-[6px] flex-1 overflow-hidden rounded-[3px] border border-[color:var(--lab-grid)] bg-[color:var(--lab-recessed)]">
+            <span className="absolute inset-x-0 bottom-0 transition-all duration-300" style={{ height: `${fill * 100}%`, backgroundColor: state.fill }} />
+          </span>
+        );
+      })}
+      {!single && units > cells ? <span className="lab-mono text-[9px] text-muted-foreground">+{units - cells}</span> : null}
+      {lost ? (
+        <span className="relative flex h-3 min-w-[6px] flex-1 items-center justify-center rounded-[3px] border border-[color:var(--lab-down)] bg-[color:var(--lab-down-fill)] text-[color:var(--lab-down-ink)]">
+          <svg viewBox="0 0 8 8" className="h-2 w-2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square"><path d="M1 1l6 6M7 1 1 7" /></svg>
+        </span>
+      ) : null}
+    </div>
+  );
+}
 
 function TierNode({ id, data }: NodeProps<Node<TierData>>) {
   const ctx = useContext(BoardCtx)!;
@@ -85,30 +125,40 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
   const down = Boolean(cfg.down);
   const linked = ctx.reachable.has(id);
   const size = typeof cfg.size === "string" ? cfg.size.replace(/^(compute|memory|general)-/, "") : null;
-  const count = typeof cfg.count === "number" ? cfg.count : typeof cfg.replicas === "number" ? cfg.replicas : typeof cfg.zones === "number" ? cfg.zones : null;
+  const count = typeof cfg.count === "number" ? cfg.count : typeof cfg.replicas === "number" ? cfg.replicas + 1 : typeof cfg.zones === "number" ? cfg.zones : 1;
   const u = tier && linked && !down && !tier.managed ? tier.utilisation : null;
-  const shownCount = tier && !tier.managed && linked ? tier.units : count;
+  const units = tier && !tier.managed && linked ? tier.units : count;
   const lost = ctx.hit.has(id) && !down;
   const open = ctx.drawerId === id;
-
-  const frame = down
-    ? "border-red-500 bg-red-50 dark:bg-red-500/10"
-    : !linked
-      ? "border-dashed border-muted-foreground/40 bg-card"
-      : ctx.selected === id
-        ? "border-blue-500 bg-card ring-2 ring-blue-500/30"
-        : "border-border bg-card";
-
+  const selected = ctx.selected === id;
   const color = colorOf(data.kind);
   const dimmed = ctx.focus != null && !ctx.focus.has(id);
+  const state = u != null ? loadState(u) : null;
+  const ghost = ctx.ghost?.[id];
+
+  const border = down
+    ? "border-[color:var(--lab-down)]"
+    : selected
+      ? "border-[color:var(--lab-accent)] ring-[3px] ring-[color:var(--lab-accent)]/25"
+      : ghost?.state === "missing"
+        ? "border-dashed border-[color:var(--lab-accent)]"
+        : ghost?.state === "matched"
+          ? "border-[color:var(--lab-ok)]"
+          : state?.key === "hot"
+            ? "border-[color:var(--lab-hot)]"
+            : !linked
+              ? "border-dashed border-[color:var(--lab-ink2)]/60"
+              : "border-[color:var(--lab-grid)]";
 
   return (
     <div
       title={tier?.cacheStats && linked && !down ? cacheSentence(tier.cacheStats) : undefined}
-      className={`group/node relative w-[158px] rounded-xl border px-3 py-2 text-card-foreground shadow-sm transition-[box-shadow,opacity] duration-200 ${frame} ${dimmed ? "opacity-30" : ""}`}
-      style={down ? undefined : { borderTopColor: color, borderTopWidth: 3 }}
+      className={`group/node relative min-h-[104px] w-[176px] rounded-[6px] border-[1.5px] bg-card py-2 pl-[13px] pr-2.5 text-card-foreground shadow-[0_2px_0_0_var(--lab-edge-shadow)] transition-[box-shadow,opacity,transform] duration-200 hover:-translate-y-px hover:shadow-[0_4px_0_0_var(--lab-edge-shadow)] ${border} ${dimmed ? "opacity-40" : ""} ${ctx.running && down ? "lab-shake" : ""} ${ghost?.state === "missing" ? "bg-[color:var(--lab-accent)]/10" : ""}`}
     >
-      {/* The settings icon: only on hover or focus (always on touch screens), never the drawer itself. */}
+      <span aria-hidden className="absolute bottom-0 left-0 top-0 w-[3px] rounded-l-[4px]" style={{ backgroundColor: down ? "var(--lab-down)" : color }} />
+      {down ? <span aria-hidden className="lab-hatch absolute inset-x-[3px] top-0 h-[5px] opacity-70" /> : null}
+
+      {/* The tune keycap: only on hover or focus (always on touch screens). It opens the cassette, never anything bigger. */}
       <button
         type="button"
         data-settings-for={id}
@@ -118,43 +168,57 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
         aria-controls={open ? "lab-settings-drawer" : undefined}
         disabled={ctx.locked}
         onClick={(e) => { e.stopPropagation(); ctx.openSettings(id); }}
-        className={`nodrag nopan absolute -right-2.5 -top-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 bg-slate-900 text-slate-100 shadow transition-opacity hover:bg-slate-700 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 disabled:hidden group-focus-within/node:opacity-100 group-hover/node:opacity-100 [@media(hover:none)]:opacity-100 ${open || ctx.selected === id ? "opacity-100" : "opacity-0"}`}
+        className={`nodrag nopan lab-mono absolute right-0 top-0 z-10 flex h-5 items-center gap-1 rounded-bl-[5px] rounded-tr-[4px] border-b border-l border-[color:var(--lab-grid)] bg-[color:var(--lab-inspector)] px-1.5 text-[9px] font-bold uppercase tracking-wider text-slate-100 transition-opacity hover:bg-[color:var(--lab-inspector-2)] focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--lab-accent)] disabled:hidden group-focus-within/node:opacity-100 group-hover/node:opacity-100 [@media(hover:none)]:opacity-100 ${open || selected ? "opacity-100" : "opacity-0"}`}
       >
-        {ctx.readOnly ? <Info className="h-3.5 w-3.5" aria-hidden /> : <Settings className="h-3.5 w-3.5" aria-hidden />}
+        {ctx.readOnly ? <Info className="h-3 w-3" aria-hidden /> : <SlidersHorizontal className="h-3 w-3" aria-hidden />}
+        {ctx.readOnly ? "Why" : "Tune"}
       </button>
-      {/* A dot on every side. The board runs in loose mode, so any dot can start or end a link. */}
-      <Handle type="source" id="t" position={Position.Top} className={HANDLE} style={{ backgroundColor: color }} />
-      <Handle type="source" id="r" position={Position.Right} className={HANDLE} style={{ backgroundColor: color }} />
-      <Handle type="source" id="l" position={Position.Left} className={HANDLE} style={{ backgroundColor: color }} />
+
+      <Handle type="source" id="t" position={Position.Top} className={PORT} style={{ backgroundColor: color }} />
+      <Handle type="source" id="r" position={Position.Right} className={PORT} style={{ backgroundColor: color }} />
+      <Handle type="source" id="l" position={Position.Left} className={PORT} style={{ backgroundColor: color }} />
+      <Handle type="source" id="b" position={Position.Bottom} className={PORT} style={{ backgroundColor: color }} />
+
       <div className="flex items-center gap-2">
-        <span aria-hidden className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[13px] ${down ? "opacity-50" : ""}`} style={chipStyle(data.kind)}>{iconOf(data.kind)}</span>
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[4px] bg-[color:var(--lab-recessed)]" style={{ color }}>
+          <KindGlyph kind={data.kind} />
+        </span>
         <div className="min-w-0 flex-1">
-          <div className={`truncate text-[13px] font-medium leading-tight ${down ? "text-red-600 line-through dark:text-red-400" : ""}`}>{def.label}</div>
-          <div className="truncate text-[10px] text-muted-foreground">
-            {def.vendor}{size ? ` · ${size}` : ""}{shownCount != null && size ? ` x${shownCount}` : ""}
+          <div title={ctx.nameOf(data.kind)} className={`lab-display truncate text-[13.5px] font-semibold leading-tight ${down ? "line-through" : ""}`}>{ctx.nameOf(data.kind)}</div>
+          <div className="lab-mono truncate text-[9.5px] uppercase tracking-wide text-muted-foreground">
+            {size ? `${ctx.sizeLabel(data.kind, String(cfg.size))}${units > 1 ? ` x${units}` : ""}` : ROLE_LABEL[roleOf(data.kind)]}
           </div>
         </div>
       </div>
-      {down ? (
-        <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-red-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">DOWN</div>
-      ) : lost ? (
-        <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-amber-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">1 LOST</div>
-      ) : !linked ? (
-        <div className="mt-2 text-[10px] text-muted-foreground">Not linked: link it into the path</div>
-      ) : u != null ? (
-        <div className="mt-2 flex items-center gap-2">
-          <div className="h-[6px] flex-1 overflow-hidden rounded-full bg-muted">
-            <div className={`h-full rounded-full ${utilBar(u)} transition-all`} style={{ width: `${Math.min(Math.round(u * 100), 100)}%` }} />
+
+      <div className="mt-2 min-h-[20px]">
+        {down ? (
+          <span className="lab-mono inline-block -rotate-2 rounded-[3px] border-2 border-[color:var(--lab-down)] px-1.5 py-px text-[10px] font-bold uppercase tracking-widest text-[color:var(--lab-down-ink)]">Offline</span>
+        ) : !linked ? (
+          <span className="text-[10px] text-muted-foreground">Not linked: link it into the path</span>
+        ) : u != null ? (
+          <div className="flex items-center gap-2">
+            <CoreMatrix units={units} u={u} lost={lost} />
+            <span className="lab-mono shrink-0 text-[11px] font-bold tabular-nums" style={{ color: state!.ink }}>{Math.round(u * 100)}%</span>
           </div>
-          <span className={`text-[10px] font-semibold tabular-nums ${utilText(u)}`}>{Math.round(u * 100)}%</span>
+        ) : data.kind === "client" ? (
+          <span className="lab-mono text-[10px] uppercase tracking-wide text-muted-foreground">where requests start</span>
+        ) : (
+          <span className="lab-mono text-[10px] uppercase tracking-wide text-muted-foreground">managed, scales for you</span>
+        )}
+      </div>
+      <div className="mt-1 flex min-h-[13px] items-center gap-1.5">
+        {state?.tag ? <span className="lab-mono rounded-[3px] px-1 text-[9px] font-bold tracking-wider text-white" style={{ backgroundColor: state.key === "hot" ? "var(--lab-hot-ink)" : "var(--lab-warm-ink)" }}>{state.tag}</span> : null}
+        {lost ? <span className="lab-mono rounded-[3px] bg-[color:var(--lab-ok-ink)] px-1 text-[9px] font-bold tracking-wider text-white">1 LOST, FAILOVER OK</span> : null}
+        {ghost?.state === "missing" ? <span className="lab-mono rounded-[3px] bg-[color:var(--lab-accent)] px-1 text-[9px] font-bold tracking-wider text-white">MISSING IN YOUR DESIGN</span> : null}
+        {ghost?.state === "matched" ? <span className="lab-mono text-[10px] font-bold text-[color:var(--lab-ok-ink)]">✓ matches yours</span> : null}
+        {!down && linked && !state?.tag && !lost && !ghost && tier?.note ? <span className="truncate text-[10px] text-muted-foreground" title={tier.note}>{tier.note}</span> : null}
+      </div>
+      {ghost?.state === "diff" ? (
+        <div className="lab-mono absolute -bottom-2.5 left-2 max-w-[160px] truncate rounded-[4px] border border-[color:var(--lab-warm)] bg-[color:var(--lab-warm-ink)] px-1.5 py-px text-[9px] font-bold text-white" title={ghost.notes.join("; ")}>
+          {ghost.notes[0]}{ghost.notes.length > 1 ? ` +${ghost.notes.length - 1}` : ""}
         </div>
       ) : null}
-      {!down && linked && tier?.note ? (
-        <div className="mt-1 truncate text-[10px] text-muted-foreground" title={tier.note}>{tier.note}</div>
-      ) : !down && linked && tier?.managed ? (
-        <div className="mt-1 text-[10px] text-muted-foreground">managed, scales for you</div>
-      ) : null}
-      <Handle type="source" id="b" position={Position.Bottom} className={HANDLE} style={{ backgroundColor: color }} />
     </div>
   );
 }
@@ -162,28 +226,40 @@ const nodeTypes = { tier: TierNode };
 
 type FlowData = { color: string; state: "live" | "hot" | "dead"; flow: number; dim: boolean; parts: EdgePart[] };
 
-/** How many traffic dots ride a link: one for a trickle, up to four for a flood. */
+/** How many signal packets ride a link: one for a trickle, up to four for a flood. */
 function dotsFor(flow: number): number {
   if (flow < 1) return 0;
   return Math.min(4, Math.max(1, Math.ceil(Math.log10(flow + 1)) - 1));
 }
 
+/** One part of a wire tag: a glyph that tells reads, cache misses and writes apart without colour. */
+function partKind(label: string): { glyph: React.ReactNode; word: string } {
+  if (label.startsWith("reads")) {
+    const hit = label.match(/(\d+)% answered/)?.[1];
+    return { glyph: <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full bg-[color:var(--lab-ok)]" />, word: hit ? `read, ${hit}% hit` : "read" };
+  }
+  if (label.startsWith("cache miss")) return { glyph: <span aria-hidden className="inline-block h-1.5 w-1.5 rotate-45 border border-[color:var(--lab-warm)]" />, word: "miss" };
+  if (label.startsWith("click writes")) return { glyph: <span aria-hidden className="text-[8px] leading-none text-[color:var(--lab-routing)]">▸</span>, word: "write" };
+  return { glyph: null, word: label };
+}
+
 /**
- * A link drawn in the color of the component it leaves, in layers: a wide
- * invisible stroke that is easy to grab, a soft glow, the dashed line with its
- * arrowhead (marching while traffic flows), dots riding along it (more for more
- * traffic, red when the part it feeds is overloaded), and the request rate it carries.
+ * A link drawn as a cable: a wide casing, a core trace in the colour of the part it
+ * leaves, small rectangular signal packets riding it (more for more traffic), and
+ * one wire tag at the middle. A busy link is drawn with a double-dash pattern and a
+ * dead one with sparse dots, so the state never depends on colour alone.
  */
 function FlowEdge({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, markerEnd, selected, data }: EdgeProps<Edge<FlowData>>) {
-  const [path, labelX, labelY] = getSmoothStepPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, borderRadius: 14 });
+  const [path, labelX, labelY] = getSmoothStepPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, borderRadius: 8 });
   const state = data?.state ?? "live";
-  const color = state === "live" ? data?.color ?? "#3b82f6" : RED;
-  const fade = (data?.dim ? 0.15 : 1) * (state === "dead" ? 0.6 : 1);
+  const color = state === "live" ? data?.color ?? "var(--lab-compute)" : RED;
+  const fade = (data?.dim ? 0.2 : 1) * (state === "dead" ? 0.7 : 1);
   const dots = state === "dead" ? 0 : dotsFor(data?.flow ?? 0);
   const duration = state === "hot" ? 0.9 : 1.8;
+  const dash = state === "dead" ? "2 5" : state === "hot" ? "10 3 2 3" : "8 5";
   return (
     <>
-      <path d={path} fill="none" stroke={color} strokeWidth={selected ? 11 : 7} opacity={0.16 * fade} style={{ filter: "blur(3px)" }} aria-hidden />
+      <path d={path} fill="none" stroke="var(--lab-grid)" strokeWidth={selected ? 8 : 6} strokeLinecap="square" opacity={0.35 * fade} aria-hidden />
       <BaseEdge
         path={path}
         markerEnd={markerEnd}
@@ -191,32 +267,35 @@ function FlowEdge({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPo
         className={state === "dead" ? undefined : "lab-edge-live"}
         style={{
           stroke: color,
-          strokeWidth: selected ? 3 : state === "hot" ? 2.5 : 2,
-          strokeDasharray: state === "dead" ? "4 5" : "8 5",
+          strokeWidth: selected ? 3 : state === "hot" ? 3 : 2,
+          strokeDasharray: dash,
           opacity: fade,
           transition: "opacity 0.2s ease, stroke 0.3s ease",
         }}
       />
       {Array.from({ length: dots }, (_, i) => (
-        <circle key={i} r={3.5} fill={color} opacity={fade} className="lab-dot" aria-hidden>
-          <animateMotion dur={`${duration}s`} begin={`${-(duration / dots) * i}s`} repeatCount="indefinite" path={path} />
-        </circle>
+        <rect key={i} x={-3} y={-1.25} width={6} height={2.5} rx={1} fill={color} opacity={fade} className="lab-packet" aria-hidden>
+          <animateMotion dur={`${duration}s`} begin={`${-(duration / dots) * i}s`} repeatCount="indefinite" path={path} rotate="auto" />
+        </rect>
       ))}
       {state !== "dead" && data && data.flow > 0 ? (
         <EdgeLabelRenderer>
           <div
-            className="nodrag nopan pointer-events-none absolute flex flex-col items-center gap-0.5 transition-opacity"
+            className="nodrag nopan lab-mono pointer-events-none absolute flex items-stretch overflow-hidden whitespace-nowrap rounded-[4px] border-[1.5px] border-[color:var(--lab-grid)] bg-card text-[10px] font-medium text-card-foreground shadow-[0_1px_0_0_var(--lab-edge-shadow)] transition-opacity"
             style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`, opacity: fade }}
           >
-            {(data.parts.length > 0 ? data.parts : [{ label: "", rate: data.flow }]).map((part) => (
-              <div
-                key={part.label}
-                className="whitespace-nowrap rounded-full border bg-card px-1.5 py-px text-[10px] font-semibold tabular-nums shadow-sm"
-                style={{ color, borderColor: `${color}55` }}
-              >
-                {Math.round(part.rate).toLocaleString()}/s{part.label ? ` ${part.label}` : ""}
-              </div>
-            ))}
+            <span aria-hidden className="w-[3px] shrink-0" style={{ backgroundColor: color }} />
+            {(data.parts.length > 0 ? data.parts : [{ label: "", rate: data.flow }]).map((part, i) => {
+              const k = part.label ? partKind(part.label) : null;
+              return (
+                <span key={part.label || i} className={`flex items-center gap-1 px-1.5 py-0.5 ${i > 0 ? "border-l border-[color:var(--lab-grid)]" : ""}`}>
+                  {k?.glyph}
+                  <span className="font-bold">{Math.round(part.rate).toLocaleString()}/s</span>
+                  {k ? <span className="text-muted-foreground">{k.word}</span> : null}
+                  {part.label ? <span className="sr-only">{part.label}</span> : null}
+                </span>
+              );
+            })}
           </div>
         </EdgeLabelRenderer>
       ) : null}
@@ -224,16 +303,6 @@ function FlowEdge({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPo
   );
 }
 const edgeTypes = { flow: FlowEdge };
-
-const EDGE_CSS = `
-@keyframes lab-edge-flow { from { stroke-dashoffset: 26; } to { stroke-dashoffset: 0; } }
-.lab-edge-live { animation: lab-edge-flow 0.9s linear infinite; }
-@media (prefers-reduced-motion: reduce) { .lab-edge-live { animation: none; } .lab-dot { display: none; } }
-.dark .react-flow__controls { box-shadow: none; }
-.dark .react-flow__controls-button { background: #1f2937; color: #e5e7eb; border-bottom-color: #374151; }
-.dark .react-flow__controls-button:hover { background: #374151; }
-.dark .react-flow__controls-button svg { fill: currentColor; }
-`;
 
 function defaultsFor(kind: ComponentKind): NodeConfig {
   const cfg: NodeConfig = {};
@@ -276,7 +345,9 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
   const [confirm, setConfirm] = useState<"solution" | "copy" | null>(null);
   const start: Board = spec.startingBoard ?? { nodes: [], edges: [] };
   const targets = useMemo(() => spec.levels[0]?.targets ?? {}, [spec]);
-  const { screenToFlowPosition, fitView } = useReactFlow();
+  const { screenToFlowPosition, fitView, setCenter, getZoom } = useReactFlow();
+  const viewport = useViewport();
+  const names = useNames();
   const seq = useRef(0);
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -387,10 +458,17 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
     return ids;
   }, [hover, edges]);
 
-  function openSettings(id: string) {
+  const openSettings = useCallback((id: string) => {
     setSelected(id);
-    setDrawerId((cur) => (cur === id ? null : id));
-  }
+    const opening = drawerId !== id;
+    setDrawerId(opening ? id : null);
+    // On a phone the cassette is a deck along the bottom: lift the part into the view above it.
+    const node = nodes.find((n) => n.id === id);
+    if (opening && node && (rootRef.current?.clientWidth ?? 1000) < 576) {
+      const zoom = getZoom();
+      setCenter(node.position.x + NODE_W / 2, node.position.y + NODE_H / 2 + 110 / zoom, { zoom, duration: 250 });
+    }
+  }, [drawerId, nodes, getZoom, setCenter]);
   function closeDrawer() {
     const id = drawerId;
     setDrawerId(null);
@@ -399,9 +477,10 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
   const ctx: Ctx = useMemo(
     () => ({
       tiers: new Map(shownResult.tiers.map((t) => [t.id, t])), cfg: shownCfg, reachable, selected, drawerId, hit,
-      locked: runPhase !== null, readOnly, openSettings, focus,
+      locked: runPhase !== null, running: runPhase !== null, ghost: readOnly ? compare?.nodes : undefined, readOnly, openSettings, focus,
+      nameOf: names.nameOf, sizeLabel: names.sizeText,
     }),
-    [shownResult, shownCfg, reachable, selected, drawerId, hit, runPhase, focus, readOnly],
+    [shownResult, shownCfg, reachable, selected, drawerId, hit, runPhase, focus, readOnly, compare, names, openSettings],
   );
 
   const shownEdges: Edge<FlowData>[] = edges.map((e) => {
@@ -421,7 +500,7 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
       markerEnd: { type: MarkerType.ArrowClosed, color, width: 18, height: 18 },
     };
   });
-  const rolesOnBoard = [...new Set(nodes.map((n) => roleOf(n.data.kind)))];
+  const familiesOnBoard = [...new Set(nodes.map((n) => familyOf(n.data.kind)))];
   const palette = useMemo(() => paletteFor(spec.allowedComponents), [spec]);
   const running = runPhase !== null;
   /** No editing while a run plays, and none at all in the reference solution. */
@@ -522,45 +601,61 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
   const ran = runState === "done";
   const challengeLabel = spec.challenge ? "Visual challenge" : "LVL 1";
   const solution = spec.solution;
+  // The cassette grows out beside its component: its position follows the node through pan and zoom.
+  const anchor = drawerNode
+    ? anchorStyle(
+        `min(${Math.round((drawerNode.position.x + NODE_W) * viewport.zoom + viewport.x + 14)}px, calc(100% - 284px))`,
+        `max(8px, min(${Math.round(drawerNode.position.y * viewport.zoom + viewport.y)}px, calc(100% - 430px)))`,
+      )
+    : undefined;
   const checkLabels = useMemo(() => Object.fromEntries(report.checks.map((c) => [c.id, c.label])), [report]);
 
   return (
     <BoardCtx.Provider value={ctx}>
-      <style>{EDGE_CSS}</style>
-      <div ref={rootRef} onKeyDown={onRootKeyDown} className="not-prose @container my-6 overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5">
+      <style>{BOARD_CSS}</style>
+      <div ref={rootRef} onKeyDown={onRootKeyDown} className="lab-board not-prose @container my-6 overflow-hidden rounded-[8px] border-[1.5px] border-border bg-card text-card-foreground shadow-[0_2px_0_0_var(--lab-edge-shadow)]">
+        <div className="flex flex-wrap items-center justify-between gap-2 bg-[color:var(--lab-inspector)] px-4 py-2 text-slate-100">
           <div className="flex min-w-0 items-center gap-2">
             {readOnly ? (
-              <span className="shrink-0 rounded-md bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/20 dark:text-amber-200" data-testid="solution-badge">Reference solution</span>
+              <span className="lab-mono shrink-0 rounded-[4px] bg-amber-300 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-900" data-testid="solution-badge">Reference solution</span>
             ) : (
-              <span className="shrink-0 rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">{challengeLabel}</span>
+              <span className="lab-mono shrink-0 rounded-[4px] border border-sky-300/60 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-sky-200">{challengeLabel}</span>
             )}
-            <span className="truncate text-[13px] font-medium">{spec.title}</span>
+            <span className="lab-display truncate text-[14px] font-semibold">{spec.title}</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <div role="group" aria-label="Names" className="lab-mono flex items-center gap-1.5 text-[9.5px] font-bold uppercase tracking-wider text-slate-300">
+              <span>Names</span>
+              <span className="flex overflow-hidden rounded-[4px] border border-slate-500">
+                {(["generic", "aws"] as const).map((m) => (
+                  <button key={m} type="button" aria-pressed={names.mode === m} data-testid={`names-${m}`} onClick={() => names.setMode(m)}
+                    className={`px-1.5 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300 ${names.mode === m ? "bg-sky-300 text-slate-900" : "text-slate-200 hover:bg-white/10"}`}>
+                    {m === "aws" ? "AWS" : "Generic"}
+                  </button>
+                ))}
+              </span>
+            </div>
             {ran ? (
-              <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums ${report.allPass ? "bg-emerald-600 text-white" : "bg-red-600 text-white"}`} data-testid="score-chip">
-                {report.passed}/{report.total} checks
+              <span key={report.passed} className={`lab-stamp lab-mono rounded-[4px] border-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${report.allPass ? "border-emerald-300 text-emerald-300" : "border-red-300 text-red-300"}`} data-testid="score-chip">
+                {report.allPass ? `${report.total}/${report.total} verified` : `${report.passed}/${report.total} checks`}
               </span>
             ) : null}
             {readOnly ? (
               <>
-                <button type="button" onClick={onBack} className="rounded-md px-2 py-1 text-[12px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground">Back to my design</button>
-                <button type="button" onClick={onCompare} className="rounded-md px-2 py-1 text-[12px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground" data-testid="compare-button">Compare with mine</button>
-                <button type="button" onClick={() => setConfirm("copy")} disabled={running} className="rounded-md border border-border px-2 py-1 text-[12px] font-medium hover:bg-muted disabled:opacity-40" data-testid="copy-button">Copy to my board</button>
+                <button type="button" onClick={onBack} className={HEAD_BTN}>Back to my design</button>
+                <button type="button" onClick={onCompare} className={HEAD_BTN} data-testid="compare-button">Compare with mine</button>
+                <button type="button" onClick={() => setConfirm("copy")} disabled={running} className={`${HEAD_BTN} border border-slate-500`} data-testid="copy-button">Copy to my board</button>
               </>
             ) : (
               <>
-                <button type="button" onClick={onReset} disabled={running} className="rounded-md px-2 py-1 text-[12px] text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40">
-                  Reset
-                </button>
+                <button type="button" onClick={onReset} disabled={running} className={HEAD_BTN}>Reset</button>
                 {solution && onOpenSolution ? (
                   <button
                     type="button"
                     onClick={() => setConfirm("solution")}
                     disabled={!canOpenSolution || running}
                     title={canOpenSolution ? "See how this lab is solved" : "Press Run once first, then you can see a solution"}
-                    className="rounded-md border border-border px-2.5 py-1 text-[12px] font-medium hover:bg-muted disabled:opacity-40"
+                    className={`${HEAD_BTN} border border-slate-500`}
                     data-testid="solution-button"
                   >
                     Solution
@@ -569,16 +664,14 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
               </>
             )}
             {running ? (
-              <button type="button" onClick={skipRun} className="rounded-lg border border-border px-3 py-1.5 text-[13px] font-medium hover:bg-muted">
-                Skip to results
-              </button>
+              <button type="button" onClick={skipRun} className={`${HEAD_BTN} border border-slate-500`}>Skip to results</button>
             ) : null}
             <button
               type="button"
               onClick={startRun}
               disabled={running}
               data-testid="run-button"
-              className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-1.5 text-[13px] font-semibold text-white transition-transform hover:bg-emerald-700 active:scale-95 disabled:opacity-60"
+              className="lab-mono flex items-center gap-1.5 rounded-[5px] border-b-2 border-emerald-950 bg-emerald-700 px-3 py-1.5 text-[11.5px] font-bold uppercase tracking-wider text-white hover:bg-emerald-600 active:translate-y-[2px] active:border-b-0 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300"
             >
               <span aria-hidden>{"▶"}</span> {running ? "Running..." : runState === "idle" ? "Run" : "Run again"}
             </button>
@@ -628,13 +721,13 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
                         type="button"
                         draggable={!locked}
                         disabled={locked}
-                        aria-label={`Add ${COMPONENT_CATALOG[k].label}`}
+                        aria-label={`Add ${names.nameOf(k)}`}
                         onDragStart={(e) => { e.dataTransfer.setData(DRAG_TYPE, k); e.dataTransfer.effectAllowed = "move"; }}
                         onClick={() => addNode(k)}
-                        className="flex shrink-0 cursor-grab items-center gap-2 rounded-lg border border-border bg-background px-2 py-1.5 text-left transition-colors hover:border-blue-400 hover:bg-muted/40 active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50 @2xl:mb-1 @2xl:w-full"
+                        className="flex shrink-0 cursor-grab items-center gap-2 rounded-[6px] border-[1.5px] border-border bg-card px-2 py-1.5 text-left shadow-[0_2px_0_0_var(--lab-edge-shadow)] transition-colors hover:bg-muted active:translate-y-px active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--lab-accent)] @2xl:mb-1 @2xl:w-full"
                       >
-                        <span aria-hidden className="flex h-5 w-5 items-center justify-center rounded text-[11px]" style={chipStyle(k)}>{iconOf(k)}</span>
-                        <span className="flex-1 whitespace-nowrap text-[12px] font-medium @2xl:truncate">{COMPONENT_CATALOG[k].label}</span>
+                        <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-[4px]" style={{ backgroundColor: tint(colorOf(k), 14), color: colorOf(k) }}><KindGlyph kind={k} size={16} /></span>
+                        <span className="flex-1 whitespace-nowrap text-[12px] font-medium @2xl:truncate">{names.nameOf(k)}</span>
                         {price ? <span className="hidden text-[10px] tabular-nums text-muted-foreground @2xl:inline">${price.pricePerHour}</span> : null}
                       </button>
                     );
@@ -648,7 +741,7 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
           {/* Canvas, with the settings drawer laid over its right edge (or bottom, on a phone). */}
           <div className="flex min-w-0 flex-col">
             <div
-              className="relative h-[440px] overflow-hidden bg-muted/20 @2xl:h-[500px]"
+              className="relative h-[520px] overflow-hidden bg-[color:var(--lab-canvas)] @2xl:h-[500px]"
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; }}
               onDrop={onDrop}
             >
@@ -685,11 +778,12 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
                 maxZoom={1.5}
                 proOptions={{ hideAttribution: true }}
               >
-                <Background variant={BackgroundVariant.Dots} gap={18} size={1} className="!bg-transparent" />
+                <Background variant={BackgroundVariant.Cross} gap={18} size={6} color="var(--lab-grid)" className="!bg-transparent" />
                 <Controls showInteractive={false} position="bottom-left" />
               </ReactFlow>
               {drawerNode && readOnly ? (
                 <PartExplainer
+                  anchor={anchor}
                   id={drawerNode.id}
                   kind={drawerNode.data.kind}
                   part={solution?.parts[drawerNode.id]}
@@ -700,6 +794,7 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
                 />
               ) : drawerNode ? (
                 <SettingsDrawer
+                  anchor={anchor}
                   id={drawerNode.id}
                   kind={drawerNode.data.kind}
                   cfg={controls.perNode[drawerNode.id] ?? {}}
@@ -730,14 +825,14 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border px-3 py-1.5 text-[11px] text-muted-foreground">
               <span>Link color = the component it leaves:</span>
-              {rolesOnBoard.map((r) => (
-                <span key={r} className="inline-flex items-center gap-1">
-                  <span aria-hidden className="inline-block h-[3px] w-4 rounded-full" style={{ backgroundColor: ROLE_COLOR[r] }} />
-                  {ROLE_LABEL[r]}
+              {familiesOnBoard.map((f) => (
+                <span key={f} className="inline-flex items-center gap-1">
+                  <span aria-hidden className="inline-block h-[3px] w-4" style={{ backgroundColor: familyColor(f) }} />
+                  {FAMILY_LABEL[f]}
                 </span>
               ))}
               <span className="inline-flex items-center gap-1">
-                <span aria-hidden className="inline-block h-[3px] w-4 rounded-full" style={{ backgroundColor: RED }} />
+                <span aria-hidden className="inline-block h-[3px] w-4" style={{ backgroundColor: RED }} />
                 down, unlinked or overloaded
               </span>
             </div>
@@ -776,7 +871,7 @@ export function HldBoard({ spec }: { spec: HldLabSpec }) {
   const solutionSpec = useMemo(() => (spec.solution ? { ...spec, startingBoard: spec.solution.board } : spec), [spec]);
 
   return (
-    <>
+    <NamesProvider>
       {/* The learner's board stays mounted while the solution is open, so their work is never lost. */}
       <div hidden={mode === "solution"}>
         <ReactFlowProvider key={generation}>
@@ -806,6 +901,6 @@ export function HldBoard({ spec }: { spec: HldLabSpec }) {
           />
         </ReactFlowProvider>
       ) : null}
-    </>
+    </NamesProvider>
   );
 }

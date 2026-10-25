@@ -15,7 +15,16 @@ export interface CompareLine {
   explains: string[];
 }
 
+/** How one part of the reference design stands against the learner's design, for the blueprint ghost. */
+export interface GhostState {
+  state: "matched" | "missing" | "diff";
+  /** Short notes for a pill on an under-configured part: "Hit rate lower". */
+  notes: string[];
+}
+
 export interface CompareResult {
+  /** By node id in the reference design. */
+  nodes: Record<string, GhostState>;
   lines: CompareLine[];
   failing: number;
   /** How many of the failing checks at least one difference explains. */
@@ -39,7 +48,7 @@ function byKind(board: Board): Map<ComponentKind, BoardNode[]> {
 
 export function compareDesigns(spec: HldLabSpec, mine: Board, report: ChallengeReport): CompareResult {
   const solution = spec.solution;
-  if (!solution) return { lines: [], failing: 0, explained: 0, headline: "This lab has no reference solution." };
+  if (!solution) return { nodes: {}, lines: [], failing: 0, explained: 0, headline: "This lab has no reference solution." };
   const failing = report.checks.filter((c) => !c.pass);
   const failingById = new Map(failing.map((c) => [c.id, c.label]));
   const explainsOf = (ids: string[]) => [...new Set(ids.filter((id) => failingById.has(id)).map((id) => failingById.get(id)!))];
@@ -51,20 +60,24 @@ export function compareDesigns(spec: HldLabSpec, mine: Board, report: ChallengeR
     return node ? solution.parts[node.id]?.checks ?? [] : [];
   };
   const lines: CompareLine[] = [];
+  const nodes: Record<string, GhostState> = {};
 
   for (const [kind, refNodes] of ref) {
     if (kind === "client") continue;
     const mineNodes = own.get(kind) ?? [];
     const checks = partChecks(kind);
     if (mineNodes.length === 0) {
+      for (const n of refNodes) nodes[n.id] = { state: "missing", notes: [] };
       lines.push({ text: `The reference has a ${label(kind).toLowerCase()}. Your design has none.`, explains: explainsOf(checks) });
       continue;
     }
+    refNodes.forEach((n, i) => { if (i >= mineNodes.length) nodes[n.id] = { state: "missing", notes: [] }; });
     if (mineNodes.length < refNodes.length) {
       lines.push({ text: `The reference has ${refNodes.length} of these: ${label(kind).toLowerCase()}. You have ${mineNodes.length}.`, explains: explainsOf(checks) });
     }
     const refNode = refNodes[0]!;
     const mineNode = mineNodes[0]!;
+    const notes: string[] = [];
     for (const prop of COMPONENT_CATALOG[kind].properties) {
       if (prop.id === "down") continue;
       const a = propValue(mineNode, prop.id);
@@ -78,7 +91,10 @@ export function compareDesigns(spec: HldLabSpec, mine: Board, report: ChallengeR
         text = `${label(kind)}: "${prop.label}" is ${how} than in the reference.`;
       }
       lines.push({ text, explains: explainsOf(checks) });
+      notes.push(prop.type === "toggle" ? `${prop.label} ${Number(a) > 0 ? "on" : "off"}` : `${prop.label} ${typeof a === "number" && typeof b === "number" ? (a < b ? "lower" : "higher") : prop.type === "size" ? (price(a) < price(b) ? "smaller" : "larger") : "differs"}`);
     }
+    if (mineNodes.length < refNodes.length) notes.push("fewer than reference");
+    nodes[refNode.id] = { state: notes.length > 0 ? "diff" : "matched", notes };
   }
 
   // Links, by the kinds they join, so renamed or repeated parts do not confuse the comparison.
@@ -116,5 +132,5 @@ export function compareDesigns(spec: HldLabSpec, mine: Board, report: ChallengeR
       : lines.length === 0
         ? `Your design fails ${failing.length} check${failing.length === 1 ? "" : "s"}, but nothing differs in parts, settings or links. Read each failure's reason.`
         : `Your design fails ${failing.length} check${failing.length === 1 ? "" : "s"}. These differences explain ${explained} of them.`;
-  return { lines, failing: failing.length, explained, headline };
+  return { nodes, lines, failing: failing.length, explained, headline };
 }
