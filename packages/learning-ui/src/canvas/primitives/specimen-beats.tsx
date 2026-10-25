@@ -24,7 +24,7 @@ import { SpecimenSvg } from "./ui-specimen-svg";
 export type SpecVerdict = { text: string; tone: Tone };
 
 /** Picture width in viewBox units; the screen is centred inside it. */
-export const SPECIMEN_PICTURE_WIDTH = 360;
+export const SPECIMEN_PICTURE_WIDTH = 324;
 const BANNER_SPACE = 48;
 
 function useLayouts(screens: SpecScreen[]): ScreenLayout[] {
@@ -281,6 +281,8 @@ export type SpecimenSkimConfig = {
   screen: SpecScreen;
   /** How long the page shows, in seconds. */
   seconds: number;
+  /** A longer time the reader may choose instead, for example for reading in a second language. */
+  slowerSeconds?: number;
   question: string;
   options: SkimOption[];
   answer: string;
@@ -294,8 +296,9 @@ export type SpecimenSkimConfig = {
 
 type SkimPhase = "ready" | "showing" | "asking" | "answered";
 
-export function SpecimenSkim({ title, limits, screen, seconds, question, options, answer, why, hint, rightVerdict, wrongVerdict }: SpecimenSkimConfig & { title: string; limits: string }) {
+export function SpecimenSkim({ title, limits, screen, seconds: fastSeconds, slowerSeconds, question, options, answer, why, hint, rightVerdict, wrongVerdict }: SpecimenSkimConfig & { title: string; limits: string }) {
   const [phase, setPhase] = useState<SkimPhase>("ready");
+  const [seconds, setSeconds] = useState(fastSeconds);
   const [left, setLeft] = useState(seconds);
   const [picked, setPicked] = useState<string | null>(null);
   const layout = useMemo(() => layoutScreen(screen), [screen]);
@@ -327,7 +330,17 @@ export function SpecimenSkim({ title, limits, screen, seconds, question, options
   const covered = phase === "ready" || phase === "asking";
   const controls =
     phase === "ready" ? (
-      <BeatActionButton onClick={() => { setLeft(seconds); setPhase("showing"); }}>Start the skim</BeatActionButton>
+      <>
+        {slowerSeconds ? (
+          <BeatChoice
+            label="Time to look"
+            options={[{ id: "fast", label: `${fastSeconds} s` }, { id: "slow", label: `${slowerSeconds} s` }] as const}
+            value={seconds === slowerSeconds ? "slow" : "fast"}
+            onChange={(v) => setSeconds(v === "slow" ? slowerSeconds : fastSeconds)}
+          />
+        ) : null}
+        <BeatActionButton onClick={() => { setLeft(seconds); setPhase("showing"); }}>Start the skim</BeatActionButton>
+      </>
     ) : phase === "answered" ? (
       <BeatActionButton onClick={() => { setPicked(null); setPhase("ready"); }}>Try again</BeatActionButton>
     ) : null;

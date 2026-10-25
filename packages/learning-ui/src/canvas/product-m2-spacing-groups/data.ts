@@ -4,7 +4,7 @@ import { makeSpecimenLadderCanvas } from "../primitives/canvas-factories";
 
 // Product Sense, chapter 2.4: space does the grouping. Maryam's Halaqa list
 // of study groups (fictional) at five amounts of space between the groups,
-// while the space inside each group stays at 6. Drag to see the groups appear,
+// while the space inside each group stays at 4. Every amount is a multiple of 4. Drag to see the groups appear,
 // then drift so far apart that a phone shows only one.
 
 const GROUPS = [
@@ -29,18 +29,18 @@ function group(g: (typeof GROUPS)[number], inner: number): SpecBlock {
 
 function screen(between: number): SpecScreen {
   return {
-    alt: `Three study groups, with ${between} units of space between groups and 6 inside each group.`,
+    alt: `Three study groups, with ${between} units of space between groups and 4 inside each group.`,
     gap: between,
-    blocks: [{ kind: "nav", title: "Study groups" }, ...GROUPS.map((g) => group(g, 6))],
+    blocks: [{ kind: "nav", title: "Study groups" }, ...GROUPS.map((g) => group(g, 4))],
   };
 }
 
 const STEPS = [
-  { between: 6, text: "Nine lines, no groups", tone: "bad" as const },
+  { between: 4, text: "Nine lines, no groups", tone: "bad" as const },
   { between: 12, text: "Groups start to show", tone: "warn" as const },
-  { between: 22, text: "Each group reads as one", tone: "good" as const },
-  { between: 36, text: "Clear, but fewer fit", tone: "warn" as const },
-  { between: 56, text: "Groups drift apart", tone: "bad" as const },
+  { between: 24, text: "Each group reads as one", tone: "good" as const },
+  { between: 40, text: "Clear, but fewer fit", tone: "warn" as const },
+  { between: 64, text: "Groups drift apart", tone: "bad" as const },
 ];
 
 export const productM2SpacingGroups: CustomCanvasSpec = {
@@ -51,7 +51,7 @@ export const productM2SpacingGroups: CustomCanvasSpec = {
     "Real screens group with more than space: lines, cards and type size help too. The amounts are viewBox units, not pixels on your phone. Halaqa and its groups are fictional.",
   component: makeSpecimenLadderCanvas({
     label: "Space between groups",
-    steps: STEPS.map((s) => ({ screen: screen(s.between), verdict: { text: s.text, tone: s.tone }, valueText: `${s.between} between groups, 6 inside` })),
+    steps: STEPS.map((s) => ({ screen: screen(s.between), verdict: { text: s.text, tone: s.tone }, valueText: `${s.between} between groups, 4 inside` })),
     ends: ["less", "more"],
     caption: "Space between groups",
     hint: "Drag across the picture to change the space between groups.",

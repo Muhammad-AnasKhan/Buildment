@@ -75,11 +75,15 @@ export type SpecScreen = {
   gap?: number;
   /** "paper" is white in both themes, for screens that use literal colours. */
   background?: "card" | "muted" | "glow" | "ink" | "paper";
+  /** "rtl" mirrors the layout for Arabic and other right-to-left screens. */
+  dir?: "ltr" | "rtl";
   blocks: SpecBlock[];
 };
 
 export type PlacedText = {
   type: "text";
+  /** Set on right-to-left screens, so the text is shaped and ordered right to left. */
+  rtl?: boolean;
   /** Literal colour, when the block set one. */
   color?: string;
   x: number;
@@ -403,6 +407,7 @@ export function layoutScreen(screen: SpecScreen): ScreenLayout {
   const contentH = stack(ctx, screen.blocks, margin + pad, top + pad, pageW - pad * 2, gap);
   const pageH = contentH + pad * 2;
   const height = top + pageH + (frame === "phone" ? margin + 8 : 0);
+  if (screen.dir === "rtl") mirror(ctx, margin, pageW);
   return {
     width: pageW + margin * 2,
     height,
@@ -410,6 +415,34 @@ export function layoutScreen(screen: SpecScreen): ScreenLayout {
     items: ctx.items,
     regions: ctx.regions,
   };
+}
+
+/** Flips every shape across the page's centre line, so a right-to-left screen starts on the right. */
+function mirror(ctx: Ctx, left: number, width: number) {
+  const flip = (x: number) => 2 * left + width - x;
+  for (const p of ctx.items) {
+    switch (p.type) {
+      case "rect":
+      case "art":
+        p.x = flip(p.x) - p.w;
+        break;
+      case "glyph":
+        p.x = flip(p.x) - p.size;
+        break;
+      case "spinner":
+        p.cx = flip(p.cx);
+        break;
+      case "line":
+        [p.x1, p.x2] = [flip(p.x2), flip(p.x1)];
+        break;
+      case "text":
+        p.x = flip(p.x);
+        p.anchor = p.anchor === "start" ? "end" : p.anchor === "end" ? "start" : "middle";
+        p.rtl = true;
+        break;
+    }
+  }
+  for (const r of ctx.regions) r.x = flip(r.x) - r.w;
 }
 
 /** Ids used by blocks anywhere in a screen, in order. */

@@ -137,3 +137,21 @@ describe("contrast and motion", () => {
     expect(layout.items.filter((p) => !p.motion).length).toBe(1);
   });
 });
+
+describe("right-to-left screens", () => {
+  it("mirrors shapes and text across the page, keeping them inside it", () => {
+    const base = { alt: "x", blocks: [{ kind: "text" as const, id: "t", text: "حلقة دراسة" }, { kind: "button" as const, id: "b", label: "Join" }] };
+    const ltr = layoutScreen(base);
+    const rtl = layoutScreen({ ...base, dir: "rtl" });
+    const right = ltr.page.x + ltr.page.w;
+    const [lt, rt] = [ltr.regions[0], rtl.regions[0]];
+    expect(rt.x + rt.w).toBeCloseTo(right - (lt.x - ltr.page.x), 5);
+    const text = rtl.items.find((p) => p.type === "text");
+    expect(text && text.type === "text" && text.anchor).toBe("end");
+    expect(text && text.type === "text" && text.rtl).toBe(true);
+    for (const r of rtl.regions) {
+      expect(r.x).toBeGreaterThanOrEqual(rtl.page.x - 0.5);
+      expect(r.x + r.w).toBeLessThanOrEqual(right + 0.5);
+    }
+  });
+});

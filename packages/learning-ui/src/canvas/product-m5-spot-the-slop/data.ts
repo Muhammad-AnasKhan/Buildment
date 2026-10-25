@@ -44,7 +44,7 @@ const EDITORIAL: SpecScreen = {
   alt: "Wasel's page rebuilt around real content: a plain headline that says what happens, the price list as the picture, opening hours and one clear button.",
   blocks: [
     { kind: "text", text: "WASEL PRINT AND COPY", size: 11, weight: 700, tone: "muted" },
-    { kind: "text", text: "Send your file now. Pick it up printed by 4 pm.", size: 22, weight: 700, font: "serif" },
+    { kind: "text", text: "Send your file before noon. Pick it up printed by 4 pm.", size: 22, weight: 700, font: "serif" },
     { kind: "image", art: "receipt", height: 78, caption: "Black and white 0.50 shekels a page. Colour 2 shekels. Binding 5." },
     { kind: "button", label: "Upload a file", full: true },
     { kind: "text", text: "Open 8 am to 6 pm, near the university gate.", size: 12.5, tone: "muted" },
