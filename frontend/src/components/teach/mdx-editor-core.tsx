@@ -36,6 +36,7 @@ import { normalizeLearningLogQuestionProps } from "@/shared/lib/learning-log";
 // Per-block editor descriptors — each block folder owns its own descriptor.
 import { quizEditorDescriptor } from "@/blocks/quiz/editorDescriptor";
 import { predictEditorDescriptor } from "@/blocks/predict/editorDescriptor";
+import { aiInterviewEditorDescriptor } from "@/blocks/ai-interview/editorDescriptor";
 import { openQuestionEditorDescriptor } from "@/blocks/open-question/editorDescriptor";
 import { codeEditorDescriptor } from "@/blocks/code/editorDescriptor";
 import { mustReadEditorDescriptor } from "@/blocks/must-read/editorDescriptor";
@@ -56,6 +57,7 @@ import { uploadCourseImage } from "@/lib/course-media-upload";
 const blockRegistryDescriptors = [
   quizEditorDescriptor,
   predictEditorDescriptor,
+  aiInterviewEditorDescriptor,
   openQuestionEditorDescriptor,
   codeEditorDescriptor,
   mustReadEditorDescriptor,

@@ -51,6 +51,16 @@ const schema = z.object({
   /** OpenRouter access for AI review drafts; drafting is disabled without a key. */
   OPENROUTER_API_KEY: optionalString,
   OPENROUTER_REVIEW_MODEL: optionalString,
+  /** Default model for learner AI interviews; each learner may pick another one. */
+  OPENROUTER_INTERVIEW_MODEL: optionalString,
+  /**
+   * 32 random bytes, base64, used to encrypt learners' own AI keys (AES-256-GCM).
+   * Without it the AI interview feature reports that it is not set up.
+   */
+  AI_KEY_ENCRYPTION_KEY: optionalString.refine(
+    (value) => value === undefined || (/^[A-Za-z0-9+/]+={0,2}$/.test(value) && Buffer.from(value, "base64").length === 32),
+    "AI_KEY_ENCRYPTION_KEY must be 32 bytes encoded as base64 (for example: openssl rand -base64 32)"
+  ),
 
   /** Private Cloudflare R2 bucket used for instructor-uploaded course images. */
   R2_ENDPOINT: optionalString,

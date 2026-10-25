@@ -18,6 +18,7 @@ export function restoreInteractiveBlockTags(source: string): string {
     "ProjectPreview",
     "LearningObjectives",
     "Predict",
+    "AiInterview",
     "MustRead",
     "MandatoryReadCard",
     "VideoBlock",

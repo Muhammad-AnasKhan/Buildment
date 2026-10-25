@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { startTransition, useActionState } from "react";
 import type { FormEvent } from "react";
 import { signInWithPasswordAction } from "@/server/actions/sign-in-credentials";
 import { sendMagicLinkAction } from "@/server/actions/magic-link";
@@ -30,24 +30,27 @@ export function PasswordLoginForm({
   const emailError = errorFor("email");
   const passwordError = errorFor("password");
 
-  function validateBeforeSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const parsed = loginSchema.safeParse({
       email: formData.get("email"),
       password: formData.get("password"),
     });
     if (!parsed.success) {
-      event.preventDefault();
       setLocalErrors(zodAuthErrors(parsed.error));
-    } else {
-      setLocalErrors({});
+      return;
     }
+    setLocalErrors({});
+    // Calling the action directly keeps what was typed: a form action resets the
+    // fields when it settles, even when it returns an error.
+    startTransition(() => action(formData));
   }
 
   return (
     <form
       action={action}
-      onSubmit={validateBeforeSubmit}
+      onSubmit={handleSubmit}
       noValidate
       className="space-y-3.5"
     >
@@ -133,24 +136,24 @@ export function MagicLinkForm({ redirectTo }: { redirectTo?: string | null }) {
     useAuthFormErrors(state);
   const emailError = errorFor("email");
 
-  function validateBeforeSubmit(event: FormEvent<HTMLFormElement>) {
-    const parsed = authEmailSchema.safeParse(
-      new FormData(event.currentTarget).get("email"),
-    );
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const parsed = authEmailSchema.safeParse(formData.get("email"));
     if (!parsed.success) {
-      event.preventDefault();
       setLocalErrors({
         email: parsed.error.issues[0]?.message ?? "Enter a valid email",
       });
-    } else {
-      setLocalErrors({});
+      return;
     }
+    setLocalErrors({});
+    startTransition(() => action(formData));
   }
 
   return (
     <form
       action={action}
-      onSubmit={validateBeforeSubmit}
+      onSubmit={handleSubmit}
       noValidate
       className="space-y-3.5"
     >

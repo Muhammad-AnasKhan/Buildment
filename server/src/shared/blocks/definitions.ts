@@ -27,6 +27,9 @@ import { VideoConfigSchema, type VideoConfig } from "./video/schema.js";
 import { VisualWalkthroughConfigSchema, type VisualWalkthroughConfig } from "./visual-walkthrough/schema.js";
 import { VisualDiagramConfigSchema, type VisualDiagramConfig } from "./visual-diagram/schema.js";
 import { RoadmapConfigSchema, type RoadmapConfig } from "./roadmap/schema.js";
+import { AiInterviewConfigSchema, type AiInterviewConfig, type AiInterviewPayload } from "./ai-interview/schema.js";
+import { gradeAiInterview } from "./ai-interview/grade.js";
+import { reportAiInterview } from "./ai-interview/report.js";
 
 // The one place a BlockType maps to its schema, grader and report — see
 // docs/03-blocks-registry.mdx. The API grades against this table; the frontend
@@ -150,6 +153,15 @@ export const blockDefinitions = {
     grade: gradePredict,
     report: reportPredict,
   } satisfies BlockDefinition<PredictConfig, PredictPayload>,
+  AI_INTERVIEW: {
+    type: "AI_INTERVIEW",
+    version: 1,
+    behavior: "assessment",
+    progress: "completion",
+    schema: AiInterviewConfigSchema,
+    grade: gradeAiInterview,
+    report: reportAiInterview,
+  } satisfies BlockDefinition<AiInterviewConfig, AiInterviewPayload>,
 } as const;
 
 export type RegisteredBlockType = keyof typeof blockDefinitions;

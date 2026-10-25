@@ -204,6 +204,18 @@ optional `context` (`method`, `url`, `bearer`, `responseHint`). Import pipeline 
 
 Registry folder: `src/blocks/predict/` — same contract as `QUIZ`.
 
+## `<AiInterview>`: text mock interview on the learner's own key
+
+Authored with a ` ```aiinterview ` fence (`title`, `opening`, `focus`, `context`, `maxTurns`, `whyDepth`,
+server-only `rubric`, `required`). The learner chats with an AI interviewer, then finishes to get structured
+feedback. Registry type `AI_INTERVIEW`, folder `shared/blocks/ai-interview/`.
+
+- Completion: a session is finished and its feedback saved. **No automatic score.**
+- `rubric` never reaches the client or a report.
+- Reports: mentors read the transcript and feedback in the mentee evaluation.
+
+Full format, endpoints and key handling: [`13-ai-interview.mdx`](13-ai-interview.mdx).
+
 ## `<Callout>` / `<Steps>` / `<Diagram>` — non-interactive presentation
 
 Not graded, but part of the component library: styled callouts (info/warn/tip), numbered step

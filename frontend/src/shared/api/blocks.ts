@@ -13,6 +13,8 @@ import type { ProjectPreviewConfig } from "../blocks/project-preview/schema";
 import type { RoadmapConfig } from "../blocks/roadmap/schema";
 import type { VisualDiagramConfig } from "../blocks/visual-diagram/schema";
 import type { VisualWalkthroughConfig } from "../blocks/visual-walkthrough/schema";
+import type { SanitizedAiInterviewConfig } from "../blocks/ai-interview/schema";
+import type { AiInterviewInitialState } from "./ai";
 
 // Wire contract for GET /api/v1/blocks/:blockId/state: the client-safe config plus
 // the caller's latest answer, shaped for each block's client component.
@@ -57,6 +59,12 @@ export type MustReadBlockState = {
   initialRead: boolean;
 };
 
+export type AiInterviewBlockState = {
+  type: "AI_INTERVIEW";
+  config: SanitizedAiInterviewConfig;
+  initialState: AiInterviewInitialState;
+};
+
 /** Presentation blocks carry no answer; the reader only needs their config. */
 export type ContentBlockState =
   | { type: "STEPS"; config: StepsConfig }
@@ -74,6 +82,7 @@ export type BlockState =
   | CodeBlockState
   | OpenQuestionBlockState
   | MustReadBlockState
+  | AiInterviewBlockState
   | ContentBlockState;
 
 /** Quiz-mode chapter: every question's last answer, for the wizard's initial state. */

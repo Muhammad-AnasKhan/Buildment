@@ -106,4 +106,3 @@ export function EstimatePlayCanvas({ title, limits }: { title: string; purpose: 
     </BeatFrame>
   );
 }
-

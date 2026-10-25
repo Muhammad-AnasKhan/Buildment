@@ -117,6 +117,14 @@ import { slipOrGiveUp } from "./slip-or-give-up/data";
 import { whichHabitFirst } from "./which-habit-first/data";
 import { dinaStudyBlock } from "./dina-study-block/data";
 import { prayerTimeAnchors } from "./prayer-time-anchors/data";
+import { prefillDecodeSteps } from "./prefill-decode-steps/data";
+import { kvCachePerToken } from "./kv-cache-per-token/data";
+import { gpuMemoryBudget } from "./gpu-memory-budget/data";
+import { pagedKvAllocation } from "./paged-kv-allocation/data";
+import { speculativeDecodingGain } from "./speculative-decoding-gain/data";
+import { selfHostOrApi } from "./self-host-or-api/data";
+import { admissionControlTokens } from "./admission-control-tokens/data";
+import { deploymentFitSteps } from "./deployment-fit-steps/data";
 import { sysdesignTwoClocks } from "./sysdesign-two-clocks/data";
 import { sysdesignClockBand } from "./sysdesign-clock-band/data";
 import { sysdesignBandOverlap } from "./sysdesign-band-overlap/data";
@@ -830,6 +838,14 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "which-habit-first": whichHabitFirst,
   "dina-study-block": dinaStudyBlock,
   "prayer-time-anchors": prayerTimeAnchors,
+  "prefill-decode-steps": prefillDecodeSteps,
+  "kv-cache-per-token": kvCachePerToken,
+  "gpu-memory-budget": gpuMemoryBudget,
+  "paged-kv-allocation": pagedKvAllocation,
+  "speculative-decoding-gain": speculativeDecodingGain,
+  "self-host-or-api": selfHostOrApi,
+  "admission-control-tokens": admissionControlTokens,
+  "deployment-fit-steps": deploymentFitSteps,
   "sysdesign-two-clocks": sysdesignTwoClocks,
   "sysdesign-clock-band": sysdesignClockBand,
   "sysdesign-band-overlap": sysdesignBandOverlap,

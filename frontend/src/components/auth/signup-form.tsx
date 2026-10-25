@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { startTransition, useActionState } from "react";
 import type { FormEvent } from "react";
 import { signupAction, type SignupState } from "@/server/actions/signup";
 import { signupSchema } from "@/shared/lib/auth-validation";
@@ -21,7 +21,8 @@ export function SignupForm() {
   const emailError = errorFor("email");
   const passwordError = errorFor("password");
 
-  function validateBeforeSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const parsed = signupSchema.safeParse({
       name: formData.get("name"),
@@ -29,17 +30,19 @@ export function SignupForm() {
       password: formData.get("password"),
     });
     if (!parsed.success) {
-      event.preventDefault();
       setLocalErrors(zodAuthErrors(parsed.error));
-    } else {
-      setLocalErrors({});
+      return;
     }
+    setLocalErrors({});
+    // Calling the action directly keeps what was typed: a form action resets the
+    // fields when it settles, even when it returns an error.
+    startTransition(() => formAction(formData));
   }
 
   return (
     <form
       action={formAction}
-      onSubmit={validateBeforeSubmit}
+      onSubmit={handleSubmit}
       noValidate
       className="space-y-3.5"
     >

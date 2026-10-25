@@ -51,6 +51,17 @@ function MermaidDiagram(props: {
 }) {
   return <WebMermaidDiagram {...props} scriptSrc={mermaidScript} />;
 }
+// The AI interview needs the learner's own key and the web app's settings, so the desktop app only points to it.
+function AiInterview(props: { id?: string }) {
+  return (
+    <PendingBlockCard
+      typeLabel="AI interview"
+      title="AI interview"
+      description="This mock interview is available in the web app."
+      blockId={props.id}
+    />
+  );
+}
 function LearningObjectives(props: any) {
   return (
     <LearningObjectivesView
@@ -72,6 +83,7 @@ export const lessonBlocks: Record<string, ComponentType<any>> = {
   EcosystemGallery: BlockGallery,
   Quiz: Practice,
   Predict: Practice,
+  AiInterview,
   OpenQuestion: Practice,
   CodeExercise: Practice,
   Code: Practice,

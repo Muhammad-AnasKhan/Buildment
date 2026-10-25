@@ -146,4 +146,3 @@ export function ShardsPlayCanvas({ title, limits }: { title: string; purpose: st
     </BeatFrame>
   );
 }
-

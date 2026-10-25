@@ -7,7 +7,7 @@
  * script implements): the mentor's prose is kept close to verbatim. The two
  * things it actively transforms are:
  *
- *   1. Explicit interactive fences (`quiz`, `openquestion`, `predict`, `codeexercise`) become
+ *   1. Explicit interactive fences (`quiz`, `openquestion`, `predict`, `aiinterview`, `codeexercise`) become
  *      registered blocks, with grading-only config kept server-side.
  *   2. Explicit presentation components such as ChapterRecap and ProjectPreview
  *      become registered presentation blocks.
@@ -35,6 +35,7 @@ import { QuizConfigSchema, normalizeQuizConfig } from "../src/shared/blocks/quiz
 import { VisualWalkthroughConfigSchema } from "../src/shared/blocks/visual-walkthrough/schema.js";
 import { VisualDiagramConfigSchema } from "../src/shared/blocks/visual-diagram/schema.js";
 import { RoadmapConfigSchema } from "../src/shared/blocks/roadmap/schema.js";
+import { AiInterviewFenceSchema } from "../src/shared/blocks/ai-interview/schema.js";
 import { COURSE_SOURCE_DIR, loadCourseManifest, type CourseManifest } from "./course-source.js";
 import { recomputeEnrollmentRollup } from "../src/services/progress/compute.js";
 
@@ -73,7 +74,7 @@ const CHAPTER_NAMES: Record<number, string> = {
 
 export type PendingBlock = {
   id: string;
-  type: "QUIZ" | "OPEN_QUESTION" | "CHAPTER_RECAP" | "PROJECT_PREVIEW" | "LEARNING_OBJECTIVES" | "CODE" | "PREDICT" | "MUST_READ" | "VIDEO" | "VISUAL_WALKTHROUGH" | "VISUAL_DIAGRAM" | "ROADMAP";
+  type: "QUIZ" | "OPEN_QUESTION" | "CHAPTER_RECAP" | "PROJECT_PREVIEW" | "LEARNING_OBJECTIVES" | "CODE" | "PREDICT" | "MUST_READ" | "VIDEO" | "VISUAL_WALKTHROUGH" | "VISUAL_DIAGRAM" | "ROADMAP" | "AI_INTERVIEW";
   config: Prisma.InputJsonValue;
   required: boolean;
 };
@@ -132,7 +133,9 @@ function blockPlaceholderTag(block: PendingBlock): string {
                           ? "VisualDiagram"
                           : block.type === "ROADMAP"
                             ? "Roadmap"
-                            : "OpenQuestion";
+                            : block.type === "AI_INTERVIEW"
+                              ? "AiInterview"
+                              : "OpenQuestion";
   return `<${tag} id="${block.id}" />`;
 }
 
@@ -501,7 +504,7 @@ function escapeMdxProse(body: string): string {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });
-  withMarkers = withMarkers.replace(/<(Quiz|OpenQuestion|CodeExercise|ChapterRecap|ProjectPreview|LearningObjectives|Predict|MustRead|VideoBlock|VisualWalkthrough|VisualDiagram|Roadmap|Steps)\s+id="[^"]+"\s*\/>/g, (tag) => {
+  withMarkers = withMarkers.replace(/<(Quiz|OpenQuestion|CodeExercise|ChapterRecap|ProjectPreview|LearningObjectives|Predict|AiInterview|MustRead|VideoBlock|VisualWalkthrough|VisualDiagram|Roadmap|Steps)\s+id="[^"]+"\s*\/>/g, (tag) => {
     blockTags.push(tag);
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });
@@ -615,6 +618,35 @@ function transformPredictFences(body: string, pushBlock: (b: PendingBlock) => st
         allowRetry: parsed.allowRetry ?? true,
         context: parsed.context,
       },
+    });
+  });
+}
+
+/**
+ * ```aiinterview``` fenced YAML -> AiInterview block + placeholder tag. Unlike the
+ * lenient fences above, a malformed one stops the import with the reason: the
+ * block holds a server-only rubric and a misspelled key would silently drop it.
+ */
+function transformAiInterviewFences(body: string, pushBlock: (b: PendingBlock) => string): string {
+  return body.replace(/```aiinterview\n([\s\S]*?)```/g, (_match, yamlText: string) => {
+    let parsed: unknown;
+    try {
+      parsed = loadYaml(yamlText);
+    } catch {
+      throw new Error("aiinterview fence: the YAML could not be read.");
+    }
+    const result = AiInterviewFenceSchema.safeParse(parsed);
+    if (!result.success) {
+      const reasons = result.error.issues.map((issue) => `${issue.path.join(".") || "fence"}: ${issue.message}`);
+      throw new Error(`aiinterview fence is invalid (${reasons.join("; ")}).`);
+    }
+    const { required, ...config } = result.data;
+    return pushBlock({
+      id: ulid(),
+      type: "AI_INTERVIEW",
+      // Needs the learner's own OpenRouter key, so it does not gate a chapter unless the author says so.
+      required: required ?? false,
+      config: config as Prisma.InputJsonValue,
     });
   });
 }
@@ -761,6 +793,7 @@ export function parseLesson(moduleNum: number, moduleDir: string, fileName: stri
   source = transformQuizFences(source, pushBlock);
   source = transformOpenQuestionFences(source, pushBlock);
   source = transformPredictFences(source, pushBlock);
+  source = transformAiInterviewFences(source, pushBlock);
   source = transformCodeExerciseFences(source, pushBlock);
   source = transformFaqSections(source);
   const isMilestone = /-checklist\.md$/.test(fileName);

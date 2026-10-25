@@ -1,6 +1,7 @@
 import type { MDXComponents } from "next-mdx-remote-client/rsc";
 import { QuizComponent } from "@/blocks/quiz/Component";
 import { PredictComponent } from "@/blocks/predict/Component";
+import { AiInterviewComponent } from "@/blocks/ai-interview/Component";
 import { OpenQuestionComponent } from "@/blocks/open-question/Component";
 import { CodeExerciseComponent } from "@/blocks/code/Component";
 import { StepsComponent } from "@/blocks/steps/Component";
@@ -57,6 +58,7 @@ const cellBorder = "border border-border";
 export const mdxComponents: MDXComponents = {
   Quiz: QuizComponent,
   Predict: PredictComponent,
+  AiInterview: AiInterviewComponent,
   OpenQuestion: OpenQuestionComponent,
   CodeExercise: CodeExerciseComponent,
   Steps: StepsComponent,

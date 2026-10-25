@@ -99,7 +99,7 @@ export function extractBlockConfigsFromSource(source: string): Map<string, unkno
 
   visit(tree, ["mdxJsxFlowElement", "mdxJsxTextElement"], (node) => {
     const element = node as unknown as MdxJsxElement;
-    if (!["Quiz", "Predict", "OpenQuestion", "CodeExercise", "MustRead", "Steps", "ProjectPreview", "LearningObjectives", "ChapterRecap", "VideoBlock", "VisualWalkthrough", "VisualDiagram", "Roadmap"].includes(element.name ?? "")) return;
+    if (!["Quiz", "Predict", "AiInterview", "OpenQuestion", "CodeExercise", "MustRead", "Steps", "ProjectPreview", "LearningObjectives", "ChapterRecap", "VideoBlock", "VisualWalkthrough", "VisualDiagram", "Roadmap"].includes(element.name ?? "")) return;
     const props = readJsxProperties(element);
     const id = props.id?.trim();
     if (!id) return;

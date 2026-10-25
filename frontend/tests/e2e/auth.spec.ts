@@ -16,33 +16,43 @@ async function whoAmI(page: Page): Promise<string | null> {
   });
 }
 
+/** The login password input. The "Password" tab panel carries the same label, so scope to it. */
+function loginPasswordField(page: Page) {
+  return page.getByRole("tabpanel", { name: "Password" }).getByLabel("Password", { exact: true });
+}
+
 test.describe("password sign-in", () => {
-  test("rejects a wrong password with a readable message", async ({ page }) => {
+  test("rejects a wrong password and keeps what was typed", async ({ page }) => {
     await page.goto("/login");
-    await page.getByLabel("Email", { exact: true }).fill("mentee1@buildment.dev");
-    await page.getByLabel("Password", { exact: true }).fill("not-the-password");
+    const email = page.getByLabel("Email", { exact: true });
+    const password = loginPasswordField(page);
+    await email.fill("mentee1@buildment.dev");
+    await password.fill("not-the-password");
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
-    await expect(page).toHaveURL(/\/login\?error=INVALID_CREDENTIALS/);
     await expect(page.getByText("Invalid email or password.")).toBeVisible();
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(email).toHaveValue("mentee1@buildment.dev");
+    await expect(password).toHaveValue("not-the-password");
   });
 
   test("signs a seeded learner in, shows the dashboard, and signs out", async ({ page }) => {
     test.setTimeout(120_000); // first dashboard compile on a cold dev server is slow
     await page.goto("/login");
     await page.getByLabel("Email", { exact: true }).fill("mentee1@buildment.dev");
-    await page.getByLabel("Password", { exact: true }).fill(SEED_PASSWORD);
+    await loginPasswordField(page).fill(SEED_PASSWORD);
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
 
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 });
     expect(await whoAmI(page)).toBe("mentee1@buildment.dev");
 
     await page.setViewportSize({ width: 1400, height: 900 });
-    // The sidebar button is a client handler; on a cold dev server hydration can
-    // land after the first paint, so retry the click until it navigates. The inner
-    // wait must outlast the action round-trip or the retry re-clicks mid-redirect.
+    // Sign out lives in the sidebar's account menu, a client handler; on a cold dev
+    // server hydration can land after the first paint, so retry until it navigates.
+    // The inner wait must outlast the action round-trip or the retry re-clicks mid-redirect.
     await expect(async () => {
-      await page.getByRole("button", { name: "Sign out" }).first().click();
+      await page.getByRole("button", { name: /^Account and workspace/ }).first().click();
+      await page.getByRole("menuitem", { name: "Sign out" }).click();
       await expect(page).toHaveURL(/\/$/, { timeout: 15_000 });
     }).toPass({ timeout: 90_000 });
     expect(await whoAmI(page)).toBeNull();
@@ -71,30 +81,33 @@ test.describe("signup", () => {
     await page.goto("/signup");
     await page.getByLabel("Name").fill("E2E Learner");
     await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Password").fill("a-long-enough-password");
-    await page.getByRole("button", { name: "Sign up" }).click();
+    await page.getByLabel("Password", { exact: true }).fill("a-long-enough-password");
+    await page.getByRole("button", { name: "Create account" }).click();
 
     // Without AUTH_RESEND_KEY the API verifies immediately and the login page confirms it.
     await expect(page).toHaveURL(/\/login\?verified=1/, { timeout: 15_000 });
     await expect(page.getByText(/Email verified/)).toBeVisible();
 
-    await page.getByLabel("Password", { exact: true }).fill("a-long-enough-password");
+    await loginPasswordField(page).fill("a-long-enough-password");
     await page.getByRole("button", { name: "Sign in", exact: true }).click();
     await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 });
   });
 
-  test("reports an email that is already registered", async ({ page }) => {
+  test("reports an email that is already registered and keeps what was typed", async ({ page }) => {
     await page.goto("/signup");
     await page.getByLabel("Name").fill("Dup");
     await page.getByLabel("Email").fill("mentee1@buildment.dev");
-    await page.getByLabel("Password").fill("a-long-enough-password");
-    await page.getByRole("button", { name: "Sign up" }).click();
+    await page.getByLabel("Password", { exact: true }).fill("a-long-enough-password");
+    await page.getByRole("button", { name: "Create account" }).click();
     await expect(page.getByText(/already exists/)).toBeVisible();
+    await expect(page.getByLabel("Name")).toHaveValue("Dup");
+    await expect(page.getByLabel("Email")).toHaveValue("mentee1@buildment.dev");
   });
 });
 
 test("magic link request lands on the check-your-email page", async ({ page }) => {
   await page.goto("/login");
+  await page.getByRole("tab", { name: "Magic link" }).click();
   await page.getByLabel("Email for magic link").fill("mentee1@buildment.dev");
   await page.getByRole("button", { name: "Send magic link" }).click();
   await expect(page).toHaveURL(/\/verify$/, { timeout: 15_000 });

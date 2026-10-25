@@ -303,4 +303,3 @@ export function SequencePlayCanvas({ title, limits }: { title: string; purpose: 
     </BeatFrame>
   );
 }
-
