@@ -82,7 +82,11 @@ export type SpecScreen = {
 
 export type PlacedText = {
   type: "text";
-  /** Set on right-to-left screens, so the text is shaped and ordered right to left. */
+  /**
+   * Set on right-to-left screens. The anchor is already mirrored, and the
+   * browser shapes Arabic right to left by itself, so drawing needs no SVG
+   * direction (which would flip the anchor a second time).
+   */
   rtl?: boolean;
   /** Literal colour, when the block set one. */
   color?: string;

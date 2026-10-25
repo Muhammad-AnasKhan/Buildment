@@ -81,7 +81,6 @@ function SpecText({ p }: { p: PlacedText }) {
       x={p.x}
       y={p.y}
       textAnchor={p.anchor}
-      direction={p.rtl ? "rtl" : undefined}
       className={cn(!p.color && TEXT_TONE[p.tone], FONT[p.font])}
       style={{ fontSize: p.size, fontWeight: p.weight, fill: p.color }}
     >
