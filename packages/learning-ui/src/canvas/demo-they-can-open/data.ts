@@ -55,7 +55,7 @@ export const demoTheyCanOpen: SequenceSpec = {
       label: "guest login",
       tone: "good",
       title: "One click",
-      note: "The guest button opens the app with a demo account. The app already holds made-up sample data: 12 rides, 4 drivers and 3 riders. Before you press Next: what should the founder be able to do in two minutes?",
+      note: "The guest button opens the app with a demo account. The app already holds made-up sample data: 12 rides, 4 drivers and 3 riders. A safe demo gives each guest their own space, or resets on a schedule, with read-only access where it can. It holds no real user data and no secrets. Before you press Next: what should the founder be able to do in two minutes?",
     },
     {
       from: 2,
@@ -88,5 +88,5 @@ export const demoTheyCanOpen: SequenceSpec = {
     "At step 5, ask who your two kinds of users are. Could one demo login show both sides?",
   ],
   limits:
-    "This is one founder, one app and one ten-minute window, with numbers that belong to this example. Some founders will read code, and some projects cannot be hosted for free or on a weak connection. In that case a short screen recording and screenshots are the next best thing. A demo does not replace the interview. It gives the founder something true to ask about.",
+    "This is one founder, one app and one ten-minute window, with numbers that belong to this example. A safe demo uses made-up data only, gives each guest their own space or resets on a schedule, and gives guests the least access it can. Some founders will read code, and some projects cannot be hosted for free or on a weak connection. In that case a short screen recording and screenshots are the next best thing. A demo does not replace the interview. It gives the founder something true to ask about.",
 };
