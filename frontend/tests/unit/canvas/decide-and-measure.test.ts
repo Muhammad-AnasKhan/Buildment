@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { computeDecision, decide, decideAndMeasure, describeDecisionChange } from "@buildment/learning-ui/canvas/decide-and-measure/data";
+import { computeDecision, decide, decideAndMeasure, describeDecisionChange, type DecideInputs } from "@buildment/learning-ui/canvas/decide-and-measure/data";
 import { defaultValues } from "@buildment/learning-ui/canvas/renderers/slider/model";
 
 const start = defaultValues(decideAndMeasure);
+const base: DecideInputs = { baseline: 30, result: 34, rise: 5, swing: 2 };
 
 describe("decide-and-measure model", () => {
   it("starts with Mais's case: 30 percent before, a target of 35, a swing of 2, a result of 34", () => {
@@ -19,29 +20,29 @@ describe("decide-and-measure model", () => {
   });
 
   it("gives the three verdicts for the try-this results", () => {
-    expect(decide({ ...start, result: 37 }).verdict).toBe("keep");
-    expect(decide({ ...start, result: 33 }).verdict).toBe("change");
-    expect(decide({ ...start, result: 36 }).verdict).toBe("watch");
-    expect(decide({ ...start, result: 34 }).verdict).toBe("watch");
-    expect(decide({ ...start, result: 32 }).verdict).toBe("change");
+    expect(decide({ ...base, result: 37 }).verdict).toBe("keep");
+    expect(decide({ ...base, result: 33 }).verdict).toBe("change");
+    expect(decide({ ...base, result: 36 }).verdict).toBe("watch");
+    expect(decide({ ...base, result: 34 }).verdict).toBe("watch");
+    expect(decide({ ...base, result: 32 }).verdict).toBe("change");
   });
 
   it("keeps watching when the result is exactly on the target and the swing is above 0", () => {
-    const onTarget = decide({ ...start, result: 35 });
+    const onTarget = decide({ ...base, result: 35 });
     expect(onTarget.gap).toBe(0);
     expect(onTarget.verdict).toBe("watch");
     expect(computeDecision({ ...start, result: 35 }).summary).toContain("exactly on the target");
   });
 
   it("changes course when the result is exactly at the target minus the swing, and keeps at target plus the swing", () => {
-    expect(decide({ ...start, result: 33 }).verdict).toBe("change");
-    expect(decide({ ...start, result: 37 }).verdict).toBe("keep");
+    expect(decide({ ...base, result: 33 }).verdict).toBe("change");
+    expect(decide({ ...base, result: 37 }).verdict).toBe("keep");
   });
 
   it("lets the target decide when the normal swing is 0", () => {
-    expect(decide({ ...start, swing: 0 }).verdict).toBe("change");
-    expect(decide({ ...start, swing: 0, result: 35 }).verdict).toBe("keep");
-    expect(decide({ ...start, swing: 0, result: 36 }).verdict).toBe("keep");
+    expect(decide({ ...base, swing: 0 }).verdict).toBe("change");
+    expect(decide({ ...base, swing: 0, result: 35 }).verdict).toBe("keep");
+    expect(decide({ ...base, swing: 0, result: 36 }).verdict).toBe("keep");
   });
 
   it("handles a result below the starting rate and the largest target", () => {
