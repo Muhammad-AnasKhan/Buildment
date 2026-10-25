@@ -43,8 +43,8 @@ import type { ComponentKind } from "./catalog";
 import { COMPONENT_CATALOG, SIZE_CATALOG, canConnect, isComponentKind, roleOf } from "./catalog";
 import type { Board, HldLabSpec } from "./types";
 import { initialControls, type BoardControls, type NodeConfig } from "./hld-board-model";
-import { runTieredModel, type ModelResult, type TierLoad } from "@/lab/tiered-architecture";
-import { runChallenge } from "./challenge";
+import type { ModelResult, TierLoad } from "@/lab/tiered-architecture";
+import { runChallenge, runModel } from "./challenge";
 import { RunPanel, PhaseStrip, type RunState } from "./RunPanel";
 import { SettingsDrawer } from "./SettingsDrawer";
 import { RED, ROLE_COLOR, ROLE_LABEL, chipStyle, colorOf, iconOf, paletteFor, utilBar, utilText } from "./board-style";
@@ -271,7 +271,7 @@ function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [nodeKey, edgeKey, controls],
   );
-  const result: ModelResult = useMemo(() => runTieredModel(board, load, targets), [board, load, targets]);
+  const result: ModelResult = useMemo(() => runModel(spec, board, load, targets), [spec, board, load, targets]);
   const report = useMemo(() => runChallenge(spec, board, load), [spec, board, load]);
   const designKey = useMemo(() => JSON.stringify([board.nodes.map((n) => [n.id, n.kind, n.props]), board.edges, load]), [board, load]);
 

@@ -47,16 +47,17 @@ describe("the URL shortener challenge", () => {
     expect(report.phases.map((p) => p.id)).toEqual(["steady", "lose-app", "lose-cache", "lose-worker"]);
   });
 
-  it("fails the starting board on counting, redundancy and speed, with a reason for each", () => {
+  it("fails the starting board on capacity, redundancy and speed, with a reason for each", () => {
     const start: Board = { nodes: spec.startingBoard!.nodes, edges: spec.startingBoard!.edges };
     const report = runChallenge(spec, start, 3000);
     expect(report.allPass).toBe(false);
     const byId = Object.fromEntries(report.checks.map((c) => [c.id, c]));
     expect(byId.shorten!.pass).toBe(true);
     expect(byId.redirect!.pass).toBe(true);
-    expect(byId.count!.pass).toBe(false);
-    expect(byId.count!.reason).toMatch(/queue/);
-    expect(byId["worker-dies"]!.reason).toMatch(/queue/);
+    // No queue: each redirect writes its click inline, so counting works but loads the database.
+    expect(byId.count!.pass).toBe(true);
+    expect(byId.count!.measured).toMatch(/inline/);
+    expect(byId["worker-dies"]!.measured).toMatch(/no worker to lose/);
     expect(byId["app-dies"]!.pass).toBe(false);
     expect(byId.capacity!.pass).toBe(false);
     for (const c of report.checks.filter((c) => !c.pass)) expect(c.reason).toBeTruthy();
@@ -68,7 +69,10 @@ describe("the URL shortener challenge", () => {
     expect(failed(reference({ w: { batchSize: 1 } }))).toContain("p99");
     expect(failed(reference({ app: { count: 2 } }))).toEqual(expect.arrayContaining(["app-dies", "p99"]));
     expect(failed(reference({ lb: { zones: 1 } }))).toEqual(expect.arrayContaining(["capacity", "p99"]));
-    expect(failed(reference({}, ["q", "w"]))).toEqual(["count", "worker-dies"]);
+    expect(failed(reference({}, ["w"]))).toEqual(["count", "worker-dies"]);
+    // Counting inline puts 3,000 writes a second on the primary: it works only with a far bigger database.
+    expect(failed(reference({}, ["q", "w"]))).toEqual(["app-dies", "cache-dies", "cache-dies-p99", "capacity", "p99"]);
+    expect(failed(reference({ db: { size: "memory-xlarge" } }, ["q", "w"]))).toEqual(["cost"]);
     expect(failed(reference({}, ["cache"]))).toEqual(["p99"]);
   });
 
@@ -143,6 +147,17 @@ describe("challenge validation", () => {
     expect(bad.join("|")).toMatch(/has no fault/);
     expect(bad.join("|")).toMatch(/unknown scenario/);
     expect(bad.join("|")).toMatch(/at least one functional/);
+  });
+});
+
+describe("inline click writes", () => {
+  it("add one write a second per redirect to the database, on top of the cache misses", () => {
+    const b = reference({}, ["q", "w"]);
+    const off = runTieredModel(b, 3000, {});
+    const on = runTieredModel(b, 3000, {}, { inlineWrites: true });
+    expect(on.edgeFlows["app>db"]! - off.edgeFlows["app>db"]!).toBeCloseTo(3000, 5);
+    expect(on.tiers.find((t) => t.id === "db")!.utilisation).toBeGreaterThan(1);
+    expect(off.tiers.find((t) => t.id === "db")!.utilisation).toBeLessThan(0.1);
   });
 });
 

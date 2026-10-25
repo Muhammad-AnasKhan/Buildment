@@ -11,7 +11,7 @@ export const hldVisualUrlShortener: HldLabSpec = {
   hints: [
     "Run the starting design first. It shortens and redirects, but read which checks fail and why.",
     "A cache in front of the database answers most redirects. Without it, the database carries every one, and when the cache dies it carries them all at once.",
-    "Count clicks after the redirect, not during it: app server to queue, queue to worker, worker to database. Set the worker's batch size so the database sees a few writes, not thousands.",
+    "Without a queue, every redirect writes its click to the database before it answers: counting works, but the database takes 3,000 writes a second. With a queue, the app server hands the click over, a worker counts it later, and a batch size above 1 turns thousands of writes into a few.",
     "Redundancy costs money. Add the second instance only where a check asks for it.",
   ],
   allowedComponents: ["client", "load-balancer", "app-server", "cache", "database", "queue", "worker"],
@@ -35,6 +35,7 @@ export const hldVisualUrlShortener: HldLabSpec = {
   ],
   challenge: {
     peakLoad: 3_000,
+    inlineClicks: true,
     scenarios: [
       { id: "lose-app", title: "An app server dies", story: "One app server stops. The load balancer sends its share to the others.", faults: [{ type: "lose-instance", role: "compute" }] },
       { id: "lose-cache", title: "The cache dies", story: "The cache is gone. Every redirect now asks the database.", faults: [{ type: "down", role: "cache" }] },
@@ -43,7 +44,7 @@ export const hldVisualUrlShortener: HldLabSpec = {
     checks: [
       { type: "path", id: "shorten", kind: "functional", label: "Shortening works", chain: ["client", "compute", "database"], target: "a new link can be saved: client > app server > database" },
       { type: "path", id: "redirect", kind: "functional", label: "A redirect returns the long URL", chain: ["client", "compute", "database"], target: "the app server can read the link back from the database (the cache is optional)" },
-      { type: "path", id: "count", kind: "functional", label: "Clicks are counted", chain: ["client", "compute", "queue", "worker", "database"], target: "a click travels app server > queue > worker > database" },
+      { type: "path", id: "count", kind: "functional", label: "Clicks are counted", chain: ["client", "compute", "queue", "worker", "database"], inlineIfNo: "queue", target: "a click is counted: app server > queue > worker > database, or written inline when there is no queue" },
       { type: "metric", id: "capacity", kind: "non-functional", label: "Serves the whole peak", scenario: "steady", metric: "capacity", op: ">=", value: 3_000 },
       { type: "metric", id: "p99", kind: "non-functional", label: "p99 redirect latency", scenario: "steady", metric: "p99", op: "<=", value: 65 },
       { type: "metric", id: "app-dies", kind: "non-functional", label: "Everyone is still served when an app server dies", scenario: "lose-app", metric: "served", op: ">=", value: 0.999 },

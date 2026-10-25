@@ -52,6 +52,15 @@ export interface TierLoad {
   waitMs: number;
 }
 
+/** Optional rules a lab can switch on for the whole run. */
+export interface ModelOptions {
+  /**
+   * Every request an app server serves also writes one row (a click) to the database
+   * before it answers. Labs turn this on when the board has no queue to carry the clicks.
+   */
+  inlineWrites?: boolean;
+}
+
 export interface Targets {
   rps?: number;
   p99Ms?: number;
@@ -215,7 +224,7 @@ interface Evaluation {
   note?: string;
 }
 
-function evaluate(node: BoardNode, flow: number): Evaluation {
+function evaluate(node: BoardNode, flow: number, inlineWrites = 0): Evaluation {
   const def = COMPONENT_CATALOG[node.kind];
   const role = def.role;
 
@@ -284,7 +293,9 @@ function evaluate(node: BoardNode, flow: number): Evaluation {
     const reads = num(node, "readRatio", 0.8);
     const multiAz = num(node, "multiAz", 0) > 0;
     // Every write goes to the primary; reads spread over the primary and its replicas.
-    const util = Math.max(flow * (1 - reads), (flow * reads) / (1 + replicas)) / perUnit;
+    // Inline writes are all writes: they are part of the flow but never reads.
+    const other = Math.max(0, flow - inlineWrites);
+    const util = Math.max(other * (1 - reads) + inlineWrites, (other * reads) / (1 + replicas)) / perUnit;
     const parts = [replicas > 0 ? `${replicas} read replica${replicas === 1 ? "" : "s"}` : null, multiAz ? "Multi-AZ" : null].filter(Boolean);
     return {
       capacity: util > 0 ? flow / util : perUnit * (1 + replicas), units: 1 + replicas,
@@ -320,7 +331,7 @@ function evaluate(node: BoardNode, flow: number): Evaluation {
 
 // ---- the model -------------------------------------------------------------------
 
-export function runTieredModel(board: Board, load: number, targets: Targets): ModelResult {
+export function runTieredModel(board: Board, load: number, targets: Targets, options: ModelOptions = {}): ModelResult {
   const byId = new Map(board.nodes.map((n) => [n.id, n]));
   const reachable = reachableFrom(board);
   const { children, parents } = liveLinks(board, reachable);
@@ -333,6 +344,7 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
   // different roles are different services and each see the whole stream; a
   // database or key-value store beside a cache only sees the cache misses.
   const incoming = new Map<string, number>();
+  const inlineWrites = new Map<string, number>();
   const edgeFlows: Record<string, number> = {};
   let dropped = 0;
   let blocked = 0;
@@ -362,6 +374,15 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
         edgeFlows[`${id}>${k}`] = share / ids.length;
       }
     }
+    if (options.inlineWrites && roleOf(node.kind) === "compute") {
+      const stores = kids.filter((k) => roleOf(k.kind) === "database");
+      for (const store of stores) {
+        const writes = out / stores.length;
+        incoming.set(store.id, (incoming.get(store.id) ?? 0) + writes);
+        inlineWrites.set(store.id, (inlineWrites.get(store.id) ?? 0) + writes);
+        edgeFlows[`${id}>${store.id}`] = (edgeFlows[`${id}>${store.id}`] ?? 0) + writes;
+      }
+    }
   }
 
   const evaluations = new Map<string, Evaluation>();
@@ -372,7 +393,7 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     const down = isDown(node);
     const onPath = reachable.has(node.id);
     const flow = onPath ? incoming.get(node.id) ?? 0 : 0;
-    const ev = evaluate(node, flow);
+    const ev = evaluate(node, flow, inlineWrites.get(node.id) ?? 0);
     const capacity = down ? 0 : ev.capacity;
     evaluations.set(node.id, ev);
     cost += ev.cost; // placed hardware costs money whether or not it is serving

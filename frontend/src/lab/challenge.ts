@@ -11,7 +11,7 @@
 import type { Board, BoardNode, ChallengeDef, ChallengeScenario, CheckDef, CheckMetric, Fault, HldLabSpec } from "./types";
 import type { ComponentKind, Role } from "./catalog";
 import { COMPONENT_CATALOG, roleOf } from "./catalog";
-import { runTieredModel, type ModelResult, type TierLoad } from "./tiered-architecture";
+import { runTieredModel, type ModelOptions, type ModelResult, type Targets, type TierLoad } from "./tiered-architecture";
 
 export const STEADY: ChallengeScenario = {
   id: "steady",
@@ -134,6 +134,12 @@ const roleName = (role: Role) => ROLE_NAME[role] ?? `a ${role}`;
 
 function pathCheck(def: Extract<CheckDef, { type: "path" }>, board: Board): CheckResult {
   const { trail, missing } = followChain(board, def.chain);
+  if (missing !== undefined && def.inlineIfNo && !board.nodes.some((n) => roleOf(n.kind) === def.inlineIfNo)) {
+    return {
+      id: def.id, kind: def.kind, label: def.label, pass: true, scenario: "steady", target: def.target,
+      measured: `written inline, before each redirect answers (no ${lower(roleLabel(def.inlineIfNo))})`,
+    };
+  }
   const pass = missing === undefined;
   const last = trail.at(-1);
   return {
@@ -199,11 +205,14 @@ function metricCheck(def: Extract<CheckDef, { type: "metric" }>, phases: Map<str
   };
 }
 
-function drainCheck(def: Extract<CheckDef, { type: "drain" }>, steady: PhaseReport, scenarioId: string): CheckResult {
+function drainCheck(def: Extract<CheckDef, { type: "drain" }>, steady: PhaseReport, scenarioId: string, inlineClicks: boolean): CheckResult {
   const { board, result, load } = steady;
   const queue = board.nodes.find((n) => roleOf(n.kind) === "queue" && result.tiers.find((t) => t.id === n.id)?.reachable);
   const target = `no clicks lost, all counted within ${def.maxDrainSeconds} s of the worker coming back`;
   const base = { id: def.id, kind: def.kind, label: def.label, scenario: scenarioId, target };
+  if (!queue && inlineClicks && !board.nodes.some((n) => roleOf(n.kind) === "queue")) {
+    return { ...base, pass: true, measured: "no worker to lose: clicks are written inline" };
+  }
   if (!queue) {
     const lost = Math.round(load * def.outageSeconds);
     return { ...base, pass: false, measured: `${lost.toLocaleString("en-US")} clicks lost in ${def.outageSeconds} s`, reason: "Clicks have nowhere to wait while the worker is down. Put a queue between the app server and the worker." };
@@ -245,21 +254,29 @@ export function challengeFor(spec: HldLabSpec): ChallengeDef {
   return { peakLoad: level?.load ?? 1000, scenarios: [], checks };
 }
 
+/** The model run for a lab: the same options the challenge's own scenarios use, so every number agrees. */
+export function runModel(spec: HldLabSpec, board: Board, load: number, targets: Targets = {}): ModelResult {
+  const options: ModelOptions = {
+    inlineWrites: Boolean(spec.challenge?.inlineClicks) && !board.nodes.some((n) => roleOf(n.kind) === "queue"),
+  };
+  return runTieredModel(board, load, targets, options);
+}
+
 /** Plays the board through the challenge. `board` must already carry the learner's properties. */
 export function runChallenge(spec: HldLabSpec, board: Board, load: number): ChallengeReport {
   const challenge = challengeFor(spec);
-  const steadyResult = runTieredModel(board, load, {});
+  const steadyResult = runModel(spec, board, load);
   const phases: PhaseReport[] = [{ ...STEADY, load, board, hit: [], applicable: true, result: steadyResult }];
   for (const scenario of challenge.scenarios) {
     const { board: faulted, hit, applicable } = applyFaults(board, scenario.faults, steadyResult);
     const missing = applicable ? undefined : lower(roleLabel(scenario.faults[0]?.role ?? "compute"));
-    phases.push({ id: scenario.id, title: scenario.title, story: scenario.story, load, board: faulted, hit, applicable, missing, result: runTieredModel(faulted, load, {}) });
+    phases.push({ id: scenario.id, title: scenario.title, story: scenario.story, load, board: faulted, hit, applicable, missing, result: runModel(spec, faulted, load) });
   }
   const byId = new Map(phases.map((p) => [p.id, p]));
   const steady = phases[0]!;
   const checks: CheckResult[] = challenge.checks.map((def) => {
     if (def.type === "path") return pathCheck(def, board);
-    if (def.type === "drain") return drainCheck(def, steady, challenge.scenarios.find((s) => s.faults.some((f) => f.type === "down" && f.role === "worker"))?.id ?? "steady");
+    if (def.type === "drain") return drainCheck(def, steady, challenge.scenarios.find((s) => s.faults.some((f) => f.type === "down" && f.role === "worker"))?.id ?? "steady", Boolean(challenge.inlineClicks));
     return metricCheck(def, byId);
   });
   const passed = checks.filter((c) => c.pass).length;

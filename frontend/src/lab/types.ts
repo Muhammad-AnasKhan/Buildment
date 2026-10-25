@@ -60,7 +60,13 @@ interface CheckBase {
 
 export type CheckDef =
   /** A functional check: a request can travel client -> ... -> the next role, in order. */
-  | (CheckBase & { type: "path"; chain: Role[]; target: string })
+  | (CheckBase & {
+      type: "path";
+      chain: Role[];
+      target: string;
+      /** A design with no component of this role passes without the chain: the work is done inline instead. */
+      inlineIfNo?: Role;
+    })
   /** A measured check: one number from one scenario against a limit. */
   | (CheckBase & { type: "metric"; scenario: string; metric: CheckMetric; op: "<=" | ">="; value: number })
   /** Work queued while its consumer is down must be fully counted once it is back. */
@@ -69,6 +75,11 @@ export type CheckDef =
 export interface ChallengeDef {
   /** Requests a second at the busiest moment; every scenario runs at this load. */
   peakLoad: number;
+  /**
+   * With no queue on the board, each request writes its click to the database before it
+   * answers, so counting works but costs a database write per request.
+   */
+  inlineClicks?: boolean;
   scenarios: ChallengeScenario[];
   checks: CheckDef[];
 }
