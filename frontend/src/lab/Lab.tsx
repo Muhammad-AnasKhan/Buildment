@@ -1,11 +1,14 @@
 // <Lab slug="..." /> from chapter MDX. Looks the slug up in the lab registry and
-// renders the interactive board for an hld lab (a schema placeholder for db). An
+// renders the interactive board for an hld lab, the network board or planner
+// for a net lab (a schema placeholder for db). An
 // unknown slug renders a quiet note, and the chapter prose still carries the
 // idea. Self-contained so it does not depend on the canvas primitives layer.
 
 import { getLabSpec } from "./registry";
 import type { LabSpec } from "./types";
 import { HldBoard } from "./HldBoard";
+import { NetBoard } from "./net/NetBoard";
+import { PlanBoard } from "./net/PlanBoard";
 
 export function resolveLab(slug: unknown): { spec: LabSpec } | null {
   if (typeof slug !== "string") return null;
@@ -13,8 +16,10 @@ export function resolveLab(slug: unknown): { spec: LabSpec } | null {
   return spec ? { spec } : null;
 }
 
-export function labView(spec: LabSpec): "hld-board" | "db-placeholder" {
-  return spec.family === "hld" ? "hld-board" : "db-placeholder";
+export function labView(spec: LabSpec): "hld-board" | "net-board" | "net-plan" | "db-placeholder" {
+  if (spec.family === "hld") return "hld-board";
+  if (spec.family === "net") return spec.mode === "plan" ? "net-plan" : "net-board";
+  return "db-placeholder";
 }
 
 function LabFrame({ eyebrow, title, purpose, limits, children }: { eyebrow: string; title: string; purpose: string; limits: string; children: React.ReactNode }) {
@@ -40,6 +45,15 @@ export function Lab({ slug }: { slug?: unknown }) {
     return (
       <LabFrame eyebrow="Explore" title={spec.title} purpose={spec.purpose} limits={spec.limits}>
         <HldBoard spec={spec} />
+      </LabFrame>
+    );
+  }
+
+  if (spec.family === "net") {
+    const eyebrow = spec.mode === "fault" ? "Fix it" : spec.mode === "plan" ? "Plan it" : "Explore";
+    return (
+      <LabFrame eyebrow={eyebrow} title={spec.title} purpose={spec.purpose} limits={spec.limits}>
+        {spec.mode === "plan" && spec.plan ? <PlanBoard plan={spec.plan} /> : <NetBoard spec={spec} />}
       </LabFrame>
     );
   }
