@@ -7,6 +7,7 @@ export const adoptAToolLoopSources: SceneSpec = {
   kind: "scene",
   title: "Three sources, one question",
   purpose: "Yazan asks a post, an AI answer and the docs the same question about a made-up tool, and only the docs give him a version and a limit he can check.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   limits:
     "A made-up tool and three sources. A real AI answer is sometimes right, and a post sometimes links to the docs. The lesson is which source gives a version and a date you can check, not that one kind of source is always wrong.",
   scene: {

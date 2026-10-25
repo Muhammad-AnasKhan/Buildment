@@ -8,6 +8,7 @@ export const growLaithFortyRepos: SceneSpec = {
   kind: "scene",
   title: "Forty repositories, one question",
   purpose: "A mentor with ten minutes opens Laith's profile, opens one repository and asks why it was built that way. The repository has no answer.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   limits:
     "A made-up fellow and a made-up mentor. Many people with many repositories do explain their choices; the picture shows what happens when forty repositories hold no reasons. Neither Laith nor Mira is a real person.",
   scene: {

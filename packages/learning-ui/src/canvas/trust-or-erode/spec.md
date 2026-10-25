@@ -40,7 +40,7 @@ Tap a bucket or drag the card onto it. Keyboard: each bucket is a button.
 
 ## Edge cases
 - Nothing on a card claims one style is better for every team. The reasons talk about what the teammate can do next.
-- Names are not used on cards; the chapter's story names Faisal and Ruwa.
+- Names are not used on cards; the chapter story names Faisal and Mira.
 
 ## Accessibility
 Shared Sorter: bucket buttons labelled with name, gloss and count; a polite live region reads each result and reason; reduced motion removes flight and shake.
