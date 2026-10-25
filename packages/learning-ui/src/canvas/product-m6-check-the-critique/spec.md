@@ -1,0 +1,14 @@
+# Canvas spec: product-m6-check-the-critique
+
+- **Course and chapter:** product-sense, 6.3 "AI as a critic: several opinions, then you decide", beat 4 (the playable beat).
+- **Renderer:** custom, on the reusable `Sorter` primitive (`primitives/sorter.tsx`, model `models/sorter.ts`). This folder holds only data. Reason: the learner must decide what each AI point needs and get a consequence for a wrong choice, which a static list cannot do.
+- **Claim:** A point from an AI critique is not a verdict. It becomes one of three things: a check against a rule or a number you can measure, a question for a person you can watch, or nothing, when it names no problem [B19, B53 to B56; the sorting method is the course's inference].
+- **Model:** one card on top at a time (nine cards, seed 0 keeps the data order). A right bucket moves the card in and deals the next. A wrong bucket keeps the card and shows the reason written for that card and bucket. The round ends when the deck is empty.
+- **Buckets:** "Check a rule" (measure it), "Ask a person" (watch them), "Not useful" (nothing to check).
+- **Cards (9, all invented points about Halaqa's create-group screen):** the grey hint text is too light (rule: contrast ratio, WCAG 1.4.3); the Create button is too small for a thumb (rule: target size, 24 at AA, aim for 44 to 48); errors show only as a red border (rule: colour must not be the only signal, WCAG 1.4.1); a student may not know what to type in Seats (person); students may prefer to pick a time from a list (person); four fields are too many for a quick form (person: no number gives a limit, a student shows where they stop); make it feel more modern and premium (not useful); I give this screen 7 out of 10 (not useful); add a glowing purple header so it stands out (not useful: names no problem).
+- **Inputs:** tap a bucket (a real button over each bucket), or drag the card onto a bucket.
+- **What changes:** the three bucket counts; a wrong card shakes and the reason appears; the end note shows once every card is sorted.
+- **What the learner should notice:** a point that sounds like taste can still be checked with a number ("too small", "too light"); a point that sounds like a fact can only be settled by watching a person ("too many fields"); a score and "more modern" name no problem at all.
+- **Accessibility:** bucket buttons are labelled with name, gloss and count; a polite live region reads each result and reason; the SVG has a label with the current card; focus rings on every button.
+- **Limits (fold):** real critiques often mix kinds in one sentence and some points need both a rule and a person. The points are invented, not tool output. Halaqa is fictional.
+- **Sources:** NN/g on AI critique [B19]; LLM-judge studies [B53 to B56]; WCAG 2.2 1.4.3, 1.4.1, 2.5.8 and 2.5.5 [A1, A3, A4, A16]; the squint and rule checks are taught in modules 2 and 3.
