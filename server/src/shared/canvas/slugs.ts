@@ -752,6 +752,7 @@ export const CANVAS_SLUGS = [
   "who-leads-this-call-query",
   "who-leads-this-call",
   "who-the-smaller-team-keeps",
+  "who-leads-this-call-survey",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];

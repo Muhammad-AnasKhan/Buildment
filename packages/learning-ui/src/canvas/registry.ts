@@ -752,6 +752,7 @@ import { whoLeadsThisCallLayouts } from "./who-leads-this-call-layouts/data";
 import { whoLeadsThisCallQuery } from "./who-leads-this-call-query/data";
 import { whoLeadsThisCall } from "./who-leads-this-call/data";
 import { whoTheSmallerTeamKeeps } from "./who-the-smaller-team-keeps/data";
+import { whoLeadsThisCallSurvey } from "./who-leads-this-call-survey/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
@@ -1518,6 +1519,7 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "who-leads-this-call-query": whoLeadsThisCallQuery,
   "who-leads-this-call": whoLeadsThisCall,
   "who-the-smaller-team-keeps": whoTheSmallerTeamKeeps,
+  "who-leads-this-call-survey": whoLeadsThisCallSurvey,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */

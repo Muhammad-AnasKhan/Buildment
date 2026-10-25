@@ -6,6 +6,7 @@ export const useAiOrNotLoginCode: SceneSpec = {
   kind: "scene",
   title: "Login code that runs but cannot be checked",
   purpose: "Ehab gets login code from an AI assistant, cannot tell whether it is safe, and asks a mentor to review it before 60 members use it.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   limits: "A fictional fellow and study group, with a made-up review result. A review lowers the risk but does not remove it, and a ready-made sign-in service may be a better choice than any custom code. The picture shows one way to make an unchecked result checkable.",
   scene: {
     width: 420,

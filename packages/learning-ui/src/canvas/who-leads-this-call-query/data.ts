@@ -6,6 +6,7 @@ export const whoLeadsThisCallQuery: SceneSpec = {
   kind: "scene",
   title: "A 40-line query she can test",
   purpose: "Manar asks an AI assistant for a 40-line report query, runs it on a copy of the data, sees the totals match a hand count, and decides to use it.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   limits: "A fictional freelancer and café. Checking totals on a copy catches wrong sums, not every flaw: a query can match three shops and still fail on the fourth, so she keeps the hand count in her notes.",
   scene: {
     width: 420,

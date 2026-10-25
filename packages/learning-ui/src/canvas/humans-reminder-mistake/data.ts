@@ -7,6 +7,7 @@ export const humansReminderMistake: SceneSpec = {
   kind: "scene",
   title: "A reminder that looked right in the test",
   purpose: "Jawad asks an AI assistant for reminder code, tests one visit, sends 230 texts with the time three hours early, and the clinic calls him.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   limits: "A fictional service, developer and clinic, with made-up numbers. Real mistakes come from many causes, and the person who shipped the code is not always one developer.",
   scene: {
     width: 420,

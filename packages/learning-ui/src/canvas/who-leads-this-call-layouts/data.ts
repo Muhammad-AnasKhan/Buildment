@@ -6,6 +6,7 @@ export const whoLeadsThisCallLayouts: SceneSpec = {
   kind: "scene",
   title: "Three layouts that all work",
   purpose: "An AI assistant drafts three menu layouts and prefers one; Manar adds what she knows about the café's customers and picks another.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   limits: "A fictional freelancer and café. Once Manar tells the assistant about the phones, it can redraw layout B lighter, and she still decides. The picture shows who holds the facts, not a rule against asking the AI again.",
   scene: {
     width: 420,

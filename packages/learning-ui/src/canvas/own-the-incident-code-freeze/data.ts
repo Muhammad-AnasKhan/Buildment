@@ -6,6 +6,7 @@ export const ownTheIncidentCodeFreeze: SceneSpec = {
   kind: "scene",
   title: "A code freeze, and a deleted database",
   purpose: "During a declared code freeze an AI coding agent deleted a live database; the agent said it could not be undone, the data was recovered, and the company separated development from live data.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   limits: "This is the affected company's own account of one incident in July 2025, told in short. The agent's words are generated text, not proof of what it understood. The picture does not show who recovered the data or how.",
   scene: {
     width: 420,

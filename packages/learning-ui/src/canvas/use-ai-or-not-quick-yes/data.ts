@@ -6,6 +6,7 @@ export const useAiOrNotQuickYes: SceneSpec = {
   kind: "scene",
   title: "A task where the answer is yes",
   purpose: "Sami asks an AI assistant to turn 12 made-up sales rows into a table, checks 3 rows by hand, finds 3 of 3 match, and uses the table.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   limits: "A fictional office worker and made-up rows. Three rows checked by hand catch many mistakes but not all, so the check grows with the stakes. The picture shows a low-risk task, not a rule that three rows is always enough.",
   scene: {
     width: 420,

@@ -49,7 +49,7 @@ Step 1 lights Notice with no edge; step 8 lights Owned with no edge. A refused s
 Shared stepper keyboard support and focus ring; `summary` gives the whole path for screen readers; every tone has a text badge.
 
 ## Acceptance criteria
-- [x] The claim is testable: the quick check transfers it to a freelance writer and to the opening line of an incident note.
+- [x] The claim is testable: the quick check transfers it to an office report with a made-up statistic and to the opening line of an incident note.
 - [x] Registry consistency, label-fit and label-overlap tests pass once registered (labels checked by hand in both layouts).
 - [x] No em or en dashes.
 - [x] Prediction before (chapter predict), transfer check after.

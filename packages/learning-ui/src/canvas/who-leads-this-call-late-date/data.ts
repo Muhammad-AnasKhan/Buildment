@@ -6,6 +6,7 @@ export const whoLeadsThisCallLateDate: SceneSpec = {
   kind: "scene",
   title: "Telling the client the project is late",
   purpose: "Manar uses an AI draft as notes, then phones the client herself, hears two questions and answers them.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   limits: "A fictional freelancer and client. Some clients prefer a written message, and then a person still sends it and answers the reply. The picture shows who is on the call, not that a call is always needed.",
   scene: {
     width: 420,
