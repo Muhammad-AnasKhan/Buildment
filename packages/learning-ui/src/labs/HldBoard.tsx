@@ -125,7 +125,10 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
       } ${dimmed ? "opacity-30" : ""}`}
       style={down ? undefined : { borderTopColor: color, borderTopWidth: 3 }}
     >
-      <Handle type="target" position={Position.Top} className={HANDLE} style={{ backgroundColor: color }} />
+      {/* A dot on every side. The board runs in loose mode, so any dot can start or end a link. */}
+      <Handle type="source" id="t" position={Position.Top} className={HANDLE} style={{ backgroundColor: color }} />
+      <Handle type="source" id="r" position={Position.Right} className={HANDLE} style={{ backgroundColor: color }} />
+      <Handle type="source" id="l" position={Position.Left} className={HANDLE} style={{ backgroundColor: color }} />
       <div className="flex items-center gap-2">
         <span aria-hidden className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[13px] ${down ? "opacity-50" : ""}`} style={chipStyle(data.kind)}>{iconOf(data.kind)}</span>
         <div className="min-w-0 flex-1">
@@ -152,7 +155,7 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
       ) : !down && linked && tier?.managed ? (
         <div className="mt-1 text-[10px] text-muted-foreground">managed, scales for you</div>
       ) : null}
-      <Handle type="source" position={Position.Bottom} className={HANDLE} style={{ backgroundColor: color }} />
+      <Handle type="source" id="b" position={Position.Bottom} className={HANDLE} style={{ backgroundColor: color }} />
     </div>
   );
 }
@@ -284,7 +287,7 @@ function Editor({ spec }: { spec: HldLabSpec }) {
     start.nodes.map((n, i) => ({ id: n.id, type: "tier", position: { x: 80, y: i * 175 }, width: NODE_W, height: NODE_H, data: { kind: n.kind } })),
   );
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(
-    start.edges.map((e) => ({ id: `${e.from}-${e.to}`, source: e.from, target: e.to })),
+    start.edges.map((e) => ({ id: `${e.from}-${e.to}`, source: e.from, target: e.to, sourceHandle: "b", targetHandle: "t" })),
   );
   const [controls, setControls] = useState<BoardControls>(() => initialControls(start, spec.levels[0]?.load ?? 1000));
   const [selected, setSelected] = useState<string | null>(
@@ -420,7 +423,11 @@ function Editor({ spec }: { spec: HldLabSpec }) {
   const connect = (c: Connection) => {
     const o = orient(c.source, c.target);
     if (!o || alreadyLinked(o.source, o.target)) return;
-    setEdges((es) => [...es, { id: `${o.source}-${o.target}`, source: o.source, target: o.target }]);
+    // Keep the sides the learner chose; if we flipped the link's direction, flip its sides too.
+    const flipped = o.source !== c.source;
+    const sourceHandle = (flipped ? c.targetHandle : c.sourceHandle) ?? "b";
+    const targetHandle = (flipped ? c.sourceHandle : c.targetHandle) ?? "t";
+    setEdges((es) => [...es, { id: `${o.source}-${o.target}`, source: o.source, target: o.target, sourceHandle, targetHandle }]);
   };
   const explainFailedLink = (from?: string | null, to?: string | null) => {
     const ka = kindOf(from);

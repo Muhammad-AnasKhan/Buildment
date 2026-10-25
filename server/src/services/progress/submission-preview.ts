@@ -1,4 +1,4 @@
-import { AI_INTERVIEW_FOCUS_LABELS, AiInterviewConfigSchema, AiInterviewPayloadSchema } from "../../shared/blocks/ai-interview/schema.js";
+import { AI_INTERVIEW_FLAG_LABELS, AI_INTERVIEW_FOCUS_LABELS, AiInterviewConfigSchema, AiInterviewPayloadSchema } from "../../shared/blocks/ai-interview/schema.js";
 import { CodeConfigSchema } from "../../shared/blocks/code/schema.js";
 import { OpenQuestionConfigSchema } from "../../shared/blocks/open-question/schema.js";
 import { PredictConfigSchema } from "../../shared/blocks/predict/schema.js";
@@ -76,6 +76,9 @@ function aiInterviewPreview(config: unknown, payload: unknown): { prompt: string
     `Weaknesses and fixes\n${bullets(feedback.weaknesses.map((item) => `${item.point} Fix: ${item.fix}`))}`,
     ...(feedback.focusNotes.length > 0
       ? [`Notes by focus area\n${bullets(feedback.focusNotes.map((item) => `${AI_INTERVIEW_FOCUS_LABELS[item.focus]}: ${item.note}`))}`]
+      : []),
+    ...(feedback.flags.length > 0
+      ? [`Flags\n${bullets(feedback.flags.map((item) => `${AI_INTERVIEW_FLAG_LABELS[item.name]}: "${item.quote}"`))}`]
       : []),
     `Next steps\n${feedback.nextSteps.map((item, index) => `${index + 1}. ${item}`).join("\n")}`,
   ];

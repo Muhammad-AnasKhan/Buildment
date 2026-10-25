@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ApiError, apiFetch } from "@/lib/api-client";
+import { playFeedback } from "@/lib/sound-feedback";
 import { AiInterviewClient as SharedAiInterviewClient } from "@buildment/learning-ui/blocks/ai-interview/AiInterviewClient";
 import type { AiInterviewInitialState, AiInterviewSessionResult } from "@/shared/api/ai";
 import type { SanitizedAiInterviewConfig } from "@/shared/blocks/ai-interview/schema";
@@ -25,6 +26,7 @@ export function AiInterviewClient({ id, config, initialState }: {
         }
       }}
       onComplete={() => router.refresh()}
+      onFeedback={playFeedback}
     />
   );
 }

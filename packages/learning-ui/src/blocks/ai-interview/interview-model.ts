@@ -1,4 +1,4 @@
-import { AI_INTERVIEW_LIMITS } from "../../shared/blocks/ai-interview/schema";
+import { AI_INTERVIEW_LIMITS, contextFields, type AiInterviewContextMode } from "../../shared/blocks/ai-interview/schema";
 import type { AiInterviewSessionView } from "../../shared/api/ai";
 
 // Pure helpers behind the interview block, kept apart from React so they can be
@@ -33,19 +33,22 @@ export function checkAnswer(text: string, max: number = AI_INTERVIEW_LIMITS.answ
   return { length, remaining: max - length, tooLong, empty, canSend: !empty && !tooLong };
 }
 
-export function checkContext(text: string, min: number = AI_INTERVIEW_LIMITS.contextMinChars, max: number = AI_INTERVIEW_LIMITS.contextMaxChars) {
+export type ContextCheck = { length: number; remaining: number; tooShort: boolean; tooLong: boolean; ok: boolean };
+
+/** Length check for one pasted box against its own limits. */
+export function checkContext(text: string, min: number = AI_INTERVIEW_LIMITS.contextMinChars, max: number = AI_INTERVIEW_LIMITS.contextMaxChars): ContextCheck {
   const length = text.trim().length;
-  return { length, remaining: max - text.length, tooShort: length < min, tooLong: text.length > max, canStart: length >= min && text.length <= max };
+  const tooShort = length < min;
+  const tooLong = text.length > max;
+  return { length, remaining: max - text.length, tooShort, tooLong, ok: !tooShort && !tooLong };
 }
 
-export function contextLabel(mode: "resume" | "project" | "none"): string {
-  return mode === "resume" ? "Your resume" : "Your project";
-}
+/** What the learner has typed in each context box, by wire field. */
+export type ContextDrafts = { context: string; contextWork: string };
 
-export function contextHint(mode: "resume" | "project" | "none"): string {
-  return mode === "resume"
-    ? "Paste the text of your resume. The interviewer will ask about what is in it."
-    : "Paste a short description of your project. The interviewer will ask about what you built.";
+/** True once every box the block asks for is filled within its limits. */
+export function contextReady(mode: AiInterviewContextMode, drafts: ContextDrafts): boolean {
+  return contextFields(mode).every((box) => checkContext(drafts[box.field], box.min, box.max).ok);
 }
 
 /** A message that is safe to show: API errors already carry plain text, anything else gets a generic line. */

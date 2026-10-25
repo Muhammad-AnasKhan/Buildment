@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { AiInterviewInitialState, AiInterviewSessionView } from "../../shared/api/ai";
 import type { SanitizedAiInterviewConfig } from "../../shared/blocks/ai-interview/schema";
 import { AiInterviewView, type InterviewBusy } from "./AiInterviewView";
-import { friendlyError } from "./interview-model";
+import { friendlyError, type ContextDrafts } from "./interview-model";
 
 // Owns the network calls and the drafts for one interview block. Everything it
 // shows comes from the API; the learner's key is never in the browser.
@@ -14,15 +14,20 @@ export function AiInterviewClient({
   initialState,
   request,
   onComplete,
+  onFeedback,
 }: {
   config: SanitizedAiInterviewConfig;
   initialState: AiInterviewInitialState;
   request: (action: "start" | "answer" | "finish" | "abandon", json: unknown) => Promise<AiInterviewSessionView>;
   onComplete?: () => void;
+  onFeedback?: (kind: "success" | "error") => void;
 }) {
   const [session, setSession] = useState<AiInterviewSessionView | null>(initialState.session);
   const [hasKey, setHasKey] = useState(initialState.hasKey);
-  const [contextDraft, setContextDraft] = useState(initialState.session?.context ?? "");
+  const [contextDrafts, setContextDrafts] = useState<ContextDrafts>({
+    context: initialState.session?.context ?? "",
+    contextWork: initialState.session?.contextWork ?? "",
+  });
   const [answerDraft, setAnswerDraft] = useState("");
   const [busy, setBusy] = useState<InterviewBusy>(null);
   const [error, setError] = useState<string | null>(null);
@@ -33,6 +38,7 @@ export function AiInterviewClient({
     try {
       return await request(path as "start" | "answer" | "finish" | "abandon", json);
     } catch (err) {
+      onFeedback?.("error");
       if (err && typeof err === "object" && "code" in err && err.code === "AI_KEY_REQUIRED") setHasKey(false);
       setError(friendlyError(err));
       return null;
@@ -42,7 +48,9 @@ export function AiInterviewClient({
   }
 
   async function start() {
-    const next = await call("starting", "start", { context: config.context === "none" ? null : contextDraft });
+    const next = await call("starting", "start", config.context === "none"
+      ? {}
+      : { context: contextDrafts.context, contextWork: config.context === "resume-and-project" ? contextDrafts.contextWork : null });
     if (next) {
       setSession(next);
       setAnswerDraft("");
@@ -63,6 +71,7 @@ export function AiInterviewClient({
     const next = await call("finishing", "finish", { sessionId: session.id });
     if (next) {
       setSession(next);
+      onFeedback?.("success");
       onComplete?.();
     }
   }
@@ -83,11 +92,11 @@ export function AiInterviewClient({
       configured={initialState.configured}
       hasKey={hasKey}
       session={session}
-      contextDraft={contextDraft}
+      contextDrafts={contextDrafts}
       answerDraft={answerDraft}
       busy={busy}
       error={error}
-      onContextChange={setContextDraft}
+      onContextChange={(field, value) => setContextDrafts((drafts) => ({ ...drafts, [field]: value }))}
       onAnswerChange={setAnswerDraft}
       onStart={start}
       onSend={send}

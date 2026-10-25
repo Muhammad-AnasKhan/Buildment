@@ -29,14 +29,68 @@ export const AI_INTERVIEW_FOCUS_LABELS: Record<AiInterviewFocus, string> = {
   "strengths-weaknesses": "Strengths and weaknesses",
 };
 
-export const AI_INTERVIEW_CONTEXT_MODES = ["resume", "project", "none"] as const;
+export const AI_INTERVIEW_CONTEXT_MODES = ["resume", "project", "resume-and-project", "none"] as const;
 export type AiInterviewContextMode = (typeof AI_INTERVIEW_CONTEXT_MODES)[number];
+
+/** One box the learner fills in before starting. `field` is the name used on the wire and in the session. */
+export type AiInterviewContextField = {
+  field: "context" | "contextWork";
+  /** What the text is, which decides how the interviewer is told about it. */
+  role: "resume" | "work";
+  label: string;
+  hint: string;
+  min: number;
+  max: number;
+};
+
+/** The boxes a context mode asks for, each with its own length cap. Empty for "none". */
+export function contextFields(mode: AiInterviewContextMode): AiInterviewContextField[] {
+  const resume: AiInterviewContextField = {
+    field: "context",
+    role: "resume",
+    label: "Your resume",
+    hint: "Paste the text of your resume. The interviewer will ask about what is in it.",
+    min: AI_INTERVIEW_LIMITS.contextMinChars,
+    max: AI_INTERVIEW_LIMITS.contextMaxChars,
+  };
+  if (mode === "resume") return [resume];
+  if (mode === "project") {
+    return [{ ...resume, role: "work", label: "Your project", hint: "Paste a short description of your project. The interviewer will ask about what you built." }];
+  }
+  if (mode === "resume-and-project") {
+    return [
+      resume,
+      {
+        field: "contextWork",
+        role: "work",
+        label: "Your important work",
+        hint: "Paste or describe the work you are proudest of: what you built, what you did yourself, and what came of it.",
+        min: AI_INTERVIEW_LIMITS.contextMinChars,
+        max: AI_INTERVIEW_LIMITS.workMaxChars,
+      },
+    ];
+  }
+  return [];
+}
+
+/** The learner's pasted text by role, from what a session stores. */
+export function interviewContext(
+  mode: AiInterviewContextMode,
+  stored: { context: string | null; contextWork: string | null }
+): { resume: string | null; work: string | null } {
+  if (mode === "resume") return { resume: stored.context, work: null };
+  if (mode === "project") return { resume: null, work: stored.context };
+  if (mode === "resume-and-project") return { resume: stored.context, work: stored.contextWork };
+  return { resume: null, work: null };
+}
 
 /** Caps shared by the API, the prompts and the UI so they cannot drift apart. */
 export const AI_INTERVIEW_LIMITS = {
   answerMaxChars: 2000,
   contextMaxChars: 6000,
   contextMinChars: 40,
+  /** The "important work" box when a resume is asked for too. */
+  workMaxChars: 4000,
   defaultMaxTurns: 10,
   maxTurnsCeiling: 20,
   defaultWhyDepth: 5,
@@ -101,6 +155,42 @@ export const AiInterviewTranscriptSchema = z.array(AiInterviewTurnSchema);
 
 const shortText = (max: number) => z.string().trim().min(1).max(max);
 
+/** Named weak points the feedback call can raise, each tied to the learner's own words. */
+export const AI_INTERVIEW_FLAG_NAMES = [
+  "vague-ownership",
+  "unsupported-number",
+  "pseudo-story",
+  "invented-reason-risk",
+  "jargon-without-explanation",
+] as const;
+
+export type AiInterviewFlagName = (typeof AI_INTERVIEW_FLAG_NAMES)[number];
+
+export const AI_INTERVIEW_FLAG_LABELS: Record<AiInterviewFlagName, string> = {
+  "vague-ownership": "Vague ownership",
+  "unsupported-number": "Unsupported number",
+  "pseudo-story": "Pseudo-story",
+  "invented-reason-risk": "Invented reason risk",
+  "jargon-without-explanation": "Jargon without explanation",
+};
+
+/** What each flag means, in the words the feedback prompt and the UI share. */
+export const AI_INTERVIEW_FLAG_MEANINGS: Record<AiInterviewFlagName, string> = {
+  "vague-ownership": 'It stays unclear what the candidate personally did ("we did", "I was involved in").',
+  "unsupported-number": "A number or result is given with no way to know where it came from or how it was measured.",
+  "pseudo-story": "It sounds like a story but has no real situation, decision, action or outcome that could be checked.",
+  "invented-reason-risk": "A reason is given that sounds made up after the fact, so a follow-up question may expose it.",
+  "jargon-without-explanation": "Technical terms are used without saying what they mean or why they matter here.",
+};
+
+export const AiInterviewFlagSchema = z.object({
+  name: z.enum(AI_INTERVIEW_FLAG_NAMES),
+  /** The learner's own words that triggered the flag. */
+  quote: shortText(300),
+});
+
+export type AiInterviewFlag = z.infer<typeof AiInterviewFlagSchema>;
+
 /** Structured feedback returned by the finish call and saved with the session. */
 export const AiInterviewFeedbackSchema = z.object({
   strengths: z.array(shortText(400)).min(1).max(5),
@@ -113,6 +203,8 @@ export const AiInterviewFeedbackSchema = z.object({
     .array(shortText(400))
     .min(3)
     .transform((steps) => steps.slice(0, 3) as [string, string, string]),
+  /** Every flag that applies, empty when none. Feedback saved before flags existed has none. */
+  flags: z.array(AiInterviewFlagSchema).max(10).default([]),
 });
 
 export type AiInterviewFeedback = z.infer<typeof AiInterviewFeedbackSchema>;

@@ -384,3 +384,149 @@ describe("AI interview block", () => {
     }
   });
 });
+
+describe("AI interview with resume and important work", () => {
+  let id2 = "";
+  let sid = "";
+  const RESUME = "Five years at Acme Payments. I led the retry service and moved the checkout API to queues.";
+  const WORK = "My best project: a payment retry service. I wrote the queue, the backoff rules and the dashboard myself.";
+  const call = async (path: string, body: object) =>
+    record(await authed(request(app).post(`/api/v1/blocks/${id2}/ai-interview/${path}`).send(body)));
+
+  beforeAll(async () => {
+    const block = await prisma.block.create({
+      data: {
+        id: `blk-interview2-${fx.tag}`,
+        chapterId: fx.chapterA.id,
+        type: "AI_INTERVIEW",
+        order: 4,
+        required: false,
+        config: {
+          title: "Resume and work interview",
+          opening: "Walk me through the work you are proudest of.",
+          focus: ["impact", "best-technical"],
+          context: "resume-and-project",
+          maxTurns: 2,
+          whyDepth: 2,
+          rubric: RUBRIC,
+        },
+      },
+    });
+    id2 = block.id;
+  });
+  afterAll(async () => {
+    await prisma.aiInterviewSession.deleteMany({ where: { blockId: id2 } });
+    await prisma.response.deleteMany({ where: { blockId: id2 } });
+    await prisma.blockStats.deleteMany({ where: { blockId: id2 } });
+    await prisma.block.deleteMany({ where: { id: id2 } });
+  });
+
+  it("serves the new context mode to the reader", async () => {
+    const res = record(await authed(request(app).get(`/api/v1/blocks/${id2}/state`)));
+    expect(res.body.data.config.context).toBe("resume-and-project");
+    expect(JSON.stringify(res.body)).not.toContain("SECRET-RUBRIC");
+  });
+
+  it("needs both boxes, each within its own length", async () => {
+    const noWork = await call("start", { context: RESUME });
+    expect(noWork.status).toBe(400);
+    expect(noWork.body.code).toBe("AI_INTERVIEW_CONTEXT_REQUIRED");
+    expect(noWork.body.message).toContain("important work");
+
+    const noResume = await call("start", { contextWork: WORK });
+    expect(noResume.body.message).toContain("resume");
+
+    const longWork = await call("start", { context: RESUME, contextWork: "w".repeat(4001) });
+    expect(longWork.status).toBe(400);
+    expect(longWork.body.code).toBe("AI_INTERVIEW_CONTEXT_TOO_LONG");
+    expect(longWork.body.message).toContain("4000");
+
+    // The resume box allows more than the work box does.
+    const longResume = await call("start", { context: "r".repeat(5000), contextWork: WORK });
+    expect(longResume.status).toBe(200);
+    await call("abandon", { sessionId: longResume.body.data.session.id });
+  });
+
+  it("stores both boxes and tells the interviewer about each, with the deeper probes", async () => {
+    const started = await call("start", { context: RESUME, contextWork: WORK });
+    expect(started.status).toBe(200);
+    sid = started.body.data.session.id;
+    expect(started.body.data.session).toMatchObject({ context: RESUME, contextWork: WORK });
+
+    fetchMock.mockResolvedValueOnce(chat("How did you measure that result?"));
+    const res = await call("answer", { sessionId: sid, answer: "We cut failed payments by 40 percent. It was a large queue system." });
+    expect(res.status).toBe(200);
+    const [system, intro] = lastBody().messages;
+    expect(intro!.content).toContain(`<candidate_resume>\n${RESUME}\n</candidate_resume>`);
+    expect(intro!.content).toContain(`<candidate_work>\n${WORK}\n</candidate_work>`);
+    expect(system!.content).toContain("How did you measure it?");
+    expect(system!.content).toContain("What happens if Y fails or the load doubles?");
+  });
+
+  it("keeps only flags that quote the learner, names the flags in the card data and the mentor view", async () => {
+    await call("answer", { sessionId: sid, answer: "I just did what the team needed." });
+    const feedback = {
+      strengths: ["You picked a project you know well."],
+      weaknesses: [{ point: "Show where the 40 percent came from.", fix: "Say how you counted failed payments before and after." }],
+      focusNotes: [],
+      nextSteps: ["Write the before and after numbers.", "Build a small project around your own needs.", "Practise the story out loud."],
+      flags: [
+        { name: "unsupported-number", quote: "We cut failed payments by 40 percent." },
+        { name: "vague-ownership", quote: "I just did what the team needed" },
+        { name: "pseudo-story", quote: "Words the learner never wrote." },
+        { name: "lazy", quote: "We cut failed payments by 40 percent." },
+      ],
+    };
+    fetchMock.mockResolvedValueOnce(chat(JSON.stringify(feedback)));
+    const res = await call("finish", { sessionId: sid });
+    expect(res.status).toBe(200);
+    expect(lastBody().messages[0]!.content).toContain('"unsupported-number"');
+    expect(res.body.data.session.feedback.flags).toEqual([
+      { name: "unsupported-number", quote: "We cut failed payments by 40 percent." },
+      { name: "vague-ownership", quote: "I just did what the team needed" },
+    ]);
+
+    const { submissionPreview } = await import("../../src/services/progress/submission-preview.js");
+    const response = await prisma.response.findFirstOrThrow({ where: { blockId: id2 } });
+    const block = await prisma.block.findUniqueOrThrow({ where: { id: id2 } });
+    const preview = submissionPreview(block.type, block.config, response.payload).answer;
+    expect(preview).toContain("Flags");
+    expect(preview).toContain('Unsupported number: "We cut failed payments by 40 percent."');
+    expect(preview).toContain('Vague ownership: "I just did what the team needed"');
+    expect(preview).not.toContain("Pseudo-story");
+  });
+
+  it("shows feedback saved before flags existed, with no flags", async () => {
+    const old = await prisma.aiInterviewSession.create({
+      data: {
+        userId: fx.learner.id,
+        blockId: id2,
+        status: "FINISHED",
+        finishedAt: new Date(Date.now() + 60_000),
+        turnCount: 1,
+        transcript: [],
+        feedback: {
+          strengths: ["Clear."],
+          weaknesses: [{ point: "Add numbers.", fix: "Measure it." }],
+          focusNotes: [],
+          nextSteps: ["a", "b", "c"],
+        },
+      },
+    });
+    const res = record(await authed(request(app).get(`/api/v1/blocks/${id2}/state`)));
+    expect(res.body.data.initialState.session.id).toBe(old.id);
+    expect(res.body.data.initialState.session.feedback.flags).toEqual([]);
+  });
+
+  it("returns no flags when the model finds none", async () => {
+    const started = await call("start", { context: RESUME, contextWork: WORK });
+    const id = started.body.data.session.id;
+    fetchMock.mockResolvedValueOnce(chat("What was the hardest part?"));
+    await call("answer", { sessionId: id, answer: "Keeping the queue fast under load." });
+    fetchMock.mockResolvedValueOnce(
+      chat(JSON.stringify({ strengths: ["Honest and specific."], weaknesses: [{ point: "Add a number.", fix: "Say how fast." }], focusNotes: [], nextSteps: ["a", "b", "c"], flags: [] }))
+    );
+    const res = await call("finish", { sessionId: id });
+    expect(res.body.data.session.feedback.flags).toEqual([]);
+  });
+});

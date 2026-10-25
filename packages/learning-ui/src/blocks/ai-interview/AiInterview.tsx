@@ -18,7 +18,7 @@ export function AiInterview() {
       configured={false}
       hasKey={false}
       session={null}
-      contextDraft=""
+      contextDrafts={{ context: "", contextWork: "" }}
       answerDraft=""
       busy={null}
       error={null}
