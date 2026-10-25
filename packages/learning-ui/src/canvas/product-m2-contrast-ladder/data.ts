@@ -16,7 +16,7 @@ function screen(grey: string): SpecScreen {
     blocks: [
       { kind: "text", text: "Statistics 101 revision", size: 17, weight: 700, color: "#111111" },
       { kind: "text", text: "We solve past exam questions together. Bring your notes and a pen.", size: 15, lineHeight: 1.5, color: grey },
-      { kind: "text", text: "Tomorrow 5 pm, library room 2", size: 13, color: grey },
+      { kind: "text", text: "Tomorrow 5 pm, online", size: 13, color: grey },
       { kind: "text", text: "4 seats left", size: 13, weight: 600, color: grey },
     ],
   };
@@ -24,7 +24,7 @@ function screen(grey: string): SpecScreen {
 
 const STEPS = [
   { grey: "#999999", text: "2.85:1 fails 4.5 and 3", tone: "bad" as const },
-  { grey: "#777777", text: "4.48:1 fails by a hair", tone: "bad" as const },
+  { grey: "#777777", text: "4.48:1 fails: under 4.5", tone: "bad" as const },
   { grey: "#767676", text: "4.54:1 passes AA", tone: "good" as const },
   { grey: "#595959", text: "7.00:1 passes with room", tone: "good" as const },
   { grey: "#000000", text: "21:1 the highest possible", tone: "good" as const },

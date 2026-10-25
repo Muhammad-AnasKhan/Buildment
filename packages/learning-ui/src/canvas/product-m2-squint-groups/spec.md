@@ -3,7 +3,7 @@
 - **Course and chapter:** product-sense, 2.4 "Space does the grouping", the third beat (an extra canvas).
 - **Renderer:** custom, on the reusable specimen compare beat with the `blur` option. This folder holds only data. Reason: the squint test from 2.2 shows the groups that space makes, so the learner can use one test on both.
 - **Claim:** When the space inside a group equals the space between groups, a blurred list is one smear. When the space between groups is larger, the blur leaves three separate shapes.
-- **Model:** the same three Halaqa groups as `product-m2-spacing-groups`, with the same space inside a group (6) and two of its stops for the space between groups (6 and 22). Both versions are blurred. Verdicts: "One smear, no groups" (bad), "Three groups show" (good).
+- **Model:** the same three Halaqa groups as `product-m2-spacing-groups`, with the same space inside a group (4) and two of its stops for the space between groups (4 and 24, both multiples of 4). Both versions are blurred. Verdicts: "One smear, no groups" (bad), "Three groups show" (good).
 - **Inputs:** two buttons (Even, Grouped).
 - **What changes:** the space between groups and the verdict.
 - **What the learner should notice:** the words cannot be read in either picture; the groups are still visible in one of them.

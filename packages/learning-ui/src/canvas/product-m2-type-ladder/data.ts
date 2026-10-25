@@ -33,7 +33,7 @@ const STEPS = [
 export const productM2TypeLadder: CustomCanvasSpec = {
   kind: "custom",
   title: "Body text size",
-  purpose: "Drag the size of the body text on a study group page from 11 to 26 and see where it strains, where it reads well and where it pushes the page apart.",
+  purpose: "Drag the size of the body text on a study group page from 11 to 26 and see where it strains, reads well or pushes the page apart.",
   limits:
     "Sizes are drawn units, close to but not the same as pixels on your phone, and the line height stays at 1.5 for every step. The sizes in the sources are for Latin letters. For Arabic, check with a native reader on a real phone. Halaqa is fictional.",
   component: makeSpecimenLadderCanvas({

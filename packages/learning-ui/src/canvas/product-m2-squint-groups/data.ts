@@ -3,8 +3,8 @@ import type { SpecBlock, SpecScreen } from "../models/ui-specimen";
 import { makeSpecimenCompareCanvas } from "../primitives/canvas-factories";
 
 // Product Sense, chapter 2.4: the Halaqa list from the spacing ladder
-// (fictional), squinted. With 6 between groups and 6 inside, the blur leaves
-// one smear. With 22 between and 6 inside, the blur leaves three groups.
+// (fictional), squinted. With 4 between groups and 4 inside, the blur leaves
+// one smear. With 24 between and 4 inside, the blur leaves three groups.
 // Same groups and same amounts as product-m2-spacing-groups.
 
 const GROUPS = [
@@ -29,9 +29,9 @@ function group(g: (typeof GROUPS)[number], inner: number): SpecBlock {
 
 function screen(between: number): SpecScreen {
   return {
-    alt: `Three study groups with ${between} units of space between groups and 6 inside each group.`,
+    alt: `Three study groups with ${between} units of space between groups and 4 inside each group.`,
     gap: between,
-    blocks: [{ kind: "nav", title: "Study groups" }, ...GROUPS.map((g) => group(g, 6))],
+    blocks: [{ kind: "nav", title: "Study groups" }, ...GROUPS.map((g) => group(g, 4))],
   };
 }
 
@@ -44,8 +44,8 @@ export const productM2SquintGroups: CustomCanvasSpec = {
   component: makeSpecimenCompareCanvas({
     choiceLabel: "Spacing",
     versions: [
-      { id: "even", label: "Even", screen: screen(6), blur: true, verdict: { text: "One smear, no groups", tone: "bad" } },
-      { id: "grouped", label: "Grouped", screen: screen(22), blur: true, verdict: { text: "Three groups show", tone: "good" } },
+      { id: "even", label: "Even", screen: screen(4), blur: true, verdict: { text: "One smear, no groups", tone: "bad" } },
+      { id: "grouped", label: "Grouped", screen: screen(24), blur: true, verdict: { text: "Three groups show", tone: "good" } },
     ],
     hint: "Switch between the two squinted lists.",
     start: "even",

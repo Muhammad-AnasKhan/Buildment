@@ -3,7 +3,7 @@ import type { SpecScreen } from "../models/ui-specimen";
 import { makeSpecimenCompareCanvas } from "../primitives/canvas-factories";
 
 // Product Sense, chapter 2.1: Nadia, a team lead (fictional), opens ten project
-// pages. Two of them are shown: all lines alike, and the name loudest. The third
+// pages. Two of them are shown: all lines alike, and the name largest. The third
 // is Laith's page a week later, rebuilt so that the result comes first. All three
 // say true things; they differ in what comes first.
 

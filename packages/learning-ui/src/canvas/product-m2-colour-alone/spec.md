@@ -3,7 +3,7 @@
 - **Course and chapter:** product-sense, 2.5 "Colour with a job, contrast you can measure", the fourth beat (an extra canvas).
 - **Renderer:** custom, on the reusable specimen compare beat. This folder holds only data. Reason: "never colour alone" is easiest to feel when the learner sees an error that is only a tint and then asks who would miss it.
 - **Claim:** An error shown only by a colour is missed by anyone who cannot tell that colour from its neighbours. Words next to the field say what is wrong and what to do; the colour can add to the words.
-- **Model:** Halaqa's create-group form with the Course field empty. Colour: the field is a light red box with a grey hint and no sentence. With words: the field has a red border and a red sentence under it: "Choose a course so people can find your group." The Place field and the button are the same in both. Verdicts: "Colour is the whole message" (bad), "Colour plus words" (good).
+- **Model:** Halaqa's Start a group form with its four fields in the course's order (Course, When, Where, Seats) and the button "Start the group", with the Course field empty. Colour: the field is a light red box with a grey hint and no sentence. With words: the field has a red border and a red sentence under it: "Choose a course so people can find your group." The other three fields and the button are the same in both, and the Where field has the hint "Library, online or cafe". Verdicts: "Colour is the whole message" (bad), "Colour plus words" (good).
 - **Inputs:** two buttons (Colour, With words).
 - **What changes:** how the error is shown and the verdict.
 - **What the learner should notice:** the first form has nothing to read; the second can be understood with the colour removed.

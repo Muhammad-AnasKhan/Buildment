@@ -2,30 +2,33 @@ import type { CustomCanvasSpec } from "../registry";
 import type { SpecScreen } from "../models/ui-specimen";
 import { makeSpecimenCompareCanvas } from "../primitives/canvas-factories";
 
-// Product Sense, chapter 2.5: Halaqa's create-group form (fictional) when the
-// Course field is empty. First the only signal is a red tint on the field.
-// Then the field also has a red border and a sentence that says what
+// Product Sense, chapter 2.5: Halaqa's Start a group form (fictional) when
+// the Course field is empty. First the only signal is a red tint on the
+// field. Then the field also has a red border and a sentence that says what
 // to do. Colour can add to a message but cannot be the whole message.
 
 const COLOUR_ONLY: SpecScreen = {
-  alt: "The Create a group form. The Course field has a light red fill. No text says what is wrong.",
+  alt: "The Start a group form. The Course field has a light red fill. No text says what is wrong.",
   blocks: [
-    { kind: "nav", title: "Create a group" },
+    { kind: "nav", title: "Start a group" },
     { kind: "text", text: "Course", size: 13, weight: 600 },
     { kind: "box", fill: "badSoft", pad: 10, border: false, radius: 7, children: [{ kind: "text", text: "Choose a course", size: 13, tone: "muted" }] },
-    { kind: "text", text: "Place", size: 13, weight: 600 },
-    { kind: "field", value: "Library room 2" },
-    { kind: "button", label: "Create group", full: true, size: 14 },
+    { kind: "field", label: "When", value: "Tomorrow 5 pm" },
+    { kind: "field", label: "Where", value: "Online", hint: "Library, online or cafe" },
+    { kind: "field", label: "Seats", value: "4" },
+    { kind: "button", label: "Start the group", full: true, size: 14 },
   ],
 };
 
 const WITH_WORDS: SpecScreen = {
   alt: "The same form. The Course field has a red border, and a red sentence under it says: Choose a course so people can find your group.",
   blocks: [
-    { kind: "nav", title: "Create a group" },
+    { kind: "nav", title: "Start a group" },
     { kind: "field", label: "Course", placeholder: "Choose a course", error: "Choose a course so people can find your group." },
-    { kind: "field", label: "Place", value: "Library room 2" },
-    { kind: "button", label: "Create group", full: true, size: 14 },
+    { kind: "field", label: "When", value: "Tomorrow 5 pm" },
+    { kind: "field", label: "Where", value: "Online", hint: "Library, online or cafe" },
+    { kind: "field", label: "Seats", value: "4" },
+    { kind: "button", label: "Start the group", full: true, size: 14 },
   ],
 };
 

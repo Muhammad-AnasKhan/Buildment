@@ -6,7 +6,7 @@
 - **Model:** three phone screens (Fares, Yasmin, Laith, all fictional fellows). Fares: seven text lines in one size and weight. Yasmin: a very large name, then small grey lines. Laith (his page a week later, rebuilt so that the result comes first): a small label, a large result headline, a picture, one button and one small line. Verdicts: "Nothing comes first" (bad), "Her name comes first" (warn), "The result comes first" (good).
 - **Inputs:** three buttons, one for each page.
 - **What changes:** the screen and the verdict banner.
-- **What the learner should notice:** the pages have the same kind of facts; what differs is which fact is loudest. The chapter does not name a rule yet.
+- **What the learner should notice:** the pages have the same kind of facts; what differs is which fact comes first. The chapter does not name a rule yet.
 - **Accessibility:** the buttons form a labelled group ("Project page"); a polite live region reads the page's description and verdict; the SVG has a title; text at least 11 units.
 - **Limits (fold):** three pages cannot show every failure; a glance is not a test; the people, apps and numbers are fictional.
 - **Sources:** none needed: the picture sets up the problem. The rule it leads to is sourced in 2.2 [A69].

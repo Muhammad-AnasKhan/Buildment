@@ -16,20 +16,20 @@ const AS_BUILT: SpecScreen = {
     { kind: "text", text: "Tonight 8 pm, library room 2", size: 14, weight: 700 },
     { kind: "text", text: "2 seats left", size: 14, weight: 700 },
     { kind: "button", label: "Join", variant: "secondary", size: 14 },
-    { kind: "button", label: "Create a group", variant: "secondary", size: 14 },
+    { kind: "button", label: "Create group", variant: "secondary", size: 14 },
     { kind: "button", label: "Chat", variant: "secondary", size: 14 },
     { kind: "pills", items: [{ text: "Polls" }, { text: "Voice rooms" }, { text: "Streaks" }] },
   ],
 };
 
 const FIXED: SpecScreen = {
-  alt: "Halaqa's Find a group screen after the fix. The group's name is large and bold, its time, place and seats are smaller, and one filled Join button follows. Other actions are small and quiet.",
+  alt: "Halaqa's Find a group screen after the fix. The group's name is large and bold, its time, place and seats are smaller, and one filled Join button follows. Other actions are small and plain.",
   blocks: [
     { kind: "text", text: "Data structures, exam Thursday", size: 22, weight: 700 },
     { kind: "text", text: "Tonight 8 pm, library room 2", size: 16, tone: "muted" },
     { kind: "text", text: "2 seats left", size: 16, weight: 600 },
     { kind: "button", label: "Join this group", full: true, size: 16 },
-    { kind: "button", label: "Create a group", variant: "ghost", size: 13 },
+    { kind: "button", label: "Create group", variant: "ghost", size: 13 },
     { kind: "text", text: "Chat, polls and voice rooms are in the menu.", size: 13, tone: "muted" },
   ],
 };
