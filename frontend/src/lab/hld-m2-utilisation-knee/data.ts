@@ -13,9 +13,11 @@ export const hldM2UtilisationKnee: HldLabSpec = {
   startingBoard: {
     nodes: [
       { id: "client", kind: "client", x: 0, y: 1 },
-      { id: "lb", kind: "load-balancer", x: 1, y: 1 },
+      // The balancer and database are sized with room to spare so the app tier
+      // is the part that reaches the knee as the load rises.
+      { id: "lb", kind: "load-balancer", x: 1, y: 1, props: { size: "general-xlarge" } },
       { id: "app", kind: "app-server", x: 2, y: 1 },
-      { id: "db", kind: "database", x: 3, y: 1 },
+      { id: "db", kind: "database", x: 3, y: 1, props: { size: "memory-xlarge" } },
     ],
     edges: [
       { from: "client", to: "lb" },

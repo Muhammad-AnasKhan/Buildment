@@ -6,6 +6,8 @@ import type { LabSlug } from "@/shared/lab/slugs";
 import { isLabSlug } from "@/shared/lab/slugs";
 import type { LabSpec } from "./types";
 import { hldM2UtilisationKnee } from "./hld-m2-utilisation-knee/data";
+import { hldM4ThreeTiers } from "./hld-m4-three-tiers/data";
+import { hldM20WaslaRedirects } from "./hld-m20-wasla-redirects/data";
 import { awsWebTier } from "./aws-web-tier/data";
 import { k8sWebApp } from "./k8s-web-app/data";
 import { dockerComposeStack } from "./docker-compose-stack/data";
@@ -13,6 +15,8 @@ import { linuxSingleHost } from "./linux-single-host/data";
 
 export const labRegistry: Record<LabSlug, LabSpec> = {
   "hld-m2-utilisation-knee": hldM2UtilisationKnee,
+  "hld-m4-three-tiers": hldM4ThreeTiers,
+  "hld-m20-wasla-redirects": hldM20WaslaRedirects,
   "aws-web-tier": awsWebTier,
   "k8s-web-app": k8sWebApp,
   "docker-compose-stack": dockerComposeStack,
