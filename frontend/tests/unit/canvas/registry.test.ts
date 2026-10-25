@@ -175,7 +175,7 @@ describe("canvas source stays inside the SVG rules", () => {
   // A contrast lesson must show literal colours, because the ratio between two
   // exact colours is what it teaches (product-sense decision log, 2026-10-25).
   // Every other canvas uses theme tokens.
-  const LITERAL_COLOUR_LESSONS = ["product-m2-contrast-ladder/data.ts"];
+  const LITERAL_COLOUR_LESSONS = ["product-m2-contrast-ladder/data.ts", "product-m2-large-text/data.ts", "product-m2-wasel-before/data.ts"];
 
   for (const file of files) {
     it(`${file.replace(/\\/g, "/")}`, () => {

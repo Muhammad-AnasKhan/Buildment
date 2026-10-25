@@ -726,7 +726,6 @@ import { productM2SquintTest } from "./product-m2-squint-test/data";
 import { productM2TextZoom } from "./product-m2-text-zoom/data";
 import { productM2ThreeSizes } from "./product-m2-three-sizes/data";
 import { productM2TypeLadder } from "./product-m2-type-ladder/data";
-import { productM3ColourNotAlone } from "./product-m3-colour-not-alone/data";
 import { productM3FirstRun } from "./product-m3-first-run/data";
 import { productM3FormSpot } from "./product-m3-form-spot/data";
 import { productM3FourStates } from "./product-m3-four-states/data";
@@ -756,6 +755,40 @@ import { productM7OneClickAccess } from "./product-m7-one-click-access/data";
 import { productM7Scene } from "./product-m7-scene/data";
 import { productM7SkimAfter } from "./product-m7-skim-after/data";
 import { productM7SkimBefore } from "./product-m7-skim-before/data";
+import { productM1CountOrShare } from "./product-m1-count-or-share/data";
+import { productM1FirstCheck } from "./product-m1-first-check/data";
+import { productM1JobOrNot } from "./product-m1-job-or-not/data";
+import { productM1LastTime } from "./product-m1-last-time/data";
+import { productM1SayNo } from "./product-m1-say-no/data";
+import { productM2ArabicSize } from "./product-m2-arabic-size/data";
+import { productM2FrontLoad } from "./product-m2-front-load/data";
+import { productM2LargeText } from "./product-m2-large-text/data";
+import { productM2OneStep } from "./product-m2-one-step/data";
+import { productM2Signals } from "./product-m2-signals/data";
+import { productM2WaselBefore } from "./product-m2-wasel-before/data";
+import { productM3ErrorTemplates } from "./product-m3-error-templates/data";
+import { productM3ErrorWords } from "./product-m3-error-words/data";
+import { productM3HelpInPlace } from "./product-m3-help-in-place/data";
+import { productM3MotionSorter } from "./product-m3-motion-sorter/data";
+import { productM3ReducedMotion } from "./product-m3-reduced-motion/data";
+import { productM3RtlCard } from "./product-m3-rtl-card/data";
+import { productM3TabOrder } from "./product-m3-tab-order/data";
+import { productM4FiveTesters } from "./product-m4-five-testers/data";
+import { productM4LevelLadder } from "./product-m4-level-ladder/data";
+import { productM4SameFramework } from "./product-m4-same-framework/data";
+import { productM5AskedOrder } from "./product-m5-asked-order/data";
+import { productM5BigNumber } from "./product-m5-big-number/data";
+import { productM5FourFixes } from "./product-m5-four-fixes/data";
+import { productM5LabelsErrors } from "./product-m5-labels-errors/data";
+import { productM5SwapADefault } from "./product-m5-swap-a-default/data";
+import { productM6BriefParts } from "./product-m6-brief-parts/data";
+import { productM6OneTable } from "./product-m6-one-table/data";
+import { productM6OrderSwap } from "./product-m6-order-swap/data";
+import { productM6SaidOrBuilt } from "./product-m6-said-or-built/data";
+import { productM6VerdictOrQuestions } from "./product-m6-verdict-or-questions/data";
+import { productM7MutedFrame } from "./product-m7-muted-frame/data";
+import { productM7PageOrder } from "./product-m7-page-order/data";
+import { productM7WhereLinksGo } from "./product-m7-where-links-go/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
@@ -1496,7 +1529,6 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "product-m2-text-zoom": productM2TextZoom,
   "product-m2-three-sizes": productM2ThreeSizes,
   "product-m2-type-ladder": productM2TypeLadder,
-  "product-m3-colour-not-alone": productM3ColourNotAlone,
   "product-m3-first-run": productM3FirstRun,
   "product-m3-form-spot": productM3FormSpot,
   "product-m3-four-states": productM3FourStates,
@@ -1526,6 +1558,40 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "product-m7-scene": productM7Scene,
   "product-m7-skim-after": productM7SkimAfter,
   "product-m7-skim-before": productM7SkimBefore,
+  "product-m1-count-or-share": productM1CountOrShare,
+  "product-m1-first-check": productM1FirstCheck,
+  "product-m1-job-or-not": productM1JobOrNot,
+  "product-m1-last-time": productM1LastTime,
+  "product-m1-say-no": productM1SayNo,
+  "product-m2-arabic-size": productM2ArabicSize,
+  "product-m2-front-load": productM2FrontLoad,
+  "product-m2-large-text": productM2LargeText,
+  "product-m2-one-step": productM2OneStep,
+  "product-m2-signals": productM2Signals,
+  "product-m2-wasel-before": productM2WaselBefore,
+  "product-m3-error-templates": productM3ErrorTemplates,
+  "product-m3-error-words": productM3ErrorWords,
+  "product-m3-help-in-place": productM3HelpInPlace,
+  "product-m3-motion-sorter": productM3MotionSorter,
+  "product-m3-reduced-motion": productM3ReducedMotion,
+  "product-m3-rtl-card": productM3RtlCard,
+  "product-m3-tab-order": productM3TabOrder,
+  "product-m4-five-testers": productM4FiveTesters,
+  "product-m4-level-ladder": productM4LevelLadder,
+  "product-m4-same-framework": productM4SameFramework,
+  "product-m5-asked-order": productM5AskedOrder,
+  "product-m5-big-number": productM5BigNumber,
+  "product-m5-four-fixes": productM5FourFixes,
+  "product-m5-labels-errors": productM5LabelsErrors,
+  "product-m5-swap-a-default": productM5SwapADefault,
+  "product-m6-brief-parts": productM6BriefParts,
+  "product-m6-one-table": productM6OneTable,
+  "product-m6-order-swap": productM6OrderSwap,
+  "product-m6-said-or-built": productM6SaidOrBuilt,
+  "product-m6-verdict-or-questions": productM6VerdictOrQuestions,
+  "product-m7-muted-frame": productM7MutedFrame,
+  "product-m7-page-order": productM7PageOrder,
+  "product-m7-where-links-go": productM7WhereLinksGo,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
