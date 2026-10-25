@@ -9,6 +9,7 @@ export const claimTypeSorterDevin: SceneSpec = {
   title: "A launch claim meets an outside test",
   purpose: "A maker reports a result on its own test. Months later, a team outside the maker tries the tool on 20 real tasks and reports a different kind of result.",
   limits: "Two results from two different tests: one chosen by the maker, one by a small team with 20 tasks. Neither says how the tool does on your work, and the tool has changed since.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   scene: {
     width: 420,
     height: 280,

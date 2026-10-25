@@ -11,7 +11,7 @@ renderer: factor (HTML controls, weighted sum)
 # Canvas spec: Who does a smaller team keep?
 
 ## Teaching claim
-A smaller team keeps the person who gives the AI context, checks what it made, owns the result and works well with others. Only when raw output alone matters does the engineer who ships the most come out ahead (dossier A34, A36 to A40, A46, A56, A58, A64).
+A smaller team keeps the person who gives the AI context, checks what it made, owns the result and works well with others. Only when raw output alone matters does the engineer who ships the most win (dossier A34, A36 to A40, A46, A56, A58, A64).
 
 ## Why a canvas
 The chapter tells Rawan's choice and shows the evidence in folds. A single verdict can sound like the course's opinion, and "the fast one loses" can sound like a promise. The canvas lets the learner be Rawan, set how much each habit matters, and search for the settings where the fastest teammate wins. Finding that corner and seeing how small it is makes the claim the learner's own.

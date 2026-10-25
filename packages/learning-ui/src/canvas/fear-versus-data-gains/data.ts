@@ -9,6 +9,7 @@ export const fearVersusDataGains: SceneSpec = {
   title: "Gains depend on the task",
   purpose: "Consultants with AI help do more, faster, on a task that suits the tool, and are less often right on one task that does not.",
   limits: "One study of 758 consultants at one firm in 2023, with GPT-4 and tasks the researchers designed. Only one task sat outside what the tool did well. It shows that fit matters, not how large the effect is today.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   scene: {
     width: 420,
     height: 280,

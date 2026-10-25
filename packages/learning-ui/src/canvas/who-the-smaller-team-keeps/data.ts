@@ -3,12 +3,12 @@ import type { FactorSpec } from "../renderers/factor/types";
 // Course 13 v2, chapter 1.7 "Fewer people, more work". Rawan (fictional) leads
 // a small agency and can keep one more engineer. Three fictional teammates are
 // scored from 1 to 5 on what a smaller team needs. Only when raw output alone
-// matters does the fastest teammate come out ahead. The scores are the
+// matters does the fastest teammate win. The scores are the
 // course's own illustrative judgement; checked totals are in spec.md.
 export const whoTheSmallerTeamKeeps: FactorSpec = {
   kind: "factor",
   title: "Who does a smaller team keep?",
-  purpose: "Be Rawan: change how much each habit matters to her, and find the only settings where the engineer who ships the most comes out ahead.",
+  purpose: "Be Rawan: change how much each habit matters to her, and find the only settings where the engineer who ships the most wins.",
   whatThisShows:
     "Omar, Sana and Mazen, three fictional engineers, each scored from 1 to 5 on five things a smaller team needs. Each score is multiplied by how much that habit matters, and the results are added up. Raw output is easy to get with AI now; context, checking, ownership and teamwork are what separate people.",
   options: [
