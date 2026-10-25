@@ -710,6 +710,21 @@ import { sysdesignM18CloudExplorer } from "./sysdesign-m18-cloud-explorer/data";
 import { careerM6EmptyPhrases } from "./career-m6-empty-phrases/data";
 import { careerM1FirstLook } from "./career-m1-first-look/data";
 import { careerM3ClaimCard } from "./career-m3-claim-card/data";
+import { careerM1BadgesOrProject } from "./career-m1-badges-or-project/data";
+import { careerM1CheckableOrClaim } from "./career-m1-checkable-or-claim/data";
+import { careerM1DetectorFlag } from "./career-m1-detector-flag/data";
+import { careerM1ErrorsCleaned } from "./career-m1-errors-cleaned/data";
+import { careerM1FoundersPhone } from "./career-m1-founders-phone/data";
+import { careerM1GenericOrTailored } from "./career-m1-generic-or-tailored/data";
+import { careerM1GuessTheWriter } from "./career-m1-guess-the-writer/data";
+import { careerM1HandbookCards } from "./career-m1-handbook-cards/data";
+import { careerM1KitBiasNote } from "./career-m1-kit-bias-note/data";
+import { careerM1OneLink } from "./career-m1-one-link/data";
+import { careerM1OnlyYouCanWrite } from "./career-m1-only-you-can-write/data";
+import { careerM1PileAndDay } from "./career-m1-pile-and-day/data";
+import { careerM1SixtySent } from "./career-m1-sixty-sent/data";
+import { careerM1SmoothLetters } from "./career-m1-smooth-letters/data";
+import { careerM1TenSecondTest } from "./career-m1-ten-second-test/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
@@ -1434,6 +1449,21 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "career-m6-empty-phrases": careerM6EmptyPhrases,
   "career-m1-first-look": careerM1FirstLook,
   "career-m3-claim-card": careerM3ClaimCard,
+  "career-m1-badges-or-project": careerM1BadgesOrProject,
+  "career-m1-checkable-or-claim": careerM1CheckableOrClaim,
+  "career-m1-detector-flag": careerM1DetectorFlag,
+  "career-m1-errors-cleaned": careerM1ErrorsCleaned,
+  "career-m1-founders-phone": careerM1FoundersPhone,
+  "career-m1-generic-or-tailored": careerM1GenericOrTailored,
+  "career-m1-guess-the-writer": careerM1GuessTheWriter,
+  "career-m1-handbook-cards": careerM1HandbookCards,
+  "career-m1-kit-bias-note": careerM1KitBiasNote,
+  "career-m1-one-link": careerM1OneLink,
+  "career-m1-only-you-can-write": careerM1OnlyYouCanWrite,
+  "career-m1-pile-and-day": careerM1PileAndDay,
+  "career-m1-sixty-sent": careerM1SixtySent,
+  "career-m1-smooth-letters": careerM1SmoothLetters,
+  "career-m1-ten-second-test": careerM1TenSecondTest,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */

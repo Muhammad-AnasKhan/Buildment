@@ -711,6 +711,21 @@ export const CANVAS_SLUGS = [
   "career-m6-empty-phrases",
   "career-m1-first-look",
   "career-m3-claim-card",
+  "career-m1-badges-or-project",
+  "career-m1-checkable-or-claim",
+  "career-m1-detector-flag",
+  "career-m1-errors-cleaned",
+  "career-m1-founders-phone",
+  "career-m1-generic-or-tailored",
+  "career-m1-guess-the-writer",
+  "career-m1-handbook-cards",
+  "career-m1-kit-bias-note",
+  "career-m1-one-link",
+  "career-m1-only-you-can-write",
+  "career-m1-pile-and-day",
+  "career-m1-sixty-sent",
+  "career-m1-smooth-letters",
+  "career-m1-ten-second-test",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];

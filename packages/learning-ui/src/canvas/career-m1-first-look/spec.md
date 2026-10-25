@@ -1,31 +1,53 @@
-# Canvas spec: career-m1-first-look
+---
+artifact: canvas-spec
+course: career-brand
+chapter: "1.2"
+beat: 3
+slug: career-m1-first-look
+kind: budget-stack
+playable: true
+status: existing slug, data revised
+version: 2
+owner: interaction-designer
+---
 
-- **Course and chapter:** career-brand (course 16), module 1, chapter 1.2 beat 3, "Your first screen decides what they see".
-- **Renderer:** the house budget stack (`primitives/budget-stack.tsx`, model `models/budget-stack.ts`) built with `makeBudgetStackCanvas` (`primitives/canvas-factories.tsx`). All data is in `data.ts`.
-- **Claim:** A quick reader spends a short look top to bottom. Whatever fills the top is what they keep, so the best proof has to come first.
+# Canvas spec: Your first screen decides what they see
 
-## Blocks, budget and goal
+## Teaching claim
+A phone shows only a fraction of a page, and whatever fills it is what a quick reader keeps. Moving the proof up is what lets them see it.
 
-Bashar's resume in its starting order: Objective (filler, 4 s), Skills: 24 tools (context, 5 s), Education (context, 3 s), Order API p95 from 1.9 s to 0.4 s (proof, 4 s), Live demo and case study link (proof, 3 s), Hobbies (filler, 2 s). Budget 12 s, labelled "A quick first look (illustrative)". Goal: 2 proof blocks seen.
+## Why this visual
+The budget stack is the exact primitive for "what is seen before the budget runs out". The learner changes only the order, so the lesson is the order.
 
-Rule: the budget is spent block by block in order; a block counts as seen when the budget covers at least half of its cost (`SEEN_SHARE` in the model).
+## Revision of the existing data
+The data in `packages/learning-ui/src/canvas/career-m1-first-look/data.ts` gave Bashar an "Order API p95 from 1.9 s to 0.4 s" line, 24 tools and a 12 second budget. None of that is in the course canon (`module-briefs/00-areej-and-cast.md`): Bashar has 28 technologies, a nightly import he moved into a queue so it stopped timing out, and no invented number. The pack also says a first look must not be given as seconds. Replace the data with the version below (the unit is lines of a phone screen, not seconds). The slug does not change.
 
-- Starting order: Objective, Skills and Education spend all 12 s; both proof blocks are not seen. Verdict "Only 0 of 2 proof blocks seen".
-- Order API moved to the top: Order API, Objective and most of Skills are seen; the demo is not. 1 of 2.
-- Both proof blocks at the top: 7 s on proof, then Objective. "Goal met: 2 proof blocks seen".
-
-## Inputs and what moves
-
-A marker walks down the stack on its own, slower over costly blocks, with a readout of the seconds spent on the rail beside the phone. Blocks get a "seen" tag as the marker passes half of them; when the time runs out, the blocks past it turn grey with a dashed border and a "not seen" tag, a warn line marks the edge, and the rail shows the exact point the budget ran out. It loops while on screen, stops off screen, freezes while pressed, and shows the final frame under reduced motion and before it first plays. Tap a block to select it, then Move up or Move down (or the arrow keys, or drag it); the marker runs again. Replay shows when no block is selected. Kind is an icon plus a word (Proof, Context, Filler).
+## Data
+```json
+{
+  "title": "Your first screen decides what they see",
+  "purpose": "Bashar's resume as a phone shows it. A first screen runs out before the proof; the learner moves the two proof blocks up so the reader sees them.",
+  "limits": "The 10 lines and the size of each block are illustrative. Real readers differ: some read every line, some skip around, and no study gives a fixed time. A block counts as seen here when the first screen covers at least half of it. Bashar is a fictional fellow.",
+  "config": {
+    "blocks": [
+      { "id": "name", "label": "Name and contact line", "cost": 2, "kind": "context" },
+      { "id": "objective", "label": "Objective paragraph, AI-written", "cost": 5, "kind": "filler", "note": "A paragraph about being motivated." },
+      { "id": "skills", "label": "Skills: 28 technologies in a block", "cost": 5, "kind": "context", "note": "Twenty-eight names, no order." },
+      { "id": "duties", "label": "Responsible for backend services", "cost": 2, "kind": "filler", "note": "A duty, not a result." },
+      { "id": "import", "label": "Moved the nightly import into a queue; it stopped timing out", "cost": 3, "kind": "proof", "note": "His best work. Today it sits on page 2." },
+      { "id": "link", "label": "One labelled link to the import code", "cost": 1, "kind": "proof", "note": "One link that says what the reader will see." }
+    ],
+    "budget": 10,
+    "unit": "lines",
+    "budgetLabel": "First screen (illustrative)",
+    "goal": 2,
+    "hint": "Tap a block, then move it up or down. Or drag it."
+  }
+}
+```
 
 ## What the learner should notice
-
-Nothing about the proof changed, only its place. Moving it above the objective and the skills list is what lets a quick reader see it.
+Nothing about the proof changed, only its place. Name first, then the proof and its link; the objective paragraph and the skills block fall below the first screen. No number is added to the import line, because the canon gives none.
 
 ## Limits
-
-The 12 seconds and the costs are illustrative: real readers differ, and no study gives a fixed number of seconds.
-
-## Sources
-
-Module brief 1 (`agent-ip/work/career-brand/module-briefs/01-what-a-reader-sees-first.md`), 1.2 beat 3.
+In the `limits` field of the data.
