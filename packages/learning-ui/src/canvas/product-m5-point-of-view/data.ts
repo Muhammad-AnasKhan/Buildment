@@ -53,19 +53,18 @@ const CARD_GRID: SpecScreen = {
 };
 
 const REAL_CONTENT: SpecScreen = {
-  alt: "A first screen whose headline says what happens, a picture of the price list, an Upload a file button, the rule about sending before noon, and the opening hours.",
+  alt: "A first screen whose headline says what happens, a picture of the price list, an Upload a file button and the opening hours. The headline already carries the before-noon rule.",
   background: "card",
   blocks: [
-    { kind: "text", text: "Send your file now. Pick it up printed by 4 pm.", size: 22, weight: 700, font: "serif" },
+    { kind: "text", text: "Send your file before noon. Pick it up printed by 4 pm.", size: 22, weight: 700, font: "serif" },
     { kind: "image", art: "receipt", height: 78, caption: PRICES },
     { kind: "button", label: "Upload a file", full: true },
-    { kind: "text", text: "Orders sent before noon are ready by 4 pm.", size: 12.5, tone: "muted" },
     { kind: "text", text: HOURS, size: 12.5, tone: "muted" },
   ],
 };
 
 const ONE_BOLD: SpecScreen = {
-  alt: "A first screen where the time 4 pm is set very large, with a line saying orders sent before noon are ready then, the price list as a picture, an Upload a file button and the opening hours.",
+  alt: "A first screen where the time 4 pm is set very large, with a line about sending before noon. The price list, an Upload a file button and the opening hours follow.",
   background: "card",
   blocks: [
     { kind: "text", text: "Ready by", size: 13, tone: "muted" },

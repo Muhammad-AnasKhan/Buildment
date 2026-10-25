@@ -8,10 +8,10 @@ import { makeSpecimenCompareCanvas } from "../primitives/canvas-factories";
 // test from chapter 2.2): with everything bold, no first thing survives.
 
 const ALL_BOLD: SpecScreen = {
-  alt: "Four lines of the same large, heavy type: send your file now, 0.50 shekels a page, ready by 4 pm, open 8 am to 6 pm, then a large Upload a file button.",
+  alt: "Four lines in the same large, heavy type: send before noon, 0.50 shekels a page, ready by 4 pm, open 8 am to 6 pm. Then a large Upload a file button.",
   background: "card",
   blocks: [
-    { kind: "text", text: "Send your file now", size: 22, weight: 800 },
+    { kind: "text", text: "Send before noon", size: 22, weight: 800 },
     { kind: "text", text: "0.50 shekels a page", size: 22, weight: 800 },
     { kind: "text", text: "Ready by 4 pm", size: 22, weight: 800 },
     { kind: "text", text: "Open 8 am to 6 pm", size: 22, weight: 800 },
@@ -20,10 +20,10 @@ const ALL_BOLD: SpecScreen = {
 };
 
 const ONE_BOLD: SpecScreen = {
-  alt: "The time 4 pm set very large with Ready by above it, a short line to send your file now, the price and the opening hours in small type, and an Upload a file button.",
+  alt: "The time 4 pm set very large with Ready by above it. A short line says to send before noon. The price and hours are in small type, above an Upload a file button.",
   background: "card",
   blocks: [
-    { kind: "text", text: "Send your file now", size: 15, weight: 600 },
+    { kind: "text", text: "Send your file before noon", size: 15, weight: 600 },
     { kind: "text", text: "Ready by", size: 13, tone: "muted" },
     { kind: "text", text: "4 pm", size: 48, weight: 800, tone: "accent" },
     { kind: "text", text: "0.50 shekels a page", size: 13, tone: "muted" },
