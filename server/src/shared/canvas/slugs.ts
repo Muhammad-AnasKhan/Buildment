@@ -707,6 +707,8 @@ export const CANVAS_SLUGS = [
   "sysdesign-m18-pipeline-step",
   "sysdesign-m18-canary-blast",
   "sysdesign-m18-cloud-explorer",
+  "product-m2-spacing-groups",
+  "product-m5-spot-the-slop",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];

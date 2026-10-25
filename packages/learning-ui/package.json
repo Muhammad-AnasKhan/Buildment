@@ -326,6 +326,8 @@
     "./canvas/models/session-reads": "./src/canvas/models/session-reads.ts",
     "./canvas/models/session-writes": "./src/canvas/models/session-writes.ts",
     "./canvas/models/snowflake-bits": "./src/canvas/models/snowflake-bits.ts",
+    "./canvas/product-m2-spacing-groups/data": "./src/canvas/product-m2-spacing-groups/data.ts",
+    "./canvas/product-m5-spot-the-slop/data": "./src/canvas/product-m5-spot-the-slop/data.ts",
     "./canvas/models/sorter": "./src/canvas/models/sorter.ts",
     "./canvas/models/ui-specimen": "./src/canvas/models/ui-specimen.ts",
     "./canvas/models/stale-race": "./src/canvas/models/stale-race.ts",
