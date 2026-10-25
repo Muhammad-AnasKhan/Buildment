@@ -8,6 +8,7 @@ export const toolbeltOneLineReadme: SceneSpec = {
   kind: "scene",
   title: "Same code, two visitors",
   purpose: "A visitor opens a repository with a one-line README and leaves unsure; a second visitor opens the same repository with a picture and a short demo and understands it.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   limits:
     "A made-up case with made-up visitors. Showing your work does not promise that anyone will use it. It lets a stranger decide in a minute, instead of guessing.",
   scene: {

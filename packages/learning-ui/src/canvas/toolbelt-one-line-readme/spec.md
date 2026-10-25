@@ -29,7 +29,7 @@ A story of "nobody understood it" is abstract. Watching one visitor leave and th
 - Static fallback: the final frame under reduced motion, which shows the good verdict.
 
 ## Controls
-Replay. Pressing the picture freezes the motion.
+Replay. Pressing the picture freezes the motion. The `hint` line reads: Watch: it plays on its own. Press Replay to see it again.
 
 ## Visualisation
 Three icon cards, flying dots with short labels, one verdict banner.

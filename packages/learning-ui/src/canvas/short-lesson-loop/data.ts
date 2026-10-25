@@ -5,7 +5,7 @@ import type { StateMachineSpec } from "../renderers/state-machine/types";
 // takes a quiz, checks one claim against the API's own documentation, and
 // writes his notes in his own words. The machine refuses "paste the summary as
 // notes" and "skip the check". Dossier: C20 and C21 (study tools can be
-// wrong), C14 to C18 as reused from v1 3.4 and 3.5. See spec.md.
+// wrong), C17 to C21 as reused from v1 3.4 and 3.5. See spec.md.
 export const shortLessonLoop: StateMachineSpec = {
   kind: "state-machine",
   title: "A short lesson, checked",

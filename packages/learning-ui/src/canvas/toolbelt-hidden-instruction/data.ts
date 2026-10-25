@@ -11,6 +11,7 @@ export const toolbeltHiddenInstruction: SceneSpec = {
   kind: "scene",
   title: "A hidden order in an issue",
   purpose: "An AI tool reads a stranger's issue that hides an instruction. With a wide token the private notes leak. With a narrow token the same instruction has nowhere to go.",
+  hint: "Watch: it plays on its own. Press Replay to see it again.",
   limits:
     "A made-up case in the shape of a documented risk. Real attacks vary, and a narrow token limits the damage but does not stop the tool from reading the hidden order. Keep human review and never put secrets where a tool can read them.",
   scene: {

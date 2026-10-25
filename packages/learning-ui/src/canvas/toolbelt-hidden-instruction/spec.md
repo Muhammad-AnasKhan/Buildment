@@ -28,7 +28,7 @@ The risk is invisible in a screenshot of an issue. Watching the same issue meet 
 - Static fallback: the final frame under reduced motion shows the good verdict.
 
 ## Controls
-Replay.
+Replay. The `hint` line reads: Watch: it plays on its own. Press Replay to see it again.
 
 ## Visualisation
 Four icon cards, flying dots with short labels (drawn where clear), one verdict banner.

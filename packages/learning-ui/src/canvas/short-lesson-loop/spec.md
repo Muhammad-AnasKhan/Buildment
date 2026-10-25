@@ -20,7 +20,7 @@ The mistake is a shortcut that feels fine: the lesson reads clearly and the quiz
 - States (grid 3 by 2): Ask (0,0), Lesson (1,0), Quiz (2,0), Check (1,1), Your notes (0,1).
 - Edges: Ask to Lesson "get lesson"; Lesson to Quiz "quiz"; Quiz to Check "pick"; Check to Your notes "write it"; two refused loops, Lesson "paste as notes" and Quiz "skip check".
 - Steps (eight): ask; the lesson arrives; paste as notes refused; the quiz (3 of 3); skip the check refused; one claim picked; the lesson was wrong (a made-up mistake: "a 404 status means the server crashed", while the documentation says 404 means not found); notes in his own words with the page name and the date.
-- Dossier ids: C20 and C21 (study mode and Guided Learning can make mistakes and tell learners to double-check); C14 to C18 as reused from v1 chapters 3.4 and 3.5; the "15-minute lesson" idea is the course's method (C20 and C21 do not test accuracy).
+- Dossier ids: C20 and C21 (study mode and Guided Learning can make mistakes and tell learners to double-check); C17 to C21 as reused from v1 chapters 3.4 and 3.5; the "15-minute lesson" idea is the course's method (C20 and C21 do not test accuracy).
 - Assumptions: Murad is fictional and the mistake is made up for the example.
 - Limitations: stated in `limits` (a real lesson has many claims, one check is the habit).
 
