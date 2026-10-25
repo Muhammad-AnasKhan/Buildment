@@ -91,7 +91,7 @@ export const LEVEL_CARDS: SortCard[] = [
   },
   {
     id: "seats-first",
-    text: "Best checks pass. Seats left is the largest text: seats decide the join.",
+    text: "Best checks pass. Seats left is the largest text: a student the night before an exam picks by seats.",
     answer: "remarkable",
     why: {
       average: "Rule: Remarkable is Best plus a named choice and reason. Both are stated.",
@@ -101,7 +101,7 @@ export const LEVEL_CARDS: SortCard[] = [
   },
   {
     id: "free-hours-first",
-    text: "Best checks pass. Rooms open on today's free hours: students book the same day.",
+    text: "Best checks pass. Rooms open on today's free hours: a student who needs a room tonight books in one tap.",
     answer: "remarkable",
     why: {
       average: "Rule: Remarkable is Best plus a named choice and reason. Both are stated.",
@@ -123,6 +123,6 @@ export const productM4FourLevels: CustomCanvasSpec = {
     deckLabel: "A screen, in facts",
     prompt: "Which level do these facts show?",
     hint: "Tap the highest level whose checks the facts show are met, or drag the card onto it.",
-    endNote: "Each level needs every check below it. A top-level choice needs a reason a reader can name.",
+    endNote: "Each level needs every check below it. A top-level choice still has to be defended in words.",
   }),
 };

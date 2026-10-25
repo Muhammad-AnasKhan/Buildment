@@ -24,12 +24,12 @@ export const PROBLEM_CARDS: SortCard[] = [
     },
   },
   {
-    id: "four-of-five",
-    text: "4 of 5 classmates Maryam asked found no group in time.",
+    id: "three-of-six",
+    text: "3 of 6 classmates Maryam asked found no group before an exam.",
     answer: "problem",
     why: {
       feature: "A feature names a thing to build. This says what happened to people, and Maryam asked them.",
-      guess: "A guess says what people would do. This already happened, and it was checked with 5 people.",
+      guess: "A guess says what people would do. This already happened, and it was checked with 6 people.",
     },
   },
   {

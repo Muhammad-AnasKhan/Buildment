@@ -69,11 +69,11 @@ export const CRITIQUE_CARDS: SortCard[] = [
   },
   {
     id: "too-many-fields",
-    text: "Four fields are too many for a quick form.",
+    text: "Students may give up before the fourth field.",
     answer: "person",
     why: {
-      rule: "Check a rule is for what a standard can measure. No rule limits fields: watch where a student stops.",
-      drop: "Not useful is for points that name no problem. This may be right: watch whether a student stops.",
+      rule: "Check a rule is for what a standard can measure. No rule says when a student gives up: watch where one stops.",
+      drop: "Not useful is for points that name no problem. This names one, giving up: watch whether a student stops.",
     },
   },
   {
