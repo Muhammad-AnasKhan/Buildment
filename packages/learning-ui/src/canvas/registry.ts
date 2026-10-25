@@ -709,6 +709,53 @@ import { sysdesignM18CanaryBlast } from "./sysdesign-m18-canary-blast/data";
 import { sysdesignM18CloudExplorer } from "./sysdesign-m18-cloud-explorer/data";
 import { productM2SpacingGroups } from "./product-m2-spacing-groups/data";
 import { productM5SpotTheSlop } from "./product-m5-spot-the-slop/data";
+import { productM1ProblemOrFeature } from "./product-m1-problem-or-feature/data";
+import { productM1Scene } from "./product-m1-scene/data";
+import { productM1ScopeHammer } from "./product-m1-scope-hammer/data";
+import { productM1SignalOrCount } from "./product-m1-signal-or-count/data";
+import { productM1TheCheaperFix } from "./product-m1-the-cheaper-fix/data";
+import { productM1TwoJobs } from "./product-m1-two-jobs/data";
+import { productM2ColourAlone } from "./product-m2-colour-alone/data";
+import { productM2ColourJobs } from "./product-m2-colour-jobs/data";
+import { productM2ContrastLadder } from "./product-m2-contrast-ladder/data";
+import { productM2LabelGap } from "./product-m2-label-gap/data";
+import { productM2LineHeight } from "./product-m2-line-height/data";
+import { productM2Scene } from "./product-m2-scene/data";
+import { productM2SquintGroups } from "./product-m2-squint-groups/data";
+import { productM2SquintTest } from "./product-m2-squint-test/data";
+import { productM2TextZoom } from "./product-m2-text-zoom/data";
+import { productM2ThreeSizes } from "./product-m2-three-sizes/data";
+import { productM2TypeLadder } from "./product-m2-type-ladder/data";
+import { productM3ColourNotAlone } from "./product-m3-colour-not-alone/data";
+import { productM3FirstRun } from "./product-m3-first-run/data";
+import { productM3FormSpot } from "./product-m3-form-spot/data";
+import { productM3FourStates } from "./product-m3-four-states/data";
+import { productM3LabelVanish } from "./product-m3-label-vanish/data";
+import { productM3MotionWithAJob } from "./product-m3-motion-with-a-job/data";
+import { productM3Scene } from "./product-m3-scene/data";
+import { productM3TapTargets } from "./product-m3-tap-targets/data";
+import { productM3WaitLadder } from "./product-m3-wait-ladder/data";
+import { productM3WhenToCheck } from "./product-m3-when-to-check/data";
+import { productM4CritiqueOrOpinion } from "./product-m4-critique-or-opinion/data";
+import { productM4DefaultOrChoice } from "./product-m4-default-or-choice/data";
+import { productM4FourLevels } from "./product-m4-four-levels/data";
+import { productM4PolishOrPass } from "./product-m4-polish-or-pass/data";
+import { productM4RuleOrMyth } from "./product-m4-rule-or-myth/data";
+import { productM4SameTask } from "./product-m4-same-task/data";
+import { productM4Scene } from "./product-m4-scene/data";
+import { productM5Boldness } from "./product-m5-boldness/data";
+import { productM5CardWithAJob } from "./product-m5-card-with-a-job/data";
+import { productM5HundredProducts } from "./product-m5-hundred-products/data";
+import { productM5PointOfView } from "./product-m5-point-of-view/data";
+import { productM5Scene } from "./product-m5-scene/data";
+import { productM6CheckTheCritique } from "./product-m6-check-the-critique/data";
+import { productM6Scene } from "./product-m6-scene/data";
+import { productM6VagueOrBriefed } from "./product-m6-vague-or-briefed/data";
+import { productM7DemoStoryboard } from "./product-m7-demo-storyboard/data";
+import { productM7OneClickAccess } from "./product-m7-one-click-access/data";
+import { productM7Scene } from "./product-m7-scene/data";
+import { productM7SkimAfter } from "./product-m7-skim-after/data";
+import { productM7SkimBefore } from "./product-m7-skim-before/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
@@ -1432,6 +1479,53 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m18-cloud-explorer": sysdesignM18CloudExplorer,
   "product-m2-spacing-groups": productM2SpacingGroups,
   "product-m5-spot-the-slop": productM5SpotTheSlop,
+  "product-m1-problem-or-feature": productM1ProblemOrFeature,
+  "product-m1-scene": productM1Scene,
+  "product-m1-scope-hammer": productM1ScopeHammer,
+  "product-m1-signal-or-count": productM1SignalOrCount,
+  "product-m1-the-cheaper-fix": productM1TheCheaperFix,
+  "product-m1-two-jobs": productM1TwoJobs,
+  "product-m2-colour-alone": productM2ColourAlone,
+  "product-m2-colour-jobs": productM2ColourJobs,
+  "product-m2-contrast-ladder": productM2ContrastLadder,
+  "product-m2-label-gap": productM2LabelGap,
+  "product-m2-line-height": productM2LineHeight,
+  "product-m2-scene": productM2Scene,
+  "product-m2-squint-groups": productM2SquintGroups,
+  "product-m2-squint-test": productM2SquintTest,
+  "product-m2-text-zoom": productM2TextZoom,
+  "product-m2-three-sizes": productM2ThreeSizes,
+  "product-m2-type-ladder": productM2TypeLadder,
+  "product-m3-colour-not-alone": productM3ColourNotAlone,
+  "product-m3-first-run": productM3FirstRun,
+  "product-m3-form-spot": productM3FormSpot,
+  "product-m3-four-states": productM3FourStates,
+  "product-m3-label-vanish": productM3LabelVanish,
+  "product-m3-motion-with-a-job": productM3MotionWithAJob,
+  "product-m3-scene": productM3Scene,
+  "product-m3-tap-targets": productM3TapTargets,
+  "product-m3-wait-ladder": productM3WaitLadder,
+  "product-m3-when-to-check": productM3WhenToCheck,
+  "product-m4-critique-or-opinion": productM4CritiqueOrOpinion,
+  "product-m4-default-or-choice": productM4DefaultOrChoice,
+  "product-m4-four-levels": productM4FourLevels,
+  "product-m4-polish-or-pass": productM4PolishOrPass,
+  "product-m4-rule-or-myth": productM4RuleOrMyth,
+  "product-m4-same-task": productM4SameTask,
+  "product-m4-scene": productM4Scene,
+  "product-m5-boldness": productM5Boldness,
+  "product-m5-card-with-a-job": productM5CardWithAJob,
+  "product-m5-hundred-products": productM5HundredProducts,
+  "product-m5-point-of-view": productM5PointOfView,
+  "product-m5-scene": productM5Scene,
+  "product-m6-check-the-critique": productM6CheckTheCritique,
+  "product-m6-scene": productM6Scene,
+  "product-m6-vague-or-briefed": productM6VagueOrBriefed,
+  "product-m7-demo-storyboard": productM7DemoStoryboard,
+  "product-m7-one-click-access": productM7OneClickAccess,
+  "product-m7-scene": productM7Scene,
+  "product-m7-skim-after": productM7SkimAfter,
+  "product-m7-skim-before": productM7SkimBefore,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */

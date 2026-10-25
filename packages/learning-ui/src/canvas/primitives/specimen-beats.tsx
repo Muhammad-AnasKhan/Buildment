@@ -287,11 +287,14 @@ export type SpecimenSkimConfig = {
   /** Why each option is right or wrong, keyed by option id. */
   why: Record<string, string>;
   hint: string;
+  /** Banner after a right or a wrong answer, about 30 characters each. */
+  rightVerdict?: string;
+  wrongVerdict?: string;
 };
 
 type SkimPhase = "ready" | "showing" | "asking" | "answered";
 
-export function SpecimenSkim({ title, limits, screen, seconds, question, options, answer, why, hint }: SpecimenSkimConfig & { title: string; limits: string }) {
+export function SpecimenSkim({ title, limits, screen, seconds, question, options, answer, why, hint, rightVerdict, wrongVerdict }: SpecimenSkimConfig & { title: string; limits: string }) {
   const [phase, setPhase] = useState<SkimPhase>("ready");
   const [left, setLeft] = useState(seconds);
   const [picked, setPicked] = useState<string | null>(null);
@@ -319,8 +322,8 @@ export function SpecimenSkim({ title, limits, screen, seconds, question, options
         : phase === "asking"
           ? { text: "Time is up", tone: "accent" }
           : right
-            ? { text: "Right: the page made it clear", tone: "good" }
-            : { text: "Not quite: see why below", tone: "bad" };
+            ? { text: rightVerdict ?? "Right: the page made it clear", tone: "good" }
+            : { text: wrongVerdict ?? "Not quite: see why below", tone: "bad" };
   const covered = phase === "ready" || phase === "asking";
   const controls =
     phase === "ready" ? (
@@ -332,7 +335,16 @@ export function SpecimenSkim({ title, limits, screen, seconds, question, options
     <BeatFrame label={title} controls={controls} hint={phase === "answered" && picked ? <span aria-live="polite">{why[picked]}</span> : hint} limits={limits}>
       <Picture height={height} title={covered ? "The page is hidden." : screen.alt}>
         <VerdictBanner width={SPECIMEN_PICTURE_WIDTH} text={verdict.text} tone={verdict.tone} />
-        <SpecimenSvg layout={layout} x={screenX(layout)} y={BANNER_SPACE} frame={screen.frame ?? "browser"} background={screen.background} dim={covered} />
+        {/* Hidden means unreadable: blurred, faded and under a cover, so nobody can read it before Start. */}
+        <SpecimenSvg layout={layout} x={screenX(layout)} y={BANNER_SPACE} frame={screen.frame ?? "browser"} background={screen.background} dim={covered} blur={covered} />
+        {covered ? (
+          <g aria-hidden>
+            <rect x={screenX(layout)} y={BANNER_SPACE} width={layout.width} height={layout.height} rx={10} className="fill-card/80" />
+            <text x={SPECIMEN_PICTURE_WIDTH / 2} y={BANNER_SPACE + Math.min(layout.height / 2, 120)} textAnchor="middle" className="fill-muted-foreground text-[14px] font-semibold">
+              {phase === "ready" ? "The page is hidden" : "The page is hidden again"}
+            </text>
+          </g>
+        ) : null}
         {phase === "showing" ? (
           <rect x={screenX(layout)} y={BANNER_SPACE - 6} width={layout.width * (left / seconds)} height={3} rx={1.5} className={TONES.warn.solidFill} />
         ) : null}
