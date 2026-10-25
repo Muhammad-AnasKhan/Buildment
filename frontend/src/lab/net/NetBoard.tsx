@@ -14,6 +14,7 @@ import { prompt, runCommand } from "./commands";
 import type { Frame, NetEvent, Run } from "./engine";
 import type { DeviceState, NetDeviceSpec, NetTopology, World } from "./model";
 import { buildWorld, cloneWorld } from "./model";
+import { FaultSolution } from "./NetSolution";
 import { formatCidr, formatIp } from "./ip";
 
 interface LogEntry {
@@ -295,6 +296,15 @@ export function NetBoard({ spec }: { spec: NetLabSpec }) {
     requestAnimationFrame(() => scroller.current?.scrollTo({ top: scroller.current.scrollHeight }));
   }
 
+  function applySolution() {
+    const steps = spec.solution?.steps ?? [];
+    const next = cloneWorld(world);
+    const entries = steps.map((s) => ({ device: s.device, command: s.command, output: runCommand(next, s.device, s.command).output }));
+    setWorld(next);
+    setLog((l) => [...l, ...entries]);
+    setStepper(null);
+  }
+
   function stepperFor(title: string, r: Run): Stepper {
     return { title, events: r.events, index: 0 };
   }
@@ -378,6 +388,7 @@ export function NetBoard({ spec }: { spec: NetLabSpec }) {
             </section>
           )}
           {spec.checks && <Checks checks={spec.checks} results={results} />}
+          {spec.solution?.steps && <FaultSolution solution={spec.solution} onApply={applySolution} />}
         </div>
         <div className="flex min-h-[22rem] flex-col overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 text-zinc-100">
           <div className="flex flex-wrap items-center gap-1 border-b border-zinc-800 px-2 py-1.5">

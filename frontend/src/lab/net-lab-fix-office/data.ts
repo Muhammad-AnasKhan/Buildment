@@ -70,6 +70,18 @@ export const netLabFixOffice: NetLabSpec = {
       { a: "r2.dc", b: "server.eth0" },
     ],
   },
+  solution: {
+    summary:
+      "Three separate faults. PC 1 sends everything off the office network to 10.1.0.254, an address nobody owns, so its ARP question is never answered. PC 2 has a /29, which covers only 10.1.0.16 to 10.1.0.23, so the router at 10.1.0.1 is not on its network and the kernel will not accept it as a gateway. Router 2 knows nothing about 10.1.0.0/24, so every reply to the office is dropped there.",
+    steps: [
+      { device: "pc1", command: "ip route del default", why: "The default route points at 10.1.0.254. ip neigh shows it FAILED: no device answers for that address." },
+      { device: "pc1", command: "ip route add default via 10.1.0.1", why: "10.1.0.1 is router 1's address on the office switch, so PC 1 can reach it directly." },
+      { device: "pc2", command: "ip addr del 10.1.0.20/29 dev eth0", why: "A /29 holds 10.1.0.16 to 10.1.0.23. The router at 10.1.0.1 falls outside it, so PC 2 cannot use it." },
+      { device: "pc2", command: "ip addr add 10.1.0.20/24 dev eth0", why: "The office network is a /24, the same mask PC 1 and router 1 use." },
+      { device: "pc2", command: "ip route add default via 10.1.0.1", why: "Now 10.1.0.1 is on PC 2's network, so the kernel accepts it as the gateway." },
+      { device: "r2", command: "ip route add 10.1.0.0/24 via 10.0.0.1", why: "Replies to the office must go back through router 1. Without this route router 2 answers the server with Destination Net Unreachable." },
+    ],
+  },
   checks: [
     { id: "pc1-server", label: "PC 1 reaches the server", from: "pc1", to: "10.2.0.10", kind: "ping", expect: "reach" },
     { id: "pc2-server", label: "PC 2 reaches the server", from: "pc2", to: "10.2.0.10", kind: "ping", expect: "reach" },

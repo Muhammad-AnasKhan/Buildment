@@ -7,7 +7,7 @@ import { canConnect, isComponentKind } from "./catalog";
 import type { NetCheck } from "./net/checks";
 import type { NetTopology } from "./net/model";
 import type { PlanSpec } from "./net/plan";
-import { validateChecks, validatePlan, validateTopology } from "./net/validate";
+import { validateChecks, validatePlan, validateSolution, validateTopology } from "./net/validate";
 
 export type LabFamily = "hld" | "db" | "net";
 
@@ -60,6 +60,22 @@ export interface DbLabSpec extends LabBase {
   query: string;
 }
 
+export interface NetSolutionStep {
+  device: string;
+  command: string;
+  // Why this command, in plain words: what was wrong and what it changes.
+  why: string;
+}
+
+// Kept hidden until the learner asks for it. A fault lab's steps must pass
+// every check from the starting network, and a plan's blocks must all fit;
+// the validator runs both.
+export interface NetSolution {
+  summary: string;
+  steps?: NetSolutionStep[];
+  blocks?: Record<string, { block: string; why: string }>;
+}
+
 // A network lab: explore a topology from its devices' terminals, fix a broken
 // one until every check passes, or plan blocks inside one parent block.
 export interface NetLabSpec extends LabBase {
@@ -74,21 +90,25 @@ export interface NetLabSpec extends LabBase {
   tasks?: string[];
   // One-tap commands under the terminal, run on the selected device.
   suggested?: string[];
+  solution?: NetSolution;
 }
 
 export type LabSpec = HldLabSpec | DbLabSpec | NetLabSpec;
 
 function validateNetLab(spec: NetLabSpec): string[] {
   const problems: string[] = [];
+  if (spec.mode !== "explore" && !spec.solution) problems.push(`a ${spec.mode} lab needs a solution`);
   if (spec.mode === "plan") {
     if (!spec.plan) problems.push("a plan lab needs a plan");
     else problems.push(...validatePlan(spec.plan));
+    if (spec.plan && spec.solution) problems.push(...validateSolution(spec.solution, { plan: spec.plan }));
     return problems;
   }
   if (!spec.topology) return ["an explore or fault lab needs a topology"];
   problems.push(...validateTopology(spec.topology));
   if (spec.checks) problems.push(...validateChecks(spec.topology, spec.checks));
   if (spec.mode === "fault" && !spec.checks?.length) problems.push("a fault lab needs checks");
+  if (spec.solution) problems.push(...validateSolution(spec.solution, { topology: spec.topology, checks: spec.checks }));
   if (spec.startDevice && !spec.topology.devices.some((d) => d.id === spec.startDevice)) {
     problems.push(`startDevice "${spec.startDevice}" is not a device`);
   }

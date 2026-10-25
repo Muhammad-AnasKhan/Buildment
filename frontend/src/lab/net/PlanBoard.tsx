@@ -6,6 +6,8 @@
 // checks say so.
 
 import { useMemo, useState } from "react";
+import type { NetSolution } from "../types";
+import { PlanSolution } from "./NetSolution";
 import type { PlanSpec } from "./plan";
 import { blockRange, checkPlan } from "./plan";
 import type { Cidr } from "./ip";
@@ -13,7 +15,7 @@ import { networkOf, parseCidr, usableHosts } from "./ip";
 
 const TONES = ["bg-sky-500", "bg-amber-500", "bg-emerald-500", "bg-violet-500", "bg-rose-500", "bg-cyan-500", "bg-lime-500", "bg-fuchsia-500"];
 
-export function PlanBoard({ plan }: { plan: PlanSpec }) {
+export function PlanBoard({ plan, solution }: { plan: PlanSpec; solution?: NetSolution }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const parent = parseCidr(plan.parent) as Cidr;
   const size = 2 ** (32 - parent.prefix);
@@ -89,6 +91,14 @@ export function PlanBoard({ plan }: { plan: PlanSpec }) {
           );
         })}
       </ul>
+      {solution?.blocks && (
+        <PlanSolution
+          solution={solution}
+          plan={plan}
+          answers={answers}
+          onFill={() => setAnswers(Object.fromEntries(Object.entries(solution.blocks ?? {}).map(([id, b]) => [id, b.block])))}
+        />
+      )}
     </div>
   );
 }

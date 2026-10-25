@@ -53,7 +53,7 @@ export function Lab({ slug }: { slug?: unknown }) {
     const eyebrow = spec.mode === "fault" ? "Fix it" : spec.mode === "plan" ? "Plan it" : "Explore";
     return (
       <LabFrame eyebrow={eyebrow} title={spec.title} purpose={spec.purpose} limits={spec.limits}>
-        {spec.mode === "plan" && spec.plan ? <PlanBoard plan={spec.plan} /> : <NetBoard spec={spec} />}
+        {spec.mode === "plan" && spec.plan ? <PlanBoard plan={spec.plan} solution={spec.solution} /> : <NetBoard spec={spec} />}
       </LabFrame>
     );
   }

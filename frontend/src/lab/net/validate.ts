@@ -2,10 +2,14 @@
 // registered net lab. It reports problems rather than throwing, like
 // validateLabSpec for the other families.
 
+import type { NetSolution } from "../types";
 import type { NetCheck } from "./checks";
+import { runChecks } from "./checks";
+import { runCommand } from "./commands";
 import type { NetTopology } from "./model";
-import { parseEndpoint } from "./model";
+import { buildWorld, parseEndpoint } from "./model";
 import type { PlanSpec } from "./plan";
+import { checkPlan } from "./plan";
 import { isLabSafe, parseCidr, parseIp } from "./ip";
 
 export function validateTopology(topology: NetTopology): string[] {
@@ -70,6 +74,41 @@ export function validatePlan(plan: PlanSpec): string[] {
   if (plan.needs.length === 0) problems.push("a plan needs at least one group");
   for (const need of plan.needs) {
     if (need.hosts < 1) problems.push(`plan group "${need.id}" needs at least one host`);
+  }
+  return problems;
+}
+
+// Proves a solution works: a fault lab's steps, run in order on the starting
+// network, must make every check pass; a plan's blocks must all fit.
+export function validateSolution(solution: NetSolution, lab: { topology?: NetTopology; checks?: NetCheck[]; plan?: PlanSpec }): string[] {
+  const problems: string[] = [];
+  if (solution.summary.trim().length === 0) problems.push("a solution needs a summary");
+  if (lab.plan) {
+    const blocks = solution.blocks ?? {};
+    for (const need of lab.plan.needs) {
+      if (!blocks[need.id]) problems.push(`the solution has no block for "${need.id}"`);
+      else if (!blocks[need.id].why.trim()) problems.push(`the solution's block for "${need.id}" needs a why`);
+    }
+    const answers = Object.fromEntries(Object.entries(blocks).map(([id, b]) => [id, b.block]));
+    const result = checkPlan(lab.plan, answers);
+    for (const n of result.needs) if (!n.ok) problems.push(`the solution's block for "${n.id}" fails: ${n.problems.join(" ")}`);
+    return problems;
+  }
+  if (!lab.topology) return problems;
+  const world = buildWorld(lab.topology);
+  for (const step of solution.steps ?? []) {
+    if (!world.devices[step.device]) {
+      problems.push(`solution step "${step.command}" runs on unknown device "${step.device}"`);
+      continue;
+    }
+    if (!step.why.trim()) problems.push(`solution step "${step.command}" needs a why`);
+    const result = runCommand(world, step.device, step.command);
+    if (/^(Error|RTNETLINK|Cannot)/.test(result.output)) problems.push(`solution step "${step.command}" on ${step.device} fails: ${result.output}`);
+  }
+  if (lab.checks) {
+    runChecks(world, lab.checks).forEach((r, i) => {
+      if (!r.pass) problems.push(`after the solution, check "${lab.checks?.[i].id}" still fails`);
+    });
   }
   return problems;
 }

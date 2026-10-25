@@ -108,3 +108,25 @@ describe("net validation and views", () => {
     expect(labView(netLabPlanSchool)).toBe("net-plan");
   });
 });
+
+describe("net lab solutions", () => {
+  it("the fault and plan labs carry solutions the validator has proved", async () => {
+    const { validateLabSpec } = await import("@/lab/types");
+    expect(netLabFixOffice.solution?.steps?.length).toBeGreaterThan(0);
+    expect(netLabPlanSchool.solution?.blocks).toBeDefined();
+    expect(validateLabSpec(netLabFixOffice)).toEqual([]);
+    expect(validateLabSpec(netLabPlanSchool)).toEqual([]);
+  });
+
+  it("a solution that leaves a check failing is reported", async () => {
+    const { validateSolution } = await import("@/lab/net/validate");
+    const steps = (netLabFixOffice.solution?.steps ?? []).filter((s) => s.device !== "r2");
+    const problems = validateSolution({ summary: "partial", steps }, { topology: netLabFixOffice.topology, checks: netLabFixOffice.checks });
+    expect(problems).toContain('after the solution, check "server-pc1" still fails');
+  });
+
+  it("a fault or plan lab without a solution is refused", async () => {
+    const { validateLabSpec } = await import("@/lab/types");
+    expect(validateLabSpec({ ...netLabFixOffice, solution: undefined })).toContain("a fault lab needs a solution");
+  });
+});
