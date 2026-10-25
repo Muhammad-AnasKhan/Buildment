@@ -46,6 +46,10 @@ export interface TierLoad {
   managed: boolean;
   /** A short line for the card: autoscaled, throttling, backlog, and so on. */
   note?: string;
+  /** What this component costs per hour whether or not it is serving. */
+  cost: number;
+  /** Milliseconds a request spends waiting in line here, on top of its service time. Zero off the request path. */
+  waitMs: number;
 }
 
 export interface Targets {
@@ -74,6 +78,8 @@ export interface ModelResult {
   blocked: number;
   /** How fast queued work piles up because consumers are too slow, per second. */
   backlog: number;
+  /** The role on the request path with the lowest availability, for "add redundancy here". */
+  weakest?: { role: Role; availability: number };
 }
 
 // ---- reading a node's configuration -------------------------------------------
@@ -347,7 +353,10 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     const byRole = new Map<Role, string[]>();
     for (const kid of kids) byRole.set(roleOf(kid.kind), [...(byRole.get(roleOf(kid.kind)) ?? []), kid.id]);
     for (const [role, ids] of byRole) {
-      const share = role === "database" || role === "nosql" ? out * missRate : out;
+      const stores = role === "database" || role === "nosql";
+      // A worker batches its writes: one trip to the store carries `batchSize` events.
+      const batch = node.kind === "worker" && stores ? Math.max(1, num(node, "batchSize", 1)) : 1;
+      const share = stores ? (out * missRate) / batch : out;
       for (const k of ids) {
         incoming.set(k, (incoming.get(k) ?? 0) + share / ids.length);
         edgeFlows[`${id}>${k}`] = share / ids.length;
@@ -369,7 +378,7 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     cost += ev.cost; // placed hardware costs money whether or not it is serving
     tiers.push({
       id: node.id, kind: node.kind, capacity, utilisation: capacity > 0 ? flow / capacity : 0,
-      down, reachable: onPath, units: ev.units, managed: ev.managed, note: ev.note,
+      down, reachable: onPath, units: ev.units, managed: ev.managed, note: ev.note, cost: ev.cost, waitMs: 0,
     });
   }
   const tierById = new Map(tiers.map((t) => [t.id, t]));
@@ -383,7 +392,9 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     const behind = Math.max(0, (incoming.get(id) ?? 0) - consumers);
     backlog += behind;
     const tier = tierById.get(id);
-    if (tier) tier.note = consumers === 0 ? "no consumers linked" : behind > 0 ? `backlog grows ${rate(behind)}/s` : "consumers keeping up";
+    // A consumer that is down is still linked: say so, instead of "no consumers linked".
+    const linkedButDown = board.edges.some((e) => e.from === id && isDown(byId.get(e.to)!));
+    if (tier) tier.note = consumers === 0 ? (linkedButDown ? `consumers down, backlog grows ${rate(behind)}/s` : "no consumers linked") : behind > 0 ? `backlog grows ${rate(behind)}/s` : "consumers keeping up";
   }
 
   // Capacity, latency and availability of the synchronous request path.
@@ -406,13 +417,19 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     const before = (parents.get(id) ?? []).filter((p) => sync.has(p));
     lat50.set(id, service + Math.max(0, ...before.map((p) => lat50.get(p) ?? 0)));
     lat99.set(id, service / (1 - u) + Math.max(0, ...before.map((p) => lat99.get(p) ?? 0)));
+    if (tier) tier.waitMs = service / (1 - u) - service;
   }
   const p50 = NETWORK_MS + Math.max(0, ...lat50.values());
   const p99 = NETWORK_MS + Math.max(0, ...lat99.values());
 
   // Parallel components with the same role back each other up; the roles are in series.
   let availability = 1;
-  for (const parts of roleAvail.values()) availability *= 1 - parts.reduce((all, a) => all * (1 - a), 1);
+  let weakest: ModelResult["weakest"];
+  for (const [role, parts] of roleAvail) {
+    const roleUp = 1 - parts.reduce((all, a) => all * (1 - a), 1);
+    availability *= roleUp;
+    if (!weakest || roleUp < weakest.availability) weakest = { role, availability: roleUp };
+  }
 
   // A placed database that requests cannot reach means nothing is served.
   let failure: string | undefined;
@@ -445,6 +462,7 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     dropped,
     blocked,
     backlog,
+    weakest,
     costPerHour: cost,
     tiers,
     pass,
