@@ -3,17 +3,17 @@ import type { SpecBlock, SpecScreen } from "../models/ui-specimen";
 import { makeSpecimenCompareCanvas } from "../primitives/canvas-factories";
 
 // Product Sense, chapter 3.2: every screen has four states. Halaqa's study
-// groups screen (fictional) for the course "Data structures", drawn as empty,
-// loading, error and full. Each state says what is happening; only the full
-// state is the one most apps draw.
+// groups screen (fictional), drawn as empty, loading, error and full. Each
+// state says what is happening; only the full state is the one most apps
+// draw. The full state uses the course's three canon groups.
 
 const TOP: SpecBlock[] = [
   { kind: "nav", title: "Study groups" },
-  { kind: "text", text: "Showing: Data structures", size: 12.5, tone: "muted" },
+  { kind: "text", text: "Showing: all courses", size: 12.5, tone: "muted" },
 ];
 
 const EMPTY: SpecScreen = {
-  alt: "Halaqa's study groups screen with no groups for Data structures yet, a line about what a group is, and a Start a group button.",
+  alt: "Halaqa's study groups screen with no groups yet, a line about what a group is, and a Start a group button.",
   blocks: [
     ...TOP,
     {
@@ -23,7 +23,7 @@ const EMPTY: SpecScreen = {
       pad: 14,
       children: [
         { kind: "icon", glyph: "search", tile: true, size: 18 },
-        { kind: "text", text: "No groups for Data structures yet", size: 15, weight: 700 },
+        { kind: "text", text: "No groups yet", size: 15, weight: 700 },
         { kind: "text", text: "A group has a time, a place and seats. You can start one in a minute.", size: 12.5, tone: "muted" },
         { kind: "button", label: "Start a group" },
       ],
@@ -32,17 +32,17 @@ const EMPTY: SpecScreen = {
 };
 
 const LOADING: SpecScreen = {
-  alt: "Halaqa's study groups screen while loading: a spinner, the words Finding groups, a bar showing 3 of 8 loaded, and a line that the search is kept.",
+  alt: "Halaqa's study groups screen while loading: a spinner, the words Finding groups, a bar showing 3 of 8 loaded, and a line that this can take about 12 seconds.",
   blocks: [
     ...TOP,
     { kind: "spinner", label: "Finding groups..." },
     { kind: "progress", label: "Loaded 3 of 8 groups", value: 3 / 8 },
-    { kind: "text", text: "Your connection is slow. Your search is kept.", size: 12.5, tone: "muted" },
+    { kind: "text", text: "Your connection is slow. This can take about 12 seconds.", size: 12.5, tone: "muted" },
   ],
 };
 
 const ERROR: SpecScreen = {
-  alt: "Halaqa's study groups screen after a failed load: a message that groups did not load because the connection dropped, that the search is kept, and a Try again button.",
+  alt: "Halaqa's study groups screen after a failed load: a message that groups did not load because the connection dropped, and a Try again button.",
   blocks: [
     ...TOP,
     {
@@ -53,14 +53,14 @@ const ERROR: SpecScreen = {
       children: [
         { kind: "icon", glyph: "wifi", tile: true, size: 18, tone: "bad" },
         { kind: "text", text: "Groups did not load", size: 15, weight: 700 },
-        { kind: "text", text: "The connection dropped before the list arrived. Your search is kept.", size: 12.5, tone: "muted" },
+        { kind: "text", text: "The connection dropped before the list arrived.", size: 12.5, tone: "muted" },
         { kind: "button", label: "Try again" },
       ],
     },
   ],
 };
 
-function group(name: string, when: string, seats: string): SpecBlock {
+function group(name: string, when: string, seats: string, full = false): SpecBlock {
   return {
     kind: "box",
     border: true,
@@ -69,17 +69,18 @@ function group(name: string, when: string, seats: string): SpecBlock {
     children: [
       { kind: "text", text: name, size: 14, weight: 600 },
       { kind: "text", text: when, size: 12.5, tone: "muted" },
-      { kind: "text", text: seats, size: 12, weight: 600, tone: "accent" },
+      { kind: "text", text: seats, size: 12, weight: 600, tone: full ? "bad" : "accent" },
     ],
   };
 }
 
 const FULL: SpecScreen = {
-  alt: "Halaqa's study groups screen with two groups for Data structures, each with a time, a place and seats left.",
+  alt: "Halaqa's study groups screen with three groups, each with a time, a place and seats left. The last group says Full.",
   blocks: [
     ...TOP,
     group("Data structures, exam Thursday", "Tonight 8 pm, library room 2", "2 seats left"),
-    group("Data structures problem set", "Tomorrow 5 pm, online", "4 seats left"),
+    group("Statistics 101 revision", "Tomorrow 5 pm, online", "4 seats left"),
+    group("Arabic literature reading", "Saturday 10 am, cafe", "Full", true),
   ],
 };
 

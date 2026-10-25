@@ -11,7 +11,7 @@ import { makeSpecimenCompareCanvas } from "../primitives/canvas-factories";
 const HEAD: SpecBlock[] = [
   { kind: "text", text: "Data structures, exam Thursday", size: 15, weight: 700 },
   { kind: "text", text: "Tonight 8 pm, library room 2", size: 12.5, tone: "muted" },
-  { kind: "text", text: "3 seats left", size: 12.5, weight: 600, tone: "accent" },
+  { kind: "text", text: "2 seats left", size: 12.5, weight: 600, tone: "accent" },
 ];
 
 const BUSY: SpecScreen = {

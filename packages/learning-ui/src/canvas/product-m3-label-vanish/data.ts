@@ -3,35 +3,41 @@ import type { SpecScreen } from "../models/ui-specimen";
 import { makeSpecimenCompareCanvas } from "../primitives/canvas-factories";
 
 // Product Sense, chapter 3.3: a placeholder is gone once the person types.
-// The same three-field form (Halaqa, fictional) empty, typed with placeholder
-// labels, and typed with labels above.
+// The same four-field form (Halaqa, fictional: Course, When, Where, Seats)
+// empty, typed with placeholder labels, and typed with labels above.
 
 const EMPTY: SpecScreen = {
-  alt: "A Start a group form with three empty fields whose placeholders read Course, Day and time, and Seats.",
+  alt: "A Start a group form with four empty fields whose placeholders read Course, When, Where and Seats.",
+  gap: 10,
   blocks: [
     { kind: "nav", title: "Start a group" },
     { kind: "field", placeholder: "Course" },
-    { kind: "field", placeholder: "Day and time" },
+    { kind: "field", placeholder: "When" },
+    { kind: "field", placeholder: "Where" },
     { kind: "field", placeholder: "Seats" },
   ],
 };
 
 const TYPED: SpecScreen = {
-  alt: "The same form after typing: the fields now show Data structures, Tonight 8 pm and 3, and nothing says what the last field is for.",
+  alt: "The same form after typing: the fields now show Data structures, Tonight 8 pm, Library room 2 and 3, and nothing says what the last field is for.",
+  gap: 10,
   blocks: [
     { kind: "nav", title: "Start a group" },
     { kind: "field", value: "Data structures" },
     { kind: "field", value: "Tonight 8 pm" },
+    { kind: "field", value: "Library room 2" },
     { kind: "field", value: "3" },
   ],
 };
 
 const LABELLED: SpecScreen = {
-  alt: "The same typed form with a visible label above each field: Course, Day and time, and Seats.",
+  alt: "The same typed form with a visible label above each field: Course, When, Where and Seats.",
+  gap: 10,
   blocks: [
     { kind: "nav", title: "Start a group" },
     { kind: "field", label: "Course", value: "Data structures" },
-    { kind: "field", label: "Day and time", value: "Tonight 8 pm" },
+    { kind: "field", label: "When", value: "Tonight 8 pm" },
+    { kind: "field", label: "Where", value: "Library room 2" },
     { kind: "field", label: "Seats", value: "3" },
   ],
 };

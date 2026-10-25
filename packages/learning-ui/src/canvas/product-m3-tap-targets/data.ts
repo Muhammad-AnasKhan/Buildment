@@ -57,7 +57,7 @@ export const productM3TapTargets: CustomCanvasSpec = {
   title: "How big should a finger target be?",
   purpose: "Drag along six sizes of three icon buttons, from 16 to 48 units, and see which sizes fall below the WCAG AA floor and which are comfortable for a finger.",
   limits:
-    "The phone in the picture is 300 units wide, a little narrower than many phones, so one unit is one pixel of that phone and sizes on your phone differ a little. WCAG 2.5.8 has exceptions this picture does not draw. Halaqa is a fictional app.",
+    "The phone in the picture is 300 units wide, a little narrower than many phones. One unit is one pixel of that phone, so sizes on your phone differ a little. WCAG 2.5.8 has exceptions this picture does not draw. Halaqa is a fictional app.",
   component: makeSpecimenLadderCanvas({
     label: "Target size",
     steps: STEPS.map((s) => ({
