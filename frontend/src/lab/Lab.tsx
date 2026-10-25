@@ -38,7 +38,7 @@ export function Lab({ slug }: { slug?: unknown }) {
 
   if (spec.family === "hld") {
     return (
-      <LabFrame eyebrow="Explore" title={spec.title} purpose={spec.purpose} limits={spec.limits}>
+      <LabFrame eyebrow={spec.challenge ? "Visual challenge" : "Explore"} title={spec.title} purpose={spec.purpose} limits={spec.limits}>
         <HldBoard spec={spec} />
       </LabFrame>
     );

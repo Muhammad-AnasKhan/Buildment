@@ -1,14 +1,20 @@
 "use client";
 
-// The interactive HLD lab board: a small architecture editor. Drag components
-// from the drawer onto the canvas, link them by dragging from one node's bottom
-// dot to another's top dot (only links the catalog allows), delete nodes or
-// links, double-click a component to take it down, and the tiered-architecture
-// model routes the load along your links and scores utilisation, p99,
-// availability and cost against the lab's targets.
+// The interactive HLD lab board: a small architecture editor and a runner.
+//
+// Layout: the component palette on the left, the canvas in the middle, and the
+// brief, live numbers and checks underneath. Component settings are not on the
+// page: hover or focus a component and a small settings icon appears on it;
+// clicking it opens one dark drawer on the right (a bottom sheet on a phone).
+//
+// Drag components from the palette onto the canvas, link them by dragging from a
+// dot on one to a dot on another (only links the catalog allows), then press Run.
+// Run plays the design through every scenario of the challenge (peak traffic,
+// then each failure), shows the traffic, saturation and failures on the board,
+// and lists every check as pass or fail with the value measured.
 
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
-import type { DragEvent } from "react";
+import type { DragEvent, KeyboardEvent } from "react";
 import {
   Background,
   BackgroundVariant,
@@ -32,54 +38,22 @@ import {
   type NodeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { Settings } from "lucide-react";
 import type { ComponentKind } from "./catalog";
-import type { PropertyDef, PropertyGroup, Role } from "./catalog";
-import { COMPONENT_CATALOG, SIZE_CATALOG, canConnect, isComponentKind, roleOf, sizesFor } from "./catalog";
+import { COMPONENT_CATALOG, SIZE_CATALOG, canConnect, isComponentKind, roleOf } from "./catalog";
 import type { Board, HldLabSpec } from "./types";
 import { initialControls, type BoardControls, type NodeConfig } from "./hld-board-model";
 import { runTieredModel, type ModelResult, type TierLoad } from "@/lab/tiered-architecture";
-
-// One color and icon per role. A component's chip, top bar and dots use its
-// role's color, and so does every link that leaves it, so a violet line always
-// means "from a load balancer", whichever course it is from. Red is kept for
-// trouble: down, unreachable or overloaded.
-const ROLE_ICON: Record<Role, string> = {
-  client: "○", dns: "◈", cdn: "☁", firewall: "⛨", limiter: "⧗", balancer: "⇉",
-  gateway: "‖", compute: "▣", function: "λ", worker: "⚙", cache: "⚡", database: "▽",
-  nosql: "◇", search: "⌕", queue: "☰", stream: "≋", storage: "▦",
-};
-const ROLE_COLOR: Record<Role, string> = {
-  client: "#64748b", dns: "#78716c", cdn: "#0ea5e9", firewall: "#e11d48", limiter: "#ea580c", balancer: "#8b5cf6",
-  gateway: "#c026d3", compute: "#3b82f6", function: "#0891b2", worker: "#6366f1", cache: "#f59e0b", database: "#10b981",
-  nosql: "#059669", search: "#a16207", queue: "#14b8a6", stream: "#0d9488", storage: "#84cc16",
-};
-const ROLE_LABEL: Record<Role, string> = {
-  client: "Client", dns: "DNS", cdn: "CDN", firewall: "Firewall", limiter: "Rate limit", balancer: "Load balancing",
-  gateway: "Gateway", compute: "Compute", function: "Functions", worker: "Workers", cache: "Cache", database: "Database",
-  nosql: "NoSQL", search: "Search", queue: "Queue", stream: "Stream", storage: "Storage",
-};
-const iconOf = (kind: ComponentKind) => ROLE_ICON[roleOf(kind)];
-const colorOf = (kind: ComponentKind) => ROLE_COLOR[roleOf(kind)];
-const chipStyle = (kind: ComponentKind) => ({ backgroundColor: `${colorOf(kind)}22`, color: colorOf(kind) });
-const ROLE_GROUPS: { group: string; roles: Role[] }[] = [
-  { group: "Traffic", roles: ["client", "dns", "cdn", "firewall", "limiter", "balancer", "gateway"] },
-  { group: "Compute", roles: ["compute", "function", "worker"] },
-  { group: "Data", roles: ["cache", "database", "nosql", "search", "storage"] },
-  { group: "Messaging", roles: ["queue", "stream"] },
-];
-function paletteFor(kinds: ComponentKind[]) {
-  return ROLE_GROUPS.map((g) => ({ group: g.group, kinds: kinds.filter((k) => g.roles.includes(roleOf(k))) })).filter((g) => g.kinds.length > 0);
-}
+import { runChallenge } from "./challenge";
+import { RunPanel, PhaseStrip, type RunState } from "./RunPanel";
+import { SettingsDrawer } from "./SettingsDrawer";
+import { RED, ROLE_COLOR, ROLE_LABEL, chipStyle, colorOf, iconOf, paletteFor, utilBar, utilText } from "./board-style";
 
 const DRAG_TYPE = "application/x-lab-kind";
-const RED = "#ef4444";
 const NODE_W = 158;
 const NODE_H = 92;
-
-const utilBar = (u: number) => (u < 0.7 ? "bg-emerald-500" : u < 0.9 ? "bg-amber-500" : "bg-red-500");
-const utilText = (u: number) =>
-  u < 0.7 ? "text-emerald-600 dark:text-emerald-400" : u < 0.9 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400";
-const okText = (ok: boolean) => (ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400");
+/** How long the run stays on each scenario. */
+const PHASE_MS = 2600;
 
 type TierData = { kind: ComponentKind };
 type Ctx = {
@@ -87,7 +61,11 @@ type Ctx = {
   cfg: Record<string, NodeConfig>;
   reachable: Set<string>;
   selected: string | null;
-  pulse: string | null;
+  drawerId: string | null;
+  /** Components the current scenario took down or thinned out. */
+  hit: Set<string>;
+  locked: boolean;
+  openSettings: (id: string) => void;
   /** While hovering, the components related to the hovered one; others dim. */
   focus: Set<string> | null;
 };
@@ -106,6 +84,8 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
   const count = typeof cfg.count === "number" ? cfg.count : typeof cfg.replicas === "number" ? cfg.replicas : typeof cfg.zones === "number" ? cfg.zones : null;
   const u = tier && linked && !down && !tier.managed ? tier.utilisation : null;
   const shownCount = tier && !tier.managed && linked ? tier.units : count;
+  const lost = ctx.hit.has(id) && !down;
+  const open = ctx.drawerId === id;
 
   const frame = down
     ? "border-red-500 bg-red-50 dark:bg-red-500/10"
@@ -120,11 +100,23 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
 
   return (
     <div
-      className={`w-[158px] rounded-xl border px-3 py-2 text-card-foreground transition-[box-shadow,opacity] duration-200 ${frame} ${
-        ctx.pulse === id ? "shadow-[0_0_0_4px_rgba(59,130,246,0.4)]" : "shadow-sm"
-      } ${dimmed ? "opacity-30" : ""}`}
+      className={`group/node relative w-[158px] rounded-xl border px-3 py-2 text-card-foreground shadow-sm transition-[box-shadow,opacity] duration-200 ${frame} ${dimmed ? "opacity-30" : ""}`}
       style={down ? undefined : { borderTopColor: color, borderTopWidth: 3 }}
     >
+      {/* The settings icon: only on hover or focus (always on touch screens), never the drawer itself. */}
+      <button
+        type="button"
+        data-settings-for={id}
+        aria-label={`Settings for ${def.label}`}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls={open ? "lab-settings-drawer" : undefined}
+        disabled={ctx.locked}
+        onClick={(e) => { e.stopPropagation(); ctx.openSettings(id); }}
+        className={`nodrag nopan absolute -right-2.5 -top-2.5 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-slate-600 bg-slate-900 text-slate-100 shadow transition-opacity hover:bg-slate-700 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-400 disabled:hidden group-focus-within/node:opacity-100 group-hover/node:opacity-100 [@media(hover:none)]:opacity-100 ${open || ctx.selected === id ? "opacity-100" : "opacity-0"}`}
+      >
+        <Settings className="h-3.5 w-3.5" aria-hidden />
+      </button>
       {/* A dot on every side. The board runs in loose mode, so any dot can start or end a link. */}
       <Handle type="source" id="t" position={Position.Top} className={HANDLE} style={{ backgroundColor: color }} />
       <Handle type="source" id="r" position={Position.Right} className={HANDLE} style={{ backgroundColor: color }} />
@@ -140,6 +132,8 @@ function TierNode({ id, data }: NodeProps<Node<TierData>>) {
       </div>
       {down ? (
         <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-red-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">DOWN</div>
+      ) : lost ? (
+        <div className="mt-2 inline-flex items-center gap-1 rounded-md bg-amber-600 px-1.5 py-0.5 text-[10px] font-semibold text-white">1 LOST</div>
       ) : !linked ? (
         <div className="mt-2 text-[10px] text-muted-foreground">Not linked: link it into the path</div>
       ) : u != null ? (
@@ -163,16 +157,25 @@ const nodeTypes = { tier: TierNode };
 
 type FlowData = { color: string; state: "live" | "hot" | "dead"; flow: number; dim: boolean };
 
+/** How many traffic dots ride a link: one for a trickle, up to four for a flood. */
+function dotsFor(flow: number): number {
+  if (flow < 1) return 0;
+  return Math.min(4, Math.max(1, Math.ceil(Math.log10(flow + 1)) - 1));
+}
+
 /**
  * A link drawn in the color of the component it leaves, in layers: a wide
  * invisible stroke that is easy to grab, a soft glow, the dashed line with its
- * arrowhead (marching while traffic flows), and the request rate it carries.
+ * arrowhead (marching while traffic flows), dots riding along it (more for more
+ * traffic, red when the part it feeds is overloaded), and the request rate it carries.
  */
 function FlowEdge({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, markerEnd, selected, data }: EdgeProps<Edge<FlowData>>) {
   const [path, labelX, labelY] = getSmoothStepPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition, borderRadius: 14 });
   const state = data?.state ?? "live";
   const color = state === "live" ? data?.color ?? "#3b82f6" : RED;
   const fade = (data?.dim ? 0.15 : 1) * (state === "dead" ? 0.6 : 1);
+  const dots = state === "dead" ? 0 : dotsFor(data?.flow ?? 0);
+  const duration = state === "hot" ? 0.9 : 1.8;
   return (
     <>
       <path d={path} fill="none" stroke={color} strokeWidth={selected ? 11 : 7} opacity={0.16 * fade} style={{ filter: "blur(3px)" }} aria-hidden />
@@ -189,6 +192,11 @@ function FlowEdge({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPo
           transition: "opacity 0.2s ease, stroke 0.3s ease",
         }}
       />
+      {Array.from({ length: dots }, (_, i) => (
+        <circle key={i} r={3.5} fill={color} opacity={fade} className="lab-dot" aria-hidden>
+          <animateMotion dur={`${duration}s`} begin={`${-(duration / dots) * i}s`} repeatCount="indefinite" path={path} />
+        </circle>
+      ))}
       {state !== "dead" && data && data.flow > 0 ? (
         <EdgeLabelRenderer>
           <div
@@ -207,69 +215,12 @@ const edgeTypes = { flow: FlowEdge };
 const EDGE_CSS = `
 @keyframes lab-edge-flow { from { stroke-dashoffset: 26; } to { stroke-dashoffset: 0; } }
 .lab-edge-live { animation: lab-edge-flow 0.9s linear infinite; }
-@media (prefers-reduced-motion: reduce) { .lab-edge-live { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .lab-edge-live { animation: none; } .lab-dot { display: none; } }
+.dark .react-flow__controls { box-shadow: none; }
+.dark .react-flow__controls-button { background: #1f2937; color: #e5e7eb; border-bottom-color: #374151; }
+.dark .react-flow__controls-button:hover { background: #374151; }
+.dark .react-flow__controls-button svg { fill: currentColor; }
 `;
-
-function Stat({ label, value, ok, hint }: { label: string; value: string; ok: boolean; hint: string }) {
-  return (
-    <div className="rounded-xl bg-muted/50 px-3 py-2">
-      <div className="text-[11px] text-muted-foreground">{label}</div>
-      <div className={`text-[19px] font-semibold leading-tight tabular-nums ${okText(ok)}`}>{value}</div>
-      <div className="text-[10px] text-muted-foreground">{hint}</div>
-    </div>
-  );
-}
-
-const GROUP_ORDER: PropertyGroup[] = ["Capacity", "Scaling", "Resilience", "Behaviour"];
-const SCALING_FIELDS = new Set(["minCount", "maxCount", "targetUtil"]);
-
-/** One configurable property: size and option pickers, toggles, sliders and numbers. */
-function PropertyField({ p, value, onChange }: { p: PropertyDef; value: number | string | undefined; onChange: (v: number | string) => void }) {
-  const v = value ?? p.default;
-  const row = "mb-1.5 flex items-center justify-between gap-2 text-[11px]";
-  const field = "rounded-md border border-border bg-card px-1.5 py-1 text-[11px]";
-  const label = <span className="text-muted-foreground" title={p.help}>{p.label}</span>;
-  if (p.type === "size" || p.type === "enum") {
-    const options = p.type === "size" ? sizesFor(p.sizeSet ?? "generic").map((t) => t.id) : p.options ?? [];
-    return (
-      <label className={row}>
-        {label}
-        <select value={String(v)} onChange={(e) => onChange(e.target.value)} className={`${field} max-w-[128px]`}>
-          {options.map((o) => <option key={o} value={o}>{o}</option>)}
-        </select>
-      </label>
-    );
-  }
-  if (p.type === "toggle") {
-    const on = Number(v) > 0;
-    return (
-      <div className={row}>
-        {label}
-        <button type="button" role="switch" aria-checked={on} aria-label={p.label} onClick={() => onChange(on ? 0 : 1)}
-          className={`relative h-4 w-7 shrink-0 rounded-full transition-colors ${on ? "bg-blue-600" : "bg-muted-foreground/30"}`}>
-          <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${on ? "left-3.5" : "left-0.5"}`} />
-        </button>
-      </div>
-    );
-  }
-  if (p.type === "ratio") {
-    return (
-      <label className={row}>
-        {label}
-        <span className="flex items-center gap-1.5">
-          <input type="range" min={0} max={1} step={p.step ?? 0.05} value={Number(v)} onChange={(e) => onChange(Number(e.target.value))} className="w-16 accent-blue-600" />
-          <span className="w-8 text-right tabular-nums">{Math.round(Number(v) * 100)}%</span>
-        </span>
-      </label>
-    );
-  }
-  return (
-    <label className={row}>
-      {label}
-      <input type="number" min={p.min} max={p.max} value={Number(v)} onChange={(e) => onChange(Number(e.target.value))} className={`${field} w-20 tabular-nums`} />
-    </label>
-  );
-}
 
 function defaultsFor(kind: ComponentKind): NodeConfig {
   const cfg: NodeConfig = {};
@@ -277,23 +228,37 @@ function defaultsFor(kind: ComponentKind): NodeConfig {
   return cfg;
 }
 
-function Editor({ spec }: { spec: HldLabSpec }) {
+/**
+ * Where a starting board's nodes go. A board authored as a grid (more than one
+ * column and more than one row) keeps its shape; a single row or column is laid
+ * out as a column, top to bottom, the way a request travels.
+ */
+function startPositions(nodes: Board["nodes"]): Map<string, { x: number; y: number }> {
+  const columns = new Set(nodes.map((n) => n.x)).size;
+  const rows = new Set(nodes.map((n) => n.y)).size;
+  const grid = columns > 1 && rows > 1;
+  return new Map(nodes.map((n, i) => [n.id, grid ? { x: n.x * 200 + 40, y: n.y * 135 + 20 } : { x: 80, y: i * 140 }]));
+}
+
+function Editor({ spec, onReset }: { spec: HldLabSpec; onReset: () => void }) {
   const start: Board = spec.startingBoard ?? { nodes: [], edges: [] };
   const targets = useMemo(() => spec.levels[0]?.targets ?? {}, [spec]);
   const { screenToFlowPosition, fitView } = useReactFlow();
   const seq = useRef(0);
+  const rootRef = useRef<HTMLDivElement>(null);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node<TierData>>(
-    start.nodes.map((n, i) => ({ id: n.id, type: "tier", position: { x: 80, y: i * 175 }, width: NODE_W, height: NODE_H, data: { kind: n.kind } })),
-  );
+  const [initialNodes] = useState<Node<TierData>[]>(() => {
+    const at = startPositions(start.nodes);
+    return start.nodes.map((n) => ({ id: n.id, type: "tier", position: at.get(n.id)!, width: NODE_W, height: NODE_H, data: { kind: n.kind } }));
+  });
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node<TierData>>(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(
     start.edges.map((e) => ({ id: `${e.from}-${e.to}`, source: e.from, target: e.to, sourceHandle: "b", targetHandle: "t" })),
   );
   const [controls, setControls] = useState<BoardControls>(() => initialControls(start, spec.levels[0]?.load ?? 1000));
-  const [selected, setSelected] = useState<string | null>(
-    () => start.nodes.find((n) => COMPONENT_CATALOG[n.kind].properties.some((p) => p.type === "size"))?.id ?? null,
-  );
-  const [pulse, setPulse] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [drawerId, setDrawerId] = useState<string | null>(null);
+  const load = spec.challenge ? spec.challenge.peakLoad : controls.load;
 
   // The model only cares about structure and config, not node positions, so key it on those.
   const nodeKey = nodes.map((n) => `${n.id}:${n.data.kind}`).join("|");
@@ -306,21 +271,70 @@ function Editor({ spec }: { spec: HldLabSpec }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [nodeKey, edgeKey, controls],
   );
-  const result: ModelResult = useMemo(() => runTieredModel(board, controls.load, targets), [board, controls.load, targets]);
+  const result: ModelResult = useMemo(() => runTieredModel(board, load, targets), [board, load, targets]);
+  const report = useMemo(() => runChallenge(spec, board, load), [spec, board, load]);
+  const designKey = useMemo(() => JSON.stringify([board.nodes.map((n) => [n.id, n.kind, n.props]), board.edges, load]), [board, load]);
+
+  // ---- running the challenge -----------------------------------------------------
+  const [runPhase, setRunPhase] = useState<number | null>(null);
+  const [ranKey, setRanKey] = useState<string | null>(null);
+  const [previewId, setPreviewId] = useState<string | null>(null);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const clearTimers = () => { timers.current.forEach(clearTimeout); timers.current = []; };
+  useEffect(() => clearTimers, []);
+
+  const runState: RunState = runPhase !== null ? "running" : ranKey === null ? "idle" : ranKey === designKey ? "done" : "stale";
+
+  function startRun() {
+    clearTimers();
+    setDrawerId(null);
+    setPreviewId(null);
+    const key = designKey;
+    if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      setRanKey(key);
+      return;
+    }
+    const total = report.phases.length;
+    const step = (i: number) => {
+      setRunPhase(i);
+      timers.current.push(
+        setTimeout(() => {
+          if (i + 1 < total) step(i + 1);
+          else { setRunPhase(null); setRanKey(key); }
+        }, PHASE_MS),
+      );
+    };
+    step(0);
+  }
+  function skipRun() {
+    clearTimers();
+    setRunPhase(null);
+    setRanKey(designKey);
+  }
+
+  // What the board shows: the learner's design, or one scenario of the run.
+  const view = runPhase !== null ? report.phases[runPhase] : previewId ? report.phases.find((p) => p.id === previewId) ?? null : null;
+  const shownBoard = view ? view.board : board;
+  const shownResult = view ? view.result : result;
+  const shownCfg = useMemo<Record<string, NodeConfig>>(
+    () => (view ? Object.fromEntries(view.board.nodes.map((n) => [n.id, (n.props ?? {}) as NodeConfig])) : controls.perNode),
+    [view, controls.perNode],
+  );
+  const hit = useMemo(() => new Set(view?.hit ?? []), [view]);
 
   const reachable = useMemo(() => {
     const seen = new Set<string>();
     const next = new Map<string, string[]>();
-    for (const e of board.edges) next.set(e.from, [...(next.get(e.from) ?? []), e.to]);
-    const isDown = (id: string) => Boolean(controls.perNode[id]?.down);
-    const queue = board.nodes.filter((n) => n.kind === "client" && !isDown(n.id)).map((n) => n.id);
+    for (const e of shownBoard.edges) next.set(e.from, [...(next.get(e.from) ?? []), e.to]);
+    const isDown = (id: string) => Boolean(shownCfg[id]?.down);
+    const queue = shownBoard.nodes.filter((n) => n.kind === "client" && !isDown(n.id)).map((n) => n.id);
     queue.forEach((id) => seen.add(id));
     while (queue.length) {
       const id = queue.shift()!;
       for (const to of next.get(id) ?? []) if (!isDown(to) && !seen.has(to)) { seen.add(to); queue.push(to); }
     }
     return seen;
-  }, [board, controls.perNode]);
+  }, [shownBoard, shownCfg]);
 
   // Hovering a component or link focuses it and its direct neighbours; the rest dims.
   const [hover, setHover] = useState<{ node?: string; edge?: string } | null>(null);
@@ -337,14 +351,26 @@ function Editor({ spec }: { spec: HldLabSpec }) {
     return ids;
   }, [hover, edges]);
 
+  function openSettings(id: string) {
+    setSelected(id);
+    setDrawerId((cur) => (cur === id ? null : id));
+  }
+  function closeDrawer() {
+    const id = drawerId;
+    setDrawerId(null);
+    if (id) requestAnimationFrame(() => rootRef.current?.querySelector<HTMLButtonElement>(`[data-settings-for="${CSS.escape(id)}"]`)?.focus());
+  }
   const ctx: Ctx = useMemo(
-    () => ({ tiers: new Map(result.tiers.map((t) => [t.id, t])), cfg: controls.perNode, reachable, selected, pulse, focus }),
-    [result, controls.perNode, reachable, selected, pulse, focus],
+    () => ({
+      tiers: new Map(shownResult.tiers.map((t) => [t.id, t])), cfg: shownCfg, reachable, selected, drawerId, hit,
+      locked: runPhase !== null, openSettings, focus,
+    }),
+    [shownResult, shownCfg, reachable, selected, drawerId, hit, runPhase, focus],
   );
 
   const shownEdges: Edge<FlowData>[] = edges.map((e) => {
     const live = reachable.has(e.source) && reachable.has(e.target);
-    const target = result.tiers.find((t) => t.id === e.target);
+    const target = shownResult.tiers.find((t) => t.id === e.target);
     const state: FlowData["state"] = !live ? "dead" : target && target.utilisation >= 0.9 ? "hot" : "live";
     const sourceKind = nodes.find((n) => n.id === e.source)?.data.kind ?? "app-server";
     const color = state === "live" ? colorOf(sourceKind) : RED;
@@ -352,20 +378,21 @@ function Editor({ spec }: { spec: HldLabSpec }) {
     return {
       ...e,
       type: "flow",
-      data: { color, state, flow: result.edgeFlows[`${e.source}>${e.target}`] ?? 0, dim: !related },
+      data: { color, state, flow: shownResult.edgeFlows[`${e.source}>${e.target}`] ?? 0, dim: !related },
       markerEnd: { type: MarkerType.ArrowClosed, color, width: 18, height: 18 },
     };
   });
   const rolesOnBoard = [...new Set(nodes.map((n) => roleOf(n.data.kind)))];
   const palette = useMemo(() => paletteFor(spec.allowedComponents), [spec]);
+  const locked = runPhase !== null;
 
   function addNode(kind: ComponentKind, position?: { x: number; y: number }) {
+    if (locked) return;
     seq.current += 1;
-    const id = `${kind}-added-${seq.current}`;
-    setNodes((ns) => [
-      ...ns,
-      { id, type: "tier", position: position ?? { x: 300, y: 20 + (ns.length % 4) * 110 }, width: NODE_W, height: NODE_H, data: { kind } },
-    ]);
+    const n = seq.current;
+    const id = `${kind}-added-${n}`;
+    const at = position ?? { x: 300 + Math.floor((n - 1) / 4) * 190, y: 20 + ((n - 1) % 4) * 130 };
+    setNodes((ns) => [...ns, { id, type: "tier", position: at, width: NODE_W, height: NODE_H, data: { kind } }]);
     setControls((c) => ({ ...c, perNode: { ...c.perNode, [id]: defaultsFor(kind) } }));
     setSelected(id);
   }
@@ -373,6 +400,7 @@ function Editor({ spec }: { spec: HldLabSpec }) {
     setNodes((ns) => ns.filter((n) => n.id !== id));
     setEdges((es) => es.filter((e) => e.source !== id && e.target !== id));
     setSelected(null);
+    setDrawerId(null);
   }
   const setProp = (id: string, key: string, value: number | string) =>
     setControls((c) => ({ ...c, perNode: { ...c.perNode, [id]: { ...c.perNode[id], [key]: value } } }));
@@ -439,115 +467,152 @@ function Editor({ spec }: { spec: HldLabSpec }) {
     flash(!o ? `${a} and ${b} can't be linked: requests never flow between them.` : alreadyLinked(o.source, o.target) ? `${a} and ${b} are already linked.` : `That link would make a loop.`);
   };
 
-  const run = () => {
-    const order = [...reachable].filter((id) => nodes.some((n) => n.id === id));
-    let i = 0;
-    setPulse(order[0] ?? null);
-    const timer = setInterval(() => {
-      i += 1;
-      if (i >= order.length) { clearInterval(timer); setPulse(null); } else setPulse(order[i]);
-    }, 260);
-  };
-
   useEffect(() => {
-    const t = setTimeout(() => fitView({ padding: 0.2 }), 50);
+    const t = setTimeout(() => fitView({ padding: 0.12, maxZoom: 1 }), 50);
     return () => clearTimeout(t);
   }, [fitView]);
 
-  const sel = selected ? nodes.find((n) => n.id === selected) : null;
-  const selDef = sel ? COMPONENT_CATALOG[sel.data.kind] : null;
-  const selCfg = selected ? controls.perNode[selected] ?? {} : {};
+  const onRootKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Escape" && drawerId) { e.stopPropagation(); closeDrawer(); }
+  };
 
-  const missions: [string, boolean][] = [
-    [`Serve ${targets.rps?.toLocaleString() ?? "the"} req/s`, result.pass.rps],
-    [`p99 under ${targets.p99Ms ?? "target"} ms`, result.pass.p99],
-    [`${targets.availability ? (targets.availability * 100).toFixed(1) : "99.9"}% available`, result.pass.availability],
-    ["Within budget", result.pass.budget],
-  ];
+  const drawerNode = drawerId ? nodes.find((n) => n.id === drawerId) : null;
+  const ran = runState === "done";
+  const challengeLabel = spec.challenge ? "Visual challenge" : "LVL 1";
 
   return (
     <BoardCtx.Provider value={ctx}>
       <style>{EDGE_CSS}</style>
-      <div className="not-prose @container my-6 overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-          <div className="flex items-center gap-2">
-            <span className="rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">LVL 1</span>
-            <span className="text-[13px] font-medium">{spec.title}</span>
+      <div ref={rootRef} onKeyDown={onRootKeyDown} className="not-prose @container my-6 overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-2.5">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="shrink-0 rounded-md bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700 dark:bg-blue-500/20 dark:text-blue-300">{challengeLabel}</span>
+            <span className="truncate text-[13px] font-medium">{spec.title}</span>
           </div>
-          <button onClick={run} className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-1.5 text-[13px] font-semibold text-white transition-transform hover:bg-emerald-700 active:scale-95">
-            <span aria-hidden>{"▶"}</span> Run
-          </button>
+          <div className="flex items-center gap-2">
+            {ran ? (
+              <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums ${report.allPass ? "bg-emerald-600 text-white" : "bg-red-600 text-white"}`} data-testid="score-chip">
+                {report.passed}/{report.total} checks
+              </span>
+            ) : null}
+            <button type="button" onClick={onReset} disabled={locked} className="rounded-md px-2 py-1 text-[12px] text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-40">
+              Reset
+            </button>
+            {locked ? (
+              <button type="button" onClick={skipRun} className="rounded-lg border border-border px-3 py-1.5 text-[13px] font-medium hover:bg-muted">
+                Skip to results
+              </button>
+            ) : null}
+            <button
+              type="button"
+              onClick={startRun}
+              disabled={locked}
+              data-testid="run-button"
+              className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3.5 py-1.5 text-[13px] font-semibold text-white transition-transform hover:bg-emerald-700 active:scale-95 disabled:opacity-60"
+            >
+              <span aria-hidden>{"▶"}</span> {locked ? "Running..." : runState === "idle" ? "Run" : "Run again"}
+            </button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 @2xl:grid-cols-[172px_minmax(0,1fr)] @5xl:grid-cols-[172px_minmax(0,1fr)_260px]">
-          {/* Drawer */}
-          <div className="border-b border-border p-3 @2xl:border-b-0 @2xl:border-r">
+        {runState !== "idle" ? (
+          <PhaseStrip report={report} running={runPhase} previewId={previewId} onPick={setPreviewId} onBack={() => setPreviewId(null)} />
+        ) : null}
+
+        <div className="grid grid-cols-1 @2xl:grid-cols-[190px_minmax(0,1fr)]">
+          {/* Palette: a row you scroll on a phone, a column on a wider board. */}
+          <div className="border-b border-border p-3 @2xl:border-b-0 @2xl:border-r" role="group" aria-label="Components">
             <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Components</div>
-            <div className="mb-2 text-[10px] text-muted-foreground">Drag onto the board, or click to add.</div>
-            {palette.map((grp) => (
-              <div key={grp.group} className="mb-2.5">
-                <div className="mb-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70">{grp.group}</div>
-                {grp.kinds.map((k) => {
-                  const price = SIZE_CATALOG.find((s) => s.id === COMPONENT_CATALOG[k].properties.find((p) => p.type === "size")?.default);
-                  return (
-                    <button
-                      key={k}
-                      draggable
-                      onDragStart={(e) => { e.dataTransfer.setData(DRAG_TYPE, k); e.dataTransfer.effectAllowed = "move"; }}
-                      onClick={() => addNode(k)}
-                      className="mb-1 flex w-full cursor-grab items-center gap-2 rounded-lg border border-border bg-background px-2 py-1.5 text-left transition-colors hover:border-blue-400 hover:bg-muted/40 active:cursor-grabbing"
-                    >
-                      <span aria-hidden className="flex h-5 w-5 items-center justify-center rounded text-[11px]" style={chipStyle(k)}>{iconOf(k)}</span>
-                      <span className="flex-1 truncate text-[12px] font-medium">{COMPONENT_CATALOG[k].label}</span>
-                      {price ? <span className="text-[10px] tabular-nums text-muted-foreground">${price.pricePerHour}</span> : null}
-                    </button>
-                  );
-                })}
-              </div>
-            ))}
+            <div className="mb-2 text-[10px] text-muted-foreground">Drag onto the board, or tap to add.</div>
+            <div className="flex gap-3 overflow-x-auto pb-1 @2xl:block @2xl:overflow-visible @2xl:pb-0">
+              {palette.map((grp) => (
+                <div key={grp.group} className="flex shrink-0 items-start gap-1.5 @2xl:mb-2.5 @2xl:block">
+                  <div className="hidden text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70 @2xl:mb-1 @2xl:block">{grp.group}</div>
+                  {grp.kinds.map((k) => {
+                    const price = SIZE_CATALOG.find((s) => s.id === COMPONENT_CATALOG[k].properties.find((p) => p.type === "size")?.default);
+                    return (
+                      <button
+                        key={k}
+                        type="button"
+                        draggable={!locked}
+                        disabled={locked}
+                        aria-label={`Add ${COMPONENT_CATALOG[k].label}`}
+                        onDragStart={(e) => { e.dataTransfer.setData(DRAG_TYPE, k); e.dataTransfer.effectAllowed = "move"; }}
+                        onClick={() => addNode(k)}
+                        className="flex shrink-0 cursor-grab items-center gap-2 rounded-lg border border-border bg-background px-2 py-1.5 text-left transition-colors hover:border-blue-400 hover:bg-muted/40 active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50 @2xl:mb-1 @2xl:w-full"
+                      >
+                        <span aria-hidden className="flex h-5 w-5 items-center justify-center rounded text-[11px]" style={chipStyle(k)}>{iconOf(k)}</span>
+                        <span className="flex-1 whitespace-nowrap text-[12px] font-medium @2xl:truncate">{COMPONENT_CATALOG[k].label}</span>
+                        {price ? <span className="hidden text-[10px] tabular-nums text-muted-foreground @2xl:inline">${price.pricePerHour}</span> : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Canvas */}
+          {/* Canvas, with the settings drawer laid over its right edge (or bottom, on a phone). */}
           <div className="flex min-w-0 flex-col">
-          <div className="relative h-[460px] bg-muted/20" onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; }} onDrop={onDrop}>
-            <ReactFlow
-              nodes={nodes}
-              edges={shownEdges}
-              nodeTypes={nodeTypes}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnect={connect}
-              onConnectEnd={(_, state) => {
-                if (!state.isValid && state.fromNode && state.toNode) explainFailedLink(state.fromNode.id, state.toNode.id);
-              }}
-              isValidConnection={isValidConnection}
-              connectionMode={ConnectionMode.Loose}
-              connectionRadius={40}
-              onNodeClick={(_, n) => setSelected(n.id)}
-              onNodeDoubleClick={(_, n) => toggleDown(n.id)}
-              onEdgeDoubleClick={(_, e) => setEdges((es) => es.filter((x) => x.id !== e.id))}
-              onNodesDelete={(deleted) => { if (deleted.some((n) => n.id === selected)) setSelected(null); }}
-              onPaneClick={() => setSelected(null)}
-              edgeTypes={edgeTypes}
-              onNodeMouseEnter={(_, n) => setHover({ node: n.id })}
-              onNodeMouseLeave={() => setHover(null)}
-              onEdgeMouseEnter={(_, e) => setHover({ edge: e.id })}
-              onEdgeMouseLeave={() => setHover(null)}
-              deleteKeyCode={["Backspace", "Delete"]}
-              minZoom={0.35}
-              maxZoom={1.5}
-              proOptions={{ hideAttribution: true }}
+            <div
+              className="relative h-[440px] overflow-hidden bg-muted/20 @2xl:h-[500px]"
+              onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; }}
+              onDrop={onDrop}
             >
-              <Background variant={BackgroundVariant.Dots} gap={18} size={1} className="!bg-transparent" />
-              <Controls showInteractive={false} position="bottom-left" />
-            </ReactFlow>
-          </div>
+              <ReactFlow
+                nodes={nodes}
+                edges={shownEdges}
+                nodeTypes={nodeTypes}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onConnect={connect}
+                onConnectEnd={(_, state) => {
+                  if (!state.isValid && state.fromNode && state.toNode) explainFailedLink(state.fromNode.id, state.toNode.id);
+                }}
+                isValidConnection={isValidConnection}
+                connectionMode={ConnectionMode.Loose}
+                connectionRadius={40}
+                nodesDraggable={!locked}
+                nodesConnectable={!locked}
+                onNodeClick={(_, n) => setSelected(n.id)}
+                onNodeDoubleClick={(_, n) => { if (!locked) toggleDown(n.id); }}
+                onEdgeDoubleClick={(_, e) => { if (!locked) setEdges((es) => es.filter((x) => x.id !== e.id)); }}
+                onNodesDelete={(deleted) => {
+                  if (deleted.some((n) => n.id === selected)) setSelected(null);
+                  if (deleted.some((n) => n.id === drawerId)) setDrawerId(null);
+                }}
+                onPaneClick={() => { setSelected(null); setDrawerId(null); }}
+                edgeTypes={edgeTypes}
+                onNodeMouseEnter={(_, n) => setHover({ node: n.id })}
+                onNodeMouseLeave={() => setHover(null)}
+                onEdgeMouseEnter={(_, e) => setHover({ edge: e.id })}
+                onEdgeMouseLeave={() => setHover(null)}
+                deleteKeyCode={locked ? null : ["Backspace", "Delete"]}
+                minZoom={0.35}
+                maxZoom={1.5}
+                proOptions={{ hideAttribution: true }}
+              >
+                <Background variant={BackgroundVariant.Dots} gap={18} size={1} className="!bg-transparent" />
+                <Controls showInteractive={false} position="bottom-left" />
+              </ReactFlow>
+              {drawerNode ? (
+                <SettingsDrawer
+                  id={drawerNode.id}
+                  kind={drawerNode.data.kind}
+                  cfg={controls.perNode[drawerNode.id] ?? {}}
+                  tier={result.tiers.find((t) => t.id === drawerNode.id)}
+                  onChange={(key, value) => setProp(drawerNode.id, key, value)}
+                  onToggleDown={() => toggleDown(drawerNode.id)}
+                  onRemove={() => removeNode(drawerNode.id)}
+                  onClose={closeDrawer}
+                />
+              ) : null}
+            </div>
             <div className="flex flex-wrap gap-x-4 gap-y-0.5 border-t border-border px-3 py-1.5 text-[11px] text-muted-foreground">
               {notice ? <span className="font-medium text-red-600 dark:text-red-400">{notice}</span> : null}
+              <span><span className="font-medium text-foreground">Settings</span> hover or tap a component, then its icon</span>
               <span><span className="font-medium text-foreground">Link</span> drag from any dot to another component</span>
-              <span><span className="font-medium text-foreground">Take down</span> double-click a component</span>
               <span><span className="font-medium text-foreground">Remove</span> select it, press Delete</span>
-              <span><span className="font-medium text-foreground">Trace</span> hover a component or link</span>
             </div>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border px-3 py-1.5 text-[11px] text-muted-foreground">
               <span>Link color = the component it leaves:</span>
@@ -563,104 +628,29 @@ function Editor({ spec }: { spec: HldLabSpec }) {
               </span>
             </div>
           </div>
-
-          {/* Score */}
-          <div className="grid gap-4 border-t border-border p-3 @2xl:col-span-2 @2xl:grid-cols-3 @5xl:col-span-1 @5xl:grid-cols-1 @5xl:border-l @5xl:border-t-0">
-            <div>
-            <p className="mb-2 text-[12px] leading-snug text-muted-foreground">{spec.scenario}</p>
-            <label className="flex items-center justify-between text-[12px] text-muted-foreground">
-              <span>Offered load</span>
-              <span className="font-semibold tabular-nums text-foreground">{controls.load.toLocaleString()} req/s</span>
-            </label>
-            <input type="range" min={500} max={12000} step={500} value={controls.load}
-              onChange={(e) => setControls((c) => ({ ...c, load: Number(e.target.value) }))}
-              className="mb-3 w-full accent-blue-600" />
-
-            {sel && selDef ? (
-              <div className="mb-3 rounded-xl border border-border bg-background p-2.5">
-                <div className="mb-1.5 flex items-center justify-between">
-                  <span className="text-[12px] font-semibold">{selDef.label} <span className="font-normal text-muted-foreground">{selDef.vendor}</span></span>
-                  <button onClick={() => removeNode(sel.id)} className="text-[11px] text-muted-foreground hover:text-red-600">remove</button>
-                </div>
-                {GROUP_ORDER.map((group) => {
-                  const fields = selDef.properties.filter(
-                    (p) => (p.group ?? "Capacity") === group && (!SCALING_FIELDS.has(p.id) || Number(selCfg.autoscale ?? 0) > 0),
-                  );
-                  if (fields.length === 0) return null;
-                  return (
-                    <div key={group}>
-                      <div className="mb-1 mt-2 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70">{group}</div>
-                      {fields.map((p) => (
-                        <PropertyField key={p.id} p={p} value={selCfg[p.id]} onChange={(v) => setProp(sel.id, p.id, v)} />
-                      ))}
-                    </div>
-                  );
-                })}
-                <button
-                  onClick={() => toggleDown(sel.id)}
-                  className={`mt-1 w-full rounded-md border px-2 py-1 text-[11px] font-semibold ${
-                    selCfg.down
-                      ? "border-emerald-600 text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
-                      : "border-red-500 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
-                  }`}
-                >
-                  {selCfg.down ? "Restore" : "Take it down"}
-                </button>
-              </div>
-            ) : (
-              <div className="mb-3 rounded-xl border border-dashed border-border p-2.5 text-[11px] text-muted-foreground">
-                Click a component to configure it or take it down.
-              </div>
-            )}
-
-            </div>
-            <div>
-            <div className="grid grid-cols-2 gap-2">
-              <Stat label="Capacity" value={`${result.capacityCeiling.toLocaleString()}/s`} ok={result.pass.rps} hint={targets.rps ? `need ${targets.rps.toLocaleString()}` : "no target"} />
-              <Stat label="p99" value={`${result.p99Ms} ms`} ok={result.pass.p99} hint={targets.p99Ms ? `under ${targets.p99Ms}` : "no target"} />
-              <Stat label="Availability" value={`${(result.availability * 100).toFixed(2)}%`} ok={result.pass.availability} hint={targets.availability ? `need ${(targets.availability * 100).toFixed(1)}%` : "no target"} />
-              <Stat label="Cost" value={`$${result.costPerHour.toFixed(2)}/h`} ok={result.pass.budget} hint={targets.budgetPerHour ? `budget $${targets.budgetPerHour}` : "no target"} />
-            </div>
-
-            <p className={`mt-2.5 text-[12px] font-semibold ${okText(result.allPass)}`}>
-              {result.allPass ? "All targets green. Level passed." : result.failure ?? verdict(result)}
-            </p>
-            {result.dropped > 0.5 || result.blocked > 0.5 || result.backlog > 0.5 ? (
-              <ul className="mt-1 space-y-0.5 text-[11px] text-muted-foreground">
-                {result.dropped > 0.5 ? <li>Rejecting {Math.round(result.dropped).toLocaleString()}/s at limits and throttles</li> : null}
-                {result.blocked > 0.5 ? <li>Firewall filtering {Math.round(result.blocked).toLocaleString()}/s</li> : null}
-                {result.backlog > 0.5 ? <li>Queue backlog growing {Math.round(result.backlog).toLocaleString()}/s: add consumers</li> : null}
-              </ul>
-            ) : null}
-
-            </div>
-            <div className="@5xl:border-t @5xl:border-border @5xl:pt-2.5">
-              <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Missions</div>
-              {missions.map(([label, done]) => (
-                <div key={label} className="flex items-center gap-2 py-0.5 text-[12px]">
-                  <span aria-hidden className={`flex h-4 w-4 items-center justify-center rounded-full text-[9px] text-white ${done ? "bg-emerald-600" : "border border-border bg-transparent"}`}>{done ? "✓" : ""}</span>
-                  <span className={done ? "text-foreground" : "text-muted-foreground"}>{label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
+
+        <RunPanel
+          spec={spec}
+          result={result}
+          report={report}
+          state={runState}
+          running={runPhase}
+          ran={ran}
+          load={load}
+          onLoad={(n) => setControls((c) => ({ ...c, load: n }))}
+          onShow={setPreviewId}
+        />
       </div>
     </BoardCtx.Provider>
   );
 }
 
 export function HldBoard({ spec }: { spec: HldLabSpec }) {
+  const [generation, setGeneration] = useState(0);
   return (
-    <ReactFlowProvider>
-      <Editor spec={spec} />
+    <ReactFlowProvider key={generation}>
+      <Editor spec={spec} onReset={() => setGeneration((g) => g + 1)} />
     </ReactFlowProvider>
   );
-}
-
-function verdict(r: ModelResult): string {
-  if (!r.pass.rps) return "Capacity fails: a tier cannot serve the target load.";
-  if (!r.pass.p99) return "p99 fails: a tier is past the 70% knee.";
-  if (!r.pass.availability) return "Availability fails: add redundancy.";
-  return "Over budget: try fewer or smaller instances.";
 }
