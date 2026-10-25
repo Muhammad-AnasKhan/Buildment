@@ -391,7 +391,7 @@ describe("answer checking and feedback", () => {
     expect(explainQuestion(pickQ)).toBe("128 + 16 + 4 + 2 = 150");
     expect(explainQuestion({ kind: "byte-to-bits", value: 0 })).toBe("0 = 0");
     expect(explainQuestion({ kind: "byte-to-bits", value: 255 })).toBe("128 + 64 + 32 + 16 + 8 + 4 + 2 + 1 = 255");
-    expect(explainQuestion(realQ)).toBe("256 is more than one byte can hold, so it cannot exist");
+    expect(explainQuestion(realQ)).toBe("256 is above 255: it cannot exist");
     expect(explainQuestion({ kind: "real-or-not", text: "10.0.0.1", real: true })).toBe("Four parts, each 0 to 255, so it can exist");
   });
 

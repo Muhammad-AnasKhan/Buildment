@@ -138,7 +138,7 @@ function ByteView({ title, purpose, limits }: ViewProps) {
   const equation = sumText(bits);
   const chipText = placesOn(bits).length ? equation : "no bits on";
   const chipW = Math.min(W - 16, chipText.length * 8.2 + 32);
-  const summary = `${byteSummary(bits)}${overflow ? " Adding one to 255 needs a ninth bit. A byte has eight, so every bit is back to 0." : ""}`;
+  const summary = `${byteSummary(bits)}${overflow ? " Every bit is back to 0." : ""}`;
 
   const cardX = (i: number) => BYTE_X0 + BYTE_PITCH * (i + 1);
   const rowY = 76;

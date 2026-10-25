@@ -333,7 +333,9 @@ export function explainQuestion(question: DrillQuestion): string {
     case "real-or-not": {
       const parsed = parseIpv4(question.text);
       if (parsed.ok) return "Four parts, each 0 to 255, so it can exist";
-      return `${parsed.error.message}, so it cannot exist`;
+      // Short enough to fit the question card on a 375px phone.
+      if (parsed.error.kind === "range") return `${parsed.error.message.split(" ")[0]} is above 255: it cannot exist`;
+      return `${parsed.error.message}: it cannot exist`;
     }
   }
 }
