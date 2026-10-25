@@ -31,8 +31,10 @@ export type AiInterviewSessionStatus = "ACTIVE" | "FINISHED" | "ABANDONED";
 export type AiInterviewSessionView = {
   id: string;
   status: AiInterviewSessionStatus;
-  /** What the learner pasted when starting; null when the block asks for none. */
+  /** What the learner pasted when starting (their resume or project); null when the block asks for none. */
   context: string | null;
+  /** The "important work" box, only for blocks that ask for a resume and work together. */
+  contextWork: string | null;
   transcript: AiInterviewTurn[];
   /** Answers given so far. */
   turnCount: number;
@@ -49,7 +51,7 @@ export type AiInterviewSessionView = {
 /** Returned by start, answer, finish and abandon. */
 export type AiInterviewSessionResult = { session: AiInterviewSessionView };
 
-export type AiInterviewStartInput = { context?: string | null };
+export type AiInterviewStartInput = { context?: string | null; contextWork?: string | null };
 export type AiInterviewAnswerInput = { sessionId: string; answer: string };
 export type AiInterviewSessionInput = { sessionId: string };
 

@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { blockDefinitions } from "../../../../../src/shared/blocks/definitions.js";
 import {
+  AI_INTERVIEW_FLAG_LABELS,
+  AI_INTERVIEW_FLAG_NAMES,
   AI_INTERVIEW_FOCUS_AREAS,
   AiInterviewConfigSchema,
   AiInterviewFeedbackSchema,
   AiInterviewFenceSchema,
+  contextFields,
+  interviewContext,
 } from "../../../../../src/shared/blocks/ai-interview/schema.js";
 import { MDX_COMPONENT_NAMES } from "../../../../../src/shared/mdx/component-allowlist.js";
 import { BLOCK_TAG_NAMES } from "../../../../../src/shared/mdx/extract.js";
@@ -97,5 +101,80 @@ describe("interview feedback", () => {
     ["an unknown focus area", { focusNotes: [{ focus: "trivia", note: "x" }] }],
   ])("rejects %s", (_name, patch) => {
     expect(AiInterviewFeedbackSchema.safeParse({ ...good, ...patch }).success).toBe(false);
+  });
+});
+
+describe("context modes", () => {
+  it("keeps resume, project and none working and adds resume-and-project", () => {
+    for (const context of ["resume", "project", "resume-and-project", "none"]) {
+      expect(AiInterviewConfigSchema.parse({ ...base, context }).context).toBe(context);
+    }
+    expect(AiInterviewConfigSchema.safeParse({ ...base, context: "both" }).success).toBe(false);
+  });
+
+  it("asks for the boxes each mode needs, each with its own cap", () => {
+    expect(contextFields("none")).toEqual([]);
+    expect(contextFields("resume").map((box) => [box.field, box.role, box.max])).toEqual([["context", "resume", 6000]]);
+    expect(contextFields("project").map((box) => [box.field, box.role, box.max])).toEqual([["context", "work", 6000]]);
+    const both = contextFields("resume-and-project");
+    expect(both.map((box) => [box.field, box.role, box.label, box.max])).toEqual([
+      ["context", "resume", "Your resume", 6000],
+      ["contextWork", "work", "Your important work", 4000],
+    ]);
+    expect(both.every((box) => box.min === 40)).toBe(true);
+  });
+
+  it("maps stored text to roles for the prompt", () => {
+    const stored = { context: "first", contextWork: "second" };
+    expect(interviewContext("resume", stored)).toEqual({ resume: "first", work: null });
+    expect(interviewContext("project", stored)).toEqual({ resume: null, work: "first" });
+    expect(interviewContext("resume-and-project", stored)).toEqual({ resume: "first", work: "second" });
+    expect(interviewContext("none", stored)).toEqual({ resume: null, work: null });
+  });
+
+  it("accepts the new mode in the fence", () => {
+    expect(AiInterviewFenceSchema.safeParse({ ...base, context: "resume-and-project" }).success).toBe(true);
+  });
+});
+
+describe("feedback flags", () => {
+  const good = {
+    strengths: ["Clear story."],
+    weaknesses: [{ point: "Say the number's source.", fix: "Add where it came from." }],
+    focusNotes: [],
+    nextSteps: ["a", "b", "c"],
+  };
+
+  it("has exactly the five names and a human label for each", () => {
+    expect([...AI_INTERVIEW_FLAG_NAMES]).toEqual(["vague-ownership", "unsupported-number", "pseudo-story", "invented-reason-risk", "jargon-without-explanation"]);
+    expect(AI_INTERVIEW_FLAG_LABELS).toEqual({
+      "vague-ownership": "Vague ownership",
+      "unsupported-number": "Unsupported number",
+      "pseudo-story": "Pseudo-story",
+      "invented-reason-risk": "Invented reason risk",
+      "jargon-without-explanation": "Jargon without explanation",
+    });
+  });
+
+  it("parses feedback saved before flags existed, with no flags", () => {
+    expect(AiInterviewFeedbackSchema.parse(good).flags).toEqual([]);
+  });
+
+  it("accepts a flag with the learner's quote and none or several flags", () => {
+    const flags = [
+      { name: "unsupported-number", quote: "We cut errors by 90 percent." },
+      { name: "vague-ownership", quote: "We did a lot of it." },
+    ];
+    expect(AiInterviewFeedbackSchema.parse({ ...good, flags }).flags).toEqual(flags);
+    expect(AiInterviewFeedbackSchema.parse({ ...good, flags: [] }).flags).toEqual([]);
+  });
+
+  it.each([
+    ["an unknown name", [{ name: "lazy", quote: "x" }]],
+    ["a flag without a quote", [{ name: "pseudo-story" }]],
+    ["an empty quote", [{ name: "pseudo-story", quote: "  " }]],
+    ["a quote over 300 characters", [{ name: "pseudo-story", quote: "x".repeat(301) }]],
+  ])("rejects %s", (_name, flags) => {
+    expect(AiInterviewFeedbackSchema.safeParse({ ...good, flags }).success).toBe(false);
   });
 });

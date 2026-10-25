@@ -2,21 +2,24 @@ import Link from "next/link";
 import { Bot, KeyRound, Loader2, MessageSquareText, RotateCcw, Send, User } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { AnswerTextareaWithMic } from "@/components/learn/answer-textarea-with-mic";
 import { cn } from "@/lib/utils";
 import type { AiInterviewSessionView } from "@/shared/api/ai";
 import {
+  AI_INTERVIEW_FLAG_LABELS,
   AI_INTERVIEW_FOCUS_LABELS,
   AI_INTERVIEW_LIMITS,
+  contextFields,
   type SanitizedAiInterviewConfig,
 } from "@/shared/blocks/ai-interview/schema";
 import {
   AI_SETTINGS_HREF,
   checkAnswer,
   checkContext,
-  contextHint,
-  contextLabel,
+  contextReady,
   interviewStage,
   turnCounter,
+  type ContextDrafts,
 } from "./interview-model";
 
 // The interview block, drawn from props only: the container owns the network and
@@ -30,11 +33,12 @@ export type AiInterviewViewProps = {
   configured: boolean;
   hasKey: boolean;
   session: AiInterviewSessionView | null;
-  contextDraft: string;
+  /** One draft per context box the block asks for. */
+  contextDrafts: ContextDrafts;
   answerDraft: string;
   busy: InterviewBusy;
   error: string | null;
-  onContextChange: (value: string) => void;
+  onContextChange: (field: keyof ContextDrafts, value: string) => void;
   onAnswerChange: (value: string) => void;
   onStart: () => void;
   onSend: () => void;
@@ -125,7 +129,7 @@ function FeedbackCard({ session, config }: { session: AiInterviewSessionView; co
         Interview finished. This block is complete.
       </p>
       <div>
-        <h4 className="text-sm font-semibold">What went well</h4>
+        <h4 className="text-sm font-semibold">Strengths to build on</h4>
         <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm leading-6">
           {feedback.strengths.map((item) => (
             <li key={item}>{item}</li>
@@ -133,7 +137,7 @@ function FeedbackCard({ session, config }: { session: AiInterviewSessionView; co
         </ul>
       </div>
       <div>
-        <h4 className="text-sm font-semibold">What to improve</h4>
+        <h4 className="text-sm font-semibold">What to do better</h4>
         <ul className="mt-2 space-y-3">
           {feedback.weaknesses.map((item) => (
             <li key={item.point} className="rounded-lg border bg-muted/40 p-3 text-sm leading-6">
@@ -157,6 +161,20 @@ function FeedbackCard({ session, config }: { session: AiInterviewSessionView; co
               </div>
             ))}
           </dl>
+        </div>
+      ) : null}
+      {feedback.flags.length > 0 ? (
+        <div data-testid="ai-interview-flags">
+          <h4 className="text-sm font-semibold">Things to watch</h4>
+          <p className="mt-1 text-xs text-muted-foreground">These came from your own words. Each one is a habit you can change.</p>
+          <ul className="mt-2 space-y-2">
+            {feedback.flags.map((flag, index) => (
+              <li key={`${flag.name}-${index}`} className="rounded-lg border bg-amber-500/10 p-3 text-sm leading-6">
+                <p className="font-medium">{AI_INTERVIEW_FLAG_LABELS[flag.name]}</p>
+                <blockquote className="mt-1 border-l-2 border-amber-500/60 pl-3 text-muted-foreground">{flag.quote}</blockquote>
+              </li>
+            ))}
+          </ul>
         </div>
       ) : null}
       <div>
@@ -248,19 +266,17 @@ export function AiInterviewView(props: AiInterviewViewProps) {
               if (check.canSend && busy === null) props.onSend();
             }}
           >
-            <label htmlFor={`answer-${session.id}`} className="sr-only">
-              Your answer
-            </label>
-            <Textarea
+            <AnswerTextareaWithMic
               id={`answer-${session.id}`}
               value={props.answerDraft}
-              onChange={(event) => props.onAnswerChange(event.target.value)}
-              placeholder="Type your answer. Simple words are fine."
+              onChange={props.onAnswerChange}
+              ariaLabel="Your answer"
+              placeholder="Type or speak your answer. Simple words are fine."
               rows={4}
-              className="min-h-24 resize-y text-base"
+              className="min-h-24 text-base"
               disabled={busy !== null}
-              aria-invalid={check.tooLong}
-              aria-describedby={`answer-count-${session.id}`}
+              invalid={check.tooLong}
+              describedBy={`answer-count-${session.id}`}
             />
             <div className="flex items-center justify-between gap-3">
               <span id={`answer-count-${session.id}`}>
@@ -285,8 +301,8 @@ export function AiInterviewView(props: AiInterviewViewProps) {
   }
 
   // intro: a key is saved, no session is running.
-  const needsContext = config.context !== "none";
-  const context = checkContext(props.contextDraft);
+  const boxes = contextFields(config.context);
+  const canStart = contextReady(config.context, props.contextDrafts);
   const starting = busy === "starting";
   return (
     <Shell config={config}>
@@ -294,32 +310,37 @@ export function AiInterviewView(props: AiInterviewViewProps) {
       <p className="text-sm leading-6 text-muted-foreground">
         A text interview with up to {config.maxTurns} answers. Write simple, honest answers. You can finish early and get feedback.
       </p>
-      {needsContext ? (
-        <div className="space-y-2">
-          <label htmlFor="ai-interview-context" className="text-sm font-medium">
-            {contextLabel(config.context)}
-          </label>
-          <p id="ai-interview-context-hint" className="text-xs text-muted-foreground">
-            {contextHint(config.context)}
-          </p>
-          <Textarea
-            id="ai-interview-context"
-            value={props.contextDraft}
-            onChange={(event) => props.onContextChange(event.target.value)}
-            rows={6}
-            className="min-h-32 resize-y text-base"
-            disabled={busy !== null}
-            aria-invalid={context.tooLong}
-            aria-describedby="ai-interview-context-hint"
-          />
-          <div className="flex justify-between">
-            <span className="text-xs text-muted-foreground">{context.tooShort ? `At least ${AI_INTERVIEW_LIMITS.contextMinChars} characters` : " "}</span>
-            <Counter used={props.contextDraft.length} max={AI_INTERVIEW_LIMITS.contextMaxChars} over={context.tooLong} />
+      {boxes.map((box) => {
+        const text = props.contextDrafts[box.field];
+        const check = checkContext(text, box.min, box.max);
+        const id = `ai-interview-${box.field}`;
+        return (
+          <div key={box.field} className="space-y-2" data-field={box.field}>
+            <label htmlFor={id} className="text-sm font-medium">
+              {box.label}
+            </label>
+            <p id={`${id}-hint`} className="text-xs text-muted-foreground">
+              {box.hint}
+            </p>
+            <Textarea
+              id={id}
+              value={text}
+              onChange={(event) => props.onContextChange(box.field, event.target.value)}
+              rows={6}
+              className="min-h-32 resize-y text-base"
+              disabled={busy !== null}
+              aria-invalid={check.tooLong}
+              aria-describedby={`${id}-hint`}
+            />
+            <div className="flex justify-between">
+              <span className="text-xs text-muted-foreground">{check.tooShort ? `At least ${box.min} characters` : " "}</span>
+              <Counter used={text.length} max={box.max} over={check.tooLong} />
+            </div>
           </div>
-        </div>
-      ) : null}
+        );
+      })}
       <ErrorLine message={error} />
-      <Button className="h-10 w-full sm:w-auto" onClick={props.onStart} disabled={busy !== null || (needsContext && !context.canStart)}>
+      <Button className="h-10 w-full sm:w-auto" onClick={props.onStart} disabled={busy !== null || !canStart}>
         {starting ? <Loader2 className="animate-spin" aria-hidden /> : null}
         {starting ? "Starting..." : "Start interview"}
       </Button>

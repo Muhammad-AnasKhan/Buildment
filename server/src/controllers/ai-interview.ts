@@ -14,8 +14,8 @@ const blockId = (req: Request) => req.params.blockId as string;
 
 // POST /api/v1/blocks/:blockId/ai-interview/start
 export async function start(req: Request, res: Response) {
-  const { context } = req.body as { context?: string | null };
-  ok(res, { session: await startAiInterview({ blockId: blockId(req), user: req.user, context }) });
+  const { context, contextWork } = req.body as { context?: string | null; contextWork?: string | null };
+  ok(res, { session: await startAiInterview({ blockId: blockId(req), user: req.user, context, contextWork }) });
 }
 
 // POST /api/v1/blocks/:blockId/ai-interview/answer
