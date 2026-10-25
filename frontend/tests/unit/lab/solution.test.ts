@@ -108,7 +108,7 @@ describe("compare with mine", () => {
     expect(text).toMatch(/The reference has a cache\. Your design has none\./);
     expect(text).toMatch(/The reference has a queue\. Your design has none\./);
     expect(text).toMatch(/The reference has a worker\. Your design has none\./);
-    expect(r.lines.find((l) => /has a cache/.test(l.text))!.explains).toContain("p99 redirect latency");
+    expect(r.lines.find((l) => /has a cache/.test(l.text))!.explains).toContain("Slowest 1 in 100 redirects is fast enough (p99)");
     expect(r.lines.find((l) => /has a queue/.test(l.text))!.explains).toContain("Serves the whole peak");
     expect(r.failing).toBeGreaterThan(0);
     expect(r.explained).toBeGreaterThan(0);
@@ -121,11 +121,11 @@ describe("compare with mine", () => {
     mine.nodes.find((n) => n.id === "db")!.props!.multiAz = 0;
     const r = compare(mine);
     const text = r.lines.map((l) => l.text).join("\n");
-    expect(text).toMatch(/App server: "Instances" is lower than in the reference\./);
-    expect(text).toMatch(/Database: "Read replicas" is lower than in the reference\./);
-    expect(text).toMatch(/"Standby in a second zone" is off in your design and on in the reference/);
+    expect(text).toMatch(/App server: "Machines \(instances\)" is lower than in the reference\./);
+    expect(text).toMatch(/Database: "Read-only copies \(read replicas\)" is lower than in the reference\./);
+    expect(text).toMatch(/"Extra copy that takes over \(failover standby\)" is off in your design and on in the reference/);
     expect(text).not.toMatch(/\b(3|95|500)\b/);
-    expect(r.lines.find((l) => /Read replicas/.test(l.text))!.explains).toEqual(expect.arrayContaining(["Everyone is still served when the cache dies"]));
+    expect(r.lines.find((l) => /Read-only copies/.test(l.text))!.explains).toEqual(expect.arrayContaining(["Everyone is still served when the cache dies"]));
   });
 
   it("notes a missing link and an added part", () => {

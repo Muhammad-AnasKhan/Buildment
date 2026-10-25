@@ -137,7 +137,7 @@ function pathCheck(def: Extract<CheckDef, { type: "path" }>, board: Board): Chec
   if (missing !== undefined && def.inlineIfNo && !board.nodes.some((n) => roleOf(n.kind) === def.inlineIfNo)) {
     return {
       id: def.id, kind: def.kind, label: def.label, pass: true, scenario: "steady", target: def.target,
-      measured: `written inline, before each redirect answers (no ${lower(roleLabel(def.inlineIfNo))})`,
+      measured: `saved during the redirect (inline), no ${lower(roleLabel(def.inlineIfNo))}`,
     };
   }
   const pass = missing === undefined;
@@ -181,14 +181,14 @@ function whyMetricFailed(metric: CheckMetric, r: ModelResult, scenario: PhaseRep
     }
     case "capacity":
     case "served":
-      return worst ? `${busy(worst)}${during}, so it cannot serve the whole load. Add instances, replicas or a cache in front of it.` : "Nothing on the board can serve the load.";
+      return worst ? `${busy(worst)}${during}, so it cannot serve the whole load. Add machines, read-only copies or a cache in front of it.` : "Nothing on the board can serve the load.";
     case "availability": {
       const role = r.weakest?.role;
       return role ? `${roleLabel(role)} is the weak link (${pct(r.weakest!.availability)}): run more than one, or in two zones.` : "Add redundancy.";
     }
     case "cost": {
       const priciest = [...r.tiers].sort((a, b) => b.cost - a.cost)[0];
-      return priciest ? `${labelOf(priciest.kind)} costs the most ($${priciest.cost.toFixed(2)}/h). Try a smaller size or fewer instances.` : "Over budget.";
+      return priciest ? `${labelOf(priciest.kind)} costs the most ($${priciest.cost.toFixed(2)}/h). Try a smaller size or fewer machines.` : "Over budget.";
     }
   }
 }
@@ -211,7 +211,7 @@ function drainCheck(def: Extract<CheckDef, { type: "drain" }>, steady: PhaseRepo
   const target = `no clicks lost, all counted within ${def.maxDrainSeconds} s of the worker coming back`;
   const base = { id: def.id, kind: def.kind, label: def.label, scenario: scenarioId, target };
   if (!queue && inlineClicks && !board.nodes.some((n) => roleOf(n.kind) === "queue")) {
-    return { ...base, pass: true, measured: "no worker to lose: clicks are written inline" };
+    return { ...base, pass: true, measured: "no worker to lose: clicks are saved during the redirect (inline)" };
   }
   if (!queue) {
     const lost = Math.round(load * def.outageSeconds);
@@ -226,12 +226,12 @@ function drainCheck(def: Extract<CheckDef, { type: "drain" }>, steady: PhaseRepo
   const spare = capacity - arriving;
   const backlog = Math.round(arriving * def.outageSeconds);
   if (spare <= 0) {
-    return { ...base, pass: false, measured: `backlog ${backlog.toLocaleString("en-US")} clicks, never drains`, reason: `Workers count ${perSec(capacity)} but clicks arrive at ${perSec(arriving)}: they can never catch up. Add workers or a bigger size.` };
+    return { ...base, pass: false, measured: `${backlog.toLocaleString("en-US")} clicks waiting, never all counted`, reason: `Workers count ${perSec(capacity)} but clicks arrive at ${perSec(arriving)}: they can never catch up. Add workers or a bigger size.` };
   }
   const drain = Math.ceil(backlog / spare);
   const pass = drain <= def.maxDrainSeconds;
   return {
-    ...base, pass, measured: `backlog ${backlog.toLocaleString("en-US")} clicks, drained in ${drain} s`,
+    ...base, pass, measured: `${backlog.toLocaleString("en-US")} clicks waiting, all counted after ${drain} s`,
     reason: pass ? undefined : `Workers have only ${perSec(spare)} to spare, so ${backlog.toLocaleString("en-US")} waiting clicks take ${drain} s. Add workers or a bigger size.`,
   };
 }
@@ -248,8 +248,8 @@ export function challengeFor(spec: HldLabSpec): ChallengeDef {
     if (value != null) checks.push({ type: "metric", id, kind: "non-functional", label, scenario: "steady", metric, op, value });
   };
   add("capacity", "Serves the load", "capacity", ">=", t.rps);
-  add("p99", "p99 latency", "p99", "<=", t.p99Ms);
-  add("availability", "Availability", "availability", ">=", t.availability);
+  add("p99", "Slowest 1 in 100 requests (p99)", "p99", "<=", t.p99Ms);
+  add("availability", "Stays up (availability)", "availability", ">=", t.availability);
   add("cost", "Cost per hour", "cost", "<=", t.budgetPerHour);
   return { peakLoad: level?.load ?? 1000, scenarios: [], checks };
 }

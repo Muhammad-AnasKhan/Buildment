@@ -93,9 +93,9 @@ describe("the URL shortener challenge", () => {
 
   it("reports the worker outage as a backlog and how long it takes to drain", () => {
     const drain = runChallenge(spec, reference(), 3000).checks.find((c) => c.id === "worker-dies")!;
-    expect(drain.measured).toMatch(/backlog 180,000 clicks, drained in \d+ s/);
+    expect(drain.measured).toMatch(/180,000 clicks waiting, all counted after \d+ s/);
     const never = runChallenge(spec, reference({ w: { count: 1 } }), 3000).checks.find((c) => c.id === "worker-dies")!;
-    expect(never.measured).toMatch(/never drains/);
+    expect(never.measured).toMatch(/never all counted/);
   });
 
   it("takes one app server out of a fleet of three, not the whole tier", () => {

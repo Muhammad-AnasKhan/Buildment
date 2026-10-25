@@ -131,15 +131,15 @@ export function sizeLabel(kind: ComponentKind, sizeId: string, mode: NameMode): 
   const tier = SIZE_CATALOG.find((t) => t.id === sizeId);
   const plain = sizeId.replace(/^(compute|memory|general)-/, "");
   if (mode === "generic" || !tier) {
-    return { label: plain, detail: tier ? `${tier.vcpu} vCPU, ${tier.memoryGb} GB (model size)` : "" };
+    return { label: plain, detail: tier ? `${tier.vcpu} CPU cores, ${tier.memoryGb} GB memory (model size)` : "" };
   }
   const aws = awsInstance(kind, sizeId);
-  if (!aws && tier.set !== "generic") return { label: plain, detail: `${tier.vcpu} vCPU, ${tier.memoryGb} GB (model size)` };
+  if (!aws && tier.set !== "generic") return { label: plain, detail: `${tier.vcpu} CPU cores, ${tier.memoryGb} GB memory (model size)` };
   if (!aws) {
     return { label: plain, detail: `${COMPONENT_CATALOG[kind].label}: AWS manages this part, so this size is the model's capacity setting, not an AWS choice` };
   }
   const mem = Number.isInteger(aws.memoryGiB) ? String(aws.memoryGiB) : aws.memoryGiB.toFixed(2);
-  return { label: aws.type, detail: `${aws.vcpu} vCPU, ${mem} GiB. ${instanceMeaning(aws.type)} Prices here are illustrative.` };
+  return { label: aws.type, detail: `${aws.vcpu} vCPU (virtual CPU cores), ${mem} GiB memory. ${instanceMeaning(aws.type)} Prices here are illustrative.` };
 }
 
 /** Names the board shows for a part, in the learner's chosen mode. Parts already from the AWS family keep their own names. */

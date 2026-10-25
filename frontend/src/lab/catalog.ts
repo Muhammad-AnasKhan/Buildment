@@ -166,7 +166,7 @@ const ROLE_NEXT: Record<Role, Role[]> = {
 
 const size = (sizeSet: SizeSet, defaultId: string): PropertyDef => ({
   id: "size",
-  label: "Instance size",
+  label: "Machine size",
   type: "size",
   sizeSet,
   default: defaultId,
@@ -186,12 +186,12 @@ const choice = (id: string, label: string, options: string[], def: string, group
   id, label, type: "enum", options, default: def, unit: "option", group, help,
 });
 const azs = (def: number, min = 1): PropertyDef =>
-  count("azs", "Availability Zones", "AZs", def, min, 3, "Resilience", "Spreading across zones survives a zone outage.");
+  count("azs", "Zones (separate data centres)", "zones", def, min, 3, "Resilience", "Spreading across zones means one zone going down does not stop the service.");
 const scaling = (on: 0 | 1, min: number, max: number, target: number): PropertyDef[] => [
-  toggle("autoscale", "Autoscaling", on, "Scaling", "Add or remove instances to hold the target utilisation."),
-  count("minCount", "Min instances", "instances", min, 1, 100, "Scaling"),
-  count("maxCount", "Max instances", "instances", max, 1, 200, "Scaling"),
-  ratio("targetUtil", "Target utilisation", target, "Scaling", "Scale out before this, the queueing knee sits near 0.7."),
+  toggle("autoscale", "Add machines automatically (autoscaling)", on, "Scaling", "Adds or removes machines to stay near the target busyness."),
+  count("minCount", "Fewest machines", "machines", min, 1, 100, "Scaling"),
+  count("maxCount", "Most machines", "machines", max, 1, 200, "Scaling"),
+  ratio("targetUtil", "Aim to stay this busy (target utilisation)", target, "Scaling", "Add machines before this level. Waiting time starts to climb near 70% busy."),
 ];
 
 // ---- the catalog -----------------------------------------------------------
@@ -201,13 +201,13 @@ type Entry = Omit<ComponentDef, "kind" | "ports">;
 const ENTRIES: Record<ComponentKind, Entry> = {
   // Generic high-level design blocks
   client: { label: "Client", family: "hld", role: "client", vendor: "Users", icon: "client",
-    properties: [count("load", "Offered load", "req/s", 1000, 1, 10_000_000)] },
+    properties: [count("load", "Traffic sent (offered load)", "req/s", 1000, 1, 10_000_000)] },
   dns: { label: "DNS", family: "hld", role: "dns", vendor: "Resolver", icon: "dns",
     managed: { capacity: 1_000_000, pricePerHour: 0.001, pricePerMillion: 0 },
     properties: [count("ttl", "Record TTL", "seconds", 300, 1, 86_400, "Behaviour")] },
   cdn: { label: "CDN", family: "hld", role: "cdn", vendor: "Edge cache", icon: "cdn",
     managed: { capacity: 1_000_000, pricePerHour: 0.02, pricePerMillion: 0.75 },
-    properties: [ratio("hitRate", "Edge hit rate", 0.8, "Behaviour", "Hits are served at the edge; only misses reach the origin.")] },
+    properties: [ratio("hitRate", "Answered nearby (edge hit rate)", 0.8, "Behaviour", "A hit is answered close to the user. Only misses reach your servers.")] },
   waf: { label: "Firewall", family: "hld", role: "firewall", vendor: "WAF", icon: "firewall",
     managed: { capacity: 1_000_000, pricePerHour: 0.007, pricePerMillion: 0.6 },
     properties: [ratio("blockRate", "Blocked share", 0.02, "Behaviour", "Share of traffic dropped as malicious.")] },
@@ -215,31 +215,31 @@ const ENTRIES: Record<ComponentKind, Entry> = {
     managed: { capacity: 1_000_000, pricePerHour: 0.01, pricePerMillion: 0 },
     properties: [count("limit", "Limit", "req/s", 5000, 10, 1_000_000, "Behaviour", "Requests above this are rejected, protecting what sits behind it.")] },
   "load-balancer": { label: "Load balancer", family: "hld", role: "balancer", vendor: "L7 LB", icon: "balancer",
-    properties: [size("generic", "general-small"), count("zones", "Zones", "zones", 1, 1, 3, "Resilience")] },
+    properties: [size("generic", "general-small"), count("zones", "Zones (separate data centres)", "zones", 1, 1, 3, "Resilience")] },
   "api-gateway": { label: "API gateway", family: "hld", role: "gateway", vendor: "Gateway", icon: "gateway",
-    properties: [size("generic", "general-small"), count("count", "Instances", "instances", 2, 1, 50)] },
+    properties: [size("generic", "general-small"), count("count", "Machines (instances)", "machines", 2, 1, 50)] },
   "app-server": { label: "App server", family: "hld", role: "compute", vendor: "Compute", icon: "compute",
-    properties: [size("generic", "compute-small"), count("count", "Instances", "instances", 2, 1, 50), ...scaling(0, 2, 10, 0.6), azs(1)] },
+    properties: [size("generic", "compute-small"), count("count", "Machines (instances)", "machines", 2, 1, 50), ...scaling(0, 2, 10, 0.6), azs(1)] },
   worker: { label: "Worker", family: "hld", role: "worker", vendor: "Consumer", icon: "worker",
-    properties: [size("generic", "compute-small"), count("count", "Workers", "workers", 2, 1, 100), count("batchSize", "Batch size", "events", 1, 1, 1000, "Behaviour", "Events written to the database per trip. Batching turns thousands of events a second into a few updates."), ...scaling(0, 1, 20, 0.7)] },
+    properties: [size("generic", "compute-small"), count("count", "Workers", "workers", 2, 1, 100), count("batchSize", "Clicks saved per trip (batch size)", "events", 1, 1, 1000, "Behaviour", "How many clicks go to the database in one trip. Saving many at once turns thousands of writes a second into a few."), ...scaling(0, 1, 20, 0.7)] },
   cache: { label: "Cache", family: "hld", role: "cache", vendor: "Redis", icon: "cache",
-    properties: [size("generic", "memory-small"), count("count", "Nodes", "nodes", 1, 1, 20), ratio("hitRate", "Hit rate", 0.85), azs(1)] },
+    properties: [size("generic", "memory-small"), count("count", "Machines (nodes)", "nodes", 1, 1, 20), ratio("hitRate", "Answered by the cache (hit rate)", 0.85, "Behaviour", "A hit means the database is never asked. A miss goes on to the database."), azs(1)] },
   database: { label: "Database", family: "hld", role: "database", vendor: "PostgreSQL", icon: "database",
     properties: [
       size("generic", "memory-medium"),
-      count("replicas", "Read replicas", "replicas", 0, 0, 5, "Capacity", "Replicas share the reads; every write still goes to the primary."),
-      ratio("readRatio", "Read share", 0.8, "Behaviour", "Share of database traffic that is reads."),
-      toggle("multiAz", "Standby in a second zone", 0, "Resilience", "A synchronous standby takes over if the primary's zone fails. Doubles the primary cost."),
+      count("replicas", "Read-only copies (read replicas)", "copies", 0, 0, 5, "Capacity", "Extra copies that share the reads. Every write still goes to the main copy (the primary)."),
+      ratio("readRatio", "Share that only reads", 0.8, "Behaviour", "Reads look data up. Writes change it."),
+      toggle("multiAz", "Extra copy that takes over (failover standby)", 0, "Resilience", "A standby copy in a second zone takes over if the main copy's zone fails. It doubles the main copy's cost."),
     ] },
   nosql: { label: "NoSQL store", family: "hld", role: "nosql", vendor: "Key-value", icon: "nosql",
-    properties: [size("generic", "memory-medium"), count("count", "Nodes", "nodes", 3, 1, 30), azs(1)] },
+    properties: [size("generic", "memory-medium"), count("count", "Machines (nodes)", "nodes", 3, 1, 30), azs(1)] },
   search: { label: "Search", family: "hld", role: "search", vendor: "Index", icon: "search",
-    properties: [size("generic", "memory-medium"), count("count", "Nodes", "nodes", 2, 1, 20), azs(1)] },
+    properties: [size("generic", "memory-medium"), count("count", "Machines (nodes)", "nodes", 2, 1, 20), azs(1)] },
   queue: { label: "Queue", family: "hld", role: "queue", vendor: "Broker", icon: "queue",
     managed: { capacity: 100_000, pricePerHour: 0.01, pricePerMillion: 0.04 },
-    properties: [count("maxInFlight", "Max in flight", "messages", 1000, 1, 1_000_000, "Behaviour")] },
+    properties: [count("maxInFlight", "Most messages handled at once (max in flight)", "messages", 1000, 1, 1_000_000, "Behaviour")] },
   stream: { label: "Event stream", family: "hld", role: "stream", vendor: "Kafka", icon: "stream",
-    properties: [count("partitions", "Partitions", "partitions", 4, 1, 256, "Capacity", "Each partition takes about 1,000 events/s."), count("retentionHours", "Retention", "hours", 24, 1, 8760, "Behaviour")] },
+    properties: [count("partitions", "Lanes (partitions)", "lanes", 4, 1, 256, "Capacity", "Each lane takes about 1,000 events a second."), count("retentionHours", "Keep events for (retention)", "hours", 24, 1, 8760, "Behaviour")] },
   "object-storage": { label: "Object storage", family: "hld", role: "storage", vendor: "Blob store", icon: "storage",
     managed: { capacity: 1_000_000, pricePerHour: 0.01, pricePerMillion: 0.4 },
     properties: [count("capacityGb", "Capacity", "GB", 100, 1, 1_000_000)] },
