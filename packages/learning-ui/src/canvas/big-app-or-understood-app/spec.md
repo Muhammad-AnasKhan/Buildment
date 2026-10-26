@@ -59,7 +59,7 @@ The store wins in exactly two of the 243 settings: "Number of features" at 3, "C
 ## Rendering
 - Primary: the shared factor renderer.
 - Two options, five criteria, three weight levels ("Matters a little", "Matters", "Matters a lot"), scores 1 to 5. Criterion names are 22 characters or fewer; option names 22 or fewer.
-- Static fallback: chapter 1.5 gives the default totals, the winning corner and the setting that turns it back, in prose after the canvas.
+- Static fallback: chapter 1.8 gives the default totals, the winning corner and the setting that turns it back, in prose after the canvas.
 
 ## Controls
 One three-level weight control per criterion. Presets are not needed: `tryThis` gives the settings to try.
@@ -79,7 +79,7 @@ The shared factor table and totals: each cell shows score x weight, and the lead
 ## Edge cases
 - Ties exist (two settings above); the shared renderer labels a tie.
 - All weights at the same level: the slice leads (12 to 18 at 1, 36 to 54 at 3).
-- Facts match chapter 1.5 and the course's canonical facts: 14 features against 3; Yara's first slice built in weeks 1 to 2 (about 16 hours) saves a link, opens it by its short code, shows a "link not found" page and keeps a click count as a number saved in the database; prices stored as text; blank payment page; a decision note.
+- Facts match chapter 1.8 and the course's canonical facts: 14 features against 3; Yara's first slice built in weeks 1 to 2 (about 16 hours) saves a link, opens it by its short code, shows a "link not found" page and keeps a click count as a number saved in the database; prices stored as text; blank payment page; a decision note.
 
 ## Accessibility
 Shared factor controls are labelled HTML inputs with keyboard support; totals and the leader are given in text, never by colour alone.
@@ -89,10 +89,10 @@ Shared factor controls are labelled HTML inputs with keyboard support; totals an
 - [x] The model is tested: the shared factor model tests and the registry scale checks, once registered; totals above computed for all 243 settings.
 - [x] The design is simple and legible: two options, five criteria.
 - [x] Prediction before (chapter predict, first line of `tryThis`), transfer check after.
-- [x] Reader fallback exists: the prose in chapter 1.5.
+- [x] Reader fallback exists: the prose in chapter 1.8.
 
 ## Build plan
 `packages/learning-ui/src/canvas/big-app-or-understood-app/data.ts`, export `bigAppOrUnderstoodApp` (FactorSpec). To be registered by the orchestrator in `packages/learning-ui/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts` and `factor-model.test.ts`; preview at `/workspace/canvases`.
 
 ## Placement
-Chapter 1.5, section "Weighing the two projects", after the predict and before "Where it goes wrong".
+Chapter 1.8, section "Weighing the two projects", after the predict and before "Where it goes wrong".

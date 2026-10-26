@@ -1,6 +1,6 @@
 import type { StateMachineSpec } from "../renderers/state-machine/types";
 
-// Learn and Build with AI course, chapter 1.4 "AI can help or harm your learning".
+// Learn and Build with AI course, chapter 1.6 "AI can help or harm your learning".
 // Kinan and Lubna practise the same 20 problems with the same chat assistant:
 // Kinan asks for answers, Lubna asks for hints. Practice scores and test scores
 // point in opposite directions. A fellow's example, not study data; the chapter

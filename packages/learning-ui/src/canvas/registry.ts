@@ -173,6 +173,27 @@ import { sysdesignM2KneePlay } from "./sysdesign-m2-knee-play/data";
 import { sysdesignM2FanOutPlay } from "./sysdesign-m2-fan-out-play/data";
 import { sysdesignM1DesignLoop } from "./sysdesign-m1-design-loop/data";
 import { sysdesignM2LatencyLadder } from "./sysdesign-m2-latency-ladder/data";
+import { netM1PacketDns } from "./net-m1-packet-dns/data";
+import { netM1PacketEcho } from "./net-m1-packet-echo/data";
+import { netM1PacketOwnLines } from "./net-m1-packet-own-lines/data";
+import { netM1PacketChange } from "./net-m1-packet-change/data";
+import { netM1PacketJobs } from "./net-m1-packet-jobs/data";
+import { netM1PacketWrap } from "./net-m1-packet-wrap/data";
+import { netM1PacketUnwrap } from "./net-m1-packet-unwrap/data";
+import { netM1ReplaySetupChecker } from "./net-m1-replay-setup-checker/data";
+import { netM1ReplayOwnNumbers } from "./net-m1-replay-own-numbers/data";
+import { netM1ReplayVirtualCable } from "./net-m1-replay-virtual-cable/data";
+import { netM1SceneBroadcastMac } from "./net-m1-scene-broadcast-mac/data";
+import { netM2ByteBits } from "./net-m2-byte-bits/data";
+import { netM2AddressBits } from "./net-m2-address-bits/data";
+import { netM2AddressDrill } from "./net-m2-address-drill/data";
+import { netM2SceneFreePool } from "./net-m2-scene-free-pool/data";
+import { netM2AllocateClass } from "./net-m2-allocate-class/data";
+import { netM2AllocateCidr } from "./net-m2-allocate-cidr/data";
+import { netM2Prefix } from "./net-m2-prefix/data";
+import { netM2CidrDrill } from "./net-m2-cidr-drill/data";
+import { netM2SceneSameAddress } from "./net-m2-scene-same-address/data";
+import { netM2Classify } from "./net-m2-classify/data";
 import { sysdesignM2Estimator } from "./sysdesign-m2-estimator/data";
 import { sysdesignM2AvailabilityBuilder } from "./sysdesign-m2-availability-builder/data";
 import { sysdesignM1LaunchDayIllustrated } from "./sysdesign-m1-launch-day-illustrated/data";
@@ -744,6 +765,178 @@ import { halalInHand } from "./halal-in-hand/data";
 import { aFridayDoneWell } from "./a-friday-done-well/data";
 import { quietSadaqah } from "./quiet-sadaqah/data";
 import { aRamadanDay } from "./a-ramadan-day/data";
+import { actOnFeedback } from "./act-on-feedback/data";
+import { adoptAToolLoopSources } from "./adopt-a-tool-loop-sources/data";
+import { adoptAToolLoop } from "./adopt-a-tool-loop/data";
+import { agreementIsNotProofLeftOut } from "./agreement-is-not-proof-left-out/data";
+import { agreementIsNotProofTwo } from "./agreement-is-not-proof-two/data";
+import { agreementIsNotProof } from "./agreement-is-not-proof/data";
+import { cacheChoiceContext } from "./cache-choice-context/data";
+import { claimTypeSorterDevin } from "./claim-type-sorter-devin/data";
+import { claimTypeSorter } from "./claim-type-sorter/data";
+import { detectorMyths } from "./detector-myths/data";
+import { dumpOrStory } from "./dump-or-story/data";
+import { fastAnswerLostWeek } from "./fast-answer-lost-week/data";
+import { fastestDatabaseDepends } from "./fastest-database-depends/data";
+import { fearVersusDataGains } from "./fear-versus-data-gains/data";
+import { fearVersusData } from "./fear-versus-data/data";
+import { firstOrResearchedAnswerClaims } from "./first-or-researched-answer-claims/data";
+import { firstOrResearchedAnswerDates } from "./first-or-researched-answer-dates/data";
+import { firstOrResearchedAnswer } from "./first-or-researched-answer/data";
+import { growLaithFortyRepos } from "./grow-laith-forty-repos/data";
+import { humansReminderMistake } from "./humans-reminder-mistake/data";
+import { leastAccessPicker } from "./least-access-picker/data";
+import { likelyNextWordAgrees } from "./likely-next-word-agrees/data";
+import { likelyNextWord } from "./likely-next-word/data";
+import { metricsStoreContext } from "./metrics-store-context/data";
+import { outboxOrNot } from "./outbox-or-not/data";
+import { ownTheIncidentCodeFreeze } from "./own-the-incident-code-freeze/data";
+import { ownTheIncident } from "./own-the-incident/data";
+import { pickAVisualTool } from "./pick-a-visual-tool/data";
+import { shortLessonLoop } from "./short-lesson-loop/data";
+import { showsThinkingOrNoise } from "./shows-thinking-or-noise/data";
+import { toolbeltHiddenInstruction } from "./toolbelt-hidden-instruction/data";
+import { toolbeltOneLineReadme } from "./toolbelt-one-line-readme/data";
+import { trustOrErode } from "./trust-or-erode/data";
+import { twoTeamsSameAnswer } from "./two-teams-same-answer/data";
+import { useAiOrNotLoginCode } from "./use-ai-or-not-login-code/data";
+import { useAiOrNotQuickYes } from "./use-ai-or-not-quick-yes/data";
+import { useAiOrNot } from "./use-ai-or-not/data";
+import { usefulOrBait } from "./useful-or-bait/data";
+import { voiceUseCheck } from "./voice-use-check/data";
+import { whichTeamProjectFits } from "./which-team-project-fits/data";
+import { whoLeadsThisCallLateDate } from "./who-leads-this-call-late-date/data";
+import { whoLeadsThisCallLayouts } from "./who-leads-this-call-layouts/data";
+import { whoLeadsThisCallQuery } from "./who-leads-this-call-query/data";
+import { whoLeadsThisCall } from "./who-leads-this-call/data";
+import { whoTheSmallerTeamKeeps } from "./who-the-smaller-team-keeps/data";
+import { whoLeadsThisCallSurvey } from "./who-leads-this-call-survey/data";
+import { careerM6EmptyPhrases } from "./career-m6-empty-phrases/data";
+import { careerM1FirstLook } from "./career-m1-first-look/data";
+import { careerM3ClaimCard } from "./career-m3-claim-card/data";
+import { careerM1BadgesOrProject } from "./career-m1-badges-or-project/data";
+import { careerM1CheckableOrClaim } from "./career-m1-checkable-or-claim/data";
+import { careerM1DetectorFlag } from "./career-m1-detector-flag/data";
+import { careerM1ErrorsCleaned } from "./career-m1-errors-cleaned/data";
+import { careerM1FoundersPhone } from "./career-m1-founders-phone/data";
+import { careerM1GenericOrTailored } from "./career-m1-generic-or-tailored/data";
+import { careerM1GuessTheWriter } from "./career-m1-guess-the-writer/data";
+import { careerM1HandbookCards } from "./career-m1-handbook-cards/data";
+import { careerM1KitBiasNote } from "./career-m1-kit-bias-note/data";
+import { careerM1OneLink } from "./career-m1-one-link/data";
+import { careerM1OnlyYouCanWrite } from "./career-m1-only-you-can-write/data";
+import { careerM1PileAndDay } from "./career-m1-pile-and-day/data";
+import { careerM1SixtySent } from "./career-m1-sixty-sent/data";
+import { careerM1SmoothLetters } from "./career-m1-smooth-letters/data";
+import { careerM1TenSecondTest } from "./career-m1-ten-second-test/data";
+import { careerM2BestAtWhat } from "./career-m2-best-at-what/data";
+import { careerM2ClaimsUnderPillars } from "./career-m2-claims-under-pillars/data";
+import { careerM2FootballNotebook } from "./career-m2-football-notebook/data";
+import { careerM2FoundVsTeam } from "./career-m2-found-vs-team/data";
+import { careerM2LabelsFade } from "./career-m2-labels-fade/data";
+import { careerM2OneLineOpens } from "./career-m2-one-line-opens/data";
+import { careerM2RoleCard } from "./career-m2-role-card/data";
+import { careerM2SkillsNotAdjectives } from "./career-m2-skills-not-adjectives/data";
+import { careerM2TenOrThree } from "./career-m2-ten-or-three/data";
+import { careerM2ThreeAsks } from "./career-m2-three-asks/data";
+import { careerM2ThreeReplies } from "./career-m2-three-replies/data";
+import { careerM2VolunteerFull } from "./career-m2-volunteer-full/data";
+import { careerM2WhereDetailHelps } from "./career-m2-where-detail-helps/data";
+import { careerM3AskFirst } from "./career-m3-ask-first/data";
+import { careerM3EmptyClaimCard } from "./career-m3-empty-claim-card/data";
+import { careerM3FairTestClaim } from "./career-m3-fair-test-claim/data";
+import { careerM3FiveRuns } from "./career-m3-five-runs/data";
+import { careerM3K6FairTest } from "./career-m3-k6-fair-test/data";
+import { careerM3LeakedKey } from "./career-m3-leaked-key/data";
+import { careerM3MatchWorkToProof } from "./career-m3-match-work-to-proof/data";
+import { careerM3NotMeasured } from "./career-m3-not-measured/data";
+import { careerM3PercentNeedsStart } from "./career-m3-percent-needs-start/data";
+import { careerM3PercentileLine } from "./career-m3-percentile-line/data";
+import { careerM3PercentilesDontAverage } from "./career-m3-percentiles-dont-average/data";
+import { careerM3PhoneExport } from "./career-m3-phone-export/data";
+import { careerM3PlanPair } from "./career-m3-plan-pair/data";
+import { careerM3SameWeek } from "./career-m3-same-week/data";
+import { careerM3SeventyOfWhat } from "./career-m3-seventy-of-what/data";
+import { careerM3SixQuestions } from "./career-m3-six-questions/data";
+import { careerM3TimeSavedNet } from "./career-m3-time-saved-net/data";
+import { careerM3TimingSheet } from "./career-m3-timing-sheet/data";
+import { careerM3WhatElseChanged } from "./career-m3-what-else-changed/data";
+import { careerM3WindowChanges } from "./career-m3-window-changes/data";
+import { careerM4BusSchedule } from "./career-m4-bus-schedule/data";
+import { careerM4FirstRealUser } from "./career-m4-first-real-user/data";
+import { careerM4FixedBox } from "./career-m4-fixed-box/data";
+import { careerM4MatchingQuestion } from "./career-m4-matching-question/data";
+import { careerM4PileOfApps } from "./career-m4-pile-of-apps/data";
+import { careerM4ProjectPage } from "./career-m4-project-page/data";
+import { careerM4RideAppWeekend } from "./career-m4-ride-app-weekend/data";
+import { careerM4RunTheFilter } from "./career-m4-run-the-filter/data";
+import { careerM4ScopeSentence } from "./career-m4-scope-sentence/data";
+import { careerM4SpeedVsUnderstanding } from "./career-m4-speed-vs-understanding/data";
+import { careerM4StudiesDisagree } from "./career-m4-studies-disagree/data";
+import { careerM5Captions } from "./career-m5-captions/data";
+import { careerM5CaseFromRow } from "./career-m5-case-from-row/data";
+import { careerM5DemoAsleep } from "./career-m5-demo-asleep/data";
+import { careerM5DemoLogin } from "./career-m5-demo-login/data";
+import { careerM5DemoStoryboard } from "./career-m5-demo-storyboard/data";
+import { careerM5ExtraSteps } from "./career-m5-extra-steps/data";
+import { careerM5GoogleConsent } from "./career-m5-google-consent/data";
+import { careerM5LinkNobodyOpens } from "./career-m5-link-nobody-opens/data";
+import { careerM5LinksInSixMonths } from "./career-m5-links-in-six-months/data";
+import { careerM5NoHosting } from "./career-m5-no-hosting/data";
+import { careerM5RedactedChart } from "./career-m5-redacted-chart/data";
+import { careerM5RemoveAControl } from "./career-m5-remove-a-control/data";
+import { careerM5SameBox } from "./career-m5-same-box/data";
+import { careerM5ScreenshotFirst } from "./career-m5-screenshot-first/data";
+import { careerM5ShowTheHardPart } from "./career-m5-show-the-hard-part/data";
+import { careerM5SleepThenSignup } from "./career-m5-sleep-then-signup/data";
+import { careerM5StartWithResult } from "./career-m5-start-with-result/data";
+import { careerM5StrangerPath } from "./career-m5-stranger-path/data";
+import { careerM6AdjectivesOrFact } from "./career-m6-adjectives-or-fact/data";
+import { careerM6BuildABullet } from "./career-m6-build-a-bullet/data";
+import { careerM6CopiedWords } from "./career-m6-copied-words/data";
+import { careerM6DutyVsBullet } from "./career-m6-duty-vs-bullet/data";
+import { careerM6FilingCabinet } from "./career-m6-filing-cabinet/data";
+import { careerM6HumaniserNo } from "./career-m6-humaniser-no/data";
+import { careerM6LinesAnyones } from "./career-m6-lines-anyones/data";
+import { careerM6MissingTracker } from "./career-m6-missing-tracker/data";
+import { careerM6NoNumberBullet } from "./career-m6-no-number-bullet/data";
+import { careerM6OldBulletMarked } from "./career-m6-old-bullet-marked/data";
+import { careerM6PasteTest } from "./career-m6-paste-test/data";
+import { careerM6PickAPosting } from "./career-m6-pick-a-posting/data";
+import { careerM6PlainFile } from "./career-m6-plain-file/data";
+import { careerM6TailoringReorder } from "./career-m6-tailoring-reorder/data";
+import { careerM6TestLinks } from "./career-m6-test-links/data";
+import { careerM7CommentEdit } from "./career-m7-comment-edit/data";
+import { careerM7DifferentFeeds } from "./career-m7-different-feeds/data";
+import { careerM7EightWeekLog } from "./career-m7-eight-week-log/data";
+import { careerM7ExperienceEntry } from "./career-m7-experience-entry/data";
+import { careerM7FolkloreCards } from "./career-m7-folklore-cards/data";
+import { careerM7FortyNotes } from "./career-m7-forty-notes/data";
+import { careerM7FreeAccount } from "./career-m7-free-account/data";
+import { careerM7HeadlineParts } from "./career-m7-headline-parts/data";
+import { careerM7HeadlineTravels } from "./career-m7-headline-travels/data";
+import { careerM7LikeGroup } from "./career-m7-like-group/data";
+import { careerM7MoreYes } from "./career-m7-more-yes/data";
+import { careerM7RulesForbid } from "./career-m7-rules-forbid/data";
+import { careerM7SpendTheNotes } from "./career-m7-spend-the-notes/data";
+import { careerM8CanonicalFields } from "./career-m8-canonical-fields/data";
+import { careerM8ChannelVersions } from "./career-m8-channel-versions/data";
+import { careerM8FirstPublishedLine } from "./career-m8-first-published-line/data";
+import { careerM8OpenWithProblem } from "./career-m8-open-with-problem/data";
+import { careerM8PlainWords } from "./career-m8-plain-words/data";
+import { careerM8PostGone } from "./career-m8-post-gone/data";
+import { careerM8SayItBack } from "./career-m8-say-it-back/data";
+import { careerM8SearchPicksOne } from "./career-m8-search-picks-one/data";
+import { careerM8SmallAndAlive } from "./career-m8-small-and-alive/data";
+import { careerM8SpecificsOrTemplate } from "./career-m8-specifics-or-template/data";
+import { careerM8SwapGeneric } from "./career-m8-swap-generic/data";
+import { careerM8TemplateSite } from "./career-m8-template-site/data";
+import { careerM8VisitorJudges } from "./career-m8-visitor-judges/data";
+import { careerM9KeepTheTerm } from "./career-m9-keep-the-term/data";
+import { careerM9LedgerRowShown } from "./career-m9-ledger-row-shown/data";
+import { careerM9LinePicked } from "./career-m9-line-picked/data";
+import { careerM9OneChange } from "./career-m9-one-change/data";
+import { careerM9TapTheFlag } from "./career-m9-tap-the-flag/data";
 import { productM2SpacingGroups } from "./product-m2-spacing-groups/data";
 import { productM5SpotTheSlop } from "./product-m5-spot-the-slop/data";
 import { productM1ProblemOrFeature } from "./product-m1-problem-or-feature/data";
@@ -849,6 +1042,102 @@ import { feedbackToNextProject } from "./feedback-to-next-project/data";
 import { whyNotThatChoice } from "./why-not-that-choice/data";
 import { fiftyTimesTest } from "./fifty-times-test/data";
 import { demoTheyCanOpen } from "./demo-they-can-open/data";
+import { netM3ArpExchange } from "./net-m3-arp-exchange/data";
+import { netM3Broadcast } from "./net-m3-broadcast/data";
+import { netM3MaskAnd } from "./net-m3-mask-and/data";
+import { netM3MaskBits } from "./net-m3-mask-bits/data";
+import { netM3MaskDrill } from "./net-m3-mask-drill/data";
+import { netM3OverlapLine } from "./net-m3-overlap-line/data";
+import { netM3OverlapNest } from "./net-m3-overlap-nest/data";
+import { netM3SplitBoundary } from "./net-m3-split-boundary/data";
+import { netM3SplitDrill } from "./net-m3-split-drill/data";
+import { netM3SplitPlace } from "./net-m3-split-place/data";
+import { netM3SplitSize } from "./net-m3-split-size/data";
+import { netM3WideMask } from "./net-m3-wide-mask/data";
+import { netM4RouteLongest } from "./net-m4-route-longest/data";
+import { netM9V6Drill } from "./net-m9-v6-drill/data";
+import { netM9V6Expand } from "./net-m9-v6-expand/data";
+import { netM9V6Invalid } from "./net-m9-v6-invalid/data";
+import { netM9V6Shorten } from "./net-m9-v6-shorten/data";
+import { netM3ArpNoOwner } from "./net-m3-arp-no-owner/data";
+import { netM3ArpTable } from "./net-m3-arp-table/data";
+import { netM3FlatBroadcast } from "./net-m3-flat-broadcast/data";
+import { netM3ReplayWrongMask } from "./net-m3-replay-wrong-mask/data";
+import { netM3SceneFlatSchool } from "./net-m3-scene-flat-school/data";
+import { netM3SceneLateOverlap } from "./net-m3-scene-late-overlap/data";
+import { netM3SceneNeedMac } from "./net-m3-scene-need-mac/data";
+import { netM3SplitBroadcast } from "./net-m3-split-broadcast/data";
+import { netM3SplitFilter } from "./net-m3-split-filter/data";
+import { netM3SwitchLearning } from "./net-m3-switch-learning/data";
+import { netM4MacLocal } from "./net-m4-mac-local/data";
+import { netM4MacPerHop } from "./net-m4-mac-per-hop/data";
+import { netM4MacRemote } from "./net-m4-mac-remote/data";
+import { netM4ReplayRouter } from "./net-m4-replay-router/data";
+import { netM4RouteDefault } from "./net-m4-route-default/data";
+import { netM4RouteGet } from "./net-m4-route-get/data";
+import { netM4RouteMatches } from "./net-m4-route-matches/data";
+import { netM4RouteMetric } from "./net-m4-route-metric/data";
+import { netM4RouteReorder } from "./net-m4-route-reorder/data";
+import { netM4RouteTable } from "./net-m4-route-table/data";
+import { netM4SilentRouter } from "./net-m4-silent-router/data";
+import { netM4TimeExceeded } from "./net-m4-time-exceeded/data";
+import { netM4TracerouteProbes } from "./net-m4-traceroute-probes/data";
+import { netM4TtlCountdown } from "./net-m4-ttl-countdown/data";
+import { netM5FiveNumbers } from "./net-m5-five-numbers/data";
+import { netM5LaptopAddress } from "./net-m5-laptop-address/data";
+import { netM5ListenAll } from "./net-m5-listen-all/data";
+import { netM5ListenLoopback } from "./net-m5-listen-loopback/data";
+import { netM5MatchReplies } from "./net-m5-match-replies/data";
+import { netM5PhoneLocalhost } from "./net-m5-phone-localhost/data";
+import { netM5ReplayConversation } from "./net-m5-replay-conversation/data";
+import { netM5SceneLateAudio } from "./net-m5-scene-late-audio/data";
+import { netM5SceneLossyLink } from "./net-m5-scene-lossy-link/data";
+import { netM5SceneTwoTabs } from "./net-m5-scene-two-tabs/data";
+import { netM5SocketsPorts } from "./net-m5-sockets-ports/data";
+import { netM5SortResend } from "./net-m5-sort-resend/data";
+import { netM5SortTcpUdp } from "./net-m5-sort-tcp-udp/data";
+import { netM5TcpLossAck } from "./net-m5-tcp-loss-ack/data";
+import { netM5TcpLossResend } from "./net-m5-tcp-loss-resend/data";
+import { netM5TcpLossTimeline } from "./net-m5-tcp-loss-timeline/data";
+import { netM5UdpLossTimeline } from "./net-m5-udp-loss-timeline/data";
+import { netM6CgnatLayers } from "./net-m6-cgnat-layers/data";
+import { netM6Conntrack } from "./net-m6-conntrack/data";
+import { netM6FilterRule } from "./net-m6-filter-rule/data";
+import { netM6ForwardRule } from "./net-m6-forward-rule/data";
+import { netM6HomeRouterFirstLook } from "./net-m6-home-router-first-look/data";
+import { netM6InboundUnsolicited } from "./net-m6-inbound-unsolicited/data";
+import { netM6NatClash } from "./net-m6-nat-clash/data";
+import { netM6NatIdleExpire } from "./net-m6-nat-idle-expire/data";
+import { netM6NatKeepalive } from "./net-m6-nat-keepalive/data";
+import { netM6NatRewrite } from "./net-m6-nat-rewrite/data";
+import { netM6NatTableFills } from "./net-m6-nat-table-fills/data";
+import { netM6ReplayForwardGuest } from "./net-m6-replay-forward-guest/data";
+import { netM6ReplayMasquerade } from "./net-m6-replay-masquerade/data";
+import { netM6RouteLeak } from "./net-m6-route-leak/data";
+import { netM6SceneQuietChat } from "./net-m6-scene-quiet-chat/data";
+import { netM7DhcpFourMessages } from "./net-m7-dhcp-four-messages/data";
+import { netM7DhcpPool } from "./net-m7-dhcp-pool/data";
+import { netM7DnsEmptyCache } from "./net-m7-dns-empty-cache/data";
+import { netM7DnsWarmCache } from "./net-m7-dns-warm-cache/data";
+import { netM7ReplayChallenge5 } from "./net-m7-replay-challenge-5/data";
+import { netM7SceneFacebookMissing } from "./net-m7-scene-facebook-missing/data";
+import { netM7SceneNoAddress } from "./net-m7-scene-no-address/data";
+import { netM7SortWhoAnswers } from "./net-m7-sort-who-answers/data";
+import { netM7TtlOneResolver } from "./net-m7-ttl-one-resolver/data";
+import { netM7TtlThreeResolvers } from "./net-m7-ttl-three-resolvers/data";
+import { netM8JourneyDns } from "./net-m8-journey-dns/data";
+import { netM8JourneyFirstByte } from "./net-m8-journey-first-byte/data";
+import { netM8JourneyGateway } from "./net-m8-journey-gateway/data";
+import { netM8JourneyLeaseArp } from "./net-m8-journey-lease-arp/data";
+import { netM8JourneyNatHop } from "./net-m8-journey-nat-hop/data";
+import { netM8JourneyReply } from "./net-m8-journey-reply/data";
+import { netM8ReplayCapstone1 } from "./net-m8-replay-capstone-1/data";
+import { netM8ReplayCapstone2 } from "./net-m8-replay-capstone-2/data";
+import { netM8ReplayCapstone3 } from "./net-m8-replay-capstone-3/data";
+import { netM8ReplayCapstone4 } from "./net-m8-replay-capstone-4/data";
+import { netM9Ipv6Addresses } from "./net-m9-ipv6-addresses/data";
+import { netM9Ipv6Filter } from "./net-m9-ipv6-filter/data";
+import { netM9Ipv6VsNat } from "./net-m9-ipv6-vs-nat/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -1606,6 +1895,178 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "a-friday-done-well": aFridayDoneWell,
   "quiet-sadaqah": quietSadaqah,
   "a-ramadan-day": aRamadanDay,
+  "act-on-feedback": actOnFeedback,
+  "adopt-a-tool-loop-sources": adoptAToolLoopSources,
+  "adopt-a-tool-loop": adoptAToolLoop,
+  "agreement-is-not-proof-left-out": agreementIsNotProofLeftOut,
+  "agreement-is-not-proof-two": agreementIsNotProofTwo,
+  "agreement-is-not-proof": agreementIsNotProof,
+  "cache-choice-context": cacheChoiceContext,
+  "claim-type-sorter-devin": claimTypeSorterDevin,
+  "claim-type-sorter": claimTypeSorter,
+  "detector-myths": detectorMyths,
+  "dump-or-story": dumpOrStory,
+  "fast-answer-lost-week": fastAnswerLostWeek,
+  "fastest-database-depends": fastestDatabaseDepends,
+  "fear-versus-data-gains": fearVersusDataGains,
+  "fear-versus-data": fearVersusData,
+  "first-or-researched-answer-claims": firstOrResearchedAnswerClaims,
+  "first-or-researched-answer-dates": firstOrResearchedAnswerDates,
+  "first-or-researched-answer": firstOrResearchedAnswer,
+  "grow-laith-forty-repos": growLaithFortyRepos,
+  "humans-reminder-mistake": humansReminderMistake,
+  "least-access-picker": leastAccessPicker,
+  "likely-next-word-agrees": likelyNextWordAgrees,
+  "likely-next-word": likelyNextWord,
+  "metrics-store-context": metricsStoreContext,
+  "outbox-or-not": outboxOrNot,
+  "own-the-incident-code-freeze": ownTheIncidentCodeFreeze,
+  "own-the-incident": ownTheIncident,
+  "pick-a-visual-tool": pickAVisualTool,
+  "short-lesson-loop": shortLessonLoop,
+  "shows-thinking-or-noise": showsThinkingOrNoise,
+  "toolbelt-hidden-instruction": toolbeltHiddenInstruction,
+  "toolbelt-one-line-readme": toolbeltOneLineReadme,
+  "trust-or-erode": trustOrErode,
+  "two-teams-same-answer": twoTeamsSameAnswer,
+  "use-ai-or-not-login-code": useAiOrNotLoginCode,
+  "use-ai-or-not-quick-yes": useAiOrNotQuickYes,
+  "use-ai-or-not": useAiOrNot,
+  "useful-or-bait": usefulOrBait,
+  "voice-use-check": voiceUseCheck,
+  "which-team-project-fits": whichTeamProjectFits,
+  "who-leads-this-call-late-date": whoLeadsThisCallLateDate,
+  "who-leads-this-call-layouts": whoLeadsThisCallLayouts,
+  "who-leads-this-call-query": whoLeadsThisCallQuery,
+  "who-leads-this-call": whoLeadsThisCall,
+  "who-the-smaller-team-keeps": whoTheSmallerTeamKeeps,
+  "who-leads-this-call-survey": whoLeadsThisCallSurvey,
+  "career-m6-empty-phrases": careerM6EmptyPhrases,
+  "career-m1-first-look": careerM1FirstLook,
+  "career-m3-claim-card": careerM3ClaimCard,
+  "career-m1-badges-or-project": careerM1BadgesOrProject,
+  "career-m1-checkable-or-claim": careerM1CheckableOrClaim,
+  "career-m1-detector-flag": careerM1DetectorFlag,
+  "career-m1-errors-cleaned": careerM1ErrorsCleaned,
+  "career-m1-founders-phone": careerM1FoundersPhone,
+  "career-m1-generic-or-tailored": careerM1GenericOrTailored,
+  "career-m1-guess-the-writer": careerM1GuessTheWriter,
+  "career-m1-handbook-cards": careerM1HandbookCards,
+  "career-m1-kit-bias-note": careerM1KitBiasNote,
+  "career-m1-one-link": careerM1OneLink,
+  "career-m1-only-you-can-write": careerM1OnlyYouCanWrite,
+  "career-m1-pile-and-day": careerM1PileAndDay,
+  "career-m1-sixty-sent": careerM1SixtySent,
+  "career-m1-smooth-letters": careerM1SmoothLetters,
+  "career-m1-ten-second-test": careerM1TenSecondTest,
+  "career-m2-best-at-what": careerM2BestAtWhat,
+  "career-m2-claims-under-pillars": careerM2ClaimsUnderPillars,
+  "career-m2-football-notebook": careerM2FootballNotebook,
+  "career-m2-found-vs-team": careerM2FoundVsTeam,
+  "career-m2-labels-fade": careerM2LabelsFade,
+  "career-m2-one-line-opens": careerM2OneLineOpens,
+  "career-m2-role-card": careerM2RoleCard,
+  "career-m2-skills-not-adjectives": careerM2SkillsNotAdjectives,
+  "career-m2-ten-or-three": careerM2TenOrThree,
+  "career-m2-three-asks": careerM2ThreeAsks,
+  "career-m2-three-replies": careerM2ThreeReplies,
+  "career-m2-volunteer-full": careerM2VolunteerFull,
+  "career-m2-where-detail-helps": careerM2WhereDetailHelps,
+  "career-m3-ask-first": careerM3AskFirst,
+  "career-m3-empty-claim-card": careerM3EmptyClaimCard,
+  "career-m3-fair-test-claim": careerM3FairTestClaim,
+  "career-m3-five-runs": careerM3FiveRuns,
+  "career-m3-k6-fair-test": careerM3K6FairTest,
+  "career-m3-leaked-key": careerM3LeakedKey,
+  "career-m3-match-work-to-proof": careerM3MatchWorkToProof,
+  "career-m3-not-measured": careerM3NotMeasured,
+  "career-m3-percent-needs-start": careerM3PercentNeedsStart,
+  "career-m3-percentile-line": careerM3PercentileLine,
+  "career-m3-percentiles-dont-average": careerM3PercentilesDontAverage,
+  "career-m3-phone-export": careerM3PhoneExport,
+  "career-m3-plan-pair": careerM3PlanPair,
+  "career-m3-same-week": careerM3SameWeek,
+  "career-m3-seventy-of-what": careerM3SeventyOfWhat,
+  "career-m3-six-questions": careerM3SixQuestions,
+  "career-m3-time-saved-net": careerM3TimeSavedNet,
+  "career-m3-timing-sheet": careerM3TimingSheet,
+  "career-m3-what-else-changed": careerM3WhatElseChanged,
+  "career-m3-window-changes": careerM3WindowChanges,
+  "career-m4-bus-schedule": careerM4BusSchedule,
+  "career-m4-first-real-user": careerM4FirstRealUser,
+  "career-m4-fixed-box": careerM4FixedBox,
+  "career-m4-matching-question": careerM4MatchingQuestion,
+  "career-m4-pile-of-apps": careerM4PileOfApps,
+  "career-m4-project-page": careerM4ProjectPage,
+  "career-m4-ride-app-weekend": careerM4RideAppWeekend,
+  "career-m4-run-the-filter": careerM4RunTheFilter,
+  "career-m4-scope-sentence": careerM4ScopeSentence,
+  "career-m4-speed-vs-understanding": careerM4SpeedVsUnderstanding,
+  "career-m4-studies-disagree": careerM4StudiesDisagree,
+  "career-m5-captions": careerM5Captions,
+  "career-m5-case-from-row": careerM5CaseFromRow,
+  "career-m5-demo-asleep": careerM5DemoAsleep,
+  "career-m5-demo-login": careerM5DemoLogin,
+  "career-m5-demo-storyboard": careerM5DemoStoryboard,
+  "career-m5-extra-steps": careerM5ExtraSteps,
+  "career-m5-google-consent": careerM5GoogleConsent,
+  "career-m5-link-nobody-opens": careerM5LinkNobodyOpens,
+  "career-m5-links-in-six-months": careerM5LinksInSixMonths,
+  "career-m5-no-hosting": careerM5NoHosting,
+  "career-m5-redacted-chart": careerM5RedactedChart,
+  "career-m5-remove-a-control": careerM5RemoveAControl,
+  "career-m5-same-box": careerM5SameBox,
+  "career-m5-screenshot-first": careerM5ScreenshotFirst,
+  "career-m5-show-the-hard-part": careerM5ShowTheHardPart,
+  "career-m5-sleep-then-signup": careerM5SleepThenSignup,
+  "career-m5-start-with-result": careerM5StartWithResult,
+  "career-m5-stranger-path": careerM5StrangerPath,
+  "career-m6-adjectives-or-fact": careerM6AdjectivesOrFact,
+  "career-m6-build-a-bullet": careerM6BuildABullet,
+  "career-m6-copied-words": careerM6CopiedWords,
+  "career-m6-duty-vs-bullet": careerM6DutyVsBullet,
+  "career-m6-filing-cabinet": careerM6FilingCabinet,
+  "career-m6-humaniser-no": careerM6HumaniserNo,
+  "career-m6-lines-anyones": careerM6LinesAnyones,
+  "career-m6-missing-tracker": careerM6MissingTracker,
+  "career-m6-no-number-bullet": careerM6NoNumberBullet,
+  "career-m6-old-bullet-marked": careerM6OldBulletMarked,
+  "career-m6-paste-test": careerM6PasteTest,
+  "career-m6-pick-a-posting": careerM6PickAPosting,
+  "career-m6-plain-file": careerM6PlainFile,
+  "career-m6-tailoring-reorder": careerM6TailoringReorder,
+  "career-m6-test-links": careerM6TestLinks,
+  "career-m7-comment-edit": careerM7CommentEdit,
+  "career-m7-different-feeds": careerM7DifferentFeeds,
+  "career-m7-eight-week-log": careerM7EightWeekLog,
+  "career-m7-experience-entry": careerM7ExperienceEntry,
+  "career-m7-folklore-cards": careerM7FolkloreCards,
+  "career-m7-forty-notes": careerM7FortyNotes,
+  "career-m7-free-account": careerM7FreeAccount,
+  "career-m7-headline-parts": careerM7HeadlineParts,
+  "career-m7-headline-travels": careerM7HeadlineTravels,
+  "career-m7-like-group": careerM7LikeGroup,
+  "career-m7-more-yes": careerM7MoreYes,
+  "career-m7-rules-forbid": careerM7RulesForbid,
+  "career-m7-spend-the-notes": careerM7SpendTheNotes,
+  "career-m8-canonical-fields": careerM8CanonicalFields,
+  "career-m8-channel-versions": careerM8ChannelVersions,
+  "career-m8-first-published-line": careerM8FirstPublishedLine,
+  "career-m8-open-with-problem": careerM8OpenWithProblem,
+  "career-m8-plain-words": careerM8PlainWords,
+  "career-m8-post-gone": careerM8PostGone,
+  "career-m8-say-it-back": careerM8SayItBack,
+  "career-m8-search-picks-one": careerM8SearchPicksOne,
+  "career-m8-small-and-alive": careerM8SmallAndAlive,
+  "career-m8-specifics-or-template": careerM8SpecificsOrTemplate,
+  "career-m8-swap-generic": careerM8SwapGeneric,
+  "career-m8-template-site": careerM8TemplateSite,
+  "career-m8-visitor-judges": careerM8VisitorJudges,
+  "career-m9-keep-the-term": careerM9KeepTheTerm,
+  "career-m9-ledger-row-shown": careerM9LedgerRowShown,
+  "career-m9-line-picked": careerM9LinePicked,
+  "career-m9-one-change": careerM9OneChange,
+  "career-m9-tap-the-flag": careerM9TapTheFlag,
   "product-m2-spacing-groups": productM2SpacingGroups,
   "product-m5-spot-the-slop": productM5SpotTheSlop,
   "product-m1-problem-or-feature": productM1ProblemOrFeature,
@@ -1710,6 +2171,123 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "why-not-that-choice": whyNotThatChoice,
   "fifty-times-test": fiftyTimesTest,
   "demo-they-can-open": demoTheyCanOpen,
+  "net-m1-packet-dns": netM1PacketDns,
+  "net-m1-packet-echo": netM1PacketEcho,
+  "net-m1-packet-own-lines": netM1PacketOwnLines,
+  "net-m1-packet-change": netM1PacketChange,
+  "net-m1-packet-jobs": netM1PacketJobs,
+  "net-m1-packet-wrap": netM1PacketWrap,
+  "net-m1-packet-unwrap": netM1PacketUnwrap,
+  "net-m1-replay-setup-checker": netM1ReplaySetupChecker,
+  "net-m1-replay-own-numbers": netM1ReplayOwnNumbers,
+  "net-m1-replay-virtual-cable": netM1ReplayVirtualCable,
+  "net-m1-scene-broadcast-mac": netM1SceneBroadcastMac,
+  "net-m2-byte-bits": netM2ByteBits,
+  "net-m2-address-bits": netM2AddressBits,
+  "net-m2-address-drill": netM2AddressDrill,
+  "net-m2-scene-free-pool": netM2SceneFreePool,
+  "net-m2-allocate-class": netM2AllocateClass,
+  "net-m2-allocate-cidr": netM2AllocateCidr,
+  "net-m2-prefix": netM2Prefix,
+  "net-m2-cidr-drill": netM2CidrDrill,
+  "net-m2-scene-same-address": netM2SceneSameAddress,
+  "net-m2-classify": netM2Classify,
+  "net-m3-arp-exchange": netM3ArpExchange,
+  "net-m3-broadcast": netM3Broadcast,
+  "net-m3-mask-and": netM3MaskAnd,
+  "net-m3-mask-bits": netM3MaskBits,
+  "net-m3-mask-drill": netM3MaskDrill,
+  "net-m3-overlap-line": netM3OverlapLine,
+  "net-m3-overlap-nest": netM3OverlapNest,
+  "net-m3-split-boundary": netM3SplitBoundary,
+  "net-m3-split-drill": netM3SplitDrill,
+  "net-m3-split-place": netM3SplitPlace,
+  "net-m3-split-size": netM3SplitSize,
+  "net-m3-wide-mask": netM3WideMask,
+  "net-m4-route-longest": netM4RouteLongest,
+  "net-m9-v6-drill": netM9V6Drill,
+  "net-m9-v6-expand": netM9V6Expand,
+  "net-m9-v6-invalid": netM9V6Invalid,
+  "net-m9-v6-shorten": netM9V6Shorten,
+  "net-m3-arp-no-owner": netM3ArpNoOwner,
+  "net-m3-arp-table": netM3ArpTable,
+  "net-m3-flat-broadcast": netM3FlatBroadcast,
+  "net-m3-replay-wrong-mask": netM3ReplayWrongMask,
+  "net-m3-scene-flat-school": netM3SceneFlatSchool,
+  "net-m3-scene-late-overlap": netM3SceneLateOverlap,
+  "net-m3-scene-need-mac": netM3SceneNeedMac,
+  "net-m3-split-broadcast": netM3SplitBroadcast,
+  "net-m3-split-filter": netM3SplitFilter,
+  "net-m3-switch-learning": netM3SwitchLearning,
+  "net-m4-mac-local": netM4MacLocal,
+  "net-m4-mac-per-hop": netM4MacPerHop,
+  "net-m4-mac-remote": netM4MacRemote,
+  "net-m4-replay-router": netM4ReplayRouter,
+  "net-m4-route-default": netM4RouteDefault,
+  "net-m4-route-get": netM4RouteGet,
+  "net-m4-route-matches": netM4RouteMatches,
+  "net-m4-route-metric": netM4RouteMetric,
+  "net-m4-route-reorder": netM4RouteReorder,
+  "net-m4-route-table": netM4RouteTable,
+  "net-m4-silent-router": netM4SilentRouter,
+  "net-m4-time-exceeded": netM4TimeExceeded,
+  "net-m4-traceroute-probes": netM4TracerouteProbes,
+  "net-m4-ttl-countdown": netM4TtlCountdown,
+  "net-m5-five-numbers": netM5FiveNumbers,
+  "net-m5-laptop-address": netM5LaptopAddress,
+  "net-m5-listen-all": netM5ListenAll,
+  "net-m5-listen-loopback": netM5ListenLoopback,
+  "net-m5-match-replies": netM5MatchReplies,
+  "net-m5-phone-localhost": netM5PhoneLocalhost,
+  "net-m5-replay-conversation": netM5ReplayConversation,
+  "net-m5-scene-late-audio": netM5SceneLateAudio,
+  "net-m5-scene-lossy-link": netM5SceneLossyLink,
+  "net-m5-scene-two-tabs": netM5SceneTwoTabs,
+  "net-m5-sockets-ports": netM5SocketsPorts,
+  "net-m5-sort-resend": netM5SortResend,
+  "net-m5-sort-tcp-udp": netM5SortTcpUdp,
+  "net-m5-tcp-loss-ack": netM5TcpLossAck,
+  "net-m5-tcp-loss-resend": netM5TcpLossResend,
+  "net-m5-tcp-loss-timeline": netM5TcpLossTimeline,
+  "net-m5-udp-loss-timeline": netM5UdpLossTimeline,
+  "net-m6-cgnat-layers": netM6CgnatLayers,
+  "net-m6-conntrack": netM6Conntrack,
+  "net-m6-filter-rule": netM6FilterRule,
+  "net-m6-forward-rule": netM6ForwardRule,
+  "net-m6-home-router-first-look": netM6HomeRouterFirstLook,
+  "net-m6-inbound-unsolicited": netM6InboundUnsolicited,
+  "net-m6-nat-clash": netM6NatClash,
+  "net-m6-nat-idle-expire": netM6NatIdleExpire,
+  "net-m6-nat-keepalive": netM6NatKeepalive,
+  "net-m6-nat-rewrite": netM6NatRewrite,
+  "net-m6-nat-table-fills": netM6NatTableFills,
+  "net-m6-replay-forward-guest": netM6ReplayForwardGuest,
+  "net-m6-replay-masquerade": netM6ReplayMasquerade,
+  "net-m6-route-leak": netM6RouteLeak,
+  "net-m6-scene-quiet-chat": netM6SceneQuietChat,
+  "net-m7-dhcp-four-messages": netM7DhcpFourMessages,
+  "net-m7-dhcp-pool": netM7DhcpPool,
+  "net-m7-dns-empty-cache": netM7DnsEmptyCache,
+  "net-m7-dns-warm-cache": netM7DnsWarmCache,
+  "net-m7-replay-challenge-5": netM7ReplayChallenge5,
+  "net-m7-scene-facebook-missing": netM7SceneFacebookMissing,
+  "net-m7-scene-no-address": netM7SceneNoAddress,
+  "net-m7-sort-who-answers": netM7SortWhoAnswers,
+  "net-m7-ttl-one-resolver": netM7TtlOneResolver,
+  "net-m7-ttl-three-resolvers": netM7TtlThreeResolvers,
+  "net-m8-journey-dns": netM8JourneyDns,
+  "net-m8-journey-first-byte": netM8JourneyFirstByte,
+  "net-m8-journey-gateway": netM8JourneyGateway,
+  "net-m8-journey-lease-arp": netM8JourneyLeaseArp,
+  "net-m8-journey-nat-hop": netM8JourneyNatHop,
+  "net-m8-journey-reply": netM8JourneyReply,
+  "net-m8-replay-capstone-1": netM8ReplayCapstone1,
+  "net-m8-replay-capstone-2": netM8ReplayCapstone2,
+  "net-m8-replay-capstone-3": netM8ReplayCapstone3,
+  "net-m8-replay-capstone-4": netM8ReplayCapstone4,
+  "net-m9-ipv6-addresses": netM9Ipv6Addresses,
+  "net-m9-ipv6-filter": netM9Ipv6Filter,
+  "net-m9-ipv6-vs-nat": netM9Ipv6VsNat,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */

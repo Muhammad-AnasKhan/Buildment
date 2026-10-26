@@ -40,7 +40,7 @@ Fellows hear "AI builds it in a weekend" and plan a month. The arithmetic of hou
 
 ## Rendering
 - Primary: the shared slider renderer (HTML range inputs, stat cards, bars).
-- Static fallback: chapter 5.2 works the same arithmetic in prose for one month and six months, so a learner who cannot use the canvas still meets the claim.
+- Static fallback: chapter 7.2 works the same arithmetic in prose for one month and six months, so a learner who cannot use the canvas still meets the claim.
 
 ## Controls
 Three range inputs with visible values and units, keyboard operable (arrow keys move one step), each at least 44px tall on a phone.
@@ -67,7 +67,7 @@ Every result is also in the screen-reader summary sentence. Bars carry their val
 - Readable at 375px in light and dark mode, with no horizontal scroll.
 
 ## Placement
-In chapter 5.2, after the predict about squeezing the project into one month and before the worked plan. A quiz item later in the chapter transfers the claim to a different fellow's hours.
+In chapter 7.2, after the predict about squeezing the project into one month and before the worked plan. A quiz item later in the chapter transfers the claim to a different fellow's hours.
 
 ## Tests
 `frontend/tests/unit/canvas/six-month-hours-split.test.ts`.

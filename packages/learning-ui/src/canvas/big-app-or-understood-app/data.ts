@@ -1,6 +1,6 @@
 import type { FactorSpec } from "../renderers/factor/types";
 
-// Learn and Build with AI course, chapter 1.5 "Plenty of AI, few strong projects".
+// Learn and Build with AI course, chapter 1.8 "Plenty of AI, few strong projects".
 // Khaled's 14-feature store built in a weekend against Yara's small, understood
 // first slice of Qasir, scored on what a reviewer checks. Only when "Number of
 // features" matters most does the big app win. The scores are the course's own
@@ -8,7 +8,7 @@ import type { FactorSpec } from "../renderers/factor/types";
 export const bigAppOrUnderstoodApp: FactorSpec = {
   kind: "factor",
   title: "A big app or an understood app?",
-  purpose: "Be the reviewer: change how much each check matters, and find the only settings where the big app comes out ahead.",
+  purpose: "Be the reviewer: change how much each check matters, and find the only settings where the big app wins.",
   whatThisShows:
     "Khaled's weekend store and Yara's first slice of Qasir, each scored from 1 to 5 on five things a reviewer checks. Each score is multiplied by how much that check matters, and the results are added up. Speed of building no longer separates projects; understanding does.",
   options: [

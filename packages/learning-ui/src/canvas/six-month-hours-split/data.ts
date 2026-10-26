@@ -1,6 +1,6 @@
 import type { SliderResult, SliderSpec, SliderValues } from "../renderers/slider/types";
 
-// Learn and Build with AI course, chapter 5.2 "Why strong projects still take
+// Learn and Build with AI course, chapter 7.2 "Why strong projects still take
 // months". Yara's planning numbers for her link shortener project: 12 areas to
 // learn and build, about 8 hours to learn an area well and about 4 hours to
 // build it with AI help, and 4 weeks in a month. They are her plan's own

@@ -7,10 +7,17 @@ export const LAB_SLUGS = [
   "hld-m2-utilisation-knee",
   "hld-m4-three-tiers",
   "hld-m20-wasla-redirects",
+  "hld-visual-url-shortener",
   "aws-web-tier",
   "k8s-web-app",
   "docker-compose-stack",
   "linux-single-host",
+  "net-explore-office",
+  "net-lab-fix-office",
+  "net-lab-plan-school",
+  "net-lab-build-two-subnets",
+  "net-lab-home-router",
+  "net-lab-no-internet",
 ] as const;
 
 export type LabSlug = (typeof LAB_SLUGS)[number];

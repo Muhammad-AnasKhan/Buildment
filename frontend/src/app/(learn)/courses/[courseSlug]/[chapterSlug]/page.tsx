@@ -12,6 +12,7 @@ import { ChapterReaderShell } from "@/components/learn/chapter-reader-shell";
 import { LockedChapterView } from "@/components/learn/locked-chapter";
 import { VariantThemeScope, variantForTrack } from "@/components/learn/variant-theme";
 import { signOutAction } from "@/server/auth/actions";
+import { loadChapterNarration } from "@/lib/narration";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,8 @@ export default async function ChapterReaderPage({
   const { content } = view;
   const source = chapter.readerMode === "QUIZ" ? stripInteractiveBlockTags(content.source) : content.source;
   const headings = extractHeadings(source);
+  // Only unlocked, non-quiz chapters get audio; a missing or unreadable manifest just means no player.
+  const narration = chapter.readerMode === "QUIZ" ? null : await loadChapterNarration(course.slug, chapter.slug);
 
   return (
     <VariantThemeScope variant={variant}>
@@ -93,6 +96,7 @@ export default async function ChapterReaderPage({
         predictGate={content.predictGate}
         predictRevealed={content.predictRevealed}
         helpThread={content.helpThread}
+        narration={narration}
         user={user}
         signOutAction={signOutAction}
         modules={modules}

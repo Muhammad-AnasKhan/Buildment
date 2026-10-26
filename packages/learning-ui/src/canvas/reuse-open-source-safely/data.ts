@@ -1,6 +1,6 @@
 import type { StateMachineSpec } from "../renderers/state-machine/types";
 
-// Learn and Build with AI course, chapter 5.5 "Learn from open source".
+// Learn and Build with AI course, chapter 7.5 "Learn from open source".
 // Yara finds an open-source link shortener (shortlane, a made-up name),
 // checks its licence and its health, reads it in order, reuses one function
 // within the MIT licence and credits it. The machine refuses copying from a
