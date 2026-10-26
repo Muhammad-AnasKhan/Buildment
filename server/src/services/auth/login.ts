@@ -10,7 +10,8 @@ import {
   shouldAutoVerifyWithoutEmailDelivery,
 } from "./email-verification.js";
 import { ensureSeedTestUserVerified, shouldAutoVerifySeedTestUser } from "./seed-test-users.js";
-import { createSession, deleteSession, toSessionUser } from "./session.js";
+import { createSession, deleteSession, toSessionUser, assertNotSuspended } from "./session.js";
+import { assertMfaCode } from "./mfa.js";
 
 /**
  * Unverified accounts are activated on the spot when email delivery is not
@@ -30,11 +31,14 @@ export async function resolveVerificationState(user: SessionUser): Promise<Sessi
 }
 
 /** Password sign-in. Mints a session and attaches any pending organisation enrollments. */
-export async function loginWithPassword(input: { email: string; password: string }) {
+export async function loginWithPassword(input: { email: string; password: string; code?: string }) {
   const record = await prisma.user.findUnique({ where: { email: input.email } });
   if (!record || !verifyPassword(input.password, record.passwordHash)) {
     throw new UnauthorizedError("Invalid email or password.", AUTH_ERROR_CODES.INVALID_CREDENTIALS);
   }
+  assertNotSuspended(record);
+  // MFA is checked before the verification gate, so an enabled account always proves possession.
+  await assertMfaCode(record, input.code);
 
   const user = await resolveVerificationState(toSessionUser(record));
   if (user.role !== "ADMIN" && !isEmailVerified(user.emailVerified)) {

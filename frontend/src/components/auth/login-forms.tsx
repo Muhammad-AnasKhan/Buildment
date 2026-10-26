@@ -101,6 +101,26 @@ export function PasswordLoginForm({
           </p>
         ) : null}
       </div>
+      {state.mfaRequired ? (
+        <div className="space-y-1.5">
+          <Label htmlFor="code" className="text-sm font-semibold">
+            Authentication code
+          </Label>
+          <Input
+            id="code"
+            name="code"
+            inputMode="text"
+            autoCapitalize="characters"
+            autoCorrect="off"
+            spellCheck={false}
+            autoComplete="one-time-code"
+            maxLength={40}
+            placeholder="123456 or ABCD-EFGH-IJKL-MNOP"
+            autoFocus
+            className="h-12 rounded-xl bg-background px-3.5 dark:bg-background"
+          />
+        </div>
+      ) : null}
       {formError ? (
         <p
           role="alert"

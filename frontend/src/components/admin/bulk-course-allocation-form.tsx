@@ -1,12 +1,15 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useActionState, useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/app-toast";
 import { bulkUpsertOrganizationCourseAllocationsAction } from "@/server/actions/admin/organizations";
+import type { AdminActionState } from "@/server/actions/admin/action-result";
 
 const PAGE_SIZE = 25;
+const initialAction: AdminActionState = { ok: false, message: "" };
 
 export type BulkAllocationCourse = {
   id: string;
@@ -76,6 +79,12 @@ export function BulkCourseAllocationForm({
   emptyMessage?: string;
 }) {
   const courseById = useMemo(() => new Map(courses.map((course) => [course.id, course])), [courses]);
+
+  const [state, formAction] = useActionState(bulkUpsertOrganizationCourseAllocationsAction, initialAction);
+
+  useEffect(() => {
+    if (state.message) toast(state.message, state.ok ? "success" : "error");
+  }, [state]);
 
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -165,7 +174,7 @@ export function BulkCourseAllocationForm({
   const largeCatalog = courses.length > PAGE_SIZE;
 
   return (
-    <form action={bulkUpsertOrganizationCourseAllocationsAction} className="space-y-4">
+    <form action={formAction} className="space-y-4">
       <input type="hidden" name="organizationId" value={organizationId} />
 
       {Array.from(selected).map((courseId) => {
@@ -326,11 +335,24 @@ export function BulkCourseAllocationForm({
         Allowed for new integration enrollments (all selected courses)
       </label>
 
-      <Button type="submit" disabled={selected.size === 0}>
+      <Button
+        type="submit"
+        disabled={selected.size === 0}
+        loadingLabel={intent === "add" ? "Adding…" : "Saving…"}
+      >
         {intent === "add"
           ? `Add ${selected.size > 0 ? selected.size.toLocaleString() : ""} course${selected.size === 1 ? "" : "s"} to catalog`
           : `Save changes for ${selected.size > 0 ? selected.size.toLocaleString() : ""} course${selected.size === 1 ? "" : "s"}`}
       </Button>
+
+      {state.message ? (
+        <p
+          role={state.ok ? "status" : "alert"}
+          className={state.ok ? "text-xs text-emerald-600 dark:text-emerald-400" : "text-xs text-destructive"}
+        >
+          {state.message}
+        </p>
+      ) : null}
     </form>
   );
 }

@@ -5,6 +5,26 @@ import { changePasswordBody } from "./auth.js";
 export const orgIdParams = params("orgId");
 export const requestIdParams = params("requestId");
 export const userIdParams = params("userId");
+export const courseIdParams = params("courseId");
+
+/** Change a course's publish state from the admin catalog. */
+export const courseStatusBody = z.object({
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
+});
+export type CourseStatusBody = z.infer<typeof courseStatusBody>;
+
+/** Bulk selection: ids only (per-item failures are reported, never all-or-nothing). */
+const bulkIdsBody = z.object({
+  ids: z.array(id).min(1, "Select at least one row").max(100, "Too many rows selected"),
+});
+
+export const bulkSuspendBody = bulkIdsBody.extend({
+  note: z.string().trim().max(240).optional(),
+});
+export type BulkSuspendBody = z.infer<typeof bulkSuspendBody>;
+
+export const bulkIdsOnlyBody = bulkIdsBody;
+export type BulkIdsBody = z.infer<typeof bulkIdsBody>;
 
 export const adminProfileBody = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),
@@ -38,7 +58,22 @@ export type AllocationsBody = z.infer<typeof allocationsBody>;
 export const approveCourseRequestBody = z.object({ maxEnrollments, expiresAt });
 export type ApproveCourseRequestBody = z.infer<typeof approveCourseRequestBody>;
 
+/** Bulk approve applies one cap/expiry to every selected request. */
+export const bulkApproveBody = bulkIdsBody.extend({ maxEnrollments, expiresAt });
+export type BulkApproveBody = z.infer<typeof bulkApproveBody>;
+
 export const instructorAccessBody = z.object({ enabled: z.boolean() });
+
+export const suspendUserBody = z.object({
+  note: z.string().trim().max(240).optional(),
+});
+export type SuspendUserBody = z.infer<typeof suspendUserBody>;
+
+/** A 6-digit TOTP code (spaces tolerated by the verifier). */
+export const totpCodeBody = z.object({
+  code: z.string().trim().min(6, "Enter the 6-digit code").max(10),
+});
+export type TotpCodeBody = z.infer<typeof totpCodeBody>;
 
 export const grantInstructorBody = z.object({
   email,
@@ -51,3 +86,47 @@ export const grantAdminBody = z.object({
   name: z.string().trim().min(1).max(120).optional(),
 });
 export type GrantAdminBody = z.infer<typeof grantAdminBody>;
+
+/** Shared list controls: text search plus offset paging. */
+const listQuery = z.object({
+  query: z.string().trim().max(120).optional(),
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(5).max(100).optional(),
+});
+
+export const listUsersQuery = listQuery.extend({
+  role: z.enum(["MENTEE", "MENTOR", "ADMIN"]).optional(),
+  verified: z.enum(["true", "false"]).optional(),
+  /** The pending instructor-access panel pages independently of the account list. */
+  requestsPage: z.coerce.number().int().min(1).optional(),
+});
+export type ListUsersQuery = z.infer<typeof listUsersQuery>;
+
+export const listCoursesQuery = listQuery.extend({
+  status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]).optional(),
+});
+export type ListCoursesQuery = z.infer<typeof listCoursesQuery>;
+
+/** Paging-only queries for lists without a search box. */
+export const pageQuery = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  pageSize: z.coerce.number().int().min(5).max(100).optional(),
+});
+export type PageQuery = z.infer<typeof pageQuery>;
+
+export const listOrganizationsQuery = pageQuery.extend({
+  query: z.string().trim().max(120).optional(),
+});
+export type ListOrganizationsQuery = z.infer<typeof listOrganizationsQuery>;
+
+/** The requests page pages its two lists independently: `page` (pending), `recentPage` (reviewed). */
+export const listRequestsQuery = pageQuery.extend({
+  recentPage: z.coerce.number().int().min(1).optional(),
+});
+export type ListRequestsQuery = z.infer<typeof listRequestsQuery>;
+
+/** Platform metrics window: 7, 30 (default), or 90 UTC days. */
+export const metricsQuery = z.object({
+  range: z.enum(["7", "30", "90"]).optional(),
+});
+export type MetricsQuery = z.infer<typeof metricsQuery>;

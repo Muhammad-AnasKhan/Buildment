@@ -173,6 +173,26 @@ export function AdminTableCell({
   );
 }
 
+export function AdminActionRow({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-3 border-t border-border py-4 first:border-t-0 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-foreground">{title}</p>
+        {description ? <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{description}</p> : null}
+      </div>
+      {children ? <div className="flex shrink-0 flex-wrap items-center gap-2">{children}</div> : null}
+    </div>
+  );
+}
+
 export function AdminEmptyState({
   title,
   description,

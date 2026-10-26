@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type { CreatedOrganization, IssuedCredential } from "@/shared/api/admin";
 import { adminCall } from "./call";
+import { runAdminAction, toAdminActionState, type AdminActionState } from "./action-result";
 
 // Tenants and their integration access. The API returns a credential secret
 // exactly once; the page shows it through the redirect query, as before.
@@ -12,47 +13,70 @@ function credentialRevealUrl(organizationId: string, credential: IssuedCredentia
   return `/admin/organizations/${organizationId}?accessKey=${encodeURIComponent(credential.accessKey)}&secret=${encodeURIComponent(credential.secret)}`;
 }
 
-export async function createOrganizationAction(formData: FormData): Promise<void> {
-  const { organization, credential } = await adminCall<CreatedOrganization>("/api/v1/admin/organizations", {
-    method: "POST",
-    json: { name: String(formData.get("name") ?? ""), slug: String(formData.get("slug") ?? "") || undefined },
-  });
+export async function createOrganizationAction(
+  _prev: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  let created: CreatedOrganization;
+  try {
+    created = await adminCall<CreatedOrganization>("/api/v1/admin/organizations", {
+      method: "POST",
+      json: { name: String(formData.get("name") ?? ""), slug: String(formData.get("slug") ?? "") || undefined },
+    });
+  } catch (error) {
+    return toAdminActionState(error);
+  }
   revalidatePath("/admin/organizations");
-  redirect(credentialRevealUrl(organization.id, credential));
+  // redirect() throws Next.js control-flow; keep it outside the try/catch above.
+  redirect(credentialRevealUrl(created.organization.id, created.credential));
 }
 
-export async function rotateOrganizationCredentialFormAction(formData: FormData): Promise<void> {
+export async function rotateOrganizationCredentialFormAction(
+  _prev: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
   const organizationId = String(formData.get("organizationId") ?? "");
-  if (!organizationId) throw new Error("Missing organization.");
-  const credential = await adminCall<IssuedCredential>(
-    `/api/v1/admin/organizations/${encodeURIComponent(organizationId)}/credentials/rotate`,
-    { method: "POST" }
-  );
+  if (!organizationId) return { ok: false, message: "Missing organization." };
+  let credential: IssuedCredential;
+  try {
+    credential = await adminCall<IssuedCredential>(
+      `/api/v1/admin/organizations/${encodeURIComponent(organizationId)}/credentials/rotate`,
+      { method: "POST" }
+    );
+  } catch (error) {
+    return toAdminActionState(error);
+  }
   revalidatePath(`/admin/organizations/${organizationId}`);
   redirect(credentialRevealUrl(organizationId, credential));
 }
 
 /** Allocate many published courses to an org catalog in one step (platform admin). */
-export async function bulkUpsertOrganizationCourseAllocationsAction(formData: FormData): Promise<void> {
+export async function bulkUpsertOrganizationCourseAllocationsAction(
+  _prev: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
   const organizationId = String(formData.get("organizationId") ?? "");
-  if (!organizationId) throw new Error("Missing organization.");
+  if (!organizationId) return { ok: false, message: "Missing organization." };
 
   const courseIds = [...new Set(formData.getAll("courseIds").map(String).filter(Boolean))];
-  if (courseIds.length === 0) throw new Error("Select at least one course.");
+  if (courseIds.length === 0) return { ok: false, message: "Select at least one course." };
 
-  await adminCall<void>(`/api/v1/admin/organizations/${encodeURIComponent(organizationId)}/allocations`, {
-    method: "PUT",
-    json: {
-      isAllowed: formData.get("isAllowed") === "on" || formData.get("isAllowed") === "true",
-      courses: courseIds.map((courseId) => ({
-        courseId,
-        maxEnrollments: Number(formData.get(`maxEnrollments_${courseId}`) ?? 0),
-        expiresAt: String(formData.get(`expiresAt_${courseId}`) ?? "").trim(),
-      })),
-    },
+  return runAdminAction(async () => {
+    await adminCall<void>(`/api/v1/admin/organizations/${encodeURIComponent(organizationId)}/allocations`, {
+      method: "PUT",
+      json: {
+        isAllowed: formData.get("isAllowed") === "on" || formData.get("isAllowed") === "true",
+        courses: courseIds.map((courseId) => ({
+          courseId,
+          maxEnrollments: Number(formData.get(`maxEnrollments_${courseId}`) ?? 0),
+          expiresAt: String(formData.get(`expiresAt_${courseId}`) ?? "").trim(),
+        })),
+      },
+    });
+
+    revalidatePath(`/admin/organizations/${organizationId}`);
+    revalidatePath("/admin/organizations");
+    revalidatePath("/admin/requests");
+    return `Saved ${courseIds.length} course${courseIds.length === 1 ? "" : "s"}.`;
   });
-
-  revalidatePath(`/admin/organizations/${organizationId}`);
-  revalidatePath("/admin/organizations");
-  revalidatePath("/admin/requests");
 }

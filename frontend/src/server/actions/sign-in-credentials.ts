@@ -18,7 +18,8 @@ export type LoginState = AuthFormState;
 export async function signInWithPasswordAction(_prev: LoginState, formData: FormData): Promise<LoginState> {
   const parsed = loginSchema.safeParse({ email: formData.get("email"), password: formData.get("password") });
   if (!parsed.success) return { fieldErrors: zodAuthErrors(parsed.error), formError: null };
-  return signInAndRedirect(parsed.data, formData);
+  const code = String(formData.get("code") ?? "").trim() || undefined;
+  return signInAndRedirect({ ...parsed.data, code }, formData);
 }
 
 /** Dev-only test-account picker: signs in as a seeded user through the same login call. */
@@ -30,7 +31,7 @@ export async function signInAsTestAccountAction(_prev: LoginState, formData: For
   return signInAndRedirect({ email, password: SEED_DEV_PASSWORD }, formData);
 }
 
-async function signInAndRedirect(credentials: { email: string; password: string }, formData: FormData): Promise<LoginState> {
+async function signInAndRedirect(credentials: { email: string; password: string; code?: string }, formData: FormData): Promise<LoginState> {
   const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? "")) ?? "/dashboard";
 
   let session: AuthSession;
@@ -42,6 +43,10 @@ async function signInAndRedirect(credentials: { email: string; password: string 
     });
   } catch (error) {
     if (error instanceof ApiError) {
+      // MFA: keep the code field visible so the second attempt can include it.
+      if (error.code === "MFA_REQUIRED" || error.code === "MFA_INVALID") {
+        return { fieldErrors: {}, formError: loginErrorMessage(error.code), mfaRequired: true };
+      }
       return {
         fieldErrors: apiAuthErrors(error.errors),
         formError: error.errors.length ? null : error.code === "API_UNAVAILABLE" ? error.message : loginErrorMessage(error.code) ?? error.message,

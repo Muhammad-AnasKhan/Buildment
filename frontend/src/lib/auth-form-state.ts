@@ -3,7 +3,7 @@ import type { ApiFieldError } from "@/lib/api-client";
 
 export type AuthField = "name" | "email" | "password";
 export type AuthFieldErrors = Partial<Record<AuthField, string>>;
-export type AuthFormState = { fieldErrors: AuthFieldErrors; formError: string | null };
+export type AuthFormState = { fieldErrors: AuthFieldErrors; formError: string | null; mfaRequired?: boolean };
 
 const authFields: AuthField[] = ["name", "email", "password"];
 

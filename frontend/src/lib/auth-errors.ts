@@ -20,6 +20,14 @@ export function loginErrorMessage(code: string | undefined): string | null {
       return "That sign-in link is invalid or was already used.";
     case "magic-expired":
       return "That sign-in link has expired. Request a new one.";
+    case "ACCOUNT_SUSPENDED":
+    case "magic-suspended":
+    case "suspended":
+      return "This account has been suspended. Contact a platform admin.";
+    case "MFA_REQUIRED":
+      return "Enter the 6-digit code from your authenticator app, or a backup code.";
+    case "MFA_INVALID":
+      return "That authenticator code is not valid.";
     default:
       return code ? "Sign in failed. Try again." : null;
   }

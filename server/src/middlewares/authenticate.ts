@@ -1,6 +1,7 @@
 import type { NextFunction, Request, RequestHandler, Response } from "express";
-import { UnauthorizedError } from "../utils/errors.js";
-import { SECURE_SESSION_COOKIE, SESSION_COOKIE, findSessionUser } from "../services/auth/session.js";
+import { AUTH_ERROR_CODES } from "../shared/api/auth.js";
+import { ForbiddenError, UnauthorizedError } from "../utils/errors.js";
+import { SECURE_SESSION_COOKIE, SESSION_COOKIE, findSessionState } from "../services/auth/session.js";
 
 function readSessionToken(req: Request): string | undefined {
   const header = req.headers.authorization;
@@ -12,32 +13,49 @@ function readSessionToken(req: Request): string | undefined {
   return cookies[SECURE_SESSION_COOKIE] ?? cookies[SESSION_COOKIE];
 }
 
-async function resolveUser(req: Request) {
-  if (req.user) return req.user;
+/** Resolved session, or undefined when there is no usable token. */
+async function resolveSession(req: Request) {
   const token = readSessionToken(req);
   if (!token) return undefined;
-  const user = await findSessionUser(token);
-  if (!user) return undefined;
-  req.user = user;
-  req.sessionToken = token;
-  return user;
+  const state = await findSessionState(token);
+  if (!state) return undefined;
+  return { ...state, token };
 }
 
-/** Attaches `req.user` when a valid session is present; never rejects. */
+/** Attaches `req.user` when a valid, active session is present; never rejects. */
 export const optionalAuth: RequestHandler = async (req, _res, next) => {
   try {
-    await resolveUser(req);
+    if (!req.user) {
+      const session = await resolveSession(req);
+      if (session && !session.suspended) {
+        req.user = session.user;
+        req.sessionToken = session.token;
+      }
+    }
     next();
   } catch (error) {
     next(error);
   }
 };
 
-/** Rejects with 401 unless the request carries a valid session. */
+/**
+ * Rejects with 401 unless the request carries a valid session. A suspended account
+ * gets a distinct 403 (`ACCOUNT_SUSPENDED`) so clients can explain the sign-out.
+ */
 export const authenticate: RequestHandler = async (req: Request, _res: Response, next: NextFunction) => {
   try {
-    const user = await resolveUser(req);
-    if (!user) throw new UnauthorizedError("Not signed in");
+    if (!req.user) {
+      const session = await resolveSession(req);
+      if (!session) throw new UnauthorizedError("Not signed in");
+      if (session.suspended) {
+        throw new ForbiddenError(
+          "This account has been suspended. Contact a platform admin.",
+          AUTH_ERROR_CODES.ACCOUNT_SUSPENDED
+        );
+      }
+      req.user = session.user;
+      req.sessionToken = session.token;
+    }
     next();
   } catch (error) {
     next(error);

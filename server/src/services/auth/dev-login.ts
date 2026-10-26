@@ -5,7 +5,7 @@ import { isProduction } from "../../config/env.js";
 import { BadRequestError, ForbiddenError, NotFoundError } from "../../utils/errors.js";
 import { homeRouteForRole } from "./access-rules.js";
 import { ensureSeedTestUserVerified, shouldAutoVerifySeedTestUser } from "./seed-test-users.js";
-import { createSession } from "./session.js";
+import { createSession, assertNotSuspended } from "./session.js";
 
 // Dev-only shortcut to sign in as a seeded user without email delivery configured.
 // Mints a real Session row, so every guard behaves exactly as after a real sign-in.
@@ -19,6 +19,7 @@ export async function createDevLoginSession(input: { email?: string; redirectTo?
 
   let user = await prisma.user.findUnique({ where: { email: input.email } });
   if (!user) throw new NotFoundError(`No user with email ${input.email} — run pnpm db:seed first`);
+  assertNotSuspended(user);
   if (!user.emailVerified && shouldAutoVerifySeedTestUser(input.email)) {
     await ensureSeedTestUserVerified(input.email);
     user = await prisma.user.findUniqueOrThrow({ where: { email: input.email } });
