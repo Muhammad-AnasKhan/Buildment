@@ -26,3 +26,7 @@ Level 1 needs a cache and a database sized for the misses. Levels 2 and 3 are no
 1. Add a cache at 80% hits. Expected: the database still sees 20,000 reads a second and stays the busiest part.
 2. Raise the hit rate to 95%. Expected: the ceiling rises, but 5,000 misses a second still overload a single database.
 3. Add read replicas. Expected: p99 drops under 200 ms and the design costs about $15 an hour.
+
+## Solution
+
+The reference design is in `solution.ts`: the starting board plus a cache of 4 nodes at a 95% hit rate and 2 read replicas on the database. It passes all four targets at level 1 (ceiling 115,200 a second, p99 171 ms, $15.00 an hour). The board offers it through the Solution button after one Run, read-only, with a short explanation per part and a "Compare with mine" list. The link labels show the cache wiring: reads to the cache with the hit ratio, and only the misses to the database.

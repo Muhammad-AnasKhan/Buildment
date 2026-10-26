@@ -46,6 +46,27 @@ export interface TierLoad {
   managed: boolean;
   /** A short line for the card: autoscaled, throttling, backlog, and so on. */
   note?: string;
+  /** What this component costs per hour whether or not it is serving. */
+  cost: number;
+  /** Milliseconds a request spends waiting in line here, on top of its service time. Zero off the request path. */
+  waitMs: number;
+  /** For a cache: what it was asked, what it answered itself, and what went on to the database. */
+  cacheStats?: { hitRate: number; reads: number; hits: number; misses: number };
+}
+
+/** One labelled share of the traffic on a link, such as "cache misses" or "click writes". */
+export interface EdgePart {
+  label: string;
+  rate: number;
+}
+
+/** Optional rules a lab can switch on for the whole run. */
+export interface ModelOptions {
+  /**
+   * Every request an app server serves also writes one row (a click) to the database
+   * before it answers. Labs turn this on when the board has no queue to carry the clicks.
+   */
+  inlineWrites?: boolean;
 }
 
 export interface Targets {
@@ -68,12 +89,16 @@ export interface ModelResult {
   failure?: string;
   /** Request rate on each live link, keyed "from>to". */
   edgeFlows: Record<string, number>;
+  /** What the traffic on a link is made of, where that is worth saying (cache reads, misses, writes). */
+  edgeParts: Record<string, EdgePart[]>;
   /** Requests rejected by rate limits and throttles, per second. */
   dropped: number;
   /** Requests filtered out by firewalls, per second. */
   blocked: number;
   /** How fast queued work piles up because consumers are too slow, per second. */
   backlog: number;
+  /** The role on the request path with the lowest availability, for "add redundancy here". */
+  weakest?: { role: Role; availability: number };
 }
 
 // ---- reading a node's configuration -------------------------------------------
@@ -189,6 +214,8 @@ function passOn(node: BoardNode): number {
   const role = roleOf(node.kind);
   if (role === "cdn") return 1 - num(node, "hitRate", 0);
   if (role === "firewall") return 1 - num(node, "blockRate", 0);
+  // A cache answers its hits itself; only the misses go on to a database linked behind it.
+  if (role === "cache") return 1 - num(node, "hitRate", 0);
   return 1;
 }
 function lambdaCapacity(node: BoardNode): number {
@@ -209,7 +236,7 @@ interface Evaluation {
   note?: string;
 }
 
-function evaluate(node: BoardNode, flow: number): Evaluation {
+function evaluate(node: BoardNode, flow: number, inlineWrites = 0): Evaluation {
   const def = COMPONENT_CATALOG[node.kind];
   const role = def.role;
 
@@ -278,7 +305,9 @@ function evaluate(node: BoardNode, flow: number): Evaluation {
     const reads = num(node, "readRatio", 0.8);
     const multiAz = num(node, "multiAz", 0) > 0;
     // Every write goes to the primary; reads spread over the primary and its replicas.
-    const util = Math.max(flow * (1 - reads), (flow * reads) / (1 + replicas)) / perUnit;
+    // Inline writes are all writes: they are part of the flow but never reads.
+    const other = Math.max(0, flow - inlineWrites);
+    const util = Math.max(other * (1 - reads) + inlineWrites, (other * reads) / (1 + replicas)) / perUnit;
     const parts = [replicas > 0 ? `${replicas} read replica${replicas === 1 ? "" : "s"}` : null, multiAz ? "Multi-AZ" : null].filter(Boolean);
     return {
       capacity: util > 0 ? flow / util : perUnit * (1 + replicas), units: 1 + replicas,
@@ -314,7 +343,7 @@ function evaluate(node: BoardNode, flow: number): Evaluation {
 
 // ---- the model -------------------------------------------------------------------
 
-export function runTieredModel(board: Board, load: number, targets: Targets): ModelResult {
+export function runTieredModel(board: Board, load: number, targets: Targets, options: ModelOptions = {}): ModelResult {
   const byId = new Map(board.nodes.map((n) => [n.id, n]));
   const reachable = reachableFrom(board);
   const { children, parents } = liveLinks(board, reachable);
@@ -327,7 +356,10 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
   // different roles are different services and each see the whole stream; a
   // database or key-value store beside a cache only sees the cache misses.
   const incoming = new Map<string, number>();
+  const inlineWrites = new Map<string, number>();
   const edgeFlows: Record<string, number> = {};
+  const edgeParts: Record<string, EdgePart[]> = {};
+  const addPart = (key: string, label: string, rate: number) => { (edgeParts[key] ??= []).push({ label, rate }); };
   let dropped = 0;
   let blocked = 0;
   const clients = order.filter((id) => byId.get(id)!.kind === "client");
@@ -344,13 +376,42 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     const kids = (children.get(id) ?? []).map((k) => byId.get(k)!);
     const cache = kids.find((n) => roleOf(n.kind) === "cache");
     const missRate = cache ? 1 - num(cache, "hitRate", 0) : 1;
+    // Read-through: a store that the cache itself links to is loaded by the cache on a miss,
+    // so the app server's own link to it carries no reads (it never counts twice).
+    const behindCache = new Set(cache ? children.get(cache.id) ?? [] : []);
     const byRole = new Map<Role, string[]>();
-    for (const kid of kids) byRole.set(roleOf(kid.kind), [...(byRole.get(roleOf(kid.kind)) ?? []), kid.id]);
+    for (const kid of kids) {
+      if (behindCache.has(kid.id)) continue;
+      byRole.set(roleOf(kid.kind), [...(byRole.get(roleOf(kid.kind)) ?? []), kid.id]);
+    }
     for (const [role, ids] of byRole) {
-      const share = role === "database" || role === "nosql" ? out * missRate : out;
+      const stores = role === "database" || role === "nosql";
+      // A worker batches its writes: one trip to the store carries `batchSize` events.
+      const batch = node.kind === "worker" && stores ? Math.max(1, num(node, "batchSize", 1)) : 1;
+      const share = stores ? (out * missRate) / batch : out;
       for (const k of ids) {
-        incoming.set(k, (incoming.get(k) ?? 0) + share / ids.length);
-        edgeFlows[`${id}>${k}`] = share / ids.length;
+        const key = `${id}>${k}`;
+        const rate = share / ids.length;
+        incoming.set(k, (incoming.get(k) ?? 0) + rate);
+        edgeFlows[key] = (edgeFlows[key] ?? 0) + rate;
+        if (role === "cache") addPart(key, `reads, ${Math.round(num(byId.get(k)!, "hitRate", 0) * 100)}% answered by the cache`, rate);
+        else if (stores && node.kind === "worker" && batch > 1) addPart(key, `click writes, ${batch} per trip`, rate);
+        else if (stores && cache) addPart(key, "cache misses", rate);
+        else if (stores && roleOf(node.kind) === "cache") addPart(key, "cache misses", rate);
+      }
+    }
+    if (options.inlineWrites && roleOf(node.kind) === "compute") {
+      // The click write goes to the store whether the app server reaches it directly or through its cache.
+      const direct = kids.filter((k) => roleOf(k.kind) === "database");
+      const through = (cache ? children.get(cache.id) ?? [] : []).map((k) => byId.get(k)!).filter((k) => roleOf(k.kind) === "database");
+      const stores = [...new Map([...direct, ...through].map((k) => [k.id, k])).values()];
+      for (const store of stores) {
+        const writes = out / stores.length;
+        const key = direct.some((d) => d.id === store.id) ? `${id}>${store.id}` : `${cache!.id}>${store.id}`;
+        incoming.set(store.id, (incoming.get(store.id) ?? 0) + writes);
+        inlineWrites.set(store.id, (inlineWrites.get(store.id) ?? 0) + writes);
+        edgeFlows[key] = (edgeFlows[key] ?? 0) + writes;
+        addPart(key, direct.some((d) => d.id === store.id) ? "click writes" : "click writes, written directly", writes);
       }
     }
   }
@@ -363,13 +424,16 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     const down = isDown(node);
     const onPath = reachable.has(node.id);
     const flow = onPath ? incoming.get(node.id) ?? 0 : 0;
-    const ev = evaluate(node, flow);
+    const ev = evaluate(node, flow, inlineWrites.get(node.id) ?? 0);
     const capacity = down ? 0 : ev.capacity;
     evaluations.set(node.id, ev);
     cost += ev.cost; // placed hardware costs money whether or not it is serving
     tiers.push({
       id: node.id, kind: node.kind, capacity, utilisation: capacity > 0 ? flow / capacity : 0,
-      down, reachable: onPath, units: ev.units, managed: ev.managed, note: ev.note,
+      down, reachable: onPath, units: ev.units, managed: ev.managed, note: ev.note, cost: ev.cost, waitMs: 0,
+      cacheStats: roleOf(node.kind) === "cache" && onPath
+        ? { hitRate: num(node, "hitRate", 0), reads: flow, hits: flow * num(node, "hitRate", 0), misses: flow * (1 - num(node, "hitRate", 0)) }
+        : undefined,
     });
   }
   const tierById = new Map(tiers.map((t) => [t.id, t]));
@@ -383,7 +447,9 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     const behind = Math.max(0, (incoming.get(id) ?? 0) - consumers);
     backlog += behind;
     const tier = tierById.get(id);
-    if (tier) tier.note = consumers === 0 ? "no consumers linked" : behind > 0 ? `backlog grows ${rate(behind)}/s` : "consumers keeping up";
+    // A consumer that is down is still linked: say so, instead of "no consumers linked".
+    const linkedButDown = board.edges.some((e) => e.from === id && isDown(byId.get(e.to)!));
+    if (tier) tier.note = consumers === 0 ? (linkedButDown ? `consumers down, backlog grows ${rate(behind)}/s` : "no consumers linked") : behind > 0 ? `backlog grows ${rate(behind)}/s` : "consumers keeping up";
   }
 
   // Capacity, latency and availability of the synchronous request path.
@@ -406,13 +472,19 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     const before = (parents.get(id) ?? []).filter((p) => sync.has(p));
     lat50.set(id, service + Math.max(0, ...before.map((p) => lat50.get(p) ?? 0)));
     lat99.set(id, service / (1 - u) + Math.max(0, ...before.map((p) => lat99.get(p) ?? 0)));
+    if (tier) tier.waitMs = service / (1 - u) - service;
   }
   const p50 = NETWORK_MS + Math.max(0, ...lat50.values());
   const p99 = NETWORK_MS + Math.max(0, ...lat99.values());
 
   // Parallel components with the same role back each other up; the roles are in series.
   let availability = 1;
-  for (const parts of roleAvail.values()) availability *= 1 - parts.reduce((all, a) => all * (1 - a), 1);
+  let weakest: ModelResult["weakest"];
+  for (const [role, parts] of roleAvail) {
+    const roleUp = 1 - parts.reduce((all, a) => all * (1 - a), 1);
+    availability *= roleUp;
+    if (!weakest || roleUp < weakest.availability) weakest = { role, availability: roleUp };
+  }
 
   // A placed database that requests cannot reach means nothing is served.
   let failure: string | undefined;
@@ -442,9 +514,11 @@ export function runTieredModel(board: Board, load: number, targets: Targets): Mo
     availability,
     failure,
     edgeFlows,
+    edgeParts,
     dropped,
     blocked,
     backlog,
+    weakest,
     costPerHour: cost,
     tiers,
     pass,
