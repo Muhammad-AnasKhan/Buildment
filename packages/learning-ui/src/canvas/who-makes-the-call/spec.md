@@ -29,7 +29,7 @@ The chapter's hook tells Dina's first try (the mistake) and its worked example w
 - Why this layout: the refused loop on Question needs the cell below it empty, because the narrow layout puts the loop label where a row 1 pill would be. The refused "ship unchecked" edge runs straight along row 0 from Options drafted to Owned, so the picture shows the short way (dashed, refused) next to the long way round through Checked and Decided.
 - Same-column edges ("you" from Options drafted to Checked, "own" from Decided to Owned) have labels of 3 characters, because the narrow layout turns them into short horizontal edges with about 22px between pills.
 - No diagonal edges. Longest edge label: "ship unchecked" (14 characters).
-- Static fallback: chapter 1.3 explains the five states and both refused moves in prose after the canvas.
+- Static fallback: chapter 1.5 explains the five states and both refused moves in prose after the canvas.
 
 ## Controls
 Shared stepper controls only. No numeric inputs: the claim is about who may make which move.
@@ -59,10 +59,10 @@ Shared stepper keyboard support and focus ring; `summary` gives the whole path f
 - [x] The model is tested: registry consistency, label-fit and label-overlap tests, once registered.
 - [x] The design is simple and legible: five states, six edges, no diagonals.
 - [x] Prediction before (chapter predict, first line of `tryThis`), transfer check after.
-- [x] Reader fallback exists: the prose in chapter 1.3.
+- [x] Reader fallback exists: the prose in chapter 1.5.
 
 ## Build plan
 `packages/learning-ui/src/canvas/who-makes-the-call/data.ts`, export `whoMakesTheCall` (StateMachineSpec). To be registered by the orchestrator in `packages/learning-ui/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.
 
 ## Placement
-Chapter 1.3, section "Dina's second try", after the predict and before "Where it goes wrong".
+Chapter 1.5, section "Dina's second try", after the predict and before "Where it goes wrong".

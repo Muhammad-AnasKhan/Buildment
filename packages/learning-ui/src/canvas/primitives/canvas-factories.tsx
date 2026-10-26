@@ -1,6 +1,27 @@
 import type { ComponentType } from "react";
 import { BlockMap, type BlockMapConfig } from "./block-map";
+import { CommitStory } from "./commit-story";
+import { ContextPicker } from "./context-picker";
+import { FlipDeck } from "./flip-deck";
+import { BudgetStack, type BudgetStackConfig } from "./budget-stack";
+import { PhraseFixer, type PhraseFixerConfig } from "./phrase-fixer";
+import { SlotCard, type SlotCardConfig } from "./slot-card";
 import { Sorter, type SorterConfig } from "./sorter";
+import { WordSampler } from "./word-sampler";
+import type { CommitStoryConfig } from "../models/commit-story";
+import type { ContextPickerConfig } from "../models/context-picker";
+import type { FlipDeckConfig } from "../models/flip-deck";
+import type { WordSamplerConfig } from "../models/word-sampler";
+import {
+  SpecimenCompare,
+  SpecimenLadder,
+  SpecimenSkim,
+  SpecimenSpot,
+  type SpecimenCompareConfig,
+  type SpecimenLadderConfig,
+  type SpecimenSkimConfig,
+  type SpecimenSpotConfig,
+} from "./specimen-beats";
 
 // Factories that turn a course's data into a registry component, so its
 // data.ts holds only data. This file has no "use client": the registry runs
@@ -23,4 +44,91 @@ export function makeBlockMapCanvas(config: BlockMapConfig): ComponentType<Canvas
   }
   BlockMapCanvas.displayName = "BlockMapCanvas";
   return BlockMapCanvas;
+}
+
+export function makeContextPickerCanvas(config: ContextPickerConfig): ComponentType<CanvasProps> {
+  function ContextPickerCanvas({ title, limits }: CanvasProps) {
+    return <ContextPicker title={title} limits={limits} {...config} />;
+  }
+  ContextPickerCanvas.displayName = "ContextPickerCanvas";
+  return ContextPickerCanvas;
+}
+
+export function makeFlipDeckCanvas(config: FlipDeckConfig): ComponentType<CanvasProps> {
+  function FlipDeckCanvas({ title, limits }: CanvasProps) {
+    return <FlipDeck title={title} limits={limits} {...config} />;
+  }
+  FlipDeckCanvas.displayName = "FlipDeckCanvas";
+  return FlipDeckCanvas;
+}
+
+export function makeCommitStoryCanvas(config: CommitStoryConfig): ComponentType<CanvasProps> {
+  function CommitStoryCanvas({ title, limits }: CanvasProps) {
+    return <CommitStory title={title} limits={limits} {...config} />;
+  }
+  CommitStoryCanvas.displayName = "CommitStoryCanvas";
+  return CommitStoryCanvas;
+}
+
+export function makeWordSamplerCanvas(config: WordSamplerConfig): ComponentType<CanvasProps> {
+  function WordSamplerCanvas({ title, limits }: CanvasProps) {
+    return <WordSampler title={title} limits={limits} {...config} />;
+  }
+  WordSamplerCanvas.displayName = "WordSamplerCanvas";
+  return WordSamplerCanvas;
+}
+export function makePhraseFixerCanvas(config: PhraseFixerConfig): ComponentType<CanvasProps> {
+  function PhraseFixerCanvas({ title, limits }: CanvasProps) {
+    return <PhraseFixer title={title} limits={limits} {...config} />;
+  }
+  PhraseFixerCanvas.displayName = "PhraseFixerCanvas";
+  return PhraseFixerCanvas;
+}
+
+export function makeBudgetStackCanvas(config: BudgetStackConfig): ComponentType<CanvasProps> {
+  function BudgetStackCanvas({ title, limits }: CanvasProps) {
+    return <BudgetStack title={title} limits={limits} {...config} />;
+  }
+  BudgetStackCanvas.displayName = "BudgetStackCanvas";
+  return BudgetStackCanvas;
+}
+
+export function makeSlotCardCanvas(config: SlotCardConfig): ComponentType<CanvasProps> {
+  function SlotCardCanvas({ title, limits }: CanvasProps) {
+    return <SlotCard title={title} limits={limits} {...config} />;
+  }
+  SlotCardCanvas.displayName = "SlotCardCanvas";
+  return SlotCardCanvas;
+}
+
+export function makeSpecimenCompareCanvas(config: SpecimenCompareConfig): ComponentType<CanvasProps> {
+  function SpecimenCompareCanvas({ title, limits }: CanvasProps) {
+    return <SpecimenCompare title={title} limits={limits} {...config} />;
+  }
+  SpecimenCompareCanvas.displayName = "SpecimenCompareCanvas";
+  return SpecimenCompareCanvas;
+}
+
+export function makeSpecimenLadderCanvas(config: SpecimenLadderConfig): ComponentType<CanvasProps> {
+  function SpecimenLadderCanvas({ title, limits }: CanvasProps) {
+    return <SpecimenLadder title={title} limits={limits} {...config} />;
+  }
+  SpecimenLadderCanvas.displayName = "SpecimenLadderCanvas";
+  return SpecimenLadderCanvas;
+}
+
+export function makeSpecimenSpotCanvas(config: SpecimenSpotConfig): ComponentType<CanvasProps> {
+  function SpecimenSpotCanvas({ title, limits }: CanvasProps) {
+    return <SpecimenSpot title={title} limits={limits} {...config} />;
+  }
+  SpecimenSpotCanvas.displayName = "SpecimenSpotCanvas";
+  return SpecimenSpotCanvas;
+}
+
+export function makeSpecimenSkimCanvas(config: SpecimenSkimConfig): ComponentType<CanvasProps> {
+  function SpecimenSkimCanvas({ title, limits }: CanvasProps) {
+    return <SpecimenSkim title={title} limits={limits} {...config} />;
+  }
+  SpecimenSkimCanvas.displayName = "SpecimenSkimCanvas";
+  return SpecimenSkimCanvas;
 }

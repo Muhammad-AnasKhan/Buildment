@@ -1,6 +1,6 @@
-import { LearningObjectivesView } from '@buildment/learning-ui/blocks/learning-objectives/LearningObjectivesView';
+import { LearningObjectives } from '@buildment/learning-ui/blocks/learning-objectives/LearningObjectives';
 import { fetchBlockState } from "@/blocks/block-state";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 
 export async function LearningObjectivesComponent({
   id,
@@ -32,5 +32,5 @@ export async function LearningObjectivesComponent({
     return null;
   }
 
-  return <LearningObjectivesView id={id} objectives={list} />;
+  return <LearningObjectives id={id} objectives={list} />;
 }

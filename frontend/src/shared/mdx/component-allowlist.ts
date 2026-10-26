@@ -21,6 +21,7 @@ export const MDX_COMPONENT_NAMES = [
   "Checklist",
   "LearningLog",
   "GlossaryTerm",
+  "Video",
   "VideoBlock",
   "VisualWalkthrough",
   "VisualDiagram",

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { newRun, sendIp, sourceAddress } from "@/lab/net/engine";
-import type { NetTopology, World } from "@/lab/net/model";
-import { buildWorld, lookupRoute } from "@/lab/net/model";
-import { formatIp, parseIp } from "@/lab/net/ip";
+import { newRun, sendIp, sourceAddress } from "@buildment/learning-ui/labs/net/engine";
+import type { NetTopology, World } from "@buildment/learning-ui/labs/net/model";
+import { buildWorld, lookupRoute } from "@buildment/learning-ui/labs/net/model";
+import { formatIp, parseIp } from "@buildment/learning-ui/labs/net/ip";
 
 const a = (text: string) => parseIp(text) as number;
 

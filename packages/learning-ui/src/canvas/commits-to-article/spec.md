@@ -20,14 +20,14 @@ The chapter tells the steps in prose. Stepping through them puts the AI edit in 
 - Inputs: none beyond the shared step controls.
 - Outputs: the active arrow between lanes, the step note, outcome badge and chips.
 - Rule: four lanes (Salma, Repository, Chat assistant, Platforms); seven steps: read the week, draft, ask for an edit, the edit returns with one new claim, check each fact, answer and add the AI-use line, adapt for two platforms.
-- Fixed data (from chapter 6.2): week 6 holds labs 26 to 30; Salma's project is a shuttle bus timetable for her university; lab 27 is the lost edit to the 8:00 trip; the test sends 20 edits and exactly 1 is saved; the draft is about 650 words; the LinkedIn version is about 120 words; the DEV version is the full post marked AI-assisted.
+- Fixed data (from chapter 10.2): week 6 holds labs 26 to 30; Salma's project is a shuttle bus timetable for her university; lab 27 is the lost edit to the 8:00 trip; the test sends 20 edits and exactly 1 is saved; the draft is about 650 words; the LinkedIn version is about 120 words; the DEV version is the full post marked AI-assisted.
 - Assumptions: the edit changes exactly one fact, and the repository holds the evidence that catches it.
 - Limitations: real edits can change meaning in quieter ways; platform labels change.
 
 ## Rendering
 - Primary: the shared sequence renderer, narrow layout below `sm`.
 - Arrow labels are at most 18 characters ("edit, no new facts" and "edits, 3 questions" are exactly 18).
-- Static fallback: chapter 6.2 tells the same steps in prose, including the changed sentence, before and after the canvas.
+- Static fallback: chapter 10.2 tells the same steps in prose, including the changed sentence, before and after the canvas.
 
 ## Controls
 Shared stepper controls only. No numeric inputs: the claim is about order and checking, not quantities.
@@ -55,7 +55,7 @@ Shared stepper keyboard support and focus ring; `summary` gives the whole flow f
 - [x] Reader fallback exists (prose in 6.2).
 
 ## Placement
-Chapter 6.2, after the predict on whether every number in the draft survives the edit, and before the section "Adapt for two platforms".
+Chapter 10.2, after the predict on whether every number in the draft survives the edit, and before the section "Adapt for two platforms".
 
 ## Build plan
 `packages/learning-ui/src/canvas/commits-to-article/data.ts`, export `commitsToArticle`, to be registered by the orchestrator in `packages/learning-ui/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.

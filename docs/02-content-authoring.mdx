@@ -296,6 +296,15 @@ no `Response` rows. Registered in `src/mdx/components.tsx` and MDXEditor via
 Import preserves these tags in `scripts/import-course.ts` `escapeMdxProse()`; reader restores
 via `restoreInteractiveBlockTags()`.
 
+## Listen-along audio
+
+A course can offer a Listen player on chosen chapters. The course lists the chapters in a
+`narration:` block in `course.yaml`; `agent-ip/scripts/narrate/narrate.py` turns each chapter's
+teaching text into a small `.mp3` and a `manifest.json` under `frontend/public/narration/<course slug>/`;
+the reader shows the player for any chapter in a manifest. Quiz, predict and open-question blocks are
+never read aloud, and audio is only downloaded when a learner presses play. Set `NARRATION_BASE_URL`
+to serve the same files from object storage. See `agent-ip/scripts/narrate/README.md`.
+
 ## Where this lives in the repo
 
 ```

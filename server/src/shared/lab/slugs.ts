@@ -7,6 +7,7 @@ export const LAB_SLUGS = [
   "hld-m2-utilisation-knee",
   "hld-m4-three-tiers",
   "hld-m20-wasla-redirects",
+  "hld-visual-url-shortener",
   "aws-web-tier",
   "k8s-web-app",
   "docker-compose-stack",

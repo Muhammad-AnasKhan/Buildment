@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { runCommand } from "@/lab/net/commands";
-import type { NetTopology } from "@/lab/net/model";
-import { buildWorld } from "@/lab/net/model";
+import { runCommand } from "@buildment/learning-ui/labs/net/commands";
+import type { NetTopology } from "@buildment/learning-ui/labs/net/model";
+import { buildWorld } from "@buildment/learning-ui/labs/net/model";
 
 // Host A, router 1, router 2, host B (networking dossier 5.8).
 const office: NetTopology = {

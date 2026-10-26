@@ -27,7 +27,7 @@ The chapter explains the four kinds of missing knowledge in prose and works thro
 - Primary: the shared sequence renderer.
 - Lanes: 3 actors, so the narrow layout gives each pill about 96px. Names are 3, 14 and 13 characters ("You", "Chat assistant", "Project facts"); the pack's "Your project facts" is shortened to "Project facts" so it fits a phone pill.
 - Arrow labels are 17 characters or fewer: "same question", "generic answer", "list the facts", "question + facts", "fitted answer", "ask the owner", "decide, then test".
-- Static fallback: chapter 1.2 tells the whole story in prose after the canvas ("The canvas showed ..."), and the hook tells the first answer.
+- Static fallback: chapter 1.4 tells the whole story in prose after the canvas ("The canvas showed ..."), and the hook tells the first answer.
 
 ## Controls
 Shared stepper controls only. No numeric inputs: the claim is about which facts reach the answer, not about quantities.
@@ -48,7 +48,7 @@ Three lanes and seven arrows. Tones: warn on the generic answer (fits most shops
 - Step 7 is a loop on the "You" lane; its label "decide, then test" sits to the right of the lane, inside 340px.
 - Chips are kept short (under 25 characters) so they wrap cleanly on a phone.
 - Numbers match the chapter exactly: a budget of $300, nothing monthly, cash at the counter, hosting already paid for this year.
-- Classification matches chapter 1.2: all four facts in step 3 are context (who the customers are, how they pay, the budget, what the shop already has), as the chapter defines context; the email fact in step 6 is the kind "nobody wrote it down".
+- Classification matches chapter 1.4: all four facts in step 3 are context (who the customers are, how they pay, the budget, what the shop already has), as the chapter defines context; the email fact in step 6 is the kind "nobody wrote it down".
 
 ## Accessibility
 Shared stepper keyboard support and focus ring; `summary` gives the whole flow for screen readers; every tone has a text badge, so colour is never the only signal.
@@ -58,10 +58,10 @@ Shared stepper keyboard support and focus ring; `summary` gives the whole flow f
 - [x] The model is tested: registry consistency and label-fit tests, once the orchestrator registers the slug.
 - [x] The design is simple and legible: three lanes, seven steps.
 - [x] Prediction before (chapter predict, first line of `tryThis`), transfer check after (two MCQs).
-- [x] Reader fallback exists: the prose in chapter 1.2.
+- [x] Reader fallback exists: the prose in chapter 1.4.
 
 ## Build plan
 `packages/learning-ui/src/canvas/ai-missing-context/data.ts`, export `aiMissingContext` (SequenceSpec). To be registered by the orchestrator in `packages/learning-ui/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.
 
 ## Placement
-Chapter 1.2, after the predict in "What happens when the facts go in", before "Where it goes wrong".
+Chapter 1.4, after the predict in "What happens when the facts go in", before "Where it goes wrong".

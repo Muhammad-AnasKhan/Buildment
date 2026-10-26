@@ -1,0 +1,50 @@
+---
+artifact: canvas-spec
+course: career-brand
+chapter: "3.5"
+beat: 6
+slug: career-m3-phone-export
+kind: scene
+playable: false
+version: 1
+owner: interaction-designer
+---
+
+# Canvas spec: No laptop? Read the export
+
+## Teaching claim
+You can do this module on a phone. Read a supplied dashboard export and answer the six questions, or bring a number from a real job with permission. Running k6, Lighthouse or EXPLAIN is optional.
+
+## Why this visual
+A phone with the six questions beside it shows the no-install path in one picture, with the laptop as a later, optional step.
+
+## Data
+This is the only place in the course that mentions Areej's equipment. State it as a plain fact (she works mostly on a phone and a shared laptop and plans laptop work for hours when the power is on). Do not make it a story.
+
+```json
+{
+  "title": "No laptop? Read the export",
+  "purpose": "On a phone, Areej reads a dashboard export and answers the six questions about it. The shared laptop is optional, for later, if she wants to run a test herself.",
+  "limits": "The no-install path is a full path, not a lesser one: it teaches reading a number you did not set up. Tools named in this module carry 'checked 2026-10'; trust your own screen.",
+  "hint": "Six questions, one phone.",
+  "scene": {
+    "width": 420,
+    "height": 330,
+    "actors": [
+      { "id": "questions", "label": "Questions", "kind": "note", "sub": "six in turn", "x": 62, "y": 110 },
+      { "id": "phone", "label": "Her phone", "kind": "phone", "sub": "reads export", "x": 358, "y": 110 },
+      { "id": "laptop", "label": "Laptop", "kind": "server", "sub": "later, optional", "x": 210, "y": 250 }
+    ],
+    "events": [
+      { "kind": "fly", "at": 0.3, "dur": 1.0, "from": "questions", "to": "phone", "label": "ask six" },
+      { "kind": "say", "at": 1.4, "actor": "phone", "text": "answers here", "tone": "good" },
+      { "kind": "say", "at": 2.6, "actor": "laptop", "text": "optional tests", "tone": "accent" },
+      { "kind": "verdict", "at": 3.4, "text": "You can do this on a phone", "tone": "good" }
+    ],
+    "loop": 7
+  }
+}
+```
+
+## What the learner should notice
+Nothing in the picture needs a laptop to understand. The laptop is where the optional measurement would run.

@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { runChecks } from "@/lab/net/checks";
-import { runCommand } from "@/lab/net/commands";
-import { buildWorld } from "@/lab/net/model";
-import { checkPlan } from "@/lab/net/plan";
-import { validateTopology } from "@/lab/net/validate";
-import { netExploreOffice } from "@/lab/net-explore-office/data";
-import { netLabFixOffice } from "@/lab/net-lab-fix-office/data";
-import { netLabPlanSchool } from "@/lab/net-lab-plan-school/data";
-import { labView } from "@/lab/Lab";
-import type { NetTopology } from "@/lab/net/model";
+import { runChecks } from "@buildment/learning-ui/labs/net/checks";
+import { runCommand } from "@buildment/learning-ui/labs/net/commands";
+import { buildWorld } from "@buildment/learning-ui/labs/net/model";
+import { checkPlan } from "@buildment/learning-ui/labs/net/plan";
+import { validateTopology } from "@buildment/learning-ui/labs/net/validate";
+import { netExploreOffice } from "@buildment/learning-ui/labs/net-explore-office/data";
+import { netLabFixOffice } from "@buildment/learning-ui/labs/net-lab-fix-office/data";
+import { netLabPlanSchool } from "@buildment/learning-ui/labs/net-lab-plan-school/data";
+import { labView } from "@buildment/learning-ui/labs/Lab";
+import type { NetTopology } from "@buildment/learning-ui/labs/net/model";
 
 describe("net-lab-fix-office", () => {
   const topology = netLabFixOffice.topology as NetTopology;
@@ -111,7 +111,7 @@ describe("net validation and views", () => {
 
 describe("net lab solutions", () => {
   it("the fault and plan labs carry solutions the validator has proved", async () => {
-    const { validateLabSpec } = await import("@/lab/types");
+    const { validateLabSpec } = await import("@buildment/learning-ui/labs/types");
     expect(netLabFixOffice.solution?.steps?.length).toBeGreaterThan(0);
     expect(netLabPlanSchool.solution?.blocks).toBeDefined();
     expect(validateLabSpec(netLabFixOffice)).toEqual([]);
@@ -119,14 +119,14 @@ describe("net lab solutions", () => {
   });
 
   it("a solution that leaves a check failing is reported", async () => {
-    const { validateSolution } = await import("@/lab/net/validate");
+    const { validateSolution } = await import("@buildment/learning-ui/labs/net/validate");
     const steps = (netLabFixOffice.solution?.steps ?? []).filter((s) => s.device !== "r2");
     const problems = validateSolution({ summary: "partial", steps }, { topology: netLabFixOffice.topology, checks: netLabFixOffice.checks });
     expect(problems).toContain('after the solution, check "server-pc1" still fails');
   });
 
   it("a fault or plan lab without a solution is refused", async () => {
-    const { validateLabSpec } = await import("@/lab/types");
+    const { validateLabSpec } = await import("@buildment/learning-ui/labs/types");
     expect(validateLabSpec({ ...netLabFixOffice, solution: undefined })).toContain("a fault lab needs a solution");
   });
 });

@@ -1,6 +1,6 @@
 import type { SequenceSpec } from "../renderers/sequence/types";
 
-// Learn and Build with AI course, chapter 1.2 "What AI does not know".
+// Learn and Build with AI course, chapter 1.4 "What AI does not know".
 // Majd asks a chat assistant the same question twice for a print shop's order
 // form: alone it gives a generic plan, with four facts only he knows it gives a
 // plan that fits; one fact nobody wrote down still has to come from the owner.
