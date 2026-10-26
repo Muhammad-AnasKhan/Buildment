@@ -756,6 +756,75 @@ import { netM3SceneNeedMac } from "./net-m3-scene-need-mac/data";
 import { netM3SplitBroadcast } from "./net-m3-split-broadcast/data";
 import { netM3SplitFilter } from "./net-m3-split-filter/data";
 import { netM3SwitchLearning } from "./net-m3-switch-learning/data";
+import { netM4MacLocal } from "./net-m4-mac-local/data";
+import { netM4MacPerHop } from "./net-m4-mac-per-hop/data";
+import { netM4MacRemote } from "./net-m4-mac-remote/data";
+import { netM4ReplayRouter } from "./net-m4-replay-router/data";
+import { netM4RouteDefault } from "./net-m4-route-default/data";
+import { netM4RouteGet } from "./net-m4-route-get/data";
+import { netM4RouteMatches } from "./net-m4-route-matches/data";
+import { netM4RouteMetric } from "./net-m4-route-metric/data";
+import { netM4RouteReorder } from "./net-m4-route-reorder/data";
+import { netM4RouteTable } from "./net-m4-route-table/data";
+import { netM4SilentRouter } from "./net-m4-silent-router/data";
+import { netM4TimeExceeded } from "./net-m4-time-exceeded/data";
+import { netM4TracerouteProbes } from "./net-m4-traceroute-probes/data";
+import { netM4TtlCountdown } from "./net-m4-ttl-countdown/data";
+import { netM5FiveNumbers } from "./net-m5-five-numbers/data";
+import { netM5LaptopAddress } from "./net-m5-laptop-address/data";
+import { netM5ListenAll } from "./net-m5-listen-all/data";
+import { netM5ListenLoopback } from "./net-m5-listen-loopback/data";
+import { netM5MatchReplies } from "./net-m5-match-replies/data";
+import { netM5PhoneLocalhost } from "./net-m5-phone-localhost/data";
+import { netM5ReplayConversation } from "./net-m5-replay-conversation/data";
+import { netM5SceneLateAudio } from "./net-m5-scene-late-audio/data";
+import { netM5SceneLossyLink } from "./net-m5-scene-lossy-link/data";
+import { netM5SceneTwoTabs } from "./net-m5-scene-two-tabs/data";
+import { netM5SocketsPorts } from "./net-m5-sockets-ports/data";
+import { netM5SortResend } from "./net-m5-sort-resend/data";
+import { netM5SortTcpUdp } from "./net-m5-sort-tcp-udp/data";
+import { netM5TcpLossAck } from "./net-m5-tcp-loss-ack/data";
+import { netM5TcpLossResend } from "./net-m5-tcp-loss-resend/data";
+import { netM5TcpLossTimeline } from "./net-m5-tcp-loss-timeline/data";
+import { netM5UdpLossTimeline } from "./net-m5-udp-loss-timeline/data";
+import { netM6CgnatLayers } from "./net-m6-cgnat-layers/data";
+import { netM6Conntrack } from "./net-m6-conntrack/data";
+import { netM6FilterRule } from "./net-m6-filter-rule/data";
+import { netM6ForwardRule } from "./net-m6-forward-rule/data";
+import { netM6HomeRouterFirstLook } from "./net-m6-home-router-first-look/data";
+import { netM6InboundUnsolicited } from "./net-m6-inbound-unsolicited/data";
+import { netM6NatClash } from "./net-m6-nat-clash/data";
+import { netM6NatIdleExpire } from "./net-m6-nat-idle-expire/data";
+import { netM6NatKeepalive } from "./net-m6-nat-keepalive/data";
+import { netM6NatRewrite } from "./net-m6-nat-rewrite/data";
+import { netM6NatTableFills } from "./net-m6-nat-table-fills/data";
+import { netM6ReplayForwardGuest } from "./net-m6-replay-forward-guest/data";
+import { netM6ReplayMasquerade } from "./net-m6-replay-masquerade/data";
+import { netM6RouteLeak } from "./net-m6-route-leak/data";
+import { netM6SceneQuietChat } from "./net-m6-scene-quiet-chat/data";
+import { netM7DhcpFourMessages } from "./net-m7-dhcp-four-messages/data";
+import { netM7DhcpPool } from "./net-m7-dhcp-pool/data";
+import { netM7DnsEmptyCache } from "./net-m7-dns-empty-cache/data";
+import { netM7DnsWarmCache } from "./net-m7-dns-warm-cache/data";
+import { netM7ReplayChallenge5 } from "./net-m7-replay-challenge-5/data";
+import { netM7SceneFacebookMissing } from "./net-m7-scene-facebook-missing/data";
+import { netM7SceneNoAddress } from "./net-m7-scene-no-address/data";
+import { netM7SortWhoAnswers } from "./net-m7-sort-who-answers/data";
+import { netM7TtlOneResolver } from "./net-m7-ttl-one-resolver/data";
+import { netM7TtlThreeResolvers } from "./net-m7-ttl-three-resolvers/data";
+import { netM8JourneyDns } from "./net-m8-journey-dns/data";
+import { netM8JourneyFirstByte } from "./net-m8-journey-first-byte/data";
+import { netM8JourneyGateway } from "./net-m8-journey-gateway/data";
+import { netM8JourneyLeaseArp } from "./net-m8-journey-lease-arp/data";
+import { netM8JourneyNatHop } from "./net-m8-journey-nat-hop/data";
+import { netM8JourneyReply } from "./net-m8-journey-reply/data";
+import { netM8ReplayCapstone1 } from "./net-m8-replay-capstone-1/data";
+import { netM8ReplayCapstone2 } from "./net-m8-replay-capstone-2/data";
+import { netM8ReplayCapstone3 } from "./net-m8-replay-capstone-3/data";
+import { netM8ReplayCapstone4 } from "./net-m8-replay-capstone-4/data";
+import { netM9Ipv6Addresses } from "./net-m9-ipv6-addresses/data";
+import { netM9Ipv6Filter } from "./net-m9-ipv6-filter/data";
+import { netM9Ipv6VsNat } from "./net-m9-ipv6-vs-nat/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -1524,6 +1593,75 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "net-m3-split-broadcast": netM3SplitBroadcast,
   "net-m3-split-filter": netM3SplitFilter,
   "net-m3-switch-learning": netM3SwitchLearning,
+  "net-m4-mac-local": netM4MacLocal,
+  "net-m4-mac-per-hop": netM4MacPerHop,
+  "net-m4-mac-remote": netM4MacRemote,
+  "net-m4-replay-router": netM4ReplayRouter,
+  "net-m4-route-default": netM4RouteDefault,
+  "net-m4-route-get": netM4RouteGet,
+  "net-m4-route-matches": netM4RouteMatches,
+  "net-m4-route-metric": netM4RouteMetric,
+  "net-m4-route-reorder": netM4RouteReorder,
+  "net-m4-route-table": netM4RouteTable,
+  "net-m4-silent-router": netM4SilentRouter,
+  "net-m4-time-exceeded": netM4TimeExceeded,
+  "net-m4-traceroute-probes": netM4TracerouteProbes,
+  "net-m4-ttl-countdown": netM4TtlCountdown,
+  "net-m5-five-numbers": netM5FiveNumbers,
+  "net-m5-laptop-address": netM5LaptopAddress,
+  "net-m5-listen-all": netM5ListenAll,
+  "net-m5-listen-loopback": netM5ListenLoopback,
+  "net-m5-match-replies": netM5MatchReplies,
+  "net-m5-phone-localhost": netM5PhoneLocalhost,
+  "net-m5-replay-conversation": netM5ReplayConversation,
+  "net-m5-scene-late-audio": netM5SceneLateAudio,
+  "net-m5-scene-lossy-link": netM5SceneLossyLink,
+  "net-m5-scene-two-tabs": netM5SceneTwoTabs,
+  "net-m5-sockets-ports": netM5SocketsPorts,
+  "net-m5-sort-resend": netM5SortResend,
+  "net-m5-sort-tcp-udp": netM5SortTcpUdp,
+  "net-m5-tcp-loss-ack": netM5TcpLossAck,
+  "net-m5-tcp-loss-resend": netM5TcpLossResend,
+  "net-m5-tcp-loss-timeline": netM5TcpLossTimeline,
+  "net-m5-udp-loss-timeline": netM5UdpLossTimeline,
+  "net-m6-cgnat-layers": netM6CgnatLayers,
+  "net-m6-conntrack": netM6Conntrack,
+  "net-m6-filter-rule": netM6FilterRule,
+  "net-m6-forward-rule": netM6ForwardRule,
+  "net-m6-home-router-first-look": netM6HomeRouterFirstLook,
+  "net-m6-inbound-unsolicited": netM6InboundUnsolicited,
+  "net-m6-nat-clash": netM6NatClash,
+  "net-m6-nat-idle-expire": netM6NatIdleExpire,
+  "net-m6-nat-keepalive": netM6NatKeepalive,
+  "net-m6-nat-rewrite": netM6NatRewrite,
+  "net-m6-nat-table-fills": netM6NatTableFills,
+  "net-m6-replay-forward-guest": netM6ReplayForwardGuest,
+  "net-m6-replay-masquerade": netM6ReplayMasquerade,
+  "net-m6-route-leak": netM6RouteLeak,
+  "net-m6-scene-quiet-chat": netM6SceneQuietChat,
+  "net-m7-dhcp-four-messages": netM7DhcpFourMessages,
+  "net-m7-dhcp-pool": netM7DhcpPool,
+  "net-m7-dns-empty-cache": netM7DnsEmptyCache,
+  "net-m7-dns-warm-cache": netM7DnsWarmCache,
+  "net-m7-replay-challenge-5": netM7ReplayChallenge5,
+  "net-m7-scene-facebook-missing": netM7SceneFacebookMissing,
+  "net-m7-scene-no-address": netM7SceneNoAddress,
+  "net-m7-sort-who-answers": netM7SortWhoAnswers,
+  "net-m7-ttl-one-resolver": netM7TtlOneResolver,
+  "net-m7-ttl-three-resolvers": netM7TtlThreeResolvers,
+  "net-m8-journey-dns": netM8JourneyDns,
+  "net-m8-journey-first-byte": netM8JourneyFirstByte,
+  "net-m8-journey-gateway": netM8JourneyGateway,
+  "net-m8-journey-lease-arp": netM8JourneyLeaseArp,
+  "net-m8-journey-nat-hop": netM8JourneyNatHop,
+  "net-m8-journey-reply": netM8JourneyReply,
+  "net-m8-replay-capstone-1": netM8ReplayCapstone1,
+  "net-m8-replay-capstone-2": netM8ReplayCapstone2,
+  "net-m8-replay-capstone-3": netM8ReplayCapstone3,
+  "net-m8-replay-capstone-4": netM8ReplayCapstone4,
+  "net-m9-ipv6-addresses": netM9Ipv6Addresses,
+  "net-m9-ipv6-filter": netM9Ipv6Filter,
+  "net-m9-ipv6-vs-nat": netM9Ipv6VsNat,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
