@@ -3,6 +3,9 @@ import { BlockMap, type BlockMapConfig } from "./block-map";
 import { CommitStory } from "./commit-story";
 import { ContextPicker } from "./context-picker";
 import { FlipDeck } from "./flip-deck";
+import { BudgetStack, type BudgetStackConfig } from "./budget-stack";
+import { PhraseFixer, type PhraseFixerConfig } from "./phrase-fixer";
+import { SlotCard, type SlotCardConfig } from "./slot-card";
 import { Sorter, type SorterConfig } from "./sorter";
 import { WordSampler } from "./word-sampler";
 import type { CommitStoryConfig } from "../models/commit-story";
@@ -73,6 +76,29 @@ export function makeWordSamplerCanvas(config: WordSamplerConfig): ComponentType<
   }
   WordSamplerCanvas.displayName = "WordSamplerCanvas";
   return WordSamplerCanvas;
+}
+export function makePhraseFixerCanvas(config: PhraseFixerConfig): ComponentType<CanvasProps> {
+  function PhraseFixerCanvas({ title, limits }: CanvasProps) {
+    return <PhraseFixer title={title} limits={limits} {...config} />;
+  }
+  PhraseFixerCanvas.displayName = "PhraseFixerCanvas";
+  return PhraseFixerCanvas;
+}
+
+export function makeBudgetStackCanvas(config: BudgetStackConfig): ComponentType<CanvasProps> {
+  function BudgetStackCanvas({ title, limits }: CanvasProps) {
+    return <BudgetStack title={title} limits={limits} {...config} />;
+  }
+  BudgetStackCanvas.displayName = "BudgetStackCanvas";
+  return BudgetStackCanvas;
+}
+
+export function makeSlotCardCanvas(config: SlotCardConfig): ComponentType<CanvasProps> {
+  function SlotCardCanvas({ title, limits }: CanvasProps) {
+    return <SlotCard title={title} limits={limits} {...config} />;
+  }
+  SlotCardCanvas.displayName = "SlotCardCanvas";
+  return SlotCardCanvas;
 }
 
 export function makeSpecimenCompareCanvas(config: SpecimenCompareConfig): ComponentType<CanvasProps> {

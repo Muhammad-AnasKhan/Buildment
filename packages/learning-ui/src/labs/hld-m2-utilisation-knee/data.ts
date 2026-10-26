@@ -4,11 +4,11 @@ import type { HldLabSpec } from "../types";
 export const hldM2UtilisationKnee: HldLabSpec = {
   slug: "hld-m2-utilisation-knee",
   family: "hld",
-  title: "The utilisation knee",
+  title: "The point where waiting explodes (the utilisation knee)",
   purpose: "Push load into one app tier and watch p99 climb once it passes the knee.",
   limits:
-    "A steady-state model, not a real cloud. No cold starts, no noisy neighbours, illustrative prices only.",
-  hints: ["Add a second app server before the first one passes about 70% busy."],
+    "A simplified model, not a real cloud. No slow starts, no noisy neighbours, and made-up prices.",
+  hints: ["Add a second app server before the first one passes about 70% busy (the utilisation knee)."],
   allowedComponents: kindsInFamily("hld"),
   startingBoard: {
     nodes: [

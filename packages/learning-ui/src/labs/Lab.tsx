@@ -13,11 +13,11 @@ export function labView(spec: LabSpec): "hld-board" | "db-placeholder" {
   return spec.family === "hld" ? "hld-board" : "db-placeholder";
 }
 
-function LabFrame({ title, purpose, limits, children }: { title: string; purpose: string; limits: string; children: ReactNode }) {
+function LabFrame({ eyebrow, title, purpose, limits, children }: { eyebrow: string; title: string; purpose: string; limits: string; children: ReactNode }) {
   return (
     <figure className="not-prose my-8">
       <figcaption className="mb-2">
-        <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Explore</div>
+        <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{eyebrow}</div>
         <div className="text-lg font-semibold">{title}</div>
         <p className="text-sm text-muted-foreground">{purpose}</p>
       </figcaption>
@@ -38,7 +38,7 @@ export function Lab({ spec, slug }: { spec?: LabSpec | null; slug?: unknown }) {
   }
 
   return (
-    <LabFrame title={resolvedSpec.title} purpose={resolvedSpec.purpose} limits={resolvedSpec.limits}>
+    <LabFrame eyebrow={resolvedSpec.family === "hld" && resolvedSpec.challenge ? "Visual challenge" : "Explore"} title={resolvedSpec.title} purpose={resolvedSpec.purpose} limits={resolvedSpec.limits}>
       {resolvedSpec.family === "hld" ? <HldBoard spec={resolvedSpec} /> : <p className="text-sm text-muted-foreground">The schema board loads in the full lab.</p>}
     </LabFrame>
   );
