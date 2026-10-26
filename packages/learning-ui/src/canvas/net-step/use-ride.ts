@@ -2,8 +2,8 @@
 
 import { useLayoutEffect, useState, type RefObject } from "react";
 
-/** How long the packet takes to ride one link: inside the 400 to 700 ms the spec asks for. */
-export const RIDE_MS = 550;
+/** How long the packet takes to ride one link: slow enough to read the chips as they move (learner feedback, 2026-10-26). */
+export const RIDE_MS = 1400;
 
 type Ride = { key: string | null; t: number };
 

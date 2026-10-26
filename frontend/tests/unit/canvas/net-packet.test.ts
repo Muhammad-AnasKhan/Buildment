@@ -835,16 +835,16 @@ describe("the broadcast scene", () => {
       // Every message in flight finds a clear place for its label at some moment of its trip.
       chipTops(scene, frame);
     }
-    const mid = sceneFrame(scene, 0.55);
+    const mid = sceneFrame(scene, 0.99);
     expect(mid.packets).toHaveLength(3);
     expect(chipTops(scene, mid).every((top) => top !== null)).toBe(true);
-    const reply = sceneFrame(scene, 2.05);
+    const reply = sceneFrame(scene, 3.69);
     expect(reply.packets).toHaveLength(1);
     expect(chipTops(scene, reply)[0]).not.toBeNull();
   });
 
   it("has the phone say it is the one and the others say they hear and do not reply", () => {
-    const frame = sceneFrame(scene, 2);
+    const frame = sceneFrame(scene, 3.6);
     const sub = (id: string) => frame.actors.find((a) => a.id === id)?.sub;
     expect(sub("phone")).toBe("that is me");
     expect(sub("tv")).toBe("hears, no reply");

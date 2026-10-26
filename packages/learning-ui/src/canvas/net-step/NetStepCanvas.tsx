@@ -39,7 +39,7 @@ export type NetStepCanvasProps = {
   data: NetStepData;
 };
 
-const FADE_IN = "animate-in fade-in duration-300 motion-reduce:animate-none";
+const FADE_IN = "animate-in fade-in duration-700 motion-reduce:animate-none";
 
 const OPTION_BASE = "min-h-11 rounded-lg border px-3 py-2 text-left text-[13px] font-semibold leading-5 transition-colors motion-reduce:transition-none";
 const OPTION_IDLE = "border-border bg-card text-foreground hover:bg-muted";

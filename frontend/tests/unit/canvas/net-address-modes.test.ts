@@ -598,10 +598,10 @@ describe("the two scenes", () => {
     expect(requestsAfter.length).toBeGreaterThan(0);
     const wait = scene.events.find((e) => e.kind === "wait");
     expect(wait && wait.kind === "wait" && wait.actor).toBe("pool");
-    expect(sceneFrame(scene, 3).waits[0].progress).toBeGreaterThan(0);
-    expect(sceneFrame(scene, 3).waits[0].progress).toBeLessThan(1);
-    expect(sceneFrame(scene, 9).waits[0]).toMatchObject({ progress: 1, label: "all gone" });
-    expect(sceneFrame(scene, 12.5).actors.find((a) => a.id === "site")).toMatchObject({ sub: "still answering", tone: "good" });
+    expect(sceneFrame(scene, 5.4).waits[0].progress).toBeGreaterThan(0);
+    expect(sceneFrame(scene, 5.4).waits[0].progress).toBeLessThan(1);
+    expect(sceneFrame(scene, 16.2).waits[0]).toMatchObject({ progress: 1, label: "all gone" });
+    expect(sceneFrame(scene, 22.5).actors.find((a) => a.id === "site")).toMatchObject({ sub: "still answering", tone: "good" });
   });
 
   it("show three homes with the same private address, and a packet to it refused", () => {
@@ -615,7 +615,7 @@ describe("the two scenes", () => {
     for (const ip of routerAddresses) expect(classify(ip), ip).toBe("special");
     const refused = scene.events.find((e) => e.kind === "fly" && e.tone === "bad");
     expect(refused && refused.kind === "fly" && refused.label).toBe("to 192.168.1.23");
-    expect(sceneFrame(scene, 8).actors.find((a) => a.id === "net")).toMatchObject({ sub: "drops it", tone: "bad" });
-    expect(sceneFrame(scene, 8).actors.find((a) => a.id === "l2")?.sub).toBe("sees nothing");
+    expect(sceneFrame(scene, 14.4).actors.find((a) => a.id === "net")).toMatchObject({ sub: "drops it", tone: "bad" });
+    expect(sceneFrame(scene, 14.4).actors.find((a) => a.id === "l2")?.sub).toBe("sees nothing");
   });
 });
