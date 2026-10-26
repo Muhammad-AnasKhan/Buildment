@@ -1,16 +1,38 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { ENROLLMENT_ERROR_CODES, type SelfEnrollResult } from "@/shared/api/catalog";
 import { safeRedirectTo } from "@/shared/lib/safe-redirect";
 import { ApiError } from "@/lib/api-client";
 import { serverApiFetch } from "@/lib/api-server";
+import {
+  PENDING_ENGAGEMENT_COOKIE,
+  PENDING_ENGAGEMENT_MAX_AGE_SECONDS,
+  formatPendingEnrollment,
+} from "@/lib/engagement/pending-event";
 
 function refreshLearnerPages() {
   revalidatePath("/my-courses");
   revalidatePath("/dashboard");
   revalidatePath("/catalog");
+}
+
+/** The redirect leaves no client code running, so the next page reports the enrollment. */
+async function leaveEnrollmentForMascot(courseId: string) {
+  const value = formatPendingEnrollment(courseId);
+  if (!value) return;
+  try {
+    (await cookies()).set(PENDING_ENGAGEMENT_COOKIE, value, {
+      path: "/",
+      maxAge: PENDING_ENGAGEMENT_MAX_AGE_SECONDS,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+  } catch {
+    // Engagement is optional; the enrollment itself already succeeded.
+  }
 }
 
 export async function selfEnrollInCourseAction(formData: FormData): Promise<void> {
@@ -36,17 +58,20 @@ export async function selfEnrollInCourseAction(formData: FormData): Promise<void
   if (result.lifecycle === "PAYMENT_REQUIRED") {
     redirect(`/courses/${result.courseSlug}/checkout`);
   }
+  await leaveEnrollmentForMascot(courseId);
   redirect(returnTo ?? `/courses/${result.courseSlug}`);
 }
 
 /** Simulates a successful checkout until a payment provider is wired. */
 export async function completeEnrollmentPaymentStubAction(formData: FormData): Promise<void> {
   const enrollmentId = String(formData.get("enrollmentId") ?? "");
+  const courseId = String(formData.get("courseId") ?? "");
   if (!enrollmentId) throw new Error("Missing enrollment.");
 
   const result = await serverApiFetch<{ courseSlug: string }>(`/api/v1/enrollments/${enrollmentId}/payment-stub`, {
     method: "POST",
   });
   refreshLearnerPages();
+  if (courseId) await leaveEnrollmentForMascot(courseId);
   redirect(`/courses/${result.courseSlug}`);
 }

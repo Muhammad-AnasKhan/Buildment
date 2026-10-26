@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { HelpThreadDetail } from "./help-thread-detail";
 import type { HelpThreadView } from "@/shared/api/help";
 import { helpUiCopy as copy } from "@/shared/lib/help-ui-copy";
+import { ASK_HELP_EVENT } from "@/lib/engagement/ask-help";
 
 export function AskHelpDialog({
   courseId,
@@ -34,6 +35,13 @@ export function AskHelpDialog({
     if (open && !dialog.open) dialog.showModal();
     if (!open && dialog.open) dialog.close();
   }, [open]);
+
+  // The mascot's "Ask a mentor" button opens this dialog (lib/engagement/ask-help.ts).
+  useEffect(() => {
+    const onAskHelp = () => setOpen(true);
+    window.addEventListener(ASK_HELP_EVENT, onAskHelp);
+    return () => window.removeEventListener(ASK_HELP_EVENT, onAskHelp);
+  }, []);
 
   function close() {
     setOpen(false);

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useTransition } from "react";
 import { saveHeadingNote } from "@/server/actions/heading-note";
+import { trackEngagement } from "@/lib/engagement/client";
 import { StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -43,6 +44,7 @@ export function HeadingNoteButton({ headingId }: { headingId: string }) {
       }
       setSaved(Boolean(body.trim()));
       setOpen(false);
+      if (body.trim()) trackEngagement({ type: "notes_saved", chapterId });
     });
   }
 

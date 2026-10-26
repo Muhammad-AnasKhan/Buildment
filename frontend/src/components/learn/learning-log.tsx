@@ -6,6 +6,7 @@ import {
   type LearningLogQuestionData,
 } from "@buildment/learning-ui/components/learn/learning-log";
 import { saveLearningLogAnswers } from "@/server/actions/learning-log";
+import { trackEngagement } from "@/lib/engagement/client";
 
 type Answers = Record<string, string>;
 const LearningLogContext = createContext<{ chapterId: string; initialAnswers: Answers } | null>(null);
@@ -37,7 +38,9 @@ export function LearningLog(props: {
   const onSave = useCallback(async (answers: Answers) => {
     if (!chapterId) return { ok: false };
     const result = await saveLearningLogAnswers({ chapterId, answers });
-    return result.ok ? result : { ok: false };
+    if (!result.ok) return { ok: false };
+    trackEngagement({ type: "notes_saved", chapterId });
+    return result;
   }, [chapterId]);
   return (
     <SharedLearningLog

@@ -10,8 +10,13 @@ import {
   subscribeNotifications,
 } from "@/lib/notifications/notification-store";
 import { toast } from "@/components/ui/app-toast";
+import { mascotAnnounces } from "@/lib/engagement/client";
 
-const showToast = (item: NotificationItem) => toast(item.body, "info", { title: item.title, href: item.url });
+/** A notification the messenger mascot announces is not toasted as well; the bell still lists it. */
+const showToast = (item: NotificationItem) => {
+  if (mascotAnnounces(item)) return;
+  toast(item.body, "info", { title: item.title, href: item.url });
+};
 
 // However many centers are mounted, one toast listener exists, so a notification toasts once.
 let toastHolders = 0;

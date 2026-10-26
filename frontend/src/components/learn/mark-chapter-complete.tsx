@@ -13,6 +13,7 @@ import { ChapterCompleteCelebrationModal } from "@/components/learn/chapter-comp
 import { scrollToNextCheckpoint } from "@buildment/learning-ui/components/learn/checkpoint-marker";
 import { playFeedback } from "@/lib/sound-feedback";
 import { toast } from "@/components/ui/app-toast";
+import { trackEngagement } from "@/lib/engagement/client";
 
 const MODAL_OPEN_DELAY_MS = 200;
 
@@ -139,6 +140,7 @@ function ChapterCompletionMoment({
       }
       setCompletionSaved(true);
       beginCelebration();
+      trackEngagement({ type: "chapter_completed", chapterId });
       router.refresh();
     });
   }
@@ -201,7 +203,7 @@ function ChapterCompletionMoment({
               Completed
             </span>
           ) : reflectionPending ? (
-            <span className="inline-flex h-10 w-full min-w-[11rem] items-center justify-center rounded-lg border border-border bg-muted px-4 text-sm font-medium text-muted-foreground sm:w-auto">
+            <span className="inline-flex h-10 w-full min-w-44 items-center justify-center rounded-lg border border-border bg-muted px-4 text-sm font-medium text-muted-foreground sm:w-auto">
               Complete your reflection
             </span>
           ) : canMarkComplete ? (
@@ -211,7 +213,7 @@ function ChapterCompletionMoment({
               onClick={onMark}
               loading={pending}
               disabled={pending}
-              className="h-10 w-full min-w-[11rem] rounded-lg px-5 text-sm font-medium sm:w-auto"
+              className="h-10 w-full min-w-44 rounded-lg px-5 text-sm font-medium sm:w-auto"
             >
               {pending ? "Saving…" : "Mark chapter complete"}
             </Button>
@@ -220,7 +222,7 @@ function ChapterCompletionMoment({
               type="button"
               variant="outline"
               onClick={scrollToNextCheckpoint}
-              className="h-10 w-full min-w-[11rem] gap-2 rounded-lg px-5 text-sm font-medium sm:w-auto"
+              className="h-10 w-full min-w-44 gap-2 rounded-lg px-5 text-sm font-medium sm:w-auto"
             >
               <ArrowUp className="size-4 shrink-0" aria-hidden />
               {remaining === 1

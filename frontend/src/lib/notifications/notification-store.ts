@@ -23,6 +23,8 @@ import { ApiError, apiFetch } from "@/lib/api-client";
 const PAGE_SIZE = 20;
 /** A push older than this is shown in the bell but not toasted (it was delivered late). */
 const TOAST_MAX_AGE_MS = 60_000;
+/** A push that arrived while the tab was hidden is toasted on return if it is still this fresh. */
+const DEFERRED_TOAST_MAX_AGE_MS = 5 * 60_000;
 const RETRY_DELAYS_MS = [2_000, 5_000, 15_000, 30_000, 60_000];
 
 export type NotificationState = {
@@ -48,6 +50,11 @@ const listeners = new Set<() => void>();
 const toastListeners = new Set<(item: NotificationItem) => void>();
 /** Ids already toasted in this tab, so a reconnect or duplicate push never toasts twice. */
 const toasted = new Set<string>();
+/**
+ * Pushes that arrived while the tab was hidden (another window covering it counts on Windows),
+ * held until the tab is visible again so the toast, or the mascot, is not lost.
+ */
+let deferredToasts: NotificationItem[] = [];
 
 function setState(patch: Partial<NotificationState>) {
   state = { ...state, ...patch };
@@ -159,12 +166,29 @@ function handleNew(event: NotificationNewEvent) {
 
   const fresh = Date.now() - new Date(notification.createdAt).getTime() < TOAST_MAX_AGE_MS;
   const visible = typeof document !== "undefined" && document.visibilityState === "visible";
-  if (known || toasted.has(notification.id) || !fresh || !visible) {
+  if (known || toasted.has(notification.id) || !fresh) {
     toasted.add(notification.id);
     return;
   }
   toasted.add(notification.id);
+  if (!visible) {
+    deferredToasts.push(notification);
+    return;
+  }
   toastListeners.forEach((listener) => listener(notification));
+}
+
+/** Toasts the pushes held while the tab was hidden, unless they were read or went stale meanwhile. */
+function flushDeferredToasts() {
+  if (document.visibilityState !== "visible" || deferredToasts.length === 0) return;
+  const held = deferredToasts;
+  deferredToasts = [];
+  for (const notification of held) {
+    const current = state.items.find((item) => item.id === notification.id);
+    const fresh = Date.now() - new Date(notification.createdAt).getTime() < DEFERRED_TOAST_MAX_AGE_MS;
+    if (!current || current.readAt || !fresh) continue;
+    toastListeners.forEach((listener) => listener(current));
+  }
 }
 
 function handleRead(event: NotificationReadEvent) {
@@ -244,10 +268,13 @@ function connectStream(): () => void {
   };
 
   void open();
+  document.addEventListener("visibilitychange", flushDeferredToasts);
 
   return () => {
     stopped = true;
     window.clearTimeout(retryTimer);
+    document.removeEventListener("visibilitychange", flushDeferredToasts);
+    deferredToasts = [];
     source?.close();
     source = null;
     setState({ connected: false });

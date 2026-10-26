@@ -435,6 +435,298 @@
   }
 }
 
+/* Mascot (src/components/mascot): the bubble pops in, the body plays one move for its pose,
+   and small parts (waving arm, sparkles, idea bulb, confetti, tea steam) loop briefly. Blinking and the talking mouth
+   are driven from React. Everything here is off when motion is reduced. */
+@keyframes mascot-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(16px) scale(0.9);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes mascot-jump {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  30% {
+    transform: translateY(-14px) scale(0.97, 1.04);
+  }
+  55% {
+    transform: translateY(0) scale(1.06, 0.92);
+  }
+  75% {
+    transform: translateY(-4px) scale(1, 1);
+  }
+}
+
+@keyframes mascot-puff {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes mascot-nod {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  35% {
+    transform: rotate(7deg);
+  }
+  65% {
+    transform: rotate(-2deg);
+  }
+}
+
+@keyframes mascot-tilt {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  30%,
+  70% {
+    transform: rotate(-8deg);
+  }
+}
+
+@keyframes mascot-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-8px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  70% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes mascot-wave {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25%,
+  75% {
+    transform: rotate(-22deg);
+  }
+  50% {
+    transform: rotate(8deg);
+  }
+}
+
+@keyframes mascot-twinkle {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+}
+
+@keyframes mascot-glow {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@keyframes mascot-spin {
+  0% {
+    transform: translateY(0) rotate(0);
+  }
+  45% {
+    transform: translateY(-14px) rotate(200deg);
+  }
+  80% {
+    transform: translateY(0) rotate(360deg);
+  }
+  90% {
+    transform: translateY(0) rotate(360deg) scale(1.05, 0.95);
+  }
+  100% {
+    transform: translateY(0) rotate(360deg);
+  }
+}
+
+@keyframes mascot-fly-in {
+  0% {
+    opacity: 0;
+    transform: translate(48px, -36px) rotate(14deg) scale(0.85);
+  }
+  55% {
+    opacity: 1;
+    transform: translate(-5px, 3px) rotate(-5deg) scale(1.02);
+  }
+  80% {
+    transform: translate(2px, -1px) rotate(2deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0) rotate(0);
+  }
+}
+
+@keyframes mascot-stretch {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  35% {
+    transform: scale(0.94, 1.1);
+  }
+  60% {
+    transform: scale(1.04, 0.96);
+  }
+}
+
+@keyframes mascot-confetti {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.4) rotate(0);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(40deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.9) rotate(220deg);
+  }
+}
+
+@keyframes mascot-steam {
+  0% {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+}
+
+.mascot-enter {
+  animation: mascot-enter 420ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+.mascot-body {
+  transform-origin: 50% 100%;
+}
+
+.mascot-motion-jump {
+  animation: mascot-jump 700ms ease-out 120ms both;
+}
+
+.mascot-motion-puff {
+  animation: mascot-puff 600ms ease-out 120ms both;
+}
+
+.mascot-motion-nod {
+  animation: mascot-nod 650ms ease-in-out 900ms both;
+}
+
+.mascot-motion-tilt {
+  animation: mascot-tilt 1400ms ease-in-out 150ms both;
+}
+
+.mascot-motion-bounce {
+  animation: mascot-bounce 800ms ease-out 120ms both;
+}
+
+.mascot-part-wave {
+  transform-box: view-box;
+  transform-origin: 88px 62px;
+  animation: mascot-wave 900ms ease-in-out 200ms 2 both;
+}
+
+.mascot-part-twinkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mascot-twinkle 700ms ease-in-out 3 both;
+}
+
+.mascot-part-glow {
+  animation: mascot-glow 800ms ease-in-out 3 both;
+}
+
+.mascot-motion-slow-nod {
+  animation: mascot-nod 1100ms ease-in-out 900ms both;
+}
+
+/* Spins around its middle rather than its feet. */
+.mascot-motion-spin {
+  transform-origin: 50% 58%;
+  animation: mascot-spin 850ms cubic-bezier(0.3, 0.7, 0.4, 1) 120ms both;
+}
+
+.mascot-motion-fly-in {
+  animation: mascot-fly-in 750ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.mascot-motion-stretch {
+  animation: mascot-stretch 1300ms ease-in-out 200ms both;
+}
+
+.mascot-part-confetti {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mascot-confetti 1300ms ease-out both;
+}
+
+.mascot-part-steam {
+  animation: mascot-steam 1600ms ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-enter,
+  .mascot-motion-jump,
+  .mascot-motion-puff,
+  .mascot-motion-nod,
+  .mascot-motion-slow-nod,
+  .mascot-motion-tilt,
+  .mascot-motion-bounce,
+  .mascot-motion-spin,
+  .mascot-motion-fly-in,
+  .mascot-motion-stretch,
+  .mascot-part-wave,
+  .mascot-part-twinkle,
+  .mascot-part-glow,
+  .mascot-part-confetti,
+  .mascot-part-steam {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 /* Interactive canvases: a short segment travelling along the active arrow
    (packages/learning-ui/src/canvas/primitives/flow-pulse.tsx). The path has pathLength 100, so the
    dash pattern is in percent of the arrow. Hidden when motion is reduced. */
