@@ -68,6 +68,11 @@ const KIND_ICON: Record<StackKind, typeof BadgeCheck> = { proof: BadgeCheck, fil
 
 const fmt = (v: number) => (Number.isInteger(v) ? String(v) : v.toFixed(1));
 
+/** "1 line", not "1 lines": a plural word unit drops its "s" for exactly one (short units such as "s" stay). */
+function unitFor(n: number, unit: string): string {
+  return n === 1 && /^[a-z]{3,}s$/.test(unit) ? unit.slice(0, -1) : unit;
+}
+
 export function BudgetStack({ title, limits, blocks, budget, unit, budgetLabel, goal, hint, prompt = STACK_DEFAULT_PROMPT, verdicts }: BudgetStackConfig & { title: string; limits: string }) {
   const wrap = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
@@ -252,7 +257,7 @@ export function BudgetStack({ title, limits, blocks, budget, unit, budgetLabel, 
                   </text>
                 ))}
                 <text x={G.block.x + 48} y={metaY} className={cn(NEUTRAL.mutedText, "text-[13px] font-medium tabular-nums")}>
-                  {`${KIND_WORD[b.kind]} · ${fmt(b.cost)} ${unit}`}
+                  {`${KIND_WORD[b.kind]} · ${fmt(b.cost)} ${unitFor(b.cost, unit)}`}
                 </text>
                 {tag ? (
                   <g>
@@ -281,7 +286,7 @@ export function BudgetStack({ title, limits, blocks, budget, unit, budgetLabel, 
           {!stopped ? <path d={`M ${G.phone.x + 2} ${markerY - 6} L ${G.phone.x + 10} ${markerY} L ${G.phone.x + 2} ${markerY + 6} Z`} className={TONES.accent.solidFill} aria-hidden /> : null}
           <rect x={G.pill.x} y={pillY} width={G.pill.w} height={G.pill.h} rx={12} className={cn(stopped && ranOut ? TONES.warn.softFill : TONES.accent.softFill, stopped && ranOut ? TONES.warn.stroke : TONES.accent.stroke)} strokeWidth={1.5} />
           <text x={G.pill.x + G.pill.w / 2} y={pillY + 17} textAnchor="middle" className={cn(stopped && ranOut ? TONES.warn.text : TONES.accent.text, "text-[13px] font-bold tabular-nums")}>
-            {`${stopped ? fmt(spendAll) : fmt(Math.floor(spent))} ${unit}`}
+            {`${stopped ? fmt(spendAll) : fmt(Math.floor(spent))} ${unitFor(stopped ? spendAll : Math.floor(spent), unit)}`}
           </text>
           {stopped ? (
             <text x={G.pill.x + G.pill.w / 2} y={pillY + G.pill.h + 17} textAnchor="middle" className={cn(NEUTRAL.mutedText, "text-[13px] font-semibold")}>
@@ -306,7 +311,7 @@ export function BudgetStack({ title, limits, blocks, budget, unit, budgetLabel, 
               key={b.id}
               type="button"
               aria-pressed={selected === b.id}
-              aria-label={`${b.label}. ${KIND_WORD[b.kind]}, ${fmt(b.cost)} ${unit}. Place ${i + 1} of ${rows.length}. ${row.seen ? "Seen" : "Not seen"} within the budget.${b.note ? ` ${b.note}` : ""}`}
+              aria-label={`${b.label}. ${KIND_WORD[b.kind]}, ${fmt(b.cost)} ${unitFor(b.cost, unit)}. Place ${i + 1} of ${rows.length}. ${row.seen ? "Seen" : "Not seen"} within the budget.${b.note ? ` ${b.note}` : ""}`}
               onClick={() => {
                 if (skipClick.current) {
                   skipClick.current = false;
