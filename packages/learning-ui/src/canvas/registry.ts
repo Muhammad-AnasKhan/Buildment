@@ -707,6 +707,132 @@ import { sysdesignM18ClusterPlay } from "./sysdesign-m18-cluster-play/data";
 import { sysdesignM18PipelineStep } from "./sysdesign-m18-pipeline-step/data";
 import { sysdesignM18CanaryBlast } from "./sysdesign-m18-canary-blast/data";
 import { sysdesignM18CloudExplorer } from "./sysdesign-m18-cloud-explorer/data";
+import { careerM6EmptyPhrases } from "./career-m6-empty-phrases/data";
+import { careerM1FirstLook } from "./career-m1-first-look/data";
+import { careerM3ClaimCard } from "./career-m3-claim-card/data";
+import { careerM1BadgesOrProject } from "./career-m1-badges-or-project/data";
+import { careerM1CheckableOrClaim } from "./career-m1-checkable-or-claim/data";
+import { careerM1DetectorFlag } from "./career-m1-detector-flag/data";
+import { careerM1ErrorsCleaned } from "./career-m1-errors-cleaned/data";
+import { careerM1FoundersPhone } from "./career-m1-founders-phone/data";
+import { careerM1GenericOrTailored } from "./career-m1-generic-or-tailored/data";
+import { careerM1GuessTheWriter } from "./career-m1-guess-the-writer/data";
+import { careerM1HandbookCards } from "./career-m1-handbook-cards/data";
+import { careerM1KitBiasNote } from "./career-m1-kit-bias-note/data";
+import { careerM1OneLink } from "./career-m1-one-link/data";
+import { careerM1OnlyYouCanWrite } from "./career-m1-only-you-can-write/data";
+import { careerM1PileAndDay } from "./career-m1-pile-and-day/data";
+import { careerM1SixtySent } from "./career-m1-sixty-sent/data";
+import { careerM1SmoothLetters } from "./career-m1-smooth-letters/data";
+import { careerM1TenSecondTest } from "./career-m1-ten-second-test/data";
+import { careerM2BestAtWhat } from "./career-m2-best-at-what/data";
+import { careerM2ClaimsUnderPillars } from "./career-m2-claims-under-pillars/data";
+import { careerM2FootballNotebook } from "./career-m2-football-notebook/data";
+import { careerM2FoundVsTeam } from "./career-m2-found-vs-team/data";
+import { careerM2LabelsFade } from "./career-m2-labels-fade/data";
+import { careerM2OneLineOpens } from "./career-m2-one-line-opens/data";
+import { careerM2RoleCard } from "./career-m2-role-card/data";
+import { careerM2SkillsNotAdjectives } from "./career-m2-skills-not-adjectives/data";
+import { careerM2TenOrThree } from "./career-m2-ten-or-three/data";
+import { careerM2ThreeAsks } from "./career-m2-three-asks/data";
+import { careerM2ThreeReplies } from "./career-m2-three-replies/data";
+import { careerM2VolunteerFull } from "./career-m2-volunteer-full/data";
+import { careerM2WhereDetailHelps } from "./career-m2-where-detail-helps/data";
+import { careerM3AskFirst } from "./career-m3-ask-first/data";
+import { careerM3EmptyClaimCard } from "./career-m3-empty-claim-card/data";
+import { careerM3FairTestClaim } from "./career-m3-fair-test-claim/data";
+import { careerM3FiveRuns } from "./career-m3-five-runs/data";
+import { careerM3K6FairTest } from "./career-m3-k6-fair-test/data";
+import { careerM3LeakedKey } from "./career-m3-leaked-key/data";
+import { careerM3MatchWorkToProof } from "./career-m3-match-work-to-proof/data";
+import { careerM3NotMeasured } from "./career-m3-not-measured/data";
+import { careerM3PercentNeedsStart } from "./career-m3-percent-needs-start/data";
+import { careerM3PercentileLine } from "./career-m3-percentile-line/data";
+import { careerM3PercentilesDontAverage } from "./career-m3-percentiles-dont-average/data";
+import { careerM3PhoneExport } from "./career-m3-phone-export/data";
+import { careerM3PlanPair } from "./career-m3-plan-pair/data";
+import { careerM3SameWeek } from "./career-m3-same-week/data";
+import { careerM3SeventyOfWhat } from "./career-m3-seventy-of-what/data";
+import { careerM3SixQuestions } from "./career-m3-six-questions/data";
+import { careerM3TimeSavedNet } from "./career-m3-time-saved-net/data";
+import { careerM3TimingSheet } from "./career-m3-timing-sheet/data";
+import { careerM3WhatElseChanged } from "./career-m3-what-else-changed/data";
+import { careerM3WindowChanges } from "./career-m3-window-changes/data";
+import { careerM4BusSchedule } from "./career-m4-bus-schedule/data";
+import { careerM4FirstRealUser } from "./career-m4-first-real-user/data";
+import { careerM4FixedBox } from "./career-m4-fixed-box/data";
+import { careerM4MatchingQuestion } from "./career-m4-matching-question/data";
+import { careerM4PileOfApps } from "./career-m4-pile-of-apps/data";
+import { careerM4ProjectPage } from "./career-m4-project-page/data";
+import { careerM4RideAppWeekend } from "./career-m4-ride-app-weekend/data";
+import { careerM4RunTheFilter } from "./career-m4-run-the-filter/data";
+import { careerM4ScopeSentence } from "./career-m4-scope-sentence/data";
+import { careerM4SpeedVsUnderstanding } from "./career-m4-speed-vs-understanding/data";
+import { careerM4StudiesDisagree } from "./career-m4-studies-disagree/data";
+import { careerM5Captions } from "./career-m5-captions/data";
+import { careerM5CaseFromRow } from "./career-m5-case-from-row/data";
+import { careerM5DemoAsleep } from "./career-m5-demo-asleep/data";
+import { careerM5DemoLogin } from "./career-m5-demo-login/data";
+import { careerM5DemoStoryboard } from "./career-m5-demo-storyboard/data";
+import { careerM5ExtraSteps } from "./career-m5-extra-steps/data";
+import { careerM5GoogleConsent } from "./career-m5-google-consent/data";
+import { careerM5LinkNobodyOpens } from "./career-m5-link-nobody-opens/data";
+import { careerM5LinksInSixMonths } from "./career-m5-links-in-six-months/data";
+import { careerM5NoHosting } from "./career-m5-no-hosting/data";
+import { careerM5RedactedChart } from "./career-m5-redacted-chart/data";
+import { careerM5RemoveAControl } from "./career-m5-remove-a-control/data";
+import { careerM5SameBox } from "./career-m5-same-box/data";
+import { careerM5ScreenshotFirst } from "./career-m5-screenshot-first/data";
+import { careerM5ShowTheHardPart } from "./career-m5-show-the-hard-part/data";
+import { careerM5SleepThenSignup } from "./career-m5-sleep-then-signup/data";
+import { careerM5StartWithResult } from "./career-m5-start-with-result/data";
+import { careerM5StrangerPath } from "./career-m5-stranger-path/data";
+import { careerM6AdjectivesOrFact } from "./career-m6-adjectives-or-fact/data";
+import { careerM6BuildABullet } from "./career-m6-build-a-bullet/data";
+import { careerM6CopiedWords } from "./career-m6-copied-words/data";
+import { careerM6DutyVsBullet } from "./career-m6-duty-vs-bullet/data";
+import { careerM6FilingCabinet } from "./career-m6-filing-cabinet/data";
+import { careerM6HumaniserNo } from "./career-m6-humaniser-no/data";
+import { careerM6LinesAnyones } from "./career-m6-lines-anyones/data";
+import { careerM6MissingTracker } from "./career-m6-missing-tracker/data";
+import { careerM6NoNumberBullet } from "./career-m6-no-number-bullet/data";
+import { careerM6OldBulletMarked } from "./career-m6-old-bullet-marked/data";
+import { careerM6PasteTest } from "./career-m6-paste-test/data";
+import { careerM6PickAPosting } from "./career-m6-pick-a-posting/data";
+import { careerM6PlainFile } from "./career-m6-plain-file/data";
+import { careerM6TailoringReorder } from "./career-m6-tailoring-reorder/data";
+import { careerM6TestLinks } from "./career-m6-test-links/data";
+import { careerM7CommentEdit } from "./career-m7-comment-edit/data";
+import { careerM7DifferentFeeds } from "./career-m7-different-feeds/data";
+import { careerM7EightWeekLog } from "./career-m7-eight-week-log/data";
+import { careerM7ExperienceEntry } from "./career-m7-experience-entry/data";
+import { careerM7FolkloreCards } from "./career-m7-folklore-cards/data";
+import { careerM7FortyNotes } from "./career-m7-forty-notes/data";
+import { careerM7FreeAccount } from "./career-m7-free-account/data";
+import { careerM7HeadlineParts } from "./career-m7-headline-parts/data";
+import { careerM7HeadlineTravels } from "./career-m7-headline-travels/data";
+import { careerM7LikeGroup } from "./career-m7-like-group/data";
+import { careerM7MoreYes } from "./career-m7-more-yes/data";
+import { careerM7RulesForbid } from "./career-m7-rules-forbid/data";
+import { careerM7SpendTheNotes } from "./career-m7-spend-the-notes/data";
+import { careerM8CanonicalFields } from "./career-m8-canonical-fields/data";
+import { careerM8ChannelVersions } from "./career-m8-channel-versions/data";
+import { careerM8FirstPublishedLine } from "./career-m8-first-published-line/data";
+import { careerM8OpenWithProblem } from "./career-m8-open-with-problem/data";
+import { careerM8PlainWords } from "./career-m8-plain-words/data";
+import { careerM8PostGone } from "./career-m8-post-gone/data";
+import { careerM8SayItBack } from "./career-m8-say-it-back/data";
+import { careerM8SearchPicksOne } from "./career-m8-search-picks-one/data";
+import { careerM8SmallAndAlive } from "./career-m8-small-and-alive/data";
+import { careerM8SpecificsOrTemplate } from "./career-m8-specifics-or-template/data";
+import { careerM8SwapGeneric } from "./career-m8-swap-generic/data";
+import { careerM8TemplateSite } from "./career-m8-template-site/data";
+import { careerM8VisitorJudges } from "./career-m8-visitor-judges/data";
+import { careerM9KeepTheTerm } from "./career-m9-keep-the-term/data";
+import { careerM9LedgerRowShown } from "./career-m9-ledger-row-shown/data";
+import { careerM9LinePicked } from "./career-m9-line-picked/data";
+import { careerM9OneChange } from "./career-m9-one-change/data";
+import { careerM9TapTheFlag } from "./career-m9-tap-the-flag/data";
 import { productM2SpacingGroups } from "./product-m2-spacing-groups/data";
 import { productM5SpotTheSlop } from "./product-m5-spot-the-slop/data";
 import { productM1ProblemOrFeature } from "./product-m1-problem-or-feature/data";
@@ -1532,6 +1658,132 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m18-pipeline-step": sysdesignM18PipelineStep,
   "sysdesign-m18-canary-blast": sysdesignM18CanaryBlast,
   "sysdesign-m18-cloud-explorer": sysdesignM18CloudExplorer,
+  "career-m6-empty-phrases": careerM6EmptyPhrases,
+  "career-m1-first-look": careerM1FirstLook,
+  "career-m3-claim-card": careerM3ClaimCard,
+  "career-m1-badges-or-project": careerM1BadgesOrProject,
+  "career-m1-checkable-or-claim": careerM1CheckableOrClaim,
+  "career-m1-detector-flag": careerM1DetectorFlag,
+  "career-m1-errors-cleaned": careerM1ErrorsCleaned,
+  "career-m1-founders-phone": careerM1FoundersPhone,
+  "career-m1-generic-or-tailored": careerM1GenericOrTailored,
+  "career-m1-guess-the-writer": careerM1GuessTheWriter,
+  "career-m1-handbook-cards": careerM1HandbookCards,
+  "career-m1-kit-bias-note": careerM1KitBiasNote,
+  "career-m1-one-link": careerM1OneLink,
+  "career-m1-only-you-can-write": careerM1OnlyYouCanWrite,
+  "career-m1-pile-and-day": careerM1PileAndDay,
+  "career-m1-sixty-sent": careerM1SixtySent,
+  "career-m1-smooth-letters": careerM1SmoothLetters,
+  "career-m1-ten-second-test": careerM1TenSecondTest,
+  "career-m2-best-at-what": careerM2BestAtWhat,
+  "career-m2-claims-under-pillars": careerM2ClaimsUnderPillars,
+  "career-m2-football-notebook": careerM2FootballNotebook,
+  "career-m2-found-vs-team": careerM2FoundVsTeam,
+  "career-m2-labels-fade": careerM2LabelsFade,
+  "career-m2-one-line-opens": careerM2OneLineOpens,
+  "career-m2-role-card": careerM2RoleCard,
+  "career-m2-skills-not-adjectives": careerM2SkillsNotAdjectives,
+  "career-m2-ten-or-three": careerM2TenOrThree,
+  "career-m2-three-asks": careerM2ThreeAsks,
+  "career-m2-three-replies": careerM2ThreeReplies,
+  "career-m2-volunteer-full": careerM2VolunteerFull,
+  "career-m2-where-detail-helps": careerM2WhereDetailHelps,
+  "career-m3-ask-first": careerM3AskFirst,
+  "career-m3-empty-claim-card": careerM3EmptyClaimCard,
+  "career-m3-fair-test-claim": careerM3FairTestClaim,
+  "career-m3-five-runs": careerM3FiveRuns,
+  "career-m3-k6-fair-test": careerM3K6FairTest,
+  "career-m3-leaked-key": careerM3LeakedKey,
+  "career-m3-match-work-to-proof": careerM3MatchWorkToProof,
+  "career-m3-not-measured": careerM3NotMeasured,
+  "career-m3-percent-needs-start": careerM3PercentNeedsStart,
+  "career-m3-percentile-line": careerM3PercentileLine,
+  "career-m3-percentiles-dont-average": careerM3PercentilesDontAverage,
+  "career-m3-phone-export": careerM3PhoneExport,
+  "career-m3-plan-pair": careerM3PlanPair,
+  "career-m3-same-week": careerM3SameWeek,
+  "career-m3-seventy-of-what": careerM3SeventyOfWhat,
+  "career-m3-six-questions": careerM3SixQuestions,
+  "career-m3-time-saved-net": careerM3TimeSavedNet,
+  "career-m3-timing-sheet": careerM3TimingSheet,
+  "career-m3-what-else-changed": careerM3WhatElseChanged,
+  "career-m3-window-changes": careerM3WindowChanges,
+  "career-m4-bus-schedule": careerM4BusSchedule,
+  "career-m4-first-real-user": careerM4FirstRealUser,
+  "career-m4-fixed-box": careerM4FixedBox,
+  "career-m4-matching-question": careerM4MatchingQuestion,
+  "career-m4-pile-of-apps": careerM4PileOfApps,
+  "career-m4-project-page": careerM4ProjectPage,
+  "career-m4-ride-app-weekend": careerM4RideAppWeekend,
+  "career-m4-run-the-filter": careerM4RunTheFilter,
+  "career-m4-scope-sentence": careerM4ScopeSentence,
+  "career-m4-speed-vs-understanding": careerM4SpeedVsUnderstanding,
+  "career-m4-studies-disagree": careerM4StudiesDisagree,
+  "career-m5-captions": careerM5Captions,
+  "career-m5-case-from-row": careerM5CaseFromRow,
+  "career-m5-demo-asleep": careerM5DemoAsleep,
+  "career-m5-demo-login": careerM5DemoLogin,
+  "career-m5-demo-storyboard": careerM5DemoStoryboard,
+  "career-m5-extra-steps": careerM5ExtraSteps,
+  "career-m5-google-consent": careerM5GoogleConsent,
+  "career-m5-link-nobody-opens": careerM5LinkNobodyOpens,
+  "career-m5-links-in-six-months": careerM5LinksInSixMonths,
+  "career-m5-no-hosting": careerM5NoHosting,
+  "career-m5-redacted-chart": careerM5RedactedChart,
+  "career-m5-remove-a-control": careerM5RemoveAControl,
+  "career-m5-same-box": careerM5SameBox,
+  "career-m5-screenshot-first": careerM5ScreenshotFirst,
+  "career-m5-show-the-hard-part": careerM5ShowTheHardPart,
+  "career-m5-sleep-then-signup": careerM5SleepThenSignup,
+  "career-m5-start-with-result": careerM5StartWithResult,
+  "career-m5-stranger-path": careerM5StrangerPath,
+  "career-m6-adjectives-or-fact": careerM6AdjectivesOrFact,
+  "career-m6-build-a-bullet": careerM6BuildABullet,
+  "career-m6-copied-words": careerM6CopiedWords,
+  "career-m6-duty-vs-bullet": careerM6DutyVsBullet,
+  "career-m6-filing-cabinet": careerM6FilingCabinet,
+  "career-m6-humaniser-no": careerM6HumaniserNo,
+  "career-m6-lines-anyones": careerM6LinesAnyones,
+  "career-m6-missing-tracker": careerM6MissingTracker,
+  "career-m6-no-number-bullet": careerM6NoNumberBullet,
+  "career-m6-old-bullet-marked": careerM6OldBulletMarked,
+  "career-m6-paste-test": careerM6PasteTest,
+  "career-m6-pick-a-posting": careerM6PickAPosting,
+  "career-m6-plain-file": careerM6PlainFile,
+  "career-m6-tailoring-reorder": careerM6TailoringReorder,
+  "career-m6-test-links": careerM6TestLinks,
+  "career-m7-comment-edit": careerM7CommentEdit,
+  "career-m7-different-feeds": careerM7DifferentFeeds,
+  "career-m7-eight-week-log": careerM7EightWeekLog,
+  "career-m7-experience-entry": careerM7ExperienceEntry,
+  "career-m7-folklore-cards": careerM7FolkloreCards,
+  "career-m7-forty-notes": careerM7FortyNotes,
+  "career-m7-free-account": careerM7FreeAccount,
+  "career-m7-headline-parts": careerM7HeadlineParts,
+  "career-m7-headline-travels": careerM7HeadlineTravels,
+  "career-m7-like-group": careerM7LikeGroup,
+  "career-m7-more-yes": careerM7MoreYes,
+  "career-m7-rules-forbid": careerM7RulesForbid,
+  "career-m7-spend-the-notes": careerM7SpendTheNotes,
+  "career-m8-canonical-fields": careerM8CanonicalFields,
+  "career-m8-channel-versions": careerM8ChannelVersions,
+  "career-m8-first-published-line": careerM8FirstPublishedLine,
+  "career-m8-open-with-problem": careerM8OpenWithProblem,
+  "career-m8-plain-words": careerM8PlainWords,
+  "career-m8-post-gone": careerM8PostGone,
+  "career-m8-say-it-back": careerM8SayItBack,
+  "career-m8-search-picks-one": careerM8SearchPicksOne,
+  "career-m8-small-and-alive": careerM8SmallAndAlive,
+  "career-m8-specifics-or-template": careerM8SpecificsOrTemplate,
+  "career-m8-swap-generic": careerM8SwapGeneric,
+  "career-m8-template-site": careerM8TemplateSite,
+  "career-m8-visitor-judges": careerM8VisitorJudges,
+  "career-m9-keep-the-term": careerM9KeepTheTerm,
+  "career-m9-ledger-row-shown": careerM9LedgerRowShown,
+  "career-m9-line-picked": careerM9LinePicked,
+  "career-m9-one-change": careerM9OneChange,
+  "career-m9-tap-the-flag": careerM9TapTheFlag,
   "product-m2-spacing-groups": productM2SpacingGroups,
   "product-m5-spot-the-slop": productM5SpotTheSlop,
   "product-m1-problem-or-feature": productM1ProblemOrFeature,
