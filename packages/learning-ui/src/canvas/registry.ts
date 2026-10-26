@@ -187,6 +187,13 @@ import { netM1SceneBroadcastMac } from "./net-m1-scene-broadcast-mac/data";
 import { netM2ByteBits } from "./net-m2-byte-bits/data";
 import { netM2AddressBits } from "./net-m2-address-bits/data";
 import { netM2AddressDrill } from "./net-m2-address-drill/data";
+import { netM2SceneFreePool } from "./net-m2-scene-free-pool/data";
+import { netM2AllocateClass } from "./net-m2-allocate-class/data";
+import { netM2AllocateCidr } from "./net-m2-allocate-cidr/data";
+import { netM2Prefix } from "./net-m2-prefix/data";
+import { netM2CidrDrill } from "./net-m2-cidr-drill/data";
+import { netM2SceneSameAddress } from "./net-m2-scene-same-address/data";
+import { netM2Classify } from "./net-m2-classify/data";
 import { sysdesignM2Estimator } from "./sysdesign-m2-estimator/data";
 import { sysdesignM2AvailabilityBuilder } from "./sysdesign-m2-availability-builder/data";
 import { sysdesignM1LaunchDayIllustrated } from "./sysdesign-m1-launch-day-illustrated/data";
@@ -1456,6 +1463,13 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "net-m2-byte-bits": netM2ByteBits,
   "net-m2-address-bits": netM2AddressBits,
   "net-m2-address-drill": netM2AddressDrill,
+  "net-m2-scene-free-pool": netM2SceneFreePool,
+  "net-m2-allocate-class": netM2AllocateClass,
+  "net-m2-allocate-cidr": netM2AllocateCidr,
+  "net-m2-prefix": netM2Prefix,
+  "net-m2-cidr-drill": netM2CidrDrill,
+  "net-m2-scene-same-address": netM2SceneSameAddress,
+  "net-m2-classify": netM2Classify,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */

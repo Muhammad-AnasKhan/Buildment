@@ -722,6 +722,13 @@ export const CANVAS_SLUGS = [
   "net-m2-byte-bits",
   "net-m2-address-bits",
   "net-m2-address-drill",
+  "net-m2-scene-free-pool",
+  "net-m2-allocate-class",
+  "net-m2-allocate-cidr",
+  "net-m2-prefix",
+  "net-m2-cidr-drill",
+  "net-m2-scene-same-address",
+  "net-m2-classify",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];

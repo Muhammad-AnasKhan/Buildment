@@ -29,7 +29,7 @@ const W = 420;
 const H = 276;
 const ZERO_BITS: Bits = [0, 0, 0, 0, 0, 0, 0, 0];
 
-type AnswerCardProps = {
+export type AnswerCardProps = {
   x: number;
   y: number;
   w: number;
@@ -40,10 +40,12 @@ type AnswerCardProps = {
   tone?: Tone;
   right?: boolean;
   onPress?: () => void;
+  /** Distance from the card's middle to the text baseline; 9 suits a 30px number. */
+  baseline?: number;
 };
 
 /** A tappable answer in the picture. Once the question is answered it becomes a plain, marked card. */
-function AnswerCard({ x, y, w, h, text, textClass, label, tone, right, onPress }: AnswerCardProps) {
+export function AnswerCard({ x, y, w, h, text, textClass, label, tone, right, onPress, baseline = 9 }: AnswerCardProps) {
   const body = (
     <>
       <rect
@@ -55,7 +57,7 @@ function AnswerCard({ x, y, w, h, text, textClass, label, tone, right, onPress }
         strokeWidth={tone ? 2.5 : 1.5}
         className={cn(tone ? cn(TONES[tone].softFill, TONES[tone].stroke) : cn(NEUTRAL.surface, NEUTRAL.line), SHAPE_TRANSITION)}
       />
-      <text x={x + w / 2} y={y + h / 2 + 9} textAnchor="middle" className={cn(tone ? TONES[tone].text : NEUTRAL.text, "font-bold tabular-nums", textClass)}>
+      <text x={x + w / 2} y={y + h / 2 + baseline} textAnchor="middle" className={cn(tone ? TONES[tone].text : NEUTRAL.text, "font-bold tabular-nums", textClass)}>
         {text}
       </text>
       {right !== undefined ? <ResultMark x={x + w - 24} y={y + 8} right={right} /> : null}
@@ -72,6 +74,42 @@ function AnswerCard({ x, y, w, h, text, textClass, label, tone, right, onPress }
     <SvgButton x={x} y={y} width={w} height={h} rx={14} label={label} onPress={onPress}>
       {body}
     </SvgButton>
+  );
+}
+
+const dotCx = (k: number) => W / 2 + (k - (DRILL_SIZE - 1) / 2) * 32;
+
+/** Progress: five dots, a mark inside each answered one. Drawn at the top of a drill picture. */
+export function ProgressDots({ results, index, setNumber }: { results: (boolean | null)[]; index: number; setNumber: number }) {
+  return (
+    <g aria-hidden="true">
+      <Caption x={12} y={63} anchor="start" strong>{`Set ${setNumber}`}</Caption>
+      {Array.from({ length: DRILL_SIZE }, (_, k) => {
+        const r = results[k];
+        const tone: Tone | null = r === null ? null : r ? "good" : "bad";
+        const here = k === index && r === null;
+        return (
+          <g key={k}>
+            <circle
+              cx={dotCx(k)}
+              cy={58}
+              r={11}
+              strokeWidth={here ? 2.5 : 1.5}
+              className={cn(tone ? cn(TONES[tone].softFill, TONES[tone].stroke) : here ? cn(TONES.accent.softFill, TONES.accent.stroke) : cn(NEUTRAL.surface, NEUTRAL.line), SHAPE_TRANSITION)}
+            />
+            {r === null ? (
+              <text x={dotCx(k)} y={63} textAnchor="middle" className={cn(here ? TONES.accent.text : NEUTRAL.mutedText, "text-[13px] font-semibold")}>
+                {k + 1}
+              </text>
+            ) : r ? (
+              <Check x={dotCx(k) - 7} y={51} width={14} height={14} strokeWidth={3} className={cn("fill-none", TONES.good.stroke)} />
+            ) : (
+              <X x={dotCx(k) - 7} y={51} width={14} height={14} strokeWidth={3} className={cn("fill-none", TONES.bad.stroke)} />
+            )}
+          </g>
+        );
+      })}
+    </g>
   );
 }
 
@@ -147,8 +185,6 @@ export function DrillView({ title, purpose, limits }: DrillProps) {
     return {};
   };
 
-  const dotCx = (k: number) => W / 2 + (k - (DRILL_SIZE - 1) / 2) * 32;
-
   return (
     <BeatFrame
       label={title}
@@ -166,35 +202,7 @@ export function DrillView({ title, purpose, limits }: DrillProps) {
         <desc id={`${ids}d`}>{`${purpose} Set ${setNumber}, question ${index + 1} of ${DRILL_SIZE}.`}</desc>
         <DotGrid width={W} height={H} />
 
-        {/* Progress: five dots, a mark inside each answered one. */}
-        <g aria-hidden="true">
-          <Caption x={12} y={63} anchor="start" strong>{`Set ${setNumber}`}</Caption>
-          {Array.from({ length: DRILL_SIZE }, (_, k) => {
-            const r = results[k];
-            const tone: Tone | null = r === null ? null : r ? "good" : "bad";
-            const here = k === index && r === null;
-            return (
-              <g key={k}>
-                <circle
-                  cx={dotCx(k)}
-                  cy={58}
-                  r={11}
-                  strokeWidth={here ? 2.5 : 1.5}
-                  className={cn(tone ? cn(TONES[tone].softFill, TONES[tone].stroke) : here ? cn(TONES.accent.softFill, TONES.accent.stroke) : cn(NEUTRAL.surface, NEUTRAL.line), SHAPE_TRANSITION)}
-                />
-                {r === null ? (
-                  <text x={dotCx(k)} y={63} textAnchor="middle" className={cn(here ? TONES.accent.text : NEUTRAL.mutedText, "text-[13px] font-semibold")}>
-                    {k + 1}
-                  </text>
-                ) : r ? (
-                  <Check x={dotCx(k) - 7} y={51} width={14} height={14} strokeWidth={3} className={cn("fill-none", TONES.good.stroke)} />
-                ) : (
-                  <X x={dotCx(k) - 7} y={51} width={14} height={14} strokeWidth={3} className={cn("fill-none", TONES.bad.stroke)} />
-                )}
-              </g>
-            );
-          })}
-        </g>
+        <ProgressDots results={results} index={index} setNumber={setNumber} />
 
         {/* The question card, with the feedback line at its foot. */}
         <g aria-hidden="true">

@@ -21,26 +21,51 @@ import {
   sumText,
   toggleBit,
   ipToNumber,
+  addrConfigSchema,
+  type AddrConfig,
   type Bits,
   type ParseError,
 } from "../models/net-address";
 import { BitCard, Caption, ControlButton, bitName, useReducedMotion, useTimers } from "./bit-parts";
+import { AllocateView } from "./AllocateView";
+import { ClassifyView } from "./ClassifyView";
+import { CidrDrillView } from "./CidrDrillView";
 import { DrillView } from "./DrillView";
+import { PrefixView } from "./PrefixView";
 
-export type AddressMode = "byte" | "address" | "drill";
+export type AddressMode = "byte" | "address" | "drill" | "allocate" | "prefix" | "classify";
 
 export type AddressBitsProps = {
   title: string;
   purpose: string;
   limits: string;
   mode: AddressMode;
+  /**
+   * Plain, serialisable parameters for the allocate, prefix, classify and CIDR
+   * drill modes, checked against `addrConfigSchema`. The byte, address and
+   * bits drill modes need none.
+   */
+  config?: AddrConfig;
 };
 
-/** The address renderer: one component, three modes (byte, address, drill). */
-export function AddressBitsCanvas({ mode, title, purpose, limits }: AddressBitsProps) {
+/** The address renderer: one component, six modes (byte, address, drill, allocate, prefix, classify). */
+export function AddressBitsCanvas({ mode, title, purpose, limits, config }: AddressBitsProps) {
   if (mode === "byte") return <ByteView title={title} purpose={purpose} limits={limits} />;
   if (mode === "address") return <AddressView title={title} purpose={purpose} limits={limits} />;
-  return <DrillView title={title} purpose={purpose} limits={limits} />;
+  if (mode === "drill") {
+    const parsed = config ? addrConfigSchema.safeParse(config) : null;
+    if (parsed?.success && parsed.data.mode === "drill" && parsed.data.questions === "cidr") return <CidrDrillView title={title} purpose={purpose} limits={limits} />;
+    return <DrillView title={title} purpose={purpose} limits={limits} />;
+  }
+  const parsed = addrConfigSchema.safeParse(config);
+  if (!parsed.success || parsed.data.mode !== mode) {
+    return <p role="alert" className="not-prose my-6 text-sm text-muted-foreground">This picture could not load its settings.</p>;
+  }
+  const data = parsed.data;
+  if (data.mode === "allocate") return <AllocateView title={title} purpose={purpose} limits={limits} config={data} />;
+  if (data.mode === "prefix") return <PrefixView title={title} purpose={purpose} limits={limits} config={data} />;
+  if (data.mode === "classify") return <ClassifyView title={title} purpose={purpose} limits={limits} config={data} />;
+  return null;
 }
 
 type ViewProps = { title: string; purpose: string; limits: string };
