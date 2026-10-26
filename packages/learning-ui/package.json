@@ -321,6 +321,7 @@
     "./lib/integrity/use-quiz-integrity": "./src/lib/integrity/use-quiz-integrity.ts",
     "./lib/mermaid-dark-patch": "./src/lib/mermaid-dark-patch.ts",
     "./lib/parse-prose-markdown": "./src/lib/parse-prose-markdown.tsx",
+    "./lib/use-speech-input": "./src/lib/use-speech-input.ts",
     "./lib/utils": "./src/lib/utils.ts",
     "./shared/api/integrity": "./src/shared/api/integrity.ts",
     "./shared/blocks/roadmap/schema": "./src/shared/blocks/roadmap/schema.ts",
