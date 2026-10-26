@@ -14,7 +14,7 @@ export const whoLeadsThisCallQuery: SceneSpec = {
     actors: [
       { id: "manar", label: "Manar", kind: "user", sub: "freelancer", x: 60, y: 110 },
       { id: "ai", label: "AI assistant", kind: "server", sub: "drafts", x: 360, y: 110 },
-      { id: "copy", label: "Copy of data", kind: "database", sub: "3 shops", x: 60, y: 228 },
+      { id: "copy", label: "Data copy", kind: "database", sub: "3 shops", x: 60, y: 228 },
       { id: "report", label: "Report", kind: "note", sub: "monthly sales", x: 360, y: 228 },
     ],
     events: [

@@ -20,11 +20,11 @@ export const shortLessonLoop: StateMachineSpec = {
     { id: "notes", name: "Your notes", sub: "your own words", col: 0, row: 1 },
   ],
   edges: [
-    { from: "ask", to: "lesson", label: "get lesson" },
+    { from: "ask", to: "lesson", label: "ask" },
     { from: "lesson", to: "quiz", label: "quiz" },
     { from: "quiz", to: "check", label: "pick" },
     { from: "check", to: "notes", label: "write it" },
-    { from: "lesson", to: "lesson", label: "paste as notes", kind: "rejected" },
+    { from: "lesson", to: "notes", label: "paste", kind: "rejected" },
     { from: "quiz", to: "quiz", label: "skip check", kind: "rejected" },
   ],
   steps: [

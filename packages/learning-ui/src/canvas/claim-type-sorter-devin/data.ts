@@ -16,7 +16,7 @@ export const claimTypeSorterDevin: SceneSpec = {
     actors: [
       { id: "maker", label: "Maker", kind: "user", sub: "sells Devin", x: 70, y: 100 },
       { id: "public", label: "Readers", kind: "note", sub: "hear both", x: 300, y: 100 },
-      { id: "outside", label: "Outside team", kind: "worker", sub: "20 real tasks", x: 70, y: 222 },
+      { id: "outside", label: "Testers", kind: "worker", sub: "20 real tasks", x: 70, y: 222 },
     ],
     events: [
       { kind: "fly", at: 0, dur: 0.9, from: "maker", to: "public", label: "13.86% solved" },

@@ -17,13 +17,13 @@ export const firstOrResearchedAnswerDates: SceneSpec = {
     height: 330,
     actors: [
       { id: "ai", label: "Assistant", kind: "server", sub: "text ends 2025", x: 70, y: 100 },
-      { id: "page", label: "Program page", kind: "note", sub: "2026 rules", x: 350, y: 100 },
+      { id: "page", label: "Rules page", kind: "note", sub: "2026 rules", x: 350, y: 100 },
     ],
-    strip: { y: 300, from: 0, to: 24, unit: "months", caption: "months since January 2025", every: 6 },
+    strip: { y: 300, from: 0, to: 24, unit: "", caption: "months since January 2025", every: 6 },
     events: [
       { kind: "tag", at: 0.4, row: 0, value: 8, label: "text ends (example)" },
       { kind: "mark", at: 0.5, actor: "ai", tone: "warn" },
-      { kind: "tag", at: 1.8, row: 1, value: 21, label: "2026 rule", tone: "good" },
+      { kind: "tag", at: 1.8, row: 0, value: 21, label: "2026 rule", tone: "good" },
       { kind: "mark", at: 1.9, actor: "page", tone: "good" },
       { kind: "line", at: 3.0, value: 21.8, label: "today" },
       { kind: "fly", at: 3.6, dur: 1.2, from: "ai", to: "page", label: "old rule" },

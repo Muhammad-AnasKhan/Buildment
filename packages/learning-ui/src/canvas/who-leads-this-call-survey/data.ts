@@ -18,7 +18,7 @@ export const whoLeadsThisCallSurvey: SceneSpec = {
       { id: "planning", label: "Planning", kind: "note", sub: "who keeps it?", x: 210, y: 110 },
       { id: "review", label: "Code review", kind: "note", sub: "who keeps it?", x: 360, y: 110 },
       { id: "testing", label: "Testing", kind: "note", sub: "who keeps it?", x: 135, y: 228 },
-      { id: "writing", label: "Writing code", kind: "note", sub: "who keeps it?", x: 285, y: 228 },
+      { id: "writing", label: "Coding", kind: "note", sub: "who keeps it?", x: 285, y: 228 },
     ],
     events: [
       { kind: "say", at: 0.8, actor: "deploy", text: "75.8% keep it", tone: "accent" },
