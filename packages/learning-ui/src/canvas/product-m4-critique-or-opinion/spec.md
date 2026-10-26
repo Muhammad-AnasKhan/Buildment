@@ -1,0 +1,12 @@
+# Canvas spec: product-m4-critique-or-opinion
+
+- **Course and chapter:** product-sense, 4.4 "Study real products: collect, compare, critique", beat 2 ("A critique, an opinion and a guess").
+- **Renderer:** custom, on the reusable `Sorter` primitive (`primitives/sorter.tsx`, model `models/sorter.ts`) with three buckets. This folder holds only data. Reason: telling a critique from an opinion from a guess is a skill the learner practises by sorting real-looking sentences and reading the rule behind a wrong bucket.
+- **Claim:** A critique names what you see, a rule and proof. An opinion is a feeling about the look. A guess claims to know why the maker did something, which no one can see on the screen. Only a critique helps the maker decide what to change. A date is a habit of a good log, and it does not decide the kind of sentence.
+- **Model:** nine sentences about the made-up apps A, B and C from the same-task canvas. Critique (3): placeholder-only labels in App A with GOV.UK's rule (dated); free hours first in App B tied to the task (no date); a map and no times in App C tied to the task (dated). Opinion (3): "9 Nov: App B just feels more professional" (dated), "make the Book button pop more", "I love the colours in App C". Guess (3): "9 Nov: App A asks five questions because the owner wants data" (dated), App C hides times so people stay longer, App B copied its layout from a famous app.
+- **Inputs:** tap a bucket or drag the card onto a tray. Each wrong try shows a rule written for that card and bucket.
+- **What changes:** bucket counts, the card, and the rule shown after a wrong try.
+- **What the learner should notice:** a date does not make a critique, and a critique without a date is still a critique that needs one. What marks it is a screen fact, a rule and proof. A feeling about the look is an opinion, and a claim about why the maker did it is a guess, with or without a date.
+- **Accessibility:** tray buttons are labelled with the name, gloss and count; a polite live region reads each result and rule; text at least 11.5 units; every rule fits two lines of 60 characters.
+- **Limits (in the data):** real sentences mix the three kinds, so the canvas asks what each sentence mainly does. The apps and the dates are made up.
+- **Sources:** critique against objectives, and a facilitator turning opinions into questions [A31]; the GOV.UK Design System on labels and its reasons [A74]; the course's own rule never to guess a company's reasons.
