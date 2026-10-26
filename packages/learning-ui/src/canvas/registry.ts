@@ -707,6 +707,43 @@ import { sysdesignM18ClusterPlay } from "./sysdesign-m18-cluster-play/data";
 import { sysdesignM18PipelineStep } from "./sysdesign-m18-pipeline-step/data";
 import { sysdesignM18CanaryBlast } from "./sysdesign-m18-canary-blast/data";
 import { sysdesignM18CloudExplorer } from "./sysdesign-m18-cloud-explorer/data";
+import { onePercentADay } from "./one-percent-a-day/data";
+import { shareTheIdeaNotTheScore } from "./share-the-idea-not-the-score/data";
+import { adhanToFirstTakbir } from "./adhan-to-first-takbir/data";
+import { fivePrayersOneDay } from "./five-prayers-one-day/data";
+import { aPageAfterFajr } from "./a-page-after-fajr/data";
+import { missedPortionMakeUp } from "./missed-portion-make-up/data";
+import { morningEveningStarterSet } from "./morning-evening-starter-set/data";
+import { adhkarOnTheWay } from "./adhkar-on-the-way/data";
+import { afterTheSalam } from "./after-the-salam/data";
+import { beforeSleepRecitations } from "./before-sleep-recitations/data";
+import { alMulkByHeart } from "./al-mulk-by-heart/data";
+import { weeklyReview } from "./weekly-review/data";
+import { insideThePrayer } from "./inside-the-prayer/data";
+import { understandOneVerse } from "./understand-one-verse/data";
+import { theNightRoutine } from "./the-night-routine/data";
+import { aDayOfSmallDuas } from "./a-day-of-small-duas/data";
+import { theSunnahMeal } from "./the-sunnah-meal/data";
+import { wordsBetweenPeople } from "./words-between-people/data";
+import { stayingInWudu } from "./staying-in-wudu/data";
+import { theFitrahWeek } from "./the-fitrah-week/data";
+import { aloneWithAllah } from "./alone-with-allah/data";
+import { cleaningTheHeart } from "./cleaning-the-heart/data";
+import { livingWithAllah } from "./living-with-allah/data";
+import { beforeYouSpeak } from "./before-you-speak/data";
+import { guardingEyesAndEars } from "./guarding-eyes-and-ears/data";
+import { beforeYouForward } from "./before-you-forward/data";
+import { aHotMoment } from "./a-hot-moment/data";
+import { rightsFriendsHumour } from "./rights-friends-humour/data";
+import { mercyAndCourage } from "./mercy-and-courage/data";
+import { parentsFirst } from "./parents-first/data";
+import { aHomeThatRuns } from "./a-home-that-runs/data";
+import { aDayWithAPlan } from "./a-day-with-a-plan/data";
+import { learningEveryDay } from "./learning-every-day/data";
+import { halalInHand } from "./halal-in-hand/data";
+import { aFridayDoneWell } from "./a-friday-done-well/data";
+import { quietSadaqah } from "./quiet-sadaqah/data";
+import { aRamadanDay } from "./a-ramadan-day/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
@@ -1428,6 +1465,43 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m18-pipeline-step": sysdesignM18PipelineStep,
   "sysdesign-m18-canary-blast": sysdesignM18CanaryBlast,
   "sysdesign-m18-cloud-explorer": sysdesignM18CloudExplorer,
+  "one-percent-a-day": onePercentADay,
+  "share-the-idea-not-the-score": shareTheIdeaNotTheScore,
+  "adhan-to-first-takbir": adhanToFirstTakbir,
+  "five-prayers-one-day": fivePrayersOneDay,
+  "a-page-after-fajr": aPageAfterFajr,
+  "missed-portion-make-up": missedPortionMakeUp,
+  "morning-evening-starter-set": morningEveningStarterSet,
+  "adhkar-on-the-way": adhkarOnTheWay,
+  "after-the-salam": afterTheSalam,
+  "before-sleep-recitations": beforeSleepRecitations,
+  "al-mulk-by-heart": alMulkByHeart,
+  "weekly-review": weeklyReview,
+  "inside-the-prayer": insideThePrayer,
+  "understand-one-verse": understandOneVerse,
+  "the-night-routine": theNightRoutine,
+  "a-day-of-small-duas": aDayOfSmallDuas,
+  "the-sunnah-meal": theSunnahMeal,
+  "words-between-people": wordsBetweenPeople,
+  "staying-in-wudu": stayingInWudu,
+  "the-fitrah-week": theFitrahWeek,
+  "alone-with-allah": aloneWithAllah,
+  "cleaning-the-heart": cleaningTheHeart,
+  "living-with-allah": livingWithAllah,
+  "before-you-speak": beforeYouSpeak,
+  "guarding-eyes-and-ears": guardingEyesAndEars,
+  "before-you-forward": beforeYouForward,
+  "a-hot-moment": aHotMoment,
+  "rights-friends-humour": rightsFriendsHumour,
+  "mercy-and-courage": mercyAndCourage,
+  "parents-first": parentsFirst,
+  "a-home-that-runs": aHomeThatRuns,
+  "a-day-with-a-plan": aDayWithAPlan,
+  "learning-every-day": learningEveryDay,
+  "halal-in-hand": halalInHand,
+  "a-friday-done-well": aFridayDoneWell,
+  "quiet-sadaqah": quietSadaqah,
+  "a-ramadan-day": aRamadanDay,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
