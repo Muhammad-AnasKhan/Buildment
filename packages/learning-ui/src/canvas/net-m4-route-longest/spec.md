@@ -1,0 +1,9 @@
+# Canvas spec: net-m4-route-longest
+
+- **Course and chapter:** networking, 4.2 (routing tables). Renderer spec: `agent-ip/work/networking/canvas-specs/netstep-renderer.md`.
+- **Renderer:** the generic `[netstep]` beat canvas, `NetStepCanvas.tsx` in `net-step/`. Model and schema: `models/net-step.ts`.
+- **Claim:** When several rows of a routing table match a destination, the router uses the most specific one, the longest prefix, not the first row and not the default.
+- **Input:** **Next** plays the next step; **Start over** goes back to the first. At step 2 the learner first taps which of the three matching rows the router uses; the step plays after the pick, and the feedback says why. No other control.
+- **Data:** a laptop, a router and three next hops (Router A, Router B, a provider). The router's table has `10.0.0.0/8` via 10.0.0.2, `10.1.0.0/16` via 10.1.0.2 and `default` via 203.0.113.2. A packet from 192.168.1.23 to 10.1.2.3 with TTL 64 arrives; after the pick the /16 row is lit; the packet leaves toward Router B with TTL 63 (verdict: "Longest prefix wins: the /16"). TTL is 64 at the sender and one less per router, as the lab showed. The table is a model view of `ip route`, not a recording; public addresses come from the documentation range.
+- **Accessibility:** the caption, the packet fields and the lit row are in a polite live region and in the picture's description; pick options are native buttons with `aria-pressed` and say "your pick" and "right answer" in words; the changed TTL carries the word "changed"; the packet rides its link in about 550 ms and shows at once under reduced motion.
+- **Limits (in the fold):** one router and three rows; real tables are bigger; ties between rows of the same length are broken by the metric, which is not drawn; the addresses are made up.

@@ -1,0 +1,200 @@
+# Recorded 2026-10-26 by running the challenge template in the course lab image (networking-lab, ubuntu:24.04 digest 68ee2200, Docker Desktop for Windows). '### CMD' lines are what was typed; the lines after are the real output.
+##### SESSION setup-checker
+### CMD: bash toolkit/check-setup.sh
+PASS in-lab
+PASS repo-visible
+PASS tool-ip
+PASS tool-nft
+PASS tool-tcpdump
+PASS tool-dnsmasq
+PASS tool-dig
+PASS tool-traceroute
+PASS tool-ping
+PASS tool-nc
+PASS tool-curl
+PASS tool-conntrack
+PASS tool-busybox
+PASS tool-nano
+PASS tool-dhclient
+PASS namespace-create
+PASS veth-create
+PASS line-endings
+RESULT: all checks passed
+### EXIT: 0
+### CMD: bash challenges/challenge-0-setup/part-1-install/test.sh
+PASS in-lab
+PASS repo-visible
+PASS tool-ip
+PASS tool-nft
+PASS tool-tcpdump
+PASS tool-dnsmasq
+PASS tool-dig
+PASS tool-traceroute
+PASS tool-ping
+PASS tool-nc
+PASS tool-curl
+PASS tool-conntrack
+PASS tool-busybox
+PASS tool-nano
+PASS tool-dhclient
+PASS namespace-create
+PASS veth-create
+PASS line-endings
+RESULT: all checks passed
+### EXIT: 0
+##### SESSION own-numbers
+### CMD: bash challenges/challenge-0-setup/part-2-your-numbers/check-numbers.sh /tmp/numbers-dotted.txt
+address   192.168.1.23
+mask      255.255.255.0 = /24
+prefix    192.168.1.23/24
+gateway   192.168.1.1
+dns       192.168.1.1
+public    203.0.113.45
+PASS my-numbers.txt looks right
+### EXIT: 0
+### CMD: bash challenges/challenge-0-setup/part-2-your-numbers/check-numbers.sh /tmp/numbers-hex.txt
+address   192.168.1.23
+mask      0xffffff00 = 255.255.255.0 = /24
+prefix    192.168.1.23/24
+gateway   192.168.1.1
+dns       192.168.1.1
+public    203.0.113.45
+PASS my-numbers.txt looks right
+### EXIT: 0
+### CMD: bash challenges/challenge-0-setup/part-2-your-numbers/test.sh
+PASS 255.255.255.0 prints /24
+PASS 0xffffff00 prints /24
+PASS 0xfffff000 prints /20
+PASS a file with Windows line endings is read correctly
+PASS a mask with three numbers is refused: mask needs four numbers
+PASS 255.0.255.0 is refused: not a mask
+PASS an address with three numbers is refused
+FAIL your my-numbers.txt has a problem. Checker said: FAIL address: address is empty. Paste the number from your computer, for example 192.168.1.23
+FAIL gateway: gateway is empty. Paste the number from your computer, for example 192.168.1.1
+FAIL dns: dns is empty. Paste the number from your computer, for example 192.168.1.1
+FAIL public: public is empty. Paste the number from your computer, for example 203.0.113.45
+FAIL mask: mask is empty. Paste the number from your computer, for example 255.255.255.0
+RESULT: 5 problem(s). Run cat my-numbers.txt to see what the checker read.
+RESULT: 1 check(s) failed
+### EXIT: 1
+##### SESSION virtual-cable
+### CMD: bash challenges/challenge-1-two-computers/part-1-virtual-cable/cable.sh
+8: veth-laptop@if7: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    link/ether 92:84:33:2d:7d:3f brd ff:ff:ff:ff:ff:ff link-netns phone
+    inet 192.168.1.10/24 scope global veth-laptop
+       valid_lft forever preferred_lft forever
+    inet6 fe80::9084:33ff:fe2d:7d3f/64 scope link tentative 
+       valid_lft forever preferred_lft forever
+7: veth-phone@if8: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    link/ether da:31:b9:f1:3f:18 brd ff:ff:ff:ff:ff:ff link-netns laptop
+    inet 192.168.1.20/24 scope global veth-phone
+       valid_lft forever preferred_lft forever
+    inet6 fe80::d831:b9ff:fef1:3f18/64 scope link tentative 
+       valid_lft forever preferred_lft forever
+Done. Next: ip netns exec laptop ping -c2 -W1 192.168.1.20
+### EXIT: 0
+### CMD: ip netns exec laptop ping -c 2 192.168.1.20
+PING 192.168.1.20 (192.168.1.20) 56(84) bytes of data.
+64 bytes from 192.168.1.20: icmp_seq=1 ttl=64 time=0.542 ms
+64 bytes from 192.168.1.20: icmp_seq=2 ttl=64 time=0.039 ms
+
+--- 192.168.1.20 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 0.039/0.290/0.542/0.251 ms
+### EXIT: 0
+### CMD: ip netns exec phone timeout 5 tcpdump -n -v -e -l -i veth-phone -c 4 2>/dev/null & sleep 1; ip netns exec laptop ip neigh flush all; ip netns exec laptop ping -c 1 192.168.1.20 >/dev/null; wait
+20:19:43.499837 92:84:33:2d:7d:3f > 33:33:00:00:00:16, ethertype IPv6 (0x86dd), length 90: (hlim 1, next-header Options (0) payload length: 36) fe80::9084:33ff:fe2d:7d3f > ff02::16: HBH (rtalert: 0x0000) (padn) [icmp6 sum ok] ICMP6, multicast listener report v2, 1 group record(s) [gaddr ff02::1:ff2d:7d3f to_ex, 0 source(s)]
+20:19:43.499853 92:84:33:2d:7d:3f > 33:33:00:00:00:02, ethertype IPv6 (0x86dd), length 70: (hlim 255, next-header ICMPv6 (58) payload length: 16) fe80::9084:33ff:fe2d:7d3f > ff02::2: [icmp6 sum ok] ICMP6, router solicitation, length 16
+	  source link-address option (1), length 8 (1): 92:84:33:2d:7d:3f
+20:19:43.947799 da:31:b9:f1:3f:18 > 33:33:00:00:00:16, ethertype IPv6 (0x86dd), length 90: (hlim 1, next-header Options (0) payload length: 36) fe80::d831:b9ff:fef1:3f18 > ff02::16: HBH (rtalert: 0x0000) (padn) [icmp6 sum ok] ICMP6, multicast listener report v2, 1 group record(s) [gaddr ff02::1:fff1:3f18 to_ex, 0 source(s)]
+20:19:43.947819 da:31:b9:f1:3f:18 > 33:33:00:00:00:02, ethertype IPv6 (0x86dd), length 70: (hlim 255, next-header ICMPv6 (58) payload length: 16) fe80::d831:b9ff:fef1:3f18 > ff02::2: [icmp6 sum ok] ICMP6, router solicitation, length 16
+	  source link-address option (1), length 8 (1): da:31:b9:f1:3f:18
+### EXIT: 0
+### CMD: ip netns exec laptop ping -c 2 -W 1 192.168.1.99
+PING 192.168.1.99 (192.168.1.99) 56(84) bytes of data.
+
+--- 192.168.1.99 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1029ms
+
+### EXIT: 1
+### CMD: bash challenges/challenge-1-two-computers/part-1-virtual-cable/test.sh
+PASS namespaces laptop and phone exist
+PASS laptop has 192.168.1.10/24 on veth-laptop
+PASS phone has 192.168.1.20/24 on veth-phone
+PASS laptop pings 192.168.1.20 with 0% loss
+PASS phone pings 192.168.1.10 with 0% loss
+PASS 192.168.1.99 gets no answer (2 sent, 0 received), as it should
+NOTE capture.txt not found yet. Do the capture step in the README, then run this test again.
+RESULT: all checks passed
+### EXIT: 0
+##### SESSION wrong-mask
+### CMD: bash challenges/challenge-1-two-computers/part-2-wrong-mask/wrong-mask.sh
+10: veth-laptop@if9: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000 link-netns phone
+    inet 192.168.1.10/24 scope global veth-laptop
+       valid_lft forever preferred_lft forever
+9: veth-phone@if10: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000 link-netns laptop
+    inet 192.168.1.20/28 scope global veth-phone
+       valid_lft forever preferred_lft forever
+Done. laptop is 192.168.1.10/24 and phone is 192.168.1.20/28.
+### EXIT: 0
+### CMD: bash challenges/challenge-1-two-computers/part-2-wrong-mask/test.sh
+--- masks disagree: laptop /24, phone /28
+PASS laptop to 192.168.1.20: silent loss (2 sent, 0 received)
+PASS phone to 192.168.1.10: Network is unreachable
+PASS laptop to 192.168.1.99: silent loss (2 sent, 0 received)
+PASS the ARP request for 192.168.1.99 goes unanswered
+--- the fix: both /24
+PASS laptop to 192.168.1.20: 0% loss
+PASS phone to 192.168.1.10: 0% loss
+RESULT: all checks passed
+### EXIT: 0
+##### SESSION rerun-safety
+### CMD: bash challenges/challenge-1-two-computers/part-1-virtual-cable/cable.sh
+16: veth-laptop@if15: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    link/ether a6:36:9e:9b:c0:cd brd ff:ff:ff:ff:ff:ff link-netns phone
+    inet 192.168.1.10/24 scope global veth-laptop
+       valid_lft forever preferred_lft forever
+    inet6 fe80::a436:9eff:fe9b:c0cd/64 scope link tentative 
+       valid_lft forever preferred_lft forever
+15: veth-phone@if16: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    link/ether 62:7f:70:7b:2e:a0 brd ff:ff:ff:ff:ff:ff link-netns laptop
+    inet 192.168.1.20/24 scope global veth-phone
+       valid_lft forever preferred_lft forever
+    inet6 fe80::607f:70ff:fe7b:2ea0/64 scope link tentative 
+       valid_lft forever preferred_lft forever
+Done. Next: ip netns exec laptop ping -c2 -W1 192.168.1.20
+### EXIT: 0
+### CMD: bash challenges/challenge-1-two-computers/part-1-virtual-cable/test.sh
+PASS namespaces laptop and phone exist
+PASS laptop has 192.168.1.10/24 on veth-laptop
+PASS phone has 192.168.1.20/24 on veth-phone
+PASS laptop pings 192.168.1.20 with 0% loss
+PASS phone pings 192.168.1.10 with 0% loss
+PASS 192.168.1.99 gets no answer (2 sent, 0 received), as it should
+NOTE capture.txt not found yet. Do the capture step in the README, then run this test again.
+RESULT: all checks passed
+### EXIT: 0
+##### SESSION not-privileged
+PASS in-lab
+PASS repo-visible
+PASS tool-ip
+PASS tool-nft
+PASS tool-tcpdump
+PASS tool-dnsmasq
+PASS tool-dig
+PASS tool-traceroute
+PASS tool-ping
+PASS tool-nc
+PASS tool-curl
+PASS tool-conntrack
+PASS tool-busybox
+PASS tool-nano
+PASS tool-dhclient
+FAIL no-privilege: a namespace could not be made. The lab needs --privileged. Type exit, then start it with: bash lab/start.sh
+PASS line-endings
+RESULT: 1 check(s) failed. Read the first FAIL line. Its name tells you which check.
+### EXIT: 1
+##### SESSION outside-lab
+FAIL not-in-lab: this is not the lab. On your computer run: bash lab/start.sh (Windows PowerShell: .\lab\start.ps1). Then run this checker again inside the lab. If you did that, rebuild the image: docker build -t networking-lab lab/
+RESULT: 1 check(s) failed. Read the first FAIL line. Its name tells you which check.
+### EXIT: 1

@@ -173,6 +173,27 @@ import { sysdesignM2KneePlay } from "./sysdesign-m2-knee-play/data";
 import { sysdesignM2FanOutPlay } from "./sysdesign-m2-fan-out-play/data";
 import { sysdesignM1DesignLoop } from "./sysdesign-m1-design-loop/data";
 import { sysdesignM2LatencyLadder } from "./sysdesign-m2-latency-ladder/data";
+import { netM1PacketDns } from "./net-m1-packet-dns/data";
+import { netM1PacketEcho } from "./net-m1-packet-echo/data";
+import { netM1PacketOwnLines } from "./net-m1-packet-own-lines/data";
+import { netM1PacketChange } from "./net-m1-packet-change/data";
+import { netM1PacketJobs } from "./net-m1-packet-jobs/data";
+import { netM1PacketWrap } from "./net-m1-packet-wrap/data";
+import { netM1PacketUnwrap } from "./net-m1-packet-unwrap/data";
+import { netM1ReplaySetupChecker } from "./net-m1-replay-setup-checker/data";
+import { netM1ReplayOwnNumbers } from "./net-m1-replay-own-numbers/data";
+import { netM1ReplayVirtualCable } from "./net-m1-replay-virtual-cable/data";
+import { netM1SceneBroadcastMac } from "./net-m1-scene-broadcast-mac/data";
+import { netM2ByteBits } from "./net-m2-byte-bits/data";
+import { netM2AddressBits } from "./net-m2-address-bits/data";
+import { netM2AddressDrill } from "./net-m2-address-drill/data";
+import { netM2SceneFreePool } from "./net-m2-scene-free-pool/data";
+import { netM2AllocateClass } from "./net-m2-allocate-class/data";
+import { netM2AllocateCidr } from "./net-m2-allocate-cidr/data";
+import { netM2Prefix } from "./net-m2-prefix/data";
+import { netM2CidrDrill } from "./net-m2-cidr-drill/data";
+import { netM2SceneSameAddress } from "./net-m2-scene-same-address/data";
+import { netM2Classify } from "./net-m2-classify/data";
 import { sysdesignM2Estimator } from "./sysdesign-m2-estimator/data";
 import { sysdesignM2AvailabilityBuilder } from "./sysdesign-m2-availability-builder/data";
 import { sysdesignM1LaunchDayIllustrated } from "./sysdesign-m1-launch-day-illustrated/data";
@@ -938,6 +959,102 @@ import { feedbackToNextProject } from "./feedback-to-next-project/data";
 import { whyNotThatChoice } from "./why-not-that-choice/data";
 import { fiftyTimesTest } from "./fifty-times-test/data";
 import { demoTheyCanOpen } from "./demo-they-can-open/data";
+import { netM3ArpExchange } from "./net-m3-arp-exchange/data";
+import { netM3Broadcast } from "./net-m3-broadcast/data";
+import { netM3MaskAnd } from "./net-m3-mask-and/data";
+import { netM3MaskBits } from "./net-m3-mask-bits/data";
+import { netM3MaskDrill } from "./net-m3-mask-drill/data";
+import { netM3OverlapLine } from "./net-m3-overlap-line/data";
+import { netM3OverlapNest } from "./net-m3-overlap-nest/data";
+import { netM3SplitBoundary } from "./net-m3-split-boundary/data";
+import { netM3SplitDrill } from "./net-m3-split-drill/data";
+import { netM3SplitPlace } from "./net-m3-split-place/data";
+import { netM3SplitSize } from "./net-m3-split-size/data";
+import { netM3WideMask } from "./net-m3-wide-mask/data";
+import { netM4RouteLongest } from "./net-m4-route-longest/data";
+import { netM9V6Drill } from "./net-m9-v6-drill/data";
+import { netM9V6Expand } from "./net-m9-v6-expand/data";
+import { netM9V6Invalid } from "./net-m9-v6-invalid/data";
+import { netM9V6Shorten } from "./net-m9-v6-shorten/data";
+import { netM3ArpNoOwner } from "./net-m3-arp-no-owner/data";
+import { netM3ArpTable } from "./net-m3-arp-table/data";
+import { netM3FlatBroadcast } from "./net-m3-flat-broadcast/data";
+import { netM3ReplayWrongMask } from "./net-m3-replay-wrong-mask/data";
+import { netM3SceneFlatSchool } from "./net-m3-scene-flat-school/data";
+import { netM3SceneLateOverlap } from "./net-m3-scene-late-overlap/data";
+import { netM3SceneNeedMac } from "./net-m3-scene-need-mac/data";
+import { netM3SplitBroadcast } from "./net-m3-split-broadcast/data";
+import { netM3SplitFilter } from "./net-m3-split-filter/data";
+import { netM3SwitchLearning } from "./net-m3-switch-learning/data";
+import { netM4MacLocal } from "./net-m4-mac-local/data";
+import { netM4MacPerHop } from "./net-m4-mac-per-hop/data";
+import { netM4MacRemote } from "./net-m4-mac-remote/data";
+import { netM4ReplayRouter } from "./net-m4-replay-router/data";
+import { netM4RouteDefault } from "./net-m4-route-default/data";
+import { netM4RouteGet } from "./net-m4-route-get/data";
+import { netM4RouteMatches } from "./net-m4-route-matches/data";
+import { netM4RouteMetric } from "./net-m4-route-metric/data";
+import { netM4RouteReorder } from "./net-m4-route-reorder/data";
+import { netM4RouteTable } from "./net-m4-route-table/data";
+import { netM4SilentRouter } from "./net-m4-silent-router/data";
+import { netM4TimeExceeded } from "./net-m4-time-exceeded/data";
+import { netM4TracerouteProbes } from "./net-m4-traceroute-probes/data";
+import { netM4TtlCountdown } from "./net-m4-ttl-countdown/data";
+import { netM5FiveNumbers } from "./net-m5-five-numbers/data";
+import { netM5LaptopAddress } from "./net-m5-laptop-address/data";
+import { netM5ListenAll } from "./net-m5-listen-all/data";
+import { netM5ListenLoopback } from "./net-m5-listen-loopback/data";
+import { netM5MatchReplies } from "./net-m5-match-replies/data";
+import { netM5PhoneLocalhost } from "./net-m5-phone-localhost/data";
+import { netM5ReplayConversation } from "./net-m5-replay-conversation/data";
+import { netM5SceneLateAudio } from "./net-m5-scene-late-audio/data";
+import { netM5SceneLossyLink } from "./net-m5-scene-lossy-link/data";
+import { netM5SceneTwoTabs } from "./net-m5-scene-two-tabs/data";
+import { netM5SocketsPorts } from "./net-m5-sockets-ports/data";
+import { netM5SortResend } from "./net-m5-sort-resend/data";
+import { netM5SortTcpUdp } from "./net-m5-sort-tcp-udp/data";
+import { netM5TcpLossAck } from "./net-m5-tcp-loss-ack/data";
+import { netM5TcpLossResend } from "./net-m5-tcp-loss-resend/data";
+import { netM5TcpLossTimeline } from "./net-m5-tcp-loss-timeline/data";
+import { netM5UdpLossTimeline } from "./net-m5-udp-loss-timeline/data";
+import { netM6CgnatLayers } from "./net-m6-cgnat-layers/data";
+import { netM6Conntrack } from "./net-m6-conntrack/data";
+import { netM6FilterRule } from "./net-m6-filter-rule/data";
+import { netM6ForwardRule } from "./net-m6-forward-rule/data";
+import { netM6HomeRouterFirstLook } from "./net-m6-home-router-first-look/data";
+import { netM6InboundUnsolicited } from "./net-m6-inbound-unsolicited/data";
+import { netM6NatClash } from "./net-m6-nat-clash/data";
+import { netM6NatIdleExpire } from "./net-m6-nat-idle-expire/data";
+import { netM6NatKeepalive } from "./net-m6-nat-keepalive/data";
+import { netM6NatRewrite } from "./net-m6-nat-rewrite/data";
+import { netM6NatTableFills } from "./net-m6-nat-table-fills/data";
+import { netM6ReplayForwardGuest } from "./net-m6-replay-forward-guest/data";
+import { netM6ReplayMasquerade } from "./net-m6-replay-masquerade/data";
+import { netM6RouteLeak } from "./net-m6-route-leak/data";
+import { netM6SceneQuietChat } from "./net-m6-scene-quiet-chat/data";
+import { netM7DhcpFourMessages } from "./net-m7-dhcp-four-messages/data";
+import { netM7DhcpPool } from "./net-m7-dhcp-pool/data";
+import { netM7DnsEmptyCache } from "./net-m7-dns-empty-cache/data";
+import { netM7DnsWarmCache } from "./net-m7-dns-warm-cache/data";
+import { netM7ReplayChallenge5 } from "./net-m7-replay-challenge-5/data";
+import { netM7SceneFacebookMissing } from "./net-m7-scene-facebook-missing/data";
+import { netM7SceneNoAddress } from "./net-m7-scene-no-address/data";
+import { netM7SortWhoAnswers } from "./net-m7-sort-who-answers/data";
+import { netM7TtlOneResolver } from "./net-m7-ttl-one-resolver/data";
+import { netM7TtlThreeResolvers } from "./net-m7-ttl-three-resolvers/data";
+import { netM8JourneyDns } from "./net-m8-journey-dns/data";
+import { netM8JourneyFirstByte } from "./net-m8-journey-first-byte/data";
+import { netM8JourneyGateway } from "./net-m8-journey-gateway/data";
+import { netM8JourneyLeaseArp } from "./net-m8-journey-lease-arp/data";
+import { netM8JourneyNatHop } from "./net-m8-journey-nat-hop/data";
+import { netM8JourneyReply } from "./net-m8-journey-reply/data";
+import { netM8ReplayCapstone1 } from "./net-m8-replay-capstone-1/data";
+import { netM8ReplayCapstone2 } from "./net-m8-replay-capstone-2/data";
+import { netM8ReplayCapstone3 } from "./net-m8-replay-capstone-3/data";
+import { netM8ReplayCapstone4 } from "./net-m8-replay-capstone-4/data";
+import { netM9Ipv6Addresses } from "./net-m9-ipv6-addresses/data";
+import { netM9Ipv6Filter } from "./net-m9-ipv6-filter/data";
+import { netM9Ipv6VsNat } from "./net-m9-ipv6-vs-nat/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -1888,6 +2005,123 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "why-not-that-choice": whyNotThatChoice,
   "fifty-times-test": fiftyTimesTest,
   "demo-they-can-open": demoTheyCanOpen,
+  "net-m1-packet-dns": netM1PacketDns,
+  "net-m1-packet-echo": netM1PacketEcho,
+  "net-m1-packet-own-lines": netM1PacketOwnLines,
+  "net-m1-packet-change": netM1PacketChange,
+  "net-m1-packet-jobs": netM1PacketJobs,
+  "net-m1-packet-wrap": netM1PacketWrap,
+  "net-m1-packet-unwrap": netM1PacketUnwrap,
+  "net-m1-replay-setup-checker": netM1ReplaySetupChecker,
+  "net-m1-replay-own-numbers": netM1ReplayOwnNumbers,
+  "net-m1-replay-virtual-cable": netM1ReplayVirtualCable,
+  "net-m1-scene-broadcast-mac": netM1SceneBroadcastMac,
+  "net-m2-byte-bits": netM2ByteBits,
+  "net-m2-address-bits": netM2AddressBits,
+  "net-m2-address-drill": netM2AddressDrill,
+  "net-m2-scene-free-pool": netM2SceneFreePool,
+  "net-m2-allocate-class": netM2AllocateClass,
+  "net-m2-allocate-cidr": netM2AllocateCidr,
+  "net-m2-prefix": netM2Prefix,
+  "net-m2-cidr-drill": netM2CidrDrill,
+  "net-m2-scene-same-address": netM2SceneSameAddress,
+  "net-m2-classify": netM2Classify,
+  "net-m3-arp-exchange": netM3ArpExchange,
+  "net-m3-broadcast": netM3Broadcast,
+  "net-m3-mask-and": netM3MaskAnd,
+  "net-m3-mask-bits": netM3MaskBits,
+  "net-m3-mask-drill": netM3MaskDrill,
+  "net-m3-overlap-line": netM3OverlapLine,
+  "net-m3-overlap-nest": netM3OverlapNest,
+  "net-m3-split-boundary": netM3SplitBoundary,
+  "net-m3-split-drill": netM3SplitDrill,
+  "net-m3-split-place": netM3SplitPlace,
+  "net-m3-split-size": netM3SplitSize,
+  "net-m3-wide-mask": netM3WideMask,
+  "net-m4-route-longest": netM4RouteLongest,
+  "net-m9-v6-drill": netM9V6Drill,
+  "net-m9-v6-expand": netM9V6Expand,
+  "net-m9-v6-invalid": netM9V6Invalid,
+  "net-m9-v6-shorten": netM9V6Shorten,
+  "net-m3-arp-no-owner": netM3ArpNoOwner,
+  "net-m3-arp-table": netM3ArpTable,
+  "net-m3-flat-broadcast": netM3FlatBroadcast,
+  "net-m3-replay-wrong-mask": netM3ReplayWrongMask,
+  "net-m3-scene-flat-school": netM3SceneFlatSchool,
+  "net-m3-scene-late-overlap": netM3SceneLateOverlap,
+  "net-m3-scene-need-mac": netM3SceneNeedMac,
+  "net-m3-split-broadcast": netM3SplitBroadcast,
+  "net-m3-split-filter": netM3SplitFilter,
+  "net-m3-switch-learning": netM3SwitchLearning,
+  "net-m4-mac-local": netM4MacLocal,
+  "net-m4-mac-per-hop": netM4MacPerHop,
+  "net-m4-mac-remote": netM4MacRemote,
+  "net-m4-replay-router": netM4ReplayRouter,
+  "net-m4-route-default": netM4RouteDefault,
+  "net-m4-route-get": netM4RouteGet,
+  "net-m4-route-matches": netM4RouteMatches,
+  "net-m4-route-metric": netM4RouteMetric,
+  "net-m4-route-reorder": netM4RouteReorder,
+  "net-m4-route-table": netM4RouteTable,
+  "net-m4-silent-router": netM4SilentRouter,
+  "net-m4-time-exceeded": netM4TimeExceeded,
+  "net-m4-traceroute-probes": netM4TracerouteProbes,
+  "net-m4-ttl-countdown": netM4TtlCountdown,
+  "net-m5-five-numbers": netM5FiveNumbers,
+  "net-m5-laptop-address": netM5LaptopAddress,
+  "net-m5-listen-all": netM5ListenAll,
+  "net-m5-listen-loopback": netM5ListenLoopback,
+  "net-m5-match-replies": netM5MatchReplies,
+  "net-m5-phone-localhost": netM5PhoneLocalhost,
+  "net-m5-replay-conversation": netM5ReplayConversation,
+  "net-m5-scene-late-audio": netM5SceneLateAudio,
+  "net-m5-scene-lossy-link": netM5SceneLossyLink,
+  "net-m5-scene-two-tabs": netM5SceneTwoTabs,
+  "net-m5-sockets-ports": netM5SocketsPorts,
+  "net-m5-sort-resend": netM5SortResend,
+  "net-m5-sort-tcp-udp": netM5SortTcpUdp,
+  "net-m5-tcp-loss-ack": netM5TcpLossAck,
+  "net-m5-tcp-loss-resend": netM5TcpLossResend,
+  "net-m5-tcp-loss-timeline": netM5TcpLossTimeline,
+  "net-m5-udp-loss-timeline": netM5UdpLossTimeline,
+  "net-m6-cgnat-layers": netM6CgnatLayers,
+  "net-m6-conntrack": netM6Conntrack,
+  "net-m6-filter-rule": netM6FilterRule,
+  "net-m6-forward-rule": netM6ForwardRule,
+  "net-m6-home-router-first-look": netM6HomeRouterFirstLook,
+  "net-m6-inbound-unsolicited": netM6InboundUnsolicited,
+  "net-m6-nat-clash": netM6NatClash,
+  "net-m6-nat-idle-expire": netM6NatIdleExpire,
+  "net-m6-nat-keepalive": netM6NatKeepalive,
+  "net-m6-nat-rewrite": netM6NatRewrite,
+  "net-m6-nat-table-fills": netM6NatTableFills,
+  "net-m6-replay-forward-guest": netM6ReplayForwardGuest,
+  "net-m6-replay-masquerade": netM6ReplayMasquerade,
+  "net-m6-route-leak": netM6RouteLeak,
+  "net-m6-scene-quiet-chat": netM6SceneQuietChat,
+  "net-m7-dhcp-four-messages": netM7DhcpFourMessages,
+  "net-m7-dhcp-pool": netM7DhcpPool,
+  "net-m7-dns-empty-cache": netM7DnsEmptyCache,
+  "net-m7-dns-warm-cache": netM7DnsWarmCache,
+  "net-m7-replay-challenge-5": netM7ReplayChallenge5,
+  "net-m7-scene-facebook-missing": netM7SceneFacebookMissing,
+  "net-m7-scene-no-address": netM7SceneNoAddress,
+  "net-m7-sort-who-answers": netM7SortWhoAnswers,
+  "net-m7-ttl-one-resolver": netM7TtlOneResolver,
+  "net-m7-ttl-three-resolvers": netM7TtlThreeResolvers,
+  "net-m8-journey-dns": netM8JourneyDns,
+  "net-m8-journey-first-byte": netM8JourneyFirstByte,
+  "net-m8-journey-gateway": netM8JourneyGateway,
+  "net-m8-journey-lease-arp": netM8JourneyLeaseArp,
+  "net-m8-journey-nat-hop": netM8JourneyNatHop,
+  "net-m8-journey-reply": netM8JourneyReply,
+  "net-m8-replay-capstone-1": netM8ReplayCapstone1,
+  "net-m8-replay-capstone-2": netM8ReplayCapstone2,
+  "net-m8-replay-capstone-3": netM8ReplayCapstone3,
+  "net-m8-replay-capstone-4": netM8ReplayCapstone4,
+  "net-m9-ipv6-addresses": netM9Ipv6Addresses,
+  "net-m9-ipv6-filter": netM9Ipv6Filter,
+  "net-m9-ipv6-vs-nat": netM9Ipv6VsNat,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
