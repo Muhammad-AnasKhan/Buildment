@@ -23,7 +23,6 @@
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "db:seed:showcase": "tsx scripts/seed-demo-showcase.ts",
-    "db:seed:scale": "tsx scripts/seed-scale-data.ts",
     "db:seed:integration": "tsx scripts/seed-integration-demo.ts",
     "content:import": "tsx scripts/import-course.ts",
     "content:validate": "tsx scripts/validate-chapters.ts",
