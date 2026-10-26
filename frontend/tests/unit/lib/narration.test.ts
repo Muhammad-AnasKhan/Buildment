@@ -1,0 +1,90 @@
+import { describe, expect, it } from "vitest";
+import { formatClock, formatListenMinutes, formatMegabytes, nextSpeed, resumePosition } from "../../../src/lib/narration-format";
+import { loadChapterNarration, narrationBase, pickNarration } from "../../../src/lib/narration";
+
+const manifest = {
+  version: 1,
+  chapters: {
+    "1-2-roles-and-expectations": { file: "01.02-roles-and-expectations.mp3", minutes: 3.7, bytes: 904_000, words: 625, voice: "af_heart", hash: "abc" },
+  },
+};
+
+describe("pickNarration", () => {
+  it("returns the player data for a chapter that has audio", () => {
+    expect(pickNarration(manifest, "/narration", "collaboration", "1-2-roles-and-expectations")).toEqual({
+      src: "/narration/collaboration/01.02-roles-and-expectations.mp3",
+      minutes: 3.7,
+      bytes: 904_000,
+    });
+  });
+
+  it("returns nothing for a chapter without audio, so the reader shows no player", () => {
+    expect(pickNarration(manifest, "/narration", "collaboration", "1-3-working-across-time-zones")).toBeNull();
+  });
+
+  it("ignores a broken manifest instead of failing the page", () => {
+    expect(pickNarration(null, "/narration", "c", "s")).toBeNull();
+    expect(pickNarration({}, "/narration", "c", "s")).toBeNull();
+    expect(pickNarration({ chapters: { s: { file: "../../etc/passwd", minutes: 1, bytes: 1 } } }, "/narration", "c", "s")).toBeNull();
+    expect(pickNarration({ chapters: { s: { file: "a.mp3", minutes: 0, bytes: 1 } } }, "/narration", "c", "s")).toBeNull();
+    expect(pickNarration({ chapters: { s: { file: "a.mp3", minutes: 1 } } }, "/narration", "c", "s")).toBeNull();
+  });
+});
+
+describe("narrationBase", () => {
+  it("serves from the web app by default", () => {
+    expect(narrationBase(undefined)).toBe("/narration");
+    expect(narrationBase("   ")).toBe("/narration");
+  });
+
+  it("uses a configured https address without a trailing slash", () => {
+    expect(narrationBase("https://audio.example.com/narration/")).toBe("https://audio.example.com/narration");
+  });
+
+  it("falls back for an unsafe address", () => {
+    expect(narrationBase("//evil.example.com/x")).toBe("/narration");
+    expect(narrationBase("javascript:alert(1)")).toBe("/narration");
+  });
+});
+
+describe("loadChapterNarration", () => {
+  it("rejects slugs that could escape the narration folder", async () => {
+    expect(await loadChapterNarration("../secrets", "1-2-x")).toBeNull();
+    expect(await loadChapterNarration("collaboration", "../../x")).toBeNull();
+  });
+
+  it("returns null when the course has no audio at all", async () => {
+    expect(await loadChapterNarration("a-course-without-audio", "1-1-intro")).toBeNull();
+  });
+});
+
+describe("player formatting", () => {
+  it("rounds minutes up to at least one", () => {
+    expect(formatListenMinutes(3.7)).toBe("4 min");
+    expect(formatListenMinutes(0.2)).toBe("1 min");
+  });
+
+  it("shows the download size", () => {
+    expect(formatMegabytes(904_000)).toBe("0.9 MB");
+    expect(formatMegabytes(12 * 1024 * 1024)).toBe("12 MB");
+  });
+
+  it("formats the clock", () => {
+    expect(formatClock(65.9)).toBe("1:05");
+    expect(formatClock(Number.NaN)).toBe("0:00");
+  });
+
+  it("cycles the speeds and returns to normal", () => {
+    expect(nextSpeed(1)).toBe(1.25);
+    expect(nextSpeed(1.25)).toBe(1.5);
+    expect(nextSpeed(1.5)).toBe(0.85);
+    expect(nextSpeed(0.85)).toBe(1);
+  });
+
+  it("resumes only from a useful spot", () => {
+    expect(resumePosition(1, 200)).toBe(0);
+    expect(resumePosition(80, 200)).toBe(80);
+    expect(resumePosition(199, 200)).toBe(0);
+    expect(resumePosition(80, 0)).toBe(0);
+  });
+});

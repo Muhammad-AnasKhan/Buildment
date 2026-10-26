@@ -24,6 +24,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import type { HelpThreadView } from "@/shared/api/help";
 import type { StreakMilestone } from "@/shared/lib/streak";
 import { HeadingNotesProvider } from "@/components/learn/heading-note";
+import { ChapterAudio } from "@/components/learn/chapter-audio";
+import type { ChapterNarration } from "@/lib/narration";
 import { PredictRevealProvider } from "@buildment/learning-ui/components/learn/predict-reveal";
 
 function Kbd({ children }: { children: React.ReactNode }) {
@@ -78,6 +80,7 @@ export function ChapterReaderShell({
   predictRevealed = true,
   courseId,
   helpThread,
+  narration = null,
   user,
   signOutAction,
   children,
@@ -109,6 +112,8 @@ export function ChapterReaderShell({
   predictRevealed?: boolean;
   courseId: string;
   helpThread: HelpThreadView | null;
+  /** Listen-along audio for this chapter, when its course has it. */
+  narration?: ChapterNarration | null;
   modules: SyllabusModule[];
   headings: Heading[];
   prev?: { slug: string; title: string; moduleOrder: number; order: number };
@@ -396,6 +401,9 @@ export function ChapterReaderShell({
                         : `${checkpointsCompleted}/${checkpointsTotal} checkpoints`}
                     </p>
                   )}
+                  {narration && readerMode !== "QUIZ" ? (
+                    <ChapterAudio src={narration.src} minutes={narration.minutes} bytes={narration.bytes} title={chapterTitle} />
+                  ) : null}
                 </header>
 
                 <LearningLogProvider chapterId={chapterId} initialAnswers={learningLogAnswers}>
