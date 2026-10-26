@@ -30,8 +30,8 @@ Two profiles side by side and one reader whose attention goes to only one of the
     "height": 330,
     "actors": [
       { "id": "reader", "label": "Reader", "kind": "user", "sub": "two profiles", "x": 210, "y": 105 },
-      { "id": "badges", "label": "Eight badges", "kind": "note", "sub": "no project", "x": 62, "y": 250 },
-      { "id": "project", "label": "Shipped work", "kind": "note", "sub": "has a result", "x": 358, "y": 250 }
+      { "id": "badges", "label": "8 badges", "kind": "note", "sub": "no project", "x": 62, "y": 250 },
+      { "id": "project", "label": "Project", "kind": "note", "sub": "has a result", "x": 358, "y": 250 }
     ],
     "events": [
       { "kind": "fly", "at": 0.3, "dur": 1.0, "from": "reader", "to": "badges", "label": "look" },

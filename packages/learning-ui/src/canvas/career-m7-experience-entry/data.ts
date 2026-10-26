@@ -12,7 +12,7 @@ export const careerM7ExperienceEntry: SceneSpec = {
     height: 330,
     actors: [
       { id: "entry", label: "Experience", kind: "note", sub: "accurate name", x: 210, y: 105 },
-      { id: "bullet", label: "Ledger bullet", kind: "note", sub: "from the ledger", x: 62, y: 250 },
+      { id: "bullet", label: "Bullet", kind: "note", sub: "from the ledger", x: 62, y: 250 },
       { id: "skills", label: "Skills", kind: "note", sub: "attached to it", x: 358, y: 250 },
     ],
     events: [

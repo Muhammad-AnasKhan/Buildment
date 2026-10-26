@@ -15,9 +15,9 @@ export const careerM5LinksInSixMonths: SceneSpec = {
     actors: [
       {
         id: "db",
-        label: "Free database",
+        label: "Database",
         kind: "database",
-        sub: "30-day limit",
+        sub: "free, 30 days",
         x: 62,
         y: 105
       },

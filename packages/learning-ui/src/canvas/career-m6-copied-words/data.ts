@@ -14,7 +14,7 @@ export const careerM6CopiedWords: SceneSpec = {
     "actors": [
       {
         "id": "stuffed",
-        "label": "Copied words",
+        "label": "Copied",
         "kind": "note",
         "sub": "pasted words",
         "x": 62,

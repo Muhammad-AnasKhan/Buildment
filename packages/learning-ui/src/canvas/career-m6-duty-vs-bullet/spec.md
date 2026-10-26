@@ -32,7 +32,7 @@ Waed's rewrite is from the canon: "Built a shared delivery tracker that cut miss
     "height": 330,
     "actors": [
       { "id": "duty", "label": "Duty line", "kind": "note", "sub": "responsible for", "x": 62, "y": 110 },
-      { "id": "bullet", "label": "Owned bullet", "kind": "note", "sub": "90 to 18", "x": 358, "y": 110 },
+      { "id": "bullet", "label": "Her bullet", "kind": "note", "sub": "90 to 18", "x": 358, "y": 110 },
       { "id": "reader", "label": "Reader", "kind": "user", "sub": "wants a change", "x": 210, "y": 250 }
     ],
     "events": [

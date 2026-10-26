@@ -15,7 +15,7 @@ export const careerM8PlainWords: SceneSpec = {
     actors: [
       {
         id: "long",
-        label: "Long sentence",
+        label: "One long",
         kind: "note",
         sub: "hidden verbs",
         x: 62,

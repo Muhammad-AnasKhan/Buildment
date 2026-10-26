@@ -32,7 +32,7 @@ Sireen's reshaped idea is from the canon: a pickup schedule for her cousin's sch
     "height": 330,
     "actors": [
       { "id": "sireen", "label": "Sireen", "kind": "user", "sub": "reshaped idea", "x": 62, "y": 105 },
-      { "id": "app", "label": "Pickup times", "kind": "phone", "sub": "for one bus run", "x": 358, "y": 105 },
+      { "id": "app", "label": "Schedule", "kind": "phone", "sub": "for one bus run", "x": 358, "y": 105 },
       { "id": "driver", "label": "One driver", "kind": "user", "sub": "she knows him", "x": 62, "y": 250 },
       { "id": "families", "label": "14 families", "kind": "user", "sub": "see the times", "x": 358, "y": 250 }
     ],

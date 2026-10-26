@@ -32,7 +32,7 @@ This is a course rule from the brief (instant access). Do not quote a number of 
     "height": 330,
     "actors": [
       { "id": "reader", "label": "Reader", "kind": "user", "sub": "wants a look", "x": 210, "y": 105 },
-      { "id": "long", "label": "Sign-up path", "kind": "note", "sub": "four steps", "x": 62, "y": 250 },
+      { "id": "long", "label": "Sign-up", "kind": "note", "sub": "four steps", "x": 62, "y": 250 },
       { "id": "short", "label": "One button", "kind": "note", "sub": "straight in", "x": 358, "y": 250 }
     ],
     "events": [

@@ -31,7 +31,7 @@ This is a labelled inference from the studies in beats 1 and 2 and from module 1
     "width": 420,
     "height": 330,
     "actors": [
-      { "id": "pile", "label": "Weekend apps", "kind": "note", "sub": "look alike", "x": 62, "y": 110 },
+      { "id": "pile", "label": "Many apps", "kind": "note", "sub": "look alike", "x": 62, "y": 110 },
       { "id": "project", "label": "This project", "kind": "note", "sub": "user and number", "x": 358, "y": 110 },
       { "id": "reader", "label": "Reader", "kind": "user", "sub": "looking", "x": 210, "y": 250 }
     ],

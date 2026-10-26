@@ -31,8 +31,8 @@ Google does not ban AI content but warns against pages without added value and a
     "width": 420,
     "height": 330,
     "actors": [
-      { "id": "template", "label": "Template page", "kind": "note", "sub": "stock photo", "x": 62, "y": 110 },
-      { "id": "specific", "label": "Specific page", "kind": "note", "sub": "real screenshot", "x": 358, "y": 110 },
+      { "id": "template", "label": "Template", "kind": "note", "sub": "stock photo", "x": 62, "y": 110 },
+      { "id": "specific", "label": "Specific", "kind": "note", "sub": "real screenshot", "x": 358, "y": 110 },
       { "id": "visitor", "label": "Visitor", "kind": "user", "sub": "who wrote it?", "x": 210, "y": 250 }
     ],
     "events": [

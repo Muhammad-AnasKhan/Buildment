@@ -12,9 +12,9 @@ export const careerM7FreeAccount: SceneSpec = {
     height: 330,
     actors: [
       { id: "you", label: "You", kind: "user", sub: "free account", x: 62, y: 105 },
-      { id: "connections", label: "Connections", kind: "user", sub: "can message", x: 358, y: 105 },
-      { id: "stranger", label: "Not connected", kind: "user", sub: "note or comment", x: 62, y: 250 },
-      { id: "notes", label: "Monthly notes", kind: "note", sub: "plan for three", x: 358, y: 250 },
+      { id: "connections", label: "Connected", kind: "user", sub: "can message", x: 358, y: 105 },
+      { id: "stranger", label: "Strangers", kind: "user", sub: "note or comment", x: 62, y: 250 },
+      { id: "notes", label: "Notes", kind: "note", sub: "plan for three", x: 358, y: 250 },
     ],
     events: [
       { kind: "fly", at: 0.3, dur: 1, from: "you", to: "connections", label: "message" },

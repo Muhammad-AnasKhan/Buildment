@@ -24,7 +24,7 @@ export const careerM6MissingTracker: SceneSpec = {
         "id": "tracker",
         "label": "Her tracker",
         "kind": "note",
-        "sub": "90 to 18 in 3 months",
+        "sub": "90 to 18",
         "x": 358,
         "y": 110
       },

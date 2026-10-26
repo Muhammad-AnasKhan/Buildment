@@ -33,8 +33,8 @@ Based on Google Search Central (checked 2026-10): you state a preference by redi
     "actors": [
       { "id": "google", "label": "Google", "kind": "server", "sub": "picks a version", "x": 210, "y": 105 },
       { "id": "own", "label": "Your site", "kind": "note", "sub": "the original", "x": 62, "y": 255 },
-      { "id": "dev", "label": "DEV copy", "kind": "note", "sub": "a copy", "x": 210, "y": 255 },
-      { "id": "medium", "label": "Medium copy", "kind": "note", "sub": "a copy", "x": 358, "y": 255 }
+      { "id": "dev", "label": "DEV", "kind": "note", "sub": "a copy", "x": 210, "y": 255 },
+      { "id": "medium", "label": "Medium", "kind": "note", "sub": "a copy", "x": 358, "y": 255 }
     ],
     "events": [
       { "kind": "fly", "at": 0.3, "dur": 1.0, "from": "own", "to": "google", "label": "the article" },

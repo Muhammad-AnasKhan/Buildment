@@ -23,7 +23,7 @@ export const careerM5SameBox: SceneSpec = {
       },
       {
         id: "cloud",
-        label: "Cloud server",
+        label: "Cloud",
         kind: "server",
         sub: "runs the box",
         x: 358,

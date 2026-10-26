@@ -31,8 +31,8 @@ The folklore cards are "the first hour decides", "links are punished" and "use e
     "width": 420,
     "height": 330,
     "actors": [
-      { "id": "guides", "label": "Guide claims", "kind": "note", "sub": "exact numbers", "x": 62, "y": 110 },
-      { "id": "linkedin", "label": "LinkedIn says", "kind": "note", "sub": "relate, comment", "x": 358, "y": 110 },
+      { "id": "guides", "label": "Guides", "kind": "note", "sub": "exact numbers", "x": 62, "y": 110 },
+      { "id": "linkedin", "label": "LinkedIn", "kind": "note", "sub": "relate, comment", "x": 358, "y": 110 },
       { "id": "reader", "label": "You", "kind": "user", "sub": "who to trust", "x": 210, "y": 250 }
     ],
     "events": [

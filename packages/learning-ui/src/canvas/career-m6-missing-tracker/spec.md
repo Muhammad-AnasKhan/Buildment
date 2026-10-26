@@ -32,7 +32,7 @@ From the canon: Waed built a shared tracker that recorded 90 missed delivery con
     "height": 330,
     "actors": [
       { "id": "waed", "label": "Waed", "kind": "user", "sub": "built a tracker", "x": 62, "y": 110 },
-      { "id": "tracker", "label": "Her tracker", "kind": "note", "sub": "90 to 18 in 3 months", "x": 358, "y": 110 },
+      { "id": "tracker", "label": "Her tracker", "kind": "note", "sub": "90 to 18", "x": 358, "y": 110 },
       { "id": "resume", "label": "Her resume", "kind": "note", "sub": "no tracker", "x": 210, "y": 250 }
     ],
     "events": [

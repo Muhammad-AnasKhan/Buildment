@@ -29,7 +29,7 @@ One empty claim card meets five questions that cover its six parts, and every pa
     "width": 420,
     "height": 330,
     "actors": [
-      { "id": "reader", "label": "Reader", "kind": "user", "sub": "asks five questions", "x": 62, "y": 110 },
+      { "id": "reader", "label": "Reader", "kind": "user", "sub": "five questions", "x": 62, "y": 110 },
       { "id": "claim", "label": "The claim", "kind": "note", "sub": "grew 50 percent", "x": 358, "y": 110 },
       { "id": "card", "label": "Claim card", "kind": "note", "sub": "all empty", "x": 210, "y": 250 }
     ],

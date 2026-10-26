@@ -23,9 +23,9 @@ export const careerM5DemoLogin: SceneSpec = {
       },
       {
         id: "button",
-        label: "Try the demo",
+        label: "Button",
         kind: "note",
-        sub: "one button",
+        sub: "Try the demo",
         x: 358,
         y: 110
       },
@@ -73,7 +73,7 @@ export const careerM5DemoLogin: SceneSpec = {
         kind: "say",
         at: 3.9,
         actor: "stranger",
-        text: "tries every feature",
+        text: "tries it all",
         tone: "good"
       },
       {

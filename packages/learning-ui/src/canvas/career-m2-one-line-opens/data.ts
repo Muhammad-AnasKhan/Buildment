@@ -15,7 +15,7 @@ export const careerM2OneLineOpens: SceneSpec = {
     actors: [
       { id: "line", label: "Resume line", kind: "note", sub: "Intern, 2025", x: 210, y: 105 },
       { id: "fix", label: "The fix", kind: "note", sub: "lead reviewed", x: 62, y: 250 },
-      { id: "numbers", label: "The numbers", kind: "note", sub: "4.6 s to 0.41 s", x: 210, y: 250 },
+      { id: "numbers", label: "Numbers", kind: "note", sub: "4.6 s to 0.41 s", x: 210, y: 250 },
       { id: "permission", label: "Permission", kind: "note", sub: "names removed", x: 358, y: 250 },
     ],
     events: [

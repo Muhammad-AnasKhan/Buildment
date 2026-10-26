@@ -32,7 +32,7 @@ Based on Docker's own description of a container (checked 2026-10). The course a
     "height": 330,
     "actors": [
       { "id": "laptop", "label": "Laptop", "kind": "server", "sub": "builds the box", "x": 62, "y": 110 },
-      { "id": "cloud", "label": "Cloud server", "kind": "server", "sub": "runs the box", "x": 358, "y": 110 },
+      { "id": "cloud", "label": "Cloud", "kind": "server", "sub": "runs the box", "x": 358, "y": 110 },
       { "id": "readme", "label": "README", "kind": "note", "sub": "one command", "x": 210, "y": 250 }
     ],
     "events": [

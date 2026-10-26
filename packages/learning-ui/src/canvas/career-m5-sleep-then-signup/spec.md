@@ -33,7 +33,7 @@ Free-plan facts are dated: a free web service on one host spins down after 15 mi
     "actors": [
       { "id": "founder", "label": "Founder", "kind": "user", "sub": "opens demo", "x": 358, "y": 110 },
       { "id": "demo", "label": "Demo link", "kind": "server", "sub": "asleep", "x": 62, "y": 250 },
-      { "id": "form", "label": "Sign-up form", "kind": "note", "sub": "email needed", "x": 358, "y": 250 }
+      { "id": "form", "label": "Sign-up", "kind": "note", "sub": "email needed", "x": 358, "y": 250 }
     ],
     "events": [
       { "kind": "fly", "at": 0.3, "dur": 1.0, "from": "founder", "to": "demo", "label": "open demo" },

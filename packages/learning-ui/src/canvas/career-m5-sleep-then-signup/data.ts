@@ -31,7 +31,7 @@ export const careerM5SleepThenSignup: SceneSpec = {
       },
       {
         id: "form",
-        label: "Sign-up form",
+        label: "Sign-up",
         kind: "note",
         sub: "email needed",
         x: 358,

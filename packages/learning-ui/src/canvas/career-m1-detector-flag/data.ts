@@ -14,7 +14,7 @@ export const careerM1DetectorFlag: SceneSpec = {
     height: 330,
     actors: [
       { id: "detector", label: "Detector", kind: "worker", sub: "stamps AI", x: 210, y: 105 },
-      { id: "careful", label: "Careful essay", kind: "note", sub: "second language", x: 62, y: 250 },
+      { id: "careful", label: "My essay", kind: "note", sub: "second language", x: 62, y: 250 },
       { id: "other", label: "Other essay", kind: "note", sub: "first language", x: 358, y: 250 },
     ],
     events: [

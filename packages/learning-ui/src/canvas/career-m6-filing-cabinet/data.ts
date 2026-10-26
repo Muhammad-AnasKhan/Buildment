@@ -22,7 +22,7 @@ export const careerM6FilingCabinet: SceneSpec = {
       },
       {
         "id": "tool",
-        "label": "Tracking tool",
+        "label": "The tool",
         "kind": "server",
         "sub": "sorts, filters",
         "x": 358,

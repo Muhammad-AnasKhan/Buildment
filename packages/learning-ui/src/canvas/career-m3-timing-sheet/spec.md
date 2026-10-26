@@ -32,7 +32,7 @@ Numbers are the canon's (the print shop invoice script): two weeks, 10 working d
     "height": 330,
     "actors": [
       { "id": "assistant", "label": "Assistant", "kind": "user", "sub": "times each one", "x": 62, "y": 110 },
-      { "id": "sheet", "label": "Timing sheet", "kind": "note", "sub": "10 working days", "x": 358, "y": 110 },
+      { "id": "sheet", "label": "The sheet", "kind": "note", "sub": "10 working days", "x": 358, "y": 110 },
       { "id": "result", "label": "Median", "kind": "note", "sub": "per invoice", "x": 210, "y": 250 }
     ],
     "events": [

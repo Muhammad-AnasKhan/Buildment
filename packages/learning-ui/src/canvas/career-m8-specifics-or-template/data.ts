@@ -15,7 +15,7 @@ export const careerM8SpecificsOrTemplate: SceneSpec = {
     actors: [
       {
         id: "template",
-        label: "Template page",
+        label: "Template",
         kind: "note",
         sub: "stock photo",
         x: 62,
@@ -23,7 +23,7 @@ export const careerM8SpecificsOrTemplate: SceneSpec = {
       },
       {
         id: "specific",
-        label: "Specific page",
+        label: "Specific",
         kind: "note",
         sub: "real screenshot",
         x: 358,

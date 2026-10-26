@@ -31,7 +31,7 @@ Based on the US government's plain language guides (checked 2026-10): shorter wo
     "width": 420,
     "height": 330,
     "actors": [
-      { "id": "long", "label": "Long sentence", "kind": "note", "sub": "hidden verbs", "x": 62, "y": 110 },
+      { "id": "long", "label": "One long", "kind": "note", "sub": "hidden verbs", "x": 62, "y": 110 },
       { "id": "short", "label": "Three short", "kind": "note", "sub": "active verbs", "x": 358, "y": 110 },
       { "id": "reader", "label": "Tired reader", "kind": "user", "sub": "end of the day", "x": 210, "y": 250 }
     ],

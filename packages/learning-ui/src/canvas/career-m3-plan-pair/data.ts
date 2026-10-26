@@ -17,7 +17,7 @@ export const careerM3PlanPair: SceneSpec = {
         "id": "areej",
         "label": "Areej",
         "kind": "user",
-        "sub": "EXPLAIN ANALYZE",
+        "sub": "reads the plan",
         "x": 62,
         "y": 110
       },

@@ -32,7 +32,7 @@ Areej's demo plan for Raqim Stock is from the canon: a fake shop with fake stock
     "height": 330,
     "actors": [
       { "id": "stranger", "label": "Stranger", "kind": "user", "sub": "wants a look", "x": 62, "y": 110 },
-      { "id": "button", "label": "Try the demo", "kind": "note", "sub": "one button", "x": 358, "y": 110 },
+      { "id": "button", "label": "Button", "kind": "note", "sub": "Try the demo", "x": 358, "y": 110 },
       { "id": "app", "label": "Raqim Stock", "kind": "phone", "sub": "fake shop", "x": 210, "y": 250 }
     ],
     "events": [
@@ -40,7 +40,7 @@ Areej's demo plan for Raqim Stock is from the canon: a fake shop with fake stock
       { "kind": "fly", "at": 1.6, "dur": 1.0, "from": "button", "to": "app", "label": "opens" },
       { "kind": "say", "at": 2.5, "actor": "app", "text": "fake stock", "tone": "good" },
       { "kind": "say", "at": 3.2, "actor": "button", "text": "small rights", "tone": "good" },
-      { "kind": "say", "at": 3.9, "actor": "stranger", "text": "tries every feature", "tone": "good" },
+      { "kind": "say", "at": 3.9, "actor": "stranger", "text": "tries it all", "tone": "good" },
       { "kind": "verdict", "at": 4.6, "text": "A demo login that opens the core", "tone": "good" }
     ],
     "loop": 8

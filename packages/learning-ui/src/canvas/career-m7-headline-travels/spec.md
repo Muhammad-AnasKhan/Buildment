@@ -32,7 +32,7 @@ LinkedIn's help page says the headline can differ from your job title and can pr
     "height": 330,
     "actors": [
       { "id": "profile", "label": "Profile", "kind": "note", "sub": "name + headline", "x": 62, "y": 110 },
-      { "id": "search", "label": "Search result", "kind": "note", "sub": "same headline", "x": 358, "y": 110 },
+      { "id": "search", "label": "Search", "kind": "note", "sub": "same headline", "x": 358, "y": 110 },
       { "id": "reader", "label": "Reader", "kind": "user", "sub": "scans names", "x": 210, "y": 250 }
     ],
     "events": [

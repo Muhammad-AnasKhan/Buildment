@@ -31,7 +31,7 @@ A tailored, polished letter lost its signal once AI made it cheap. A resume comp
     "width": 420,
     "height": 330,
     "actors": [
-      { "id": "stuffed", "label": "Copied words", "kind": "note", "sub": "pasted words", "x": 62, "y": 110 },
+      { "id": "stuffed", "label": "Copied", "kind": "note", "sub": "pasted words", "x": 62, "y": 110 },
       { "id": "reordered", "label": "Reordered", "kind": "note", "sub": "same facts", "x": 358, "y": 110 },
       { "id": "reader", "label": "Reader", "kind": "user", "sub": "looks for proof", "x": 210, "y": 250 }
     ],

@@ -31,7 +31,7 @@ export const careerM8SearchPicksOne: SceneSpec = {
       },
       {
         id: "dev",
-        label: "DEV copy",
+        label: "DEV",
         kind: "note",
         sub: "a copy",
         x: 210,
@@ -39,7 +39,7 @@ export const careerM8SearchPicksOne: SceneSpec = {
       },
       {
         id: "medium",
-        label: "Medium copy",
+        label: "Medium",
         kind: "note",
         sub: "a copy",
         x: 358,

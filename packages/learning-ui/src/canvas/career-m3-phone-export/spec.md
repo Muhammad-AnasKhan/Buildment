@@ -31,7 +31,7 @@ This is the only place in the course that mentions Areej's equipment. State it a
     "width": 420,
     "height": 330,
     "actors": [
-      { "id": "questions", "label": "Six questions", "kind": "note", "sub": "one by one", "x": 62, "y": 110 },
+      { "id": "questions", "label": "Questions", "kind": "note", "sub": "six in turn", "x": 62, "y": 110 },
       { "id": "phone", "label": "Her phone", "kind": "phone", "sub": "reads export", "x": 358, "y": 110 },
       { "id": "laptop", "label": "Laptop", "kind": "server", "sub": "later, optional", "x": 210, "y": 250 }
     ],

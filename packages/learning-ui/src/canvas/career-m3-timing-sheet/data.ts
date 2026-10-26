@@ -23,7 +23,7 @@ export const careerM3TimingSheet: SceneSpec = {
       },
       {
         "id": "sheet",
-        "label": "Timing sheet",
+        "label": "The sheet",
         "kind": "note",
         "sub": "10 working days",
         "x": 358,

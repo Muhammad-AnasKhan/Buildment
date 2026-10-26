@@ -14,15 +14,15 @@ export const careerM6LinesAnyones: SceneSpec = {
     "actors": [
       {
         "id": "waed",
-        "label": "Waed's resume",
+        "label": "Her resume",
         "kind": "note",
-        "sub": "AI-written",
+        "sub": "AI summary",
         "x": 62,
         "y": 110
       },
       {
         "id": "others",
-        "label": "Three others",
+        "label": "3 others",
         "kind": "note",
         "sub": "same words",
         "x": 358,

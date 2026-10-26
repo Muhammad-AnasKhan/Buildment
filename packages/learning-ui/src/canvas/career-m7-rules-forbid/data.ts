@@ -13,7 +13,7 @@ export const careerM7RulesForbid: SceneSpec = {
     actors: [
       { id: "tools", label: "Bots, tools", kind: "worker", sub: "auto-comment", x: 62, y: 105 },
       { id: "group", label: "Like groups", kind: "user", sub: "agree to like", x: 210, y: 105 },
-      { id: "fake", label: "Fake account", kind: "note", sub: "not a person", x: 358, y: 105 },
+      { id: "fake", label: "Fake user", kind: "note", sub: "not a person", x: 358, y: 105 },
       { id: "linkedin", label: "LinkedIn", kind: "server", sub: "checks rules", x: 210, y: 250 },
     ],
     events: [

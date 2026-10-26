@@ -31,7 +31,7 @@ Free-plan facts are dated and must be checked again before publishing: a free da
     "width": 420,
     "height": 340,
     "actors": [
-      { "id": "db", "label": "Free database", "kind": "database", "sub": "30-day limit", "x": 62, "y": 105 },
+      { "id": "db", "label": "Database", "kind": "database", "sub": "free, 30 days", "x": 62, "y": 105 },
       { "id": "link", "label": "Resume link", "kind": "note", "sub": "to the demo", "x": 210, "y": 105 },
       { "id": "base", "label": "Case study", "kind": "note", "sub": "static page", "x": 358, "y": 105 }
     ],

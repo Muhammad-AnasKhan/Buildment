@@ -31,8 +31,8 @@ Waed is from the canon (scene cast, 6.1). Card register is used; the illustrated
     "width": 420,
     "height": 330,
     "actors": [
-      { "id": "waed", "label": "Waed's resume", "kind": "note", "sub": "AI-written", "x": 62, "y": 110 },
-      { "id": "others", "label": "Three others", "kind": "note", "sub": "same words", "x": 358, "y": 110 },
+      { "id": "waed", "label": "Her resume", "kind": "note", "sub": "AI summary", "x": 62, "y": 110 },
+      { "id": "others", "label": "3 others", "kind": "note", "sub": "same words", "x": 358, "y": 110 },
       { "id": "reader", "label": "Reader", "kind": "user", "sub": "hiring", "x": 210, "y": 250 }
     ],
     "events": [

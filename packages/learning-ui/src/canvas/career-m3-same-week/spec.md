@@ -31,7 +31,7 @@ Numbers are from the canon: 5 hours to 1.5 hours is a 70 percent cut of the whol
     "width": 420,
     "height": 330,
     "actors": [
-      { "id": "machines", "label": "New machines", "kind": "server", "sub": "same week", "x": 62, "y": 110 },
+      { "id": "machines", "label": "Machines", "kind": "server", "sub": "new, same week", "x": 62, "y": 110 },
       { "id": "tawfiq", "label": "Tawfiq", "kind": "user", "sub": "join step", "x": 358, "y": 110 },
       { "id": "run", "label": "Nightly run", "kind": "worker", "sub": "5 h", "x": 62, "y": 250 },
       { "id": "logs", "label": "Job logs", "kind": "note", "sub": "his step only", "x": 358, "y": 250 }

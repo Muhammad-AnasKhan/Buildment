@@ -23,7 +23,7 @@ export const careerM5ExtraSteps: SceneSpec = {
       },
       {
         id: "long",
-        label: "Sign-up path",
+        label: "Sign-up",
         kind: "note",
         sub: "four steps",
         x: 62,

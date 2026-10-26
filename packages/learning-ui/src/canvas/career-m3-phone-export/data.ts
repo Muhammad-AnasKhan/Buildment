@@ -15,9 +15,9 @@ export const careerM3PhoneExport: SceneSpec = {
     "actors": [
       {
         "id": "questions",
-        "label": "Six questions",
+        "label": "Questions",
         "kind": "note",
-        "sub": "one by one",
+        "sub": "six in turn",
         "x": 62,
         "y": 110
       },

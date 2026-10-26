@@ -32,7 +32,7 @@ The "75 percent are rejected by robots" figure traces to a 2012 sales pitch by a
     "height": 330,
     "actors": [
       { "id": "employer", "label": "Employer", "kind": "user", "sub": "sets the rules", "x": 62, "y": 110 },
-      { "id": "tool", "label": "Tracking tool", "kind": "server", "sub": "sorts, filters", "x": 358, "y": 110 },
+      { "id": "tool", "label": "The tool", "kind": "server", "sub": "sorts, filters", "x": 358, "y": 110 },
       { "id": "person", "label": "A person", "kind": "user", "sub": "reads the list", "x": 210, "y": 250 }
     ],
     "events": [

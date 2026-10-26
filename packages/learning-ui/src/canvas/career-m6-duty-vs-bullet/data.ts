@@ -22,7 +22,7 @@ export const careerM6DutyVsBullet: SceneSpec = {
       },
       {
         "id": "bullet",
-        "label": "Owned bullet",
+        "label": "Her bullet",
         "kind": "note",
         "sub": "90 to 18",
         "x": 358,

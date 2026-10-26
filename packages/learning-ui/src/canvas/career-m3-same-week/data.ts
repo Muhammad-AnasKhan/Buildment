@@ -15,9 +15,9 @@ export const careerM3SameWeek: SceneSpec = {
     "actors": [
       {
         "id": "machines",
-        "label": "New machines",
+        "label": "Machines",
         "kind": "server",
-        "sub": "same week",
+        "sub": "new, same week",
         "x": 62,
         "y": 110
       },
