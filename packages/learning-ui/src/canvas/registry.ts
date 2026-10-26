@@ -790,6 +790,28 @@ import { productM7MutedFrame } from "./product-m7-muted-frame/data";
 import { productM7PageOrder } from "./product-m7-page-order/data";
 import { productM7WhereLinksGo } from "./product-m7-where-links-go/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
+import { storyOrUsually } from "./story-or-usually/data";
+import { myPartTeamPart } from "./my-part-team-part/data";
+import { samerDecisionWeights } from "./samer-decision-weights/data";
+import { percentFromWhat } from "./percent-from-what/data";
+import { findYourNumbers } from "./find-your-numbers/data";
+import { howMuchWasYours } from "./how-much-was-yours/data";
+import { resumeLineWhyChain } from "./resume-line-why-chain/data";
+import { tidyReasonBreaks } from "./tidy-reason-breaks/data";
+import { resumeLineAudit } from "./resume-line-audit/data";
+import { clarifyTheCase } from "./clarify-the-case/data";
+import { caseOptionsWeights } from "./case-options-weights/data";
+import { decideAndMeasure } from "./decide-and-measure/data";
+import { chooseTechnicalStory } from "./choose-technical-story/data";
+import { founderVersionFirst } from "./founder-version-first/data";
+import { engineerDepthLadder } from "./engineer-depth-ladder/data";
+import { broadToNarrowStrength } from "./broad-to-narrow-strength/data";
+import { weaknessAnswerChoice } from "./weakness-answer-choice/data";
+import { timeToThink } from "./time-to-think/data";
+import { feedbackToNextProject } from "./feedback-to-next-project/data";
+import { whyNotThatChoice } from "./why-not-that-choice/data";
+import { fiftyTimesTest } from "./fifty-times-test/data";
+import { demoTheyCanOpen } from "./demo-they-can-open/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -1592,6 +1614,28 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "product-m7-muted-frame": productM7MutedFrame,
   "product-m7-page-order": productM7PageOrder,
   "product-m7-where-links-go": productM7WhereLinksGo,
+  "story-or-usually": storyOrUsually,
+  "my-part-team-part": myPartTeamPart,
+  "samer-decision-weights": samerDecisionWeights,
+  "percent-from-what": percentFromWhat,
+  "find-your-numbers": findYourNumbers,
+  "how-much-was-yours": howMuchWasYours,
+  "resume-line-why-chain": resumeLineWhyChain,
+  "tidy-reason-breaks": tidyReasonBreaks,
+  "resume-line-audit": resumeLineAudit,
+  "clarify-the-case": clarifyTheCase,
+  "case-options-weights": caseOptionsWeights,
+  "decide-and-measure": decideAndMeasure,
+  "choose-technical-story": chooseTechnicalStory,
+  "founder-version-first": founderVersionFirst,
+  "engineer-depth-ladder": engineerDepthLadder,
+  "broad-to-narrow-strength": broadToNarrowStrength,
+  "weakness-answer-choice": weaknessAnswerChoice,
+  "time-to-think": timeToThink,
+  "feedback-to-next-project": feedbackToNextProject,
+  "why-not-that-choice": whyNotThatChoice,
+  "fifty-times-test": fiftyTimesTest,
+  "demo-they-can-open": demoTheyCanOpen,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */

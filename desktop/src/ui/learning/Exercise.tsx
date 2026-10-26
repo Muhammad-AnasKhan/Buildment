@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react';
-import { MarkdownText } from './MarkdownText';
 import { lessonBlocks } from './blocks/registry';
 import { lessonAsset } from './blocks/assets';
-import type { BlockState, AnswerResult } from '../../domain/learning';
+import type { BlockState } from '../../domain/learning';
+import { AiInterviewClient } from '@buildment/learning-ui/blocks/ai-interview/AiInterviewClient';
+import { MustReadCard } from '@buildment/learning-ui/blocks/must-read/MustReadCard';
+import { QuizClient } from '@buildment/learning-ui/blocks/exercises/QuizClient';
+import { PredictClient } from '@buildment/learning-ui/blocks/exercises/PredictClient';
+import { OpenQuestionClient } from '@buildment/learning-ui/blocks/exercises/OpenQuestionClient';
+import { CodeExerciseClient } from '@buildment/learning-ui/blocks/exercises/CodeExerciseClient';
 
 export function Exercise({
   id,
@@ -16,10 +21,7 @@ export function Exercise({
   onQuizAnswer?: (id: string, selected: string[]) => void;
 }) {
   const [block, setBlock] = useState<BlockState | null>(null);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [text, setText] = useState('');
-  const [url, setUrl] = useState('');
-  const [grade, setGrade] = useState<AnswerResult | null>(null);
+  const [read, setRead] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   useEffect(() => {
@@ -34,20 +36,7 @@ export function Exercise({
         }
         const value = result.data;
         setBlock(value);
-        if (value.type === 'QUIZ') {
-          setSelected(value.initialState?.selected || []);
-          setGrade(value.initialState);
-        }
-        if (value.type === 'PREDICT') {
-          setSelected(value.initialState ? [value.initialState.selected] : []);
-          setGrade(value.initialState);
-        }
-        if (value.type === 'CODE')
-          setText(value.initialState?.source || value.config.starterCode);
-        if (value.type === 'OPEN_QUESTION') {
-          setText(value.initialState?.text || '');
-          setUrl(value.initialState?.url || '');
-        }
+        if (value.type === 'MUST_READ') setRead(value.initialRead);
       })
       .catch(
         () =>
@@ -59,20 +48,14 @@ export function Exercise({
     };
   }, [id]);
   async function submit() {
-    if (!block || busy) return;
+    if (!block || block.type !== 'MUST_READ' || busy) return;
     setBusy(true);
     setError('');
-    let payload: Record<string, unknown> = {};
-    if (block.type === 'QUIZ') payload = { selected };
-    if (block.type === 'PREDICT') payload = { selected: selected[0] };
-    if (block.type === 'CODE') payload = { source: text };
-    if (block.type === 'OPEN_QUESTION') payload = { text, url };
-    if (block.type === 'MUST_READ') payload = { complete: true };
     try {
-      const result = await window.buildment.learning.answer(id, payload);
+      const result = await window.buildment.learning.answer(id, { complete: true });
       if (!result.ok) setError(result.message);
       else {
-        setGrade(result.data);
+        setRead(true);
         onSaved();
       }
     } catch {
@@ -92,6 +75,7 @@ export function Exercise({
     );
   const presentation = {
     VIDEO: 'Video',
+    STEPS: 'Steps',
     VISUAL_DIAGRAM: 'VisualDiagram',
     PROJECT_PREVIEW: 'ProjectPreview',
     LEARNING_OBJECTIVES: 'LearningObjectives',
@@ -108,174 +92,91 @@ export function Exercise({
       />
     );
   }
-  const choice = block.type === 'QUIZ' || block.type === 'PREDICT';
-  const batch = block.type === 'QUIZ' && quizAnswers !== undefined;
-  const answers = batch ? quizAnswers[id] || selected : selected;
-  const multiple =
-    block.type === 'QUIZ' && block.config.quizType === 'multiple';
-  const locked =
-    grade?.isCorrect === true ||
-    ('allowRetry' in block.config &&
-      block.config.allowRetry === false &&
-      grade !== null);
-  const interactive = [
-    'QUIZ',
-    'PREDICT',
-    'CODE',
-    'OPEN_QUESTION',
-    'MUST_READ',
-  ].includes(block.type);
-  return (
-    <section
-      className="my-7 space-y-5 overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm sm:p-8"
-      aria-label="Exercise"
-    >
-      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-        {block.type.replaceAll('_', ' ')}
-      </p>
-      {'prompt' in block.config && (
-        <div className="text-[17px] font-medium leading-8">
-          <MarkdownText text={String(block.config.prompt)} />
-        </div>
-      )}
-      {choice && (
-        <fieldset disabled={busy || locked} className="space-y-2">
-          <legend className="sr-only">Choose your answer</legend>
-          {block.config.options.map((option) => (
-            <label
-              key={option.id}
-              className={
-                'flex cursor-pointer items-start gap-3 rounded-xl border p-4 text-[15px] transition-colors hover:bg-muted/50 ' +
-                (answers.includes(option.id)
-                  ? 'border-primary/50 bg-primary/5 ring-1 ring-primary/20'
-                  : 'border-border')
-              }
-            >
-              <input
-                type={multiple ? 'checkbox' : 'radio'}
-                name={id}
-                checked={answers.includes(option.id)}
-                onChange={() => {
-                  let next = [option.id];
-                  if (multiple)
-                    next = answers.includes(option.id)
-                      ? answers.filter((item) => item !== option.id)
-                      : [...answers, option.id];
-                  setSelected(next);
-                  if (batch) onQuizAnswer?.(id, next);
-                }}
-                className="mt-1"
-              />
-              <MarkdownText text={option.label} />
-            </label>
-          ))}
-        </fieldset>
-      )}
-      {(block.type === 'CODE' || block.type === 'OPEN_QUESTION') && (
-        <textarea
-          aria-label={block.type === 'CODE' ? 'Your code' : 'Your answer'}
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          rows={8}
-          className="w-full rounded-lg border border-border bg-background p-3 font-mono text-sm"
-        />
-      )}
-      {block.type === 'OPEN_QUESTION' && (
-        <input
-          aria-label="Submission link"
-          placeholder="Submission link (if required)"
-          value={url}
-          onChange={(event) => setUrl(event.target.value)}
-          className="w-full rounded border border-border bg-background p-3"
-        />
-      )}
-      {block.type === 'MUST_READ' && (
-        <div>
-          <h3 className="font-semibold">{block.config.title}</h3>
-          <p>{block.config.description}</p>
-          <p className="break-all select-all text-sm">{block.config.url}</p>
-        </div>
-      )}
-      {!interactive &&
-        !['LEARNING_OBJECTIVES', 'CHAPTER_RECAP', 'PROJECT_PREVIEW'].includes(
-          block.type,
-        ) && <ContentValues value={block.config} />}
-      {interactive && !batch && (
-        <button
-          disabled={busy || locked || (choice && !selected.length)}
-          onClick={() => void submit()}
-          className="rounded-lg bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
-        >
-          {busy
-            ? 'Saving…'
-            : block.type === 'MUST_READ'
-              ? 'Mark as read'
-              : 'Submit answer'}
-        </button>
-      )}
-      {batch && (
-        <p className="text-xs text-muted-foreground">
-          Submit all answers at the end of this quiz.
-        </p>
-      )}
-      {grade && (
-        <div
-          role="status"
-          className={
-            'rounded-xl border p-4 text-sm leading-7 ' +
-            (grade.isCorrect === true
-              ? 'border-ok/30 bg-ok-soft'
-              : 'border-border bg-muted/50')
-          }
-        >
-          <p>
-            {grade.isCorrect === true
-              ? 'Correct'
-              : grade.isCorrect === false
-                ? 'Not correct yet'
-                : 'Answer saved'}
-          </p>
-          {grade.score !== null && (
-            <p>
-              Score: {grade.score} / {grade.maxScore}
-            </p>
-          )}
-          {grade.explanation && (
-            <div className="mt-2">
-              <MarkdownText text={grade.explanation} />
-            </div>
-          )}
-        </div>
-      )}
-      {error && <p role="alert">{error}</p>}
-    </section>
-  );
-}
-
-function ContentValues({ value }: { value: unknown }) {
-  if (typeof value === 'string' || typeof value === 'number')
-    return <p className="whitespace-pre-wrap leading-7">{String(value)}</p>;
-  if (Array.isArray(value))
+  if (block.type === 'MUST_READ')
     return (
-      <ul className="space-y-3">
-        {value.map((item, index) => (
-          <li key={index}>
-            <ContentValues value={item} />
-          </li>
-        ))}
-      </ul>
+      <MustReadCard
+        title={block.config.title}
+        href={block.config.url}
+        summary={block.config.description}
+        source={block.config.source}
+        readMinutes={block.config.readMinutes}
+        blockId={id}
+        required={block.required}
+        read={read}
+        disabled={busy}
+        error={error}
+        onReadChange={() => void submit()}
+      />
     );
-  if (value && typeof value === 'object')
+  if (block.type === 'AI_INTERVIEW')
     return (
-      <div className="space-y-3">
-        {Object.entries(value)
-          .filter(([key]) => !['id', 'type'].includes(key))
-          .map(([key, item]) => (
-            <div key={key}>
-              <ContentValues value={item} />
-            </div>
-          ))}
-      </div>
+      <AiInterviewClient
+        config={block.config}
+        initialState={block.initialState}
+        request={async (action, payload) => {
+          const result = await window.buildment.learning.aiInterview(id, action, payload);
+          if (!result.ok) throw Object.assign(new Error(result.message), { code: result.code });
+          return result.data.session;
+        }}
+        onComplete={onSaved}
+      />
+    );
+  async function respond(payload: Record<string, unknown>) {
+    const { type: _type, ...answer } = payload;
+    const result = await window.buildment.learning.answer(id, answer);
+    if (!result.ok) throw new Error(result.message);
+    return result.data;
+  }
+  if (block.type === 'QUIZ')
+    return (
+      <QuizClient
+        id={id}
+        config={block.config}
+        initialState={quizAnswers ? {
+          selected: quizAnswers[id] ?? block.initialState?.selected ?? [],
+          isCorrect: block.initialState?.isCorrect ?? null,
+          score: block.initialState?.score ?? null,
+          maxScore: block.initialState?.maxScore ?? null,
+          explanation: block.initialState?.explanation,
+        } : block.initialState}
+        presentation={quizAnswers === undefined ? 'standalone' : 'wizard'}
+        onAnswerChange={(answers) => onQuizAnswer?.(id, answers)}
+        onRespond={respond}
+        onComplete={onSaved}
+      />
+    );
+  if (block.type === 'PREDICT')
+    return (
+      <PredictClient
+        id={id}
+        config={block.config}
+        initialState={block.initialState}
+        onRespond={respond}
+        onComplete={onSaved}
+      />
+    );
+  if (block.type === 'OPEN_QUESTION')
+    return (
+      <OpenQuestionClient
+        id={id}
+        config={block.config}
+        initialState={block.initialState}
+        groupPosition={block.group.position}
+        questionIndex={block.group.index}
+        questionTotal={block.group.total}
+        onRespond={respond}
+        onComplete={onSaved}
+      />
+    );
+  if (block.type === 'CODE')
+    return (
+      <CodeExerciseClient
+        id={id}
+        config={block.config}
+        initialState={block.initialState}
+        onRespond={respond}
+        onComplete={onSaved}
+      />
     );
   return null;
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { ComponentKind } from "@/lab/catalog";
-import type { Board } from "@/lab/types";
-import { runTieredModel } from "@/lab/tiered-architecture";
+import type { ComponentKind } from "@buildment/learning-ui/labs/catalog";
+import type { Board } from "@buildment/learning-ui/labs/types";
+import { runTieredModel } from "@buildment/learning-ui/labs/tiered-architecture";
 
 const TARGETS = { rps: 5000, p99Ms: 200, availability: 0.999, budgetPerHour: 2 };
 

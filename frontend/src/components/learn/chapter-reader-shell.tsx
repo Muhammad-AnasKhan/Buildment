@@ -24,7 +24,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import type { HelpThreadView } from "@/shared/api/help";
 import type { StreakMilestone } from "@/shared/lib/streak";
 import { HeadingNotesProvider } from "@/components/learn/heading-note";
-import { PredictRevealProvider } from "@/components/learn/predict-reveal";
+import { PredictRevealProvider } from "@buildment/learning-ui/components/learn/predict-reveal";
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
