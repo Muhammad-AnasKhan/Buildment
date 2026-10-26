@@ -28,7 +28,7 @@ The chapter's worked example shows one problem asked two ways, and its studies s
 - Primary: the shared state-machine renderer.
 - Grid: 3 columns by 2 rows, one row per way of using the AI. No edges between rows, no diagonals, no loops.
 - Edge labels: "answer given" (12), "practice done" (13), "one hint" (8), "practice done" (13), all within 14 characters. In the narrow layout the two rows become two columns of vertical edges; row 0 labels sit at x 80 to about 176 and row 1 labels at x 230 to about 326, so they never meet.
-- Static fallback: chapter 1.4 states all four numbers in prose after the canvas.
+- Static fallback: chapter 1.6 states all four numbers in prose after the canvas.
 
 ## Controls
 Shared stepper controls only.
@@ -48,7 +48,7 @@ Six pills, four arrows. Tones: warn with "20 of 20" on Kinan's practice (a high 
 ## Edge cases
 - Two states share the name "Exam alone"; their ids differ and their row tells them apart.
 - Steps 2, 4 and 7 light a state with no edge.
-- Every number matches chapter 1.4 exactly.
+- Every number matches chapter 1.6 exactly.
 
 ## Accessibility
 Shared stepper keyboard support and focus ring; `summary` gives both paths and all four numbers for screen readers; tones always have a text badge.
@@ -58,10 +58,10 @@ Shared stepper keyboard support and focus ring; `summary` gives both paths and a
 - [x] The model is tested: registry consistency, label-fit and label-overlap tests, once registered.
 - [x] The design is simple and legible: two parallel rows.
 - [x] Prediction before (chapter predict, first line of `tryThis`), transfer check after.
-- [x] Reader fallback exists: the prose in chapter 1.4.
+- [x] Reader fallback exists: the prose in chapter 1.6.
 
 ## Build plan
 `packages/learning-ui/src/canvas/answers-or-hints/data.ts`, export `answersOrHints` (StateMachineSpec). To be registered by the orchestrator in `packages/learning-ui/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.
 
 ## Placement
-Chapter 1.4, section "Kinan and Lubna's test", after the predict and before "What the studies found".
+Chapter 1.6, section "Kinan and Lubna's test", after the predict and before "What the studies found".

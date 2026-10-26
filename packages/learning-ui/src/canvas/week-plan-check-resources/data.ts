@@ -1,6 +1,6 @@
 import type { SequenceSpec } from "../renderers/sequence/types";
 
-// Learn and Build with AI course, chapter 5.3 "A weekly plan, one area at a
+// Learn and Build with AI course, chapter 7.3 "A weekly plan, one area at a
 // time". Yara plans her caching week for Qasir: she asks a chat assistant for
 // resources, checks that each one exists and is current (one book does not
 // exist), replaces it with official docs she found herself, and writes the

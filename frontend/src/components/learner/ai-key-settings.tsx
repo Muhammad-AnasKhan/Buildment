@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { apiFetch } from "@/lib/api-client";
-import { friendlyError } from "@/blocks/ai-interview/interview-model";
+import { friendlyError } from "@buildment/learning-ui/blocks/ai-interview/interview-model";
 import type { AiCredentialStatus } from "@/shared/api/ai";
 import { AiKeySettingsView, type AiKeyBusy } from "./ai-key-settings-view";
 

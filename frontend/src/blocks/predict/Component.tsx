@@ -1,7 +1,7 @@
 import { fetchBlockState } from "@/blocks/block-state";
 import type { SanitizedPredictConfig } from "@/shared/blocks/predict/schema";
 import { PredictClient } from "./PredictClient";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 
 export type PredictOptionInput = string | { id?: string; label: string };
 

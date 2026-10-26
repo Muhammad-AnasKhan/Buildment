@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChapterSidebar, SidebarToggle } from "@/components/learn/chapter-sidebar";
@@ -24,7 +24,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import type { HelpThreadView } from "@/shared/api/help";
 import type { StreakMilestone } from "@/shared/lib/streak";
 import { HeadingNotesProvider } from "@/components/learn/heading-note";
-import { PredictRevealProvider } from "@/components/learn/predict-reveal";
+import { ChapterAudio } from "@/components/learn/chapter-audio";
+import type { ChapterNarration } from "@/lib/narration";
+import { PredictRevealProvider } from "@buildment/learning-ui/components/learn/predict-reveal";
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
@@ -78,6 +80,7 @@ export function ChapterReaderShell({
   predictRevealed = true,
   courseId,
   helpThread,
+  narration = null,
   user,
   signOutAction,
   children,
@@ -109,6 +112,8 @@ export function ChapterReaderShell({
   predictRevealed?: boolean;
   courseId: string;
   helpThread: HelpThreadView | null;
+  /** Listen-along audio for this chapter, when its course has it. */
+  narration?: ChapterNarration | null;
   modules: SyllabusModule[];
   headings: Heading[];
   prev?: { slug: string; title: string; moduleOrder: number; order: number };
@@ -357,6 +362,8 @@ export function ChapterReaderShell({
                 "flex-1 overflow-y-auto",
                 focusMode ? "px-4 pt-10 pb-24 sm:px-8 lg:px-16" : "px-4 pt-8 pb-24 sm:px-6 lg:px-10"
               )}
+              // The Listen player cancels this top padding so it can sit flush with the top edge while pinned.
+              style={{ "--reader-pt": focusMode ? "2.5rem" : "2rem" } as CSSProperties}
             >
               {/* ~70 characters per line at 18px: long chapters stay comfortable to read. */}
               <div className="mx-auto max-w-[40rem]">
@@ -397,6 +404,11 @@ export function ChapterReaderShell({
                     </p>
                   )}
                 </header>
+
+                {/* Outside the header so it can stay pinned to the top while the chapter scrolls. */}
+                {narration && readerMode !== "QUIZ" ? (
+                  <ChapterAudio className="-mt-4 mb-8" src={narration.src} minutes={narration.minutes} bytes={narration.bytes} title={chapterTitle} />
+                ) : null}
 
                 <LearningLogProvider chapterId={chapterId} initialAnswers={learningLogAnswers}>
                   <ChecklistProvider chapterId={chapterId} initialChecks={checklistState}>

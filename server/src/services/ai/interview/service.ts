@@ -1,7 +1,10 @@
 import { blockDefinitions } from "../../../shared/blocks/definitions.js";
 import {
   AI_INTERVIEW_LIMITS,
+  contextFields,
+  interviewContext,
   AiInterviewFeedbackSchema,
+  AiInterviewFlagSchema,
   AiInterviewTranscriptSchema,
   AiInterviewFocusSchema,
   type AiInterviewConfig,
@@ -25,12 +28,15 @@ import {
   buildFeedbackMessages,
   buildInterviewMessages,
   buildInterviewSystemPrompt,
+  hasPromptContext,
+  NO_PROMPT_CONTEXT,
   cleanQuestion,
   extractJsonObject,
   fallbackQuestion,
   feedbackJsonSchema,
   leaksPrivateText,
   planNextQuestion,
+  type PromptContext,
 } from "./prompts.js";
 
 // The AI interview: start, answer, finish and abandon one session of an
@@ -66,6 +72,7 @@ export function toSessionView(row: AiInterviewSession, config: Pick<AiInterviewC
     id: row.id,
     status: row.status,
     context: row.context,
+    contextWork: row.contextWork,
     transcript: readTranscript(row.transcript),
     turnCount: row.turnCount,
     maxTurns: config.maxTurns,
@@ -123,7 +130,7 @@ function conflict(): never {
 // ---- Start -----------------------------------------------------------------------
 
 export async function startAiInterview(
-  input: { blockId: string; user: SessionUser | undefined; context?: string | null },
+  input: { blockId: string; user: SessionUser | undefined; context?: string | null; contextWork?: string | null },
   deps: InterviewDeps = {}
 ): Promise<AiInterviewSessionView> {
   const { config, learner } = await loadInterviewBlock(input.blockId, input.user);
@@ -138,16 +145,18 @@ export async function startAiInterview(
   });
   if (existing) return toSessionView(existing, config);
 
-  let context: string | null = null;
-  if (config.context !== "none") {
-    context = (input.context ?? "").trim();
-    const what = config.context === "resume" ? "resume" : "project description";
-    if (context.length < AI_INTERVIEW_LIMITS.contextMinChars) {
-      throw new BadRequestError(`Paste your ${what} first. It needs at least ${AI_INTERVIEW_LIMITS.contextMinChars} characters.`, "AI_INTERVIEW_CONTEXT_REQUIRED");
+  // One box per field the block asks for, each with its own length limits.
+  const values: Record<"context" | "contextWork", string | null> = { context: null, contextWork: null };
+  for (const box of contextFields(config.context)) {
+    const text = (input[box.field] ?? "").trim();
+    const what = box.label.replace(/^Your /, "");
+    if (text.length < box.min) {
+      throw new BadRequestError(`Paste your ${what} first. It needs at least ${box.min} characters.`, "AI_INTERVIEW_CONTEXT_REQUIRED");
     }
-    if (context.length > AI_INTERVIEW_LIMITS.contextMaxChars) {
-      throw new BadRequestError(`Your ${what} is too long. Keep it under ${AI_INTERVIEW_LIMITS.contextMaxChars} characters.`, "AI_INTERVIEW_CONTEXT_TOO_LONG");
+    if (text.length > box.max) {
+      throw new BadRequestError(`Your ${what} is too long. Keep it under ${box.max} characters.`, "AI_INTERVIEW_CONTEXT_TOO_LONG");
     }
+    values[box.field] = text;
   }
 
   const opening: AiInterviewTurn = {
@@ -161,7 +170,8 @@ export async function startAiInterview(
     data: {
       userId: learner.id,
       blockId: input.blockId,
-      context,
+      context: values.context,
+      contextWork: values.contextWork,
       transcript: [opening] as unknown as Prisma.InputJsonValue,
       model: credential.model ?? defaultInterviewModel(),
     },
@@ -200,7 +210,7 @@ export async function answerAiInterview(
     const { apiKey, model: chosen } = await loadAiKeyForUse(learner.id, deps);
     model = chosen;
     const plan = planNextQuestion(config, withAnswer);
-    const messages = buildInterviewMessages(config, plan, withAnswer, session.context);
+    const messages = buildInterviewMessages(config, plan, withAnswer, interviewContext(config.context, session));
     const reply = await createChatCompletion({
       apiKey,
       model: chosen,
@@ -210,7 +220,7 @@ export async function answerAiInterview(
       fetchImpl: deps.fetchImpl,
     });
     const cleaned = cleanQuestion(reply);
-    const unusable = !cleaned || leaksPrivateText(cleaned, [config.rubric, buildInterviewSystemPrompt(config, plan, Boolean(session.context))]);
+    const unusable = !cleaned || leaksPrivateText(cleaned, [config.rubric, buildInterviewSystemPrompt(config, plan, hasPromptContext(interviewContext(config.context, session)))]);
     next = [
       ...withAnswer,
       {
@@ -235,8 +245,16 @@ export async function answerAiInterview(
 
 // ---- Finish ----------------------------------------------------------------------
 
-/** Keep what the model returned that we can use; the Zod schema then decides if it is enough. */
-function normaliseFeedback(raw: unknown, config: AiInterviewConfig): unknown {
+function squash(value: string): string {
+  return value.toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+/**
+ * Keep what the model returned that we can use; the Zod schema then decides if it is enough.
+ * A flag stays only when its quote really is the learner's words, so a made-up quote never
+ * reaches the learner or a mentor.
+ */
+function normaliseFeedback(raw: unknown, config: AiInterviewConfig, transcript: AiInterviewTurn[]): unknown {
   if (!raw || typeof raw !== "object") return raw;
   const value = raw as Record<string, unknown>;
   const focusNotes = Array.isArray(value.focusNotes)
@@ -245,7 +263,16 @@ function normaliseFeedback(raw: unknown, config: AiInterviewConfig): unknown {
         return AiInterviewFocusSchema.safeParse(focus).success && config.focus.includes(focus as AiInterviewConfig["focus"][number]);
       })
     : [];
-  return { ...value, focusNotes };
+  const said = transcript.filter((turn) => turn.role === "candidate").map((turn) => squash(turn.content));
+  const flags = Array.isArray(value.flags)
+    ? value.flags.filter((item) => {
+        const flag = item as { name?: unknown; quote?: unknown } | null;
+        if (typeof flag?.quote !== "string" || !AiInterviewFlagSchema.shape.name.safeParse(flag.name).success) return false;
+        const quote = squash(flag.quote);
+        return quote.length > 0 && said.some((answer) => answer.includes(quote));
+      }).map((item) => ({ name: (item as { name: unknown }).name, quote: String((item as { quote: string }).quote).trim().slice(0, 300) }))
+    : [];
+  return { ...value, focusNotes, flags };
 }
 
 async function requestFeedback(
@@ -253,7 +280,7 @@ async function requestFeedback(
   model: string,
   config: AiInterviewConfig,
   transcript: AiInterviewTurn[],
-  context: string | null,
+  context: PromptContext,
   fetchImpl: typeof fetch | undefined
 ): Promise<AiInterviewFeedback> {
   const messages = buildFeedbackMessages(config, transcript, context);
@@ -269,9 +296,9 @@ async function requestFeedback(
     if (!(error instanceof AiError) || error.code !== "AI_MODEL_UNAVAILABLE") throw error;
     reply = await createChatCompletion(base);
   }
-  const parsed = AiInterviewFeedbackSchema.safeParse(normaliseFeedback(extractJsonObject(reply), config));
+  const parsed = AiInterviewFeedbackSchema.safeParse(normaliseFeedback(extractJsonObject(reply), config, transcript));
   if (!parsed.success) throw new AiError("AI_BAD_OUTPUT");
-  const systemPrompt = buildFeedbackMessages(config, [], null)[0]!.content;
+  const systemPrompt = buildFeedbackMessages(config, [], NO_PROMPT_CONTEXT)[0]!.content;
   if (leaksPrivateText(JSON.stringify(parsed.data), [config.rubric, systemPrompt])) throw new AiError("AI_BAD_OUTPUT");
   return parsed.data;
 }
@@ -291,7 +318,7 @@ export async function finishAiInterview(
 
   const transcript = readTranscript(session.transcript);
   const { apiKey, model } = await loadAiKeyForUse(learner.id, deps);
-  const feedback = await requestFeedback(apiKey, model, config, transcript, session.context, deps.fetchImpl);
+  const feedback = await requestFeedback(apiKey, model, config, transcript, interviewContext(config.context, session), deps.fetchImpl);
 
   const finishedAt = new Date();
   const payload: AiInterviewPayload = { sessionId: session.id, turns: session.turnCount, transcript, feedback };

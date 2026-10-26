@@ -1,6 +1,6 @@
 import type { StateMachineSpec } from "../renderers/state-machine/types";
 
-// Learn and Build with AI course, chapter 6.3 "Say when AI helped".
+// Learn and Build with AI course, chapter 10.3 "Say when AI helped".
 // Hani's new post about the stock app he built for the print and copy shop where he works: list what AI did,
 // write the three-part AI-use line, check the rules where he posts, publish,
 // and correct openly when a reader finds a mistake. "All my own work" is

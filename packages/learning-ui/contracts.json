@@ -5,5 +5,7 @@
   "blocks/visual-walkthrough/schema.ts",
   "blocks/roadmap/schema.ts",
   "canvas/slugs.ts",
-  "api/integrity.ts"
+  "api/integrity.ts",
+  "api/ai.ts",
+  "blocks/ai-interview/schema.ts"
 ]

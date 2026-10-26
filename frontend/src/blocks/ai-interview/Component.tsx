@@ -1,5 +1,5 @@
 import { fetchBlockState } from "@/blocks/block-state";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 import { AiInterviewClient } from "./AiInterviewClient";
 
 /**

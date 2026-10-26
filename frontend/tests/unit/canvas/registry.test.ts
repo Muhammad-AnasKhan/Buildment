@@ -172,10 +172,16 @@ describe("canvas source stays inside the SVG rules", () => {
     expect(files.length).toBeGreaterThan(5);
   });
 
+  // A contrast lesson must show literal colours, because the ratio between two
+  // exact colours is what it teaches (product-sense decision log, 2026-10-25).
+  // Every other canvas uses theme tokens.
+  const LITERAL_COLOUR_LESSONS = ["product-m2-contrast-ladder/data.ts", "product-m2-large-text/data.ts", "product-m2-wasel-before/data.ts"];
+
   for (const file of files) {
     it(`${file.replace(/\\/g, "/")}`, () => {
       const source = fs.readFileSync(file, "utf8");
-      expect(source, "hex colour: use theme tokens").not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
+      const literalColours = LITERAL_COLOUR_LESSONS.some((f) => file.replace(/\\/g, "/").endsWith(f));
+      if (!literalColours) expect(source, "hex colour: use theme tokens").not.toMatch(/#[0-9a-fA-F]{3,8}\b/);
       expect(source).not.toMatch(/dangerouslySetInnerHTML/);
       expect(source).not.toMatch(/foreignObject|<script|<animate|javascript:|xlinkHref|<image\b/);
       expect(source, "SVG <use> can pull in outside content").not.toMatch(/<use\b/);

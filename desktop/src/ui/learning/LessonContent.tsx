@@ -1,10 +1,11 @@
-import { cloneElement, createElement, isValidElement, useState } from 'react';
+import { cloneElement, createElement, isValidElement } from 'react';
 import type { Lesson, LessonNode } from '../../domain/learning';
 import { Exercise } from './Exercise';
-import { LearningLog } from './LearningLog';
 import { lessonBlocks } from './blocks/registry';
 import { lessonAsset } from './blocks/assets';
 import { BlockBoundary } from './blocks/BlockBoundary';
+import { Checklist } from '@buildment/learning-ui/components/learn/checklist';
+import { LearningLog } from '@buildment/learning-ui/components/learn/learning-log';
 
 type Props = {
   node: LessonNode;
@@ -123,8 +124,10 @@ export function LessonContent(props: Props): React.ReactNode {
         'CodeExercise',
         'OpenQuestion',
         'MustRead',
+        'AiInterview',
         'Video',
         'VideoBlock',
+        'Steps',
         'ChapterRecap',
         'LearningObjectives',
         'ProjectPreview',
@@ -149,31 +152,29 @@ export function LessonContent(props: Props): React.ReactNode {
         questions = [];
       }
     }
-    if (node.name === 'LearningLog' && Array.isArray(questions))
+    if (node.name === 'LearningLog' && (Array.isArray(questions) || typeof questions === 'string'))
       return (
         <LearningLog
-          chapterId={lesson.chapter.id}
-          questions={questions.filter(
-            (q) => typeof q.id === 'string' && typeof q.title === 'string',
-          )}
-          initial={lesson.content?.learningLogAnswers || {}}
-          onSaved={onSaved}
+          questions={questions}
+          initialAnswers={lesson.content?.learningLogAnswers || {}}
+          onSave={async (answers) => {
+            const result = await window.buildment.learning.saveLog(lesson.chapter.id, answers);
+            if (result.ok) onSaved();
+            return { ok: result.ok };
+          }}
         />
       );
     if (node.name === 'Checklist' && Array.isArray(attributes.items))
       return (
-        <div className="my-5 space-y-3">
-          {attributes.items.map((item: any) => (
-            <ChecklistItem
-              key={item.id}
-              chapterId={lesson.chapter.id}
-              id={item.id}
-              label={item.label}
-              initial={lesson.content?.checklistState[item.id] || false}
-              onSaved={onSaved}
-            />
-          ))}
-        </div>
+        <Checklist
+          items={attributes.items}
+          initialChecks={lesson.content?.checklistState || {}}
+          onToggle={async (itemId, checked) => {
+            const result = await window.buildment.learning.checklist(lesson.chapter.id, itemId, checked);
+            if (!result.ok) throw new Error(result.message);
+            onSaved();
+          }}
+        />
       );
     const Component = lessonBlocks[node.name || ''];
     if (Component)
@@ -213,56 +214,4 @@ export function LessonContent(props: Props): React.ReactNode {
   }
   // Imports, scripts, and MDX expressions are never executed or injected as HTML.
   return <>{children}</>;
-}
-
-function ChecklistItem({
-  chapterId,
-  id,
-  label,
-  initial,
-  onSaved,
-}: {
-  chapterId: string;
-  id: string;
-  label: string;
-  initial: boolean;
-  onSaved: () => void;
-}) {
-  const [checked, setChecked] = useState(initial);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  async function change() {
-    setBusy(true);
-    try {
-      const result = await window.buildment.learning.checklist(
-        chapterId,
-        id,
-        !checked,
-      );
-      if (!result.ok) setError(result.message);
-      else {
-        setChecked(!checked);
-        setError('');
-        onSaved();
-      }
-    } catch {
-      setError('Could not save this checklist item.');
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <div>
-      <label className="flex gap-3">
-        <input
-          type="checkbox"
-          disabled={busy}
-          checked={checked}
-          onChange={() => void change()}
-        />
-        {label}
-      </label>
-      {error && <p role="alert">{error}</p>}
-    </div>
-  );
 }

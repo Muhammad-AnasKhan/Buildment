@@ -1,6 +1,6 @@
 import type { StateMachineSpec } from "../renderers/state-machine/types";
 
-// Learn and Build with AI course, chapter 1.3 "You make the call".
+// Learn and Build with AI course, chapter 1.5 "You make the call".
 // Dina's second try at the sports club timetable: the AI drafts two options,
 // Dina checks them against facts only she has, chooses the AI's pick because it
 // passed her checks, and owns the result. The machine refuses "AI decides" and

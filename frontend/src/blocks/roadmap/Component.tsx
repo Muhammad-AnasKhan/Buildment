@@ -1,7 +1,7 @@
 import { fetchBlockState } from "@/blocks/block-state";
 import type { RoadmapConfig } from "@/shared/blocks/roadmap/schema";
-import { RoadmapClient } from "./RoadmapClient";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { RoadmapClient } from "@buildment/learning-ui/blocks/roadmap/RoadmapClient";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 
 export async function RoadmapComponent({
   id,

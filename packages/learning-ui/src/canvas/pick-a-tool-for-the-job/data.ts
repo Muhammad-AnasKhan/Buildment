@@ -9,7 +9,7 @@ import type { FactorSpec } from "../renderers/factor/types";
 export const pickAToolForTheJob: FactorSpec = {
   kind: "factor",
   title: "Which kind of tool for this job?",
-  purpose: "Change how much each need matters for your job, and see which kind of tool comes out ahead.",
+  purpose: "Change how much each need matters for your job, and see which kind of tool wins.",
   whatThisShows:
     "Three kinds of AI tool, each scored from 1 to 5 on four needs a study job can have. Each score is multiplied by how much that need matters for your job, and the results are added up. No kind of tool leads for every job.",
   options: [
