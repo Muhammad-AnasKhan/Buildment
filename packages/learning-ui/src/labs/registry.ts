@@ -14,6 +14,9 @@ import { linuxSingleHost } from "./linux-single-host/data";
 import { netExploreOffice } from "./net-explore-office/data";
 import { netLabFixOffice } from "./net-lab-fix-office/data";
 import { netLabPlanSchool } from "./net-lab-plan-school/data";
+import { netLabBuildTwoSubnets } from "./net-lab-build-two-subnets/data";
+import { netLabHomeRouter } from "./net-lab-home-router/data";
+import { netLabNoInternet } from "./net-lab-no-internet/data";
 
 export const labRegistry: Record<string, LabSpec> = {
   "hld-m2-utilisation-knee": hldM2UtilisationKnee,
@@ -27,6 +30,9 @@ export const labRegistry: Record<string, LabSpec> = {
   "net-explore-office": netExploreOffice,
   "net-lab-fix-office": netLabFixOffice,
   "net-lab-plan-school": netLabPlanSchool,
+  "net-lab-build-two-subnets": netLabBuildTwoSubnets,
+  "net-lab-home-router": netLabHomeRouter,
+  "net-lab-no-internet": netLabNoInternet,
 };
 
 export function getLabSpec(slug: string): LabSpec | null {

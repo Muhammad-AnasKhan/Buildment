@@ -8,7 +8,7 @@
 import { useMemo, useRef, useState } from "react";
 import type { NetLabSpec } from "../types";
 import type { NetCheck, NetCheckResult } from "./checks";
-import { describeTarget, runChecks } from "./checks";
+import { describeCheck, runChecks } from "./checks";
 import type { CommandResult } from "./commands";
 import { prompt, runCommand } from "./commands";
 import type { Frame, NetEvent, Run } from "./engine";
@@ -251,7 +251,7 @@ function Checks({ checks, results }: { checks: NetCheck[]; results: NetCheckResu
               <span>
                 {c.label}
                 <span className="block font-mono text-[11px] text-muted-foreground">
-                  {c.from} {c.kind === "tcp" ? "connects to" : "pings"} {describeTarget(c)}: {r?.reached ? "reached" : "not reached"}
+                  {describeCheck(c)}: {c.kind === "tcp" || c.kind === "ping" ? (r?.reached ? "reached" : "not reached") : r?.pass ? "yes" : "not yet"}
                 </span>
               </span>
             </li>

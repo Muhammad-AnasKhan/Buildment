@@ -16,6 +16,9 @@ export const LAB_SLUGS = [
   "net-explore-office",
   "net-lab-fix-office",
   "net-lab-plan-school",
+  "net-lab-build-two-subnets",
+  "net-lab-home-router",
+  "net-lab-no-internet",
 ] as const;
 
 export type LabSlug = (typeof LAB_SLUGS)[number];
