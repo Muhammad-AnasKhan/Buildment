@@ -73,6 +73,8 @@ export type NotificationItem = {
   courseId: string | null;
   readAt: string | null;
   createdAt: string;
+  /** review.feedback only: what the mentor decided (absent on notifications sent before it was stored). */
+  verdict?: "APPROVED" | "NEEDS_REVISION";
 };
 
 export type NotificationFeed = {

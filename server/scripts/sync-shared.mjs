@@ -28,8 +28,10 @@ const forFrontend = (source) => HEADER + source.replace(/(from\s+["'])(\.{1,2}\/
 
 const expected = new Map();
 for (const file of walk(SOURCE)) {
-  if (!file.endsWith(".ts") || file.endsWith(".test.ts")) continue;
-  expected.set(path.relative(SOURCE, file), forFrontend(fs.readFileSync(file, "utf8")));
+  const rel = path.relative(SOURCE, file);
+  // JSON (mascot messages) has no comment syntax, so it is copied as is; --check still catches edits.
+  if (file.endsWith(".json")) expected.set(rel, fs.readFileSync(file, "utf8"));
+  else if (file.endsWith(".ts") && !file.endsWith(".test.ts")) expected.set(rel, forFrontend(fs.readFileSync(file, "utf8")));
 }
 
 const actual = new Map();
