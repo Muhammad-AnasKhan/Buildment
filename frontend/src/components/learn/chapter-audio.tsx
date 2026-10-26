@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Download, Pause, Play } from "lucide-react";
-import { formatClock, formatListenMinutes, formatMegabytes, formatSpeed, nextSpeed, resumePosition } from "@/lib/narration-format";
+import { NARRATION_SPEEDS, formatClock, formatListenMinutes, formatMegabytes, formatSpeed, resumePosition, shouldPinPlayer } from "@/lib/narration-format";
 import { cn } from "@/lib/utils";
 
 type Status = "idle" | "loading" | "playing" | "paused" | "error";
@@ -27,7 +27,7 @@ function writeSaved(key: string, seconds: number) {
  * Listen-along audio for a chapter. Nothing is downloaded until the learner presses play,
  * so reading on a slow or metered connection costs nothing extra.
  */
-export function ChapterAudio({ src, minutes, bytes, title }: { src: string; minutes: number; bytes: number; title: string }) {
+export function ChapterAudio({ src, minutes, bytes, title, className }: { src: string; minutes: number; bytes: number; title: string; className?: string }) {
   const audio = useRef<HTMLAudioElement>(null);
   const lastSaved = useRef(0);
   const [status, setStatus] = useState<Status>("idle");
@@ -53,6 +53,21 @@ export function ChapterAudio({ src, minutes, bytes, title }: { src: string; minu
     void element.play().catch(() => setStatus("error"));
   }
 
+  /** Sets the speed the browser actually accepts, so the drop-down never shows a speed that is not playing. */
+  function changeSpeed(requested: number) {
+    const element = audio.current;
+    if (element) {
+      try {
+        element.playbackRate = requested;
+      } catch {
+        // A browser that refuses a very fast rate keeps its current one.
+      }
+      setSpeed(element.playbackRate);
+      return;
+    }
+    setSpeed(requested);
+  }
+
   function seek(value: number) {
     const element = audio.current;
     if (!element || !duration) return;
@@ -60,10 +75,14 @@ export function ChapterAudio({ src, minutes, bytes, title }: { src: string; minu
     setTime(value);
   }
 
+  // The reader pads its top, so the pinned offset cancels that padding to sit flush with the top edge.
+  const pinned = shouldPinPlayer(status, time, duration);
   const label = status === "playing" ? "Pause" : status === "loading" ? "Loading" : "Play";
 
   return (
-    <section aria-label="Listen to this chapter" className="mt-6 rounded-lg border border-border bg-card px-4 py-3 text-card-foreground">
+    <section aria-label="Listen to this chapter" className={cn("rounded-lg border border-border bg-card px-4 py-3 text-card-foreground", pinned && "sticky z-30 shadow-md", className)}
+      style={pinned ? { top: "calc(var(--reader-pt, 0px) * -1)" } : undefined}
+    >
       <audio
         ref={audio}
         src={src}
@@ -117,14 +136,18 @@ export function ChapterAudio({ src, minutes, bytes, title }: { src: string; minu
                   : `Plays when you press play · ${formatMegabytes(bytes)}`}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => setSpeed(nextSpeed(speed))}
-          aria-label={`Speed ${formatSpeed(speed)}. Press to change.`}
-          className="shrink-0 rounded-md border border-border px-2.5 py-1 font-mono text-xs tabular-nums text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        <select
+          value={speed}
+          onChange={(event) => changeSpeed(Number(event.target.value))}
+          aria-label="Playback speed"
+          className="shrink-0 cursor-pointer rounded-md border border-border bg-background px-1.5 py-1 font-mono text-xs tabular-nums text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
-          {formatSpeed(speed)}
-        </button>
+          {NARRATION_SPEEDS.map((option) => (
+            <option key={option} value={option}>
+              {formatSpeed(option)}
+            </option>
+          ))}
+        </select>
         <a
           href={src}
           download

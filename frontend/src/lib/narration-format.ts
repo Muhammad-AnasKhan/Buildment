@@ -1,11 +1,16 @@
 // Small pure helpers shared by the Listen player and its tests.
 
-export const NARRATION_SPEEDS = [1, 1.25, 1.5, 0.85] as const;
-
-export function nextSpeed(current: number): number {
-  const index = NARRATION_SPEEDS.indexOf(current as (typeof NARRATION_SPEEDS)[number]);
-  return NARRATION_SPEEDS[(index + 1) % NARRATION_SPEEDS.length]!;
+/**
+ * Keep the player pinned to the top of the reader while someone is listening: playing, loading, or paused
+ * partway through so they can resume. Before the first play, or once it has finished, it scrolls with the page.
+ */
+export function shouldPinPlayer(status: string, time: number, duration: number): boolean {
+  if (status === "playing" || status === "loading") return true;
+  return status === "paused" && duration > 0 && time > 0 && time < duration - 1;
 }
+
+/** Playback speeds in the drop-down: a slower option, then normal up to 4x in quarter steps. */
+export const NARRATION_SPEEDS: readonly number[] = [0.75, ...Array.from({ length: 13 }, (_, step) => 1 + step * 0.25)];
 
 export function formatSpeed(speed: number): string {
   return `${speed}x`;
