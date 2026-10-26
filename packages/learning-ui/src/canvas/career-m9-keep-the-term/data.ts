@@ -7,7 +7,7 @@ export const careerM9KeepTheTerm: SceneSpec = {
   kind: "scene",
   title: "When the feedback is wrong",
   purpose: "A 'jargon' flag lands on 'composite index'. Areej decides to keep the term for engineering readers, and sends the explanation to her case study. The decision is hers, with a reason.",
-  limits: "Areej is a fictional fellow. A flag is feedback, not a rule, but a flag you reject needs a reason a reader can follow. The mentor's review counts alongside any tool. Course 14 teaches reading feedback critically.",
+  limits: "A flag is feedback, not a rule, but a flag you reject needs a reason a reader can follow. The mentor's review counts alongside any tool. The companion course, The Founder Interview, teaches reading feedback critically.",
   hint: "A flag you keep needs a reason.",
   scene: {
     width: 420,

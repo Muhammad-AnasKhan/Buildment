@@ -25,7 +25,7 @@ From the canon: Ismail's ledger row is escaped bugs per release from the bug tra
 {
   "title": "He opens the ledger",
   "purpose": "Ismail opens his ledger row: escaped bugs per release from the bug tracker, 10 over five releases before and 6 over five after. His regression checklist is his change. The team also began code review in the same period, so he says the drop is shared.",
-  "limits": "Ismail is a fictional fellow and his numbers are illustrative. 10 to 6 is 40 percent. A before and after of this kind is a weak design, which is why he names what else changed.",
+  "limits": "His numbers are illustrative. 10 to 6 is 40 percent. A plain before and after cannot prove that the checklist caused the drop, which is why he names what else changed.",
   "hint": "Source, window, his change, what else changed.",
   "scene": {
     "width": 420,

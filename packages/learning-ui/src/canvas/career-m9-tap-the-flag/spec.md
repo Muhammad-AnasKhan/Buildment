@@ -26,11 +26,11 @@ The brief imagines a feedback card with flags and four possible fixes. The phras
 {
   "title": "Tap a flag, see your words",
   "purpose": "Tap the three phrases in part of Areej's answer that the interviewer flagged: vague ownership, an unsupported number and jargon. Each says why and gives the fix. The card then becomes her corrected answer.",
-  "limits": "Areej is a fictional fellow. A feedback tool can be wrong, and the platform keeps a flag only when its quote really appears in your answers. The five flags are vague ownership, unsupported number, pseudo-story, invented reason risk and jargon without explanation; this card shows three.",
+  "limits": "A feedback tool can be wrong, and the platform keeps a flag only when its quote really appears in your answers. The five flags from gate 1.6 are vague ownership, unsupported number, pseudo-story, invented reason risk and jargon without explanation; this card shows three.",
   "config": {
     "segments": [
       { "id": "we", "text": "We deployed it", "weak": { "why": "Vague ownership. Who did which part?", "fix": "my lead deployed it after my migration passed review" } },
-      { "id": "ninety", "text": "and it got about 90 percent faster,", "weak": { "why": "Unsupported number. No window or source.", "fix": "and the report p95 fell from 4.6 s to 0.41 s (14 days, team dashboard)," } },
+      { "id": "ninety", "text": "and it got about 90 percent faster,", "weak": { "why": "Unsupported number. No window or source.", "fix": "and the report p95 (95 of 100 requests finish within it) fell from 4.6 s to 0.41 s (14 days, team dashboard)," } },
       { "id": "jargon", "text": "using a composite index.", "weak": { "why": "Jargon, with no explanation yet.", "fix": "using a composite index (explained in my case study)." } }
     ],
     "cardLabel": "Part of Areej's answer",

@@ -7,7 +7,7 @@ export const careerM9LinePicked: SceneSpec = {
   kind: "scene",
   title: "\"Where did 40 percent come from?\"",
   purpose: "A mentor points at Ismail's resume line 'reduced escaped bugs by 40 percent' and asks where the number came from. Ismail is ready to show the row behind it.",
-  limits: "Ismail is a fictional fellow. The capstone defence works the same way for any line of any learner's kit; the mentor may pick any one.",
+  limits: "The capstone defence works the same way for any line of any learner's kit; the mentor may pick any one.",
   hint: "Any line can be picked.",
   scene: {
     width: 420,
