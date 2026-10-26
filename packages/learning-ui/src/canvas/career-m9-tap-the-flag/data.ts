@@ -39,6 +39,6 @@ export const careerM9TapTheFlag: CustomCanvasSpec = {
   title: "Tap a flag, see your words",
   purpose: "Tap the three phrases in part of Areej's answer that the interviewer flagged: vague ownership, an unsupported number and jargon. Each says why and gives the fix. The card then becomes her corrected answer.",
   limits:
-    "A feedback tool can be wrong, and the platform keeps a flag only when its quote really appears in your answers. The five flags from gate 1.6 are vague ownership, unsupported number, pseudo-story, invented reason risk and jargon without explanation; this card shows three.",
+    "A feedback tool can be wrong, and it cannot see your ledger. The five flags from gate 1.6 are vague ownership, unsupported number, pseudo-story, invented reason risk and jargon without explanation; this card shows three.",
   component: makePhraseFixerCanvas(TAP_THE_FLAG_CONFIG),
 };
