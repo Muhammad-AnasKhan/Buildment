@@ -179,6 +179,17 @@ export function layoutPhrase(segments: PhraseSegment[], mode: "before" | "after"
   });
 }
 
+/** Where a piece of text starts on its line and how wide it is, in picture units. */
+export type PhraseBox = { x: number; w: number };
+
+/** True when every box in `next` is already in `old` within a quarter unit, so a re-measure need not re-render. */
+export function sameBoxes(old: Record<string, PhraseBox>, next: Record<string, PhraseBox>): boolean {
+  return Object.entries(next).every(([key, b]) => {
+    const o = old[key];
+    return !!o && Math.abs(o.x - b.x) < 0.25 && Math.abs(o.w - b.w) < 0.25;
+  });
+}
+
 /** Lines of the reason strip for a weak segment: why (bad tone) then the fix. */
 export function weakStrip(segment: PhraseSegment): { why: string[]; fix: string[] } {
   return { why: wrapWords(`Weak: ${segment.weak?.why ?? ""}`, STRIP_CHARS), fix: wrapWords(`Fix: ${segment.weak?.fix ?? ""}`, STRIP_CHARS) };

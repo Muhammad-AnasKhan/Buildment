@@ -13,6 +13,7 @@ import {
   PHRASE_LINE_CHARS,
   phraseVerdict,
   rewriteText,
+  sameBoxes,
   showRewrite,
   startPhrase,
   tagNumber,
@@ -186,5 +187,27 @@ describe("career-m6-empty-phrases data", () => {
     expect(html).not.toMatch(/#[0-9a-fA-F]{6}/);
     expect(html).not.toMatch(/foreignObject|<animate|<use|<image/);
     expect(html).not.toMatch(/[–—]/);
+  });
+
+  it("draws the tap areas unpainted, so no area covers the words of the phrase beside it", () => {
+    const html = renderToString(createElement(careerM6EmptyPhrases.component, { title: careerM6EmptyPhrases.title, purpose: careerM6EmptyPhrases.purpose, limits: careerM6EmptyPhrases.limits }));
+    // Two phrases share a line, so a painted area over one phrase would sit on the line's text next to it.
+    expect(layoutPhrase(segments, "before").some((line) => new Set(line.map((p) => p.segment)).size > 1)).toBe(true);
+    const buttons = html.split('role="button"').slice(1).map((chunk) => chunk.split("</g>")[0]);
+    expect(buttons).toHaveLength(segments.length);
+    for (const b of buttons) {
+      const hits = b.match(/<rect[^>]*pointer-events="all"[^>]*>/g) ?? [];
+      expect(hits.length).toBeGreaterThan(0);
+      for (const r of hits) expect(r).toContain('fill="none"');
+    }
+    expect(html).not.toContain("fill-transparent");
+  });
+
+  it("re-measures only when a box moves, so a measure after layout updates the estimates without a render loop", () => {
+    const old = { "before:0:0": { x: 34, w: 100 } };
+    expect(sameBoxes(old, { "before:0:0": { x: 34.1, w: 100.1 } })).toBe(true);
+    expect(sameBoxes(old, {})).toBe(true);
+    expect(sameBoxes(old, { "before:0:0": { x: 34, w: 80 } })).toBe(false);
+    expect(sameBoxes(old, { "before:0:1": { x: 140, w: 60 } })).toBe(false);
   });
 });

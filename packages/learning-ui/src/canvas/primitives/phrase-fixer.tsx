@@ -14,6 +14,7 @@ import {
   layoutPhrase,
   phraseVerdict,
   rewriteText,
+  sameBoxes,
   showRewrite,
   startPhrase,
   STRIP_CHARS,
@@ -21,6 +22,7 @@ import {
   tapSegment,
   weakStrip,
   DEFAULT_FINE_WHY,
+  type PhraseBox as Box,
   type PhrasePiece,
   type PhraseSegment,
   type PhraseState,
@@ -65,7 +67,6 @@ const EST_CHAR = 7.9;
 const TAG_W = 8;
 
 type View = "before" | "after";
-type Box = { x: number; w: number };
 
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
@@ -119,19 +120,35 @@ export function PhraseFixer({ title, limits, segments, cardLabel, checkableBefor
     pieceRefs.current.forEach((el, key) => {
       try {
         const len = el.getComputedTextLength();
-        if (!el.getNumberOfChars() || !Number.isFinite(len)) return;
+        // A piece with letters but no width is not laid out yet (off screen, hidden tab): keep the estimate.
+        if (!el.getNumberOfChars() || !Number.isFinite(len) || len <= 0) return;
         next[key] = { x: el.getStartPositionOfChar(0).x, w: len };
       } catch {
         // Not laid out yet (hidden tab, test renderer): keep the estimate.
       }
     });
-    setMeasured((old) => ({ ...old, ...next }));
+    setMeasured((old) => (sameBoxes(old, next) ? old : { ...old, ...next }));
   }, []);
   useIsoLayoutEffect(() => {
     measure();
   }, [measure, view, fade, segments]);
+  // The first measure can run before the picture is laid out (a lazy or off-screen section), which leaves the
+  // estimates in place and puts the underlines and hit areas off the words. Measure again once fonts load and
+  // whenever the picture changes size or comes on screen.
   useEffect(() => {
     document.fonts?.ready.then(measure).catch(() => {});
+    const el = wrap.current;
+    if (!el) return;
+    const resize = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(() => measure());
+    const seen = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) measure();
+    });
+    resize?.observe(el);
+    seen?.observe(el);
+    return () => {
+      resize?.disconnect();
+      seen?.disconnect();
+    };
   }, [measure]);
 
   const boxes = { ...estimateBoxes(before, "before"), ...estimateBoxes(after, "after"), ...measured };
@@ -266,8 +283,9 @@ export function PhraseFixer({ title, limits, segments, cardLabel, checkableBefor
                   onClick={() => tap(seg.id)}
                   onKeyDown={onKeyDown}
                 >
+                  {/* Hit areas: unpainted, so they never show over the words beside them, yet they still take the tap. */}
                   {rects.map((r, i) => (
-                    <rect key={`h${i}`} x={r.x} y={r.y} width={r.w} height={LINE_H} rx={6} className="fill-transparent" />
+                    <rect key={`h${i}`} x={r.x} y={r.y} width={r.w} height={LINE_H} rx={6} fill="none" pointerEvents="all" />
                   ))}
                   {rects.map((r, i) => (
                     <rect key={`f${i}`} x={r.x - 1} y={r.y + 1} width={r.w + 2} height={LINE_H - 2} rx={7} className={cn("fill-none opacity-0 group-focus-visible:opacity-100", TONES.accent.stroke)} strokeWidth={2.5} />
