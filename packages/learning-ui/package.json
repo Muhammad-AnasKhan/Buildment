@@ -618,7 +618,17 @@
     "./canvas/net-m9-v6-drill/data": "./src/canvas/net-m9-v6-drill/data.ts",
     "./canvas/net-m9-v6-expand/data": "./src/canvas/net-m9-v6-expand/data.ts",
     "./canvas/net-m9-v6-invalid/data": "./src/canvas/net-m9-v6-invalid/data.ts",
-    "./canvas/net-m9-v6-shorten/data": "./src/canvas/net-m9-v6-shorten/data.ts"
+    "./canvas/net-m9-v6-shorten/data": "./src/canvas/net-m9-v6-shorten/data.ts",
+    "./canvas/net-m3-arp-no-owner/data": "./src/canvas/net-m3-arp-no-owner/data.ts",
+    "./canvas/net-m3-arp-table/data": "./src/canvas/net-m3-arp-table/data.ts",
+    "./canvas/net-m3-flat-broadcast/data": "./src/canvas/net-m3-flat-broadcast/data.ts",
+    "./canvas/net-m3-replay-wrong-mask/data": "./src/canvas/net-m3-replay-wrong-mask/data.ts",
+    "./canvas/net-m3-scene-flat-school/data": "./src/canvas/net-m3-scene-flat-school/data.ts",
+    "./canvas/net-m3-scene-late-overlap/data": "./src/canvas/net-m3-scene-late-overlap/data.ts",
+    "./canvas/net-m3-scene-need-mac/data": "./src/canvas/net-m3-scene-need-mac/data.ts",
+    "./canvas/net-m3-split-broadcast/data": "./src/canvas/net-m3-split-broadcast/data.ts",
+    "./canvas/net-m3-split-filter/data": "./src/canvas/net-m3-split-filter/data.ts",
+    "./canvas/net-m3-switch-learning/data": "./src/canvas/net-m3-switch-learning/data.ts"
   },
   "files": [
     "src",

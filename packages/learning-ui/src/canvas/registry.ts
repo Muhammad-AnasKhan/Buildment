@@ -746,6 +746,16 @@ import { netM9V6Drill } from "./net-m9-v6-drill/data";
 import { netM9V6Expand } from "./net-m9-v6-expand/data";
 import { netM9V6Invalid } from "./net-m9-v6-invalid/data";
 import { netM9V6Shorten } from "./net-m9-v6-shorten/data";
+import { netM3ArpNoOwner } from "./net-m3-arp-no-owner/data";
+import { netM3ArpTable } from "./net-m3-arp-table/data";
+import { netM3FlatBroadcast } from "./net-m3-flat-broadcast/data";
+import { netM3ReplayWrongMask } from "./net-m3-replay-wrong-mask/data";
+import { netM3SceneFlatSchool } from "./net-m3-scene-flat-school/data";
+import { netM3SceneLateOverlap } from "./net-m3-scene-late-overlap/data";
+import { netM3SceneNeedMac } from "./net-m3-scene-need-mac/data";
+import { netM3SplitBroadcast } from "./net-m3-split-broadcast/data";
+import { netM3SplitFilter } from "./net-m3-split-filter/data";
+import { netM3SwitchLearning } from "./net-m3-switch-learning/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -1504,6 +1514,16 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "net-m9-v6-expand": netM9V6Expand,
   "net-m9-v6-invalid": netM9V6Invalid,
   "net-m9-v6-shorten": netM9V6Shorten,
+  "net-m3-arp-no-owner": netM3ArpNoOwner,
+  "net-m3-arp-table": netM3ArpTable,
+  "net-m3-flat-broadcast": netM3FlatBroadcast,
+  "net-m3-replay-wrong-mask": netM3ReplayWrongMask,
+  "net-m3-scene-flat-school": netM3SceneFlatSchool,
+  "net-m3-scene-late-overlap": netM3SceneLateOverlap,
+  "net-m3-scene-need-mac": netM3SceneNeedMac,
+  "net-m3-split-broadcast": netM3SplitBroadcast,
+  "net-m3-split-filter": netM3SplitFilter,
+  "net-m3-switch-learning": netM3SwitchLearning,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */

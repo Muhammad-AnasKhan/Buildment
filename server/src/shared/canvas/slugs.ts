@@ -745,6 +745,16 @@ export const CANVAS_SLUGS = [
   "net-m9-v6-expand",
   "net-m9-v6-invalid",
   "net-m9-v6-shorten",
+  "net-m3-arp-no-owner",
+  "net-m3-arp-table",
+  "net-m3-flat-broadcast",
+  "net-m3-replay-wrong-mask",
+  "net-m3-scene-flat-school",
+  "net-m3-scene-late-overlap",
+  "net-m3-scene-need-mac",
+  "net-m3-split-broadcast",
+  "net-m3-split-filter",
+  "net-m3-switch-learning",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];
