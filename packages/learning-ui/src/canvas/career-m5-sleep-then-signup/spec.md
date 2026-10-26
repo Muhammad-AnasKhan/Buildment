@@ -25,7 +25,7 @@ Free-plan facts are dated: a free web service on one host spins down after 15 mi
 {
   "title": "A minute to wake, then a sign-up",
   "purpose": "The founder opens Moath's demo link. The free service is asleep and takes about a minute to wake. Then a sign-up form asks for an email confirmation. The founder closes the tab.",
-  "limits": "Moath is a fictional fellow. Free plans differ and change their rules. Checked 2026-10; check before you rely on it, and trust your own screen. The wait counts up to about a minute only for the story. No number is given for how long a founder waits.",
+  "limits": "Free plans differ and change their rules. Checked 2026-10; check before you rely on it, and trust your own screen. The wait counts up to about a minute only for the story. No number is given for how long a founder waits.",
   "hint": "Two obstacles, one after the other.",
   "scene": {
     "width": 420,

@@ -28,7 +28,7 @@ Costs are lines on a first phone screen and are illustrative. The proof blocks a
 {
   "title": "Pick a posting, watch the order change",
   "purpose": "Areej's untailored resume fills its first screen with the summary, the invoice script, the key fix and the club form. The posting asks for database speed work. The learner moves the report bullet and the load-test bullet up so the reader sees them.",
-  "limits": "The 10 lines and the size of each block are illustrative. A block counts as seen when the first screen covers at least half of it. Every block is a real ledger row; none is dropped, they only move. Areej is a fictional fellow.",
+  "limits": "The 10 lines and the size of each block are illustrative. A block counts as seen when the first screen covers at least half of it. Every block is a real ledger row; none is dropped, they only move.",
   "config": {
     "blocks": [
       { "id": "summary", "label": "Summary: a full-stack developer who measures", "cost": 2, "kind": "context", "note": "Her general summary line." },

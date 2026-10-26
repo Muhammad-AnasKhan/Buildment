@@ -25,7 +25,7 @@ The old bullet is from the canon: "Responsible for leveraging cutting-edge techn
 {
   "title": "What an empty sentence looks like",
   "purpose": "A reader questions Areej's old bullet one phrase at a time: leveraging, seamless, robust. Each comes back empty, and almost nothing a reader can check is left.",
-  "limits": "Areej is a fictional fellow. The patterns are for orientation, not a banned list: one word proves nothing, and the same words can be fine in another sentence. The edit is about information, not about sounding human.",
+  "limits": "The patterns are for orientation, not a banned list: one word proves nothing, and the same words can be fine in another sentence. The edit is about information, not about sounding human.",
   "hint": "Question each phrase.",
   "scene": {
     "width": 420,

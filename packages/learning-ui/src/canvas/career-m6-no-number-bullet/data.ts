@@ -6,7 +6,7 @@ export const careerM6NoNumberBullet: SceneSpec = {
   "kind": "scene",
   "title": "No number? Show the change another way",
   "purpose": "Areej's key bullet has no number. It names three acts a reader can check in the repository: the key was revoked and replaced, secrets moved to environment variables, and push protection was turned on.",
-  "limits": "Areej is a fictional fellow. Nothing we found shows that bullets with numbers get more interviews. A checkable action or an honest gap is a good bullet; an invented number is not.",
+  "limits": "Nothing we found shows that bullets with numbers get more interviews. A checkable action or an honest gap is a good bullet; an invented number is not.",
   "hint": "Three acts, no number.",
   "scene": {
     "width": 420,

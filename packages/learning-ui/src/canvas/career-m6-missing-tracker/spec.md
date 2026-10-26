@@ -19,20 +19,20 @@ Waed's best result, a shared tracker that cut missed delivery confirmations, is 
 The result is drawn next to the resume that leaves it out.
 
 ## Data
-From the canon: Waed built a shared tracker that cut missed delivery confirmations from about 30 a month to 6 a month, counted from the team's tracker over three months before and three months after.
+From the canon: Waed built a shared tracker that recorded 90 missed delivery confirmations in three months before and 18 in three months after (30 to 6 a month), counted from the team's tracker over three months before and three months after.
 
 ```json
 {
   "title": "The work that is missing",
-  "purpose": "Waed built a shared tracker that cut missed delivery confirmations from about 30 a month to 6, counted from the team's tracker over three months before and after. None of it is on her resume.",
-  "limits": "Waed is a fictional fellow and her numbers are illustrative. The picture shows an omission, not a lie: the result is real and simply missing.",
+  "purpose": "Waed built a shared tracker. Her team's tracker shows 90 missed delivery confirmations in the three months before and 18 in the three months after. The team also began a daily check in that time. None of it is on her resume.",
+  "limits": "Her numbers are illustrative. The picture shows an omission, not a lie: the result is real and simply missing. Part of the fall came from the team's daily check, not from the tracker alone.",
   "hint": "A real result, left off the page.",
   "scene": {
     "width": 420,
     "height": 330,
     "actors": [
       { "id": "waed", "label": "Waed", "kind": "user", "sub": "built a tracker", "x": 62, "y": 110 },
-      { "id": "tracker", "label": "Her tracker", "kind": "note", "sub": "30 to 6 a month", "x": 358, "y": 110 },
+      { "id": "tracker", "label": "Her tracker", "kind": "note", "sub": "90 to 18 in 3 months", "x": 358, "y": 110 },
       { "id": "resume", "label": "Her resume", "kind": "note", "sub": "no tracker", "x": 210, "y": 250 }
     ],
     "events": [

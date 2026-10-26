@@ -19,7 +19,7 @@ export const EMPTY_PHRASE_SEGMENTS: PhraseSegment[] = [
     "text": "who leverages cross-functional synergies.",
     "weak": {
       "why": "Which work? There is nothing to check.",
-      "fix": "who built a shared tracker; missed delivery confirmations fell from about 30 to 6 a month (three months before and after)."
+      "fix": "who built a shared tracker: missed confirmations fell from 90 to 18 over three months (team tracker); a daily check also began."
     }
   },
   {
@@ -44,6 +44,6 @@ export const careerM6EmptyPhrases: CustomCanvasSpec = {
   kind: "custom",
   title: "Tap the empty phrases",
   purpose: "Tap the phrases in Waed's AI-written summary and duty line that a reader cannot check; each one says why and offers a checkable fix, and the card becomes the rewrite once all are found.",
-  limits: "Which phrases count as empty is a judgment, and a word on its own proves nothing: the same words can be fine in another sentence. Every fix is a fact Waed must be able to back up; an edit pass can remove filler but cannot invent results. Waed and her numbers are fictional and illustrative.",
+  limits: "Which phrases count as empty is a judgment, and a word on its own proves nothing: the same words can be fine in another sentence. Every fix is a fact Waed must be able to back up; an edit pass can remove filler but cannot invent results. Her numbers are illustrative.",
   component: makePhraseFixerCanvas(EMPTY_PHRASES_CONFIG),
 };

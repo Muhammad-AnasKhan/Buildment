@@ -28,7 +28,7 @@ The bullet is Areej's first sample bullet from the canon, exactly. The three ref
 {
   "title": "Build a bullet from a claim card",
   "purpose": "Fill Areej's resume bullet (owned, change, window, how, my share) from snippets of her claim card. Her old lines, 'worked on backend performance', 'improved speed by 90%' and an empty phrase, are refused with a reason.",
-  "limits": "A real bullet may need a source in brackets and a shorter wording for a one-page resume. The numbers are from Areej's notes and are illustrative. Areej is a fictional fellow.",
+  "limits": "A real bullet may need a source in brackets and a shorter wording for a one-page resume. The numbers are from Areej's notes and are illustrative.",
   "config": {
     "cardTitle": "Areej's resume bullet",
     "claim": "Worked on backend performance",

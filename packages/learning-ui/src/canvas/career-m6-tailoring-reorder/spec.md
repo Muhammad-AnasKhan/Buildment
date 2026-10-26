@@ -25,7 +25,7 @@ From the canon: a backend developer posting at a small logistics software startu
 {
   "title": "Tailoring changes what comes first",
   "purpose": "A posting asks for database speed work. Areej moves her report bullet to the top and starts her summary 'Backend-leaning full-stack developer'. The facts are the same; the order is new.",
-  "limits": "Areej is a fictional fellow. One company says it checks whether an application was tailored and whether the candidate tried the product. Tailoring is a habit, not a guarantee of a reply.",
+  "limits": "One company says it checks whether an application was tailored and whether the candidate tried the product. Tailoring is a habit, not a guarantee of a reply.",
   "hint": "Same facts, new order.",
   "scene": {
     "width": 420,

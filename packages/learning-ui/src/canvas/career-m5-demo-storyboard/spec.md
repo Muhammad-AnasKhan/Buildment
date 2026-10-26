@@ -25,7 +25,7 @@ Areej's 90-second storyboard is from the canon: the low-stock warning first, the
 {
   "title": "Cut the filler, keep the core",
   "purpose": "Six storyboard frames for Raqim Stock's demo have a running time. The first 90 seconds are kept, the rest is cut. The learner moves the three core frames up so the warning, the sale and the invoice all make the cut.",
-  "limits": "The frame lengths and the 90 seconds are illustrative. The 60 to 120 second range is a course rule, not a research finding. A frame counts as kept when the demo covers at least half of it. Areej is a fictional fellow.",
+  "limits": "The frame lengths and the 90 seconds are illustrative. The 60 to 120 second range is a course rule, not a research finding. A frame counts as kept when the demo covers at least half of it.",
   "config": {
     "blocks": [
       { "id": "logo", "label": "Logo intro", "cost": 10, "kind": "filler", "note": "Nothing to see yet." },

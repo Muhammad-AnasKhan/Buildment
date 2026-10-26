@@ -6,7 +6,7 @@ export const careerM6LinesAnyones: SceneSpec = {
   "kind": "scene",
   "title": "Lines that could be anyone's",
   "purpose": "Waed's resume says 'responsible for coordinating shipments' and has an AI-written summary. Three other applicants' resumes use almost the same words. The reader cannot tell them apart.",
-  "limits": "Waed is a fictional fellow and the other resumes are made up. The picture does not say AI tools cause this; plain duty lines were common before them.",
+  "limits": "The other resumes are made up. The picture does not say AI tools cause this; plain duty lines were common before them.",
   "hint": "Four resumes, one set of words.",
   "scene": {
     "width": 420,

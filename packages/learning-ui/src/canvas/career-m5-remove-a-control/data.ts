@@ -115,7 +115,7 @@ export const careerM5RemoveAControl: CustomCanvasSpec = {
   kind: "custom",
   title: "Remove a control, see the risk",
   purpose: "Sort eight things a stranger could do to a demo into the control that prevents each: fake data, low rights, limits and a reset, or keys kept out of the repository.",
-  limits: "A short checklist, not a full security review. Real demos also need throttling of password guessing and a visible 'this is a demo' line. Checked 2026-10; trust the current OWASP guidance over any list.",
+  limits: "A short checklist, not a full security review. Real demos also need a limit on repeated password guesses and a visible 'this is a demo' line. Checked 2026-10; trust the current OWASP guidance over any list.",
   component: makeSorterCanvas({
     buckets: CONTROL_BUCKETS,
     cards: CONTROL_CARDS,

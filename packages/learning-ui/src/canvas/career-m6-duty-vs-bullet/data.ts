@@ -5,8 +5,8 @@ import type { SceneSpec } from "../renderers/scene/SceneCanvas";
 export const careerM6DutyVsBullet: SceneSpec = {
   "kind": "scene",
   "title": "\"Responsible for\" is a job description",
-  "purpose": "A duty line says what Waed was supposed to do. Her owned bullet says what changed because she did it: missed delivery confirmations from about 30 to 6 a month, counted from the team tracker over three months before and after.",
-  "limits": "Waed is a fictional fellow and her numbers are illustrative. A duty line is not wrong; it just does not answer the reader's next question.",
+  "purpose": "A duty line says what Waed was supposed to do. Her owned bullet says what changed because she did it: missed delivery confirmations fell from 90 to 18, counted from the team tracker over three months before and after, while teammates also began a daily check.",
+  "limits": "Her numbers are illustrative. A duty line is not wrong; it just does not answer the reader's next question.",
   "hint": "Two lines, two questions.",
   "scene": {
     "width": 420,
@@ -24,7 +24,7 @@ export const careerM6DutyVsBullet: SceneSpec = {
         "id": "bullet",
         "label": "Owned bullet",
         "kind": "note",
-        "sub": "30 to 6 a month",
+        "sub": "90 to 18",
         "x": 358,
         "y": 110
       },

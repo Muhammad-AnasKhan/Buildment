@@ -5,8 +5,8 @@ import type { SceneSpec } from "../renderers/scene/SceneCanvas";
 export const careerM6AdjectivesOrFact: SceneSpec = {
   "kind": "scene",
   "title": "Three adjectives or one fact",
-  "purpose": "A reader gets 'dynamic, results-driven, passionate' and has no question. Then the reader gets 'missed confirmations from about 30 to 6 a month' and asks how it was measured.",
-  "limits": "Waed is a fictional fellow and her numbers are illustrative. One fact does not make a resume; it shows what the rest of the lines should do.",
+  "purpose": "A reader gets 'dynamic, results-driven, passionate' and has no question. Then the reader gets 'missed confirmations fell from 90 to 18 in three months' and asks how it was measured.",
+  "limits": "Her numbers are illustrative. One fact does not make a resume; it shows what the rest of the lines should do.",
   "hint": "Which line gives the reader a question?",
   "scene": {
     "width": 420,
@@ -59,7 +59,7 @@ export const careerM6AdjectivesOrFact: SceneSpec = {
         "dur": 1,
         "from": "fact",
         "to": "reader",
-        "label": "30 to 6 a month"
+        "label": "90 to 18 in 3 months"
       },
       {
         "kind": "say",
@@ -71,7 +71,7 @@ export const careerM6AdjectivesOrFact: SceneSpec = {
       {
         "kind": "verdict",
         "at": 4.4,
-        "text": "One fact beats three adjectives",
+        "text": "One fact outweighs three adjectives",
         "tone": "good"
       }
     ],

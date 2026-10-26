@@ -19,20 +19,20 @@ A duty says what you were supposed to do. A bullet says what changed because you
 The same reader meets a duty line and an owned bullet, and the question each one answers is different.
 
 ## Data
-Waed's rewrite is from the canon: "Built a shared delivery tracker that cut missed delivery confirmations from about 30 to 6 a month (team tracker, three months before and after)."
+Waed's rewrite is from the canon: "Built a shared delivery tracker that cut missed delivery confirmations from about 90 to 18 (team tracker, three months before and after)."
 
 ```json
 {
   "title": "\"Responsible for\" is a job description",
-  "purpose": "A duty line says what Waed was supposed to do. Her owned bullet says what changed because she did it: missed delivery confirmations from about 30 to 6 a month, counted from the team tracker over three months before and after.",
-  "limits": "Waed is a fictional fellow and her numbers are illustrative. A duty line is not wrong; it just does not answer the reader's next question.",
+  "purpose": "A duty line says what Waed was supposed to do. Her owned bullet says what changed because she did it: missed delivery confirmations fell from 90 to 18, counted from the team tracker over three months before and after, while teammates also began a daily check.",
+  "limits": "Her numbers are illustrative. A duty line is not wrong; it just does not answer the reader's next question.",
   "hint": "Two lines, two questions.",
   "scene": {
     "width": 420,
     "height": 330,
     "actors": [
       { "id": "duty", "label": "Duty line", "kind": "note", "sub": "responsible for", "x": 62, "y": 110 },
-      { "id": "bullet", "label": "Owned bullet", "kind": "note", "sub": "30 to 6 a month", "x": 358, "y": 110 },
+      { "id": "bullet", "label": "Owned bullet", "kind": "note", "sub": "90 to 18", "x": 358, "y": 110 },
       { "id": "reader", "label": "Reader", "kind": "user", "sub": "wants a change", "x": 210, "y": 250 }
     ],
     "events": [

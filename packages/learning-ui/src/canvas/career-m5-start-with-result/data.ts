@@ -7,7 +7,7 @@ export const careerM5StartWithResult: SceneSpec = {
   kind: "scene",
   title: "Start with the result",
   purpose: "A viewer opens Areej's 90-second demo. The first frame shows the low-stock warning, the payoff. A logo intro would have shown nothing yet.",
-  limits: "Areej is a fictional fellow. Starting with the result is this course's method, not a research finding. The 60 to 120 second range is also a course rule.",
+  limits: "Starting with the result is this course's method, not a research finding. The 60 to 120 second range is also a course rule.",
   hint: "Frame one is the payoff.",
   scene: {
     width: 420,

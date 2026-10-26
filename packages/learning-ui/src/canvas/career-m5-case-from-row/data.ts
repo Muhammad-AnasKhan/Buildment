@@ -104,6 +104,6 @@ export const careerM5CaseFromRow: CustomCanvasSpec = {
   kind: "custom",
   title: "Build it from a ledger row",
   purpose: "Fill the six sections of Areej's case study from her ledger rows: problem, before, what I did, after, what else changed, and what she would do differently. A boast and a vague percentage are refused.",
-  limits: "A real case study has a title, images and a link to the proof. The numbers are from Areej's notes and are illustrative. Names are removed in public; the company is 'a parcel delivery company'. Areej is a fictional fellow.",
+  limits: "A real case study has a title, images and a link to the proof. The numbers are from Areej's notes and are illustrative. Names are removed in public; the company is 'a parcel delivery company'.",
   component: makeSlotCardCanvas(CASE_STUDY_CONFIG),
 };

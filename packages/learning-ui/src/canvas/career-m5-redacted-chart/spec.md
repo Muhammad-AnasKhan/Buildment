@@ -25,7 +25,7 @@ From the canon: Areej's public title uses "a parcel delivery company"; the redac
 {
   "title": "Permission and removed names",
   "purpose": "Areej's case study shows the report chart with the company name and table names blurred. A line under it says it is shared with permission. The numbers stay.",
-  "limits": "Areej is a fictional fellow. Permission is a rule of this course, not legal advice. When in doubt keep the number private. The rule is taught in 3.3; this is its use in a case study.",
+  "limits": "Permission is a rule of this course, not legal advice. When in doubt keep the number private. The rule is taught in 3.3; this is its use in a case study.",
   "hint": "Names off, numbers kept.",
   "scene": {
     "width": 420,

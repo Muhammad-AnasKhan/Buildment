@@ -7,7 +7,7 @@ export const careerM5ShowTheHardPart: SceneSpec = {
   kind: "scene",
   title: "Show the hard part, not a tour",
   purpose: "Two sales arrive at the same moment and hit one stock count. The count stays right because the update runs in one transaction. That is the part of the demo to linger on.",
-  limits: "Areej is a fictional fellow and the plan is illustrative. A tour of menus proves little; the core flow and one hard detail invite a reader's question.",
+  limits: "The plan is illustrative. A tour of menus proves little; the core flow and one hard detail invite a reader's question.",
   hint: "Two sales, one count.",
   scene: {
     width: 420,

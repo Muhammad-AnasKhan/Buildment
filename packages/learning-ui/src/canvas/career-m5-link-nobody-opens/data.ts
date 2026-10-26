@@ -7,7 +7,7 @@ export const careerM5LinkNobodyOpens: SceneSpec = {
   kind: "scene",
   title: "A GitHub link nobody opens",
   purpose: "Moath sends a founder a link to his recipe app's repository. The README starts with install commands. The founder moves on without cloning it.",
-  limits: "Moath is a fictional fellow. The picture does not say every founder behaves this way. It shows what a README that starts with install steps asks of a reader.",
+  limits: "The picture does not say every founder behaves this way. It shows what a README that starts with install steps asks of a reader.",
   hint: "A link, a README, a reader who moves on.",
   scene: {
     width: 420,

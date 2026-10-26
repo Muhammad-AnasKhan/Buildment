@@ -93,6 +93,6 @@ export const careerM6BuildABullet: CustomCanvasSpec = {
   kind: "custom",
   title: "Build a bullet from a claim card",
   purpose: "Fill Areej's resume bullet (owned, change, window, how, my share) from snippets of her claim card. Her old lines, 'worked on backend performance', 'improved speed by 90%' and an empty phrase, are refused with a reason.",
-  limits: "A real bullet may need a source in brackets and a shorter wording for a one-page resume. The numbers are from Areej's notes and are illustrative. Areej is a fictional fellow.",
+  limits: "A real bullet may need a source in brackets and a shorter wording for a one-page resume. The numbers are from Areej's notes and are illustrative.",
   component: makeSlotCardCanvas(BULLET_CARD_CONFIG),
 };
