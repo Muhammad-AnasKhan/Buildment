@@ -7,7 +7,7 @@ export const careerM1SmoothLetters: SceneSpec = {
   kind: "scene",
   title: "When everyone writes smoothly, smooth proves less",
   purpose: "A reader meets a stack of smooth, polished letters that all sound alike. The reader looks elsewhere and checks the one line that holds a result.",
-  limits: "Read at the level of direction only. After an AI cover-letter tool arrived on one platform, the link between how well a letter matched the job and callbacks fell, and employers leaned more on other signals such as work history. Do not quote the percentages from those papers.",
+  limits: "Read at the level of direction only. After an AI cover-letter tool arrived on one platform, the link between how well a letter matched the job and callbacks (replies asking for an interview) fell, and employers leaned more on other signals such as work history. Do not quote the percentages from those papers.",
   hint: "Watch where the reader looks when every letter sounds the same.",
   scene: {
     width: 420,

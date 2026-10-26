@@ -90,7 +90,7 @@ export const careerM2WhereDetailHelps: CustomCanvasSpec = {
   kind: "custom",
   title: "Where the detail helps or distracts",
   purpose: "Sort eight places where Areej could mention her football notebook into 'helps', 'neutral' and 'distracts', with a short reason after each wrong try.",
-  limits: "Where a detail helps depends on the reader. These are course judgments, not research. Areej is a fictional fellow and uses the notebook line once, in her About section.",
+  limits: "Where a detail helps depends on the reader. These are course judgments, not research. Areej is a fictional fellow and uses the notebook line once on each page, never as a slogan.",
   component: makeSorterCanvas({
     buckets: WHERE_DETAIL_HELPS_BUCKETS,
     cards: WHERE_DETAIL_HELPS_CARDS,

@@ -23,7 +23,7 @@ The tool's job is the point: it takes a resume with errors and returns a clean c
 {
   "title": "Fixing mistakes helped in one study",
   "purpose": "A resume with errors goes to an error fixer and comes back clean. Employers hire a little more. The tool corrected mistakes; it wrote no new claims.",
-  "limits": "One field experiment with nearly half a million jobseekers on one platform found about 8 percent more hires with no drop in employer satisfaction. Two of the authors have ties to the platform. It does not show that writing help of every kind helps.",
+  "limits": "One field experiment (a real-world test run by researchers) with nearly half a million jobseekers on one platform found about 8 percent more hires with no drop in employer satisfaction. Two of the authors have ties to the platform. It does not show that writing help of every kind helps.",
   "hint": "The fixer changes mistakes, not facts.",
   "scene": {
     "width": 420,

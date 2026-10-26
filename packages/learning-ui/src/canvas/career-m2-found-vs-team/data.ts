@@ -7,7 +7,7 @@ export const careerM2FoundVsTeam: SceneSpec = {
   kind: "scene",
   title: "\"I did\" and \"the team did\"",
   purpose: "The slow report fix has seven steps. Areej found the query, ran the plan, chose the index and wrote the migration. Her lead reviewed, scheduled and deployed it. The sentence about the result should name both.",
-  limits: "Areej is a fictional fellow and the steps are simplified. Researchers measure three kinds of resume deception: fabrication, embellishment and omission. Leaving out the team's part to look bigger is embellishment.",
+  limits: "Areej is a fictional fellow and the steps are simplified. Researchers measure three kinds of resume deception: fabrication, embellishment and omission. Leaving out the team's part to look bigger is omission when it is meant to mislead.",
   hint: "Watch who does what.",
   scene: {
     width: 420,

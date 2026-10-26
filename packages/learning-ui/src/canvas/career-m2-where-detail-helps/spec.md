@@ -19,13 +19,13 @@ A human detail helps in an About section and sometimes in a friendly first messa
 The sorter puts the same detail in eight places and asks the learner to decide what it does there. Three buckets keep "neutral" as a real answer.
 
 ## Data
-Areej's notebook line is the detail (canon). In the course she uses it once, in her About section (7.5), and never more. Areej is a fictional fellow.
+Areej's notebook line is the detail (canon). In the course she uses it once on each page, never as a slogan. Areej is a fictional fellow.
 
 ```json
 {
   "title": "Where the detail helps or distracts",
   "purpose": "Sort eight places where Areej could mention her football notebook into 'helps', 'neutral' and 'distracts', with a short reason after each wrong try.",
-  "limits": "Where a detail helps depends on the reader. These are course judgments, not research. Areej is a fictional fellow and uses the notebook line once, in her About section.",
+  "limits": "Where a detail helps depends on the reader. These are course judgments, not research. Areej is a fictional fellow and uses the notebook line once on each page, never as a slogan.",
   "config": {
     "buckets": [
       { "id": "helps", "label": "Helps", "sub": "the reader gains" },

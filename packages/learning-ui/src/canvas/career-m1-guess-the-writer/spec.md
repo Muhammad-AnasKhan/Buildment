@@ -16,13 +16,13 @@ owner: interaction-designer
 Nobody can reliably tell whether a profile was written with AI, not even the people who try. So the useful question is not "will they catch me" but "does this say anything only I could say".
 
 ## Why this visual
-A reader guesses "human or AI" twice and is right once and wrong once. Results close to chance are the claim.
+A reader guesses "human or AI" twice and is right once and wrong once. The claim is that readers could not reliably tell them apart.
 
 ## Data
 ```json
 {
   "title": "People cannot reliably spot AI text",
-  "purpose": "A reader guesses whether two profiles were written by a person or by AI. The guesses are about as good as chance.",
+  "purpose": "A reader guesses whether two profiles were written by a person or by AI. Readers could not reliably tell them apart.",
   "limits": "Two guesses are a story, not data. In six experiments with 4,600 participants, people could not reliably detect AI-written self-presentations and relied on unreliable cues such as pronouns and contractions. Vendor surveys on this disagree with each other; do not quote them.",
   "hint": "Watch the reader guess twice.",
   "scene": {
@@ -41,7 +41,7 @@ A reader guesses "human or AI" twice and is right once and wrong once. Results c
       { "kind": "say", "at": 4.1, "actor": "reader", "text": "guess: human", "tone": "accent" },
       { "kind": "say", "at": 4.6, "actor": "p2", "text": "AI wrote it", "tone": "bad" },
       { "kind": "say", "at": 5.2, "actor": "reader", "text": "one of each", "tone": "warn" },
-      { "kind": "verdict", "at": 5.6, "text": "Guesses are about as good as chance", "tone": "warn" }
+      { "kind": "verdict", "at": 5.6, "text": "Not reliably told apart", "tone": "warn" }
     ],
     "loop": 9.5
   }

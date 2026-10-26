@@ -6,7 +6,7 @@ import type { SceneSpec } from "../renderers/scene/SceneCanvas";
 export const careerM1GuessTheWriter: SceneSpec = {
   kind: "scene",
   title: "People cannot reliably spot AI text",
-  purpose: "A reader guesses whether two profiles were written by a person or by AI. The guesses are about as good as chance.",
+  purpose: "A reader guesses whether two profiles were written by a person or by AI. Readers could not reliably tell them apart.",
   limits: "Two guesses are a story, not data. In six experiments with 4,600 participants, people could not reliably detect AI-written self-presentations and relied on unreliable cues such as pronouns and contractions. Vendor surveys on this disagree with each other; do not quote them.",
   hint: "Watch the reader guess twice.",
   scene: {
@@ -25,7 +25,7 @@ export const careerM1GuessTheWriter: SceneSpec = {
       { kind: "say", at: 4.1, actor: "reader", text: "guess: human", tone: "accent" },
       { kind: "say", at: 4.6, actor: "p2", text: "AI wrote it", tone: "bad" },
       { kind: "say", at: 5.2, actor: "reader", text: "one of each", tone: "warn" },
-      { kind: "verdict", at: 5.6, text: "Guesses are about as good as chance", tone: "warn" },
+      { kind: "verdict", at: 5.6, text: "Not reliably told apart", tone: "warn" },
     ],
     loop: 9.5,
   },
