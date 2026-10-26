@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { labView, resolveLab } from "@/lab/Lab";
-import type { DbLabSpec } from "@/lab/types";
+import { labView, resolveLab } from "@buildment/learning-ui/labs/Lab";
+import type { DbLabSpec } from "@buildment/learning-ui/labs/types";
 
 describe("resolveLab", () => {
   it("resolves a known slug to its spec", () => {

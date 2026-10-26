@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { COMPONENT_CATALOG, SIZE_CATALOG, kindsInFamily, type ComponentKind } from "@/lab/catalog";
-import { AWS_PARTS, AWS_PROPS, awsInstance, instanceMeaning, localize, partName, sizeLabel } from "@/lab/aws-names";
-import { labRegistry } from "@/lab/registry";
+import { COMPONENT_CATALOG, SIZE_CATALOG, kindsInFamily, type ComponentKind } from "@buildment/learning-ui/labs/catalog";
+import { AWS_PARTS, AWS_PROPS, awsInstance, instanceMeaning, localize, partName, sizeLabel } from "@buildment/learning-ui/labs/aws-names";
+import { labRegistry } from "@buildment/learning-ui/labs/registry";
 import { LAB_SLUGS } from "@/shared/lab/slugs";
 
 const SIZED: ComponentKind[] = ["app-server", "worker", "database", "cache", "search"];

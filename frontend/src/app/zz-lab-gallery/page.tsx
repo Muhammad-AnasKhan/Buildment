@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LabGallery } from "@/lab/LabGallery";
+import { LabGallery } from "@buildment/learning-ui/labs/LabGallery";
 
 // Dev-only specimen sheet of the lab components, like /zz-lab-preview. Public, no
 // auth, no data. Query: ?theme=light|dark|both and ?names=generic|aws.

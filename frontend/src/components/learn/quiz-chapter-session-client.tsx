@@ -8,7 +8,7 @@ import { playFeedback } from "@/lib/sound-feedback";
 import { apiFetch } from "@/lib/api-client";
 import { markChapterComplete } from "@/server/actions/progress";
 import { cn } from "@/lib/utils";
-import { QuizSessionContext, type QuizBlockGrade } from "@/components/learn/quiz-session-context";
+import { QuizSessionContext, type QuizBlockGrade } from "@buildment/learning-ui/components/learn/quiz-session-context";
 import { QuizIntegrityPanel } from "@/components/learn/quiz-integrity-panel";
 import { useQuizIntegrity } from "@/lib/integrity/use-quiz-integrity";
 

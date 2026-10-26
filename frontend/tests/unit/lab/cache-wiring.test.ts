@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { canConnect } from "@/lab/catalog";
-import { runTieredModel } from "@/lab/tiered-architecture";
-import type { Board, BoardNode } from "@/lab/types";
+import { canConnect } from "@buildment/learning-ui/labs/catalog";
+import { runTieredModel } from "@buildment/learning-ui/labs/tiered-architecture";
+import type { Board, BoardNode } from "@buildment/learning-ui/labs/types";
 
 const nodes: BoardNode[] = [
   { id: "c", kind: "client", x: 0, y: 0 },

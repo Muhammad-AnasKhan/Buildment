@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { challengeFor, followChain, runChallenge } from "@/lab/challenge";
-import { hldVisualUrlShortener as spec } from "@/lab/hld-visual-url-shortener/data";
-import { hldM4ThreeTiers } from "@/lab/hld-m4-three-tiers/data";
-import { runTieredModel } from "@/lab/tiered-architecture";
-import type { Board, BoardNode } from "@/lab/types";
-import { validateChallenge, validateLabSpec } from "@/lab/types";
+import { challengeFor, followChain, runChallenge } from "@buildment/learning-ui/labs/challenge";
+import { hldVisualUrlShortener as spec } from "@buildment/learning-ui/labs/hld-visual-url-shortener/data";
+import { hldM4ThreeTiers } from "@buildment/learning-ui/labs/hld-m4-three-tiers/data";
+import { runTieredModel } from "@buildment/learning-ui/labs/tiered-architecture";
+import type { Board, BoardNode } from "@buildment/learning-ui/labs/types";
+import { validateChallenge, validateLabSpec } from "@buildment/learning-ui/labs/types";
 
 type Over = Record<string, Record<string, number | string>>;
 

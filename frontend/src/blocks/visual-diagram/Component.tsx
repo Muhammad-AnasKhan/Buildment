@@ -1,6 +1,6 @@
 import { fetchBlockState } from "@/blocks/block-state";
-import { VisualDiagramClient } from "./VisualDiagramClient";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { VisualDiagramClient } from "@buildment/learning-ui/blocks/visual-diagram/VisualDiagramClient";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 
 export async function VisualDiagramComponent({
   id,

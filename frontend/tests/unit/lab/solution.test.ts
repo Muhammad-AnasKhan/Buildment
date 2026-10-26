@@ -2,12 +2,12 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { LAB_SLUGS } from "@/shared/lab/slugs";
-import { labRegistry } from "@/lab/registry";
-import { runChallenge } from "@/lab/challenge";
-import { compareDesigns } from "@/lab/solution";
-import { hldVisualUrlShortener as shortener } from "@/lab/hld-visual-url-shortener/data";
-import type { Board, HldLabSpec } from "@/lab/types";
-import { checkIdsOf, validateLabSpec } from "@/lab/types";
+import { labRegistry } from "@buildment/learning-ui/labs/registry";
+import { runChallenge } from "@buildment/learning-ui/labs/challenge";
+import { compareDesigns } from "@buildment/learning-ui/labs/solution";
+import { hldVisualUrlShortener as shortener } from "@buildment/learning-ui/labs/hld-visual-url-shortener/data";
+import type { Board, HldLabSpec } from "@buildment/learning-ui/labs/types";
+import { checkIdsOf, validateLabSpec } from "@buildment/learning-ui/labs/types";
 
 const labsWithSolution = LAB_SLUGS.map((s) => labRegistry[s]).filter((s): s is HldLabSpec => s.family === "hld" && Boolean(s.solution));
 const board = (b: { nodes: Board["nodes"]; edges: Board["edges"] }): Board => ({ nodes: b.nodes.map((n) => ({ ...n, props: { ...(n.props ?? {}) } })), edges: b.edges });
@@ -39,7 +39,7 @@ describe("reference solutions", () => {
       expect(part.without.length).toBeGreaterThan(20);
       for (const c of part.checks) expect(ids.has(c)).toBe(true);
     }
-    const file = resolve(process.cwd(), "src/lab", slug, "spec.md");
+    const file = resolve(process.cwd(), "../packages/learning-ui/src/labs", slug, "spec.md");
     expect(existsSync(file)).toBe(true);
     expect(readFileSync(file, "utf8")).toMatch(/^## Solution/m);
   });

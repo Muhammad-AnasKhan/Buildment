@@ -707,7 +707,111 @@ import { sysdesignM18ClusterPlay } from "./sysdesign-m18-cluster-play/data";
 import { sysdesignM18PipelineStep } from "./sysdesign-m18-pipeline-step/data";
 import { sysdesignM18CanaryBlast } from "./sysdesign-m18-canary-blast/data";
 import { sysdesignM18CloudExplorer } from "./sysdesign-m18-cloud-explorer/data";
+import { productM2SpacingGroups } from "./product-m2-spacing-groups/data";
+import { productM5SpotTheSlop } from "./product-m5-spot-the-slop/data";
+import { productM1ProblemOrFeature } from "./product-m1-problem-or-feature/data";
+import { productM1Scene } from "./product-m1-scene/data";
+import { productM1ScopeHammer } from "./product-m1-scope-hammer/data";
+import { productM1SignalOrCount } from "./product-m1-signal-or-count/data";
+import { productM1TheCheaperFix } from "./product-m1-the-cheaper-fix/data";
+import { productM1TwoJobs } from "./product-m1-two-jobs/data";
+import { productM2ColourAlone } from "./product-m2-colour-alone/data";
+import { productM2ColourJobs } from "./product-m2-colour-jobs/data";
+import { productM2ContrastLadder } from "./product-m2-contrast-ladder/data";
+import { productM2LabelGap } from "./product-m2-label-gap/data";
+import { productM2LineHeight } from "./product-m2-line-height/data";
+import { productM2Scene } from "./product-m2-scene/data";
+import { productM2SquintGroups } from "./product-m2-squint-groups/data";
+import { productM2SquintTest } from "./product-m2-squint-test/data";
+import { productM2TextZoom } from "./product-m2-text-zoom/data";
+import { productM2ThreeSizes } from "./product-m2-three-sizes/data";
+import { productM2TypeLadder } from "./product-m2-type-ladder/data";
+import { productM3FirstRun } from "./product-m3-first-run/data";
+import { productM3FormSpot } from "./product-m3-form-spot/data";
+import { productM3FourStates } from "./product-m3-four-states/data";
+import { productM3LabelVanish } from "./product-m3-label-vanish/data";
+import { productM3MotionWithAJob } from "./product-m3-motion-with-a-job/data";
+import { productM3Scene } from "./product-m3-scene/data";
+import { productM3TapTargets } from "./product-m3-tap-targets/data";
+import { productM3WaitLadder } from "./product-m3-wait-ladder/data";
+import { productM3WhenToCheck } from "./product-m3-when-to-check/data";
+import { productM4CritiqueOrOpinion } from "./product-m4-critique-or-opinion/data";
+import { productM4DefaultOrChoice } from "./product-m4-default-or-choice/data";
+import { productM4FourLevels } from "./product-m4-four-levels/data";
+import { productM4PolishOrPass } from "./product-m4-polish-or-pass/data";
+import { productM4RuleOrMyth } from "./product-m4-rule-or-myth/data";
+import { productM4SameTask } from "./product-m4-same-task/data";
+import { productM4Scene } from "./product-m4-scene/data";
+import { productM5Boldness } from "./product-m5-boldness/data";
+import { productM5CardWithAJob } from "./product-m5-card-with-a-job/data";
+import { productM5HundredProducts } from "./product-m5-hundred-products/data";
+import { productM5PointOfView } from "./product-m5-point-of-view/data";
+import { productM5Scene } from "./product-m5-scene/data";
+import { productM6CheckTheCritique } from "./product-m6-check-the-critique/data";
+import { productM6Scene } from "./product-m6-scene/data";
+import { productM6VagueOrBriefed } from "./product-m6-vague-or-briefed/data";
+import { productM7DemoStoryboard } from "./product-m7-demo-storyboard/data";
+import { productM7OneClickAccess } from "./product-m7-one-click-access/data";
+import { productM7Scene } from "./product-m7-scene/data";
+import { productM7SkimAfter } from "./product-m7-skim-after/data";
+import { productM7SkimBefore } from "./product-m7-skim-before/data";
+import { productM1CountOrShare } from "./product-m1-count-or-share/data";
+import { productM1FirstCheck } from "./product-m1-first-check/data";
+import { productM1JobOrNot } from "./product-m1-job-or-not/data";
+import { productM1LastTime } from "./product-m1-last-time/data";
+import { productM1SayNo } from "./product-m1-say-no/data";
+import { productM2ArabicSize } from "./product-m2-arabic-size/data";
+import { productM2FrontLoad } from "./product-m2-front-load/data";
+import { productM2LargeText } from "./product-m2-large-text/data";
+import { productM2OneStep } from "./product-m2-one-step/data";
+import { productM2Signals } from "./product-m2-signals/data";
+import { productM2WaselBefore } from "./product-m2-wasel-before/data";
+import { productM3ErrorTemplates } from "./product-m3-error-templates/data";
+import { productM3ErrorWords } from "./product-m3-error-words/data";
+import { productM3HelpInPlace } from "./product-m3-help-in-place/data";
+import { productM3MotionSorter } from "./product-m3-motion-sorter/data";
+import { productM3ReducedMotion } from "./product-m3-reduced-motion/data";
+import { productM3RtlCard } from "./product-m3-rtl-card/data";
+import { productM3TabOrder } from "./product-m3-tab-order/data";
+import { productM4FiveTesters } from "./product-m4-five-testers/data";
+import { productM4LevelLadder } from "./product-m4-level-ladder/data";
+import { productM4SameFramework } from "./product-m4-same-framework/data";
+import { productM5AskedOrder } from "./product-m5-asked-order/data";
+import { productM5BigNumber } from "./product-m5-big-number/data";
+import { productM5FourFixes } from "./product-m5-four-fixes/data";
+import { productM5LabelsErrors } from "./product-m5-labels-errors/data";
+import { productM5SwapADefault } from "./product-m5-swap-a-default/data";
+import { productM6BriefParts } from "./product-m6-brief-parts/data";
+import { productM6OneTable } from "./product-m6-one-table/data";
+import { productM6OrderSwap } from "./product-m6-order-swap/data";
+import { productM6SaidOrBuilt } from "./product-m6-said-or-built/data";
+import { productM6VerdictOrQuestions } from "./product-m6-verdict-or-questions/data";
+import { productM7MutedFrame } from "./product-m7-muted-frame/data";
+import { productM7PageOrder } from "./product-m7-page-order/data";
+import { productM7WhereLinksGo } from "./product-m7-where-links-go/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
+import { storyOrUsually } from "./story-or-usually/data";
+import { myPartTeamPart } from "./my-part-team-part/data";
+import { samerDecisionWeights } from "./samer-decision-weights/data";
+import { percentFromWhat } from "./percent-from-what/data";
+import { findYourNumbers } from "./find-your-numbers/data";
+import { howMuchWasYours } from "./how-much-was-yours/data";
+import { resumeLineWhyChain } from "./resume-line-why-chain/data";
+import { tidyReasonBreaks } from "./tidy-reason-breaks/data";
+import { resumeLineAudit } from "./resume-line-audit/data";
+import { clarifyTheCase } from "./clarify-the-case/data";
+import { caseOptionsWeights } from "./case-options-weights/data";
+import { decideAndMeasure } from "./decide-and-measure/data";
+import { chooseTechnicalStory } from "./choose-technical-story/data";
+import { founderVersionFirst } from "./founder-version-first/data";
+import { engineerDepthLadder } from "./engineer-depth-ladder/data";
+import { broadToNarrowStrength } from "./broad-to-narrow-strength/data";
+import { weaknessAnswerChoice } from "./weakness-answer-choice/data";
+import { timeToThink } from "./time-to-think/data";
+import { feedbackToNextProject } from "./feedback-to-next-project/data";
+import { whyNotThatChoice } from "./why-not-that-choice/data";
+import { fiftyTimesTest } from "./fifty-times-test/data";
+import { demoTheyCanOpen } from "./demo-they-can-open/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -1428,6 +1532,110 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "sysdesign-m18-pipeline-step": sysdesignM18PipelineStep,
   "sysdesign-m18-canary-blast": sysdesignM18CanaryBlast,
   "sysdesign-m18-cloud-explorer": sysdesignM18CloudExplorer,
+  "product-m2-spacing-groups": productM2SpacingGroups,
+  "product-m5-spot-the-slop": productM5SpotTheSlop,
+  "product-m1-problem-or-feature": productM1ProblemOrFeature,
+  "product-m1-scene": productM1Scene,
+  "product-m1-scope-hammer": productM1ScopeHammer,
+  "product-m1-signal-or-count": productM1SignalOrCount,
+  "product-m1-the-cheaper-fix": productM1TheCheaperFix,
+  "product-m1-two-jobs": productM1TwoJobs,
+  "product-m2-colour-alone": productM2ColourAlone,
+  "product-m2-colour-jobs": productM2ColourJobs,
+  "product-m2-contrast-ladder": productM2ContrastLadder,
+  "product-m2-label-gap": productM2LabelGap,
+  "product-m2-line-height": productM2LineHeight,
+  "product-m2-scene": productM2Scene,
+  "product-m2-squint-groups": productM2SquintGroups,
+  "product-m2-squint-test": productM2SquintTest,
+  "product-m2-text-zoom": productM2TextZoom,
+  "product-m2-three-sizes": productM2ThreeSizes,
+  "product-m2-type-ladder": productM2TypeLadder,
+  "product-m3-first-run": productM3FirstRun,
+  "product-m3-form-spot": productM3FormSpot,
+  "product-m3-four-states": productM3FourStates,
+  "product-m3-label-vanish": productM3LabelVanish,
+  "product-m3-motion-with-a-job": productM3MotionWithAJob,
+  "product-m3-scene": productM3Scene,
+  "product-m3-tap-targets": productM3TapTargets,
+  "product-m3-wait-ladder": productM3WaitLadder,
+  "product-m3-when-to-check": productM3WhenToCheck,
+  "product-m4-critique-or-opinion": productM4CritiqueOrOpinion,
+  "product-m4-default-or-choice": productM4DefaultOrChoice,
+  "product-m4-four-levels": productM4FourLevels,
+  "product-m4-polish-or-pass": productM4PolishOrPass,
+  "product-m4-rule-or-myth": productM4RuleOrMyth,
+  "product-m4-same-task": productM4SameTask,
+  "product-m4-scene": productM4Scene,
+  "product-m5-boldness": productM5Boldness,
+  "product-m5-card-with-a-job": productM5CardWithAJob,
+  "product-m5-hundred-products": productM5HundredProducts,
+  "product-m5-point-of-view": productM5PointOfView,
+  "product-m5-scene": productM5Scene,
+  "product-m6-check-the-critique": productM6CheckTheCritique,
+  "product-m6-scene": productM6Scene,
+  "product-m6-vague-or-briefed": productM6VagueOrBriefed,
+  "product-m7-demo-storyboard": productM7DemoStoryboard,
+  "product-m7-one-click-access": productM7OneClickAccess,
+  "product-m7-scene": productM7Scene,
+  "product-m7-skim-after": productM7SkimAfter,
+  "product-m7-skim-before": productM7SkimBefore,
+  "product-m1-count-or-share": productM1CountOrShare,
+  "product-m1-first-check": productM1FirstCheck,
+  "product-m1-job-or-not": productM1JobOrNot,
+  "product-m1-last-time": productM1LastTime,
+  "product-m1-say-no": productM1SayNo,
+  "product-m2-arabic-size": productM2ArabicSize,
+  "product-m2-front-load": productM2FrontLoad,
+  "product-m2-large-text": productM2LargeText,
+  "product-m2-one-step": productM2OneStep,
+  "product-m2-signals": productM2Signals,
+  "product-m2-wasel-before": productM2WaselBefore,
+  "product-m3-error-templates": productM3ErrorTemplates,
+  "product-m3-error-words": productM3ErrorWords,
+  "product-m3-help-in-place": productM3HelpInPlace,
+  "product-m3-motion-sorter": productM3MotionSorter,
+  "product-m3-reduced-motion": productM3ReducedMotion,
+  "product-m3-rtl-card": productM3RtlCard,
+  "product-m3-tab-order": productM3TabOrder,
+  "product-m4-five-testers": productM4FiveTesters,
+  "product-m4-level-ladder": productM4LevelLadder,
+  "product-m4-same-framework": productM4SameFramework,
+  "product-m5-asked-order": productM5AskedOrder,
+  "product-m5-big-number": productM5BigNumber,
+  "product-m5-four-fixes": productM5FourFixes,
+  "product-m5-labels-errors": productM5LabelsErrors,
+  "product-m5-swap-a-default": productM5SwapADefault,
+  "product-m6-brief-parts": productM6BriefParts,
+  "product-m6-one-table": productM6OneTable,
+  "product-m6-order-swap": productM6OrderSwap,
+  "product-m6-said-or-built": productM6SaidOrBuilt,
+  "product-m6-verdict-or-questions": productM6VerdictOrQuestions,
+  "product-m7-muted-frame": productM7MutedFrame,
+  "product-m7-page-order": productM7PageOrder,
+  "product-m7-where-links-go": productM7WhereLinksGo,
+  "story-or-usually": storyOrUsually,
+  "my-part-team-part": myPartTeamPart,
+  "samer-decision-weights": samerDecisionWeights,
+  "percent-from-what": percentFromWhat,
+  "find-your-numbers": findYourNumbers,
+  "how-much-was-yours": howMuchWasYours,
+  "resume-line-why-chain": resumeLineWhyChain,
+  "tidy-reason-breaks": tidyReasonBreaks,
+  "resume-line-audit": resumeLineAudit,
+  "clarify-the-case": clarifyTheCase,
+  "case-options-weights": caseOptionsWeights,
+  "decide-and-measure": decideAndMeasure,
+  "choose-technical-story": chooseTechnicalStory,
+  "founder-version-first": founderVersionFirst,
+  "engineer-depth-ladder": engineerDepthLadder,
+  "broad-to-narrow-strength": broadToNarrowStrength,
+  "weakness-answer-choice": weaknessAnswerChoice,
+  "time-to-think": timeToThink,
+  "feedback-to-next-project": feedbackToNextProject,
+  "why-not-that-choice": whyNotThatChoice,
+  "fifty-times-test": fiftyTimesTest,
+  "demo-they-can-open": demoTheyCanOpen,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
