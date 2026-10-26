@@ -180,6 +180,9 @@ import { netM1PacketChange } from "./net-m1-packet-change/data";
 import { netM1PacketJobs } from "./net-m1-packet-jobs/data";
 import { netM1PacketWrap } from "./net-m1-packet-wrap/data";
 import { netM1PacketUnwrap } from "./net-m1-packet-unwrap/data";
+import { netM1ReplaySetupChecker } from "./net-m1-replay-setup-checker/data";
+import { netM1ReplayOwnNumbers } from "./net-m1-replay-own-numbers/data";
+import { netM1ReplayVirtualCable } from "./net-m1-replay-virtual-cable/data";
 import { netM1SceneBroadcastMac } from "./net-m1-scene-broadcast-mac/data";
 import { netM2ByteBits } from "./net-m2-byte-bits/data";
 import { netM2AddressBits } from "./net-m2-address-bits/data";
@@ -1446,6 +1449,9 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "net-m1-packet-jobs": netM1PacketJobs,
   "net-m1-packet-wrap": netM1PacketWrap,
   "net-m1-packet-unwrap": netM1PacketUnwrap,
+  "net-m1-replay-setup-checker": netM1ReplaySetupChecker,
+  "net-m1-replay-own-numbers": netM1ReplayOwnNumbers,
+  "net-m1-replay-virtual-cable": netM1ReplayVirtualCable,
   "net-m1-scene-broadcast-mac": netM1SceneBroadcastMac,
   "net-m2-byte-bits": netM2ByteBits,
   "net-m2-address-bits": netM2AddressBits,
