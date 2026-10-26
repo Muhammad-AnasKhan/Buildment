@@ -3,6 +3,7 @@ import { email, id, params } from "./common.js";
 import { changePasswordBody } from "./auth.js";
 
 export const orgIdParams = params("orgId");
+export const allocationParams = z.object({ orgId: id, courseId: id });
 export const requestIdParams = params("requestId");
 export const userIdParams = params("userId");
 export const courseIdParams = params("courseId");

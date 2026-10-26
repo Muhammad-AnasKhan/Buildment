@@ -1,17 +1,19 @@
 
 import { prisma } from "../../db/prisma.js";
-import { utcDateOnly } from "../progress/heartbeat.js";
+import { dateToDayKey, localDayKey, shiftDayKey, dayKeyToDate } from "../../shared/lib/local-date.js";
+import { loadGamificationSummary } from "../gamification/summary.js";
 import { loadLearnerHabit } from "../progress/learner-habit.js";
 import { buildMenteeDashboardViewModel } from "./dashboard-model.js";
+import { learnerTimeZone } from "./time-zone.js";
 
 export async function loadMenteeDashboard(args: {
   learnerId: string;
   learnerName: string;
   bypassLocking?: boolean;
 }) {
-  const today = utcDateOnly();
-  const since = new Date(today);
-  since.setUTCDate(since.getUTCDate() - 6);
+  // Days are the learner's own (DailyActivity is written on their local day).
+  const todayKey = localDayKey(new Date(), await learnerTimeZone(args.learnerId));
+  const since = dayKeyToDate(shiftDayKey(todayKey, -6));
 
   const enrollments = await prisma.enrollment.findMany({
     where: { userId: args.learnerId, status: { not: "DROPPED" } },
@@ -25,6 +27,7 @@ export async function loadMenteeDashboard(args: {
       totalScore: true,
       maxScore: true,
       pendingReviews: true,
+      xpTotal: true,
       lastActiveAt: true,
       startedAt: true,
       completedAt: true,
@@ -153,15 +156,17 @@ export async function loadMenteeDashboard(args: {
     loadLearnerHabit(args.learnerId),
   ]);
 
+  // The weekly-goal reward is paid by the engagement events (services/engagement/events.ts), not
+  // here, so it always arrives with the mascot's reaction instead of silently during a page render.
+  const gamification = await loadGamificationSummary(args.learnerId);
+
   const byDay = new Map<string, number>();
   for (const row of dailyRows) {
-    const key = row.date.toISOString().slice(0, 10);
+    const key = dateToDayKey(row.date);
     byDay.set(key, (byDay.get(key) ?? 0) + row.activeSeconds);
   }
   const week = Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(since);
-    date.setUTCDate(since.getUTCDate() + index);
-    const day = date.toISOString().slice(0, 10);
+    const day = shiftDayKey(todayKey, index - 6);
     return { day, seconds: byDay.get(day) ?? 0 };
   });
 
@@ -173,9 +178,10 @@ export async function loadMenteeDashboard(args: {
     helpThreads,
     sessions,
     week,
-    todayKey: today.toISOString().slice(0, 10),
+    todayKey,
     openHelpCount,
     bypassLocking: args.bypassLocking,
     habit,
+    gamification,
   });
 }

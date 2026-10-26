@@ -8,6 +8,7 @@ import { appActivityOverviewQuery, appActivityUsersQuery } from "../../validatio
 import {
   adminProfileBody,
   adminPasswordBody,
+  allocationParams,
   allocationsBody,
   approveCourseRequestBody,
   bulkApproveBody,
@@ -53,6 +54,11 @@ router.post("/organizations", validateBody(createOrganizationBody), admin.create
 router.get("/organizations/:orgId", validateParams(orgIdParams), admin.getOrganization);
 router.post("/organizations/:orgId/credentials/rotate", validateParams(orgIdParams), admin.rotateCredential);
 router.put("/organizations/:orgId/allocations", validate({ params: orgIdParams, body: allocationsBody }), admin.upsertAllocations);
+router.patch(
+  "/organizations/:orgId/allocations/:courseId/leaderboard",
+  validate({ params: allocationParams, body: instructorAccessBody }),
+  admin.setAllocationLeaderboard
+);
 
 router.get("/course-requests", validateQuery(listRequestsQuery), admin.listCourseRequests);
 router.post("/course-requests/bulk/approve", validateBody(bulkApproveBody), admin.bulkApproveCourseRequests);

@@ -130,6 +130,7 @@ export async function getOrganization(orgId: string): Promise<AdminOrganizationD
       isAllowed: row.isAllowed,
       maxEnrollments: row.maxEnrollments,
       currentEnrollments: row.currentEnrollments,
+      leaderboardEnabled: row.leaderboardEnabled,
       expiresAt: row.expiresAt?.toISOString() ?? null,
     })),
     pendingRequests: org.courseRequests.map((r) => ({ id: r.id, courseId: r.courseId, courseTitle: r.course.title, courseSlug: r.course.slug })),
@@ -222,4 +223,13 @@ export function approvePendingRequestsFor(tx: Prisma.TransactionClient, organiza
     where: { organizationId, courseId, status: "PENDING" },
     data: { status: "APPROVED", reviewedAt: new Date(), reviewedById },
   });
+}
+
+/** Lets (or stops) this organization's learners joining the course's weekly leaderboards. */
+export async function setAllocationLeaderboard(orgId: string, courseId: string, enabled: boolean): Promise<void> {
+  const { count } = await prisma.organizationCourse.updateMany({
+    where: { organizationId: orgId, courseId },
+    data: { leaderboardEnabled: enabled },
+  });
+  if (count === 0) throw new NotFoundError("Allocation not found");
 }

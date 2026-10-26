@@ -23,3 +23,11 @@ export const profileBody = z.object({
 });
 
 export const instructorAccessRequestBody = z.object({ message: z.string().trim().max(500).optional() });
+
+export const gamificationPreferencesBody = z
+  .object({ hidden: z.boolean().optional(), leaderboardOptIn: z.boolean().optional() })
+  .refine((body) => body.hidden !== undefined || body.leaderboardOptIn !== undefined, {
+    message: "Set hidden or leaderboardOptIn",
+  });
+
+export const leaderboardQuery = z.object({ courseId: z.string().trim().min(1).max(64) });

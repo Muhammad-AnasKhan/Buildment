@@ -146,6 +146,7 @@ export async function dispatchNotification(task: () => Promise<unknown>): Promis
 // --- Live push --------------------------------------------------------------------------------
 
 export function toNotificationItem(row: Notification): NotificationItem {
+  const verdict = (row.data as { verdict?: unknown } | null)?.verdict;
   return {
     id: row.id,
     type: row.type as NotificationType,
@@ -156,6 +157,7 @@ export function toNotificationItem(row: Notification): NotificationItem {
     courseId: row.courseId,
     readAt: row.readAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(),
+    ...(verdict === "APPROVED" || verdict === "NEEDS_REVISION" ? { verdict } : {}),
   };
 }
 

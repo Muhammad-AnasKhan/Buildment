@@ -235,6 +235,7 @@ export async function notifyMenteeReviewFeedback(input: {
     body: `${courseTitle} · ${lesson}: ${formatMessagePreview(input.feedbackPreview, 140)}`,
     url: path,
     courseId: chapter.courseId,
+    data: { verdict: input.verdict },
     email: async ({ name }) => ({
       subject: approved ? `Mentor feedback · ${courseTitle}` : `Revision requested · ${courseTitle}`,
       html: await renderEmailTemplate("notify-mentee-review-feedback", {

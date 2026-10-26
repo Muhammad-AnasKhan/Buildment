@@ -86,6 +86,27 @@ const schema = z.object({
    */
   INTEGRITY_MEDIA_SECRET: optionalString,
 
+  /**
+   * Gamification switches (docs/14-gamification.mdx), each on unless set to "false". Levels and
+   * leaderboards are built from XP, so they switch off with it.
+   */
+  GAMIFICATION_XP: z
+    .string()
+    .optional()
+    .transform((value) => value !== "false"),
+  GAMIFICATION_STREAK_FREEZES: z
+    .string()
+    .optional()
+    .transform((value) => value !== "false"),
+  GAMIFICATION_LEVELS: z
+    .string()
+    .optional()
+    .transform((value) => value !== "false"),
+  GAMIFICATION_LEADERBOARDS: z
+    .string()
+    .optional()
+    .transform((value) => value !== "false"),
+
   /** Local testing only: e2e suites sign up repeatedly from one IP. Never set in production. */
   DISABLE_RATE_LIMITS: z
     .string()
