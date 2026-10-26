@@ -23,7 +23,7 @@ A visitor asks who she is, and the site answers only with things anyone could sa
 {
   "title": "A website nobody believes",
   "purpose": "Diala's personal site came from a template. It has stock photos, no dates and no numbers, and says 'I am a passionate DevOps engineer who loves solving problems'. A visitor wants proof and finds none.",
-  "limits": "Diala is a fictional fellow. A template is not wrong; this one has no specifics. The picture does not claim every visitor reacts this way.",
+  "limits": "A template is not wrong; this one has no specifics. The picture does not claim every visitor reacts this way.",
   "hint": "A site with nothing only she could say.",
   "scene": {
     "width": 420,

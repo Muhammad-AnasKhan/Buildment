@@ -7,7 +7,7 @@ export const careerM8SmallAndAlive: SceneSpec = {
   kind: "scene",
   title: "Small, dated and alive",
   purpose: "A visitor finds a small site with a dated case study, dated posts and the originals living there. It looks active. One small update a month is enough.",
-  limits: "A course suggestion, not research. Do not post just to look busy; a small real update is enough. Areej is a fictional fellow.",
+  limits: "A course suggestion, not research. Do not post just to look busy; a small real update is enough.",
   hint: "Small, dated and alive.",
   scene: {
     width: 420,

@@ -7,7 +7,7 @@ export const careerM8CanonicalFields: SceneSpec = {
   kind: "scene",
   title: "Where a canonical field exists",
   purpose: "DEV points back to your page with canonical_url. Medium marks a story as originally published elsewhere. LinkedIn gets a short version with a link. All three lead home.",
-  limits: "Checked 2026-10; if your screen differs, follow your screen. Hashnode and Substack settings are unverified, so the course relies on the 'first published at' line. Access from Gaza to these platforms is not confirmed: test early, ask your mentor, never use a VPN.",
+  limits: "Checked 2026-10; if your screen differs, follow your screen. Hashnode and Substack settings are unverified, so the course relies on the 'first published at' line. Access from where you are to these platforms is not confirmed: test early, ask your mentor, never use a VPN.",
   hint: "Three ways back to your page.",
   scene: {
     width: 420,

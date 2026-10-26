@@ -6,7 +6,7 @@ import type { PhraseFixerConfig } from "../primitives/phrase-fixer";
 // Course 16 (career-brand), module 7, chapter 7.3 beat 4: tap the parts of a
 // draft comment that add nothing. The question already adds something and
 // stays. The fixes use Areej's own work (the index bullet: p95 from 4.6 s to
-// 0.41 s, 14 days before and after). Areej is a fictional fellow. LinkedIn
+// 0.41 s, 14 days before and after). LinkedIn
 // suggests building reputation by reacting and commenting and asks members
 // to respond authentically (checked 2026-10).
 
@@ -42,6 +42,6 @@ export const careerM7CommentEdit: CustomCanvasSpec = {
   purpose:
     "Tap the parts of a draft comment that add nothing: a generic thanks and a pitch. Each says why and gives what Areej would write. The card then becomes her comment.",
   limits:
-    "Areej is a fictional fellow. This is a course method with LinkedIn's own advice behind it, not a promise of replies. A comment must be written by you; never use a tool that comments for you, which the rules forbid. Checked 2026-10.",
+    "This is a course method with LinkedIn's own advice behind it, not a promise of replies. A comment must be written by you; never use a tool that comments for you, which the rules forbid. Checked 2026-10.",
   component: makePhraseFixerCanvas(COMMENT_EDIT_CONFIG),
 };

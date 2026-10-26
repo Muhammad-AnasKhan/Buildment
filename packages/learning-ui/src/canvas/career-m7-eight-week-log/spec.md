@@ -25,7 +25,7 @@ No controlled study shows a posting habit causes more followers or offers; Linke
 {
   "title": "Grow slowly, measure eight weeks",
   "purpose": "Areej posts once a week and writes five useful comments a week. She logs posts, comments, replies and profile views for eight weeks, then compares. The picture shows the counting, not a result.",
-  "limits": "Areej is a fictional fellow. No result is shown or promised. The log is your own evidence about your own audience, not a study.",
+  "limits": "No result is shown or promised. The log is your own evidence about your own audience, not a study.",
   "hint": "Count for eight weeks, then compare.",
   "scene": {
     "width": 420,

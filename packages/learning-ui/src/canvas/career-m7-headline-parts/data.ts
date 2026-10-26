@@ -40,6 +40,6 @@ export const careerM7HeadlineParts: CustomCanvasSpec = {
   title: "Write a headline a stranger understands",
   purpose: "Build Amjad's new headline from three parts: his role, his tools and what he does. 'Passionate', 'lifelong learner', 'open to opportunities' and 'rockstar' are refused with a reason.",
   limits:
-    "Amjad is a fictional fellow. No character count is given: type your headline in the editor and read the counter on your own screen. Checked 2026-10. A headline is a summary of your About section, so write it last.",
+    "No character count is given: type your headline in the editor and read the counter on your own screen. Checked 2026-10. A headline is a summary of your About section, so write it last.",
   component: makeSlotCardCanvas(HEADLINE_CARD_CONFIG),
 };

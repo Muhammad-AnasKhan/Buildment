@@ -5,7 +5,7 @@ export const careerM7FortyNotes: SceneSpec = {
   kind: "scene",
   title: "Forty identical notes",
   purpose: "Amjad, whose headline reads 'Passionate developer | Lifelong learner', sends 40 identical notes to founders he does not know. There are no replies, and his invitations are restricted for about a week.",
-  limits: "Amjad is a fictional fellow. Platform rules change; checked 2026-10, and if your screen differs, follow your screen. Only four of the forty notes are drawn.",
+  limits: "Platform rules change; checked 2026-10, and if your screen differs, follow your screen. Only four of the forty notes are drawn.",
   hint: "Watch the same note leave again and again.",
   scene: {
     width: 420,

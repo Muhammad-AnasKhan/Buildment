@@ -40,7 +40,7 @@ export const OPEN_WITH_PROBLEM_BLOCKS: StackBlock[] = [
     label: "The result: p95 820 ms to 95 ms",
     cost: 3,
     kind: "proof",
-    note: "Same script, same data, same laptop."
+    note: "p95 is the time that 95 of every 100 requests finish within."
   },
   {
     id: "tradeoff",
@@ -64,6 +64,6 @@ export const careerM8OpenWithProblem: CustomCanvasSpec = {
   kind: "custom",
   title: "Start where the reader's question is",
   purpose: "Six paragraphs of Areej's post are in an order that opens with the history and the thanks. A busy reader runs out of room before the problem and the result. The learner moves them to the top.",
-  limits: "The 10 lines and the length of each paragraph are illustrative. Real readers differ and no study gives an ideal opening length. A paragraph counts as read when the room covers at least half of it. Areej is a fictional fellow.",
+  limits: "The 10 lines and the length of each paragraph are illustrative. Real readers differ and no study gives an ideal opening length. A paragraph counts as read when the room covers at least half of it.",
   component: makeBudgetStackCanvas(OPEN_WITH_PROBLEM_CONFIG),
 };

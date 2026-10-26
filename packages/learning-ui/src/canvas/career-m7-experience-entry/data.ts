@@ -5,7 +5,7 @@ export const careerM7ExperienceEntry: SceneSpec = {
   kind: "scene",
   title: "Experience: accurate, real, with proof",
   purpose: "An Experience entry names a real tie accurately. A bullet from the claim ledger and the skills used are attached to it. Areej's entry can read 'a parcel delivery company' if she does not want the name public.",
-  limits: "Checked 2026-10; if your screen differs, follow your screen. Areej is a fictional fellow. An Arabic or second-language profile is optional and supported. Never list an informal tie as a job.",
+  limits: "Checked 2026-10; if your screen differs, follow your screen. An Arabic or second-language profile is optional and supported. Never list an informal tie as a job.",
   hint: "A real tie, a ledger bullet, skills attached.",
   scene: {
     width: 420,

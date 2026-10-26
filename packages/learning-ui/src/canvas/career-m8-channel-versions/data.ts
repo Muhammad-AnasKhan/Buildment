@@ -20,11 +20,6 @@ export const CHANNEL_VERSIONS_BUCKETS: SortBucket[] = [
     id: "link",
     label: "Link only",
     sub: "one line and the URL"
-  },
-  {
-    id: "message",
-    label: "Personal message",
-    sub: "to one person"
   }
 ];
 
@@ -35,8 +30,7 @@ export const CHANNEL_VERSIONS_CARDS: SortCard[] = [
     answer: "full",
     why: {
       short: "DEV can hold the whole article.",
-      link: "DEV is a full article page.",
-      message: "DEV is a public page, not a message."
+      link: "DEV is a full article page."
     }
   },
   {
@@ -45,8 +39,7 @@ export const CHANNEL_VERSIONS_CARDS: SortCard[] = [
     answer: "full",
     why: {
       short: "Medium can hold the whole article.",
-      link: "Medium is a full article page.",
-      message: "Medium is a public page, not a message."
+      link: "Medium is a full article page."
     }
   },
   {
@@ -55,8 +48,7 @@ export const CHANNEL_VERSIONS_CARDS: SortCard[] = [
     answer: "short",
     why: {
       full: "A LinkedIn post is short. It is not the article.",
-      link: "A post can say more than a bare link.",
-      message: "A post is public. A message is private."
+      link: "A post can say more than a bare link."
     }
   },
   {
@@ -65,8 +57,7 @@ export const CHANNEL_VERSIONS_CARDS: SortCard[] = [
     answer: "link",
     why: {
       full: "Featured holds an item, not a copy of the article.",
-      short: "Featured shows an item, not a text post.",
-      message: "Featured is public, not a message."
+      short: "Featured shows an item, not a text post."
     }
   },
   {
@@ -75,8 +66,7 @@ export const CHANNEL_VERSIONS_CARDS: SortCard[] = [
     answer: "link",
     why: {
       full: "A README is not the place for the whole article.",
-      short: "One line and the link is enough.",
-      message: "A README is public, not a message."
+      short: "One line and the link is enough."
     }
   },
   {
@@ -85,8 +75,7 @@ export const CHANNEL_VERSIONS_CARDS: SortCard[] = [
     answer: "short",
     why: {
       full: "A profile README is a few lines, not the article.",
-      link: "A few lines of intro make it worth a click.",
-      message: "A profile README is public."
+      link: "A few lines of intro make it worth a click."
     }
   },
   {
@@ -95,27 +84,25 @@ export const CHANNEL_VERSIONS_CARDS: SortCard[] = [
     answer: "link",
     why: {
       full: "A chat is no place for an article.",
-      short: "A chat wants one line and the link.",
-      message: "It is a group, not one person."
+      short: "A chat wants one line and the link."
     }
   },
   {
-    id: "ta",
-    text: "Your former teaching assistant, who asked about load testing",
-    answer: "message",
+    id: "forum",
+    text: "A public forum thread about load testing, where links are allowed",
+    answer: "short",
     why: {
-      full: "He asked a question. Answer him in a message.",
-      short: "A public post is not an answer to him.",
-      link: "A bare link feels cold. Say why you send it."
+      full: "A forum answer is short. It is not the whole article.",
+      link: "A bare link is not an answer. Give a few lines first."
     }
   }
 ];
 
 export const careerM8ChannelVersions: CustomCanvasSpec = {
   kind: "custom",
-  title: "Map your ten channels",
-  purpose: "Sort eight of Areej's channels into the version each gets: a full copy with a canonical link, a short version with a link, a link only, or a personal message. A short reason follows each wrong try.",
-  limits: "Checked 2026-10; platform settings change, and access from Gaza to DEV, Medium and others is not confirmed, so try each on your phone. Areej is a fictional fellow. Which ten channels you use is your choice.",
+  title: "Map eight of your channels",
+  purpose: "Sort eight of Areej's channels into the version each gets: a full copy with a canonical link, a short version with a link, or a link only. A short reason follows each wrong try.",
+  limits: "Checked 2026-10; platform settings change, and access from where you are to DEV, Medium and others is not confirmed, so try each on your phone. Which channels you use is your choice.",
   component: makeSorterCanvas({
     buckets: CHANNEL_VERSIONS_BUCKETS,
     cards: CHANNEL_VERSIONS_CARDS,

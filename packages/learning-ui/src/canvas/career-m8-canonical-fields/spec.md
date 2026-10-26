@@ -19,13 +19,13 @@ DEV has a `canonical_url` field, Medium has a way to mark a story as originally 
 Three platforms each point back to your page in their own way.
 
 ## Data
-Checked 2026-10: DEV's editor guide has a `canonical_url` front matter field; Medium sets it automatically on import or manually in advanced settings (author only); LinkedIn's article SEO page describes only an SEO title and description, with no canonical field read. Hashnode and Substack settings are unverified, so use the "first published at" line there. Whether these platforms are reachable from Gaza is not confirmed: try each on your phone before the gate.
+Checked 2026-10: DEV's editor guide has a `canonical_url` front matter field; Medium sets it automatically on import or manually in advanced settings (author only); LinkedIn's article SEO page describes only an SEO title and description, with no canonical field read. Hashnode and Substack settings are unverified, so use the "first published at" line there. Whether these platforms are reachable from where you are is not confirmed: try each on your phone before the gate.
 
 ```json
 {
   "title": "Where a canonical field exists",
   "purpose": "DEV points back to your page with canonical_url. Medium marks a story as originally published elsewhere. LinkedIn gets a short version with a link. All three lead home.",
-  "limits": "Checked 2026-10; if your screen differs, follow your screen. Hashnode and Substack settings are unverified, so the course relies on the 'first published at' line. Access from Gaza to these platforms is not confirmed: test early, ask your mentor, never use a VPN.",
+  "limits": "Checked 2026-10; if your screen differs, follow your screen. Hashnode and Substack settings are unverified, so the course relies on the 'first published at' line. Access from where you are to these platforms is not confirmed: test early, ask your mentor, never use a VPN.",
   "hint": "Three ways back to your page.",
   "scene": {
     "width": 420,

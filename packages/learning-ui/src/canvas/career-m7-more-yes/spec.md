@@ -25,7 +25,7 @@ Flynn and Lake: across six studies, people underestimated by as much as 50 perce
 {
   "title": "People say yes more than you expect",
   "purpose": "An asker expects a no and sends a small, direct request. The other person says yes. In studies of asking for help, people underestimated how often others say yes, by as much as 50 percent in some studies.",
-  "limits": "A made-up asker. The studies were mostly about small, direct requests, not job offers, and the effect varied. This is a reason to send the message, not a promise of a reply.",
+  "limits": "The asker is made up. The studies were mostly about small, direct requests, not job offers, and the effect varied. This is a reason to send the message, not a promise of a reply.",
   "hint": "A small, direct ask.",
   "scene": {
     "width": 420,

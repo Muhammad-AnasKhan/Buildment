@@ -23,7 +23,7 @@ The line is added at the top of a copy, and it sends a reader back to the origin
 {
   "title": "One honest line on every copy",
   "purpose": "A copy of the article on another platform gets a line at the top: 'First published at' and a link to Areej's site. Readers follow the link home.",
-  "limits": "Areej is a fictional fellow. This does not depend on any search engine, so it also works on platforms whose canonical settings are unverified. Cross-posting is for readers, not a ranking trick.",
+  "limits": "This does not depend on any search engine, so it also works on platforms whose canonical settings are unverified. Cross-posting is for readers, not a ranking trick.",
   "hint": "One line, one link home.",
   "scene": {
     "width": 420,

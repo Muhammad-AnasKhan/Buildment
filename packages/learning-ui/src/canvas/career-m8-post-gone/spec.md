@@ -25,7 +25,7 @@ Diala is from the canon (scene cast, 8.1). Her post was about cutting her team's
 {
   "title": "Her best post, gone",
   "purpose": "Diala wrote a strong post about cutting her team's CI pipeline from 22 minutes to 9. It lived on one blogging site. When she lost access to her account there, the post went too, and the link on her resume broke.",
-  "limits": "Diala is a fictional fellow and the blogging site is not named. Platforms change their rules and can lock accounts; that is why the original belongs on a page you control.",
+  "limits": "The blogging site is not named. Platforms change their rules and can lock accounts; that is why the original belongs on a page you control.",
   "hint": "One copy, on a site she did not control.",
   "scene": {
     "width": 420,

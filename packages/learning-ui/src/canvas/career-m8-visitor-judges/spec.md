@@ -25,7 +25,7 @@ Google's people-first guidance asks whether content gives original information o
 {
   "title": "A visitor judges you by your writing",
   "purpose": "A visitor reads one post. It shows the problem, the test and the trade-off. From those three things the visitor forms a view of how the author thinks.",
-  "limits": "A made-up visitor. Google's guidance is about search content, not hiring, but it asks for the same things: original information and first-hand experience. Checked 2026-10.",
+  "limits": "The visitor is made up. Google's guidance is about search content, not hiring, but it asks for the same things: original information and first-hand experience. Checked 2026-10.",
   "hint": "Three things in one post.",
   "scene": {
     "width": 420,

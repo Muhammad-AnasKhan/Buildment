@@ -25,7 +25,7 @@ Paraphrase testing suits short documents; plan to test at least twice (plain lan
 {
   "title": "The say-it-back test",
   "purpose": "Areej's classmate reads her post and says it back: she made the list faster by keeping a copy for 30 seconds, and proved it with the same test before and after. One thing is missing: why the copy can be stale. She adds a sentence.",
-  "limits": "Areej is a fictional fellow. The test needs a person, not a tool. One listener is a small sample, so test at least twice. Plain-language guidance, not a trial.",
+  "limits": "The test needs a person, not a tool. One listener is a small sample, so test at least twice. Plain-language guidance, not a trial.",
   "hint": "Say it back, then fix the gap.",
   "scene": {
     "width": 420,

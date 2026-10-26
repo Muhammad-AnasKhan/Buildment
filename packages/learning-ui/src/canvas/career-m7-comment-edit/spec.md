@@ -22,13 +22,13 @@ The phrase fixer shows a draft comment as it would appear under a post. Tapping 
 The brief imagines rating five draft comments in a sorter. Module 7 already uses a sorter in 7.4, so this beat uses the phrase fixer on one draft: the same lesson, one comment improved in place. The fix uses Areej's own work (the index bullet) as the small example.
 
 ## Data
-Areej's example is from the canon: a composite index cut a report's p95 from 4.6 s to 0.41 s (14 days before and after). Areej is a fictional fellow. LinkedIn suggests building reputation by reacting and commenting and asks members to respond authentically (checked 2026-10).
+Areej's example is from the canon: a composite index cut a report's p95 from 4.6 s to 0.41 s (14 days before and after). LinkedIn suggests building reputation by reacting and commenting and asks members to respond authentically (checked 2026-10).
 
 ```json
 {
   "title": "A comment that adds one thing",
   "purpose": "Tap the parts of a draft comment that add nothing: a generic thanks and a pitch. Each says why and gives what Areej would write. The card then becomes her comment.",
-  "limits": "Areej is a fictional fellow. This is a course method with LinkedIn's own advice behind it, not a promise of replies. A comment must be written by you; never use a tool that comments for you, which the rules forbid. Checked 2026-10.",
+  "limits": "This is a course method with LinkedIn's own advice behind it, not a promise of replies. A comment must be written by you; never use a tool that comments for you, which the rules forbid. Checked 2026-10.",
   "config": {
     "segments": [
       { "id": "great", "text": "Great post! Thanks for sharing.", "weak": { "why": "Adds nothing. Anyone could write it.", "fix": "On the index point: a composite index cut a report's p95 from 4.6 s to 0.41 s for me (14 days before and after)." } },

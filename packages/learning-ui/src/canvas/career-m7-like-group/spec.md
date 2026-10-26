@@ -25,7 +25,7 @@ From the canon: Amjad joined a group that agreed to like each other's posts, whi
 {
   "title": "A group that likes everything",
   "purpose": "Amjad joins a group whose members agree to like each other's posts. His posts get the same few likes every time. The founders he wanted to reach do not reply.",
-  "limits": "Amjad is a fictional fellow. LinkedIn's Community Policies do not use the word pod; they say not to agree with others ahead of time to like or re-share each other's content. Rules change; checked 2026-10.",
+  "limits": "LinkedIn's Community Policies do not use the word pod; they say not to agree with others ahead of time to like or re-share each other's content. Rules change; checked 2026-10.",
   "hint": "Likes from the same few people.",
   "scene": {
     "width": 420,
