@@ -1,7 +1,7 @@
 import { fetchBlockState } from "@/blocks/block-state";
 import type { SanitizedQuizConfig } from "@/shared/blocks/quiz/schema";
 import { QuizClient } from "./QuizClient";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 
 export type QuizOptionInput = string | { id?: string; label: string };
 

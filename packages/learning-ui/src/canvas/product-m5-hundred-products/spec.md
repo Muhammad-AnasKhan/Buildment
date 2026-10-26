@@ -1,0 +1,13 @@
+# Canvas spec: product-m5-hundred-products
+
+- **Course and chapter:** product-sense, 5.3 "Words anyone could write", beat 2 ("Sort Wasel's sentences").
+- **Renderer:** custom, on the reusable `Sorter` primitive (`primitives/sorter.tsx`, model `models/sorter.ts`). This folder holds only data. Reason: the learner must make a choice and get a reason for each wrong one; any course can sort its own cards with the same component.
+- **Claim:** A sentence a hundred products could say tells a reader nothing. The rule that separates the buckets is the swap: change the product to a bakery or a gym; if the sentence still works and nothing in it can be checked, it belongs to any product. If it breaks, or holds a price, a place, or a time with its condition, only Wasel can say it. Hype words and digits do not decide the bucket.
+- **Model:** two buckets, Any product and Only Wasel. Nine cards in data order; a right bucket moves the card on, a wrong bucket keeps it and shows the reason for that card. Five cards fail the test: the hype headline, the hype subline, "Save up to 50% on every order." (a digit, no base), "5 stars from our happy customers." (a digit, no count) and "Quality prints at great prices." (no hype words). Four pass: the black and white price (0.50 shekels each), the send-before-noon promise without a digit, the place by the university gate without a digit, and the exam-week advice without a digit. Every fact on a passing card is Wasel canon from the writer pack.
+- **Surface cues that conflict with the rule (on purpose):** two "any product" cards carry digits; three "only Wasel" cards carry none. A learner who sorts by digits gets three cards wrong.
+- **Inputs:** tap a bucket, or drag the card onto it.
+- **What changes:** the bucket counts, the card, the reason line after a wrong try, and the verdict (how many took a second try).
+- **What the learner should notice:** a digit does not make a sentence specific, and a plain sentence with a place or a condition can pass. Every reason restates the swap rule.
+- **Accessibility:** inherited from the Sorter: labelled bucket buttons with counts, a live region for results, focus rings. Bucket labels at most 15 characters; cards at most about 60 characters.
+- **Limits (fold):** the test is a rule from practice; a sentence can pass and still read badly. Wasel is fictional.
+- **Sources:** Anthropic's frontend-design skill on plain description and specific copy [B3]; OpenAI's frontend guidance on filler copy and repeated mood statements [B5]. The hundred products test is the course's own rule (dossier B, accepted outline change 3).

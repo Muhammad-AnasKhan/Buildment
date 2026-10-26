@@ -1,6 +1,6 @@
-import { ChapterRecapView } from '@buildment/learning-ui/blocks/chapter-recap/ChapterRecapView';
+import { ChapterRecap } from '@buildment/learning-ui/blocks/chapter-recap/ChapterRecap';
 import { fetchBlockState } from "@/blocks/block-state";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 
 export async function ChapterRecapComponent({
   id,
@@ -32,5 +32,5 @@ export async function ChapterRecapComponent({
     return null;
   }
 
-  return <ChapterRecapView points={list} />;
+  return <ChapterRecap points={list} />;
 }

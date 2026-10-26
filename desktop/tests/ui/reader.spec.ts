@@ -182,6 +182,11 @@ test('native reader submits quizzes, saves completion, enforces locks and signs 
                 : null,
             },
           }),
+          aiInterview: async () => ({
+            ok: false,
+            code: 'NOT_USED',
+            message: 'This reader fixture does not provide interviews.',
+          }),
           quiz: async () => ({
             ok: true,
             data: {

@@ -132,6 +132,10 @@ else {
       requireRenderer(event);
       return previewClient.learning.block(id);
     });
+    ipcMain.handle('learning:ai-interview', (event, id, action, payload) => {
+      requireRenderer(event);
+      return previewClient.learning.aiInterview(id, action, payload);
+    });
     ipcMain.handle('learning:answer', (event, id, payload) => {
       requireRenderer(event);
       return previewClient.learning.answer(id, payload);

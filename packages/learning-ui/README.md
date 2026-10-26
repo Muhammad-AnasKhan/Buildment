@@ -1,9 +1,19 @@
 # Shared learning UI
 
-`@buildment/learning-ui` owns the browser-safe lesson blocks, diagrams, canvases,
-UI primitives, and quiz integrity engine used by web and desktop. Edit these
-implementations here. Canvas consumers import this package directly; the frontend canvas folder has been removed. Other old frontend paths re-export the package for existing
-readers and tests; they contain no duplicate implementation.
+`@buildment/learning-ui` owns the shared course-block renderers, labs, diagrams,
+canvases, exercise clients, and quiz integrity engine used by web and desktop.
+Edit visual block implementations here so both readers stay consistent.
+
+`src/lesson-blocks.tsx` is the shared MDX block registry. The web and desktop
+registries extend it with host-specific blocks and adapters. Shared blocks
+include Checklist and Learning Log as well as the course content and activity
+blocks. For interactive blocks, pass initial state and callbacks into the
+package component; keep server actions, API clients, and IPC calls in the host
+app. Host adapters may load or save state, but must not duplicate block UI.
+
+Canvas consumers import this package directly; the frontend canvas folder has
+been removed. Legacy frontend component paths should remain thin adapters or
+re-exports, not duplicate visual implementations.
 
 Both apps declare a local `file:../packages/learning-ui` dependency. Run `pnpm
 --dir frontend install` and `pnpm --dir desktop install` after changing this

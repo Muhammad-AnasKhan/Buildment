@@ -2,10 +2,10 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { LAB_SLUGS } from "@/shared/lab/slugs";
-import { getLabSpec, labRegistry } from "@/lab/registry";
-import { validateLabSpec } from "@/lab/types";
+import { getLabSpec, labRegistry } from "@buildment/learning-ui/labs/registry";
+import { validateLabSpec } from "@buildment/learning-ui/labs/types";
 
-const LAB_DIR = resolve(process.cwd(), "src/lab");
+const LAB_DIR = resolve(process.cwd(), "../packages/learning-ui/src/labs");
 
 describe("lab registry", () => {
   it("has keys exactly equal to LAB_SLUGS", () => {

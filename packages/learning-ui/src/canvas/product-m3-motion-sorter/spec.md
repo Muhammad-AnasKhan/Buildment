@@ -1,0 +1,13 @@
+# Canvas spec: product-m3-motion-sorter
+
+- **Course and chapter:** product-sense, 3.5 "Motion with a reason", beat 2.
+- **Renderer:** custom, on the reusable `Sorter` primitive (`primitives/sorter.tsx`, model `models/sorter.ts`). This folder holds only data. Reason: the learner must decide for each movement whether it has a job and get a reason if wrong. It replaces a hub diagram that listed the four jobs.
+- **Claim:** Motion has a job when it shows a change the person needs: work in progress, something new, something moved, or a value changed. Motion that shows no change is decoration, and decoration is the first thing to cut and the first thing to remove when a person asks for less motion. The rule is the course's own summary; the risks of decoration come from WCAG 2.3.3 and the web platform notes [A6, A43].
+- **Model:** one card on top at a time, dealt in data order and in a seeded shuffle after "Sort again". Two buckets: "Has a job" (shows a change) and "Decoration" (only looks lively). A wrong bucket keeps the card and shows the reason for that card and bucket. Every reason states the rule.
+- **Cards (8):** a spinner turns while a join is sent (job; looks like a loop, so the surface cue points to decoration); a star beside the title spins (decoration); a new group row slides in once (job); the Join button pulses (decoration); the seats count ticks from 2 to 1 (job, the canon seat count of "Data structures, exam Thursday" after a join); each card fades in on scroll (decoration; looks mild, so the surface cue points to job); a green tick fades in once after a join (job; the same fade as the scroll fade, so the surface cue points to the wrong bucket); a badge bounces every few seconds (decoration). Four of each.
+- **Inputs:** tap a bucket (a real button over each bucket) or drag the card onto a bucket.
+- **What moves:** a right card flies into its bucket; a wrong card shakes and shows its reason. Under reduced motion there is no flight or shake.
+- **What the learner should notice:** the look of a movement (gentle, looping, small) does not decide its job. The question is what change it shows. The same fade is decoration on a scrolling card and a job after a join.
+- **Accessibility:** bucket buttons are labelled with name, gloss and count; a polite live region reads each result and reason; text at least 11.5 units on a 420 viewBox.
+- **Limits (fold):** real cases are less clear. A motion can show a change and still be too long or too large. The rule is the course's own summary. Halaqa is fictional.
+- **Sources:** WCAG 2.3.3 (AAA) [A6]; MDN on `prefers-reduced-motion` [A43]; the four jobs are the course's own summary.

@@ -1,0 +1,13 @@
+# Canvas spec: product-m3-tap-targets
+
+- **Course and chapter:** product-sense, 3.4 "Everyone can use it: access and small screens", beat 1 (the playable beat).
+- **Renderer:** custom, on the reusable specimen ladder (`primitives/specimen-beats.tsx`, model `models/ui-specimen.ts`). This folder holds only data. Reason: target size is a size, so the learner should drag a size and see the targets grow and the verdict change.
+- **Claim:** There is no single number. WCAG 2.2 AA (2.5.8) asks for targets of at least 24 by 24 CSS pixels, or smaller targets with enough space around them. WCAG AAA (2.5.5) asks for 44 by 44. Apple's default control is 44 and Material suggests 48. Aim for about 44 to 48; the AA floor is 24, and only with spacing [A4, A16, A38, A39].
+- **Model:** Halaqa's group page with three icon buttons (messages, calendar, save). The icon stays 16 units wide; the box around it is the target. Six steps: 16 touching (bad, "Too small and too close"), 16 with 12 between (warn, "Passes AA only by spacing"), 24 with 8 between (warn, "At the AA floor"), 32 with 8 (warn, "Above the floor, under 44"), 44 with 8 (good, "Good: about 44") and 48 with 8 (good, "Good: about 48"). Check of the 16 with 12 step: two undersized targets whose centres are 28 apart have 24-unit circles that do not touch (28 is more than 24), and a circle reaches 4 units beyond its target while the next target starts 12 away. Check of the first step: centres 16 apart, circles overlap, and 16 is below 24, so it fails.
+- **Scale:** the phone in the picture is 300 units wide, so one unit is one pixel of that drawn phone. A caption under the screen prints "Each target is N by N. Space between: G."
+- **Inputs:** drag anywhere across the picture, or use the arrow keys on the slider; six stops.
+- **What changes:** the size and spacing of the three targets, the caption under them, and the verdict.
+- **What the learner should notice:** the icon never changes. The tap area around it does. Passing the AA floor is a minimum, and a finger is easier to satisfy at 44 to 48.
+- **Accessibility:** the wrapper is a real slider with a value text ("Target 24, space 8"); a polite live region reads the verdict; text at least 11 units.
+- **Limits (fold):** the drawn phone is a little narrower than many phones; WCAG 2.5.8 has exceptions (an equivalent control, inline text, a browser-controlled target, an essential size) that the picture does not draw; Halaqa is fictional.
+- **Sources:** WCAG 2.5.8 [A4] and 2.5.5 [A16]; Apple's Human Interface Guidelines on accessibility [A38]; Material 3 on touch targets [A39].

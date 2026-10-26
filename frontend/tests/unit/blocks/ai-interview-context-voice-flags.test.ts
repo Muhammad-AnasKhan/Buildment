@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AiInterviewView, type AiInterviewViewProps } from "@/blocks/ai-interview/AiInterviewView";
+import { AiInterviewView, type AiInterviewViewProps } from "@buildment/learning-ui/blocks/ai-interview/AiInterviewView";
 import type { AiInterviewSessionView } from "@/shared/api/ai";
 import type { SanitizedAiInterviewConfig } from "@/shared/blocks/ai-interview/schema";
 

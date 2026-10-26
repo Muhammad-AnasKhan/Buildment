@@ -2,7 +2,7 @@ import { fetchBlockState } from "@/blocks/block-state";
 import { sanitizeBlockConfig } from "@/mdx/sanitize";
 import type { SanitizedCodeConfig } from "@/shared/blocks/code/schema";
 import { CodeExerciseClient } from "./CodeExerciseClient";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 
 export async function CodeExerciseComponent({
   id,

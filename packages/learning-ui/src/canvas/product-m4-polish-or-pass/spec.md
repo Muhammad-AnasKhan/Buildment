@@ -1,0 +1,12 @@
+# Canvas spec: product-m4-polish-or-pass
+
+- **Course and chapter:** product-sense, 4.2 "Average, good, best, remarkable", beat 2 ("Polished is not the same as good"), right after the predict.
+- **Renderer:** custom, on the reusable specimen compare (`primitives/specimen-beats.tsx`, model `models/ui-specimen.ts`). This folder holds only data. Reason: the claim is that looks are not a check, so the reader must see a polished screen and a plain one side by side.
+- **Claim:** A screen can look finished and fail Good checks the reader met in modules 2 and 3 (contrast, visible labels, button size), while a plain screen passes them. Looks are not a criterion. A plain screen that also puts one thing first is on the way to Best.
+- **Model:** three versions of one booking form for Ghurfa, a library group-room page built by Rand (fictional). Polished: a soft shadow, rounded corners, an icon tile and a big title; hint text in the deliberately pale "faint" tone; two fields with placeholders only; a small Book button. Plain: a navigation bar, three fields with visible labels and prefilled values, a hint under the time, and one wide Book button. Clear: the free room and time as the largest line, the number of seats, one field for the number of people and one wide button that names the time.
+- **Inputs:** three pills labelled "Polished", "Plain" and "Clear". Polished shows first.
+- **What changes:** the whole screen, and the verdict: "Looks nice, checks fail" (warn), "Plain, checks pass" (good), "Plain, one thing first" (good).
+- **What the learner should notice:** the pale hint text, the labels that would vanish when typing, the small button, and then their absence in the plain version; in the clear version, one line that leads and no extra decoration.
+- **Accessibility:** a real segmented control with a polite live region that reads the version, the screen's description and the verdict; the SVG has a title with the same text; text at least 11 units. The picture states no contrast ratio, because the pale tone is the kit's deliberately low-contrast token and not a literal colour.
+- **Limits (in the data):** a picture can show some checks and not others, such as keyboard use; units are not pixels on the learner's phone; Ghurfa and Rand are fictional.
+- **Sources:** contrast and labels from the Good list in the chapter [A1, A2, A8, A25, A74]; hierarchy and relevance [A69, A67]; the aesthetic-usability effect [A58].
