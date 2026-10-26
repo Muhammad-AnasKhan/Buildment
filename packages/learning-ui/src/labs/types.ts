@@ -4,6 +4,8 @@
 
 import type { ComponentKind, Role } from "./catalog";
 import { canConnect, isComponentKind } from "./catalog";
+import type { BuildGoal, BuildPart, BuildSolution } from "./net/build-model";
+import { validateBuildLab } from "./net/build-validate";
 import type { NetCheck } from "./net/checks";
 import type { NetTopology } from "./net/model";
 import type { PlanSpec } from "./net/plan";
@@ -149,14 +151,19 @@ export interface NetSolution {
   summary: string;
   steps?: NetSolutionStep[];
   blocks?: Record<string, { block: string; why: string }>;
+  // Build mode: a finished canvas and a why for each step of making it.
+  build?: BuildSolution;
 }
 
 export interface NetLabSpec extends LabBase {
   family: "net";
-  mode: "explore" | "fault" | "plan";
+  mode: "explore" | "fault" | "plan" | "build";
   topology?: NetTopology;
   checks?: NetCheck[];
   plan?: PlanSpec;
+  // Build mode: what the learner can place, and what the finished network must do.
+  palette?: BuildPart[];
+  goals?: BuildGoal[];
   startDevice?: string;
   tasks?: string[];
   suggested?: string[];
@@ -166,6 +173,7 @@ export interface NetLabSpec extends LabBase {
 export type LabSpec = HldLabSpec | DbLabSpec | NetLabSpec;
 
 function validateNetLab(spec: NetLabSpec): string[] {
+  if (spec.mode === "build") return validateBuildLab(spec);
   const problems: string[] = [];
   if (spec.mode !== "explore" && !spec.solution) problems.push(`a ${spec.mode} lab needs a solution`);
   if (spec.mode === "plan") {

@@ -9,7 +9,7 @@ import type { NetSolution } from "../types";
 import type { PlanSpec } from "./plan";
 import { checkPlan } from "./plan";
 
-function Reveal({ children, label }: { children: React.ReactNode; label: string }) {
+export function Reveal({ children, label }: { children: React.ReactNode; label: string }) {
   const [open, setOpen] = useState(false);
   if (!open) {
     return (
