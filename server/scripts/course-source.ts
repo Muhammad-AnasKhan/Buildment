@@ -99,6 +99,17 @@ export const CourseManifestSchema = z.object({
   /** Catalog grouping: "tech" (default) or "soft-skills". */
   category: z.enum(["tech", "soft-skills"]).default("tech"),
   coverUrl: z.string().url().optional(),
+  /**
+   * Opt in to listen-along audio. `agent-ip/scripts/narrate/narrate.py` reads this block and
+   * writes the audio and a manifest the reader uses; chapters are file names without `.md`.
+   */
+  narration: z.object({
+    voice: z.string().min(1).default("af_heart"),
+    speed: z.number().min(0.7).max(1.2).default(0.95),
+    chapters: z.array(z.string().regex(/^\d+\.\d+-[a-z0-9-]+$/, "Use the chapter file name without .md, for example 01.02-roles")).min(1),
+    /** Words the voice gets wrong, mapped to a spelling it says correctly. */
+    pronunciations: z.record(z.string().min(1), z.string().min(1)).default({}),
+  }).optional(),
   /** Built-in family slug or the slug of variantFamily below. */
   family: z.string().optional(),
   /** Explicitly released tracks. Omit for the historical all-variants behavior. */
