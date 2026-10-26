@@ -728,6 +728,23 @@ export const CANVAS_SLUGS = [
   "net-m2-cidr-drill",
   "net-m2-scene-same-address",
   "net-m2-classify",
+  "net-m3-arp-exchange",
+  "net-m3-broadcast",
+  "net-m3-mask-and",
+  "net-m3-mask-bits",
+  "net-m3-mask-drill",
+  "net-m3-overlap-line",
+  "net-m3-overlap-nest",
+  "net-m3-split-boundary",
+  "net-m3-split-drill",
+  "net-m3-split-place",
+  "net-m3-split-size",
+  "net-m3-wide-mask",
+  "net-m4-route-longest",
+  "net-m9-v6-drill",
+  "net-m9-v6-expand",
+  "net-m9-v6-invalid",
+  "net-m9-v6-shorten",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];

@@ -729,6 +729,23 @@ import { sysdesignM18PipelineStep } from "./sysdesign-m18-pipeline-step/data";
 import { sysdesignM18CanaryBlast } from "./sysdesign-m18-canary-blast/data";
 import { sysdesignM18CloudExplorer } from "./sysdesign-m18-cloud-explorer/data";
 import type { SceneSpec } from "./renderers/scene/SceneCanvas";
+import { netM3ArpExchange } from "./net-m3-arp-exchange/data";
+import { netM3Broadcast } from "./net-m3-broadcast/data";
+import { netM3MaskAnd } from "./net-m3-mask-and/data";
+import { netM3MaskBits } from "./net-m3-mask-bits/data";
+import { netM3MaskDrill } from "./net-m3-mask-drill/data";
+import { netM3OverlapLine } from "./net-m3-overlap-line/data";
+import { netM3OverlapNest } from "./net-m3-overlap-nest/data";
+import { netM3SplitBoundary } from "./net-m3-split-boundary/data";
+import { netM3SplitDrill } from "./net-m3-split-drill/data";
+import { netM3SplitPlace } from "./net-m3-split-place/data";
+import { netM3SplitSize } from "./net-m3-split-size/data";
+import { netM3WideMask } from "./net-m3-wide-mask/data";
+import { netM4RouteLongest } from "./net-m4-route-longest/data";
+import { netM9V6Drill } from "./net-m9-v6-drill/data";
+import { netM9V6Expand } from "./net-m9-v6-expand/data";
+import { netM9V6Invalid } from "./net-m9-v6-invalid/data";
+import { netM9V6Shorten } from "./net-m9-v6-shorten/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -1470,6 +1487,23 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "net-m2-cidr-drill": netM2CidrDrill,
   "net-m2-scene-same-address": netM2SceneSameAddress,
   "net-m2-classify": netM2Classify,
+  "net-m3-arp-exchange": netM3ArpExchange,
+  "net-m3-broadcast": netM3Broadcast,
+  "net-m3-mask-and": netM3MaskAnd,
+  "net-m3-mask-bits": netM3MaskBits,
+  "net-m3-mask-drill": netM3MaskDrill,
+  "net-m3-overlap-line": netM3OverlapLine,
+  "net-m3-overlap-nest": netM3OverlapNest,
+  "net-m3-split-boundary": netM3SplitBoundary,
+  "net-m3-split-drill": netM3SplitDrill,
+  "net-m3-split-place": netM3SplitPlace,
+  "net-m3-split-size": netM3SplitSize,
+  "net-m3-wide-mask": netM3WideMask,
+  "net-m4-route-longest": netM4RouteLongest,
+  "net-m9-v6-drill": netM9V6Drill,
+  "net-m9-v6-expand": netM9V6Expand,
+  "net-m9-v6-invalid": netM9V6Invalid,
+  "net-m9-v6-shorten": netM9V6Shorten,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
