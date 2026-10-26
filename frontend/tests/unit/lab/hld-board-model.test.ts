@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { Board } from "@/lab/types";
-import { applied, initialControls } from "@/lab/hld-board-model";
-import { runTieredModel } from "@/lab/tiered-architecture";
+import type { Board } from "@buildment/learning-ui/labs/types";
+import { applied, initialControls } from "@buildment/learning-ui/labs/hld-board-model";
+import { runTieredModel } from "@buildment/learning-ui/labs/tiered-architecture";
 
 const board: Board = {
   nodes: [

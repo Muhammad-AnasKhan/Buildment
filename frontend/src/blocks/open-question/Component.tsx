@@ -1,7 +1,7 @@
 import { fetchBlockState } from "@/blocks/block-state";
 import type { SanitizedOpenQuestionConfig } from "@/shared/blocks/open-question/schema";
 import { OpenQuestionClient } from "./OpenQuestionClient";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 
 export async function OpenQuestionComponent({
   id,

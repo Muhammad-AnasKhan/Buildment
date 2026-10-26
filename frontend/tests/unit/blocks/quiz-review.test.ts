@@ -2,7 +2,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { QuizClient } from "@/blocks/quiz/QuizClient";
-import { QuizSessionContext, type QuizSessionContextValue } from "@/components/learn/quiz-session-context";
+import { QuizSessionContext, type QuizSessionContextValue } from "@buildment/learning-ui/components/learn/quiz-session-context";
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 

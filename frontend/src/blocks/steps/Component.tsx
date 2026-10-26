@@ -1,7 +1,6 @@
 import { fetchBlockState } from "@/blocks/block-state";
-import { StepsClient } from "./StepsClient";
-import { Step } from "./Step";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { Steps } from "@buildment/learning-ui/blocks/steps/Steps";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 
 export type StepItemData =
   | string
@@ -46,31 +45,5 @@ export async function StepsComponent({
     return null;
   }
 
-  const content = hasArraySteps ? (
-    <ol className="m-0 p-0 space-y-2">
-      {steps!.map((step, index) => {
-        if (typeof step === "string") {
-          return (
-            <Step key={index} stepNumber={index + 1} title={`Step ${index + 1}`}>
-              {step}
-            </Step>
-          );
-        }
-        return (
-          <Step
-            key={index}
-            stepNumber={index + 1}
-            title={step.title || `Step ${index + 1}`}
-            description={step.description || step.content}
-          >
-            {step.content || step.description}
-          </Step>
-        );
-      })}
-    </ol>
-  ) : (
-    children
-  );
-
-  return <StepsClient title={resolvedTitle}>{content}</StepsClient>;
+  return <Steps title={resolvedTitle} steps={steps}>{children}</Steps>;
 }
