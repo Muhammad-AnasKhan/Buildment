@@ -4,11 +4,11 @@ Course and chapter: networking, 5.4 beat 5 (playable). Renderer: the `sorter` pr
 
 ## Claim
 
-An acknowledgement names the next byte the receiver expects. A 100-byte segment that starts before that number has arrived. A segment that starts at that number or after it is not confirmed, and the sender sends it again.
+An acknowledgement names the next byte the receiver expects. A 100-byte segment that starts before that number is confirmed. A segment that starts at that number or after it is not confirmed yet. The receiver may hold it behind a gap, and the sender sends it again only when it decides it is lost.
 
 ## Touch
 
-One card at a time: a segment (its first byte) and the receiver's latest ack. The learner taps "Arrived" or "Send again", or drags the card onto a bucket. A wrong try shakes the card and gives a one-line reason that names the ack. Six cards, using both buckets. When all are sorted, a short lesson shows.
+One card at a time: a segment (its first byte) and the receiver's latest ack. The learner taps "Confirmed" or "Not confirmed yet", or drags the card onto a bucket. A wrong try shakes the card and gives a one-line reason that names the ack. Six cards, using both buckets. When all are sorted, a short lesson shows.
 
 ## Limits
 
