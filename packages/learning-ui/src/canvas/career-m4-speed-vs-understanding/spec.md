@@ -13,7 +13,7 @@ owner: interaction-designer
 # Canvas spec: Speed is not understanding
 
 ## Teaching claim
-In one trial, engineers who learned a new library with AI help were no faster in a way that counted, and scored lower on a quiz straight after: 50 percent against 67 percent, with the biggest gap on debugging.
+In one trial, engineers who learned a new library with AI help were no faster in a way that counted, and scored lower on a quiz straight after, with the biggest gap on debugging (direction only, no percentages).
 
 ## Why this visual
 Two groups answer the same quiz and the scores land side by side. The learner has just predicted which group does better.
@@ -24,7 +24,7 @@ A randomised trial with 52 mostly junior engineers learning one library. Limits:
 ```json
 {
   "title": "Speed is not understanding",
-  "purpose": "Two groups of engineers learn a new library, one with AI help and one without. A quiz straight after gives 50 percent for the AI group and 67 percent for the other. The AI group was a little faster, but not by a margin that counted.",
+  "purpose": "Two groups of engineers learn a new library, one with AI help and one without. A quiz straight after gives the AI group a lower score than the other group. The AI group was a little faster, but not by a margin that counted.",
   "limits": "One small trial with 52 mostly junior engineers, an immediate quiz, a chat sidebar rather than an agent, and one library. Subgroup results are tiny and not causal. It does not show that AI help always hurts learning.",
   "hint": "Same quiz, two groups.",
   "scene": {
@@ -37,9 +37,9 @@ A randomised trial with 52 mostly junior engineers learning one library. Limits:
     ],
     "events": [
       { "kind": "fly", "at": 0.3, "dur": 1.0, "from": "ai", "to": "quiz", "label": "answers" },
-      { "kind": "say", "at": 1.4, "actor": "ai", "text": "50% right", "tone": "warn" },
+      { "kind": "say", "at": 1.4, "actor": "ai", "text": "lower score", "tone": "warn" },
       { "kind": "fly", "at": 2.4, "dur": 1.0, "from": "no-ai", "to": "quiz", "label": "answers" },
-      { "kind": "say", "at": 3.5, "actor": "no-ai", "text": "67% right", "tone": "good" },
+      { "kind": "say", "at": 3.5, "actor": "no-ai", "text": "higher score", "tone": "good" },
       { "kind": "say", "at": 4.0, "actor": "quiz", "text": "gap: debugging", "tone": "accent" },
       { "kind": "verdict", "at": 4.8, "text": "Faster did not mean understood", "tone": "warn" }
     ],

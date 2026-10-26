@@ -108,6 +108,6 @@ export const careerM3ClaimCard: CustomCanvasSpec = {
   title: "Fill the claim card",
   purpose: "Fill Tawfiq's claim card (metric, before, after, window, source, your share) from snippets; a feeling, a tool's guess and the team's 70 percent are refused with a reason, and the finished card reads as one checkable sentence.",
   limits:
-    "A real claim card can need more parts, such as what else changed in the same weeks (the next beat). The window here is described, not counted, because the story gives no number of nights. Tawfiq, his team and the numbers are fictional and illustrative.",
+    "A real claim card can need more parts, such as what else changed in the same weeks (the next picture). The window here is described, not counted, because the story gives no number of nights. Tawfiq, his team and the numbers are fictional and illustrative.",
   component: makeSlotCardCanvas(CLAIM_CARD_CONFIG),
 };

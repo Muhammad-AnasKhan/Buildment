@@ -82,7 +82,7 @@ export const FILTER_CARDS: SortCard[] = [
 
 export const careerM4RunTheFilter: CustomCanvasSpec = {
   kind: "custom",
-  title: "Run five ideas through the filter",
+  title: "Run eight ideas through the filter",
   purpose: "Sort eight project ideas by what the four-question filter says: passes all four, needs two sides at once, or has nothing to measure. A short reason follows each wrong try.",
   limits: "The filter is this course's method, not a law. One idea is only an example: a community cloud, in the standard definition, is infrastructure shared by a group with a common purpose. It passes only if it starts with a defined small group, a real workload and a measurable result.",
   component: makeSorterCanvas({

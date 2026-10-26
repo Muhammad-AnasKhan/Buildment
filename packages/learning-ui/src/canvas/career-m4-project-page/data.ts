@@ -36,13 +36,13 @@ export const PROJECT_PAGE_CHIPS: SlotChip[] = [
   },
   {
     id: "bug",
-    text: "Two sales at once broke the count; a transaction fixed it",
+    text: "Planned: test two sales at once, fix a wrong count",
     slot: "bug",
-    why: "A bug found by testing, and its fix.",
+    why: "A bug found by testing, and its fix, once she has done it.",
   },
   {
     id: "log",
-    text: "Date, what I asked, used and checked, what it got wrong",
+    text: "Planned: date, what I asked, used and checked, what it got wrong",
     slot: "log",
     why: "A record of how AI was used and checked.",
   },
@@ -67,7 +67,7 @@ export const PROJECT_PAGE_CONFIG: SlotCardConfig = {
   claim: "A stock tool for a print shop",
   slots: PROJECT_PAGE_SLOTS,
   chips: PROJECT_PAGE_CHIPS,
-  assembled: "Real user: the print shop owner, from day one. Result: stockouts per month, against 5 in two months. Decision: stock updates run in one transaction. Bug fixed: two sales at once broke the count; a transaction fixed it. AI-use log: the date, what I asked, used and checked, and what it got wrong. Hardest part: reorder levels that never double count.",
+  assembled: "Real user: the print shop owner, from day one. Result: stockouts per month, against 5 in two months. Decision: stock updates run in one transaction. Bug fixed (planned): test two sales at once and fix a wrong count with a transaction. AI-use log (planned): the date, what I asked, used and checked, and what it got wrong. Hardest part: reorder levels that never double count.",
   hint: "Tap a chip, then the field it fills. Or drag the chip onto the field.",
   endNote: "Each field is something a reader can ask about. Features, speed and looks are not evidence of understanding.",
 };
@@ -76,6 +76,6 @@ export const careerM4ProjectPage: CustomCanvasSpec = {
   kind: "custom",
   title: "What still counts on a project page",
   purpose: "Fill the six fields of Raqim Stock's project page with the evidence a reader can ask about: a real user, a result, a decision, a bug fixed, an AI-use log and the hardest part. A feature count, speed and looks are refused.",
-  limits: "Raqim Stock is Areej's planned project, so the page shows what it will hold, not finished results. Areej is a fictional fellow. A project page needs more than six fields in real life.",
+  limits: "Raqim Stock is Areej's planned project, so the page shows what it will hold, not finished results. The bug and the log are what she will record, not things already done. A project page needs more than six fields in real life.",
   component: makeSlotCardCanvas(PROJECT_PAGE_CONFIG),
 };

@@ -10,7 +10,7 @@ version: 1
 owner: interaction-designer
 ---
 
-# Canvas spec: Run five ideas through the filter
+# Canvas spec: Run eight ideas through the filter
 
 ## Teaching claim
 An idea passes the four-question filter when it is useful to one person or a small known group on day one, has a result you can measure, has depth you can explain in writing, and does not need two sides at once.
@@ -24,7 +24,7 @@ The brief gives five ideas and four gates. A sorter holds up to eight cards and 
 ## Data
 ```json
 {
-  "title": "Run five ideas through the filter",
+  "title": "Run eight ideas through the filter",
   "purpose": "Sort eight project ideas by what the four-question filter says: passes all four, needs two sides at once, or has nothing to measure. A short reason follows each wrong try.",
   "limits": "The filter is this course's method, not a law. One idea is only an example: a community cloud, in the standard definition, is infrastructure shared by a group with a common purpose. It passes only if it starts with a defined small group, a real workload and a measurable result.",
   "config": {

@@ -25,7 +25,7 @@ Numbers are the canon's (the print shop invoice script). Per invoice 7 minutes b
 {
   "title": "Time saved is net, not gross",
   "purpose": "Areej's script saves 6 minutes on each of about 31 invoices a week, 186 minutes gross. Upkeep takes about 7 minutes a week. The net is 179 minutes, about 3 hours a week.",
-  "limits": "Areej is a fictional fellow and her numbers are illustrative. 31 is the average of about 32 and 30.5 invoices a week in the two timed fortnights. People recall task times as shorter than they are, so time the task as it is done today and use the median.",
+  "limits": "31 is the average of about 32 and 30.5 invoices a week in the two timed fortnights. People recall task times as shorter than they are, so time the task as it is done today and use the median.",
   "hint": "Gross in, upkeep out, net left.",
   "scene": {
     "width": 420,

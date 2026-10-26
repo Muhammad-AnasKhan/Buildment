@@ -7,7 +7,7 @@ export const careerM3K6FairTest: SceneSpec = {
   "kind": "scene",
   "title": "Same script, same data, same machine",
   "purpose": "Areej runs one load test twice against the events list. Before the cache the 95th percentile is 820 ms and the 200 ms threshold fails. After a 30-second cache it is 95 ms and the threshold passes. The script, data and laptop do not change.",
-  "limits": "Areej is a fictional fellow and her numbers are illustrative. This is a laptop test, not production, and cached lists can be up to 30 seconds old. The test uses an open model with a constant arrival rate, so it does not ease off when the server slows. Checked 2026-10; check the k6 documentation for the current syntax.",
+  "limits": "This is a laptop test, not production, and cached lists can be up to 30 seconds old. The test uses an open model with a constant arrival rate, so it does not ease off when the server slows. Checked 2026-10; check the k6 documentation for the current syntax.",
   "hint": "Only one box changes.",
   "scene": {
     "width": 420,
@@ -31,7 +31,7 @@ export const careerM3K6FairTest: SceneSpec = {
       },
       {
         "id": "data",
-        "label": "Seeded data",
+        "label": "Demo data",
         "kind": "database",
         "sub": "10,000 events",
         "x": 62,

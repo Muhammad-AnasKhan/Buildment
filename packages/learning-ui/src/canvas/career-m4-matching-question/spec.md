@@ -23,7 +23,7 @@ One question, one scroll through unfamiliar code and one answer that does not co
 {
   "title": "\"How does the matching work?\"",
   "purpose": "In an interview, Sireen is asked how the matching works in her ride app. She scrolls through code an AI tool wrote and cannot explain it.",
-  "limits": "Sireen is a fictional fellow. The picture does not claim every interviewer asks this. It shows what happens when someone does.",
+  "limits": "The picture does not claim every interviewer asks this. It shows what happens when someone does.",
   "hint": "One question, no answer.",
   "scene": {
     "width": 420,

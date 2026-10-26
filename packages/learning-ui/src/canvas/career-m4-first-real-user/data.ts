@@ -6,7 +6,7 @@ export const careerM4FirstRealUser: SceneSpec = {
   kind: "scene",
   title: "The first real user milestone",
   purpose: "By the end of week 3 of Areej's 6-week box, the print shop owner records one real week of sales in Raqim Stock. That is the first proof the tool is used.",
-  limits: "Areej is a fictional fellow and the plan is illustrative. A first real user is a start, not a result. The number to move still needs its two months of data.",
+  limits: "The plan is illustrative. A first real user is a start, not a result. The number to move still needs its two months of data.",
   hint: "A flag at week 3.",
   scene: {
     width: 420,

@@ -6,7 +6,7 @@ export const careerM4BusSchedule: SceneSpec = {
   kind: "scene",
   title: "Useful with one user",
   purpose: "Sireen reshapes her idea into a pickup schedule for her cousin's school bus run. There is one driver she knows and 14 families, and the schedule is useful on day one.",
-  limits: "Sireen is a fictional fellow. One practitioner essay argues that many network products began with a mode that was useful without other users; that is an essay, not a study. A small known group on day one is the second safe shape.",
+  limits: "One practitioner essay argues that many network products began with a mode that was useful without other users; that is an essay, not a study. A small known group on day one is the second safe shape.",
   hint: "One driver, 14 families, day one.",
   scene: {
     width: 420,

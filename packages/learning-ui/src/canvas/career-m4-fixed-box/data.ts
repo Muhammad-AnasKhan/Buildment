@@ -6,7 +6,7 @@ export const careerM4FixedBox: SceneSpec = {
   kind: "scene",
   title: "Fix the time, flex the scope",
   purpose: "Areej fixes her time box first: 6 weeks at about 5 hours a week. The scope is then shaped to fit. The core flow goes in; supplier ordering, many shops and a mobile app stay out.",
-  limits: "Areej is a fictional fellow. This is a planning habit from a public book on shaping work, used here as a way to decide scope. It is not a prediction that any plan will finish on time.",
+  limits: "This is a planning habit from a public book on shaping work, used here as a way to decide scope. It is not a prediction that any plan will finish on time.",
   hint: "The box does not change. The scope does.",
   scene: {
     width: 420,

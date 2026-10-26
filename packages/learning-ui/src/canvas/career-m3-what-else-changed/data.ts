@@ -7,7 +7,7 @@ export const careerM3WhatElseChanged: SceneSpec = {
   "kind": "scene",
   "title": "What else changed in the window",
   "purpose": "Areej's window runs through May. The index ships on 15 May. A front-end release lands on 20 May. Her card lists the release and the request counts, 6,300 before and 6,100 after, so traffic does not explain the change.",
-  "limits": "A before and after of this kind is a weak design, so the card says what else changed rather than hiding it. Areej is a fictional fellow and her numbers are illustrative. A comparison you control (module 3.5) is stronger.",
+  "limits": "A before and after of this kind is a weak design, so the card says what else changed rather than hiding it. A comparison you control (chapter 3.5) is stronger.",
   "hint": "Two other things happened in the window.",
   "scene": {
     "width": 420,

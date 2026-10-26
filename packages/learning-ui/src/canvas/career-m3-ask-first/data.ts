@@ -7,7 +7,7 @@ export const careerM3AskFirst: SceneSpec = {
   "kind": "scene",
   "title": "Ask before you show employer data",
   "purpose": "Areej asks her lead whether she may show the p95 chart of the report endpoint in her portfolio. He says yes if the company name, the table names and any customer data are removed. She removes them.",
-  "limits": "Areej is a fictional fellow. Permission is a rule of this course, not legal advice. When in doubt, keep the number private and write it in your ledger as private.",
+  "limits": "Permission is a rule of this course, not legal advice. When in doubt, keep the number private and write it in your ledger as private.",
   "hint": "Ask, then remove the names.",
   "scene": {
     "width": 420,

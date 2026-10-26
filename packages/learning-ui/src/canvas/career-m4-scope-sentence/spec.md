@@ -28,7 +28,7 @@ From the canon: Raqim Stock for the print shop owner; 6 weeks at about 5 hours a
 {
   "title": "Set the appetite, watch scope fall",
   "purpose": "Tap the weak parts of an over-large project plan. Each says why it does not fit 30 hours and gives what Areej chose: one flow for one shop, a stated time box, and a number to move.",
-  "limits": "Areej is a fictional fellow and the plan is illustrative. The baseline of 5 stockouts comes from the owner's notebook and the plan only promises to count, not to improve. A real plan needs more than one sentence.",
+  "limits": "The plan is illustrative. The baseline of 5 stockouts comes from the owner's notebook and the plan only promises to count, not to improve. A real plan needs more than one sentence.",
   "config": {
     "segments": [
       { "id": "build", "text": "I will build", "fineWhy": "A plain start. What follows must fit." },

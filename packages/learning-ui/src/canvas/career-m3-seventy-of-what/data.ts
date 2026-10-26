@@ -7,7 +7,7 @@ export const careerM3SeventyOfWhat: SceneSpec = {
   "kind": "scene",
   "title": "Seventy percent of what?",
   "purpose": "A hiring manager reads Tawfiq's line 'made the nightly pipeline 70 percent faster' and asks three questions: of what, over which days, and was it you. The line has no answer.",
-  "limits": "Tawfiq is a fictional fellow. The questions are the ones a careful reader tends to ask; real readers differ.",
+  "limits": "The questions are the ones a careful reader tends to ask; real readers differ.",
   "hint": "Watch the three questions arrive.",
   "scene": {
     "width": 420,

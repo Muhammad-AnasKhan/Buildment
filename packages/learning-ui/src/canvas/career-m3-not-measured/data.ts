@@ -7,7 +7,7 @@ export const careerM3NotMeasured: SceneSpec = {
   "kind": "scene",
   "title": "\"Not measured\" is a complete answer",
   "purpose": "A reader asks whether customers got Areej's invoices sooner. She did not measure it. Her card says so and holds a plan: ask the owner for two weeks of order and invoice times and compare.",
-  "limits": "Areej is a fictional fellow. Lab studies found that truth tellers give more checkable details than liars; that is research on accounts of events, not resumes, so use it only as a reason to prefer checkable claims.",
+  "limits": "Lab studies found that truth tellers give more checkable details than liars; that is research on accounts of events, not resumes, so use it only as a reason to prefer checkable claims.",
   "hint": "An honest gap, with a plan.",
   "scene": {
     "width": 420,

@@ -6,7 +6,7 @@ export const careerM4RideAppWeekend: SceneSpec = {
   kind: "scene",
   title: "A ride app in one weekend",
   purpose: "Sireen builds a ride-sharing app in a weekend with an AI coding tool. The screens are done. No drivers and no riders have signed up.",
-  limits: "Sireen is a fictional fellow. The story is illustrative. It does not say AI tools make apps worse; it says a finished app is not the same as a used one.",
+  limits: "The story is illustrative. It does not say AI tools make apps worse; it says a finished app is not the same as a used one.",
   hint: "A finished app and two empty groups.",
   scene: {
     width: 420,

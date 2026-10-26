@@ -28,7 +28,7 @@ The fixed plan is Areej's load test from the canon: the same k6 script, an open 
 {
   "title": "Control the test, not the calendar",
   "purpose": "Tap the weak parts of a test plan that compares two months. Each one says why it is weak and gives what Areej actually did. The card then becomes her controlled plan.",
-  "limits": "The weak plan is made up to show common mistakes. Areej's test ran on a laptop, not production, and her cache can serve a list up to 30 seconds old. Areej and her numbers are fictional and illustrative.",
+  "limits": "The weak plan is made up to show common mistakes. Areej's test ran on a laptop, not production, and her cache can serve a list up to 30 seconds old.",
   "config": {
     "segments": [
       { "id": "claim", "text": "My cache made the events list faster:", "fineWhy": "A clear claim. The test must now back it." },

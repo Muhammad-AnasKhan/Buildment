@@ -7,7 +7,7 @@ export const careerM3LeakedKey: SceneSpec = {
   "kind": "scene",
   "title": "Security proof shows the fix, not the secret",
   "purpose": "Areej finds an email-service key in an early commit. She revokes it and makes a new one, moves secrets to environment variables with an example file, and turns on push protection. The key itself is never shown.",
-  "limits": "Areej is a fictional fellow. Deleting the file would not have removed the key from the history. Push protection blocks known key formats before a push; it does not undo an earlier leak. Checked 2026-10; trust your own screen over any list.",
+  "limits": "Deleting the file would not have removed the key from the history. Push protection blocks known key formats before a push; it does not undo an earlier leak. Checked 2026-10; trust your own screen over any list.",
   "hint": "Found, replaced, prevented.",
   "scene": {
     "width": 420,

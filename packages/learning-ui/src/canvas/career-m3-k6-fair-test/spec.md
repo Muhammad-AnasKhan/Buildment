@@ -25,7 +25,7 @@ Numbers are the canon's: constant arrival rate of 50 requests per second for 2 m
 {
   "title": "Same script, same data, same machine",
   "purpose": "Areej runs one load test twice against the events list. Before the cache the 95th percentile is 820 ms and the 200 ms threshold fails. After a 30-second cache it is 95 ms and the threshold passes. The script, data and laptop do not change.",
-  "limits": "Areej is a fictional fellow and her numbers are illustrative. This is a laptop test, not production, and cached lists can be up to 30 seconds old. The test uses an open model with a constant arrival rate, so it does not ease off when the server slows. Checked 2026-10; check the k6 documentation for the current syntax.",
+  "limits": "This is a laptop test, not production, and cached lists can be up to 30 seconds old. The test uses an open model with a constant arrival rate, so it does not ease off when the server slows. Checked 2026-10; check the k6 documentation for the current syntax.",
   "hint": "Only one box changes.",
   "scene": {
     "width": 420,
@@ -33,7 +33,7 @@ Numbers are the canon's: constant arrival rate of 50 requests per second for 2 m
     "actors": [
       { "id": "test", "label": "Load test", "kind": "worker", "sub": "50 req/s, 2 min", "x": 62, "y": 105 },
       { "id": "api", "label": "Events API", "kind": "server", "sub": "no cache", "x": 358, "y": 105 },
-      { "id": "data", "label": "Seeded data", "kind": "database", "sub": "10,000 events", "x": 62, "y": 250 },
+      { "id": "data", "label": "Demo data", "kind": "database", "sub": "10,000 events", "x": 62, "y": 250 },
       { "id": "result", "label": "Threshold", "kind": "note", "sub": "p95 under 200", "x": 358, "y": 250 }
     ],
     "events": [

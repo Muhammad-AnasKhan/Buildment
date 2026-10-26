@@ -17,7 +17,7 @@ export const careerM3EmptyClaimCard: SceneSpec = {
         "id": "reader",
         "label": "Reader",
         "kind": "user",
-        "sub": "asks six things",
+        "sub": "asks five questions",
         "x": 62,
         "y": 110
       },

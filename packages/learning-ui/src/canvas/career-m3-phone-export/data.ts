@@ -7,7 +7,7 @@ export const careerM3PhoneExport: SceneSpec = {
   "kind": "scene",
   "title": "No laptop? Read the export",
   "purpose": "On a phone, Areej reads a dashboard export and answers the six questions about it. The shared laptop is optional, for later, if she wants to run a test herself.",
-  "limits": "Areej is a fictional fellow. The no-install path is a full path, not a lesser one: it teaches reading a number you did not set up. Tools named in this module carry 'checked 2026-10'; trust your own screen.",
+  "limits": "The no-install path is a full path, not a lesser one: it teaches reading a number you did not set up. Tools named in this module carry 'checked 2026-10'; trust your own screen.",
   "hint": "Six questions, one phone.",
   "scene": {
     "width": 420,

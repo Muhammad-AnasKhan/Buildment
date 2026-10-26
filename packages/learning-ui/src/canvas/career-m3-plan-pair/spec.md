@@ -24,15 +24,15 @@ Numbers are the canon's: on a staging copy with the same data volume, before the
 ```json
 {
   "title": "A query plan pair",
-  "purpose": "Areej runs the slow query on a staging copy and the plan shows a sequential scan with an actual time of 3,840 ms. After the index it shows an index scan with an actual time of 46 ms.",
-  "limits": "Areej is a fictional fellow and her numbers are illustrative. EXPLAIN shows the planner's chosen plan with estimated cost; EXPLAIN ANALYZE runs the query, so wrap writes in a transaction and roll back. Cost units are arbitrary and not milliseconds. Checked 2026-10 (PostgreSQL 18 documentation).",
+  "purpose": "Areej runs the slow query on a staging copy (a private test copy) and the plan shows a sequential scan with an actual time of 3,840 ms. After the index it shows an index scan with an actual time of 46 ms.",
+  "limits": "EXPLAIN shows the planner's chosen plan with estimated cost; EXPLAIN ANALYZE runs the query, so wrap writes in a transaction and roll back. Cost units are arbitrary and not milliseconds. Checked 2026-10 (PostgreSQL 18 documentation).",
   "hint": "Two timings on one strip.",
   "scene": {
     "width": 420,
     "height": 330,
     "actors": [
       { "id": "areej", "label": "Areej", "kind": "user", "sub": "EXPLAIN ANALYZE", "x": 62, "y": 110 },
-      { "id": "db", "label": "Staging copy", "kind": "database", "sub": "same data size", "x": 358, "y": 110 }
+      { "id": "db", "label": "Test copy", "kind": "database", "sub": "same data size", "x": 358, "y": 110 }
     ],
     "strip": { "y": 285, "from": 0, "to": 4000, "unit": "ms", "caption": "actual time of the query", "every": 1000 },
     "events": [

@@ -25,7 +25,7 @@ Numbers are from the canon: 5 hours to 1.5 hours is a 70 percent cut of the whol
 {
   "title": "The same week, bigger machines",
   "purpose": "The nightly run falls from 5 hours to 1.5 hours the week the platform team moves it to larger machines. Tawfiq's own join step falls from 50 to 20 minutes, which the job logs show.",
-  "limits": "Tawfiq, his team and the numbers are fictional and illustrative. 5 hours to 1.5 hours is a 70 percent cut of the whole run, on one night.",
+  "limits": "5 hours to 1.5 hours is a 70 percent cut of the whole run, on one night.",
   "hint": "Two changes, one week.",
   "scene": {
     "width": 420,

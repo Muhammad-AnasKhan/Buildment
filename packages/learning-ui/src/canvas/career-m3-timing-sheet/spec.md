@@ -25,7 +25,7 @@ Numbers are the canon's (the print shop invoice script): two weeks, 10 working d
 {
   "title": "Time it as it is done today",
   "purpose": "Before the script, Areej and the shop's assistant time 64 invoices over two weeks; the median is 7 minutes. Two weeks after, they time 61; the median is 1 minute. The sheet is the proof.",
-  "limits": "Areej is a fictional fellow and her numbers are illustrative. Two fortnights are a small sample and a before and after comparison is a weak design; the sheet says what else changed. Use the median, not the average, because a few slow invoices distort the average.",
+  "limits": "Two fortnights are a small sample and a before and after comparison is a weak design; the sheet says what else changed. Use the median, not the average, because a few slow invoices distort the average.",
   "hint": "Two fortnights on one sheet.",
   "scene": {
     "width": 420,
