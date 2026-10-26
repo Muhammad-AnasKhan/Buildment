@@ -1,5 +1,6 @@
 import type { Result } from '../domain/catalog';
 import type { Lesson, BlockState, AnswerResult } from '../domain/learning';
+import type { AiInterviewSessionResult } from '../../../server/src/shared/api/ai';
 import { parseLesson } from '../learning/parse-lesson';
 import { isRecord } from './validation';
 type Request = (
@@ -70,6 +71,22 @@ export function createLearningClient(request: Request) {
           message: 'Could not load this exercise.',
         };
       return { ok: true, data: result.data as BlockState };
+    },
+    async aiInterview(
+      id: string,
+      action: 'start' | 'answer' | 'finish' | 'abandon',
+      payload: unknown,
+    ): Promise<Result<AiInterviewSessionResult>> {
+      if (!valid(id) || !['start', 'answer', 'finish', 'abandon'].includes(action) || !isRecord(payload)) return invalid;
+      const result = await request(
+        `/api/v1/blocks/${segment(id)}/ai-interview/${action}`,
+        'POST',
+        payload,
+      );
+      if (!result.ok) return result;
+      if (!isRecord(result.data) || !isRecord(result.data.session))
+        return { ok: false, code: 'INVALID_RESPONSE', message: 'Could not load the interview response.' };
+      return { ok: true, data: result.data as AiInterviewSessionResult };
     },
     async answer(
       id: string,

@@ -8,9 +8,9 @@ import { markChapterComplete } from "@/server/actions/progress";
 import { acknowledgeStreakMilestone } from "@/server/actions/weekly-goal";
 import type { StreakMilestone } from "@/shared/lib/streak";
 import { cn } from "@/lib/utils";
-import { fireMiniConfetti } from "@/components/learn/mini-confetti";
+import { fireMiniConfetti } from "@buildment/learning-ui/components/learn/mini-confetti";
 import { ChapterCompleteCelebrationModal } from "@/components/learn/chapter-complete-celebration-modal";
-import { scrollToNextCheckpoint } from "@/components/learn/checkpoint-marker";
+import { scrollToNextCheckpoint } from "@buildment/learning-ui/components/learn/checkpoint-marker";
 import { playFeedback } from "@/lib/sound-feedback";
 import { toast } from "@/components/ui/app-toast";
 

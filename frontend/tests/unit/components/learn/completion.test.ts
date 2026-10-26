@@ -2,7 +2,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ChapterCompleteCelebrationModal } from "@/components/learn/chapter-complete-celebration-modal";
-import { fireMiniConfetti } from "@/components/learn/mini-confetti";
+import { fireMiniConfetti } from "@buildment/learning-ui/components/learn/mini-confetti";
 
 function renderProgress(completed: number, total: number) {
   return renderToStaticMarkup(createElement(ChapterCompleteCelebrationModal, {

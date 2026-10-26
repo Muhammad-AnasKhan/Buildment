@@ -4,6 +4,16 @@ import { BudgetStack, type BudgetStackConfig } from "./budget-stack";
 import { PhraseFixer, type PhraseFixerConfig } from "./phrase-fixer";
 import { SlotCard, type SlotCardConfig } from "./slot-card";
 import { Sorter, type SorterConfig } from "./sorter";
+import {
+  SpecimenCompare,
+  SpecimenLadder,
+  SpecimenSkim,
+  SpecimenSpot,
+  type SpecimenCompareConfig,
+  type SpecimenLadderConfig,
+  type SpecimenSkimConfig,
+  type SpecimenSpotConfig,
+} from "./specimen-beats";
 
 // Factories that turn a course's data into a registry component, so its
 // data.ts holds only data. This file has no "use client": the registry runs
@@ -50,4 +60,36 @@ export function makeSlotCardCanvas(config: SlotCardConfig): ComponentType<Canvas
   }
   SlotCardCanvas.displayName = "SlotCardCanvas";
   return SlotCardCanvas;
+}
+
+export function makeSpecimenCompareCanvas(config: SpecimenCompareConfig): ComponentType<CanvasProps> {
+  function SpecimenCompareCanvas({ title, limits }: CanvasProps) {
+    return <SpecimenCompare title={title} limits={limits} {...config} />;
+  }
+  SpecimenCompareCanvas.displayName = "SpecimenCompareCanvas";
+  return SpecimenCompareCanvas;
+}
+
+export function makeSpecimenLadderCanvas(config: SpecimenLadderConfig): ComponentType<CanvasProps> {
+  function SpecimenLadderCanvas({ title, limits }: CanvasProps) {
+    return <SpecimenLadder title={title} limits={limits} {...config} />;
+  }
+  SpecimenLadderCanvas.displayName = "SpecimenLadderCanvas";
+  return SpecimenLadderCanvas;
+}
+
+export function makeSpecimenSpotCanvas(config: SpecimenSpotConfig): ComponentType<CanvasProps> {
+  function SpecimenSpotCanvas({ title, limits }: CanvasProps) {
+    return <SpecimenSpot title={title} limits={limits} {...config} />;
+  }
+  SpecimenSpotCanvas.displayName = "SpecimenSpotCanvas";
+  return SpecimenSpotCanvas;
+}
+
+export function makeSpecimenSkimCanvas(config: SpecimenSkimConfig): ComponentType<CanvasProps> {
+  function SpecimenSkimCanvas({ title, limits }: CanvasProps) {
+    return <SpecimenSkim title={title} limits={limits} {...config} />;
+  }
+  SpecimenSkimCanvas.displayName = "SpecimenSkimCanvas";
+  return SpecimenSkimCanvas;
 }

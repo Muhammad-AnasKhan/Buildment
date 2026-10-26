@@ -1,7 +1,7 @@
-import { ProjectPreviewView } from '@buildment/learning-ui/blocks/project-preview/ProjectPreviewView';
+import { ProjectPreview } from '@buildment/learning-ui/blocks/project-preview/ProjectPreview';
 import { fetchBlockState } from "@/blocks/block-state";
 import type { ProjectPreviewConfig } from "@/shared/blocks/project-preview/schema";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 
 export async function ProjectPreviewComponent({
   id,
@@ -46,5 +46,5 @@ export async function ProjectPreviewComponent({
     return null;
   }
 
-  return <ProjectPreviewView config={config} />;
+  return <ProjectPreview {...config} />;
 }

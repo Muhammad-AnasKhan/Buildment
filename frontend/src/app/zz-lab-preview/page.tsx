@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Lab } from "@/lab/Lab";
-import { getLabSpec } from "@/lab/registry";
+import { Lab } from "@buildment/learning-ui/labs/Lab";
+import { getLabSpec } from "@buildment/learning-ui/labs/registry";
 import { LAB_SLUGS, isLabSlug } from "@/shared/lab/slugs";
 
 // Temporary preview page for the lab boards, one per course. Public, no auth,
