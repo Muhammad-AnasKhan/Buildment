@@ -9,7 +9,7 @@ import type { FactorSpec } from "../renderers/factor/types";
 export const twoOptionsTradeOff: FactorSpec = {
   kind: "factor",
   title: "Where should Qasir count clicks?",
-  purpose: "Change how much each test matters, and see when the AI's suggestion comes out ahead and when Yara's facts pick the other option.",
+  purpose: "Change how much each test matters, and see when the AI's suggestion wins and when Yara's facts pick the other option.",
   whatThisShows:
     "Two ways to count clicks, each scored from 1 to 5 on four tests. Each score is multiplied by how much that test matters, and the results are added up. The weights start at Yara's, from her project's facts: small shops and NGOs, a few hundred clicks a day on a busy link, one person building it.",
   options: [

@@ -71,7 +71,7 @@ No ties exist at any setting, so the leader is always named. The closest race is
 Weight controls are native HTML controls with visible labels; totals are text, not only bar length; the leader is named in words.
 
 ## Acceptance criteria
-- [x] The claim is testable: the quiz after the canvas (Lama's school library search page) asks which test would have to matter most for an AI's suggested cache to come out ahead.
+- [x] The claim is testable: the quiz after the canvas (Lama's school library search page) asks which test would have to matter most for an AI's suggested cache to win.
 - [x] The model is tested: suggested additions to `frontend/tests/unit/canvas/factor-model.test.ts` are the four checked totals above, and that the cache leads at exactly one of the 81 settings.
 - [x] The design is simple and legible: two options, four tests, three levels.
 - [x] Prediction before, transfer check after.
