@@ -1,7 +1,6 @@
 import { randomBytes } from "node:crypto";
 import type {
   AdminOrganizationDetail,
-  AdminOrganizationRow,
   AdminOrganizationsView,
   CreatedOrganization,
   IssuedCredential,
