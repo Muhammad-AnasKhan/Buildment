@@ -20,7 +20,7 @@ Honesty about AI help feels like a single yes or no. The canvas turns it into a 
 - Inputs: none beyond the shared step controls.
 - Outputs: the highlighted state, the active edge, the step note and chips.
 - Rule: six states in a snake (Draft ready, AI help listed, AI line written on row 0; Rules checked, Published, Corrected on row 1); five transitions and one rejected loop ("all my own" on AI line written); seven steps.
-- Fixed data (from chapter 6.3): Gemini wrote the first version of the low-stock check, which Hani rewrote and tested; it explained one error and suggested the title; the AI-use line is the one quoted in the chapter; LinkedIn makes the author responsible and DEV offers an AI-Assisted mark (checked 2026-10-24); the shop owner allows the shop's name but not its numbers; the correction line on the first post is the one quoted in the chapter.
+- Fixed data (from chapter 10.3): Gemini wrote the first version of the low-stock check, which Hani rewrote and tested; it explained one error and suggested the title; the AI-use line is the one quoted in the chapter; LinkedIn makes the author responsible and DEV offers an AI-Assisted mark (checked 2026-10-24); the shop owner allows the shop's name but not its numbers; the correction line on the first post is the one quoted in the chapter.
 - Assumptions: one post, two platforms, one person's AI help that he can list in full.
 - Limitations: platform rules change; universities, clients and employers can have stricter rules.
 
@@ -29,7 +29,7 @@ Honesty about AI help feels like a single yes or no. The canvas turns it into a 
 - Grid: 3 columns by 2 rows, a snake (left to right on row 0, back right to left on row 1), so the narrow layout fits 340px.
 - Edge labels are at most 12 characters. The edge between two states in the same column ("ok", from AI line written to Rules checked) has 2 characters, because on phones it becomes horizontal with only about 22px between pills.
 - One rejected loop only ("all my own"), on AI line written, so loop labels cannot overlap.
-- Static fallback: chapter 6.3 tells the same steps in prose (Hani's list, his line, the rules, the correction) before and after the canvas.
+- Static fallback: chapter 10.3 tells the same steps in prose (Hani's list, his line, the rules, the correction) before and after the canvas.
 
 ## Controls
 Shared stepper controls only. No numeric inputs: the claim is about order and honesty, not quantities.
@@ -57,7 +57,7 @@ Shared stepper keyboard support and focus ring; `summary` gives the whole path f
 - [x] Reader fallback exists (prose in 6.3).
 
 ## Placement
-Chapter 6.3, after the worked example and its diagram (the predict sits earlier, right after the opening story), and before the section "The rules where you post".
+Chapter 10.3, after the worked example and its diagram (the predict sits earlier, right after the opening story), and before the section "The rules where you post".
 
 ## Build plan
 `packages/learning-ui/src/canvas/disclose-ai-help/data.ts`, export `discloseAiHelp`, to be registered by the orchestrator in `packages/learning-ui/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`; preview at `/workspace/canvases`.

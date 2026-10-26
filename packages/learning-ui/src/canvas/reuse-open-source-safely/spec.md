@@ -28,7 +28,7 @@ The chapter states the licence cases in a table and the reading order in prose. 
 - Grid: columns 0 to 2, rows 0 to 1. The only edge between two states in the same column is Health checked to Read in order, labelled "ok" (2 characters), because it becomes horizontal on phones with about 22px between pills.
 - No diagonal edges. The two rejected loops sit on states in different columns and rows (column 1 row 0, column 0 row 1), so their labels do not overlap in the narrow layout, where loops sit to the right of the pill.
 - Edge labels are at most 13 characters.
-- Static fallback: chapter 5.5 covers finding, health and the reading order in prose before the canvas, and the four licence cases and credit right after it.
+- Static fallback: chapter 7.5 covers finding, health and the reading order in prose before the canvas, and the four licence cases and credit right after it.
 
 ## Controls
 Shared stepper controls only. No numeric inputs: the claim is about order and permission.
@@ -59,7 +59,7 @@ Shared stepper keyboard support and focus ring; `summary` gives the whole path, 
 - [x] Reader fallback exists (prose and table in 5.5).
 
 ## Placement
-In chapter 5.5, under "May she reuse it?", after the predict and before "Licences in four cases". Names and numbers match the chapter: shortlane (made up), MIT, last commit three weeks ago, nine contributors, a 20-line function, the README line.
+In chapter 7.5, under "May she reuse it?", after the predict and before "Licences in four cases". Names and numbers match the chapter: shortlane (made up), MIT, last commit three weeks ago, nine contributors, a 20-line function, the README line.
 
 ## Build plan
 `packages/learning-ui/src/canvas/reuse-open-source-safely/data.ts` exporting `reuseOpenSourceSafely`; the orchestrator registers it in `packages/learning-ui/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`; covered by `frontend/tests/unit/canvas/registry.test.ts`.

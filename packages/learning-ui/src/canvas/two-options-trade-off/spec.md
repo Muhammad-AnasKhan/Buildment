@@ -47,7 +47,7 @@ The chapter computes Yara's totals in prose. What prose cannot make felt is that
 ## Rendering
 - Primary: the shared factor renderer (HTML weight controls, SVG bars).
 - Why this renderer: the claim is a weighted comparison the learner changes.
-- Static fallback: chapter 5.4 shows the score table and works Yara's totals (40 and 21) in prose under "Worked example: weighing the two options".
+- Static fallback: chapter 7.4 shows the score table and works Yara's totals (40 and 21) in prose under "Worked example: weighing the two options".
 
 ## Controls
 Four weight controls with three levels each ("Matters a little", "Matters", "Matters a lot"). Each exists because each test is one of the angles in the chapter.
@@ -71,14 +71,14 @@ No ties exist at any setting, so the leader is always named. The closest race is
 Weight controls are native HTML controls with visible labels; totals are text, not only bar length; the leader is named in words.
 
 ## Acceptance criteria
-- [x] The claim is testable: the quiz after the canvas (Lama's school library search page) asks which test would have to matter most for an AI's suggested cache to come out ahead.
+- [x] The claim is testable: the quiz after the canvas (Lama's school library search page) asks which test would have to matter most for an AI's suggested cache to win.
 - [x] The model is tested: suggested additions to `frontend/tests/unit/canvas/factor-model.test.ts` are the four checked totals above, and that the cache leads at exactly one of the 81 settings.
 - [x] The design is simple and legible: two options, four tests, three levels.
 - [x] Prediction before, transfer check after.
 - [x] Reader fallback exists (score table and totals in 5.4).
 
 ## Placement
-In chapter 5.4, after the worked example and the predict ("at how many of the 81 settings does the cache counter win?"), and before "The explain-back rule, line by line". Names and numbers match the chapter.
+In chapter 7.4, after the worked example and the predict ("at how many of the 81 settings does the cache counter win?"), and before "The explain-back rule, line by line". Names and numbers match the chapter.
 
 ## Build plan
 `packages/learning-ui/src/canvas/two-options-trade-off/data.ts` exporting `twoOptionsTradeOff`; the orchestrator registers it in `packages/learning-ui/src/canvas/registry.ts` and `server/src/shared/canvas/slugs.ts`.

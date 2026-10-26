@@ -1,6 +1,6 @@
 import type { SequenceSpec } from "../renderers/sequence/types";
 
-// Learn and Build with AI course, chapter 6.2 "From a week of commits to an
+// Learn and Build with AI course, chapter 10.2 "From a week of commits to an
 // article". Salma turns week 6 of her lab log for a university shuttle bus
 // timetable (labs 26 to 30, the lost edit in lab 27) into a write-up in her
 // own voice, uses a chat assistant as an editor, catches the one fact the edit
