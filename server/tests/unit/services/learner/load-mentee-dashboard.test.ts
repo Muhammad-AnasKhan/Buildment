@@ -10,11 +10,16 @@ vi.mock("../../../../src/db/prisma.js", () => ({
   prisma: {
     enrollment: { findMany: enrollmentFindMany },
     helpThread: { findMany: helpFindMany, count: helpCount },
-    dailyActivity: { findMany: vi.fn().mockResolvedValue([]) },
+    dailyActivity: { findMany: vi.fn().mockResolvedValue([]), groupBy: vi.fn().mockResolvedValue([]) },
     studySession: { findMany: vi.fn(), count: vi.fn().mockResolvedValue(0) },
     response: { findMany: vi.fn() },
     user: { findUnique: vi.fn().mockResolvedValue(null) },
+    userProfile: { findUnique: vi.fn().mockResolvedValue(null) },
     chapterProgress: { count: vi.fn().mockResolvedValue(0) },
+    streakFreezeDay: { findMany: vi.fn().mockResolvedValue([]) },
+    xpEntry: { aggregate: vi.fn().mockResolvedValue({ _sum: { amount: null } }) },
+    leaderboardMember: { findMany: vi.fn().mockResolvedValue([]) },
+    leaderboardPlacement: { count: vi.fn().mockResolvedValue(0), findFirst: vi.fn().mockResolvedValue(null) },
   },
 }));
 
