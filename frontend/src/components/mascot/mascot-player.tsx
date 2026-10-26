@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
+import { createPortal } from "react-dom";
 import { ArrowRight, Volume2, VolumeX, X } from "lucide-react";
 import type { MascotReaction } from "@/shared/engagement/engine";
 import {
@@ -30,6 +31,8 @@ import { MascotRig } from "@/components/mascot/mascot-rig";
 // bubble is a manual popover — also top layer — and is re-raised whenever a dialog opens after it.
 // A centred modal would crowd a bottom bubble onto its backdrop, so while one is open the bubble
 // moves to the top-centre. It stays up meanwhile; its 3.5 s only count once the modal closes.
+// A modal <dialog> also makes everything outside it inert, top layer included, so while one is
+// open the bubble is rendered inside it; otherwise its close and voice buttons could not be used.
 //
 // A reaction can offer one next step (ask a mentor, open a reply, continue a chapter). It stays a
 // little longer so there is time to take it, and taking it closes the bubble.
@@ -99,6 +102,16 @@ function stopClip(current: RefObject<HTMLAudioElement | null>, onSpeaking: (spea
 
 function modalOpen(): boolean {
   return document.querySelector(MODAL_SELECTOR) !== null;
+}
+
+/** The open modal <dialog>, which makes the rest of the page inert, or null. */
+function modalDialog(): HTMLDialogElement | null {
+  try {
+    return [...document.querySelectorAll<HTMLDialogElement>("dialog:modal")].at(-1) ?? null;
+  } catch {
+    // :modal unsupported: the bubble stays where it is and only its buttons are out of reach.
+    return null;
+  }
 }
 
 /** Top-centre while a modal holds the middle of the screen, bottom-centre otherwise. */
@@ -257,6 +270,7 @@ function ReactionBubble({
 export function MascotPlayer() {
   const [shown, setShown] = useState<{ reaction: MascotReaction; seq: number } | null>(null);
   const [paused, setPaused] = useState(false);
+  const [modalHost, setModalHost] = useState<HTMLDialogElement | null>(null);
   const layerRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [speaking, setSpeaking] = useState(false);
@@ -310,14 +324,17 @@ export function MascotPlayer() {
   }, [shown, paused]);
 
   // Keep the bubble in the top layer, above any dialog that opens while it is showing, and out of
-  // the way of a modal as it opens or closes.
+  // the way of a modal as it opens or closes. Moving into or out of a modal remounts the layer, so
+  // this runs again for the new element.
   useEffect(() => {
     const layer = layerRef.current;
     if (!layer || !shown) return;
     place(layer);
     raise(layer);
+    setModalHost(modalDialog());
     const observer = new MutationObserver((mutations) => {
       place(layer);
+      setModalHost(modalDialog());
       if (mutations.some((mutation) => mutation.target instanceof HTMLDialogElement && mutation.target.open)) {
         raise(layer);
       }
@@ -331,7 +348,7 @@ export function MascotPlayer() {
         // Already hidden.
       }
     };
-  }, [shown]);
+  }, [shown, modalHost]);
 
   // Each reaction speaks once as it appears; it falls silent when the bubble goes.
   useEffect(() => {
@@ -350,6 +367,31 @@ export function MascotPlayer() {
 
   const reaction = shown?.reaction;
 
+  const layer = (
+    <div
+      ref={layerRef}
+      popover="manual"
+      data-placement="bottom"
+      className="pointer-events-none fixed inset-x-0 top-auto bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-45 m-0 flex h-auto w-full justify-center overflow-visible border-0 bg-transparent px-4 data-[placement=top]:bottom-auto data-[placement=top]:top-[max(1.5rem,env(safe-area-inset-top))] not-[&:popover-open]:hidden"
+    >
+      {shown ? (
+        <ReactionBubble
+          key={shown.seq}
+          reaction={shown.reaction}
+          animate={!reducedMotion}
+          speaking={speaking}
+          voiceOn={voiceOn}
+          onToggleVoice={toggleVoice}
+          onPause={setPaused}
+          onDismiss={() => {
+            setPaused(false);
+            setShown(null);
+          }}
+        />
+      ) : null}
+    </div>
+  );
+
   return (
     <>
       {/* Announced from outside the popover: a hidden popover is display:none and would not be read. */}
@@ -358,28 +400,7 @@ export function MascotPlayer() {
           ? `${reaction.mascotName} says: ${reaction.message}${reaction.xp ? ` You earned ${reaction.xp} XP.` : ""}`
           : ""}
       </p>
-      <div
-        ref={layerRef}
-        popover="manual"
-        data-placement="bottom"
-        className="pointer-events-none fixed inset-x-0 top-auto bottom-[max(1.5rem,env(safe-area-inset-bottom))] z-45 m-0 flex h-auto w-full justify-center overflow-visible border-0 bg-transparent px-4 data-[placement=top]:bottom-auto data-[placement=top]:top-[max(1.5rem,env(safe-area-inset-top))] not-[&:popover-open]:hidden"
-      >
-        {shown ? (
-          <ReactionBubble
-            key={shown.seq}
-            reaction={shown.reaction}
-            animate={!reducedMotion}
-            speaking={speaking}
-            voiceOn={voiceOn}
-            onToggleVoice={toggleVoice}
-            onPause={setPaused}
-            onDismiss={() => {
-              setPaused(false);
-              setShown(null);
-            }}
-          />
-        ) : null}
-      </div>
+      {shown && modalHost?.open ? createPortal(layer, modalHost) : layer}
     </>
   );
 }
