@@ -1,0 +1,193 @@
+---
+title: Engagement events and the mascot
+status: implemented 2026-10-22
+---
+
+# Engagement events and the mascot
+
+**Reads:** [`04-progress-and-gating.mdx`](04-progress-and-gating.mdx) (what "complete" means),
+[`12-notifications.mdx`](12-notifications.mdx) (the activity heartbeat).
+
+The foundation of the engagement system: the app reports learning moments, the server checks and
+stores them, and a mascot reacts. Today the only reaction is a short mascot bubble on the learner
+surface; streaks, badges or a mobile app can build on the same events.
+
+## Flow
+
+```
+component action succeeds
+  → trackEngagement({ type, courseId?, chapterId? })      frontend/src/lib/engagement/client.ts
+  → engine.track()                                        shared/engagement/engine.ts
+  → POST /api/v1/events                                   services/engagement/events.ts
+      checks the moment against the database, fills in facts, stores EngagementEvent rows
+  ← { events: [reported event, ...events it caused] }
+  → rules pick one reaction, cooldowns apply              shared/engagement/rules.ts
+  → mascot resolved by role                               shared/engagement/mascots.ts
+  → <MascotPlayer> shows image + subtitle                 frontend/src/components/mascot/mascot-player.tsx
+```
+
+`track()` never throws and nobody awaits it: a tracking failure can never break enrolling, saving a
+note or submitting a quiz.
+
+## Events
+
+| Type | Reported from | Server check | Stored once per |
+|---|---|---|---|
+| `session_start` | first page of a browser tab | none; computes `daysAway` (and `resume` after 14+ days) | (every tab session) |
+| `enrolled` | next page after the enroll / checkout redirect (cookie hand-off) | active enrollment | course |
+| `chapter_completed` | mark complete, quiz "next chapter"; also derived | `ChapterProgress` is COMPLETED | chapter |
+| `notes_saved` | margin note, learning log (max 1/min/chapter on the web) | enrolled in the chapter's course | (every save) |
+| `quiz_submitted` | quiz chapter submit | latest `Response` rows | quiz attempt |
+| `course_completed` | derived; may also be reported | `Enrollment.status` is COMPLETED | course |
+| `chapter_lingering` | the reader, after a long engaged while on the chapter (see below) | enrolled, chapter not complete | chapter per UTC day |
+| `long_session` | the attention clock, after 50 engaged minutes, at a natural pause | today's `AppActivityDay` has 30+ active minutes | UTC day |
+
+The server adds moments the client never reports: `level_up`, `weekly_goal_met` (see
+[`14-gamification.mdx`](14-gamification.mdx)) and the course milestones below. `message_received`
+is never reported or stored: the web client builds it from a live notification (see Messages).
+
+The client sends only the type and ids. **Facts come from the database**, never from the client:
+
+- `quiz_submitted` → `{ passed, attempt, score }`. `passed` is the chapter completion rule (every
+  question correct, or answered when retry is off); `attempt` is the highest attempt number among the
+  chapter's quiz questions (correct answers are kept, so only the questions still wrong advance);
+  `score` is 0–100.
+- `session_start` → `{ daysAway }`: whole days since the learner was last seen *before* this visit,
+  from `AppActivityDay` rows before today and earlier events. `null` for a first visit. After
+  `LONG_AWAY_DAYS` (14) it also carries `resume: { href, chapterTitle }`: the next unfinished
+  published chapter of the course the learner studied last.
+- Course milestones, after a new `chapter_completed` in a course that is not finished, from
+  `Enrollment.chaptersCompleted` and the course's chapter count (the same numbers as course
+  completion): `course_first_chapter` (1 done), `course_halfway` (half done, rounded up; courses of 4+
+  chapters) and `course_one_left`. Courses under 3 chapters get none. Each is stored once per course
+  with `{ chaptersCompleted, totalChapters }`.
+
+When a quiz finishes its chapter, or a chapter finishes the course, the response also carries
+`chapter_completed` / `course_completed`, so course completion — which happens on the server inside
+`recomputeChapterProgress` — still reaches the browser.
+
+Once-only moments use `dedupeKey` (`@@unique([userId, dedupeKey])`). A repeat comes back with
+`isNew: false`, and the engine never reacts to those. Unknown types fail validation (400); a moment
+the database does not show fails with 409 `ENGAGEMENT_EVENT_NOT_VERIFIED`.
+
+**Last active:** per-user `UserAppActivity.lastActiveAt` (heartbeats) stays the source. Events do not
+write it, because that column bounds heartbeat credit and moving it would undercount active time.
+
+## Mascots, roles, rules
+
+- **Cast** (`MASCOTS`): mascots are data — id, name, one pose per state. Rules ask for a **role**,
+  never a mascot, and `MASCOT_ROLE_MAP` casts it:
+
+| Role | Mascot | Character | Voice (Kokoro) |
+|---|---|---|---|
+| guide (default) | Bimo | friendly indigo robot with an antenna | `af_heart`, +3 semitones, 1.08× |
+| celebrator | Zip | glossy golden sun-star with big amber eyes, rosy cheeks, chubby arms and little legs | `am_puck`, +4, 1.15× |
+| helper | Pip | mint thinking cloud with round glasses | `af_nicole`, +1, 0.95× |
+| supporter | Mossy | gentle helper in a green bud-shaped hood and a white short-sleeved coat, with a big ivory face, pink cheeks and a wide open smile (body from the supplied artwork) | `am_michael`, −1, 0.90× |
+| messenger | Dot | round little bluebird with a topknot curl, big glossy eyes, wing-hands and a beak that opens to cheer or talk | `af_sky`, +2, 1.05× |
+
+  Bimo, the default, has a pose for every state, so a missing pose falls back to Bimo's, then to
+  Bimo's idle pose. New mascot = one registry entry + a role-map (or area-map) line. No mascot or line
+  names a course, so the same cast works in every course.
+- **Rules** (`ENGAGEMENT_RULES`), highest priority wins when one action causes several events:
+
+| Moment | Role → state | Example line | Notes |
+|---|---|---|---|
+| course completed | celebrator → graduation | "Congratulations on completing the course!" | priority 100 |
+| level up | celebrator → level_up | "Level up! Your effort is adding up." | |
+| quiz passed after misses | celebrator → proud | "You got it! That one was tricky." | |
+| quiz passed, 100% | celebrator → perfect | "Perfect score!" | |
+| one chapter left / halfway | celebrator → almost / halfway | "Just one chapter to go!" | once per course |
+| first chapter done | guide → first_step | "First chapter done! Here's where it begins." | once per course |
+| weekly goal met | celebrator → goal | "Weekly goal met! Nice consistency." | |
+| chapter completed | celebrator → celebrate | "Chapter complete. Nice work!" | once |
+| enrolled | guide → begin | "You're in! Let's start learning." | once |
+| message from a mentor | messenger → message, message_good, message_feedback, message_done | "Your mentor replied!" | button: Open |
+| quiz missed, attempt 1 / 2+ | helper → retry / help | "Let's try another way." | |
+| long while on a chapter | helper → stuck | "Need a hand? You can ask a mentor." | button: Ask a mentor |
+| back after 14+ days | guide → reunion | "Welcome back! Your next chapter is ready." | ambient; button: Continue |
+| back after 3+ days | guide → welcome_back | "Yay, you're back!" | ambient |
+| long study session | supporter → rest | "Great focus! A short break helps it stick." | |
+| notes saved | supporter → encourage | "Your own words stick best." | 10-minute cooldown |
+
+Each rule has three lines in the same spirit; the engine picks one at random and never repeats
+the previous one, so the mascots do not sound scripted. Copy never counts failures or days away.
+**Ambient** reactions (ones the learner did not just cause) are skipped on chapter reader pages, so
+nothing interrupts reading. A rule may add one **action** (`{ label, href }` or the `ask-help`
+intent), shown as a button in the bubble; help is offered, never imposed.
+
+## Quiet moments
+
+`frontend/src/lib/engagement/attention.ts` counts engaged time like the app activity clock: the tab is
+visible and the learner interacted in the last two minutes. It never fires while focus is in a text
+field.
+
+- **A long while on a chapter.** The reader watches each unfinished chapter. After twice the
+  chapter's `estimatedMinutes` (kept between 10 and 45 minutes; 20 without an estimate) of engaged
+  time it reports `chapter_lingering`, and Pip offers "Ask a mentor", which opens the chapter's help
+  dialog (`lib/engagement/ask-help.ts`). The line never mentions time.
+- **A long study stretch.** After 50 engaged minutes (a 10-minute break starts over) the clock
+  reports `long_session` at a natural pause: on a page that is not a chapter, or on moving to the
+  next chapter. Mossy suggests a short break.
+
+## Messages
+
+While the mascot player is mounted, live notifications a learner receives over the signed-in
+stream (`help.reply`, `help.resolved`, `review.feedback`) become a local `message_received` event
+(`shared/engagement/messages.ts`) and run through `engine.react()` — no extra request. Dot announces
+them with an **Open** button, and the toast for that notification stands down (the bell still lists
+it). `review.feedback` notifications store the mentor's verdict in `Notification.data`, exposed as
+`NotificationItem.verdict`, so an approval gets "Your work was approved!"; older ones, without it,
+get the neutral feedback line.
+
+## Dashboard
+
+A mascot also sits quietly on pages, never speaking or moving (`components/mascot/mascot-tip.tsx`):
+Bimo on the empty dashboard, and Mossy's **tip of the day** beside the weekly snapshot. Tips live in
+`shared/engagement/study-tips.en.json`: general study tips for every course, plus optional ones per
+course slug under `courses`, mixed in for learners whose current course it is. They are text only,
+so they can change freely.
+
+## Web player
+
+`MascotPlayer` is mounted once in `app/(learn)/layout.tsx` — learner surface only. Bottom-centre,
+non-modal, `role="status"` in a polite live region, never takes focus, hides after ~3.5 s (8 s when it
+offers an action; it waits for the voice to finish; paused while hovered or focused), dismissible,
+no motion with `prefers-reduced-motion`. Voice is on until the learner mutes it with the speaker
+button in the bubble (saved as `localStorage["buildment:mascot:voice"] = "off"`). Browsers block
+sound before the learner's first click on a page, so a reaction that arrives before then (a welcome
+back on load) stays silent.
+
+**Expressions.** Every mascot has a `rig` and is drawn live (`components/mascot/mascot-rig.tsx`) from
+the pose's `expression` in the registry: eyes, brows, mouth, blush, arms (down, up, wave, thumbs,
+point, stretch, hold), a prop (sparkles, confetti, cap, bulb, letter, tea) and one body motion (jump,
+puff, nod, slow-nod, tilt, bounce, spin, fly-in, stretch), plus an optional `opening` beat (help:
+glance up and "hmm", then smile) and a `wink`. Each character is a `Look` in that file: colours,
+body and head details; faces, arms and props are shared, so a pose reads the same on all of them. The
+mouth moves while the line types out and for as long as its voice clip plays; mascots blink at
+random intervals. Animations live in `globals.css` (`mascot-*`) and are all off with reduced motion,
+which shows the settled pose and the full line at once.
+
+To move to Rive, replace `MascotRig` with a Rive player driven by the same `expression`/state;
+rules, roles and the engine stay.
+
+## Assets: stills and voices
+
+Both are generated outside the repo and only the results are committed.
+
+- **Stills** (`frontend/public/mascots/<id>/<state>.svg`) are the rig's settled pose rendered to SVG
+  (React `renderToStaticMarkup` of `MascotRig` with `animate: false`, plus an `xmlns`). Re-render them
+  whenever a look or an expression changes.
+- **Voices** (`frontend/public/mascots/voice/<id>/<rule-id>-<line-index>.mp3`) exist for every line
+  a voiced mascot is cast to say. They are made with Kokoro (open model, Apache-2.0, commercial use
+  allowed) using the voice settings in the cast table, pitch-shifted by resampling, trimmed,
+  normalised and encoded as 48 kbps mono MP3 (about 10 KB a line). The engine names the clip of the
+  line it picked. When a line or the casting changes, regenerate the affected clips;
+  `frontend/tests/unit/engagement/mascot-assets.test.ts` lists any clip or still that is missing, and
+  a missing clip just stays silent.
+
+## Mobile
+
+`shared/engagement` has no React, browser or Prisma code. A mobile app calls
+`createEngagementEngine({ platform: "ios" | "android", transport, present, storage })` with its own
+HTTP client, AsyncStorage-backed store and presenter, against the same endpoint.

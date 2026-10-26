@@ -112,7 +112,10 @@ and preferences stay plain REST, so a two-way socket is not needed.
   means the user signed out, so it stops.
 - `NotificationCenter` (mounted in the learn, teach and admin layouts and on `/notifications`) runs
   the store and turns pushes into toasts. Toasts are de-duplicated by id, skipped for hidden tabs,
-  and skipped for pushes older than a minute.
+  and skipped for pushes older than a minute. On the learner surface, a reply, a resolved question
+  or review feedback is announced by the messenger mascot instead of a toast (see
+  [`13-engagement.mdx`](13-engagement.mdx), Messages); `review.feedback` rows store the mentor's
+  verdict in `data`, exposed as `NotificationItem.verdict`.
 - `NotificationBell` sits in each workspace shell (desktop sidebar header and mobile top bar).
 - `/notifications` — full feed, unread filter, load older, and per-category channel settings. Email
   footers link here.
