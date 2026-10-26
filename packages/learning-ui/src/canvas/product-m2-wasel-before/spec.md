@@ -1,0 +1,12 @@
+# Canvas spec: product-m2-wasel-before
+
+- **Course and chapter:** product-sense, 2.6 "Practice: fix one screen", the provided Wasel case (the optional canvas of the practice chapter).
+- **Renderer:** custom, on the reusable specimen compare beat with the `blur` option (`primitives/specimen-beats.tsx`, model `models/ui-specimen.ts`). This folder holds only data. Reason: a fellow without a project needs a "before" screen to squint at and measure, and the page was first drawn only in module 5. The page is on `background: "paper"` with literal text colours so the grey keeps its true ratio in both themes.
+- **Claim:** On Wasel's generic landing page the glow and the headline come first, three equal cards compete, and the facts a customer needs (prices, the 4 pm promise, opening hours) are the palest and smallest text on the page, so they disappear when squinted.
+- **Model:** Wasel's landing page, canon from the writer pack: a glow block holding the "AI-powered" pill, the headline "Revolutionize your printing experience" (26 bold, white), the line "Seamless, powerful and effortless." (14, white) and a glowing "Get started" button (13); a row of three equal cards "Fast", "Secure", "Smart" with tinted icon tiles (14 bold, #333333 on white, 12.63 to 1); and last the facts at 11 with line height 1.1 in #999999 on white (2.85 to 1): "Black and white 0.50 shekels a page, colour 2 shekels, binding 5 shekels. Orders sent before noon are ready by 4 pm. Open 8 am to 6 pm." Every gap is 8. Two versions: As built, and Squint (the same page blurred). Verdicts: "The glow first, facts last" (bad), "The facts do not survive" (bad).
+- **Inputs:** two buttons (As built, Squint).
+- **What changes:** whether the page is blurred, and the verdict.
+- **What the learner should notice:** the squint shows the glow block and the headline and nothing of the facts; the chapter's table gives the ratios of the pairs that fail.
+- **Accessibility:** the two buttons form a labelled group; a polite live region reads each version, its description and verdict; the SVG has a title; text at least 11 units (the facts are 11 on purpose, because the page is the thing to fix).
+- **Limits (fold):** a blur shows size, weight and contrast, not meaning; the glow and pill colours come from the reader's theme, and the chapter's table is the source for their ratios; Wasel is a fictional shop.
+- **Sources:** the course's Wasel canon (writer pack, section 8); WCAG 1.4.3 for the ratios [A1, A87]; NN/g on the squint test [A69].

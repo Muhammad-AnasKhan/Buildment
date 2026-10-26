@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { ComponentKind } from "@/lab/catalog";
-import type { BoardNode, DbLabSpec, HldLabSpec } from "@/lab/types";
-import { validateLabSpec } from "@/lab/types";
+import type { ComponentKind } from "@buildment/learning-ui/labs/catalog";
+import type { BoardNode, DbLabSpec, HldLabSpec } from "@buildment/learning-ui/labs/types";
+import { validateLabSpec } from "@buildment/learning-ui/labs/types";
 
 const n = (id: string, kind: ComponentKind): BoardNode => ({ id, kind, x: 0, y: 0 });
 

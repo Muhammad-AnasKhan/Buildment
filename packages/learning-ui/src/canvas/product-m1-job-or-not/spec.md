@@ -1,0 +1,13 @@
+# Canvas spec: product-m1-job-or-not
+
+- **Course and chapter:** product-sense, 1.3 "The job people hire your app for", beat 2, the playable sorter.
+- **Renderer:** custom, on the reusable `Sorter` primitive (`primitives/sorter.tsx`, model `models/sorter.ts`). This folder holds only data. Reason: telling a job from a persona or a feature list is a skill the learner practises with a consequence for each wrong tap; a diagram of three boxes would only restate the sentence under the picture.
+- **Claim:** Three kinds of line describe an app. A job has a situation and something the person wants to do, and it still makes sense with the app taken out. A persona says who the person is. A feature says what the app has or does. Only the job tells you what to put first.
+- **Model:** nine cards, three per bucket, dealt in data order (seed 0) and shuffled after "Sort again". Buckets: Job (situation and want), Persona (a kind of person), Feature (what the app has). Every reason states the rule that separates the buckets.
+- **Cards (9):** Job: "Battery low in the library: I want a seat by a socket.", "Class in 10 minutes: I want to know if the bus has left.", "Before an exam, a student wants someone to revise with." (no "When I" template). Persona: "Women and men aged 18 to 24 who use a phone all day.", "Third-year engineering students who live far from campus." (names a place but no want), "A 20-year-old who studies alone and likes simple apps." Feature: "Search, chat, polls, voice rooms, streaks and badges.", "When I study, I want a chat in the app, so that I can chat." (uses the template but the want is a feature), "Halaqa has group search, streaks and a leaderboard."
+- **Inputs:** tap a bucket (a real button over each bucket), or drag the card onto a bucket.
+- **What moves:** a right card flies into its bucket and the count ticks up; a wrong card shakes and shows its reason. Under reduced motion there is no flight or shake.
+- **What the learner should notice:** the wording does not decide the bucket. A line can use "When I, I want to, so that" and still be a feature, and a job can be written without it. The test is to take the app out of the sentence and ask whether it still says what a person wants in a situation.
+- **Accessibility:** bucket buttons are labelled with name, gloss and count; a polite live region reads each result and reason; text at least 11.5 units.
+- **Limits (fold):** real briefs mix the three. The lines are invented examples.
+- **Sources:** the Christensen Institute page on Jobs to Be Done [A29]; the "When I, I want to, so that" sentence is the course's own template.

@@ -12,6 +12,8 @@ const api: DesktopAPI = {
       ipcRenderer.invoke('learning:lesson', course, chapter),
     overview: (course) => ipcRenderer.invoke('learning:overview', course),
     block: (id) => ipcRenderer.invoke('learning:block', id),
+    aiInterview: (id, action, payload) =>
+      ipcRenderer.invoke('learning:ai-interview', id, action, payload),
     answer: (id, payload) => ipcRenderer.invoke('learning:answer', id, payload),
     complete: (id) => ipcRenderer.invoke('learning:complete', id),
     saveLog: (id, answers) =>

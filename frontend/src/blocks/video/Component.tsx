@@ -1,6 +1,6 @@
 import { fetchBlockState } from "@/blocks/block-state";
-import { Video } from "@/components/learn/video-embed";
-import { PendingBlockCard } from "@/components/learn/pending-block-card";
+import { Video } from "@buildment/learning-ui/components/learn/video-embed";
+import { PendingBlockCard } from "@buildment/learning-ui/components/learn/pending-block-card";
 
 export async function VideoComponent({
   id,
