@@ -6,7 +6,7 @@ import type { NetSolution } from "../types";
 import type { NetCheck } from "./checks";
 import { runChecks } from "./checks";
 import { runCommand } from "./commands";
-import type { NetTopology } from "./model";
+import type { NetDeviceSpec, NetTopology } from "./model";
 import { buildWorld, parseEndpoint } from "./model";
 import type { PlanSpec } from "./plan";
 import { checkPlan } from "./plan";
@@ -38,6 +38,7 @@ export function validateTopology(topology: NetTopology): string[] {
     for (const socket of device.sockets ?? []) {
       if (parseIp(socket.addr) === null) problems.push(`${device.id} socket address "${socket.addr}" is not an address`);
     }
+    problems.push(...validateServices(device, names));
   }
   const used = new Set<string>();
   for (const link of topology.links) {
@@ -55,13 +56,67 @@ export function validateTopology(topology: NetTopology): string[] {
   return problems;
 }
 
+const HOSTNAME = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/i;
+
+// NAT, DHCP, DNS and resolver settings: the addresses must parse, be lab-safe,
+// and the interfaces they name must exist.
+function validateServices(device: NetDeviceSpec, names: string[]): string[] {
+  const problems: string[] = [];
+  const has = (iface: string) => names.includes(iface);
+  const safe = (what: string, text: string) => {
+    const addr = parseIp(text);
+    if (addr === null) problems.push(`${device.id} ${what} "${text}" is not an address`);
+    else if (!isLabSafe(addr)) problems.push(`${device.id} ${what} "${text}" must be a private or documentation address`);
+  };
+  for (const oif of device.nat?.masquerade ?? []) {
+    if (!has(oif)) problems.push(`${device.id} masquerades out of "${oif}", which is not one of its interfaces`);
+  }
+  for (const d of device.nat?.dnat ?? []) {
+    const [addr, port] = d.to.split(":");
+    safe("port forward target", addr);
+    if (port !== undefined && !/^\d+$/.test(port)) problems.push(`${device.id} port forward target "${d.to}" has a bad port`);
+    if (d.in && !has(d.in)) problems.push(`${device.id} forwards a port arriving on "${d.in}", which is not one of its interfaces`);
+  }
+  const dhcp = device.dnsmasq?.dhcp;
+  if (dhcp) {
+    if (!has(dhcp.iface)) problems.push(`${device.id} runs DHCP on "${dhcp.iface}", which is not one of its interfaces`);
+    safe("DHCP pool start", dhcp.start);
+    safe("DHCP pool end", dhcp.end);
+    for (const t of dhcp.taken ?? []) safe("leased address", t);
+    if (dhcp.router) safe("DHCP router option", dhcp.router);
+    if (dhcp.dns) safe("DHCP dns option", dhcp.dns);
+  }
+  const dns = device.dnsmasq?.dns;
+  if (dns) {
+    if (dns.iface && !has(dns.iface)) problems.push(`${device.id} answers DNS on "${dns.iface}", which is not one of its interfaces`);
+    for (const [name, addr] of Object.entries(dns.records)) {
+      if (!HOSTNAME.test(name)) problems.push(`${device.id} DNS name "${name}" is not a host name`);
+      safe(`DNS answer for ${name}`, addr);
+    }
+  }
+  for (const r of device.resolver ?? []) safe("resolver", r);
+  return problems;
+}
+
 export function validateChecks(topology: NetTopology, checks: NetCheck[]): string[] {
-  const ids = new Set(topology.devices.map((d) => d.id));
+  const byId = new Map(topology.devices.map((d) => [d.id, d]));
   const problems: string[] = [];
   for (const check of checks) {
-    if (!ids.has(check.from)) problems.push(`check "${check.id}" starts from unknown device "${check.from}"`);
-    if (parseIp(check.to) === null) problems.push(`check "${check.id}" target "${check.to}" is not an address`);
+    const from = byId.get(check.from);
+    if (!from) problems.push(`check "${check.id}" starts from unknown device "${check.from}"`);
+    if (check.kind === "link" || check.kind === "address") {
+      if (from && !(from.ifaces ?? []).some((i) => i.name === check.to)) problems.push(`check "${check.id}" names interface "${check.to}", which ${check.from} does not have`);
+      if (check.within && !parseCidr(check.within)) problems.push(`check "${check.id}" within "${check.within}" is not a block`);
+    } else if (check.kind === "dns") {
+      if (!HOSTNAME.test(check.to)) problems.push(`check "${check.id}" name "${check.to}" is not a host name`);
+    } else if (parseIp(check.to) === null && !HOSTNAME.test(check.to)) {
+      problems.push(`check "${check.id}" target "${check.to}" is not an address or a name`);
+    }
     if (check.kind === "tcp" && !check.port) problems.push(`check "${check.id}" is tcp and needs a port`);
+    if (check.expect === "refused" && check.kind !== "tcp") problems.push(`check "${check.id}" expects a refusal, which only a tcp check can see`);
+    if ((check.seenAs || check.seenBy) && check.kind !== "tcp") problems.push(`check "${check.id}" says who sees the connection, which only a tcp check can tell`);
+    if (check.seenAs && parseIp(check.seenAs) === null) problems.push(`check "${check.id}" seenAs "${check.seenAs}" is not an address`);
+    if (check.seenBy && !byId.has(check.seenBy)) problems.push(`check "${check.id}" seenBy names unknown device "${check.seenBy}"`);
   }
   return problems;
 }
@@ -103,7 +158,7 @@ export function validateSolution(solution: NetSolution, lab: { topology?: NetTop
     }
     if (!step.why.trim()) problems.push(`solution step "${step.command}" needs a why`);
     const result = runCommand(world, step.device, step.command);
-    if (/^(Error|RTNETLINK|Cannot)/.test(result.output)) problems.push(`solution step "${step.command}" on ${step.device} fails: ${result.output}`);
+    if (/^(Error|RTNETLINK|Cannot|Command ")/.test(result.output)) problems.push(`solution step "${step.command}" on ${step.device} fails: ${result.output}`);
   }
   if (lab.checks) {
     runChecks(world, lab.checks).forEach((r, i) => {

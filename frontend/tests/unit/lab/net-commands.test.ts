@@ -160,3 +160,33 @@ describe("net commands: changing state", () => {
     expect(out(world, "a", "ip link")).toContain("a0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN");
   });
 });
+
+describe("net commands: ip route replace and change", () => {
+  it("replace swaps the gateway of an existing route and creates one when missing", () => {
+    const world = buildWorld(office);
+    expect(runCommand(world, "a", "ip route replace default via 10.1.0.1").changed).toBe(true);
+    runCommand(world, "a", "ip route replace 10.9.0.0/16 via 10.1.0.1");
+    expect(out(world, "a", "ip route")).toContain("10.9.0.0/16 via 10.1.0.1 dev a0");
+    runCommand(world, "a", "ip route replace 10.9.0.0/16 dev a0");
+    const routes = out(world, "a", "ip route").split("\n").filter((l) => l.startsWith("10.9.0.0/16"));
+    expect(routes).toEqual(["10.9.0.0/16 dev a0 scope link"]);
+  });
+
+  it("replace does not report File exists where add does", () => {
+    const world = buildWorld(office);
+    expect(out(world, "a", "ip route add default via 10.1.0.1")).toBe("RTNETLINK answers: File exists");
+    expect(out(world, "a", "ip route replace default via 10.1.0.1")).toBe("");
+  });
+
+  it("change needs an existing route", () => {
+    const world = buildWorld(office);
+    expect(out(world, "a", "ip route change 10.9.0.0/16 via 10.1.0.1")).toBe("RTNETLINK answers: No such file or directory");
+    expect(runCommand(world, "a", "ip route change default via 10.1.0.1").changed).toBe(true);
+  });
+
+  it("an unknown ip route subcommand prints iproute2's error and does not show the table", () => {
+    const world = buildWorld(office);
+    expect(out(world, "a", "ip route foo")).toBe('Command "foo" is unknown, try "ip route help".');
+    expect(out(world, "a", "ip route show")).toContain("default via 10.1.0.1");
+  });
+});

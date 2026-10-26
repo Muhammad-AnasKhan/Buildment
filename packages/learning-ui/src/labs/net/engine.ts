@@ -5,8 +5,13 @@
 // to 5.8): an owner answers ARP only when it has a route back to the asker, a
 // router answers from the address facing the sender, and anything dropped by
 // a filter, a missing route back or a quiet router is lost silently.
+//
+// A router with nftables nat rules also tracks connections (nat.ts): it
+// rewrites the destination before it routes (port forwarding, and the answer
+// to a masqueraded flow), and the source after it routes (masquerade, and the
+// answer to a forwarded port). Netfilter does it in the same order.
 
-import type { DeviceState, Endpoint, IfaceState, NetFilterRule, World } from "./model";
+import type { ConntrackEntry, DeviceState, Endpoint, IfaceState, RouteState, Tuple, World } from "./model";
 import {
   BROADCAST_MAC,
   ifaceOf,
@@ -14,9 +19,15 @@ import {
   linkIndexOf,
   lookupRoute,
   peerOf,
+  socketsOf,
   sourceFor,
 } from "./model";
-import { contains, formatIp, parseCidr } from "./ip";
+import { contains, formatIp } from "./ip";
+import type { Proto } from "./nat";
+import { claimPort, dnatRule, findEntry, masqueradeRule, opensFlow, protoOf, remember, reverse, tupleOf, withDst, withSrc } from "./nat";
+import type { DnsStatus } from "./dnsmasq";
+import { dnsAnswer, dnsServes } from "./dnsmasq";
+import { filterVerdict, tracksFlows } from "./nft";
 
 export type PacketKind =
   | "echo-request"
@@ -36,10 +47,15 @@ export interface IpPacket {
   sport?: number;
   dport?: number;
   seq?: number;
+  // The identifier of an ICMP echo, which stands in for a port when a router
+  // tracks or translates it.
+  id?: number;
   // For ICMP errors: "net" (no route), "port" (nothing listening on a UDP port).
   code?: "net" | "port";
   // For ICMP errors: the packet that caused it, so the sender can match it.
-  about?: { src: number; dst: number; seq?: number; dport?: number };
+  about?: { src: number; dst: number; seq?: number; sport?: number; dport?: number; id?: number };
+  // A DNS question (name) or its answer (status set) carried by a UDP packet.
+  dns?: { name: string; status?: DnsStatus; answer?: number };
 }
 
 export interface ArpPayload {
@@ -294,21 +310,8 @@ export function sourceAddress(device: DeviceState, dst: number): number | null {
   return route ? sourceFor(device, route) : null;
 }
 
-function ruleMatches(rule: NetFilterRule, inIface: string, outIface: string, p: IpPacket): boolean {
-  if (rule.in && rule.in !== inIface) return false;
-  if (rule.out && rule.out !== outIface) return false;
-  const src = rule.src ? parseCidr(rule.src.includes("/") ? rule.src : `${rule.src}/32`) : null;
-  const dst = rule.dst ? parseCidr(rule.dst.includes("/") ? rule.dst : `${rule.dst}/32`) : null;
-  if (src && !contains(src, p.src)) return false;
-  if (dst && !contains(dst, p.dst)) return false;
-  return true;
-}
-
-function filterVerdict(device: DeviceState, inIface: string, outIface: string, p: IpPacket): "accept" | "drop" {
-  for (const rule of device.filter) {
-    if (ruleMatches(rule, inIface, outIface, p)) return rule.action;
-  }
-  return "accept";
+function verdict(device: DeviceState, hook: "forward" | "input", inIface: string, outIface: string | undefined, p: IpPacket): "accept" | "drop" {
+  return filterVerdict(device, hook, { iif: inIface, oif: outIface, src: p.src, dst: p.dst, proto: protoOf(p), dport: p.dport });
 }
 
 // A router's warning back to the sender, from the address facing the sender.
@@ -321,59 +324,223 @@ function icmpError(world: World, run: Run, device: DeviceState, original: IpPack
     run.events.push({ kind: "no-route-back", device: device.id, text: `${device.label} has no route back to ${ip(original.src)}, so its warning is lost.` });
     return;
   }
-  const about = { src: original.src, dst: original.dst, seq: original.seq, dport: original.dport };
+  const about = { src: original.src, dst: original.dst, seq: original.seq, sport: original.sport, dport: original.dport, id: original.id };
   sendIp(world, run, device.id, { src, dst: original.src, ttl: 64, kind, code, about, seq: original.seq });
+}
+
+
+// A packet's journey through a router's netfilter hooks, kept between
+// prerouting and postrouting.
+interface Flow {
+  proto: Proto;
+  // The tuple the packet should have once translation is done.
+  target: Tuple;
+  // A flow the router has seen before.
+  entry?: ConntrackEntry;
+  // A new flow, remembered only once the packet is on its way out.
+  pending?: ConntrackEntry;
+}
+
+const addr = (value: number, port: number, proto: Proto) => (proto === "icmp" ? ip(value) : `${ip(value)}:${port}`);
+
+// What state a reply moves a tracked flow to. The lab models a whole request
+// as one exchange, so a TCP answer leaves the entry as curl would: TIME_WAIT.
+function markReplied(entry: ConntrackEntry, packet: IpPacket) {
+  if (entry.state !== "SYN_SENT" && entry.state !== "UNREPLIED") return;
+  if (packet.kind === "tcp-syn-ack") {
+    entry.state = "TIME_WAIT";
+    entry.assured = true;
+  } else if (packet.kind === "tcp-rst") {
+    entry.state = "CLOSE";
+  } else {
+    entry.state = "REPLIED";
+  }
+}
+
+// An ICMP error that comes back for a translated flow carries the packet the
+// router sent, after translation. Put the client's own header back and send it
+// on to the client, as conntrack does for related errors.
+function untranslateError(run: Run, device: DeviceState, packet: IpPacket): IpPacket {
+  const about = packet.about;
+  if (!about || !isLocalAddress(device, packet.dst)) return packet;
+  const proto: Proto = about.dport === undefined ? "icmp" : "udp";
+  for (const entry of device.conntrack) {
+    if (entry.proto !== proto) continue;
+    const seen = reverse(entry.reply);
+    if (seen.src !== about.src || seen.dst !== about.dst) continue;
+    if (proto === "udp" && (seen.dport !== about.dport || (about.sport !== undefined && seen.sport !== about.sport))) continue;
+    run.events.push({
+      kind: "forward",
+      device: device.id,
+      text: `${device.label} recognises the ICMP error as belonging to a connection it translated, and sends it to ${ip(entry.orig.src)}.`,
+    });
+    const inner = { ...about, src: entry.orig.src, sport: proto === "udp" ? entry.orig.sport : undefined, id: proto === "icmp" ? entry.orig.sport : undefined };
+    return { ...packet, dst: entry.orig.src, about: inner };
+  }
+  return packet;
+}
+
+function prerouting(run: Run, device: DeviceState, iif: string, packet: IpPacket): { packet: IpPacket; flow?: Flow } {
+  if (isIcmpError(packet)) return { packet: untranslateError(run, device, packet) };
+  const proto = protoOf(packet);
+  if (!proto) return { packet };
+  const t = tupleOf(packet);
+  let found = findEntry(device, proto, t);
+  // A new SYN on a connection that already closed starts a fresh entry.
+  if (found?.dir === "orig" && packet.kind === "tcp-syn" && (found.entry.state === "TIME_WAIT" || found.entry.state === "CLOSE")) {
+    const old = found.entry;
+    device.conntrack = device.conntrack.filter((e) => e !== old);
+    found = null;
+  }
+  if (found) {
+    const { entry, dir } = found;
+    const target = dir === "orig" ? reverse(entry.reply) : reverse(entry.orig);
+    if (dir === "reply") markReplied(entry, packet);
+    const out = withDst(packet, target);
+    if (dir === "reply" && (out.dst !== packet.dst || out.dport !== packet.dport)) {
+      run.events.push({
+        kind: "forward",
+        device: device.id,
+        text: `${device.label} finds this answer in its conntrack table and puts the original address back: ${addr(packet.dst, t.dport, proto)} becomes ${addr(out.dst, target.dport, proto)}.`,
+      });
+    }
+    return { packet: out, flow: { proto, target, entry } };
+  }
+  if (!opensFlow(packet)) return { packet };
+  const rule = dnatRule(device, iif, proto, t);
+  const reply: Tuple = rule?.to ? { src: rule.to.ip, dst: t.src, sport: rule.to.port ?? t.dport, dport: t.sport } : reverse(t);
+  const pending: ConntrackEntry = { proto, orig: t, reply, state: proto === "tcp" ? "SYN_SENT" : "UNREPLIED", assured: false };
+  const target = reverse(reply);
+  if (rule?.to) {
+    run.events.push({
+      kind: "forward",
+      device: device.id,
+      text: `A port-forward rule on ${device.label} rewrites the destination from ${addr(t.dst, t.dport, proto)} to ${addr(target.dst, target.dport, proto)} (DNAT) and remembers the pair.`,
+    });
+  }
+  return { packet: withDst(packet, target), flow: { proto, target, pending } };
+}
+
+// After routing: masquerade a new flow, then rewrite the source to match.
+function postrouting(run: Run, device: DeviceState, route: RouteState, flow: Flow, packet: IpPacket): IpPacket {
+  let target = flow.target;
+  const p = flow.pending;
+  if (p) {
+    const rule = masqueradeRule(device, route.dev, flow.proto, tupleOf(packet));
+    const src = rule ? sourceFor(device, route) : null;
+    if (rule && src !== null) {
+      const wanted = { ...p.reply, dst: src };
+      const port = claimPort(device, flow.proto, wanted);
+      p.reply = { ...wanted, dport: port };
+      target = reverse(p.reply);
+      const was = addr(p.orig.src, p.orig.sport, flow.proto);
+      run.events.push({
+        kind: "forward",
+        device: device.id,
+        text:
+          `${device.label} masquerades the packet: the source ${was} becomes ${addr(src, port, flow.proto)}, the address of ${route.dev}, and the pair goes into its conntrack table so the answer can find its way back.` +
+          (port !== p.orig.sport ? ` Port ${p.orig.sport} was already taken for this destination, so it uses ${port}.` : ""),
+      });
+    }
+    remember(device, p);
+  }
+  return withSrc(packet, target);
 }
 
 function receiveIp(world: World, run: Run, at: Endpoint, packet: IpPacket) {
   const device = world.devices[at.dev];
-  if (isLocalAddress(device, packet.dst)) {
-    deliverLocal(world, run, device, packet);
+  let pkt = packet;
+  let flow: Flow | undefined;
+  if (tracksFlows(device)) {
+    const pre = prerouting(run, device, at.iface, packet);
+    pkt = pre.packet;
+    flow = pre.flow;
+  }
+  if (isLocalAddress(device, pkt.dst)) {
+    if (verdict(device, "input", at.iface, undefined, pkt) === "drop") {
+      run.events.push({ kind: "filtered", device: device.id, text: `A filter rule on ${device.label} drops the packet from ${ip(pkt.src)} to ${ip(pkt.dst)}. No error goes back.` });
+      return;
+    }
+    if (flow?.pending) {
+      // The router is the destination, so the flow is confirmed here. Say how
+      // it ends: a listener answers, nothing listening means a reset or an error.
+      const answered = answers(device, pkt);
+      const p = flow.pending;
+      if (flow.proto === "tcp") {
+        p.state = answered ? "TIME_WAIT" : "CLOSE";
+        p.assured = answered;
+      } else if (answered) p.state = "REPLIED";
+      remember(device, p);
+    }
+    deliverLocal(world, run, device, pkt);
     return;
   }
   if (!device.forwarding) {
-    run.events.push({ kind: "not-forwarding", device: device.id, text: `${device.label} is not ${ip(packet.dst)} and does not forward packets, so it drops it.` });
+    run.events.push({ kind: "not-forwarding", device: device.id, text: `${device.label} is not ${ip(pkt.dst)} and does not forward packets, so it drops it.` });
     return;
   }
-  const route = lookupRoute(device, packet.dst);
+  const route = lookupRoute(device, pkt.dst);
   if (!route) {
-    run.events.push({ kind: "no-route", device: device.id, text: `${device.label} has no route to ${ip(packet.dst)}.${device.silent ? " It drops the packet quietly." : " It drops the packet and tells the sender."}` });
-    icmpError(world, run, device, packet, "unreachable", "net");
+    run.events.push({ kind: "no-route", device: device.id, text: `${device.label} has no route to ${ip(pkt.dst)}.${device.silent ? " It drops the packet quietly." : " It drops the packet and tells the sender."}` });
+    icmpError(world, run, device, pkt, "unreachable", "net");
     return;
   }
-  if (filterVerdict(device, at.iface, route.dev, packet) === "drop") {
-    run.events.push({ kind: "filtered", device: device.id, text: `A filter rule on ${device.label} drops the packet from ${ip(packet.src)} to ${ip(packet.dst)}. No error goes back.` });
+  if (verdict(device, "forward", at.iface, route.dev, pkt) === "drop") {
+    run.events.push({ kind: "filtered", device: device.id, text: `A filter rule on ${device.label} drops the packet from ${ip(pkt.src)} to ${ip(pkt.dst)}. No error goes back.` });
     return;
   }
-  const ttl = packet.ttl - 1;
+  const ttl = pkt.ttl - 1;
   if (ttl <= 0) {
     run.events.push({
       kind: "ttl-expired",
       device: device.id,
       text: `The TTL reaches 0 at ${device.label}, so it discards the packet${device.silent ? " and stays quiet." : " and sends ICMP Time Exceeded back."}`,
     });
-    icmpError(world, run, device, packet, "time-exceeded");
+    icmpError(world, run, device, pkt, "time-exceeded");
     return;
   }
-  emit(world, run, device, { ...packet, ttl }, route.dev, route.via ?? packet.dst);
+  let out: IpPacket = { ...pkt, ttl };
+  if (flow) out = postrouting(run, device, route, flow, out);
+  emit(world, run, device, out, route.dev, route.via ?? out.dst);
 }
 
 function listener(device: DeviceState, proto: "tcp" | "udp", dst: number, port: number) {
-  return device.sockets.find((s) => s.proto === proto && s.port === port && (s.addr === 0 || s.addr === dst));
+  return socketsOf(device).find((s) => s.proto === proto && s.port === port && (s.addr === 0 || s.addr === dst));
+}
+
+// Will the device answer this packet itself (rather than reset or refuse it)?
+function answers(device: DeviceState, packet: IpPacket): boolean {
+  switch (packet.kind) {
+    case "echo-request":
+      return true;
+    case "tcp-syn":
+      return !!listener(device, "tcp", packet.dst, packet.dport ?? 0);
+    case "udp":
+      return (packet.dport === 53 && !!packet.dns && dnsServes(device, packet.dst)) || !!listener(device, "udp", packet.dst, packet.dport ?? 0);
+    default:
+      return false;
+  }
 }
 
 function deliverLocal(world: World, run: Run, device: DeviceState, packet: IpPacket) {
   run.arrivals.push({ device: device.id, packet });
   run.events.push({ kind: "deliver", device: device.id, text: `${device.label} is ${ip(packet.dst)}: the ${describe(packet)} has arrived.` });
   const reply = (kind: PacketKind, extra: Partial<IpPacket> = {}) =>
-    sendIp(world, run, device.id, { src: packet.dst, dst: packet.src, ttl: 64, kind, seq: packet.seq, sport: packet.dport, dport: packet.sport, ...extra });
+    sendIp(world, run, device.id, { src: packet.dst, dst: packet.src, ttl: 64, kind, seq: packet.seq, id: packet.id, sport: packet.dport, dport: packet.sport, ...extra });
   switch (packet.kind) {
     case "echo-request":
       reply("echo-reply");
       return;
     case "udp":
+      // An answer to a DNS question is consumed by the asker, not refused.
+      if (packet.dns?.status) return;
+      if (packet.dport === 53 && packet.dns && dnsServes(device, packet.dst)) {
+        const found = dnsAnswer(device, packet.dns.name);
+        reply("udp", { dns: { name: packet.dns.name, status: found.status, answer: found.answer } });
+        return;
+      }
       if (!listener(device, "udp", packet.dst, packet.dport ?? 0)) {
-        reply("unreachable", { code: "port", about: { src: packet.src, dst: packet.dst, seq: packet.seq, dport: packet.dport } });
+        reply("unreachable", { code: "port", about: { src: packet.src, dst: packet.dst, seq: packet.seq, sport: packet.sport, dport: packet.dport } });
       }
       return;
     case "tcp-syn":
@@ -383,4 +550,3 @@ function deliverLocal(world: World, run: Run, device: DeviceState, packet: IpPac
       return;
   }
 }
-
