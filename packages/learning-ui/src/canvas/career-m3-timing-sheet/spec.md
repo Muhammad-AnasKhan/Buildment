@@ -13,7 +13,7 @@ owner: interaction-designer
 # Canvas spec: Time it as it is done today
 
 ## Teaching claim
-To claim time saved, time the task as it is done today, for a stated window, and use the median. People recall times as shorter than they were.
+To claim time saved, time the task as it is done today, for a stated window, and use the median. A timer beats memory, which is easy to bend.
 
 ## Why this visual
 A timing sheet filled over two fortnights gives a before median and an after median that anyone can re-check.

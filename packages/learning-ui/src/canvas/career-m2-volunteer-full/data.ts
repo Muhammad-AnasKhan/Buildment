@@ -7,7 +7,7 @@ export const careerM2VolunteerFull: SceneSpec = {
   kind: "scene",
   title: "Study and volunteer roles count",
   purpose: "Areej's volunteer card is as full as her internship card: 412 rows, 57 duplicates, 355 imported, and clashes from 9 to 1. The caveat is on the card too: sessions also dropped from three to two a week.",
-  limits: "Areej is a fictional fellow and her numbers are illustrative. Every learner has at least a study or volunteer role to write up; school projects, helping a family business and club roles all count.",
+  limits: "Areej is a fictional fellow and her numbers are illustrative. Most learners have at least a study or volunteer role to write up; school projects, helping a family business and club roles all count.",
   hint: "Watch the reader ask what changed.",
   scene: {
     width: 420,

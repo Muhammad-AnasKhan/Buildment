@@ -24,7 +24,7 @@ Dates and counts are from the canon: the index shipped on 15 May 2025; a front-e
 ```json
 {
   "title": "What else changed in the window",
-  "purpose": "Areej's window runs through May. The index ships on 15 May. A front-end release lands on 20 May. Her card lists the release and the request counts, 6,300 before and 6,100 after, so traffic does not explain the change.",
+  "purpose": "Areej's window runs through May. The index ships on 15 May. A front-end release goes out on 20 May. Her card lists the release and the request counts, 6,300 before and 6,100 after, so traffic does not explain the change.",
   "limits": "A before and after of this kind is a weak design, so the card says what else changed rather than hiding it. A comparison you control (chapter 3.5) is stronger.",
   "hint": "Two other things happened in the window.",
   "scene": {

@@ -7,7 +7,7 @@ export const careerM3WindowChanges: SceneSpec = {
   "kind": "scene",
   "title": "The window changes the number",
   "purpose": "The same requests are shown two ways: second by second the line is spiky, and as a one-minute average it looks calm. A number is only meaningful with its window.",
-  "limits": "A made-up stream with no real values. Service targets use a window too; a four-week rolling window is a common default. SLI is the measurement, SLO is the target, SLA is a contract with consequences; if nothing happens when it is missed, it is an SLO.",
+  "limits": "A made-up stream with no real values. Targets use a window too, so give the window with every target.",
   "hint": "Same traffic, two windows.",
   "scene": {
     "width": 420,

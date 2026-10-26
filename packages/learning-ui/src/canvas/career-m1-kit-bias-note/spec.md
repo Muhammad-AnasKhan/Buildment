@@ -23,7 +23,7 @@ Two equal kits and one reader, with two different outcomes, state the honest not
 {
   "title": "A good kit cannot remove every bias",
   "purpose": "Two kits carry the same proof. A reader reads both. One gets a reply and one does not. A better kit helps, but not equally for everyone.",
-  "limits": "This shows one old finding: in a 2004 US study of newspaper job ads, white-sounding names got about 50 percent more callbacks (replies asking for an interview), and a better resume helped them far more. It is old and about US ads, so it predicts nothing about remote hiring today. No study we found measures applicants from Palestine. Mentors can help you choose where to apply.",
+  "limits": "This shows one old finding: in a 2004 US study of newspaper job ads, white-sounding names got about 50 percent more callbacks (replies asking for an interview), and a better resume helped them far more. It is old and about US ads, so it predicts nothing about remote hiring today. No study we found measures applicants from where you are. Mentors can help you choose where to apply.",
   "hint": "Two equal kits, one reader.",
   "scene": {
     "width": 420,

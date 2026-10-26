@@ -1,7 +1,7 @@
 import type { SceneSpec } from "../renderers/scene/SceneCanvas";
 
 // Course 16 (career-brand), module 3, chapter 3.5 beat 5: Time it as it is done today.
-// To claim time saved, time the task as it is done today, for a stated window, and use the median. People recall times as shorter than they were.
+// To claim time saved, time the task as it is done today, for a stated window, and use the median. A timer beats memory, which is easy to bend.
 // Card register. Fictional people; the picture is a story, not data.
 export const careerM3TimingSheet: SceneSpec = {
   "kind": "scene",
