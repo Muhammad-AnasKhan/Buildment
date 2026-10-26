@@ -32,8 +32,13 @@ import { ClassifyView } from "./ClassifyView";
 import { CidrDrillView } from "./CidrDrillView";
 import { DrillView } from "./DrillView";
 import { PrefixView } from "./PrefixView";
+import { subnetModeSchema, type SubnetModeConfig } from "../models/net-modes";
+import { MaskView } from "./MaskView";
+import { OverlapView } from "./OverlapView";
+import { SplitView } from "./SplitView";
+import { V6View } from "./V6View";
 
-export type AddressMode = "byte" | "address" | "drill" | "allocate" | "prefix" | "classify";
+export type AddressMode = "byte" | "address" | "drill" | "allocate" | "prefix" | "classify" | "mask-and" | "split" | "overlap" | "v6";
 
 export type AddressBitsProps = {
   title: string;
@@ -41,14 +46,14 @@ export type AddressBitsProps = {
   limits: string;
   mode: AddressMode;
   /**
-   * Plain, serialisable parameters for the allocate, prefix, classify and CIDR
-   * drill modes, checked against `addrConfigSchema`. The byte, address and
-   * bits drill modes need none.
+   * Plain, serialisable parameters for every mode but byte, address and the
+   * bits drill, checked against `addrConfigSchema` (allocate, prefix, classify,
+   * CIDR drill) or `subnetModeSchema` (mask-and, split, overlap, v6).
    */
-  config?: AddrConfig;
+  config?: AddrConfig | SubnetModeConfig;
 };
 
-/** The address renderer: one component, six modes (byte, address, drill, allocate, prefix, classify). */
+/** The address renderer: one component, ten modes (byte, address, drill, allocate, prefix, classify, mask-and, split, overlap, v6). */
 export function AddressBitsCanvas({ mode, title, purpose, limits, config }: AddressBitsProps) {
   if (mode === "byte") return <ByteView title={title} purpose={purpose} limits={limits} />;
   if (mode === "address") return <AddressView title={title} purpose={purpose} limits={limits} />;
@@ -56,6 +61,17 @@ export function AddressBitsCanvas({ mode, title, purpose, limits, config }: Addr
     const parsed = config ? addrConfigSchema.safeParse(config) : null;
     if (parsed?.success && parsed.data.mode === "drill" && parsed.data.questions === "cidr") return <CidrDrillView title={title} purpose={purpose} limits={limits} />;
     return <DrillView title={title} purpose={purpose} limits={limits} />;
+  }
+  if (mode === "mask-and" || mode === "split" || mode === "overlap" || mode === "v6") {
+    const modeParsed = subnetModeSchema.safeParse(config);
+    if (!modeParsed.success || modeParsed.data.mode !== mode) {
+      return <p role="alert" className="not-prose my-6 text-sm text-muted-foreground">This picture could not load its settings.</p>;
+    }
+    const c = modeParsed.data;
+    if (c.mode === "mask-and") return <MaskView title={title} purpose={purpose} limits={limits} config={c} />;
+    if (c.mode === "split") return <SplitView title={title} purpose={purpose} limits={limits} config={c} />;
+    if (c.mode === "overlap") return <OverlapView title={title} purpose={purpose} limits={limits} config={c} />;
+    return <V6View title={title} purpose={purpose} limits={limits} config={c} />;
   }
   const parsed = addrConfigSchema.safeParse(config);
   if (!parsed.success || parsed.data.mode !== mode) {
