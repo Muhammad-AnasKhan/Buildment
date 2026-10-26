@@ -1,12 +1,12 @@
 import type { SceneSpec } from "../renderers/scene/SceneCanvas";
 
 // Course 16 (career-brand), module 5, chapter 5.4 beat 3: Show the hard part, not a tour.
-// Two sales hit one stock count; the demo lingers on the one hard thing.
+// Two sales hit one stock count; the demo shows the one hard thing.
 
 export const careerM5ShowTheHardPart: SceneSpec = {
   kind: "scene",
   title: "Show the hard part, not a tour",
-  purpose: "Two sales arrive at the same moment and hit one stock count. The count stays right because the update runs in one transaction. That is the part of the demo to linger on.",
+  purpose: "Two sales arrive at the same moment and hit one stock count. The count stays right because the update runs in one transaction. That is the part of the demo to show closely.",
   limits: "The plan is illustrative. A tour of menus proves little; the core flow and one hard detail invite a reader's question.",
   hint: "Two sales, one count.",
   scene: {
@@ -65,7 +65,7 @@ export const careerM5ShowTheHardPart: SceneSpec = {
       {
         kind: "verdict",
         at: 3.5,
-        text: "Linger on the one hard thing",
+        text: "Show the one hard thing",
         tone: "good"
       }
     ],

@@ -19,13 +19,13 @@ Show a screenshot first and link the video with its size stated. No autoplay, so
 A reader opens a light page quickly and then decides to tap the video.
 
 ## Data
-Light pages are an authoring rule for this platform: no autoplay, state the size, give a text path. Many readers and fellows are on weak, costly data.
+Light pages are a rule for this course: no autoplay, state the size, give a text path. Many readers and fellows are on weak, costly data.
 
 ```json
 {
   "title": "Screenshot first on weak data",
   "purpose": "A reader on weak data opens a light demo page that shows a screenshot first. A link says 'watch the 90-second demo' and states its size. Nothing plays until the reader taps.",
-  "limits": "The 90 seconds and the size are the example in the module brief; state the real size of your own file. This is a platform authoring rule, not a research finding.",
+  "limits": "The 90 seconds and the size are the example in the module brief; state the real size of your own file. This is a rule for this course, not a research finding.",
   "hint": "A light page, video on request.",
   "scene": {
     "width": 420,

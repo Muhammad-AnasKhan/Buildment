@@ -4,7 +4,7 @@ import { makeSlotCardCanvas } from "../primitives/canvas-factories";
 import type { SlotCardConfig } from "../primitives/slot-card";
 
 // Course 16 (career-brand), module 5, chapter 5.5 beat 2: Build it from a ledger row.
-// Fill the six sections of Areej's case study from her ledger rows R1 and R2; a boast, a vague percentage and a 'we' are refused.
+// Fill six of the seven parts of Areej's case study from her ledger rows R1 and R2; a boast, a vague percentage and a 'we' are refused.
 
 export const CASE_SLOTS: CardSlot[] = [
   {
@@ -103,7 +103,7 @@ export const CASE_STUDY_CONFIG: SlotCardConfig = {
 export const careerM5CaseFromRow: CustomCanvasSpec = {
   kind: "custom",
   title: "Build it from a ledger row",
-  purpose: "Fill the six sections of Areej's case study from her ledger rows: problem, before, what I did, after, what else changed, and what she would do differently. A boast and a vague percentage are refused.",
+  purpose: "Fill six of the seven parts of Areej's case study from her ledger rows: problem, before, what I did, after, what else changed, and what she would do differently. The seventh part, where to see it, is a link or an image, so it has no snippet. A boast and a vague percentage are refused.",
   limits: "A real case study has a title, images and a link to the proof. The numbers are from Areej's notes and are illustrative. Names are removed in public; the company is 'a parcel delivery company'.",
   component: makeSlotCardCanvas(CASE_STUDY_CONFIG),
 };

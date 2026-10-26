@@ -7,7 +7,7 @@ export const careerM5ScreenshotFirst: SceneSpec = {
   kind: "scene",
   title: "Screenshot first on weak data",
   purpose: "A reader on weak data opens a light demo page that shows a screenshot first. A link says 'watch the 90-second demo' and states its size. Nothing plays until the reader taps.",
-  limits: "The 90 seconds and the size are this example's numbers; state the real size of your own file. This is a platform authoring rule, not a research finding.",
+  limits: "The 90 seconds and the size are this example's numbers; state the real size of your own file. This is a rule for this course, not a research finding.",
   hint: "A light page, video on request.",
   scene: {
     width: 420,
