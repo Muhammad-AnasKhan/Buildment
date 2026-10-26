@@ -3,9 +3,10 @@ import type { AdminOrganizationDetail } from "@/shared/api/admin";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { CredentialReveal } from "@/components/admin/credential-reveal";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { AdminActionForm } from "@/components/admin/admin-action-form";
 import { BulkCourseAllocationForm } from "@/components/admin/bulk-course-allocation-form";
-import { rotateOrganizationCredentialFormAction } from "@/server/actions/admin/organizations";
+import { rotateOrganizationCredentialFormAction, setAllocationLeaderboardAction } from "@/server/actions/admin/organizations";
 import {
   AdminBackLink,
   AdminPageHeader,
@@ -147,19 +148,20 @@ export default async function AdminOrganizationDetailPage({
         title="Courses in catalog"
         description="Published courses currently allocated to this organization. Caps and expiry are enforced on integration enrollments."
       >
-        <AdminTable minWidth="720px">
+        <AdminTable minWidth="860px">
           <AdminTableHead>
             <tr>
               <AdminTableHeaderCell>Course</AdminTableHeaderCell>
               <AdminTableHeaderCell align="right">Used / max</AdminTableHeaderCell>
               <AdminTableHeaderCell>Expires</AdminTableHeaderCell>
               <AdminTableHeaderCell>Allowed</AdminTableHeaderCell>
+              <AdminTableHeaderCell>Leaderboards</AdminTableHeaderCell>
             </tr>
           </AdminTableHead>
           <AdminTableBody>
             {allocations.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-10 text-center text-sm text-muted-foreground">
+                <td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground">
                   No allocations yet.
                 </td>
               </tr>
@@ -187,6 +189,22 @@ export default async function AdminOrganizationDetailPage({
                     ) : (
                       <Badge variant="outline">No</Badge>
                     )}
+                  </AdminTableCell>
+                  <AdminTableCell>
+                    <form action={setAllocationLeaderboardAction} className="flex items-center gap-2">
+                      <input type="hidden" name="organizationId" value={org.id} />
+                      <input type="hidden" name="courseId" value={row.course.id} />
+                      <input type="hidden" name="enabled" value={row.leaderboardEnabled ? "false" : "true"} />
+                      {row.leaderboardEnabled ? <Badge variant="secondary">On</Badge> : <Badge variant="outline">Off</Badge>}
+                      <Button
+                        type="submit"
+                        size="sm"
+                        variant="ghost"
+                        aria-label={`${row.leaderboardEnabled ? "Turn off" : "Turn on"} leaderboards for ${row.course.title}`}
+                      >
+                        {row.leaderboardEnabled ? "Turn off" : "Turn on"}
+                      </Button>
+                    </form>
                   </AdminTableCell>
                 </AdminTableRow>
               ))

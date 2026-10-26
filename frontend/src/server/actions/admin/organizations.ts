@@ -80,3 +80,15 @@ export async function bulkUpsertOrganizationCourseAllocationsAction(
     return `Saved ${courseIds.length} course${courseIds.length === 1 ? "" : "s"}.`;
   });
 }
+
+/** Lets (or stops) an organization's learners joining a course's weekly leaderboards. */
+export async function setAllocationLeaderboardAction(formData: FormData): Promise<void> {
+  const organizationId = String(formData.get("organizationId") ?? "");
+  const courseId = String(formData.get("courseId") ?? "");
+  if (!organizationId || !courseId) throw new Error("Missing organization or course.");
+  await adminCall(
+    `/api/v1/admin/organizations/${encodeURIComponent(organizationId)}/allocations/${encodeURIComponent(courseId)}/leaderboard`,
+    { method: "PATCH", json: { enabled: formData.get("enabled") === "true" } }
+  );
+  revalidatePath(`/admin/organizations/${organizationId}`);
+}
