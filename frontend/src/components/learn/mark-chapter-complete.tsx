@@ -13,7 +13,7 @@ import { ChapterCompleteCelebrationModal } from "@/components/learn/chapter-comp
 import { scrollToNextCheckpoint } from "@buildment/learning-ui/components/learn/checkpoint-marker";
 import { playFeedback } from "@/lib/sound-feedback";
 import { toast } from "@/components/ui/app-toast";
-import { trackEngagement } from "@/lib/engagement/client";
+import { useMascot } from "@/lib/engagement/use-mascot";
 
 const MODAL_OPEN_DELAY_MS = 200;
 
@@ -77,6 +77,7 @@ function ChapterCompletionMoment({
   const [trackedComplete, setTrackedComplete] = useState(chapterComplete);
   const modalTimerRef = useRef<number | null>(null);
   const celebrationAnchorRef = useRef<HTMLDivElement>(null);
+  const { track } = useMascot();
 
   function prefersReducedMotion() {
     return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -140,7 +141,7 @@ function ChapterCompletionMoment({
       }
       setCompletionSaved(true);
       beginCelebration();
-      trackEngagement({ type: "chapter_completed", chapterId });
+      track({ type: "chapter_completed", chapterId });
       router.refresh();
     });
   }

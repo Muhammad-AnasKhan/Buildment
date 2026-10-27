@@ -2,18 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { ArrowRight, Volume2, VolumeX, X } from "lucide-react";
 import type { MascotReaction } from "@/shared/engagement/engine";
-import {
-  announceMessages,
-  reportPendingEngagement,
-  startEngagementSession,
-  startStudyStretchClock,
-  subscribeToMascotReactions,
-} from "@/lib/engagement/client";
+import { useMascotReactions } from "@/lib/engagement/use-mascot";
 import { requestAskHelp } from "@/lib/engagement/ask-help";
 import { MascotRig } from "@/components/mascot/mascot-rig";
 
@@ -276,34 +269,16 @@ export function MascotPlayer() {
   const [speaking, setSpeaking] = useState(false);
   const speakingRef = useRef(false);
   const reducedMotion = useReducedMotion();
-  const pathname = usePathname();
 
   useEffect(() => {
     speakingRef.current = speaking;
   }, [speaking]);
   const voiceOn = useSyncExternalStore(subscribeToVoicePreference, voiceEnabled, () => true);
 
-  useEffect(() => {
-    let seq = 0;
-    const unsubscribe = subscribeToMascotReactions((reaction) => {
-      setPaused(false);
-      setShown({ reaction, seq: ++seq });
-    });
-    startEngagementSession();
-    const stopMessages = announceMessages();
-    const stopStretchClock = startStudyStretchClock();
-    return () => {
-      unsubscribe();
-      stopMessages();
-      stopStretchClock();
-    };
-  }, []);
-
-  // Runs after the subscription above on mount, then again after each navigation, such as the
-  // redirect that follows enrolling.
-  useEffect(() => {
-    reportPendingEngagement();
-  }, [pathname]);
+  useMascotReactions((reaction, seq) => {
+    setPaused(false);
+    setShown({ reaction, seq });
+  });
 
   // Count down only while nothing modal is open and the learner is not hovering the bubble.
   useEffect(() => {
