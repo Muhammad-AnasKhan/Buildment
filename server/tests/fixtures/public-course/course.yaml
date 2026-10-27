@@ -1,0 +1,28 @@
+slug: public-test-course
+title: Sample course for platform tests
+description: A small example package for ZIP import tests.
+projectGoal: Practice a small decision and explain the result.
+difficulty: Beginner
+estimatedHours: 2
+modules:
+  - dir: 01-how-good-teams-work
+    title: Working together
+    lessons:
+      - file: 01.01-set-the-scene.md
+        title: Set the scene
+        goal: Describe the situation.
+      - file: 01.02-roles-and-expectations.md
+        title: Roles and expectations
+        goal: Choose a clear responsibility.
+      - file: 01.03-checklist.md
+        title: Checklist
+        goal: Reflect on the decision.
+  - dir: 02-practice
+    title: Practice
+    lessons:
+      - file: 02.01-set-the-scene.md
+        title: Set the scene
+        goal: Apply the idea in a new setting.
+      - file: 02.02-checklist.md
+        title: Checklist
+        goal: Review the second decision.

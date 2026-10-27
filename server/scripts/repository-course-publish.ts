@@ -31,6 +31,7 @@ export function publishingSettings(root = COURSES_ROOT) {
 }
 
 export function selectedPackages(root = COURSES_ROOT): Package[] {
+  if (!fs.existsSync(root)) return [];
   return fs.readdirSync(root, { withFileTypes: true })
     .filter(entry => entry.isDirectory())
     .map(entry => {
@@ -206,6 +207,12 @@ async function main() {
   const [mode, ...rest] = process.argv.slice(2);
   if (!["--check", "--count", "--publish"].includes(mode ?? "") || rest.length) {
     throw new Error("Usage: repository-course-publish.ts --check | --count | --publish");
+  }
+  if (!fs.existsSync(COURSES_ROOT)) {
+    if (mode === "--publish") throw new Error("Set BUILDMENT_CONTENT_ROOT to a private Buildment-core checkout before publishing courses.");
+    if (mode === "--count") console.log(0);
+    else console.log("No private course checkout configured; platform is ready for content publishing.");
+    return;
   }
   const { instructorEmail } = publishingSettings();
   const packages = selectedPackages();

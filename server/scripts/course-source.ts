@@ -21,6 +21,11 @@ const SERVER_ROOT = path.resolve(__dirname, "..");
 
 /** Support a root checkout and Heroku's APP_BASE=server slug layout. */
 export function coursesRootForServer(serverRoot: string): string {
+  // A private content checkout can live anywhere on the build or publishing host.
+  // The public platform checkout has no courses/ directory.
+  if (process.env.BUILDMENT_CONTENT_ROOT) {
+    return path.resolve(process.env.BUILDMENT_CONTENT_ROOT, "courses");
+  }
   const nested = path.join(serverRoot, "courses");
   return fs.existsSync(path.join(nested, "publishing.yaml"))
     ? nested
@@ -44,10 +49,6 @@ export const COURSE_SLUG = courseSlugFromArgs(process.argv);
 // ZIP validation runs the same scripts against an isolated temporary folder.
 export const COURSE_SOURCE_DIR = process.env.COURSE_IMPORT_SOURCE ?? path.join(COURSES_ROOT, COURSE_SLUG);
 export const COURSE_MANIFEST_PATH = path.join(COURSE_SOURCE_DIR, "course.yaml");
-
-if (!fs.existsSync(COURSE_SOURCE_DIR)) {
-  throw new Error(`No course folder at courses/${COURSE_SLUG}/`);
-}
 
 const PlannedLessonSchema = z.object({
   key: z.string().regex(/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/, "Use a stable kebab-case lesson key").optional(),
@@ -268,6 +269,9 @@ export type CourseManifest = z.infer<typeof CourseManifestSchema>;
 
 /** The parsed course.yaml, or null for a course without one (FreshMarket). Throws if it is invalid. */
 export function loadCourseManifest(): CourseManifest | null {
+  if (!fs.existsSync(COURSE_SOURCE_DIR)) {
+    throw new Error(`No course folder at ${COURSE_SOURCE_DIR}/`);
+  }
   if (!fs.existsSync(COURSE_MANIFEST_PATH)) return null;
   const raw = loadYaml(fs.readFileSync(COURSE_MANIFEST_PATH, "utf8"));
   const result = CourseManifestSchema.safeParse(raw);

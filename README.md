@@ -4,6 +4,8 @@ An interactive, project-based learning platform. Mentors write MDX chapters with
 checkpoints (quizzes, tests, must-reads, open questions, runnable code); mentees work through
 them; progress and reports are computed server-side.
 
+The platform source is here. Course packages, Agent IP, and editorial work live in the private `devweekends/Buildment-core` repository. Export archives are excluded from both repositories. Existing canvas and lab implementations remain in `packages/learning-ui` for web and desktop compatibility. See [content separation](docs/15-content-separation.mdx).
+
 Full product/technical spec lives in [`docs/`](docs/README.mdx) — start there. Load-bearing
 invariants (security, gating, grading) are spelled out in the topic docs linked from that map.
 
@@ -45,7 +47,6 @@ cp frontend/.env.example frontend/.env # API_URL (the web app never talks to Pos
 docker compose up -d                  # starts local Postgres on :5432
 pnpm db:ready                         # migrate deploy + prisma generate (use after git pull)
 pnpm db:seed                          # 1 admin, 1 mentor, 3 mentees, 1 course, 4 preview enrollments
-pnpm content:import                   # sync FreshMarket chapters/blocks from courses/
 pnpm dev                              # API on :4000, web on :3000
 ```
 
@@ -94,9 +95,9 @@ Run from the repo root unless noted.
 | `pnpm db:migrate` | `prisma migrate dev` (server) |
 | `pnpm db:seed` | Re-run the seed script (idempotent — upserts) |
 | `pnpm db:studio` | Prisma Studio, a GUI for the local database |
-| `pnpm content:import` | Import course content from `courses/` into the database |
+| `pnpm content:import` | Legacy local import when `BUILDMENT_CONTENT_ROOT` points to a private content checkout |
 | `pnpm content:validate` | Compile-check every stored chapter the way publish does (needs DB) |
-| `pnpm --dir server content:validate:source` | Compile-check from `courses/` (no DB) |
+| `pnpm --dir server content:validate:source` | Compile-check a private course checkout (no DB) |
 | `pnpm --dir server content:audit` | Structural audit (gates, learning logs, STYLE heuristics) |
 | `pnpm --dir server db:seed:showcase` | Add realistic, repeatable demo history after the course import |
 | `pnpm --dir frontend exec playwright test` | Browser end-to-end suite (starts API + web itself; see `frontend/playwright.config.ts`) |
@@ -105,14 +106,13 @@ Content and seed scripts live in `server/scripts` next to the database they writ
 
 ## 15-minute demo (local)
 
-After setup, import course content and start the app:
+After setup, start the app. A clean clone seeds a small catalog placeholder; full course lessons are published from `Buildment-core`:
 
 ```bash
-pnpm content:import   # FreshMarket course → Postgres
 pnpm dev              # http://localhost:3000 (API on :4000)
 ```
 
-1. **Mentee path** — dev-login as a mentee (e.g. `mentee1@example.com` from seed). Open **Dashboard → Continue** into module 1. Complete the **1.11 gate** (checklist + learning log — try the **mic** on a question). Submit the **2.7 quiz** (short answer supports dictation). On **3.10 gate**, submit the **ERD link** open question.
+1. **Mentee path** — dev-login as a mentee (e.g. `mentee1@example.com` from seed). After publishing private course content, open **Dashboard → Continue** into module 1. Complete the **1.11 gate** (checklist + learning log — try the **mic** on a question). Submit the **2.7 quiz** (short answer supports dictation). On **3.10 gate**, submit the **ERD link** open question.
 2. **Locking** — with `sequential` enabled (seed sets this), confirm module 2 stays locked until module 1 is complete.
 3. **Ask mentor** — from any unlocked lesson, **Ask for help** in the reader header; reply as mentor at `/help`.
 4. **Mentor path** — dev-login as mentor. **Mentees** tab → **Recalculate progress** if rollups look stale. **Review queue** shows open answers including submitted links.
@@ -134,11 +134,10 @@ Each folder deploys on its own; nothing outside it is needed.
   no CORS and the session cookie just works. Live notifications use Server-Sent Events through the
   same proxy, so nothing else is required; optionally set `NEXT_PUBLIC_REALTIME_URL` to the API's
   public URL (build time) to open the stream straight to the API instead.
-- **API on Heroku:** deploy the full repository so `courses/` and `agent-ip/scripts/` reach
-  the backend release. The root `Procfile` supports a root deployment; `server/Procfile`
-  supports a monorepo buildpack with `APP_BASE=server` that retains sibling directories.
-  The release phase runs `prisma migrate deploy` and then publishes opted-in courses using
-  the existing `DATABASE_URL`. A server-only subtree deploy cannot publish courses.
+- **API on Heroku:** deploy the platform repository. The root `Procfile` supports a root
+  deployment; `server/Procfile` supports a monorepo buildpack with `APP_BASE=server`.
+  The release phase runs `prisma migrate deploy`. Publish course updates separately from
+  the private `Buildment-core` workflow against the same database.
   The `build` script generates the Prisma client and compiles. Config vars:
   `DATABASE_URL`, `APP_URL` (the web URL — used in email links),
   `CORS_ORIGINS`, the email and OpenRouter keys from `server/.env.example`, `CRON_SECRET`.

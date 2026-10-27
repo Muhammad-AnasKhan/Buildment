@@ -110,13 +110,15 @@ manifest fail the structure audit before this becomes a release candidate.
 
 ## Repository publishing
 
-Repository course packages stay under `courses/<slug>/`. The default instructor
-for these packages is `devweekends@gmail.com`, set in `courses/publishing.yaml`.
+Repository course packages live under `courses/<slug>/` in private
+`Buildment-core`. The default instructor for these packages is
+`devweekends@gmail.com`, set in its `courses/publishing.yaml`.
 After human review, add `repositoryPublish: true` to the package's `course.yaml`.
-CI validates all opted-in packages. On a backend deployment of `main`, the
-Heroku release phase runs migrations and then uses its existing `DATABASE_URL`
-to assign repository courses to the configured instructor and use the
-same ZIP import, preview, approval, and release services as the dashboard.
+Private CI validates all opted-in packages. The private publish workflow uses
+`BUILDMENT_CONTENT_ROOT` and its `DATABASE_URL` secret to assign repository
+courses to the configured instructor through the same ZIP import, preview,
+approval, and release services as the dashboard. Platform deployment only runs
+database migrations. See [content separation](15-content-separation.mdx).
 New packages become published courses; updates make new immutable releases.
 `availableVariantSlugs` in a manifest controls which product tracks may be picked
 or randomly assigned for that course. Releasing a new track requires authored

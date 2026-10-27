@@ -49,12 +49,8 @@ jobs:
       - run: pnpm lint
       - run: pnpm test
       - run: pnpm build
+      # Course source and its editorial audits run in private Buildment-core CI.
       - run: pnpm courses:check
-      - run: pnpm content:validate:source --course multi-vendor-marketplace
-      - run: pnpm content:audit --course multi-vendor-marketplace --strict
-      - run: pnpm exec tsx scripts/audit-marketplace-inheritance.ts
-      - run: node ../agent-ip/scripts/audit-variant-repetition.mjs ../courses/multi-vendor-marketplace/variants
-      - run: pnpm courses:package:check
 
   frontend:
     name: Web — typecheck, lint, test, build
@@ -76,6 +72,8 @@ jobs:
           cache: pnpm
           cache-dependency-path: frontend/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
+      # TypeScript reads learning-ui source through the local file dependency.
+      - run: ln -s ../../frontend/node_modules ../packages/learning-ui/node_modules
       - run: pnpm typecheck
       # Pre-existing react-hooks lint findings: report, do not block.
       - run: pnpm lint
