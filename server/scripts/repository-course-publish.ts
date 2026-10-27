@@ -31,6 +31,7 @@ export function publishingSettings(root = COURSES_ROOT) {
 }
 
 export function selectedPackages(root = COURSES_ROOT): Package[] {
+  if (!fs.existsSync(root)) return [];
   return fs.readdirSync(root, { withFileTypes: true })
     .filter(entry => entry.isDirectory())
     .map(entry => {
@@ -53,6 +54,10 @@ export function selectedPackages(root = COURSES_ROOT): Package[] {
     })
     .filter((item): item is Package => item !== null)
     .sort((a, b) => a.slug.localeCompare(b.slug));
+}
+
+export function ownershipSlugGroups(packages: Package[]): string[][] {
+  return packages.map(pkg => [pkg.slug, ...(pkg.manifest.repositoryTargetSlug ? [pkg.manifest.repositoryTargetSlug] : [])]);
 }
 
 function filesForZip(dir: string): Record<string, Uint8Array> {
@@ -143,10 +148,9 @@ async function publish(packages: Package[], instructorEmail: string) {
       throw new Error(`${instructorEmail} must be a verified instructor with ZIP import access before repository publishing runs`);
     }
     const user: SessionUser = owner;
-    // Bind existing repository courses. The previous owner keeps COURSE_CREATOR access.
-    for (const entry of fs.readdirSync(COURSES_ROOT, { withFileTypes: true }).filter(item => item.isDirectory())) {
-      const target = packages.find(pkg => pkg.slug === entry.name)?.manifest.repositoryTargetSlug;
-      const slugs = [entry.name, ...(target ? [target] : [])];
+    // Bind only opted-in repository courses. The previous owner keeps
+    // COURSE_CREATOR access; unpublished source packages must not mutate DB ownership.
+    for (const slugs of ownershipSlugGroups(packages)) {
       const courses = await prisma.course.findMany({ where: { slug: { in: slugs } }, select: { id: true, slug: true, mentorId: true } });
       for (const course of courses) {
         if (course.mentorId === user.id) continue;
@@ -206,6 +210,15 @@ async function main() {
   const [mode, ...rest] = process.argv.slice(2);
   if (!["--check", "--count", "--publish"].includes(mode ?? "") || rest.length) {
     throw new Error("Usage: repository-course-publish.ts --check | --count | --publish");
+  }
+  if (!fs.existsSync(COURSES_ROOT)) {
+    if (mode === "--publish") throw new Error("Set BUILDMENT_CONTENT_ROOT to a private Buildment-core checkout before publishing courses.");
+    if (process.env.BUILDMENT_CONTENT_ROOT) {
+      throw new Error(`Private course checkout is missing at ${COURSES_ROOT}. Check BUILDMENT_CONTENT_ROOT.`);
+    }
+    if (mode === "--count") console.log(0);
+    else console.log("No private course checkout configured; platform is ready for content publishing.");
+    return;
   }
   const { instructorEmail } = publishingSettings();
   const packages = selectedPackages();

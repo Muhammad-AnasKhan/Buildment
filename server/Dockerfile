@@ -1,4 +1,4 @@
-# Build from the repository root so the backend release can read courses/.
+# Build from the public platform repository root.
 #   docker build -f server/Dockerfile -t buildment-api .
 
 FROM node:20-alpine AS base
@@ -22,14 +22,11 @@ COPY server/package.json server/pnpm-lock.yaml server/pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile --prod \
  && pnpm rebuild prisma @prisma/engines
 COPY --from=build /app/server/dist dist
-# The release publisher runs through tsx and reuses the source services.
+# The private content publisher runs from a separate checkout when configured.
 COPY --from=build /app/server/src src
 COPY server/prisma prisma
 COPY server/prisma.config.ts ./
 COPY server/scripts scripts
-COPY courses /app/courses
-COPY agent-ip/scripts/audit-course.mjs /app/agent-ip/scripts/audit-course.mjs
-COPY agent-ip/scripts/audit-variant-repetition.mjs /app/agent-ip/scripts/audit-variant-repetition.mjs
 EXPOSE 4000
 USER node
 CMD ["node", "dist/index.js"]

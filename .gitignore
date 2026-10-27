@@ -1,5 +1,9 @@
 # dependencies
 node_modules/
+/packages/learning-ui/node_modules
+/agent-ip/
+/courses/
+/exports/
 .pnp
 .pnp.*
 .pnpm-store/

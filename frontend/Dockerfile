@@ -15,6 +15,7 @@ ENV API_URL=${API_URL}
 COPY packages/learning-ui /repo/packages/learning-ui
 COPY frontend/package.json frontend/pnpm-lock.yaml frontend/pnpm-workspace.yaml frontend/.npmrc ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
+RUN ln -s ../../frontend/node_modules /repo/packages/learning-ui/node_modules
 COPY frontend/ .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN node scripts/copy-mermaid.mjs && pnpm build

@@ -360,7 +360,7 @@ describe("course ZIP import", () => {
     expect(await prisma.course.findUnique({ where: { slug } })).toBeNull();
   }, 20000);
   it("imports validated lessons and blocks as an owned draft, refusing duplicate slugs", async () => {
-    const source = new URL("../../../courses/decision-making/", import.meta.url);
+    const source = new URL("../fixtures/public-course/", import.meta.url);
     const slug = `zip-import-${fx.course.id.toLowerCase()}`;
     const files: Record<string, Uint8Array> = {};
     for (const entry of readdirSync(source, { withFileTypes: true })) {
@@ -373,17 +373,17 @@ describe("course ZIP import", () => {
           files[`${entry.name}/${file}`] = strToU8(file.endsWith("-quiz.md") ? `${frontmatter}\n\n${activities.join("\n\n")}` : lessonSource);
         }
       } else if (entry.name === "course.yaml") {
-        files[entry.name] = strToU8(readFileSync(new URL(entry.name, source), "utf8").replace("slug: decision-making", `slug: ${slug}`));
+        files[entry.name] = strToU8(readFileSync(new URL(entry.name, source), "utf8").replace("slug: public-test-course", `slug: ${slug}`));
       }
     }
     const archive = Buffer.from(zipSync(files));
     try {
-      const brokenMdx = { ...files, "01-what-a-good-decision-is/01.01-set-the-scene.md": strToU8("<Callout><UnknownComponent /></Callout>") };
+      const brokenMdx = { ...files, "01-how-good-teams-work/01.01-set-the-scene.md": strToU8("<Callout><UnknownComponent /></Callout>") };
       const invalidMdx = await request(app).post(endpoint).set(mentor()).set("Content-Type", "application/zip").send(Buffer.from(zipSync(brokenMdx)));
       expect(invalidMdx.status).toBe(422);
       expect(JSON.stringify(invalidMdx.body)).toContain("Unknown components");
       const brokenStructure = { ...files };
-      delete brokenStructure["01-what-a-good-decision-is/01.04-checklist.md"];
+      delete brokenStructure["01-how-good-teams-work/01.03-checklist.md"];
       const invalidStructure = await request(app).post(endpoint).set(mentor()).set("Content-Type", "application/zip").send(Buffer.from(zipSync(brokenStructure)));
       expect(invalidStructure.status).toBe(422);
       expect(JSON.stringify(invalidStructure.body)).toContain("Missing gate checklist");
@@ -395,8 +395,8 @@ describe("course ZIP import", () => {
       expect(course.mentorId).toBe(fx.mentor.id);
       expect(course.status).toBe("DRAFT");
       expect(course.publishedAt).toBeNull();
-      expect(course.modules).toHaveLength(7);
-      expect(course.chapters).toHaveLength(36);
+      expect(course.modules).toHaveLength(2);
+      expect(course.chapters).toHaveLength(5);
       expect(course.chapters.every(chapter => chapter.publishedAt === null)).toBe(true);
       expect(course.chapters.some(chapter => chapter.isMilestone)).toBe(true);
       expect(course.chapters.flatMap(chapter => chapter.blocks).length).toBeGreaterThan(0);
@@ -407,10 +407,10 @@ describe("course ZIP import", () => {
       const updatePath = `/api/v1/teach/courses/${course.id}/import`;
       const preview = await request(app).post(`${updatePath}/preview`).set(mentor()).set("Content-Type", "application/zip").send(archive);
       expect(preview.status, JSON.stringify(preview.body)).toBe(200);
-      expect(preview.body.data.modules).toHaveLength(7);
+      expect(preview.body.data.modules).toHaveLength(2);
       const approved = await request(app).post(`${updatePath}/approve`).set(mentor()).send({ previewId: preview.body.data.previewId, confirm: true });
       expect(approved.status, JSON.stringify(approved.body)).toBe(200);
-      expect(await prisma.chapter.count({ where: { courseId: course.id, archivedAt: null } })).toBe(36);
+      expect(await prisma.chapter.count({ where: { courseId: course.id, archivedAt: null } })).toBe(5);
       const originalFirst = course.chapters.find(chapter => chapter.slug === "1-1-set-the-scene")!;
       expect(await prisma.chapter.findUniqueOrThrow({ where: { id: originalFirst.id } })).toMatchObject({ archivedAt: null, publishedAt: null });
       expect(await prisma.course.findUniqueOrThrow({ where: { id: course.id } })).toMatchObject({ mentorId: fx.mentor.id, status: "DRAFT" });

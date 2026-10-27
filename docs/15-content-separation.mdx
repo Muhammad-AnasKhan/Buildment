@@ -1,0 +1,17 @@
+# Private content and platform releases
+
+`Buildment` contains the web app, API, desktop app, database schema, content importer, and shared learning UI. `Buildment-core` contains course packages, Agent IP, and work areas. Export archives are excluded from both repositories. This split does not rewrite the existing `Buildment` Git history; that is a separate release task before making the repository public.
+
+Current canvas implementations and their registry remain in public `packages/learning-ui` so existing web and desktop readers continue to render them by slug. The current lab runtime and authored lab definitions are also in that package during this compatibility phase. The private repository owns the lesson source that refers to those slugs.
+
+Course changes follow this path:
+
+1. Edit a course in private `Buildment-core` and merge the reviewed change.
+2. Its check workflow checks out public `Buildment`, sets `BUILDMENT_CONTENT_ROOT` to the private checkout, and runs `pnpm --dir platform/server courses:check`.
+3. Run the private `Publish courses` workflow with the production `DATABASE_URL` secret and a protected `production-content` environment. It repeats validation, then calls `courses:publish`.
+4. The publisher hashes each opted-in package and skips unchanged source. Changes go through the existing ZIP update flow and create immutable database releases. Existing learner release pins remain intact.
+5. Web and desktop readers fetch the course and chapter from the API. Updating course text or using an already shipped canvas/lab slug does not require a desktop install.
+
+Platform deploys run database migrations and serve the API. They do not publish course source. A clean platform clone builds and runs without private content; its seed creates a catalog placeholder for local testing.
+
+The existing canvas registry is compiled code. Adding a new React canvas or lab implementation requires a web/desktop release today. We intend to define a portable content format for future interactive material so future courses can add new visuals without an app update. JSON and SVG are both under consideration; no format has been selected. Any future format needs versioned validation, safe rendering, accessibility, and compatibility tests in web and desktop before it becomes a publishing contract.

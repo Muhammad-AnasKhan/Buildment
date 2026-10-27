@@ -2,9 +2,10 @@ import { afterEach, describe, expect, it } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { unzipSync } from "fflate";
 import { load as loadYaml } from "js-yaml";
-import { courseSourceHash, packageZip, publishingSettings, selectedPackages } from "../../scripts/repository-course-publish.js";
+import { courseSourceHash, ownershipSlugGroups, packageZip, publishingSettings, selectedPackages } from "../../scripts/repository-course-publish.js";
 import { coursesRootForServer } from "../../scripts/course-source.js";
 
 const temporary: string[] = [];
@@ -20,6 +21,15 @@ function course(root: string, slug: string, extra = "") {
 }
 
 describe("repository course publishing selection", () => {
+  it("fails a configured content check when the private checkout is missing", () => {
+    const missing = path.join(os.tmpdir(), `buildment-missing-${process.pid}`);
+    const result = spawnSync(process.execPath,
+      ["--import", "tsx", "scripts/repository-course-publish.ts", "--check"],
+      { cwd: path.resolve(import.meta.dirname, "../.."), env: { ...process.env, BUILDMENT_CONTENT_ROOT: missing }, encoding: "utf8" });
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("Private course checkout is missing");
+  });
+
   it("finds courses beside server and in an APP_BASE release slug", () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "buildment-course-layout-"));
     temporary.push(root);
@@ -41,6 +51,7 @@ describe("repository course publishing selection", () => {
     expect(publishingSettings(root).instructorEmail).toBe("devweekends@gmail.com");
     const packages = selectedPackages(root);
     expect(packages.map(pkg => pkg.slug)).toEqual(["ready"]);
+    expect(ownershipSlugGroups(packages)).toEqual([["ready"]]);
     const files = unzipSync(packageZip(packages[0]!, "update", "devweekends@gmail.com"));
     expect(Object.keys(files).sort()).toEqual(["01-foundations/01.01-start.md", "course.yaml"]);
     const manifest = loadYaml(Buffer.from(files["course.yaml"]!).toString("utf8")) as Record<string, unknown>;
@@ -69,6 +80,7 @@ describe("repository course publishing selection", () => {
     const dir = course(root, "source", "repositoryPublish: true\nrepositoryTargetSlug: published-course\n");
     const selected = selectedPackages(root)[0]!;
     expect(selected.slug).toBe("source");
+    expect(ownershipSlugGroups([selected])).toEqual([["source", "published-course"]]);
     const files = unzipSync(packageZip(selected, "update", "devweekends@gmail.com"));
     const manifest = loadYaml(Buffer.from(files["course.yaml"]!).toString("utf8")) as Record<string, unknown>;
     expect(manifest.slug).toBe("published-course");

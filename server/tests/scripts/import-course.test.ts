@@ -1,9 +1,16 @@
+import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parseLesson, transformPresentationBlocks, type PendingBlock } from "../../scripts/import-course.js";
+import { COURSE_SOURCE_DIR } from "../../scripts/course-source.js";
 import { QuizConfigSchema } from "../../src/shared/blocks/quiz/schema.js";
 
+// These checks read real lessons from the private course source. They only run
+// when that checkout is present (local publishing or the private content repo);
+// the public platform checkout has no courses/ directory.
+const hasCourseSource = existsSync(COURSE_SOURCE_DIR);
+
 describe("course importer numeric quiz labels", () => {
-  it("imports chapter 14.7's unquoted numeric YAML options as display strings", () => {
+  it.skipIf(!hasCourseSource)("imports chapter 14.7's unquoted numeric YAML options as display strings", () => {
     const lesson = parseLesson(14, "14-browse-catalogue-api", "14.07-quiz.md", 7, "quiz");
     const quizzes = lesson.blocks.filter(block => block.type === "QUIZ");
     expect(quizzes).toHaveLength(3);
@@ -20,7 +27,7 @@ describe("course importer numeric quiz labels", () => {
 });
 
 describe("course importer interaction intent", () => {
-  it("does not invent an OpenQuestion for a lesson without an authored interaction", () => {
+  it.skipIf(!hasCourseSource)("does not invent an OpenQuestion for a lesson without an authored interaction", () => {
     const lesson = parseLesson(
       12,
       "12-vendor-dashboard",
@@ -36,7 +43,7 @@ describe("course importer interaction intent", () => {
     );
   });
 
-  it("keeps a prose reflection as prose instead of turning it into mentor-reviewed work", () => {
+  it.skipIf(!hasCourseSource)("keeps a prose reflection as prose instead of turning it into mentor-reviewed work", () => {
     const lesson = parseLesson(
       5,
       "05-data-model-and-seed",
@@ -49,7 +56,7 @@ describe("course importer interaction intent", () => {
     expect(lesson.source).not.toContain("<OpenQuestion");
   });
 
-  it("keeps an inline course roadmap as MDX instead of escaping its props", () => {
+  it.skipIf(!hasCourseSource)("keeps an inline course roadmap as MDX instead of escaping its props", () => {
     const lesson = parseLesson(
       1,
       "01-introduction",
@@ -64,7 +71,7 @@ describe("course importer interaction intent", () => {
 });
 
 describe("course importer inline code", () => {
-  it.each([
+  it.skipIf(!hasCourseSource).each([
     ["10-open-your-shop", "10.06-scaffold-vendor-layout.md", 6, "scaffold-vendor-layout", ["`<Outlet />`", "`/vendor/*`"]],
     ["02-project-skeleton", "02.13-client-shell-and-routing.md", 13, "client-shell-and-routing", ["`<App />`", "`<p>`", '`<div id="api-status">`']],
   ] as const)("keeps JSX code spans intact in %s/%s", (moduleDir, fileName, lessonNum, slugPart, spans) => {
@@ -103,7 +110,7 @@ describe("course importer optional MustRead", () => {
     expect(mustRead('  required="false"\n').config).not.toHaveProperty("required");
   });
 
-  it("imports the example card in chapter 1.2 as optional", () => {
+  it.skipIf(!hasCourseSource)("imports the example card in chapter 1.2 as optional", () => {
     const lesson = parseLesson(1, "01-introduction", "01.02-how-to-use-this-course.md", 2, "how-to-use-this-course");
     const reads = lesson.blocks.filter((block) => block.type === "MUST_READ");
 
@@ -116,7 +123,7 @@ describe("course importer optional MustRead", () => {
 });
 
 describe("course importer gate recaps", () => {
-  it("keeps a gate's ChapterRecap and still strips its optional enrichment", () => {
+  it.skipIf(!hasCourseSource)("keeps a gate's ChapterRecap and still strips its optional enrichment", () => {
     const lesson = parseLesson(3, "03-why-mongodb", "03.11-checklist.md", 11, "checklist");
     const recaps = lesson.blocks.filter((block) => block.type === "CHAPTER_RECAP");
 

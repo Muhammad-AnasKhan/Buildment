@@ -1,2 +1,2 @@
 web: pnpm --dir server start
-release: pnpm --dir server exec prisma migrate deploy && pnpm --dir server courses:publish
+release: pnpm --dir server exec prisma migrate deploy
