@@ -131,7 +131,9 @@ Each folder deploys on its own; nothing outside it is needed.
 - **Web on Vercel:** import the repository, set Root Directory to `frontend`, keep the Next.js
   preset. Environment: `API_URL` (the API's public URL) and `APP_URL` (the Vercel URL). Browser
   traffic to `/api/v1/*` and `/integrations/v1/*` is proxied to the API server-side, so there is
-  no CORS and the session cookie just works.
+  no CORS and the session cookie just works. Live notifications use Server-Sent Events through the
+  same proxy, so nothing else is required; optionally set `NEXT_PUBLIC_REALTIME_URL` to the API's
+  public URL (build time) to open the stream straight to the API instead.
 - **API on Heroku:** deploy the full repository so `courses/` and `agent-ip/scripts/` reach
   the backend release. The root `Procfile` supports a root deployment; `server/Procfile`
   supports a monorepo buildpack with `APP_BASE=server` that retains sibling directories.
@@ -140,8 +142,12 @@ Each folder deploys on its own; nothing outside it is needed.
   The `build` script generates the Prisma client and compiles. Config vars:
   `DATABASE_URL`, `APP_URL` (the web URL — used in email links),
   `CORS_ORIGINS`, the email and OpenRouter keys from `server/.env.example`, `CRON_SECRET`.
-  Background jobs run inside the process once a day; set `JOBS_ENABLED=false` on every dyno but
-  one, or hand the schedule to an external scheduler calling `POST /api/v1/jobs/*`.
+  Scheduled jobs (hourly study reminders, daily cleanup, and the daily weekly-goal and integrity
+  jobs) run inside the process; set `JOBS_ENABLED=false` on every dyno but one, or hand the
+  schedule to an external scheduler calling `POST /api/v1/jobs/*` (study reminders hourly). The
+  notification email worker also runs in the process and is safe on every dyno. With more than
+  one dyno, set the same `REALTIME_TOKEN_SECRET` everywhere — and see
+  [`docs/12-notifications.mdx`](docs/12-notifications.mdx) for what live push needs across replicas.
 - **Containers anywhere:** `docker build -f server/Dockerfile -t buildment-api .` and
   `docker build -t buildment-web frontend/` (Next.js standalone output);
   `docker compose --profile app up --build` runs Postgres, migrations and both apps locally.

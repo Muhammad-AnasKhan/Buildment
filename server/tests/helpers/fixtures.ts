@@ -135,10 +135,16 @@ export async function createOrganizationFixture(courseId: string, options: { max
   const headers = { "x-buildment-access-key": credential.accessKey, "x-buildment-secret-key": secretKey };
 
   async function cleanup() {
-    const enrollments = await prisma.enrollment.findMany({ where: { organizationId: organization.id }, select: { id: true, learnerProfileId: true } });
+    const enrollments = await prisma.enrollment.findMany({
+      where: { organizationId: organization.id },
+      select: { id: true, learnerProfileId: true, learnerProfile: { select: { email: true } } },
+    });
     const enrollmentIds = enrollments.map((e) => e.id);
     await prisma.payment.deleteMany({ where: { enrollmentId: { in: enrollmentIds } } });
     await prisma.enrollment.deleteMany({ where: { id: { in: enrollmentIds } } });
+    // Learners without an account get email-only notifications, which no user cascade removes.
+    const profileEmails = enrollments.flatMap((e) => (e.learnerProfile ? [e.learnerProfile.email] : []));
+    await prisma.emailOutbox.deleteMany({ where: { userId: null, toEmail: { in: profileEmails } } });
     const profileIds = enrollments.map((e) => e.learnerProfileId).filter((id): id is string => Boolean(id));
     await prisma.learnerProfile.deleteMany({ where: { id: { in: profileIds } } });
     await prisma.organizationCourseRequest.deleteMany({ where: { organizationId: organization.id } });

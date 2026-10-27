@@ -3,8 +3,8 @@ import { prisma } from "../../db/prisma.js";
 import { ConflictError, ForbiddenError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
 import { canAccessTeachSurface } from "../auth/access-rules.js";
-import { notifyAdminsInstructorAccessRequest } from "../email/admin-notifications.js";
-import { queueEmail } from "../email/queue.js";
+import { notifyAdminsInstructorAccessRequest } from "../notifications/events.js";
+import { dispatchNotification } from "../notifications/service.js";
 
 /** A learner asks platform admins for instructor tools. One live request per user. */
 export async function requestInstructorAccess(user: SessionUser, message?: string) {
@@ -24,6 +24,6 @@ export async function requestInstructorAccess(user: SessionUser, message?: strin
     update: { status: "PENDING", message: message ?? null, reviewedById: null, reviewedAt: null },
     select: { id: true },
   });
-  queueEmail(() => notifyAdminsInstructorAccessRequest(request.id));
+  await dispatchNotification(() => notifyAdminsInstructorAccessRequest(request.id));
   return { requestId: request.id };
 }

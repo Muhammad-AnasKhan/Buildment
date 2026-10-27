@@ -13,8 +13,8 @@ import { applyTokens, contentTokenValues } from "../../shared/lib/content-tokens
 import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
 import { loadBlockForSubmission } from "./access.js";
 import { adjustEnrollmentPendingReviews, lockEnrollmentVariant, recomputeChapterProgress, recordBlockStats } from "../progress/compute.js";
-import { notifyMentorPendingReview } from "../email/event-notifications.js";
-import { queueEmail } from "../email/queue.js";
+import { notifyMentorPendingReview } from "../notifications/events.js";
+import { dispatchNotification } from "../notifications/service.js";
 import { assertEnrollmentChapter } from "../courses/releases.js";
 
 export type BlockResponseResult = {
@@ -114,7 +114,7 @@ export async function submitBlockResponse(input: {
   });
 
   if (response.status === "PENDING_REVIEW") {
-    queueEmail(() => notifyMentorPendingReview(response.id));
+    await dispatchNotification(() => notifyMentorPendingReview(response.id));
   }
 
   return {

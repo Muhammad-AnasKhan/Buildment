@@ -4,9 +4,11 @@ import * as admin from "../../controllers/admin.js";
 import { authenticate } from "../../middlewares/authenticate.js";
 import { requireAdmin } from "../../middlewares/require-admin.js";
 import { validate, validateBody, validateParams, validateQuery } from "../../middlewares/validate.js";
+import { appActivityOverviewQuery, appActivityUsersQuery } from "../../validations/activity.js";
 import {
   adminProfileBody,
   adminPasswordBody,
+  allocationParams,
   allocationsBody,
   approveCourseRequestBody,
   bulkApproveBody,
@@ -52,6 +54,11 @@ router.post("/organizations", validateBody(createOrganizationBody), admin.create
 router.get("/organizations/:orgId", validateParams(orgIdParams), admin.getOrganization);
 router.post("/organizations/:orgId/credentials/rotate", validateParams(orgIdParams), admin.rotateCredential);
 router.put("/organizations/:orgId/allocations", validate({ params: orgIdParams, body: allocationsBody }), admin.upsertAllocations);
+router.patch(
+  "/organizations/:orgId/allocations/:courseId/leaderboard",
+  validate({ params: allocationParams, body: instructorAccessBody }),
+  admin.setAllocationLeaderboard
+);
 
 router.get("/course-requests", validateQuery(listRequestsQuery), admin.listCourseRequests);
 router.post("/course-requests/bulk/approve", validateBody(bulkApproveBody), admin.bulkApproveCourseRequests);
@@ -77,6 +84,10 @@ router.post("/mfa/activate", validateBody(totpCodeBody), admin.activateMfa);
 router.post("/mfa/recovery-codes", validateBody(totpCodeBody), admin.regenerateRecoveryCodes);
 router.post("/mfa/disable", validateBody(totpCodeBody), admin.disableMfa);
 router.patch("/users/:userId/zip-import", validate({ params: userIdParams, body: instructorAccessBody }), admin.setZipImportAccess);
+
+router.get("/app-activity", validateQuery(appActivityOverviewQuery), admin.getAppActivity);
+router.get("/app-activity/users", validateQuery(appActivityUsersQuery), admin.listAppActivityUsers);
+
 router.patch("/users/:userId/instructor-access", validate({ params: userIdParams, body: instructorAccessBody }), admin.setInstructorAccess);
 router.post("/users/:userId/revoke-admin", validateParams(userIdParams), admin.revokeAdmin);
 router.post("/instructors", validateBody(grantInstructorBody), admin.grantInstructor);

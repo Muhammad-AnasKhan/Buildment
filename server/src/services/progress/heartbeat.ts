@@ -1,4 +1,6 @@
 import type { Prisma } from "../../generated/prisma/index.js";
+import { dayKeyToDate, localDayKey } from "../../shared/lib/local-date.js";
+import { learnerTimeZone } from "../learner/time-zone.js";
 import { ensureChapterStarted } from "./compute.js";
 
 /** Max seconds credited per heartbeat tick (client sends ~15s). */
@@ -65,7 +67,8 @@ export async function recordStudyHeartbeat(
     data: { timeSpentSeconds: { increment: credited } },
   });
 
-  const day = utcDateOnly();
+  // The learner's own calendar day, so streaks and weekly goals turn over at their midnight.
+  const day = dayKeyToDate(localDayKey(new Date(), await learnerTimeZone(input.userId, tx)));
   await tx.dailyActivity.upsert({
     where: {
       enrollmentId_date: { enrollmentId: input.enrollmentId, date: day },
@@ -97,7 +100,6 @@ export async function recordStudyHeartbeat(
     data: { activeSeconds: { increment: credited } },
   });
 
-  void input.userId;
   return {
     creditedSeconds: credited,
     sessionActiveSeconds: session.activeSeconds + credited,

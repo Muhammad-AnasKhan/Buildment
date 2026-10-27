@@ -2,8 +2,8 @@ import { INVITE_ERROR_CODES, type AcceptInviteResult, type InvitePublicView, typ
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, ForbiddenError, NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
-import { notifyMenteeCourseEnrollment, notifyMentorNewEnrollment } from "../email/event-notifications.js";
-import { queueEmail } from "../email/queue.js";
+import { notifyMenteeCourseEnrollment, notifyMentorNewEnrollment } from "../notifications/events.js";
+import { dispatchNotification } from "../notifications/service.js";
 import { lifecycleForSignedInEnrollment } from "../enrollment/lifecycle.js";
 import { assignmentForNewEnrollment } from "../courses/variant-assignment.js";
 
@@ -106,8 +106,8 @@ export async function acceptInvite(user: SessionUser, token: string, name?: stri
     return enrollment.id;
   });
 
-  queueEmail(() => notifyMenteeCourseEnrollment(enrollmentId));
-  queueEmail(() => notifyMentorNewEnrollment(enrollmentId));
+  await dispatchNotification(() => notifyMenteeCourseEnrollment(enrollmentId));
+  await dispatchNotification(() => notifyMentorNewEnrollment(enrollmentId));
 
   return { courseSlug: invite.course.slug, checkoutRequired };
 }

@@ -3,8 +3,8 @@ import { prisma } from "../../db/prisma.js";
 import { ConflictError, ForbiddenError, NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
 import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
-import { notifyMenteeHelpReply, notifyMenteeHelpThreadResolved, notifyMentorHelpQuestion } from "../email/event-notifications.js";
-import { queueEmail } from "../email/queue.js";
+import { notifyMenteeHelpReply, notifyMenteeHelpThreadResolved, notifyMentorHelpQuestion } from "../notifications/events.js";
+import { dispatchNotification } from "../notifications/service.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
 import { mentorReplyUnread } from "../progress/attention.js";
 import { ChapterLockedError, assertChapterUnlocked } from "../progress/gate.js";
@@ -134,8 +134,10 @@ export async function askFromChapter(user: SessionUser, input: { courseId: strin
       select: { id: true },
     }));
 
-  await appendMessage(thread.id, user.id, input.body);
-  queueEmail(() => notifyMentorHelpQuestion({ threadId: thread.id, body: input.body, menteeName: user.name }));
+  const messageId = await appendMessage(thread.id, user.id, input.body);
+  await dispatchNotification(() =>
+    notifyMentorHelpQuestion({ threadId: thread.id, messageId, body: input.body, menteeName: user.name })
+  );
 
   return { threadId: thread.id, created: !existingOpen };
 }
@@ -146,12 +148,12 @@ export async function reply(user: SessionUser, threadId: string, body: string) {
     throw new ConflictError("This conversation is closed.", HELP_ERROR_CODES.THREAD_CLOSED);
   }
 
-  await appendMessage(thread.id, user.id, body);
+  const messageId = await appendMessage(thread.id, user.id, body);
 
   if (user.id === thread.menteeId) {
-    queueEmail(() => notifyMentorHelpQuestion({ threadId: thread.id, body, menteeName: user.name }));
+    await dispatchNotification(() => notifyMentorHelpQuestion({ threadId: thread.id, messageId, body, menteeName: user.name }));
   } else {
-    queueEmail(() => notifyMenteeHelpReply({ threadId: thread.id, body, mentorName: user.name }));
+    await dispatchNotification(() => notifyMenteeHelpReply({ threadId: thread.id, messageId, body, mentorName: user.name }));
   }
   return { threadId: thread.id };
 }
@@ -164,13 +166,14 @@ export async function resolve(user: SessionUser, threadId: string) {
   if (thread.status === "RESOLVED") return { threadId: thread.id, alreadyResolved: true };
 
   await prisma.helpThread.update({ where: { id: thread.id }, data: { status: "RESOLVED", resolvedAt: new Date() } });
-  queueEmail(() => notifyMenteeHelpThreadResolved(thread.id));
+  await dispatchNotification(() => notifyMenteeHelpThreadResolved(thread.id));
   return { threadId: thread.id, alreadyResolved: false };
 }
 
-async function appendMessage(threadId: string, authorId: string, body: string) {
-  await prisma.helpMessage.create({ data: { threadId, authorId, body } });
+async function appendMessage(threadId: string, authorId: string, body: string): Promise<string> {
+  const message = await prisma.helpMessage.create({ data: { threadId, authorId, body }, select: { id: true } });
   await prisma.helpThread.update({ where: { id: threadId }, data: { updatedAt: new Date() } });
+  return message.id;
 }
 
 /** Latest help thread for this mentee + chapter (open or resolved), for the chapter reader. */

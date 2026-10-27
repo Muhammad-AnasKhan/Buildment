@@ -10,6 +10,9 @@ import * as weeklyGoal from "../services/learner/weekly-goal.js";
 import { loadProfile, updateProfile } from "../services/learner/profile.js";
 import { requestInstructorAccess } from "../services/instructor-access/request.js";
 import type { ProfileUpdateInput } from "../shared/api/learner.js";
+import type { GamificationPreferencesInput } from "../shared/api/gamification.js";
+import { loadGamificationSummary, updateGamificationPreferences } from "../services/gamification/summary.js";
+import { loadLeaderboard } from "../services/gamification/leaderboard.js";
 
 function displayName(user: { name: string | null; email: string }) {
   return user.name?.trim() || user.email.split("@")[0] || "there";
@@ -73,4 +76,21 @@ export async function patchProfile(req: Request, res: Response) {
 export async function requestInstructor(req: Request, res: Response) {
   const { message } = req.body as { message?: string };
   created(res, await requestInstructorAccess(req.user!, message));
+}
+
+// GET /api/v1/learner/gamification
+export async function gamification(req: Request, res: Response) {
+  ok(res, await loadGamificationSummary(req.user!.id));
+}
+
+// PATCH /api/v1/learner/gamification
+export async function patchGamification(req: Request, res: Response) {
+  await updateGamificationPreferences(req.user!.id, req.body as GamificationPreferencesInput);
+  ok(res, await loadGamificationSummary(req.user!.id));
+}
+
+// GET /api/v1/learner/leaderboard?courseId=
+export async function leaderboard(req: Request, res: Response) {
+  const { courseId } = req.query as unknown as { courseId: string };
+  ok(res, await loadLeaderboard(req.user!.id, courseId));
 }

@@ -1,0 +1,162 @@
+---
+title: Gamification — XP, levels, streaks, freezes and leaderboards
+status: implemented 2026-10-23
+---
+
+# Gamification
+
+**Reads:** [`04-progress-and-gating.mdx`](04-progress-and-gating.mdx) (what "complete" means),
+[`13-engagement.mdx`](13-engagement.mdx) (events and the mascot that announces rewards).
+
+Five pieces, each behind its own server flag, all built on progress the server has already verified:
+
+| Piece | Flag (`server/.env`) | Where |
+|---|---|---|
+| Streaks in the learner's timezone, full history | always on (a correctness fix, see below) | `shared/lib/streak.ts`, `services/progress/learner-habit.ts` |
+| XP ledger | `GAMIFICATION_XP` | `shared/gamification/xp.ts`, `services/gamification/xp.ts` |
+| Streak freezes | `GAMIFICATION_STREAK_FREEZES` | `services/gamification/habit.ts` |
+| Levels and module stages | `GAMIFICATION_LEVELS` (needs XP) | `shared/gamification/levels.ts`, `services/learner/dashboard-model.ts` |
+| Weekly leaderboards | `GAMIFICATION_LEADERBOARDS` (needs XP) | `services/gamification/leaderboard.ts` |
+
+Every flag is on unless set to `false`. The API reports the effective switches in
+`GamificationSummary.features`; a switched-off piece arrives as `null` (or leaderboard status
+`disabled`), so clients never show half a feature. The web app reads the flags from the API and has
+none of its own.
+
+## Who earns
+
+Only learners: the `MENTEE` role, through an `ACTIVE` or `COMPLETED` enrollment that is not
+`DROPPED`. Mentors, admins and previews never reach the ledger. A learner without an account
+(`PENDING_ACCOUNT`) cannot earn until the account is linked.
+
+## Streaks
+
+- A day is the learner's own calendar day: `DailyActivity.date` is written on the profile
+  timezone's day (`UserProfile.timezone`, UTC when unset or unknown). Rows written before
+  2026-10-23 are UTC days; at most one day near the switch can be off by one.
+- The whole history counts (the old 60-day window capped streaks at about 61 days).
+- Today stays open until the learner's midnight. One missed day is forgiven when study continues on
+  the other side (the grace day, unchanged).
+- Streaks are per learner, across every course.
+
+**Why no flag:** this changes how `DailyActivity.date` is stored. A switch would mix UTC and local
+days in the same table, which is worse than either.
+
+## XP
+
+Amounts are data in `shared/gamification/xp.ts`:
+
+| Moment | XP | Key (once per learner) |
+|---|---|---|
+| Chapter completed (has checkpoints) | 20 | `chapter:<chapterId>` |
+| Chapter with no checkpoints ("Mark chapter complete") | 10, at most 5 a day | `chapter:<chapterId>` |
+| Quiz chapter passed | 15 first try, 10 second, 5 after | `quiz:<chapterId>` |
+| Every quiz question right | +5 | `quiz_perfect:<chapterId>` |
+| Open answer approved by a mentor | 15 | `answer:<blockId>` |
+| Course completed | 100 | `course:<courseId>` |
+| Weekly goal met | 25 | `weekly_goal:<learner-local Monday>` |
+
+Logging in and raw time never earn XP.
+
+**The ledger.** Each award is one `XpEntry` row, written **inside the transaction that changed
+progress** (`recomputeChapterProgress`, `markChapterComplete`, `recomputeEnrollmentRollup`,
+`submitReview`), so a failed change writes no XP. `@@unique([userId, sourceKey])` makes a retry, a
+second tab or a recompute insert nothing. `User.xpTotal` and `Enrollment.xpTotal` are caches moved
+only when a row is inserted, and can always be rebuilt from the ledger. Rows are never edited or
+deleted; a correction would be a negative row.
+
+**Edge cases.** XP stays after a drop, cancellation or refund, and re-enrolling cannot earn the same
+moment twice. A chapter added after completion does not reopen it; a deleted chapter keeps its XP.
+Content variants share chapter ids, so switching variant earns nothing twice.
+
+**Reporting it.** When the browser reports `chapter_completed`, `quiz_submitted` or
+`course_completed` for the first time, `POST /api/v1/events` returns `rewards: { xp }`, the sum of
+the ledger rows under that moment's keys. The mascot shows it as a "+20 XP" chip.
+
+## Levels and module stages
+
+- Level n needs 50·(n−1)² XP in total: level 2 at 50, 3 at 200, 5 at 800, 10 at 4,050.
+- The first time the learner is seen at a level, the server records a `level_up` engagement event
+  (`level_up:<n>`) and the mascot celebrates it once, whatever earned the XP (including a mentor
+  approval while the learner was away).
+- **Module stage** on dashboard course cards: "Stage 2 of 5 · Module", the module holding the next
+  chapter among modules with published chapters.
+
+## Weekly goal and streak freezes
+
+- The first time the weekly goal is met in a learner-local week (Monday to Sunday), the server
+  records a `weekly_goal_met` engagement event (`weekly_goal_met:<Monday>`) and, in the same
+  transaction, pays 25 XP and one streak freeze. The event is the key for both, so they are paid
+  once even with XP switched off.
+- This happens on the engagement events that can move the goal (`chapter_completed`,
+  `quiz_submitted`, `session_start`), never during a page render, so the payout always arrives with
+  the mascot's reaction.
+- A learner holds at most **two** freezes (`User.streakFreezes`).
+- **Spending.** When the streak walk finds a gap it can bridge (grace day first, freezes for the
+  rest) **and** the learner studied on the other side, the covered days are recorded in
+  `StreakFreezeDay` and the balance goes down, in one transaction. A freeze is never spent on a gap
+  that would break the run anyway, and never twice for the same day, even when two pages compute
+  the streak at once. Covered days keep the run alive without adding to it.
+- The weekly-goal reminder job reads the streak without spending freezes.
+
+## Leaderboards
+
+- **Opt-in.** `User.leaderboardOptIn` defaults to false. Only learners who opted in and show game
+  elements are ever listed.
+- **One board per course and organization.** Direct learners (organization null) share their own
+  board; each organization has its own. There is no size limit, so a board has exactly one #1
+  (`LeaderboardGroup` / `LeaderboardMember`, one group per course, organization and week). Joins
+  take a Postgres advisory lock, so two learners joining at once cannot open two boards. Boards
+  are read by course, organization and week, so learners seated in separate groups while boards
+  were capped at 30 still share one ranking.
+- **Weekly.** Ranked by this week's XP in that course; weeks start Monday 00:00 UTC, so a board shares
+  one deadline. Ties go to whoever reached the score first.
+- **What a learner sees.** Their rank, up to three people either side, and their best previous week
+  (the "beat your best week" bar), so someone far from the top still has a goal.
+- **Last week's winners.** When a week ends, the board's top three (people with more than 0 XP) are
+  written to `LeaderboardPlacement` the first time anyone reads it: the board itself, or any
+  learner's summary for boards they were on. `LeaderboardGroup.settledAt` marks a settled board;
+  the claim runs under the board's advisory lock, so two readers settle it once. The board card
+  shows the three under the learner's own rank. A finished week is history: a winner who later
+  opts out, hides game elements or drops keeps the place but is no longer named, and nobody moves
+  up.
+- **Top-three badge.** `GamificationSummary.topThree` counts the learner's placements and names
+  the latest (rank, course, week). Profile settings shows it as a "Top 3 finish" badge in the
+  header, only while game elements are shown. It is recognition only: no XP or freezes.
+- **Privacy.** First name and last initial only, never email. Opting out or hiding game elements
+  removes the learner from this week's boards at once. A dropped, cancelled or expired enrollment is
+  filtered on every read.
+- **Organizations.** `OrganizationCourse.leaderboardEnabled` (on by default). Admins switch it per
+  allocation on the organization page or with
+  `PATCH /api/v1/admin/organizations/:orgId/allocations/:courseId/leaderboard { enabled }`.
+
+## Hide game elements
+
+`User.gamificationHidden` (profile settings, "Game elements"). When set:
+- the dashboard shows no XP, level, freezes or leaderboard, and the plain streak sentence returns;
+- the mascot gets no XP chip and no level-up;
+- the learner leaves every board.
+
+XP, freezes and the weekly goal keep working underneath, so turning it back on shows everything
+earned meanwhile. Module stages are progress, not a game, and stay.
+
+## API
+
+| Route | Purpose |
+|---|---|
+| `GET /api/v1/learner/gamification` | `GamificationSummary`: features, hidden, opt-in, XP total and this week, level progress, freezes, top-three finishes |
+| `PATCH /api/v1/learner/gamification` | `{ hidden?, leaderboardOptIn? }`; returns the new summary |
+| `GET /api/v1/learner/leaderboard?courseId=` | `LeaderboardView`: `disabled`, `opt_in_required`, `unavailable` (`organization_disabled` / `not_active`) or `ready` (with `lastWeek` winners) |
+| `GET /api/v1/learner/dashboard` | now also carries `gamification`, and `xp`, `stage`, `courseId` per course |
+
+Types live in `server/src/shared/api/gamification.ts`, copied to the web app by `pnpm sync-shared`.
+
+## Tests
+
+- `server/tests/unit/shared/lib/streak.test.ts`, `local-date.test.ts`: freezes, gaps, timezones, DST.
+- `server/tests/unit/shared/gamification/gamification.test.ts`: levels and XP rules.
+- `server/tests/unit/services/gamification/pure.test.ts`: ranking, names, stages.
+- `server/tests/api/gamification.test.ts`: the end-to-end flows. Awards inside the progress
+  transaction, duplicates, caps, ineligible learners, flags off, weekly goal, concurrent freeze
+  spending, local-day heartbeats, hiding, opt-in and opt-out, one board however many join, organization switch, last week's winners
+  settled once (also concurrently) and kept when a winner opts out, top-three finishes on the summary.

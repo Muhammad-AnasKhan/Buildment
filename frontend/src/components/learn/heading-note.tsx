@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useTransition } from "react";
 import { saveHeadingNote } from "@/server/actions/heading-note";
+import { useMascot } from "@/lib/engagement/use-mascot";
 import { StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ export function HeadingNoteButton({ headingId }: { headingId: string }) {
   const [saved, setSaved] = useState(Boolean(context?.notes[headingId]?.trim()));
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const { track } = useMascot();
   if (!context) return null;
   const chapterId = context.chapterId;
 
@@ -43,6 +45,7 @@ export function HeadingNoteButton({ headingId }: { headingId: string }) {
       }
       setSaved(Boolean(body.trim()));
       setOpen(false);
+      if (body.trim()) track({ type: "notes_saved", chapterId });
     });
   }
 

@@ -1,15 +1,15 @@
 import { ENROLLMENT_ERROR_CODES, type SelfEnrollResult } from "../../shared/api/catalog.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, NotFoundError } from "../../utils/errors.js";
-import { notifyMentorNewEnrollment } from "../email/event-notifications.js";
-import { queueEmail } from "../email/queue.js";
+import { notifyMentorNewEnrollment } from "../notifications/events.js";
+import { dispatchNotification } from "../notifications/service.js";
 import { SelfEnrollmentError, createSelfEnrollment } from "./create-self-enrollment.js";
 
 /** Learner enrols themselves from the catalog. Paid courses land in PAYMENT_REQUIRED. */
 export async function selfEnroll(userId: string, courseId: string): Promise<SelfEnrollResult> {
   try {
     const result = await createSelfEnrollment(prisma, { userId, courseId });
-    if (result.created) queueEmail(() => notifyMentorNewEnrollment(result.enrollmentId));
+    if (result.created) await dispatchNotification(() => notifyMentorNewEnrollment(result.enrollmentId));
     return result;
   } catch (error) {
     if (!(error instanceof SelfEnrollmentError)) throw error;

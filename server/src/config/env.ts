@@ -38,15 +38,28 @@ const schema = z.object({
 
   /** Shared secret an external scheduler presents to the jobs endpoints. */
   CRON_SECRET: optionalString,
-  /** In-process daily jobs (inactivity nudges). Turn off when another replica or an external cron owns them. */
+  /** In-process scheduled jobs (study reminders, cleanup). Turn off when another replica or an external cron owns them. */
   JOBS_ENABLED: z
     .string()
     .optional()
     .transform((value) => value !== "false"),
-  INACTIVITY_NUDGE_HOUR_UTC: z.coerce.number().int().min(0).max(23).default(9),
   WEEKLY_GOAL_REMINDER_HOUR_UTC: z.coerce.number().int().min(0).max(23).default(9),
   /** Daily job that deletes quiz camera stills older than 30 days. */
   INTEGRITY_RETENTION_HOUR_UTC: z.coerce.number().int().min(0).max(23).default(3),
+
+  /** Background worker that sends queued notification email and pushes live notifications. */
+  NOTIFICATION_WORKER_ENABLED: z
+    .string()
+    .optional()
+    .transform((value) => value !== "false"),
+  NOTIFICATION_WORKER_INTERVAL_MS: z.coerce.number().int().min(1_000).max(300_000).default(5_000),
+  /** Most routine study reminders one user can get in 24 hours, across all their courses. 0 turns them off. */
+  REMINDER_DAILY_LIMIT: z.coerce.number().int().min(0).max(5).default(1),
+  /**
+   * Signs notification-stream tickets. Optional for one API process (a random secret is made at
+   * boot); set the same value on every replica when the API runs more than one.
+   */
+  REALTIME_TOKEN_SECRET: optionalString,
 
   /** OpenRouter access for AI review drafts; drafting is disabled without a key. */
   OPENROUTER_API_KEY: optionalString,
@@ -73,6 +86,27 @@ const schema = z.object({
    */
   INTEGRITY_MEDIA_SECRET: optionalString,
 
+  /**
+   * Gamification switches (docs/14-gamification.mdx), each on unless set to "false". Levels and
+   * leaderboards are built from XP, so they switch off with it.
+   */
+  GAMIFICATION_XP: z
+    .string()
+    .optional()
+    .transform((value) => value !== "false"),
+  GAMIFICATION_STREAK_FREEZES: z
+    .string()
+    .optional()
+    .transform((value) => value !== "false"),
+  GAMIFICATION_LEVELS: z
+    .string()
+    .optional()
+    .transform((value) => value !== "false"),
+  GAMIFICATION_LEADERBOARDS: z
+    .string()
+    .optional()
+    .transform((value) => value !== "false"),
+
   /** Local testing only: e2e suites sign up repeatedly from one IP. Never set in production. */
   DISABLE_RATE_LIMITS: z
     .string()
@@ -97,6 +131,9 @@ function loadEnv(): Env {
 }
 
 export const env = loadEnv();
+
+/** Origins a browser may open the notification stream from: the web app plus any direct API clients. */
+export const realtimeOrigins = [...new Set([env.APP_URL, ...env.CORS_ORIGINS])];
 
 export const isProduction = env.NODE_ENV === "production";
 export const rateLimitsEnabled = !(env.DISABLE_RATE_LIMITS && !isProduction);

@@ -7,11 +7,11 @@ const db = vi.hoisted(() => ({
   $transaction: vi.fn(),
 }));
 vi.mock("../../../../src/db/prisma.js", () => ({ prisma: db }));
-vi.mock("../../../../src/services/email/admin-notifications.js", () => ({
+vi.mock("../../../../src/services/notifications/events.js", () => ({
+  notifyUserGrantedAdminByAdmin: vi.fn(),
   notifyUserGrantedInstructorByAdmin: vi.fn(),
   notifyUserInstructorAccessDecision: vi.fn(),
 }));
-vi.mock("../../../../src/services/email/queue.js", () => ({ queueEmail: vi.fn() }));
 
 import { approveInstructorRequest, setInstructorAccess } from "../../../../src/services/admin/users.js";
 import { canAccessTeachSurface } from "../../../../src/services/auth/access-rules.js";

@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 
 type AdminNavItem = {
   label: string;
@@ -103,6 +104,7 @@ export function AdminWorkspaceShell({
           <Logo size="sm" />
         </Link>
         <div className="flex items-center gap-1">
+          <NotificationBell />
           <WorkspaceAccountMenu current="admin" user={{ ...user, role: "ADMIN" }} signOutAction={signOutAction} compact />
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -144,10 +146,11 @@ export function AdminWorkspaceShell({
       </div>
 
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col border-r bg-card lg:flex">
-        <div className="flex h-16 shrink-0 items-center border-b px-4">
+        <div className="flex h-16 shrink-0 items-center justify-between gap-3 border-b px-4">
           <Link href="/admin" className="inline-flex outline-none focus-visible:ring-2 focus-visible:ring-ring">
             <Logo size="sm" />
           </Link>
+          <NotificationBell />
         </div>
 
         <nav aria-label="Platform admin" className="flex-1 space-y-1 overflow-y-auto p-3">

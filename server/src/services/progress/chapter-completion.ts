@@ -4,6 +4,7 @@ import { ConflictError, ForbiddenError, NotFoundError } from "../../utils/errors
 import type { SessionUser } from "../../types/auth.js";
 import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
+import { awardChapterCompletionXp } from "../gamification/xp.js";
 import { lockEnrollmentVariant, recomputeEnrollmentRollup } from "./compute.js";
 import { ChapterLockedError, assertChapterUnlocked } from "./gate.js";
 import { milestoneReflectionBlocked } from "./reflection.js";
@@ -14,7 +15,7 @@ import { assertEnrollmentChapter } from "../courses/releases.js";
 export async function unlockedChapterForLearner(chapterId: string, user: SessionUser) {
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId, archivedAt: null },
-    select: { id: true, courseId: true, slug: true, isMilestone: true, source: true, compiled: true, course: { select: { slug: true } } },
+    select: { id: true, courseId: true, slug: true, isMilestone: true, source: true, compiled: true, readerMode: true, course: { select: { slug: true } } },
   });
   if (!chapter) throw new NotFoundError("Chapter not found.");
 
@@ -106,6 +107,14 @@ export async function markChapterComplete(chapterId: string, user: SessionUser):
         blocksCompleted: completable.length,
         completedAt: existing?.completedAt ?? new Date(),
       },
+    });
+    await awardChapterCompletionXp(tx, {
+      userId: learnerUserId,
+      enrollmentId: enrollment.id,
+      courseId: chapter.courseId,
+      chapterId: chapter.id,
+      readerMode: chapter.readerMode,
+      completableBlocks: completable.length,
     });
     await recomputeEnrollmentRollup(tx, enrollment.id);
   });

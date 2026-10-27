@@ -2,6 +2,7 @@
 import type { EnrollStatus, HelpThreadStatus, ProgressStatus, BlockType } from "../domain/enums";
 import type { InstructorAccessView } from "../lib/instructor-access";
 import type { LearnerHabit, StreakMilestone } from "../lib/streak";
+import type { GamificationSummary } from "./gamification";
 
 // Wire contract for /api/v1/learner. Dates travel as ISO strings.
 
@@ -30,7 +31,9 @@ export type DashboardAction = {
 };
 
 export type DashboardCourse = {
+  /** The enrollment id. */
   id: string;
+  courseId: string;
   slug: string;
   title: string;
   coverUrl: string | null;
@@ -52,6 +55,10 @@ export type DashboardCourse = {
   totalStudySeconds: number;
   lastActiveAt: string | null;
   currentModule: string | null;
+  /** XP earned in this course; null when XP is off or the learner hides game elements. */
+  xp: number | null;
+  /** "Stage 2 of 5": the module holding the next chapter, counted among modules with chapters. Null when levels are off. */
+  stage: { current: number; total: number; title: string } | null;
   targetChapter: { title: string; slug: string; status: ProgressStatus; blocksCompleted: number; blocksTotal: number } | null;
   href: string;
   overviewHref: string;
@@ -101,6 +108,7 @@ export type MenteeDashboardViewModel = {
   };
   recentEvents: DashboardEvent[];
   habit: LearnerHabit;
+  gamification: GamificationSummary;
 };
 
 export type LearnerProgressModule = {

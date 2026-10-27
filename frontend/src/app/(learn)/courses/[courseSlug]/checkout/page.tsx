@@ -64,6 +64,7 @@ export default async function CourseCheckoutPage({
         ) : (
           <form action={completeEnrollmentPaymentStubAction} className="mt-6">
             <input type="hidden" name="enrollmentId" value={enrollment.id} />
+            <input type="hidden" name="courseId" value={course.id} />
             <Button type="submit" className="w-full">
               Pay {priceLabel} (stub)
             </Button>

@@ -213,6 +213,13 @@ model User {
   weeklyGoalReminderEnabled Boolean @default(false)
   weeklyGoalReminderSentOn DateTime? @db.Date
   celebratedStreakMilestones Int[] @default([])
+  /// Cached sum of XpEntry.amount; the ledger is the source of truth.
+  xpTotal       Int          @default(0)
+  /// Streak freezes held, 0..2 (shared/lib/streak.ts MAX_STREAK_FREEZES).
+  streakFreezes Int          @default(0)
+  /// "Hide game elements": no XP, levels, freezes or leaderboards shown, and off every board.
+  gamificationHidden Boolean @default(false)
+  leaderboardOptIn   Boolean @default(false)
   createdAt     DateTime     @default(now())
   accounts      Account[]
   sessions      Session[]
@@ -233,6 +240,17 @@ model User {
   instructorAccessReviews       InstructorAccessRequest[] @relation("InstructorAccessReviewer")
   aiCredential                  AiCredential?
   aiInterviewSessions           AiInterviewSession[]
+  appActivity                   UserAppActivity?
+  appActivityDays               AppActivityDay[]
+  notifications                 Notification[]
+  notificationPreference        NotificationPreference?
+  emailOutbox                   EmailOutbox[]
+  studyReminders                StudyReminderLog[]
+  engagementEvents              EngagementEvent[]
+  xpEntries                     XpEntry[]
+  streakFreezeDays              StreakFreezeDay[]
+  leaderboardMemberships        LeaderboardMember[]
+  leaderboardPlacements         LeaderboardPlacement[]
 }
 
 /// A learner's own AI provider key for AI interviews. Only the AES-256-GCM
@@ -359,6 +377,8 @@ model Course {
   updatedAt      DateTime     @updatedAt
 
   @@index([mentorId, status])
+  leaderboardGroups     LeaderboardGroup[]
+  leaderboardPlacements LeaderboardPlacement[]
 }
 
 model CourseInstructor {
@@ -537,6 +557,7 @@ model Enrollment {
   totalScore        Int               @default(0)
   maxScore          Int               @default(0)
   pendingReviews    Int               @default(0) // denormalized for reports — maintained at Response write/review time
+  xpTotal           Int               @default(0) // cached sum of this enrollment's XpEntry rows
   lastActiveAt      DateTime?
   lastNudgeSentAt   DateTime?
   startedAt         DateTime?
@@ -555,6 +576,7 @@ model Enrollment {
   studySessions     StudySession[]
   integrityAttempts IntegrityAttempt[]
   payment           Payment?
+  xpEntries         XpEntry[]
 
   @@unique([courseId, userId])
   @@unique([courseId, learnerProfileId])
@@ -599,6 +621,8 @@ model OrganizationCourse {
   isAllowed          Boolean      @default(true)
   maxEnrollments     Int
   currentEnrollments Int          @default(0)
+  /// Learners enrolled through this organization may join weekly course leaderboards.
+  leaderboardEnabled Boolean      @default(true)
   expiresAt          DateTime?
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
@@ -647,6 +671,232 @@ model DailyActivity {
 
   @@unique([enrollmentId, date])
   @@index([enrollmentId, date])
+}
+
+/// Estimated active seconds anywhere in the signed-in app, per user per UTC day. Study time is
+/// already inside this number — never add DailyActivity on top. Pruned after the retention window
+/// (services/activity/app-activity.ts); DailyActivity is not.
+model AppActivityDay {
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date          DateTime @db.Date
+  activeSeconds Int      @default(0)
+  heartbeats    Int      @default(0)
+  firstActiveAt DateTime
+  lastActiveAt  DateTime
+
+  @@id([userId, date])
+  @@index([date])
+}
+
+/// One row per user. `lastActiveAt` is the end of the last credited app heartbeat: it bounds new
+/// credit to wall-clock time across tabs and devices, and drives future inactivity reminders.
+model UserAppActivity {
+  userId       String   @id
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastActiveAt DateTime
+  /// Client id of the last accepted heartbeat, so an exact retry is not counted twice.
+  lastBeatId   String?
+
+  @@index([lastActiveAt])
+}
+
+// --- Engagement — written only through services/engagement (see docs/13-engagement.mdx) -----------
+
+/// One learning moment the app reacts to (mascot reactions today). `type` and `payload` follow
+/// shared/api/engagement.ts. The client only names what happened; facts in `payload` (quiz attempt,
+/// score, days away) are read from the database. `courseId`/`chapterId` are plain ids, not
+/// relations, so the history survives course edits.
+model EngagementEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  courseId  String?
+  chapterId String?
+  payload   Json     @default("{}")
+  platform  String
+  /// Names a once-only moment (an enrollment, a chapter completion, one quiz attempt), so a
+  /// retried or repeated call stores it once. Null for repeatable events.
+  dedupeKey String?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+}
+
+// --- Notifications — written only through services/notifications (see docs/12-notifications.mdx) --
+
+/// One in-app notification for one user: the bell feed and its read state. `type`/`category` are
+/// the strings in shared/api/notifications.ts.
+/// One XP award. Rows are never edited or deleted (a correction is a negative row), so totals can
+/// always be rebuilt from the ledger. `sourceKey` makes each moment award once per learner.
+model XpEntry {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollmentId String?
+  enrollment   Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  courseId     String?
+  source       String
+  sourceKey    String
+  amount       Int
+  /// The learner's local calendar day (daily caps).
+  dayKey       DateTime    @db.Date
+  /// Monday (UTC) of the leaderboard week.
+  weekKey      DateTime    @db.Date
+  createdAt    DateTime    @default(now())
+
+  @@unique([userId, sourceKey])
+  @@index([userId, createdAt])
+  @@index([userId, source, dayKey])
+  @@index([courseId, weekKey])
+}
+
+/// A missed learner-local day a streak freeze covered. Recorded so a freeze is spent once.
+model StreakFreezeDay {
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date
+  createdAt DateTime @default(now())
+
+  @@id([userId, date])
+}
+
+/// A weekly leaderboard: one course, one organization (null = direct learners), one board per week.
+model LeaderboardGroup {
+  id             String              @id @default(cuid())
+  courseId       String
+  course         Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  organizationId String?
+  weekKey        DateTime            @db.Date
+  createdAt      DateTime            @default(now())
+  /// When the finished week's top three were written to LeaderboardPlacement; null while open.
+  settledAt      DateTime?
+  members        LeaderboardMember[]
+
+  @@index([courseId, organizationId, weekKey])
+}
+
+/// A top-three finish on a finished weekly board, written once when the board settles. Kept as
+/// history: later opt-outs or drops hide the name but never re-rank a finished week.
+model LeaderboardPlacement {
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId       String
+  course         Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  organizationId String?
+  weekKey        DateTime @db.Date
+  /// 1, 2 or 3.
+  rank           Int
+  xp             Int
+  createdAt      DateTime @default(now())
+
+  @@id([userId, courseId, weekKey])
+  @@index([courseId, organizationId, weekKey])
+}
+
+model LeaderboardMember {
+  groupId  String
+  group    LeaderboardGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId String
+  weekKey  DateTime         @db.Date
+  joinedAt DateTime         @default(now())
+
+  @@id([groupId, userId])
+  @@unique([userId, courseId, weekKey])
+}
+
+model Notification {
+  id        String        @id @default(cuid())
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  category  String
+  title     String
+  body      String        @db.Text
+  /// App-relative link, e.g. /my-questions/abc.
+  url       String?
+  courseId  String?
+  data      Json?
+  /// Identity of the event, so a repeated event or a retried request never adds a second row.
+  dedupeKey String
+  readAt    DateTime?
+
+  pushedAt  DateTime?
+  createdAt DateTime      @default(now())
+  emails    EmailOutbox[]
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@index([pushedAt, createdAt])
+}
+
+/// Channels a person switched off, by notification category. No row means everything is on.
+model NotificationPreference {
+  userId      String   @id
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailOptOut String[] @default([])
+  inAppOptOut String[] @default([])
+  updatedAt   DateTime @updatedAt
+}
+
+enum EmailOutboxStatus {
+  PENDING
+  SENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+/// Email waiting for (or done with) the background worker. Rendered when the event happens, sent
+/// with retries and backoff, never from inside the API request that caused it.
+model EmailOutbox {
+  id             String            @id @default(cuid())
+  /// Null for inboxes that are not accounts (ADMIN_NOTIFY_EMAIL).
+  userId         String?
+  user           User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notificationId String?
+  notification   Notification?     @relation(fields: [notificationId], references: [id], onDelete: SetNull)
+  type           String
+  category       String
+  toEmail        String
+  subject        String
+  html           String            @db.Text
+  text           String            @db.Text
+  /// Event identity plus recipient; also sent to Resend as the idempotency key's scope.
+  dedupeKey      String            @unique
+  status         EmailOutboxStatus @default(PENDING)
+  attempts       Int               @default(0)
+  nextAttemptAt  DateTime          @default(now())
+  /// Set while a worker owns the row; a stale lock is reclaimed after a few minutes.
+  lockedAt       DateTime?
+  lastError      String?           @db.Text
+  providerId     String?
+  sentAt         DateTime?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@index([status, nextAttemptAt])
+  @@index([userId])
+}
+
+/// One row per routine study reminder, whatever channel it used. Drives the reminder cadence and
+/// the per-user daily limit; `slot` (UTC date + hour) makes a repeated job run a no-op.
+model StudyReminderLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slot      String
+  courseIds String[]
+  sentAt    DateTime @default(now())
+
+  @@unique([userId, slot])
+  @@index([userId, sentAt])
 }
 
 /// One explicit study sitting on a chapter. Heartbeats credit time only while RUNNING.

@@ -10,6 +10,8 @@ import * as mfa from "../services/admin/mfa.js";
 import * as courses from "../services/admin/courses.js";
 import * as profile from "../services/admin/profile.js";
 import * as audit from "../services/admin/audit.js";
+import * as appActivity from "../services/activity/reports.js";
+import type { AppActivityUsersQuery } from "../validations/activity.js";
 import type {
   AdminProfileBody,
   AdminPasswordBody,
@@ -115,6 +117,13 @@ export async function bulkApproveCourseRequests(req: Request, res: Response) {
 export async function bulkRejectCourseRequests(req: Request, res: Response) {
   const { ids } = req.body as BulkIdsBody;
   ok(res, await courseRequests.bulkRejectCourseRequests(req.user!, ids));
+}
+
+// PATCH /api/v1/admin/organizations/:orgId/allocations/:courseId/leaderboard
+export async function setAllocationLeaderboard(req: Request, res: Response) {
+  const { enabled } = req.body as { enabled: boolean };
+  await organizations.setAllocationLeaderboard(param(req, "orgId"), param(req, "courseId"), enabled);
+  noContent(res);
 }
 
 // GET /api/v1/admin/course-requests
@@ -273,4 +282,15 @@ export async function approveInstructorRequest(req: Request, res: Response) {
 export async function rejectInstructorRequest(req: Request, res: Response) {
   await users.rejectInstructorRequest(req.user!, param(req, "requestId"));
   noContent(res);
+}
+
+// GET /api/v1/admin/app-activity?days=7
+export async function getAppActivity(req: Request, res: Response) {
+  const { days } = req.query as unknown as { days: number };
+  ok(res, await appActivity.loadAppActivityOverview(days));
+}
+
+// GET /api/v1/admin/app-activity/users?days=7&limit=50&offset=0&inactiveForDays=&userId=
+export async function listAppActivityUsers(req: Request, res: Response) {
+  ok(res, await appActivity.listAppActivityUsers(req.query as unknown as AppActivityUsersQuery));
 }

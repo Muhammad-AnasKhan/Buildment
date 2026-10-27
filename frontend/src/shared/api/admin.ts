@@ -90,6 +90,8 @@ export type AdminAllocationRow = {
   isAllowed: boolean;
   maxEnrollments: number;
   currentEnrollments: number;
+  /** Learners enrolled through this organization may join the course's weekly leaderboards. */
+  leaderboardEnabled: boolean;
   expiresAt: string | null;
 };
 

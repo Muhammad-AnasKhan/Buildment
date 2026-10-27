@@ -16,7 +16,9 @@ src/
 ├─ middlewares/      authenticate, requireOrganization, validate, rate limits, error handlers
 ├─ shared/           contract code both apps run: block schemas + graders, API wire types,
 │                    enums, MDX block extraction, pure helpers (copied to frontend/src/shared)
-├─ jobs/             in-process daily scheduler (inactivity nudges)
+├─ jobs/             in-process scheduler (hourly study reminders, daily cleanup) and the
+│                    notification worker (outbox email + live push)
+├─ realtime/         live notification stream (Server-Sent Events, per-user, session auth)
 ├─ utils/            errors (AppError family), responses (ok/created), logger
 ├─ types/            Express request augmentation, SessionUser, view models
 └─ generated/prisma  Prisma client (generated, git-ignored)
@@ -44,10 +46,17 @@ Procfile             Heroku APP_BASE=server: release = migrate and publish, web 
   `pnpm sync-shared:check`. Files there must stay free of Express, Prisma and React imports.
 - **Authorization:** `requireInstructor` / `requireAdmin` gate the routers; course, thread and
   enrollment ownership is decided in `services/teach/access.ts` and nowhere else.
-- **Jobs:** `jobs/scheduler.ts` runs each job at its UTC hour inside the process
-  (`JOBS_ENABLED`, `INACTIVITY_NUDGE_HOUR_UTC`, `WEEKLY_GOAL_REMINDER_HOUR_UTC`);
-  daily goal reminders require `AUTH_RESEND_KEY` and an explicit learner opt-in. `/api/v1/jobs/*` + `CRON_SECRET` exist for
-  external schedulers and multi-replica deployments.
+- **Jobs:** `jobs/scheduler.ts` runs daily jobs at their UTC hour and hourly jobs at their minute
+  inside the process (`JOBS_ENABLED`, `WEEKLY_GOAL_REMINDER_HOUR_UTC`,
+  `INTEGRITY_RETENTION_HOUR_UTC`); daily goal reminders require `AUTH_RESEND_KEY` and an explicit
+  learner opt-in. `/api/v1/jobs/*` + `CRON_SECRET` exist for external schedulers and multi-replica
+  deployments.
+- **Notifications:** product events call the builders in `services/notifications/events.ts`, which
+  go through `notify()`; channels per event live in `services/notifications/config.ts`. Never call
+  `sendEmail` for a product event — it goes through the email outbox and the worker
+  (`jobs/notification-worker.ts`). Auth email (verification, magic links, invites) still sends
+  directly. Email bodies are EJS templates in `services/email/templates`. See
+  [`docs/12-notifications.mdx`](../docs/12-notifications.mdx).
 
 ## Course images (Cloudflare R2)
 

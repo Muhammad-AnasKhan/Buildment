@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   CircleHelp,
   Clock3,
-  Inbox,
   MessageSquareText,
   RotateCcw,
   Target,
@@ -18,6 +17,12 @@ import { cn } from "@/lib/utils";
 import { helpUiCopy } from "@/shared/lib/help-ui-copy";
 import { formatStudyAmount } from "@/lib/format-study-duration";
 import { WeeklyGoalEditor } from "@/components/learn/dashboard/weekly-goal-editor";
+import { CourseStageLine, LearningMomentum } from "@/components/learn/dashboard/gamification";
+import { showsGameElements } from "@/lib/gamification";
+import { LeaderboardCard } from "@/components/learn/dashboard/leaderboard-card";
+import { MascotStill, MascotTipCard } from "@/components/mascot/mascot-tip";
+import { studyTipOfTheDay } from "@/shared/engagement/study-tips";
+import type { LeaderboardView } from "@/shared/api/gamification";
 import type {
   DashboardAction,
   DashboardCourse,
@@ -82,9 +87,16 @@ function ContinueLearning({ course }: { course: DashboardCourse }) {
       <h2 className="mt-4 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">
         {course.title}
       </h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        {[course.currentModule, course.targetChapter?.title].filter(Boolean).join(" · ")}
-      </p>
+      {course.stage || course.xp !== null ? (
+        <>
+          <CourseStageLine course={course} className="mt-2 text-sm" />
+          {course.targetChapter ? <p className="mt-1 text-sm text-muted-foreground">{course.targetChapter.title}</p> : null}
+        </>
+      ) : (
+        <p className="mt-2 text-sm text-muted-foreground">
+          {[course.currentModule, course.targetChapter?.title].filter(Boolean).join(" · ")}
+        </p>
+      )}
       <div className="mt-6">
         <Progress value={course.percentComplete} className="gap-2 [&_[data-slot=progress-track]]:h-2 [&_[data-slot=progress-indicator]]:duration-200 motion-reduce:[&_[data-slot=progress-indicator]]:transition-none">
           <ProgressLabel className="text-xs text-muted-foreground">
@@ -158,12 +170,15 @@ function WeeklySnapshot({ model }: { model: MenteeDashboardViewModel }) {
         <Clock3 className="size-4 text-muted-foreground" aria-hidden />
         <h2 id="snapshot-heading" className="text-sm font-semibold">This week</h2>
       </div>
-      <p className="mt-2 text-sm text-muted-foreground">
-        {model.habit.streakCount === 0
-          ? "Every visit counts. Learn at your own pace."
-          : `${model.habit.streakCount}-day learning streak. One step at a time.`}
-
-      </p>
+      {showsGameElements(model.gamification) ? (
+        <LearningMomentum summary={model.gamification} streak={model.habit.streakCount} />
+      ) : (
+        <p className="mt-2 text-sm text-muted-foreground">
+          {model.habit.streakCount === 0
+            ? "Every visit counts. Learn at your own pace."
+            : `${model.habit.streakCount}-day learning streak. One step at a time.`}
+        </p>
+      )}
       <ActivityStrip days={model.activity.week} maxSeconds={model.activity.maxDaySeconds} />
       <dl className="mt-4 divide-y divide-border">
         {metrics.map((metric) => (
@@ -301,7 +316,7 @@ function CourseListPreview({ courses }: { courses: DashboardCourse[] }) {
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-medium">{course.title}</span>
                   <span className="mt-1 block text-xs text-muted-foreground">
-                    {course.actionLabel} · {course.percentComplete === 0 && course.chaptersCompleted > 0 ? "<1" : course.percentComplete}% complete · {relativeTime(course.lastActiveAt)}
+                    {course.actionLabel} · {course.percentComplete === 0 && course.chaptersCompleted > 0 ? "<1" : course.percentComplete}% complete{course.xp !== null ? ` · ${course.xp} XP` : ""} · {relativeTime(course.lastActiveAt)}
                   </span>
                 </span>
                 <Badge variant={status.variant} className="hidden sm:inline-flex">{status.label}</Badge>
@@ -335,7 +350,7 @@ function CourseCard({ course, featured }: { course: DashboardCourse; featured: b
             ) : null}
           </div>
           <h3 className="mt-2 line-clamp-2 font-semibold">{course.title}</h3>
-          {course.currentModule ? <p className="mt-1 truncate text-xs text-muted-foreground">{course.currentModule}</p> : null}
+          <CourseStageLine course={course} className="mt-1" />
         </div>
       </div>
       <div className="p-4">
@@ -379,7 +394,7 @@ export function MenteeCourseList({ courses, showHeading = true, primaryCourseId 
 function EmptyDashboard({ name }: { name: string }) {
   return (
     <div className="rounded-2xl border border-dashed bg-muted/20 px-6 py-16 text-center">
-      <Inbox className="mx-auto size-8 text-muted-foreground" aria-hidden />
+      <MascotStill role="guide" state="begin" className="mx-auto size-24" />
       <h2 className="mt-4 text-lg font-semibold">Your learning starts here</h2>
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-muted-foreground">
         {name}, choose a course from the catalog to get started. If your mentor sent an invite, open its link to join your course.
@@ -415,7 +430,10 @@ function RecentEvents({ events }: { events: DashboardEvent[] }) {
   );
 }
 
-export function MenteeDashboard({ model }: { model: MenteeDashboardViewModel }) {
+export function MenteeDashboard({ model, leaderboard = null }: { model: MenteeDashboardViewModel; leaderboard?: LeaderboardView | null }) {
+  const boardCourses = model.courses
+    .filter((course) => course.state !== "DROPPED" && course.state !== "PAYMENT_REQUIRED")
+    .map((course) => ({ courseId: course.courseId, title: course.title }));
   return (
     <div className="mx-auto max-w-6xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
       <DashboardHeader model={model} />
@@ -426,7 +444,13 @@ export function MenteeDashboard({ model }: { model: MenteeDashboardViewModel }) 
           {model.activity.runningSession ? <ResumeBanner session={model.activity.runningSession} /> : null}
           <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_20rem]">
             {model.primaryCourse ? <ContinueLearning course={model.primaryCourse} /> : null}
-            <WeeklySnapshot model={model} />
+            <div className="grid min-w-0 grid-cols-1 gap-5 self-start sm:grid-cols-2 xl:grid-cols-1">
+              <WeeklySnapshot model={model} />
+              {leaderboard && model.primaryCourse ? (
+                <LeaderboardCard initial={leaderboard} initialCourseId={model.primaryCourse.courseId} courses={boardCourses} />
+              ) : null}
+              <MascotTipCard tip={studyTipOfTheDay(new Date(), model.primaryCourse?.slug)} />
+            </div>
           </div>
           <div className="grid grid-cols-1 gap-8 xl:grid-cols-2">
             <ActionCenter actions={model.actions} hasCourse={Boolean(model.primaryCourse)} />

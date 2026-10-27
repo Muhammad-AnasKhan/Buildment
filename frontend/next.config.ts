@@ -34,6 +34,9 @@ const nextConfig: NextConfig = {
         { source: "/api/v1/:path*", destination: `${apiUrl}/api/v1/:path*` },
         { source: "/integrations/v1/:path*", destination: `${apiUrl}/integrations/v1/:path*` },
         { source: "/integrations/v1", destination: `${apiUrl}/integrations/v1` },
+        // The live notification stream (SSE, /api/v1/notifications/stream) needs no route of its
+        // own: the /api/v1 rule above forwards it. The API sends a comment every 20 s, which keeps
+        // it inside this proxy's 30 s idle timeout.
       ],
     };
   },

@@ -9,6 +9,9 @@ import {
   isCompletableBlock,
 } from "./rules.js";
 import { milestoneReflectionBlocked } from "./reflection.js";
+import { notifyCourseCompleted } from "../notifications/events.js";
+import { awardChapterCompletionXp, awardXp } from "../gamification/xp.js";
+import { xpKeys } from "../../shared/gamification/xp.js";
 
 // Recomputes denormalized rollups after a new Response is written — see
 // docs/04-progress-and-gating.mdx and the append-only-Response invariant in
@@ -32,7 +35,7 @@ export async function recomputeChapterProgress(
 
   const enrollment = await tx.enrollment.findUniqueOrThrow({
     where: { id: enrollmentId },
-    select: { userId: true },
+    select: { userId: true, courseId: true },
   });
 
   const [existing, chapter] = await Promise.all([
@@ -42,7 +45,7 @@ export async function recomputeChapterProgress(
     }),
     tx.chapter.findUnique({
       where: { id: chapterId },
-      select: { isMilestone: true, source: true, compiled: true },
+      select: { isMilestone: true, source: true, compiled: true, readerMode: true },
     }),
   ]);
 
@@ -115,6 +118,18 @@ export async function recomputeChapterProgress(
     },
   });
 
+  // XP on the transition to complete, in this transaction; its key makes a later recompute a no-op.
+  if (status === "COMPLETED" && existing?.status !== "COMPLETED" && learnerUserId) {
+    await awardChapterCompletionXp(tx, {
+      userId: learnerUserId,
+      enrollmentId,
+      courseId: enrollment.courseId,
+      chapterId,
+      readerMode: chapter?.readerMode ?? null,
+      completableBlocks: blocksTotal,
+    });
+  }
+
   await recomputeEnrollmentRollup(tx, enrollmentId, options);
 }
 
@@ -174,6 +189,20 @@ export async function recomputeEnrollmentRollup(
       completedAt: allChaptersComplete ? (enrollment.completedAt ?? new Date()) : null,
     },
   });
+
+  // Written in this transaction so it commits with the completion; once per enrollment (dedupe).
+  if (percentComplete >= 100 && enrollment.status !== "COMPLETED") {
+    await notifyCourseCompleted(tx, enrollmentId);
+    if (enrollment.userId) {
+      await awardXp(tx, {
+        userId: enrollment.userId,
+        enrollmentId,
+        courseId: enrollment.courseId,
+        source: "course_completed",
+        sourceKey: xpKeys.course(enrollment.courseId),
+      });
+    }
+  }
 }
 
 export async function ensureChapterStarted(

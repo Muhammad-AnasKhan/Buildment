@@ -25,7 +25,7 @@ export async function runWeeklyGoalReminders(): Promise<{ emailsSent: number; el
   let emailsSent = 0;
   let eligible = 0;
   for (const learner of learners) {
-    const goal = (await loadLearnerHabit(learner.id)).weeklyGoal;
+    const goal = (await loadLearnerHabit(learner.id, { applyFreezes: false })).weeklyGoal;
     if (!goal || !goal.dailyReminder || goal.progress >= goal.target) continue;
     eligible += 1;
 

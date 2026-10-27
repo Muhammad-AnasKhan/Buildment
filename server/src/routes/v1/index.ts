@@ -14,6 +14,9 @@ import teachRoutes from "./teach.js";
 import mediaRoutes from "./media.js";
 import adminRoutes from "./admin.js";
 import integrityRoutes from "./integrity.js";
+import activityRoutes from "./activity.js";
+import notificationRoutes from "./notifications.js";
+import engagementRoutes from "./engagement.js";
 
 // First-party API, versioned. JSON routes use the { success, data } envelope;
 // the media route streams image bytes.
@@ -34,5 +37,8 @@ router.use("/teach", teachRoutes);
 router.use("/media", mediaRoutes);
 router.use("/admin", adminRoutes);
 router.use("/integrity", integrityRoutes);
+router.use("/activity", activityRoutes);
+router.use("/notifications", notificationRoutes);
+router.use("/events", engagementRoutes);
 
 export default router;

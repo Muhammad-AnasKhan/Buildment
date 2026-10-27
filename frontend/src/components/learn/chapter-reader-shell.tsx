@@ -20,6 +20,7 @@ import type { SyllabusModule } from "@/components/learn/course-syllabus";
 import { AskHelpDialog } from "@/components/help/ask-help-dialog";
 import { StudyClock } from "@/components/learn/study-time-chip";
 import { useStudySession } from "@/lib/use-study-session";
+import { useMascot } from "@/lib/engagement/use-mascot";
 import { ThemeToggle } from "@/components/theme-toggle";
 import type { HelpThreadView } from "@/shared/api/help";
 import type { StreakMilestone } from "@/shared/lib/streak";
@@ -137,6 +138,9 @@ export function ChapterReaderShell({
   const [focusMode, setFocusMode] = useState(false);
   const study = useStudySession(chapterId);
   const layoutBeforeFocus = useRef({ left: true, right: true });
+
+  // After a long while on an unfinished chapter, the helper mascot offers a mentor.
+  useMascot({ watchChapter: chapterComplete ? null : { chapterId, estimatedMinutes } });
   const quizAutoFocusSlug = useRef<string | null>(null);
 
   const exitFocusMode = useCallback(async () => {

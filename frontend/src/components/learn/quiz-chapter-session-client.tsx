@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { QuizSessionContext, type QuizBlockGrade } from "@buildment/learning-ui/components/learn/quiz-session-context";
 import { QuizIntegrityPanel } from "@/components/learn/quiz-integrity-panel";
 import { useQuizIntegrity } from "@/lib/integrity/use-quiz-integrity";
+import { useMascot } from "@/lib/engagement/use-mascot";
 
 type QuizResultSummary = { score: number; maxScore: number; questions: number };
 
@@ -65,6 +66,7 @@ export function QuizChapterSessionClient({
   chapterComplete: boolean;
 }) {
   const router = useRouter();
+  const { track } = useMascot();
   const steps = React.Children.toArray(children).filter(Boolean);
   const total = steps.length;
   const [index, setIndex] = useState(() =>
@@ -203,6 +205,7 @@ export function QuizChapterSessionClient({
 
       const summary = { score: body.score, maxScore: body.maxScore, questions: body.questions };
       setScoreSummary(summary);
+      track({ type: "quiz_submitted", chapterId });
       setDirtyBlockIds(new Set());
 
       const gradesFromApi = Array.isArray(body.grades)
@@ -281,6 +284,7 @@ export function QuizChapterSessionClient({
         setSubmitError(result.error);
         return;
       }
+      track({ type: "chapter_completed", chapterId });
       router.push(nextHref);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Could not open the next chapter.");

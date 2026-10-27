@@ -10,8 +10,8 @@ import {
   notifyUserGrantedAdminByAdmin,
   notifyUserGrantedInstructorByAdmin,
   notifyUserInstructorAccessDecision,
-} from "../email/admin-notifications.js";
-import { queueEmail } from "../email/queue.js";
+} from "../notifications/events.js";
+import { dispatchNotification } from "../notifications/service.js";
 import { ADMIN_AUDIT_ACTIONS, recordAdminAction, type AdminActor } from "./audit.js";
 
 // Accounts and the instructor capability. Granting instructor tools promotes a
@@ -369,10 +369,11 @@ export async function grantInstructorByEmail(actor: AdminActor, input: GrantInst
     select: { id: true, name: true },
   });
 
+  const grantedAt = new Date();
   await prisma.instructorAccessRequest.upsert({
     where: { userId: user.id },
-    create: { userId: user.id, status: "APPROVED", reviewedAt: new Date() },
-    update: { status: "APPROVED", reviewedAt: new Date() },
+    create: { userId: user.id, status: "APPROVED", reviewedAt: grantedAt },
+    update: { status: "APPROVED", reviewedAt: grantedAt },
   });
 
   await recordAdminAction(prisma, {
@@ -383,7 +384,7 @@ export async function grantInstructorByEmail(actor: AdminActor, input: GrantInst
     summary: `Granted instructor access to ${input.email}`,
   });
 
-  queueEmail(() => notifyUserGrantedInstructorByAdmin({ email: input.email, name: user.name ?? input.name ?? null }));
+  await dispatchNotification(() => notifyUserGrantedInstructorByAdmin({ userId: user.id, grantedAt }));
 }
 
 /** Adds a platform admin by email, creating a verified account when the address is new. */
@@ -408,7 +409,7 @@ export async function grantAdminByEmail(actor: AdminActor, input: GrantAdminBody
     summary: `Granted platform admin to ${input.email}`,
   });
 
-  queueEmail(() => notifyUserGrantedAdminByAdmin({ email: input.email, name: user.name ?? input.name ?? null }));
+  await dispatchNotification(() => notifyUserGrantedAdminByAdmin({ userId: user.id, grantedAt: new Date() }));
 }
 
 /**
@@ -472,7 +473,7 @@ export async function approveInstructorRequest(actor: AdminActor, requestId: str
       summary: `Approved instructor request from ${request.user.email}`,
     });
   });
-  queueEmail(() => notifyUserInstructorAccessDecision({ userId: request.userId, approved: true }));
+  await dispatchNotification(() => notifyUserInstructorAccessDecision({ userId: request.userId, approved: true }));
 }
 
 export async function rejectInstructorRequest(actor: AdminActor, requestId: string): Promise<void> {
@@ -490,5 +491,5 @@ export async function rejectInstructorRequest(actor: AdminActor, requestId: stri
       summary: `Rejected instructor request from ${request.user.email}`,
     });
   });
-  queueEmail(() => notifyUserInstructorAccessDecision({ userId: request.userId, approved: false }));
+  await dispatchNotification(() => notifyUserInstructorAccessDecision({ userId: request.userId, approved: false }));
 }

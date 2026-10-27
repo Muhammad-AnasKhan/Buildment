@@ -11,6 +11,7 @@ import { pickContinueTarget } from "../progress/enrollment-syllabus.js";
 import { isCompletableBlock } from "../progress/rules.js";
 import { mentorReplyUnread } from "../progress/attention.js";
 import type { LearnerHabit } from "../../shared/lib/streak.js";
+import type { GamificationSummary } from "../../shared/api/gamification.js";
 import type {
   DashboardAction,
   DashboardCourse,
@@ -37,6 +38,7 @@ export type DashboardEnrollmentInput = {
   totalScore: number;
   maxScore: number;
   pendingReviews: number;
+  xpTotal?: number;
   lastActiveAt: Date | null;
   startedAt: Date | null;
   completedAt: Date | null;
@@ -107,6 +109,29 @@ export type {
   MenteeDashboardViewModel,
 } from "../../shared/api/learner.js";
 
+/** What a caller that loads no gamification gets: every feature off. */
+export const GAMIFICATION_OFF: GamificationSummary = {
+  features: { xp: false, streakFreezes: false, levels: false, leaderboards: false },
+  hidden: false,
+  leaderboardOptIn: false,
+  xp: null,
+  level: null,
+  freezes: null,
+  topThree: null,
+};
+
+/** "Stage 2 of 5": the module that holds the next chapter, among modules that have chapters. */
+export function moduleStage(
+  modules: Array<{ title: string; chapters: Array<{ id: string }> }>,
+  targetChapterId: string | null
+): DashboardCourse["stage"] {
+  const stages = modules.filter((module) => module.chapters.length > 0);
+  if (stages.length === 0) return null;
+  const index = targetChapterId ? stages.findIndex((module) => module.chapters.some((chapter) => chapter.id === targetChapterId)) : -1;
+  const current = index >= 0 ? index : stages.length - 1;
+  return { current: current + 1, total: stages.length, title: stages[current]!.title };
+}
+
 function iso(date: Date | null): string | null {
   return date?.toISOString() ?? null;
 }
@@ -131,7 +156,10 @@ export function buildMenteeDashboardViewModel(args: {
   openHelpCount?: number;
   bypassLocking?: boolean;
   habit?: LearnerHabit;
+  gamification?: GamificationSummary;
 }): MenteeDashboardViewModel {
+  const gamification = args.gamification ?? GAMIFICATION_OFF;
+  const showXp = gamification.features.xp && !gamification.hidden;
   const latest = latestResponses(args.responses);
   const latestByEnrollment = new Map<string, DashboardResponseInput[]>();
   for (const response of latest) {
@@ -213,6 +241,7 @@ export function buildMenteeDashboardViewModel(args: {
 
     return {
       id: enrollment.id,
+      courseId: enrollment.course.id,
       slug: enrollment.course.slug,
       title: enrollment.course.title,
       coverUrl: enrollment.course.coverUrl,
@@ -227,6 +256,8 @@ export function buildMenteeDashboardViewModel(args: {
       totalStudySeconds,
       lastActiveAt: iso(enrollment.lastActiveAt),
       currentModule: targetModule?.title ?? null,
+      xp: showXp ? (enrollment.xpTotal ?? 0) : null,
+      stage: gamification.features.levels ? moduleStage(modules, target?.id ?? null) : null,
       targetChapter: target
         ? { title: target.title, slug: target.slug, status: target.status, blocksCompleted: target.blocksCompleted ?? 0, blocksTotal: target.blockCount }
         : null,
@@ -368,5 +399,6 @@ export function buildMenteeDashboardViewModel(args: {
       streakMilestone: null,
       weeklyGoal: null,
     },
+    gamification,
   };
 }
