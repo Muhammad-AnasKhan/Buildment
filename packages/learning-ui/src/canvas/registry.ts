@@ -1138,6 +1138,10 @@ import { netM8ReplayCapstone4 } from "./net-m8-replay-capstone-4/data";
 import { netM9Ipv6Addresses } from "./net-m9-ipv6-addresses/data";
 import { netM9Ipv6Filter } from "./net-m9-ipv6-filter/data";
 import { netM9Ipv6VsNat } from "./net-m9-ipv6-vs-nat/data";
+import { netM10BgpAnnounce } from "./net-m10-bgp-announce/data";
+import { netM10ReplayChallenge7 } from "./net-m10-replay-challenge-7/data";
+import { netM11ReplayChallenge8 } from "./net-m11-replay-challenge-8/data";
+import { netM12ReplayToolbox } from "./net-m12-replay-toolbox/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -2263,6 +2267,10 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "net-m6-nat-table-fills": netM6NatTableFills,
   "net-m6-replay-forward-guest": netM6ReplayForwardGuest,
   "net-m6-replay-masquerade": netM6ReplayMasquerade,
+  "net-m12-replay-toolbox": netM12ReplayToolbox,
+  "net-m11-replay-challenge-8": netM11ReplayChallenge8,
+  "net-m10-replay-challenge-7": netM10ReplayChallenge7,
+  "net-m10-bgp-announce": netM10BgpAnnounce,
   "net-m6-route-leak": netM6RouteLeak,
   "net-m6-scene-quiet-chat": netM6SceneQuietChat,
   "net-m7-dhcp-four-messages": netM7DhcpFourMessages,

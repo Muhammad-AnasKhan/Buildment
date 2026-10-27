@@ -1,0 +1,298 @@
+import { createElement } from "react";
+import type { CustomCanvasSpec } from "../registry";
+import { outputOf, type ReplayData } from "../models/net-replay";
+import { ReplayCanvas } from "../net-m1-replay-setup-checker/ReplayCanvas";
+
+// 11.4 to 11.6 phone readers: challenge 8 parts 1 to 4 played from a real
+// recording (the challenge 8 learner sessions, recorded 2026-10-27 in the lab
+// image with the reference scripts). Steps 1 and 2 are part 1 (11.4), steps 3
+// to 7 are parts 2 and 3 (11.5), steps 8 to 13 are part 4 (11.6). Two steps
+// hide their output until the learner picks: what the cafe's outside plug
+// carries (step 5) and which address the website sees in the full tunnel
+// (step 8). The renderer is ReplayCanvas in net-m1-replay-setup-checker; the
+// model is models/net-replay.ts.
+const TITLE = "Challenge 8, replayed";
+const PURPOSE =
+  "Follow a recorded run of challenge 8: an office and a cafe behind NAT, a WireGuard tunnel between them, what each side captures, and a full and a split tunnel.";
+const LIMITS =
+  "A recording of one run of the reference scripts in the course lab, not of a learner. Keys, times, ports and some byte counts differ on every run. Long outputs are shortened, and a line with three dots marks what was left out. Part 4 rebuilt the tunnel with new keys, so its peer key differs from part 2.";
+
+export const netM11ReplayChallenge8Data: ReplayData = {
+  steps: [
+    {
+      runsOn: "lab",
+      command: ["cd /work/challenges/challenge-8-vpn/part-1-office-and-cafe", "bash office-cafe.sh"].join("\n"),
+      output: outputOf([
+        "--- the laptop visits the lab website. Which address does the website see?",
+        "the server sees you as 198.51.100.2:57230",
+        "--- the office server visits the lab website",
+        "the server sees you as 203.0.113.2:41792",
+        "--- the laptop pings the office server, 10.20.0.5 (this must fail: the internet has no route to it)",
+        "PING 10.20.0.5 (10.20.0.5) 56(84) bytes of data.",
+        "From 198.51.100.1 icmp_seq=1 Destination Net Unreachable",
+        "",
+        "--- 10.20.0.5 ping statistics ---",
+        "1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms",
+        "",
+        "(no answer, as expected)",
+        "--- the forward experiment",
+        "...",
+        "Done. Next: bash test.sh",
+      ]),
+      note: "The website sees each network's public address. The internet router, 198.51.100.1, has no route to 10.20.0.5 and says so.",
+    },
+    {
+      runsOn: "lab",
+      command: "cat forward-test.txt",
+      output: outputOf([
+        "1 rule on: arrived at the VPN box (16:16:05.269626 IP 198.51.100.2.51820 > 10.20.0.2.51820: UDP, length 6)",
+        "2 rule off, old NAT state kept: arrived at the VPN box (16:16:06.419357 IP 198.51.100.2.51820 > 10.20.0.2.51820: UDP, length 6)",
+        "3 rule off, NAT state flushed: nothing arrived at the VPN box",
+        "4 rule back, old NAT state kept: nothing arrived at the VPN box",
+        "5 rule back, NAT state flushed: arrived at the VPN box (16:16:13.612356 IP 198.51.100.2.51820 > 10.20.0.2.51820: UDP, length 6)",
+      ]),
+      note: "Lines 2 and 4 are the trap: the router keeps using its memory of the old conversation until conntrack -F clears it.",
+    },
+    {
+      runsOn: "lab",
+      command: ["cd ../part-2-the-tunnel", "bash tunnel.sh"].join("\n"),
+      output: outputOf([
+        "--- building the part 1 network",
+        "--- before the tunnel: the laptop pings 10.20.0.5",
+        "PING 10.20.0.5 (10.20.0.5) 56(84) bytes of data.",
+        "From 198.51.100.1 icmp_seq=1 Destination Net Unreachable",
+        "...",
+        "PING 10.20.0.5 (10.20.0.5) 56(84) bytes of data.",
+        "64 bytes from 10.20.0.5: icmp_seq=1 ttl=63 time=0.399 ms",
+        "64 bytes from 10.20.0.5: icmp_seq=2 ttl=63 time=0.448 ms",
+        "...",
+        "--- the office test page, through the tunnel",
+        "office test server",
+        "=== laptop",
+        "interface: wg0",
+        "...",
+        "peer: Q9Ceb0jn4n+axcB+Gqj0NfVuUvgMFST6pkmBQOtX6R8=",
+        "  endpoint: 203.0.113.2:51820",
+        "  allowed ips: 10.20.0.0/24, 10.99.0.1/32",
+        "  latest handshake: 1 second ago",
+        "...",
+        "=== vpnbox",
+        "...",
+        "peer: 9vxbHy8OFTSseJbNOaHtBbods1HcOYIMZDDONqatdRo=",
+        "  endpoint: 198.51.100.2:51820",
+        "  allowed ips: 10.99.0.2/32",
+        "...",
+        "--- one packet from 10.99.0.66, a source the VPN box does not allow",
+        "PING 10.20.0.5 (10.20.0.5) from 10.99.0.66 : 56(84) bytes of data.",
+        "...",
+        "VPN box wg0 receive errors: before 0, after 1",
+        "...",
+        "0 packets captured",
+        "...",
+        "Done. Next: bash test.sh",
+      ]),
+      note: "With the tunnel, 10.20.0.5 answers. The VPN box learned the cafe's public address by itself, and it dropped the packet from 10.99.0.66.",
+    },
+    {
+      runsOn: "lab",
+      command: [
+        "ip netns exec laptop ip link set wg0 down",
+        "ip netns exec laptop ping -c2 -W2 10.20.0.5",
+        "ip netns exec laptop ip link set wg0 up",
+        "ip netns exec laptop ip route add 10.20.0.0/24 dev wg0",
+        "ip netns exec laptop ping -c2 -W2 10.20.0.5",
+      ].join("\n"),
+      output: outputOf([
+        "PING 10.20.0.5 (10.20.0.5) 56(84) bytes of data.",
+        "From 198.51.100.1 icmp_seq=1 Destination Net Unreachable",
+        "From 198.51.100.1 icmp_seq=2 Destination Net Unreachable",
+        "",
+        "--- 10.20.0.5 ping statistics ---",
+        "2 packets transmitted, 0 received, +2 errors, 100% packet loss, time 1009ms",
+        "...",
+        "PING 10.20.0.5 (10.20.0.5) 56(84) bytes of data.",
+        "64 bytes from 10.20.0.5: icmp_seq=1 ttl=63 time=0.854 ms",
+        "64 bytes from 10.20.0.5: icmp_seq=2 ttl=63 time=0.659 ms",
+        "",
+        "--- 10.20.0.5 ping statistics ---",
+        "2 packets transmitted, 2 received, 0% packet loss, time 1016ms",
+        "rtt min/avg/max/mdev = 0.659/0.756/0.854/0.097 ms",
+      ]),
+      note: "With wg0 down, its route goes too, and the ping leaks out to the internet again. Up again, the route is added by hand, and the ping works.",
+    },
+    {
+      runsOn: "lab",
+      command: ["cd ../part-3-what-each-side-sees", "bash captures.sh"].join("\n"),
+      output: outputOf([
+        "--- building parts 1 and 2",
+        "--- the cafe's outside plug (cafe-outside.txt):",
+        "tcpdump: verbose output suppressed, use -v[v]... for full protocol decode",
+        "listening on veth-cafe-out, link-type EN10MB (Ethernet), snapshot length 262144 bytes",
+        "16:16:32.566143 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128",
+        "16:16:32.566335 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 128",
+        "16:16:33.592463 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128",
+        "16:16:33.592715 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 128",
+        "16:16:34.616327 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128",
+        "16:16:34.616540 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 128",
+        "...",
+        "16:16:34.631465 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 304",
+        "...",
+        "16 packets captured",
+        "...",
+      ]),
+      note: "Three pings and one page fetch, and the cafe sees only UDP between two public addresses on port 51820. No ICMP, no TCP, no 10.20.0.5.",
+      predict: {
+        question: "The laptop pings 10.20.0.5 three times and fetches a page through the tunnel. What does the cafe's outside plug carry?",
+        options: ["Only UDP 51820", "ICMP and TCP", "UDP and ICMP"],
+        correct: 0,
+      },
+    },
+    {
+      runsOn: "lab",
+      command: "cat wg0.txt",
+      output: outputOf([
+        "tcpdump: verbose output suppressed, use -v[v]... for full protocol decode",
+        "listening on wg0, link-type RAW (Raw IP), snapshot length 262144 bytes",
+        "16:16:38.604418 IP 10.99.0.2 > 10.20.0.5: ICMP echo request, id 879, seq 1, length 64",
+        "16:16:38.604475 IP 10.20.0.5 > 10.99.0.2: ICMP echo reply, id 879, seq 1, length 64",
+        "16:16:39.608388 IP 10.99.0.2 > 10.20.0.5: ICMP echo request, id 879, seq 2, length 64",
+        "16:16:39.608426 IP 10.20.0.5 > 10.99.0.2: ICMP echo reply, id 879, seq 2, length 64",
+        "4 packets captured",
+        "4 packets received by filter",
+        "0 packets dropped by kernel",
+      ]),
+      note: "On the VPN box's wg0 the inner packet is plain again: a ping from 10.99.0.2 to 10.20.0.5. The office sees what the cafe cannot.",
+    },
+    {
+      runsOn: "lab",
+      command: "cat size.txt size-capture.txt",
+      output: outputOf([
+        "inner 84, padded 96, outer 156",
+        "tcpdump: listening on veth-cafe-out, link-type EN10MB (Ethernet), snapshot length 262144 bytes",
+        "16:16:40.725329 IP (tos 0x0, ttl 63, id 12214, offset 0, flags [none], proto UDP (17), length 156)",
+        "    198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128",
+        "1 packet captured",
+        "2 packets received by filter",
+        "0 packets dropped by kernel",
+      ]),
+      note: "84 padded to 96, plus 32 of WireGuard is the UDP length 128. Plus 8 of UDP and 20 of IPv4 is the outer length 156.",
+    },
+    {
+      runsOn: "lab",
+      command: ["cd ../part-4-full-and-split-tunnel", "bash full-split.sh"].join("\n"),
+      output: outputOf([
+        "--- building parts 1 and 2",
+        "--- before: the laptop visits the website",
+        "the server sees you as 198.51.100.2:34276",
+        "=== laptop: ip route",
+        "default dev wg0 scope link",
+        "10.20.0.0/24 dev wg0 scope link",
+        "10.99.0.0/24 dev wg0 proto kernel scope link src 10.99.0.2",
+        "192.168.50.0/24 dev veth-laptop proto kernel scope link src 192.168.50.23",
+        "203.0.113.2 via 192.168.50.1 dev veth-laptop",
+        "=== laptop: wg show wg0 allowed-ips",
+        "xtXWb0pC2NBNnyoHn2TjfyZQrSHiHPdXuyU4fqVLp0Y=\t0.0.0.0/0",
+        "--- full tunnel: the laptop visits the website, while the cafe's outside plug is captured",
+        "the server sees you as 203.0.113.2:50228",
+        "16:17:57.265198 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 96",
+        "16:17:57.265630 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 96",
+        "...",
+        "Done. Next: bash test.sh",
+      ]),
+      note: "The default route now goes into wg0, and the /32 keeps the outer packets outside it. The website sees the office, 203.0.113.2.",
+      predict: {
+        question: "In the full tunnel, the laptop in the cafe visits the lab website. Which address does the website see?",
+        options: ["198.51.100.2", "203.0.113.2", "192.168.50.23"],
+        correct: 1,
+      },
+    },
+    {
+      runsOn: "lab",
+      command: "cat dns-cafe.txt",
+      output: outputOf([
+        "tcpdump: verbose output suppressed, use -v[v]... for full protocol decode",
+        "listening on veth-cafe-in, link-type EN10MB (Ethernet), snapshot length 262144 bytes",
+        "16:18:02.361874 IP 192.168.50.23.41288 > 192.168.50.1.53: 57993+ [1au] A? web.test. (49)",
+        "16:18:02.362061 IP 192.168.50.1.53 > 192.168.50.23.41288: 57993* 1/0/1 A 192.0.2.80 (53)",
+        "",
+        "2 packets captured",
+        "2 packets received by filter",
+        "0 packets dropped by kernel",
+      ]),
+      note: "Full tunnel, but the name question still went to the cafe's name server, in the clear. Its address is on the laptop's own cable.",
+    },
+    {
+      runsOn: "lab",
+      command: "cat dns-tunnel.txt",
+      output: outputOf([
+        "tcpdump: verbose output suppressed, use -v[v]... for full protocol decode",
+        "listening on wg0, link-type RAW (Raw IP), snapshot length 262144 bytes",
+        "16:18:07.348564 IP 10.99.0.2.55450 > 10.20.0.1.53: 43424+ [1au] A? web.test. (49)",
+        "16:18:07.348840 IP 10.20.0.1.53 > 10.99.0.2.55450: 43424* 1/0/1 A 192.0.2.80 (53)",
+        "16:18:07.363386 IP 10.99.0.2.45189 > 10.20.0.1.53: 17050+ [1au] A? intranet.test. (54)",
+        "16:18:07.363538 IP 10.20.0.1.53 > 10.99.0.2.45189: 17050* 1/0/1 A 10.20.0.5 (58)",
+        "",
+        "4 packets captured",
+        "4 packets received by filter",
+        "0 packets dropped by kernel",
+      ]),
+      note: "With the office's name server, 10.20.0.1, the questions travel inside wg0. Now the office sees them, and the cafe does not.",
+    },
+    {
+      runsOn: "lab",
+      command: "cat website-before.txt website-full.txt website-split.txt",
+      output: outputOf([
+        "the server sees you as 198.51.100.2:34276",
+        "the server sees you as 203.0.113.2:50228",
+        "the server sees you as 198.51.100.2:60596",
+      ]),
+      note: "No tunnel: the cafe. Full tunnel: the office. Split tunnel: the cafe again, because only office traffic goes inside.",
+    },
+    {
+      runsOn: "lab",
+      command: "cat cafe-outside-split.txt",
+      output: outputOf([
+        "tcpdump: verbose output suppressed, use -v[v]... for full protocol decode",
+        "listening on veth-cafe-out, link-type EN10MB (Ethernet), snapshot length 262144 bytes",
+        "16:18:11.444408 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [S], seq 3597875563, win 64240, options [mss 1460,sackOK,TS val 3789324696 ecr 0,nop,wscale 7], length 0",
+        "...",
+        "16:18:11.444511 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [P.], seq 1:88, ack 1, win 502, options [nop,nop,TS val 3789324696 ecr 2592675610], length 87: HTTP: GET /cgi-bin/whoami HTTP/1.1",
+        "...",
+        "16:18:11.451187 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128",
+        "16:18:11.451420 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 128",
+        "",
+        "14 packets captured",
+        "...",
+      ]),
+      note: "In the split tunnel the cafe reads the website visit, even the GET line. Only the office ping is hidden, as one UDP packet each way.",
+    },
+    {
+      runsOn: "lab",
+      command: "bash test.sh",
+      output: outputOf([
+        "PASS the namespaces exist",
+        "...",
+        "PASS website-full.txt: with the full tunnel, the website sees the office, 203.0.113.2",
+        "PASS cafe-outside-full.txt: in the full tunnel, the cafe sees only UDP 51820, even for the website",
+        "PASS dns-cafe.txt: in the full tunnel the question for web.test still went to the cafe, in the clear",
+        "...",
+        "PASS GAP 5: split tunnel: the website sees the cafe again, 198.51.100.2, not the office",
+        "PASS cafe-outside-split.txt: the website visit is plain TCP at the cafe, and the office ping is UDP 51820",
+        "RESULT: all checks passed",
+      ]),
+      note: "Every check passes, including the one that proves the cafe saw the name question in the clear before the DNS change.",
+    },
+  ],
+};
+
+function ChallengeEightBeat(props: { title: string; purpose: string; limits: string }) {
+  return createElement(ReplayCanvas, { ...props, data: netM11ReplayChallenge8Data });
+}
+
+export const netM11ReplayChallenge8: CustomCanvasSpec = {
+  kind: "custom",
+  title: TITLE,
+  purpose: PURPOSE,
+  limits: LIMITS,
+  component: ChallengeEightBeat,
+};
