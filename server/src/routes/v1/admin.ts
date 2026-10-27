@@ -3,18 +3,31 @@ import { userRateLimit } from "../../middlewares/rate-limit.js";
 import * as admin from "../../controllers/admin.js";
 import { authenticate } from "../../middlewares/authenticate.js";
 import { requireAdmin } from "../../middlewares/require-admin.js";
-import { validate, validateBody, validateParams } from "../../middlewares/validate.js";
+import { validate, validateBody, validateParams, validateQuery } from "../../middlewares/validate.js";
 import {
   adminProfileBody,
   adminPasswordBody,
   allocationsBody,
   approveCourseRequestBody,
+  bulkApproveBody,
+  bulkIdsOnlyBody,
+  bulkSuspendBody,
+  courseIdParams,
+  courseStatusBody,
   createOrganizationBody,
   grantAdminBody,
   grantInstructorBody,
   instructorAccessBody,
+  listCoursesQuery,
+  listOrganizationsQuery,
+  listRequestsQuery,
+  listUsersQuery,
+  metricsQuery,
   orgIdParams,
+  pageQuery,
   requestIdParams,
+  suspendUserBody,
+  totpCodeBody,
   userIdParams,
 } from "../../validations/admin.js";
 
@@ -29,24 +42,49 @@ router.patch("/profile", profileLimiter, validateBody(adminProfileBody), admin.u
 router.patch("/password", profileLimiter, validateBody(adminPasswordBody), admin.updatePassword);
 
 router.get("/overview", admin.getOverview);
-router.get("/courses", admin.listCourses);
+router.get("/metrics", validateQuery(metricsQuery), admin.getMetrics);
+router.get("/courses", validateQuery(listCoursesQuery), admin.listCourses);
+router.post("/courses/:courseId/status", validate({ params: courseIdParams, body: courseStatusBody }), admin.setCourseStatus);
+router.get("/courses/export", validateQuery(listCoursesQuery), admin.exportCoursesCsv);
 
-router.get("/organizations", admin.listOrganizations);
+router.get("/organizations", validateQuery(listOrganizationsQuery), admin.listOrganizations);
 router.post("/organizations", validateBody(createOrganizationBody), admin.createOrganization);
 router.get("/organizations/:orgId", validateParams(orgIdParams), admin.getOrganization);
 router.post("/organizations/:orgId/credentials/rotate", validateParams(orgIdParams), admin.rotateCredential);
 router.put("/organizations/:orgId/allocations", validate({ params: orgIdParams, body: allocationsBody }), admin.upsertAllocations);
 
-router.get("/course-requests", admin.listCourseRequests);
+router.get("/course-requests", validateQuery(listRequestsQuery), admin.listCourseRequests);
+router.post("/course-requests/bulk/approve", validateBody(bulkApproveBody), admin.bulkApproveCourseRequests);
+router.post("/course-requests/bulk/reject", validateBody(bulkIdsOnlyBody), admin.bulkRejectCourseRequests);
 router.post("/course-requests/:requestId/approve", validate({ params: requestIdParams, body: approveCourseRequestBody }), admin.approveCourseRequest);
 router.post("/course-requests/:requestId/reject", validateParams(requestIdParams), admin.rejectCourseRequest);
 
-router.get("/users", admin.listUsers);
+router.get("/users", validateQuery(listUsersQuery), admin.listUsers);
+// Declared before "/users/:userId" so the literal segments are not read as ids.
+router.post("/users/bulk/suspend", validateBody(bulkSuspendBody), admin.bulkSuspendUsers);
+router.post("/users/bulk/reinstate", validateBody(bulkIdsOnlyBody), admin.bulkReinstateUsers);
+router.get("/users/export", validateQuery(listUsersQuery), admin.exportUsersCsv);
+router.get("/users/:userId", validateParams(userIdParams), admin.getUserDetail);
+router.post("/users/:userId/verify-email", validateParams(userIdParams), admin.forceVerifyEmail);
+router.post("/users/:userId/revoke-sessions", validateParams(userIdParams), admin.revokeUserSessions);
+router.post("/users/:userId/suspend", validate({ params: userIdParams, body: suspendUserBody }), admin.suspendUser);
+router.post("/users/:userId/reinstate", validateParams(userIdParams), admin.reinstateUser);
+router.post("/users/:userId/reset-mfa", validateParams(userIdParams), admin.resetUserMfa);
+
+router.post("/mfa/enroll", admin.enrollMfa);
+router.get("/mfa", admin.getMfa);
+router.post("/mfa/activate", validateBody(totpCodeBody), admin.activateMfa);
+router.post("/mfa/recovery-codes", validateBody(totpCodeBody), admin.regenerateRecoveryCodes);
+router.post("/mfa/disable", validateBody(totpCodeBody), admin.disableMfa);
 router.patch("/users/:userId/zip-import", validate({ params: userIdParams, body: instructorAccessBody }), admin.setZipImportAccess);
 router.patch("/users/:userId/instructor-access", validate({ params: userIdParams, body: instructorAccessBody }), admin.setInstructorAccess);
+router.post("/users/:userId/revoke-admin", validateParams(userIdParams), admin.revokeAdmin);
 router.post("/instructors", validateBody(grantInstructorBody), admin.grantInstructor);
 router.post("/admins", validateBody(grantAdminBody), admin.grantAdmin);
 router.post("/instructor-access-requests/:requestId/approve", validateParams(requestIdParams), admin.approveInstructorRequest);
 router.post("/instructor-access-requests/:requestId/reject", validateParams(requestIdParams), admin.rejectInstructorRequest);
+
+router.get("/audit", validateQuery(pageQuery), admin.listAudit);
+router.get("/audit/export", admin.exportAuditCsv);
 
 export default router;

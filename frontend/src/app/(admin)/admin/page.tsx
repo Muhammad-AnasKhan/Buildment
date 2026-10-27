@@ -4,6 +4,7 @@ import {
   Building2,
   ClipboardList,
   GraduationCap,
+  LineChart,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -80,6 +81,13 @@ export default async function AdminHomePage() {
       title: "Users",
       description: "Grant instructor access and inspect learner accounts.",
       stat: `${instructors} can instruct`,
+    },
+    {
+      href: "/admin/trends",
+      icon: LineChart,
+      title: "Trends",
+      description: "Daily signups, enrollments, and active learners over 7, 30, or 90 days.",
+      stat: "Daily charts",
     },
   ] as const;
 

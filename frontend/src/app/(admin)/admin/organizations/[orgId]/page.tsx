@@ -3,7 +3,7 @@ import type { AdminOrganizationDetail } from "@/shared/api/admin";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { CredentialReveal } from "@/components/admin/credential-reveal";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { AdminActionForm } from "@/components/admin/admin-action-form";
 import { BulkCourseAllocationForm } from "@/components/admin/bulk-course-allocation-form";
 import { rotateOrganizationCredentialFormAction } from "@/server/actions/admin/organizations";
 import {
@@ -29,7 +29,7 @@ export default async function AdminOrganizationDetailPage({
   const { orgId } = await params;
   const query = await searchParams;
 
-  const { organization: org, credentials, allocations, pendingRequests, publishedCourses } =
+  const { organization: org, credentials, allocations, pendingRequests, publishedCourses, publishedCoursesTruncated } =
     await serverApiFetchOrNotFound<AdminOrganizationDetail>(`/api/v1/admin/organizations/${encodeURIComponent(orgId)}`);
 
   const allocationByCourseId = new Map(allocations.map((row) => [row.course.id, row]));
@@ -70,12 +70,20 @@ export default async function AdminOrganizationDetailPage({
             </>
           }
           actions={
-            <form action={rotateOrganizationCredentialFormAction}>
+            <AdminActionForm
+              action={rotateOrganizationCredentialFormAction}
+              submitLabel="Rotate API credentials"
+              pendingLabel="Rotating…"
+              variant="outline"
+              confirm={{
+                question: `Rotate API credentials for ${org.name}?`,
+                description:
+                  "The current key stops working immediately. Any integration using it must switch to the new credentials.",
+                confirmLabel: "Rotate credentials",
+              }}
+            >
               <input type="hidden" name="organizationId" value={org.id} />
-              <Button type="submit" variant="outline">
-                Rotate API credentials
-              </Button>
-            </form>
+            </AdminActionForm>
           }
         />
       </div>
@@ -193,6 +201,12 @@ export default async function AdminOrganizationDetailPage({
         className="mt-10"
       >
         <AdminPanel className="max-w-4xl">
+          {publishedCoursesTruncated ? (
+            <p className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100">
+              This catalog is larger than the {publishedCourses.length}-course cap, so only the first part is
+              listed here. Use search to find a specific course, or allocate from the course side.
+            </p>
+          ) : null}
           <BulkCourseAllocationForm
             organizationId={org.id}
             courses={allPublishedCourses}

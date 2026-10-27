@@ -1,12 +1,49 @@
-import type { CoursePricingType, CourseStatus, RequestStatus, Role } from "../domain/enums.js";
+import type { CoursePricingType, CourseStatus, EnrollmentLifecycle, RequestStatus, Role } from "../domain/enums.js";
 
 // Wire contract for /api/v1/admin — platform administration. Dates are ISO strings.
+
+/** Offset-pagination envelope shared by every admin list. */
+export type AdminPageInfo = {
+  page: number;
+  pageSize: number;
+  total: number;
+  pageCount: number;
+};
+
+/** Per-target outcome of a bulk action, so partial failures stay visible. */
+export type AdminBulkResult = {
+  updated: number;
+  skipped: Array<{ id: string; reason: string }>;
+};
 
 export type AdminOverview = {
   organizations: number;
   pendingCourseRequests: number;
   publishedCourses: number;
   instructors: number;
+};
+
+/** One UTC day of platform trend data. */
+export type AdminMetricPoint = {
+  /** YYYY-MM-DD */
+  date: string;
+  signups: number;
+  enrollments: number;
+  activeLearners: number;
+};
+
+export type AdminMetricTotals = {
+  newUsers: number;
+  newEnrollments: number;
+  activeLearners: number;
+  studySeconds: number;
+};
+
+export type AdminMetricsView = {
+  rangeDays: number;
+  totals: AdminMetricTotals;
+  /** Continuous, oldest → newest, one entry per day. */
+  series: AdminMetricPoint[];
 };
 
 export type AdminCourseRow = {
@@ -33,6 +70,11 @@ export type AdminOrganizationRow = {
   enrollmentCount: number;
 };
 
+export type AdminOrganizationsView = {
+  organizations: AdminOrganizationRow[];
+  page: AdminPageInfo;
+};
+
 export type AdminCredentialRow = {
   id: string;
   accessKey: string;
@@ -55,8 +97,10 @@ export type AdminOrganizationDetail = {
   credentials: AdminCredentialRow[];
   allocations: AdminAllocationRow[];
   pendingRequests: Array<{ id: string; courseId: string; courseTitle: string; courseSlug: string }>;
-  /** Every published course, so the admin can allocate new ones. */
+  /** Every published course, so the admin can allocate new ones. Capped for very large catalogs. */
   publishedCourses: Array<{ id: string; slug: string; title: string }>;
+  /** True when the catalog exceeded the cap, so the picker can say so. */
+  publishedCoursesTruncated: boolean;
 };
 
 /** The secret is shown exactly once, right after it is issued. */
@@ -74,6 +118,7 @@ export type AdminCourseRequestsView = {
     organization: { id: string; slug: string; name: string };
     course: { slug: string; title: string; status: CourseStatus };
   }>;
+  pendingPage: AdminPageInfo;
   recent: Array<{
     id: string;
     status: RequestStatus;
@@ -82,10 +127,12 @@ export type AdminCourseRequestsView = {
     organizationName: string;
     courseTitle: string;
   }>;
+  recentPage: AdminPageInfo;
 };
 
 export type AdminUserRow = {
   zipImportEnabled: boolean;
+  suspended: boolean;
   id: string;
   email: string;
   name: string | null;
@@ -102,11 +149,76 @@ export type AdminUsersView = {
     message: string | null;
     user: { id: string; email: string; name: string | null; role: Role };
   }>;
+  pendingRequestsPage: AdminPageInfo;
   users: AdminUserRow[];
+  page: AdminPageInfo;
+};
+
+export type AdminCoursesView = {
+  courses: AdminCourseRow[];
+  page: AdminPageInfo;
+};
+
+/** One-time TOTP enrollment payload: the secret, the otpauth URI, and a scannable QR (data URL). */
+export type AdminTotpEnrollment = { secret: string; otpauthUri: string; qrDataUrl: string };
+
+export type AdminMfaStatus = { enabled: boolean; recoveryCodesRemaining: number };
+
+/** Backup codes are returned exactly once, at enable or regenerate time. */
+export type AdminRecoveryCodes = { recoveryCodes: string[] };
+
+export type AdminUserDetail = {
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+    role: Role;
+    emailVerified: boolean;
+    zipImportEnabled: boolean;
+    suspended: boolean;
+    suspensionNote: string | null;
+    mfaEnabled: boolean;
+    createdAt: string;
+    activeSessions: number;
+    enrollmentCount: number;
+    courseCount: number;
+  };
+  enrollments: Array<{
+    id: string;
+    courseTitle: string;
+    courseSlug: string;
+    lifecycle: EnrollmentLifecycle;
+    percentComplete: number;
+    lastActiveAt: string | null;
+  }>;
+  coursesOwned: Array<{ id: string; title: string; slug: string; status: CourseStatus }>;
 };
 
 export const ADMIN_ERROR_CODES = {
   REQUEST_ALREADY_REVIEWED: "REQUEST_ALREADY_REVIEWED",
   COURSE_NOT_PUBLISHED: "COURSE_NOT_PUBLISHED",
   INVALID_EXPIRY: "INVALID_EXPIRY",
+  NOT_ADMIN: "NOT_ADMIN",
+  LAST_ADMIN: "LAST_ADMIN",
+  SELF_ACTION: "SELF_ACTION",
+  ALREADY_VERIFIED: "ALREADY_VERIFIED",
+  NOT_SUSPENDED: "NOT_SUSPENDED",
+  ALREADY_SUSPENDED: "ALREADY_SUSPENDED",
 } as const;
+
+/** One row of the platform-admin audit trail (newest first). */
+export type AdminAuditRow = {
+  id: string;
+  /** Stable machine key, e.g. "organization.rotate-credential". */
+  action: string;
+  actorEmail: string;
+  targetType: string;
+  targetId: string | null;
+  summary: string;
+  createdAt: string;
+};
+
+export type AdminAuditView = {
+  entries: AdminAuditRow[];
+  page: AdminPageInfo;
+};

@@ -7,7 +7,10 @@ import type { SanitizedAiInterviewConfig } from "@/shared/blocks/ai-interview/sc
 
 // The speech hook reads the browser; each test decides whether it is "supported".
 const speech = vi.hoisted(() => ({ supported: false, listening: false }));
-vi.mock("@/lib/use-speech-input", () => ({
+// The mic lives in the shared package and imports this hook relatively, so mock the
+// hook through the package — `@/lib/use-speech-input` is the frontend's own copy and
+// the component never loads it.
+vi.mock("@buildment/learning-ui/lib/use-speech-input", () => ({
   useSpeechInput: () => ({ supported: speech.supported, listening: speech.listening, error: null, toggle: () => {} }),
 }));
 

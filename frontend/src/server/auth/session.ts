@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { SESSION_COOKIE_NAME, type SessionUser } from "@/shared/api/auth";
 import { ApiError } from "@/lib/api-client";
 import { serverApiFetch } from "@/lib/api-server";
@@ -16,7 +17,14 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
     const { user } = await serverApiFetch<{ user: SessionUser }>("/api/v1/auth/me", { token });
     return user;
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) return null;
+    if (error instanceof ApiError) {
+      // A suspended account is refused with a distinct code — send them to the
+      // login page with the reason instead of a silent redirect.
+      if (error.status === 403 && error.code === "ACCOUNT_SUSPENDED") {
+        redirect("/login?error=suspended");
+      }
+      if (error.status === 401) return null;
+    }
     throw error;
   }
 });

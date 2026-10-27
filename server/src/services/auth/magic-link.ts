@@ -43,7 +43,7 @@ export async function requestMagicLink(input: { email: string; redirectTo?: stri
 
 export type MagicLinkResult =
   | { ok: true; session: { sessionToken: string; expires: Date }; redirectTo: string }
-  | { ok: false; reason: "invalid" | "expired" };
+  | { ok: false; reason: "invalid" | "expired" | "suspended" };
 
 export async function consumeMagicLink(token: string, redirectTo?: string): Promise<MagicLinkResult> {
   const row = await prisma.verificationToken.findUnique({ where: { token } });
@@ -58,6 +58,9 @@ export async function consumeMagicLink(token: string, redirectTo?: string): Prom
     update: { emailVerified: new Date() },
     create: { email, role: "MENTEE", emailVerified: new Date(), profile: { create: { timezone: "UTC", skills: [] } } },
   });
+  // Suspended accounts are refused with a reason (not a thrown error), so the
+  // browser landing on this GET is redirected to the login page with clear copy.
+  if (record.suspendedAt) return { ok: false, reason: "suspended" };
 
   const { user, session } = await startSession(toSessionUser(record));
   return { ok: true, session, redirectTo: safeRedirectTo(redirectTo) ?? homeRouteForRole(user.role) };

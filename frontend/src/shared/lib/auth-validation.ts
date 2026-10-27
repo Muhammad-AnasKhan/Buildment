@@ -15,4 +15,6 @@ export const signupSchema = z.object({
 export const loginSchema = z.object({
   email: authEmailSchema,
   password: z.string().min(1, "Password is required").max(128, "Password is too long"),
+  /** TOTP code, or a longer backup code; required only when the account has MFA enabled. */
+  code: z.string().trim().min(1, "Code is required").max(40, "Code is too long").optional(),
 });

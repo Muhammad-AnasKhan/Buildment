@@ -1,31 +1,64 @@
-import type { AdminUsersView } from "../../shared/api/admin.js";
+import type { AdminBulkResult, AdminUserDetail, AdminUsersView } from "../../shared/api/admin.js";
 import { ADMIN_ERROR_CODES } from "../../shared/api/admin.js";
+import type { Prisma } from "../../generated/prisma/index.js";
 import { prisma } from "../../db/prisma.js";
-import { ConflictError, NotFoundError } from "../../utils/errors.js";
-import type { GrantAdminBody, GrantInstructorBody } from "../../validations/admin.js";
+import type { CsvTable } from "../../utils/csv.js";
+import { pageInfo, resolvePaging } from "./paging.js";
+import { ConflictError, ForbiddenError, NotFoundError, isAppError } from "../../utils/errors.js";
+import type { GrantAdminBody, GrantInstructorBody, ListUsersQuery } from "../../validations/admin.js";
 import {
   notifyUserGrantedAdminByAdmin,
   notifyUserGrantedInstructorByAdmin,
   notifyUserInstructorAccessDecision,
 } from "../email/admin-notifications.js";
 import { queueEmail } from "../email/queue.js";
+import { ADMIN_AUDIT_ACTIONS, recordAdminAction, type AdminActor } from "./audit.js";
 
 // Accounts and the instructor capability. Granting instructor tools promotes a
 // learner to MENTOR (admins keep their role) and records an approved request so
 // the learner-side status reads consistently.
 
-const USER_LIST_LIMIT = 100;
+/** Upper bound on exported rows, so a download can't scan an unbounded table. */
+export const ADMIN_EXPORT_LIMIT = 10_000;
 
-export async function listUsers(): Promise<AdminUsersView> {
-  const [pendingInstructorRequests, users] = await Promise.all([
+/** Shared filter clause for the list view and the CSV export. */
+function buildUserWhere(filters: ListUsersQuery): Prisma.UserWhereInput {
+  return {
+    ...(filters.role ? { role: filters.role } : {}),
+    ...(filters.verified ? { emailVerified: filters.verified === "true" ? { not: null } : null } : {}),
+    ...(filters.query
+      ? {
+          OR: [
+            { email: { contains: filters.query, mode: "insensitive" as const } },
+            { name: { contains: filters.query, mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+}
+
+export async function listUsers(filters: ListUsersQuery = {}): Promise<AdminUsersView> {
+  const where = buildUserWhere(filters);
+  const [total, pendingRequestsTotal] = await Promise.all([
+    prisma.user.count({ where }),
+    prisma.instructorAccessRequest.count({ where: { status: "PENDING" } }),
+  ]);
+  const paging = resolvePaging(filters, total);
+  const requestsPaging = resolvePaging({ page: filters.requestsPage, pageSize: filters.pageSize }, pendingRequestsTotal);
+
+  const [pendingInstructorRequests, rows] = await Promise.all([
     prisma.instructorAccessRequest.findMany({
       where: { status: "PENDING" },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      skip: requestsPaging.skip,
+      take: requestsPaging.take,
       select: { id: true, message: true, user: { select: { id: true, email: true, name: true, role: true } } },
     }),
     prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      take: USER_LIST_LIMIT,
+      where,
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      skip: paging.skip,
+      take: paging.take,
       select: {
         id: true,
         email: true,
@@ -33,6 +66,7 @@ export async function listUsers(): Promise<AdminUsersView> {
         role: true,
         emailVerified: true,
         zipImportEnabled: true,
+        suspendedAt: true,
         createdAt: true,
         _count: { select: { enrollments: true, coursesOwned: true } },
       },
@@ -41,25 +75,251 @@ export async function listUsers(): Promise<AdminUsersView> {
 
   return {
     pendingInstructorRequests,
-    users: users.map(({ _count, emailVerified, createdAt, ...user }) => ({
+    pendingRequestsPage: pageInfo(requestsPaging),
+    users: rows.map(({ _count, emailVerified, suspendedAt, createdAt, ...user }) => ({
       ...user,
       emailVerified: emailVerified !== null,
+      suspended: suspendedAt !== null,
       createdAt: createdAt.toISOString(),
       enrollmentCount: _count.enrollments,
       courseCount: _count.coursesOwned,
     })),
+    page: pageInfo(paging),
   };
 }
 
-export async function setInstructorAccess(userId: string, enabled: boolean): Promise<void> {
-  const existing = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
-  if (!existing) throw new NotFoundError("User not found");
+/** Rows for the users CSV export (same filters as the list, capped at ADMIN_EXPORT_LIMIT). */
+export async function exportUsers(filters: ListUsersQuery = {}): Promise<CsvTable> {
+  const users = await prisma.user.findMany({
+    where: buildUserWhere(filters),
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    take: ADMIN_EXPORT_LIMIT,
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      emailVerified: true,
+      zipImportEnabled: true,
+      suspendedAt: true,
+      totpEnabledAt: true,
+      createdAt: true,
+      _count: { select: { enrollments: true, coursesOwned: true } },
+    },
+  });
+  return {
+    header: ["id", "email", "name", "role", "verified", "suspended", "mfa", "zipImport", "enrollments", "courses", "createdAt"],
+    rows: users.map((user) => [
+      user.id,
+      user.email,
+      user.name ?? "",
+      user.role,
+      user.emailVerified ? "yes" : "no",
+      user.suspendedAt ? "yes" : "no",
+      user.totpEnabledAt ? "yes" : "no",
+      user.zipImportEnabled ? "yes" : "no",
+      user._count.enrollments,
+      user._count.coursesOwned,
+      user.createdAt.toISOString(),
+    ]),
+  };
+}
+
+export async function getUserDetail(userId: string): Promise<AdminUserDetail> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      emailVerified: true,
+      zipImportEnabled: true,
+      suspendedAt: true,
+      suspensionNote: true,
+      totpEnabledAt: true,
+      createdAt: true,
+      _count: { select: { enrollments: true, coursesOwned: true, sessions: true } },
+      enrollments: {
+        orderBy: { createdAt: "desc" },
+        take: 20,
+        select: {
+          id: true,
+          lifecycle: true,
+          percentComplete: true,
+          lastActiveAt: true,
+          course: { select: { title: true, slug: true } },
+        },
+      },
+      coursesOwned: {
+        orderBy: { updatedAt: "desc" },
+        take: 20,
+        select: { id: true, title: true, slug: true, status: true },
+      },
+    },
+  });
+  if (!user) throw new NotFoundError("User not found");
+
+  return {
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      emailVerified: user.emailVerified !== null,
+      zipImportEnabled: user.zipImportEnabled,
+      suspended: user.suspendedAt !== null,
+      suspensionNote: user.suspensionNote,
+      mfaEnabled: user.totpEnabledAt !== null,
+      createdAt: user.createdAt.toISOString(),
+      activeSessions: user._count.sessions,
+      enrollmentCount: user._count.enrollments,
+      courseCount: user._count.coursesOwned,
+    },
+    enrollments: user.enrollments.map((row) => ({
+      id: row.id,
+      courseTitle: row.course.title,
+      courseSlug: row.course.slug,
+      lifecycle: row.lifecycle,
+      percentComplete: row.percentComplete,
+      lastActiveAt: row.lastActiveAt?.toISOString() ?? null,
+    })),
+    coursesOwned: user.coursesOwned,
+  };
+}
+
+/** Marks the email verified on the learner's behalf (e.g. they never received the link). */
+export async function forceVerifyEmail(actor: AdminActor, userId: string): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, emailVerified: true } });
+  if (!user) throw new NotFoundError("User not found");
+  if (user.emailVerified) throw new ConflictError("This account is already verified.", ADMIN_ERROR_CODES.ALREADY_VERIFIED);
 
   await prisma.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: userId }, data: { emailVerified: new Date() } });
+    await recordAdminAction(tx, {
+      actor,
+      action: ADMIN_AUDIT_ACTIONS.USER_FORCE_VERIFY,
+      targetType: "User",
+      targetId: userId,
+      summary: `Verified ${user.email}'s email`,
+    });
+  });
+}
+
+/** Signs the account out of every device by deleting its sessions. */
+export async function revokeUserSessions(actor: AdminActor, userId: string): Promise<void> {
+  if (actor.id === userId) {
+    throw new ForbiddenError("Sign yourself out from your own account menu.", ADMIN_ERROR_CODES.SELF_ACTION);
+  }
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true } });
+  if (!user) throw new NotFoundError("User not found");
+
+  const { count } = await prisma.session.deleteMany({ where: { userId } });
+  // Idempotent: nothing to revoke (already signed out, or a race) is a no-op, and
+  // the audit trail records changes, so skip the entry when no session was deleted.
+  if (count === 0) return;
+  await recordAdminAction(prisma, {
+    actor,
+    action: ADMIN_AUDIT_ACTIONS.USER_REVOKE_SESSIONS,
+    targetType: "User",
+    targetId: userId,
+    summary: `Signed out ${count} session${count === 1 ? "" : "s"} for ${user.email}`,
+    metadata: { sessions: count },
+  });
+}
+
+/**
+ * Blocks sign-in for an account and signs it out of every device. Guards: an admin
+ * cannot suspend themself, and the last active (non-suspended) admin cannot be
+ * suspended. The active-admin count is checked inside the transaction.
+ */
+export async function suspendUser(actor: AdminActor, userId: string, note?: string): Promise<void> {
+  if (actor.id === userId) {
+    throw new ForbiddenError("You cannot suspend your own account.", ADMIN_ERROR_CODES.SELF_ACTION);
+  }
+  const target = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, role: true, suspendedAt: true },
+  });
+  if (!target) throw new NotFoundError("User not found");
+  if (target.suspendedAt) throw new ConflictError("This account is already suspended.", ADMIN_ERROR_CODES.ALREADY_SUSPENDED);
+
+  await prisma.$transaction(async (tx) => {
+    if (target.role === "ADMIN") {
+      const activeAdmins = await tx.user.count({ where: { role: "ADMIN", suspendedAt: null } });
+      if (activeAdmins <= 1) {
+        throw new ConflictError("The last active platform admin cannot be suspended.", ADMIN_ERROR_CODES.LAST_ADMIN);
+      }
+    }
     await tx.user.update({
       where: { id: userId },
-      data: { role: existing.role === "ADMIN" ? "ADMIN" : enabled ? "MENTOR" : "MENTEE" },
+      data: { suspendedAt: new Date(), suspensionNote: note ?? null },
     });
+    // Existing sessions are kept as inert tombstones: every request now returns a
+    // distinct 403 (ACCOUNT_SUSPENDED), so clients can explain the sign-out. They
+    // are cleared on reinstate, so lifting a suspension never revives old sessions.
+    await recordAdminAction(tx, {
+      actor,
+      action: ADMIN_AUDIT_ACTIONS.USER_SUSPEND,
+      targetType: "User",
+      targetId: userId,
+      summary: `Suspended ${target.email}${note ? ` — ${note}` : ""}`,
+      ...(note ? { metadata: { note } } : {}),
+    });
+  });
+}
+
+/** Lifts a suspension so the account can sign in again. Clears old sessions so a reinstated account starts fresh. */
+export async function reinstateUser(actor: AdminActor, userId: string): Promise<void> {
+  const target = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, suspendedAt: true },
+  });
+  if (!target) throw new NotFoundError("User not found");
+  if (!target.suspendedAt) throw new ConflictError("This account is not suspended.", ADMIN_ERROR_CODES.NOT_SUSPENDED);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: userId }, data: { suspendedAt: null, suspensionNote: null } });
+    await tx.session.deleteMany({ where: { userId } });
+    await recordAdminAction(tx, {
+      actor,
+      action: ADMIN_AUDIT_ACTIONS.USER_REINSTATE,
+      targetType: "User",
+      targetId: userId,
+      summary: `Reinstated ${target.email}`,
+    });
+  });
+}
+
+/** Bulk actions run each target through the single-item path and report per-target outcomes. */
+async function runEach(idList: string[], work: (id: string) => Promise<void>): Promise<AdminBulkResult> {
+  const result: AdminBulkResult = { updated: 0, skipped: [] };
+  for (const id of idList) {
+    try {
+      await work(id);
+      result.updated += 1;
+    } catch (error) {
+      result.skipped.push({ id, reason: isAppError(error) ? error.message : "Could not be updated." });
+    }
+  }
+  return result;
+}
+
+export function bulkSuspendUsers(actor: AdminActor, ids: string[], note?: string): Promise<AdminBulkResult> {
+  return runEach(ids, (id) => suspendUser(actor, id, note));
+}
+
+export function bulkReinstateUsers(actor: AdminActor, ids: string[]): Promise<AdminBulkResult> {
+  return runEach(ids, (id) => reinstateUser(actor, id));
+}
+
+export async function setInstructorAccess(actor: AdminActor, userId: string, enabled: boolean): Promise<void> {
+  const existing = await prisma.user.findUnique({ where: { id: userId }, select: { role: true, email: true } });
+  if (!existing) throw new NotFoundError("User not found");
+  const nextRole = existing.role === "ADMIN" ? "ADMIN" : enabled ? "MENTOR" : "MENTEE";
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: userId }, data: { role: nextRole } });
     if (enabled) {
       await tx.instructorAccessRequest.upsert({
         where: { userId },
@@ -67,17 +327,35 @@ export async function setInstructorAccess(userId: string, enabled: boolean): Pro
         update: { status: "APPROVED", reviewedAt: new Date() },
       });
     }
+    await recordAdminAction(tx, {
+      actor,
+      action: ADMIN_AUDIT_ACTIONS.USER_SET_INSTRUCTOR_ACCESS,
+      targetType: "User",
+      targetId: userId,
+      summary: `${enabled ? "Granted" : "Revoked"} instructor access for ${existing.email}`,
+      metadata: { enabled },
+    });
   });
 }
 
-export async function setZipImportAccess(userId: string, enabled: boolean): Promise<void> {
-  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+export async function setZipImportAccess(actor: AdminActor, userId: string, enabled: boolean): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true } });
   if (!user) throw new NotFoundError("User not found");
-  await prisma.user.update({ where: { id: userId }, data: { zipImportEnabled: enabled } });
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: userId }, data: { zipImportEnabled: enabled } });
+    await recordAdminAction(tx, {
+      actor,
+      action: ADMIN_AUDIT_ACTIONS.USER_SET_ZIP_IMPORT,
+      targetType: "User",
+      targetId: userId,
+      summary: `${enabled ? "Enabled" : "Disabled"} ZIP import for ${user.email}`,
+      metadata: { enabled },
+    });
+  });
 }
 
 /** Grants instructor tools by email, creating a verified account when the address is new. */
-export async function grantInstructorByEmail(input: GrantInstructorBody): Promise<void> {
+export async function grantInstructorByEmail(actor: AdminActor, input: GrantInstructorBody): Promise<void> {
   const existing = await prisma.user.findUnique({ where: { email: input.email }, select: { role: true } });
   const user = await prisma.user.upsert({
     where: { email: input.email },
@@ -97,11 +375,19 @@ export async function grantInstructorByEmail(input: GrantInstructorBody): Promis
     update: { status: "APPROVED", reviewedAt: new Date() },
   });
 
+  await recordAdminAction(prisma, {
+    actor,
+    action: ADMIN_AUDIT_ACTIONS.USER_GRANT_INSTRUCTOR,
+    targetType: "User",
+    targetId: user.id,
+    summary: `Granted instructor access to ${input.email}`,
+  });
+
   queueEmail(() => notifyUserGrantedInstructorByAdmin({ email: input.email, name: user.name ?? input.name ?? null }));
 }
 
 /** Adds a platform admin by email, creating a verified account when the address is new. */
-export async function grantAdminByEmail(input: GrantAdminBody): Promise<void> {
+export async function grantAdminByEmail(actor: AdminActor, input: GrantAdminBody): Promise<void> {
   const user = await prisma.user.upsert({
     where: { email: input.email },
     create: {
@@ -114,39 +400,95 @@ export async function grantAdminByEmail(input: GrantAdminBody): Promise<void> {
     select: { id: true, name: true },
   });
 
+  await recordAdminAction(prisma, {
+    actor,
+    action: ADMIN_AUDIT_ACTIONS.USER_GRANT_ADMIN,
+    targetType: "User",
+    targetId: user.id,
+    summary: `Granted platform admin to ${input.email}`,
+  });
+
   queueEmail(() => notifyUserGrantedAdminByAdmin({ email: input.email, name: user.name ?? input.name ?? null }));
+}
+
+/**
+ * Removes the platform-admin role from a user. Guards: an admin cannot remove
+ * their own access, and the last remaining admin cannot be removed. The count is
+ * re-checked inside the transaction so two admins revoking each other at once
+ * cannot leave the platform with none.
+ */
+export async function revokeAdmin(actor: AdminActor, userId: string): Promise<void> {
+  if (actor.id === userId) {
+    throw new ForbiddenError("You cannot revoke your own platform-admin access.", ADMIN_ERROR_CODES.SELF_ACTION);
+  }
+  const target = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true, role: true } });
+  if (!target) throw new NotFoundError("User not found");
+  if (target.role !== "ADMIN") {
+    throw new ConflictError("This user is not a platform admin.", ADMIN_ERROR_CODES.NOT_ADMIN);
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const adminCount = await tx.user.count({ where: { role: "ADMIN" } });
+    if (adminCount <= 1) {
+      throw new ConflictError("The last platform admin cannot be removed.", ADMIN_ERROR_CODES.LAST_ADMIN);
+    }
+    await tx.user.update({ where: { id: userId }, data: { role: "MENTEE" } });
+    await recordAdminAction(tx, {
+      actor,
+      action: ADMIN_AUDIT_ACTIONS.USER_REVOKE_ADMIN,
+      targetType: "User",
+      targetId: userId,
+      summary: `Revoked platform admin from ${target.email}`,
+    });
+  });
 }
 
 async function requirePendingInstructorRequest(requestId: string) {
   const request = await prisma.instructorAccessRequest.findUnique({
     where: { id: requestId },
-    select: { id: true, userId: true, status: true, user: { select: { role: true } } },
+    select: { id: true, userId: true, status: true, user: { select: { role: true, email: true } } },
   });
   if (!request) throw new NotFoundError("Request not found");
   if (request.status !== "PENDING") throw new ConflictError("This request has already been reviewed.", ADMIN_ERROR_CODES.REQUEST_ALREADY_REVIEWED);
   return request;
 }
 
-export async function approveInstructorRequest(admin: { id: string }, requestId: string): Promise<void> {
+export async function approveInstructorRequest(actor: AdminActor, requestId: string): Promise<void> {
   const request = await requirePendingInstructorRequest(requestId);
-  await prisma.$transaction([
-    prisma.user.update({
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
       where: { id: request.userId },
       data: { ...(request.user.role !== "ADMIN" ? { role: "MENTOR" } : {}) },
-    }),
-    prisma.instructorAccessRequest.update({
+    });
+    await tx.instructorAccessRequest.update({
       where: { id: request.id },
-      data: { status: "APPROVED", reviewedById: admin.id, reviewedAt: new Date() },
-    }),
-  ]);
+      data: { status: "APPROVED", reviewedById: actor.id, reviewedAt: new Date() },
+    });
+    await recordAdminAction(tx, {
+      actor,
+      action: ADMIN_AUDIT_ACTIONS.INSTRUCTOR_REQUEST_APPROVE,
+      targetType: "InstructorAccessRequest",
+      targetId: request.id,
+      summary: `Approved instructor request from ${request.user.email}`,
+    });
+  });
   queueEmail(() => notifyUserInstructorAccessDecision({ userId: request.userId, approved: true }));
 }
 
-export async function rejectInstructorRequest(admin: { id: string }, requestId: string): Promise<void> {
+export async function rejectInstructorRequest(actor: AdminActor, requestId: string): Promise<void> {
   const request = await requirePendingInstructorRequest(requestId);
-  await prisma.instructorAccessRequest.update({
-    where: { id: request.id },
-    data: { status: "REJECTED", reviewedById: admin.id, reviewedAt: new Date() },
+  await prisma.$transaction(async (tx) => {
+    await tx.instructorAccessRequest.update({
+      where: { id: request.id },
+      data: { status: "REJECTED", reviewedById: actor.id, reviewedAt: new Date() },
+    });
+    await recordAdminAction(tx, {
+      actor,
+      action: ADMIN_AUDIT_ACTIONS.INSTRUCTOR_REQUEST_REJECT,
+      targetType: "InstructorAccessRequest",
+      targetId: request.id,
+      summary: `Rejected instructor request from ${request.user.email}`,
+    });
   });
   queueEmail(() => notifyUserInstructorAccessDecision({ userId: request.userId, approved: false }));
 }

@@ -7,7 +7,9 @@ import {
   BookOpen,
   Building2,
   ClipboardList,
+  History,
   LayoutDashboard,
+  LineChart,
   Menu,
   Users,
 } from "lucide-react";
@@ -79,6 +81,18 @@ export function AdminWorkspaceShell({
       href: "/admin/users",
       icon: Users,
       active: pathname === "/admin/users",
+    },
+    {
+      label: "Trends",
+      href: "/admin/trends",
+      icon: LineChart,
+      active: pathname === "/admin/trends",
+    },
+    {
+      label: "Audit",
+      href: "/admin/audit",
+      icon: History,
+      active: pathname === "/admin/audit",
     },
   ];
 

@@ -197,7 +197,16 @@ model User {
   image         String?
   role          Role         @default(MENTEE)
   passwordHash  String?
+  /// Base32 TOTP secret while MFA is set up. Null means MFA is off.
+  totpSecret    String?      @db.VarChar(64)
+  /// Set once the account confirmed a TOTP code; MFA is enforced from then on.
+  totpEnabledAt DateTime?
+  /// SHA-256 hashes of unused recovery codes. The plaintext is shown exactly once.
+  totpRecoveryCodes String[] @default([])
   zipImportEnabled Boolean @default(false)
+  /// Set by a platform admin to block sign-in; null means the account is active.
+  suspendedAt   DateTime?
+  suspensionNote String?      @db.VarChar(240)
   weeklyGoalKind WeeklyGoalKind?
   weeklyGoalTarget Int?
   weeklyGoalNote String? @db.VarChar(240)
@@ -873,4 +882,26 @@ model IntegritySnapshot {
 
   @@index([attemptId, takenAt])
   @@index([deletedAt, takenAt])
+}
+
+/// Append-only record of platform-admin actions, for accountability. The actor is
+/// stored as a snapshot (id + email, no foreign key) so the trail survives user
+/// deletion, and rows are never updated or removed by the application.
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  actorEmail String   @db.VarChar(320)
+  /// Stable machine key, e.g. "organization.rotate-credential".
+  action     String   @db.VarChar(64)
+  /// "Organization" | "User" | "CourseRequest" | "InstructorAccessRequest".
+  targetType String   @db.VarChar(40)
+  targetId   String?  @db.VarChar(64)
+  /// Human-readable one-liner shown in the admin audit view.
+  summary    String   @db.VarChar(300)
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([targetType, targetId])
+  @@index([actorId])
 }
