@@ -5,7 +5,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { unzipSync } from "fflate";
 import { load as loadYaml } from "js-yaml";
-import { courseSourceHash, packageZip, publishingSettings, selectedPackages } from "../../scripts/repository-course-publish.js";
+import { courseSourceHash, ownershipSlugGroups, packageZip, publishingSettings, selectedPackages } from "../../scripts/repository-course-publish.js";
 import { coursesRootForServer } from "../../scripts/course-source.js";
 
 const temporary: string[] = [];
@@ -51,6 +51,7 @@ describe("repository course publishing selection", () => {
     expect(publishingSettings(root).instructorEmail).toBe("devweekends@gmail.com");
     const packages = selectedPackages(root);
     expect(packages.map(pkg => pkg.slug)).toEqual(["ready"]);
+    expect(ownershipSlugGroups(packages)).toEqual([["ready"]]);
     const files = unzipSync(packageZip(packages[0]!, "update", "devweekends@gmail.com"));
     expect(Object.keys(files).sort()).toEqual(["01-foundations/01.01-start.md", "course.yaml"]);
     const manifest = loadYaml(Buffer.from(files["course.yaml"]!).toString("utf8")) as Record<string, unknown>;
@@ -79,6 +80,7 @@ describe("repository course publishing selection", () => {
     const dir = course(root, "source", "repositoryPublish: true\nrepositoryTargetSlug: published-course\n");
     const selected = selectedPackages(root)[0]!;
     expect(selected.slug).toBe("source");
+    expect(ownershipSlugGroups([selected])).toEqual([["source", "published-course"]]);
     const files = unzipSync(packageZip(selected, "update", "devweekends@gmail.com"));
     const manifest = loadYaml(Buffer.from(files["course.yaml"]!).toString("utf8")) as Record<string, unknown>;
     expect(manifest.slug).toBe("published-course");

@@ -56,6 +56,10 @@ export function selectedPackages(root = COURSES_ROOT): Package[] {
     .sort((a, b) => a.slug.localeCompare(b.slug));
 }
 
+export function ownershipSlugGroups(packages: Package[]): string[][] {
+  return packages.map(pkg => [pkg.slug, ...(pkg.manifest.repositoryTargetSlug ? [pkg.manifest.repositoryTargetSlug] : [])]);
+}
+
 function filesForZip(dir: string): Record<string, Uint8Array> {
   const files: Record<string, Uint8Array> = {};
   function visit(current: string) {
@@ -144,10 +148,9 @@ async function publish(packages: Package[], instructorEmail: string) {
       throw new Error(`${instructorEmail} must be a verified instructor with ZIP import access before repository publishing runs`);
     }
     const user: SessionUser = owner;
-    // Bind existing repository courses. The previous owner keeps COURSE_CREATOR access.
-    for (const entry of fs.readdirSync(COURSES_ROOT, { withFileTypes: true }).filter(item => item.isDirectory())) {
-      const target = packages.find(pkg => pkg.slug === entry.name)?.manifest.repositoryTargetSlug;
-      const slugs = [entry.name, ...(target ? [target] : [])];
+    // Bind only opted-in repository courses. The previous owner keeps
+    // COURSE_CREATOR access; unpublished source packages must not mutate DB ownership.
+    for (const slugs of ownershipSlugGroups(packages)) {
       const courses = await prisma.course.findMany({ where: { slug: { in: slugs } }, select: { id: true, slug: true, mentorId: true } });
       for (const course of courses) {
         if (course.mentorId === user.id) continue;
