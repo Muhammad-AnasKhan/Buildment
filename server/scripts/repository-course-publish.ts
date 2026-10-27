@@ -210,6 +210,9 @@ async function main() {
   }
   if (!fs.existsSync(COURSES_ROOT)) {
     if (mode === "--publish") throw new Error("Set BUILDMENT_CONTENT_ROOT to a private Buildment-core checkout before publishing courses.");
+    if (process.env.BUILDMENT_CONTENT_ROOT) {
+      throw new Error(`Private course checkout is missing at ${COURSES_ROOT}. Check BUILDMENT_CONTENT_ROOT.`);
+    }
     if (mode === "--count") console.log(0);
     else console.log("No private course checkout configured; platform is ready for content publishing.");
     return;
