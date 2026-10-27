@@ -1,0 +1,632 @@
+Challenge 8 (a WireGuard VPN): learner sessions from real runs
+================================================================
+
+Recorded 2026-10-27 in the lab image (networking-lab), started with --privileged.
+The scripts are the reference solutions (every gap filled), on top of the learner template's toolkit.
+Every line below "(lab) #" is the exact output of that command. Nothing is invented or edited.
+Keys, times, ids, ports chosen by Linux and byte counts differ on every run.
+
+What to find where:
+  PART 1: the website's answer for the cafe and the office, the ping that fails, forward-test.txt
+  PART 2: ping before and with the tunnel, wg show on both ends, ping with wg0 down, the false source
+  PART 3: the cafe outside capture, the wg0 capture, the 156-byte outer packet, the inside plug,
+          and the optional keepalive extra
+  PART 4: the website's answer before, in the full tunnel and in the split tunnel, the routes,
+          the DNS query captures (cafe in the clear, then inside wg0), the split capture
+
+
+======== PART 1 ========
+(lab) # cd /work/challenges/challenge-8-vpn/part-1-office-and-cafe
+
+(lab) # bash office-cafe.sh
+--- the laptop visits the lab website. Which address does the website see?
+the server sees you as 198.51.100.2:57230
+--- the office server visits the lab website
+the server sees you as 203.0.113.2:41792
+--- the laptop pings the office server, 10.20.0.5 (this must fail: the internet has no route to it)
+PING 10.20.0.5 (10.20.0.5) 56(84) bytes of data.
+From 198.51.100.1 icmp_seq=1 Destination Net Unreachable
+
+--- 10.20.0.5 ping statistics ---
+1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
+
+(no answer, as expected)
+--- the forward experiment
+1 rule on: arrived at the VPN box (16:16:05.269626 IP 198.51.100.2.51820 > 10.20.0.2.51820: UDP, length 6)
+2 rule off, old NAT state kept: arrived at the VPN box (16:16:06.419357 IP 198.51.100.2.51820 > 10.20.0.2.51820: UDP, length 6)
+The office router still remembers the conversation:
+udp      17 29 src=198.51.100.2 dst=203.0.113.2 sport=51820 dport=51820 [UNREPLIED] src=10.20.0.2 dst=198.51.100.2 sport=51820 dport=51820 mark=0 use=1
+3 rule off, NAT state flushed: nothing arrived at the VPN box
+4 rule back, old NAT state kept: nothing arrived at the VPN box
+5 rule back, NAT state flushed: arrived at the VPN box (16:16:13.612356 IP 198.51.100.2.51820 > 10.20.0.2.51820: UDP, length 6)
+Done. Next: bash test.sh
+
+(lab) # bash test.sh
+PASS the seven namespaces exist
+PASS mid-point: laptop reaches 192.168.50.1
+PASS mid-point: caferouter reaches 198.51.100.1
+PASS mid-point: officert reaches 203.0.113.1
+PASS mid-point: vpnbox reaches 10.20.0.1
+PASS mid-point: officesrv reaches 10.20.0.1
+PASS mid-point: website reaches 192.0.2.1
+PASS the laptop reaches the website, and the website sees the cafe, 198.51.100.2
+PASS the office server reaches the website, and the website sees the office, 203.0.113.2
+PASS the laptop cannot reach 10.20.0.5 (no tunnel yet, as expected)
+PASS the office router forwards UDP 51820 to 10.20.0.2
+PASS a packet from the laptop to 203.0.113.2:51820 reaches the VPN box, from 198.51.100.2
+PASS forward-test.txt: arrived, arrived (old state), nothing (flushed), nothing (old state), arrived (flushed)
+RESULT: all checks passed
+
+(lab) # cat forward-test.txt
+1 rule on: arrived at the VPN box (16:16:05.269626 IP 198.51.100.2.51820 > 10.20.0.2.51820: UDP, length 6)
+2 rule off, old NAT state kept: arrived at the VPN box (16:16:06.419357 IP 198.51.100.2.51820 > 10.20.0.2.51820: UDP, length 6)
+3 rule off, NAT state flushed: nothing arrived at the VPN box
+4 rule back, old NAT state kept: nothing arrived at the VPN box
+5 rule back, NAT state flushed: arrived at the VPN box (16:16:13.612356 IP 198.51.100.2.51820 > 10.20.0.2.51820: UDP, length 6)
+
+
+======== PART 2 ========
+(lab) # cd ../part-2-the-tunnel
+
+(lab) # bash tunnel.sh
+--- building the part 1 network
+--- before the tunnel: the laptop pings 10.20.0.5
+PING 10.20.0.5 (10.20.0.5) 56(84) bytes of data.
+From 198.51.100.1 icmp_seq=1 Destination Net Unreachable
+
+--- 10.20.0.5 ping statistics ---
+1 packets transmitted, 0 received, +1 errors, 100% packet loss, time 0ms
+
+--- with the tunnel: the laptop pings the VPN box's tunnel address, then the office server
+PING 10.99.0.1 (10.99.0.1) 56(84) bytes of data.
+64 bytes from 10.99.0.1: icmp_seq=1 ttl=64 time=0.911 ms
+
+--- 10.99.0.1 ping statistics ---
+1 packets transmitted, 1 received, 0% packet loss, time 0ms
+rtt min/avg/max/mdev = 0.911/0.911/0.911/0.000 ms
+PING 10.20.0.5 (10.20.0.5) 56(84) bytes of data.
+64 bytes from 10.20.0.5: icmp_seq=1 ttl=63 time=0.399 ms
+64 bytes from 10.20.0.5: icmp_seq=2 ttl=63 time=0.448 ms
+
+--- 10.20.0.5 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1026ms
+rtt min/avg/max/mdev = 0.399/0.423/0.448/0.024 ms
+--- the office test page, through the tunnel
+office test server
+=== laptop
+interface: wg0
+  public key: 9vxbHy8OFTSseJbNOaHtBbods1HcOYIMZDDONqatdRo=
+  private key: (hidden)
+  listening port: 51820
+
+peer: Q9Ceb0jn4n+axcB+Gqj0NfVuUvgMFST6pkmBQOtX6R8=
+  endpoint: 203.0.113.2:51820
+  allowed ips: 10.20.0.0/24, 10.99.0.1/32
+  latest handshake: 1 second ago
+  transfer: 1.15 KiB received, 1.05 KiB sent
+
+=== vpnbox
+interface: wg0
+  public key: Q9Ceb0jn4n+axcB+Gqj0NfVuUvgMFST6pkmBQOtX6R8=
+  private key: (hidden)
+  listening port: 51820
+
+peer: 9vxbHy8OFTSseJbNOaHtBbods1HcOYIMZDDONqatdRo=
+  endpoint: 198.51.100.2:51820
+  allowed ips: 10.99.0.2/32
+  latest handshake: 1 second ago
+  transfer: 1.05 KiB received, 1.15 KiB sent
+--- one packet from 10.99.0.66, a source the VPN box does not allow
+PING 10.20.0.5 (10.20.0.5) from 10.99.0.66 : 56(84) bytes of data.
+
+--- 10.20.0.5 ping statistics ---
+1 packets transmitted, 0 received, 100% packet loss, time 0ms
+
+(no answer)
+VPN box wg0 receive errors: before 0, after 1
+2: wg0: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 1420 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/none 
+    RX:  bytes packets errors dropped  missed   mcast           
+          1076       9      1       0       0       0 
+    TX:  bytes packets errors dropped carrier collsns           
+          1180       9      0       0       0       0 
+--- what tcpdump saw on the VPN box's wg0 during that ping:
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on wg0, link-type RAW (Raw IP), snapshot length 262144 bytes
+
+0 packets captured
+0 packets received by filter
+0 packets dropped by kernel
+Done. Next: bash test.sh
+
+(lab) # bash test.sh
+PASS the part 1 namespaces exist
+PASS GAP 1: two key pairs in /tmp/networking-course-wg, and each public key belongs to its private key
+PASS the VPN box listens on 51820 and knows the laptop's public key
+PASS GAP 2: the laptop uses its own private key and listens on 51820
+PASS GAP 2: the laptop's peer is the VPN box's public key, at endpoint 203.0.113.2:51820
+PASS GAP 2: the laptop's allowed-ips are 10.20.0.0/24,10.99.0.1/32
+PASS mid-point: the laptop reaches 10.99.0.1, the VPN box, through the tunnel
+PASS GAP 3: the laptop sends 10.20.0.5 into wg0
+PASS GAP 4: the office server sends 10.99.0.2 back via the VPN box, 10.20.0.2
+PASS the laptop reaches 10.20.0.5 through the tunnel
+PASS the laptop gets the office test page through the tunnel
+PASS with the laptop's wg0 down, 10.20.0.5 is out of reach (as expected)
+PASS a packet from 10.99.0.77 (not in the laptop's allowed-ips on the VPN box) was dropped: RX errors 1 to 2
+PASS with-tunnel.txt shows answers from 10.20.0.5
+PASS before-tunnel.txt shows no answer from 10.20.0.5
+PASS spoof.txt is there
+RESULT: all checks passed
+
+(lab) # ip netns exec laptop wg show
+interface: wg0
+  public key: 9vxbHy8OFTSseJbNOaHtBbods1HcOYIMZDDONqatdRo=
+  private key: (hidden)
+  listening port: 51820
+
+peer: Q9Ceb0jn4n+axcB+Gqj0NfVuUvgMFST6pkmBQOtX6R8=
+  endpoint: 203.0.113.2:51820
+  allowed ips: 10.20.0.0/24, 10.99.0.1/32
+  latest handshake: 1 second ago
+  transfer: 2.43 KiB received, 2.48 KiB sent
+
+(lab) # ip netns exec vpnbox wg show
+interface: wg0
+  public key: Q9Ceb0jn4n+axcB+Gqj0NfVuUvgMFST6pkmBQOtX6R8=
+  private key: (hidden)
+  listening port: 51820
+
+peer: 9vxbHy8OFTSseJbNOaHtBbods1HcOYIMZDDONqatdRo=
+  endpoint: 198.51.100.2:51820
+  allowed ips: 10.99.0.2/32
+  latest handshake: 1 second ago
+  transfer: 2.23 KiB received, 2.43 KiB sent
+
+(lab) # ip netns exec laptop ping -c2 -W2 10.20.0.5
+PING 10.20.0.5 (10.20.0.5) 56(84) bytes of data.
+64 bytes from 10.20.0.5: icmp_seq=1 ttl=63 time=0.561 ms
+64 bytes from 10.20.0.5: icmp_seq=2 ttl=63 time=0.462 ms
+
+--- 10.20.0.5 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1017ms
+rtt min/avg/max/mdev = 0.462/0.511/0.561/0.049 ms
+
+(lab) # ip netns exec laptop ip link set wg0 down
+
+(lab) # ip netns exec laptop ping -c2 -W2 10.20.0.5
+PING 10.20.0.5 (10.20.0.5) 56(84) bytes of data.
+From 198.51.100.1 icmp_seq=1 Destination Net Unreachable
+From 198.51.100.1 icmp_seq=2 Destination Net Unreachable
+
+--- 10.20.0.5 ping statistics ---
+2 packets transmitted, 0 received, +2 errors, 100% packet loss, time 1009ms
+
+
+(lab) # ip netns exec laptop ip link set wg0 up
+
+(lab) # ip netns exec laptop ip route add 10.20.0.0/24 dev wg0
+
+(lab) # ip netns exec laptop ping -c2 -W2 10.20.0.5
+PING 10.20.0.5 (10.20.0.5) 56(84) bytes of data.
+64 bytes from 10.20.0.5: icmp_seq=1 ttl=63 time=0.854 ms
+64 bytes from 10.20.0.5: icmp_seq=2 ttl=63 time=0.659 ms
+
+--- 10.20.0.5 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1016ms
+rtt min/avg/max/mdev = 0.659/0.756/0.854/0.097 ms
+
+(lab) # cat spoof-capture.txt
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on wg0, link-type RAW (Raw IP), snapshot length 262144 bytes
+
+0 packets captured
+0 packets received by filter
+0 packets dropped by kernel
+
+
+======== PART 3 ========
+(lab) # cd ../part-3-what-each-side-sees
+
+(lab) # bash captures.sh
+--- building parts 1 and 2
+--- the cafe's outside plug (cafe-outside.txt):
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on veth-cafe-out, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:16:32.566143 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128
+16:16:32.566335 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 128
+16:16:33.592463 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128
+16:16:33.592715 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 128
+16:16:34.616327 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128
+16:16:34.616540 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 128
+16:16:34.629830 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 96
+16:16:34.630147 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 96
+16:16:34.630447 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 96
+16:16:34.630604 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 160
+16:16:34.630811 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 96
+16:16:34.631465 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 304
+16:16:34.631507 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 112
+16:16:34.631716 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 96
+16:16:34.631925 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 96
+16:16:34.632229 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 96
+
+16 packets captured
+16 packets received by filter
+0 packets dropped by kernel
+--- the VPN box's wg0 (wg0.txt):
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on wg0, link-type RAW (Raw IP), snapshot length 262144 bytes
+16:16:38.604418 IP 10.99.0.2 > 10.20.0.5: ICMP echo request, id 879, seq 1, length 64
+16:16:38.604475 IP 10.20.0.5 > 10.99.0.2: ICMP echo reply, id 879, seq 1, length 64
+16:16:39.608388 IP 10.99.0.2 > 10.20.0.5: ICMP echo request, id 879, seq 2, length 64
+16:16:39.608426 IP 10.20.0.5 > 10.99.0.2: ICMP echo reply, id 879, seq 2, length 64
+4 packets captured
+4 packets received by filter
+0 packets dropped by kernel
+inner 84, padded 96, outer 156
+--- one outer packet, with -v (size-capture.txt):
+tcpdump: listening on veth-cafe-out, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:16:40.725329 IP (tos 0x0, ttl 63, id 12214, offset 0, flags [none], proto UDP (17), length 156)
+    198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128
+1 packet captured
+2 packets received by filter
+0 packets dropped by kernel
+Your sum, 156, matches the capture.
+Done. Next: bash test.sh
+
+(lab) # bash test.sh
+PASS the namespaces exist
+PASS mid-point: the tunnel works (the laptop reaches 10.20.0.5)
+PASS live: the cafe's outside plug carries only UDP 51820 (8 out, 8 in, nothing else)
+PASS live: the inner address 10.20.0.5 never shows at the cafe's outside plug
+PASS GAP 1: cafe-outside.txt has 16 lines, all UDP 51820, both ways, and no ICMP or TCP
+PASS GAP 2: wg0.txt shows the inner ping, 10.99.0.2 to 10.20.0.5 and the reply
+PASS GAP 3: size.txt says the outer packet is 156 bytes
+PASS live: an 84-byte ping leaves the cafe in a 156-byte outer packet
+RESULT: all checks passed
+
+(lab) # cat cafe-outside.txt
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on veth-cafe-out, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:16:32.566143 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128
+16:16:32.566335 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 128
+16:16:33.592463 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128
+16:16:33.592715 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 128
+16:16:34.616327 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128
+16:16:34.616540 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 128
+16:16:34.629830 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 96
+16:16:34.630147 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 96
+16:16:34.630447 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 96
+16:16:34.630604 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 160
+16:16:34.630811 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 96
+16:16:34.631465 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 304
+16:16:34.631507 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 112
+16:16:34.631716 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 96
+16:16:34.631925 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 96
+16:16:34.632229 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 96
+
+16 packets captured
+16 packets received by filter
+0 packets dropped by kernel
+
+(lab) # cat wg0.txt
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on wg0, link-type RAW (Raw IP), snapshot length 262144 bytes
+16:16:38.604418 IP 10.99.0.2 > 10.20.0.5: ICMP echo request, id 879, seq 1, length 64
+16:16:38.604475 IP 10.20.0.5 > 10.99.0.2: ICMP echo reply, id 879, seq 1, length 64
+16:16:39.608388 IP 10.99.0.2 > 10.20.0.5: ICMP echo request, id 879, seq 2, length 64
+16:16:39.608426 IP 10.20.0.5 > 10.99.0.2: ICMP echo reply, id 879, seq 2, length 64
+4 packets captured
+4 packets received by filter
+0 packets dropped by kernel
+
+(lab) # cat size.txt size-capture.txt
+inner 84, padded 96, outer 156
+tcpdump: listening on veth-cafe-out, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:16:40.725329 IP (tos 0x0, ttl 63, id 12214, offset 0, flags [none], proto UDP (17), length 156)
+    198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128
+1 packet captured
+2 packets received by filter
+0 packets dropped by kernel
+
+(lab) # timeout 6 ip netns exec caferouter tcpdump -n -l -i veth-cafe-in ip > inside.txt 2>&1 &
+
+(lab) # ip netns exec laptop ping -c2 -W2 10.20.0.5 > /dev/null
+
+(lab) # cat inside.txt
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on veth-cafe-in, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:16:50.073435 IP 192.168.50.23.51820 > 203.0.113.2.51820: UDP, length 128
+16:16:50.073837 IP 203.0.113.2.51820 > 192.168.50.23.51820: UDP, length 128
+16:16:51.075040 IP 192.168.50.23.51820 > 203.0.113.2.51820: UDP, length 128
+16:16:51.075227 IP 203.0.113.2.51820 > 192.168.50.23.51820: UDP, length 128
+
+4 packets captured
+4 packets received by filter
+0 packets dropped by kernel
+
+---- PART 3, optional extra: keepalive ----
+(lab) # ip netns exec caferouter sysctl -w net.netfilter.nf_conntrack_udp_timeout=10 net.netfilter.nf_conntrack_udp_timeout_stream=10
+net.netfilter.nf_conntrack_udp_timeout = 10
+net.netfilter.nf_conntrack_udp_timeout_stream = 10
+
+(lab) # ip netns exec laptop ping -c1 -W2 10.20.0.5 > /dev/null
+
+(lab) # sleep 25
+
+(lab) # ip netns exec caferouter conntrack -L -p udp
+conntrack v1.4.8 (conntrack-tools): 0 flow entries have been shown.
+
+(lab) # ip netns exec vpnbox ping -c2 -W1 10.99.0.2
+PING 10.99.0.2 (10.99.0.2) 56(84) bytes of data.
+
+--- 10.99.0.2 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1011ms
+
+
+(lab) # ip netns exec laptop wg set wg0 peer "$(cat /tmp/networking-course-wg/vpnbox.pub)" persistent-keepalive 3
+
+(lab) # ip netns exec laptop ping -c1 -W2 10.20.0.5 > /dev/null
+
+(lab) # sleep 25
+
+(lab) # ip netns exec caferouter conntrack -L -p udp
+conntrack v1.4.8 (conntrack-tools): 1 flow entries have been shown.
+udp      17 9 src=192.168.50.23 dst=203.0.113.2 sport=51820 dport=51820 src=203.0.113.2 dst=198.51.100.2 sport=51820 dport=24422 [ASSURED] mark=0 use=1
+
+(lab) # ip netns exec vpnbox ping -c2 -W1 10.99.0.2
+PING 10.99.0.2 (10.99.0.2) 56(84) bytes of data.
+64 bytes from 10.99.0.2: icmp_seq=1 ttl=64 time=0.426 ms
+64 bytes from 10.99.0.2: icmp_seq=2 ttl=64 time=0.422 ms
+
+--- 10.99.0.2 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 0.422/0.424/0.426/0.002 ms
+
+
+======== PART 4 ========
+(lab) # cd ../part-4-full-and-split-tunnel
+
+(lab) # bash full-split.sh
+--- building parts 1 and 2
+--- before: the laptop visits the website
+the server sees you as 198.51.100.2:34276
+=== laptop: ip route
+default dev wg0 scope link 
+10.20.0.0/24 dev wg0 scope link 
+10.99.0.0/24 dev wg0 proto kernel scope link src 10.99.0.2 
+192.168.50.0/24 dev veth-laptop proto kernel scope link src 192.168.50.23 
+203.0.113.2 via 192.168.50.1 dev veth-laptop 
+=== laptop: wg show wg0 allowed-ips
+xtXWb0pC2NBNnyoHn2TjfyZQrSHiHPdXuyU4fqVLp0Y=	0.0.0.0/0
+--- full tunnel: the laptop visits the website, while the cafe's outside plug is captured
+the server sees you as 203.0.113.2:50228
+16:17:57.265198 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 96
+16:17:57.265630 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 96
+16:17:57.265864 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 96
+16:17:57.266066 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 176
+16:17:57.266272 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 96
+16:17:57.268276 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 112
+16:17:57.268315 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 160
+16:17:57.268485 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 96
+16:17:57.268708 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 96
+16:17:57.268886 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 96
+--- full tunnel: the laptop looks up web.test. The capture is on the cafe router's inside plug
+192.0.2.80
+16:18:02.361874 IP 192.168.50.23.41288 > 192.168.50.1.53: 57993+ [1au] A? web.test. (49)
+16:18:02.362061 IP 192.168.50.1.53 > 192.168.50.23.41288: 57993* 1/0/1 A 192.0.2.80 (53)
+--- DNS through the tunnel: captures on the cafe router's inside plug and on the VPN box's wg0
+192.0.2.80
+10.20.0.5
+cafe inside plug:
+(no DNS packets)
+VPN box wg0:
+16:18:07.348564 IP 10.99.0.2.55450 > 10.20.0.1.53: 43424+ [1au] A? web.test. (49)
+16:18:07.348840 IP 10.20.0.1.53 > 10.99.0.2.55450: 43424* 1/0/1 A 192.0.2.80 (53)
+16:18:07.363386 IP 10.99.0.2.45189 > 10.20.0.1.53: 17050+ [1au] A? intranet.test. (54)
+16:18:07.363538 IP 10.20.0.1.53 > 10.99.0.2.45189: 17050* 1/0/1 A 10.20.0.5 (58)
+=== laptop: ip route
+default via 192.168.50.1 dev veth-laptop 
+10.20.0.0/24 dev wg0 scope link 
+10.99.0.0/24 dev wg0 proto kernel scope link src 10.99.0.2 
+192.168.50.0/24 dev veth-laptop proto kernel scope link src 192.168.50.23 
+=== laptop: wg show wg0 allowed-ips
+xtXWb0pC2NBNnyoHn2TjfyZQrSHiHPdXuyU4fqVLp0Y=	10.20.0.0/24 10.99.0.1/32
+--- split tunnel: the laptop visits the website and pings the office, while the cafe's outside plug is captured
+the server sees you as 198.51.100.2:60596
+16:18:11.444408 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [S], seq 3597875563, win 64240, options [mss 1460,sackOK,TS val 3789324696 ecr 0,nop,wscale 7], length 0
+16:18:11.444430 IP 192.0.2.80.80 > 198.51.100.2.60596: Flags [S.], seq 3255908311, ack 3597875564, win 65160, options [mss 1460,sackOK,TS val 2592675610 ecr 3789324696,nop,wscale 7], length 0
+16:18:11.444444 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 3789324696 ecr 2592675610], length 0
+16:18:11.444511 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [P.], seq 1:88, ack 1, win 502, options [nop,nop,TS val 3789324696 ecr 2592675610], length 87: HTTP: GET /cgi-bin/whoami HTTP/1.1
+16:18:11.444516 IP 192.0.2.80.80 > 198.51.100.2.60596: Flags [.], ack 88, win 509, options [nop,nop,TS val 2592675610 ecr 3789324696], length 0
+16:18:11.446254 IP 192.0.2.80.80 > 198.51.100.2.60596: Flags [P.], seq 1:18, ack 88, win 509, options [nop,nop,TS val 2592675612 ecr 3789324696], length 17: HTTP: HTTP/1.1 200 OK
+16:18:11.446304 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [.], ack 18, win 502, options [nop,nop,TS val 3789324698 ecr 2592675612], length 0
+16:18:11.446322 IP 192.0.2.80.80 > 198.51.100.2.60596: Flags [P.], seq 18:86, ack 88, win 509, options [nop,nop,TS val 2592675612 ecr 3789324698], length 68: HTTP
+16:18:11.446335 IP 192.0.2.80.80 > 198.51.100.2.60596: Flags [F.], seq 86, ack 88, win 509, options [nop,nop,TS val 2592675612 ecr 3789324698], length 0
+16:18:11.446352 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [.], ack 86, win 502, options [nop,nop,TS val 3789324698 ecr 2592675612], length 0
+16:18:11.446396 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [F.], seq 88, ack 87, win 502, options [nop,nop,TS val 3789324698 ecr 2592675612], length 0
+16:18:11.446406 IP 192.0.2.80.80 > 198.51.100.2.60596: Flags [.], ack 89, win 509, options [nop,nop,TS val 2592675612 ecr 3789324698], length 0
+16:18:11.451187 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128
+16:18:11.451420 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 128
+Done. Next: bash test.sh
+
+(lab) # bash test.sh
+PASS the namespaces exist
+PASS mid-point: the tunnel works (the laptop reaches 10.20.0.5)
+PASS the cafe's name server (192.168.50.1) and the office's (10.20.0.1) both answer
+PASS website-before.txt: before the full tunnel, the website sees the cafe, 198.51.100.2
+PASS GAP 1: in the full tunnel, 203.0.113.2/32 goes via the cafe router, outside the tunnel
+PASS GAP 2: in the full tunnel, the default route is wg0 and allowed-ips is 0.0.0.0/0
+PASS GAP 3: the office router sends 10.99.0.2 back via the VPN box, 10.20.0.2
+PASS website-full.txt: with the full tunnel, the website sees the office, 203.0.113.2
+PASS cafe-outside-full.txt: in the full tunnel, the cafe sees only UDP 51820, even for the website
+PASS dns-cafe.txt: in the full tunnel the question for web.test still went to the cafe, in the clear
+PASS GAP 4: the laptop's name server is 10.20.0.1, through the tunnel
+PASS GAP 4: dns-tunnel.txt shows the question for web.test inside wg0, from 10.99.0.2 to 10.20.0.1
+PASS GAP 4: dns-cafe-after.txt: after the change, the cafe's inside plug carries no DNS
+PASS GAP 5: split tunnel: allowed-ips '10.20.0.0/24 10.99.0.1/32', and the default route goes via 192.168.50.1
+PASS GAP 5: split tunnel: the website sees the cafe again, 198.51.100.2, not the office
+PASS cafe-outside-split.txt: the website visit is plain TCP at the cafe, and the office ping is UDP 51820
+RESULT: all checks passed
+
+(lab) # cat website-before.txt website-full.txt website-split.txt
+the server sees you as 198.51.100.2:34276
+the server sees you as 203.0.113.2:50228
+the server sees you as 198.51.100.2:60596
+
+(lab) # cat routes-full.txt
+=== laptop: ip route
+default dev wg0 scope link 
+10.20.0.0/24 dev wg0 scope link 
+10.99.0.0/24 dev wg0 proto kernel scope link src 10.99.0.2 
+192.168.50.0/24 dev veth-laptop proto kernel scope link src 192.168.50.23 
+203.0.113.2 via 192.168.50.1 dev veth-laptop 
+=== laptop: wg show wg0 allowed-ips
+xtXWb0pC2NBNnyoHn2TjfyZQrSHiHPdXuyU4fqVLp0Y=	0.0.0.0/0
+
+(lab) # cat dns-cafe.txt
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on veth-cafe-in, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:18:02.361874 IP 192.168.50.23.41288 > 192.168.50.1.53: 57993+ [1au] A? web.test. (49)
+16:18:02.362061 IP 192.168.50.1.53 > 192.168.50.23.41288: 57993* 1/0/1 A 192.0.2.80 (53)
+
+2 packets captured
+2 packets received by filter
+0 packets dropped by kernel
+
+(lab) # cat dns-cafe-after.txt
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on veth-cafe-in, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+
+0 packets captured
+0 packets received by filter
+0 packets dropped by kernel
+
+(lab) # cat dns-tunnel.txt
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on wg0, link-type RAW (Raw IP), snapshot length 262144 bytes
+16:18:07.348564 IP 10.99.0.2.55450 > 10.20.0.1.53: 43424+ [1au] A? web.test. (49)
+16:18:07.348840 IP 10.20.0.1.53 > 10.99.0.2.55450: 43424* 1/0/1 A 192.0.2.80 (53)
+16:18:07.363386 IP 10.99.0.2.45189 > 10.20.0.1.53: 17050+ [1au] A? intranet.test. (54)
+16:18:07.363538 IP 10.20.0.1.53 > 10.99.0.2.45189: 17050* 1/0/1 A 10.20.0.5 (58)
+
+4 packets captured
+4 packets received by filter
+0 packets dropped by kernel
+
+(lab) # cat routes-split.txt
+=== laptop: ip route
+default via 192.168.50.1 dev veth-laptop 
+10.20.0.0/24 dev wg0 scope link 
+10.99.0.0/24 dev wg0 proto kernel scope link src 10.99.0.2 
+192.168.50.0/24 dev veth-laptop proto kernel scope link src 192.168.50.23 
+=== laptop: wg show wg0 allowed-ips
+xtXWb0pC2NBNnyoHn2TjfyZQrSHiHPdXuyU4fqVLp0Y=	10.20.0.0/24 10.99.0.1/32
+
+(lab) # cat cafe-outside-split.txt
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on veth-cafe-out, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:18:11.444408 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [S], seq 3597875563, win 64240, options [mss 1460,sackOK,TS val 3789324696 ecr 0,nop,wscale 7], length 0
+16:18:11.444430 IP 192.0.2.80.80 > 198.51.100.2.60596: Flags [S.], seq 3255908311, ack 3597875564, win 65160, options [mss 1460,sackOK,TS val 2592675610 ecr 3789324696,nop,wscale 7], length 0
+16:18:11.444444 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 3789324696 ecr 2592675610], length 0
+16:18:11.444511 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [P.], seq 1:88, ack 1, win 502, options [nop,nop,TS val 3789324696 ecr 2592675610], length 87: HTTP: GET /cgi-bin/whoami HTTP/1.1
+16:18:11.444516 IP 192.0.2.80.80 > 198.51.100.2.60596: Flags [.], ack 88, win 509, options [nop,nop,TS val 2592675610 ecr 3789324696], length 0
+16:18:11.446254 IP 192.0.2.80.80 > 198.51.100.2.60596: Flags [P.], seq 1:18, ack 88, win 509, options [nop,nop,TS val 2592675612 ecr 3789324696], length 17: HTTP: HTTP/1.1 200 OK
+16:18:11.446304 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [.], ack 18, win 502, options [nop,nop,TS val 3789324698 ecr 2592675612], length 0
+16:18:11.446322 IP 192.0.2.80.80 > 198.51.100.2.60596: Flags [P.], seq 18:86, ack 88, win 509, options [nop,nop,TS val 2592675612 ecr 3789324698], length 68: HTTP
+16:18:11.446335 IP 192.0.2.80.80 > 198.51.100.2.60596: Flags [F.], seq 86, ack 88, win 509, options [nop,nop,TS val 2592675612 ecr 3789324698], length 0
+16:18:11.446352 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [.], ack 86, win 502, options [nop,nop,TS val 3789324698 ecr 2592675612], length 0
+16:18:11.446396 IP 198.51.100.2.60596 > 192.0.2.80.80: Flags [F.], seq 88, ack 87, win 502, options [nop,nop,TS val 3789324698 ecr 2592675612], length 0
+16:18:11.446406 IP 192.0.2.80.80 > 198.51.100.2.60596: Flags [.], ack 89, win 509, options [nop,nop,TS val 2592675612 ecr 3789324698], length 0
+16:18:11.451187 IP 198.51.100.2.51820 > 203.0.113.2.51820: UDP, length 128
+16:18:11.451420 IP 203.0.113.2.51820 > 198.51.100.2.51820: UDP, length 128
+
+14 packets captured
+14 packets received by filter
+0 packets dropped by kernel
+
+
+======== Template checks (gaps left empty) ========
+
+These are from the learner template, with the earlier parts taken from the reference so that only this part's gaps are empty.
+
+== template part 2, gaps empty
+PASS the part 1 namespaces exist
+FAIL GAP 1: the four key files in /tmp/networking-course-wg are missing, empty, or do not match. Shape: wg genkey | tee PRIVATE_FILE | wg pubkey > PUBLIC_FILE
+RESULT: 1 check(s) failed
+== template part 2, Gap 1 filled, Gaps 2 to 4 empty
+PASS the part 1 namespaces exist
+PASS GAP 1: two key pairs in /tmp/networking-course-wg, and each public key belongs to its private key
+PASS the VPN box listens on 51820 and knows the laptop's public key
+FAIL GAP 2: the laptop's wg0 should use /tmp/networking-course-wg/laptop.key and listen-port 51820. Run: ip netns exec laptop wg show
+FAIL GAP 2: the laptop's peer should be the VPN box's PUBLIC key with endpoint 203.0.113.2:51820. The peer line is: ''
+FAIL GAP 2: the laptop's allowed-ips should be 10.20.0.0/24,10.99.0.1/32. They are: ''
+FAIL mid-point: the laptop cannot reach 10.99.0.1. The tunnel is not up. Check GAP 1 and GAP 2. Ping said: PING 10.99.0.1 (10.99.0.1) 56(84) bytes of data.
+From 10.99.0.2 icmp_seq=1 Destination Host Unreachable
+ping: sendmsg: Required key not available
+From 10.99.0.2 icmp_seq=2 Destination Host Unreachable
+ping: sendmsg: Required key not available
+
+--- 10.99.0.1 ping statistics ---
+2 packets transmitted, 0 received, +2 errors, 100% packet loss, time 1017ms
+FAIL GAP 3: the laptop sends 10.20.0.5 somewhere else: '10.20.0.5 via 192.168.50.1 dev veth-laptop src 192.168.50.23 uid 0 
+    cache '. AllowedIPs does not add a route. Add one for 10.20.0.0/24 dev wg0
+FAIL GAP 4: the office server sends answers for 10.99.0.2 the wrong way: '10.99.0.2 via 10.20.0.1 dev veth-officesrv src 10.20.0.5 uid 0 
+    cache '. It needs a route to 10.99.0.0/24 via 10.20.0.2
+FAIL the laptop cannot reach 10.20.0.5. If 10.99.0.1 works, look at GAP 3 and GAP 4. Ping said: PING 10.20.0.5 (10.20.0.5) 56(84) bytes of data.
+From 198.51.100.1 icmp_seq=1 Destination Net Unreachable
+From 198.51.100.1 icmp_seq=2 Destination Net Unreachable
+
+--- 10.20.0.5 ping statistics ---
+2 packets transmitted, 0 received, +2 errors, 100% packet loss, time 1030ms
+FAIL the laptop cannot get http://10.20.0.5/ (curl exit 28). Check GAP 3 and GAP 4
+PASS with the laptop's wg0 down, 10.20.0.5 is out of reach (as expected)
+FAIL a packet from 10.99.0.77 should add an RX error on the VPN box's wg0. Errors before: '0', after: '0'
+FAIL with-tunnel.txt is missing or shows no answer. Fill in the gaps, then run bash tunnel.sh again
+PASS before-tunnel.txt shows no answer from 10.20.0.5
+PASS spoof.txt is there
+RESULT: 10 check(s) failed
+== part 3, Gap 1 on the inside plug
+FAIL GAP 1: cafe-outside.txt shows 192.168.50.23, the laptop's own address. That is the cafe's INSIDE plug, before NAT. Capture on veth-cafe-out
+RESULT: 1 check(s) failed
+== template part 3, gaps empty
+PASS the namespaces exist
+PASS mid-point: the tunnel works (the laptop reaches 10.20.0.5)
+PASS live: the cafe's outside plug carries only UDP 51820 (8 out, 8 in, nothing else)
+PASS live: the inner address 10.20.0.5 never shows at the cafe's outside plug
+FAIL GAP 1: cafe-outside.txt is missing or empty. Fill in the gap, then run bash captures.sh again
+FAIL GAP 2: wg0.txt is missing or empty. Fill in the gap, then run bash captures.sh again
+FAIL GAP 3: size.txt should end with 'outer 156'. It says: 'inner 84, padded ?, outer ?'. Round 84 up to a multiple of 16, then add 32, 8 and 20
+PASS live: an 84-byte ping leaves the cafe in a 156-byte outer packet
+RESULT: 3 check(s) failed
+== template part 4, gaps empty
+PASS the namespaces exist
+PASS mid-point: the tunnel works (the laptop reaches 10.20.0.5)
+PASS the cafe's name server (192.168.50.1) and the office's (10.20.0.1) both answer
+PASS website-before.txt: before the full tunnel, the website sees the cafe, 198.51.100.2
+FAIL GAP 1: routes-full.txt has no route '203.0.113.2 via 192.168.50.1'. Without it, the tunnel's own packets go into the tunnel
+FAIL GAP 2: routes-full.txt should show 'default dev wg0' and allowed-ips 0.0.0.0/0. It shows: 'default via 192.168.50.1 dev veth-laptop ' and '10.20.0.0/24 10.99.0.1/32'
+FAIL GAP 3: the office router sends 10.99.0.2 the wrong way: '10.99.0.2 via 203.0.113.1 dev veth-office-out src 203.0.113.2 uid 0 
+    cache '. It needs a route to 10.99.0.0/24 via 10.20.0.2
+FAIL website-full.txt: the website still sees the cafe, 198.51.100.2. The traffic did not go into the tunnel. Check GAP 2
+PASS dns-cafe.txt: in the full tunnel the question for web.test still went to the cafe, in the clear
+FAIL GAP 4: /etc/netns/laptop/resolv.conf should say 'nameserver 10.20.0.1'. It says: 'nameserver 192.168.50.1'
+FAIL GAP 4: dns-tunnel.txt should show '10.99.0.2.PORT > 10.20.0.1.53: ... A? web.test'. Check GAP 4 and GAP 3
+FAIL GAP 4: dns-cafe-after.txt should have no DNS lines. The laptop still asks the cafe. Check GAP 4
+FAIL GAP 5: make the full tunnel work first (GAP 1 to GAP 3). Then split it
+RESULT: 8 check(s) failed
+
+== template part 1 (guided, no gaps): the forward rule removed by hand after the script
+PASS the seven namespaces exist
+PASS mid-point: laptop reaches 192.168.50.1
+PASS mid-point: caferouter reaches 198.51.100.1
+PASS mid-point: officert reaches 203.0.113.1
+PASS mid-point: vpnbox reaches 10.20.0.1
+PASS mid-point: officesrv reaches 10.20.0.1
+PASS mid-point: website reaches 192.0.2.1
+PASS the laptop reaches the website, and the website sees the cafe, 198.51.100.2
+PASS the office server reaches the website, and the website sees the office, 203.0.113.2
+PASS the laptop cannot reach 10.20.0.5 (no tunnel yet, as expected)
+FAIL no port forward for UDP 51820 in the office router (step 7, or step 10 did not put it back). Run: ip netns exec officert nft list ruleset
+FAIL a UDP packet to 203.0.113.2:51820 did not reach the VPN box. Check the port forward (step 7). The VPN box saw: ''
+PASS forward-test.txt: arrived, arrived (old state), nothing (flushed), nothing (old state), arrived (flushed)
+RESULT: 2 check(s) failed

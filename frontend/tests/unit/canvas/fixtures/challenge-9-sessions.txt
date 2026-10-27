@@ -1,0 +1,851 @@
+Challenge 9, the network toolbox: real lab sessions
+====================================================
+
+Every output below was copied from real runs in the lab image (networking-lab, Ubuntu 24.04, mtr 0.95,
+iperf 3.16, Nmap 7.94SVN, DiG 9.18.39, dnsmasq 2.91, tcpdump 4.99.4, curl 8.5.0) on 2026-10-27,
+started on Windows 11 with Docker Desktop:
+
+  MSYS_NO_PATHCONV=1 docker run --rm --privileged ... networking-lab
+
+Seed: ref-mentor. With this seed, round 1 plants: 10% loss on r1 to r2; docs.lab.test answers
+203.0.113.153 at the campus resolver; the app's port 7630 is filtered; 13 Mbit/s on r2 to the server.
+Round 2 plants faults 1 and 2: 9% loss, and news.lab.test answers 203.0.113.127.
+
+The prompt "(lab) #" means: typed in the lab, in the folder of that part. Times, ports and percentages
+differ on every run. Nothing here is invented. Where a block is an excerpt, it says so.
+
+==================================================================
+SETUP: part-0-the-broken-network
+==================================================================
+
+(lab) # cd /work/challenges/challenge-9-toolbox/part-0-the-broken-network
+(lab) # bash faults.sh --seed ref-mentor
+--- building the lab network
+--- seed 'ref-mentor' (saved in fault-seed.txt)
+
+What should be true in this network (the service sheet):
+  www.lab.test, shop.lab.test, docs.lab.test, news.lab.test and mail.lab.test all mean 203.0.113.80.
+  The laptop asks the campus resolver, 192.0.2.1. The public resolver is 203.0.113.53.
+  The server has a web page on port 80, the app on port 7630, and an iperf3 server on port 5201.
+  Every cable is virtual. It carries more than 1 Gbit/s and loses nothing.
+
+Four faults are planted. What people say:
+  "Copying a file to the server is slow."  (two different faults make this complaint)
+  "docs.lab.test does not load for me. www.lab.test works."
+  "The app on port 7630 does not answer."
+Write a best guess for each one in faults.md before you start part 1.
+
+(lab) # ip netns exec laptop ping -c 50 -i 0.2 203.0.113.80
+PING 203.0.113.80 (203.0.113.80) 56(84) bytes of data.
+64 bytes from 203.0.113.80: icmp_seq=1 ttl=62 time=0.482 ms
+64 bytes from 203.0.113.80: icmp_seq=2 ttl=62 time=0.142 ms
+64 bytes from 203.0.113.80: icmp_seq=3 ttl=62 time=0.248 ms
+64 bytes from 203.0.113.80: icmp_seq=4 ttl=62 time=0.266 ms
+64 bytes from 203.0.113.80: icmp_seq=5 ttl=62 time=0.225 ms
+64 bytes from 203.0.113.80: icmp_seq=6 ttl=62 time=0.235 ms
+64 bytes from 203.0.113.80: icmp_seq=7 ttl=62 time=0.416 ms
+64 bytes from 203.0.113.80: icmp_seq=8 ttl=62 time=0.150 ms
+64 bytes from 203.0.113.80: icmp_seq=10 ttl=62 time=0.286 ms
+64 bytes from 203.0.113.80: icmp_seq=11 ttl=62 time=0.248 ms
+64 bytes from 203.0.113.80: icmp_seq=13 ttl=62 time=0.231 ms
+64 bytes from 203.0.113.80: icmp_seq=14 ttl=62 time=0.177 ms
+64 bytes from 203.0.113.80: icmp_seq=15 ttl=62 time=0.157 ms
+64 bytes from 203.0.113.80: icmp_seq=16 ttl=62 time=0.181 ms
+64 bytes from 203.0.113.80: icmp_seq=17 ttl=62 time=0.188 ms
+64 bytes from 203.0.113.80: icmp_seq=18 ttl=62 time=0.169 ms
+64 bytes from 203.0.113.80: icmp_seq=19 ttl=62 time=0.189 ms
+64 bytes from 203.0.113.80: icmp_seq=20 ttl=62 time=0.206 ms
+64 bytes from 203.0.113.80: icmp_seq=21 ttl=62 time=0.237 ms
+64 bytes from 203.0.113.80: icmp_seq=22 ttl=62 time=0.196 ms
+64 bytes from 203.0.113.80: icmp_seq=23 ttl=62 time=0.234 ms
+64 bytes from 203.0.113.80: icmp_seq=25 ttl=62 time=0.238 ms
+64 bytes from 203.0.113.80: icmp_seq=26 ttl=62 time=0.341 ms
+64 bytes from 203.0.113.80: icmp_seq=27 ttl=62 time=0.217 ms
+64 bytes from 203.0.113.80: icmp_seq=28 ttl=62 time=0.169 ms
+64 bytes from 203.0.113.80: icmp_seq=29 ttl=62 time=0.340 ms
+64 bytes from 203.0.113.80: icmp_seq=30 ttl=62 time=0.156 ms
+64 bytes from 203.0.113.80: icmp_seq=32 ttl=62 time=0.259 ms
+64 bytes from 203.0.113.80: icmp_seq=33 ttl=62 time=0.220 ms
+64 bytes from 203.0.113.80: icmp_seq=34 ttl=62 time=0.166 ms
+64 bytes from 203.0.113.80: icmp_seq=35 ttl=62 time=0.257 ms
+64 bytes from 203.0.113.80: icmp_seq=36 ttl=62 time=0.207 ms
+64 bytes from 203.0.113.80: icmp_seq=37 ttl=62 time=0.178 ms
+64 bytes from 203.0.113.80: icmp_seq=38 ttl=62 time=0.292 ms
+64 bytes from 203.0.113.80: icmp_seq=39 ttl=62 time=0.230 ms
+64 bytes from 203.0.113.80: icmp_seq=40 ttl=62 time=0.242 ms
+64 bytes from 203.0.113.80: icmp_seq=41 ttl=62 time=0.151 ms
+64 bytes from 203.0.113.80: icmp_seq=42 ttl=62 time=0.271 ms
+64 bytes from 203.0.113.80: icmp_seq=43 ttl=62 time=0.147 ms
+64 bytes from 203.0.113.80: icmp_seq=44 ttl=62 time=0.222 ms
+64 bytes from 203.0.113.80: icmp_seq=45 ttl=62 time=0.252 ms
+64 bytes from 203.0.113.80: icmp_seq=46 ttl=62 time=0.227 ms
+64 bytes from 203.0.113.80: icmp_seq=47 ttl=62 time=0.227 ms
+64 bytes from 203.0.113.80: icmp_seq=48 ttl=62 time=0.250 ms
+64 bytes from 203.0.113.80: icmp_seq=50 ttl=62 time=0.250 ms
+
+--- 203.0.113.80 ping statistics ---
+50 packets transmitted, 45 received, 10% packet loss, time 9906ms
+rtt min/avg/max/mdev = 0.142/0.230/0.482/0.066 ms
+
+(lab) # ip netns exec laptop traceroute -n 203.0.113.80
+traceroute to 203.0.113.80 (203.0.113.80), 30 hops max, 60 byte packets
+ 1  192.0.2.1  0.449 ms  0.367 ms  0.356 ms
+ 2  198.51.100.2  0.349 ms  0.296 ms  0.288 ms
+ 3  203.0.113.80  0.278 ms  0.257 ms  0.250 ms
+
+(lab) # ip netns exec laptop curl -sS -m 5 http://docs.lab.test/
+curl: (7) Failed to connect to docs.lab.test port 80 after 3062 ms: Couldn't connect to server
+
+(lab) # ip netns exec laptop curl -sS -m 5 http://203.0.113.80:7630/
+curl: (28) Connection timed out after 5002 milliseconds
+
+
+==================================================================
+PART 1: part-1-wireshark (the capture, read back with tcpdump -r as the test does)
+==================================================================
+
+(lab) # bash make-capture.sh
+capture.pcap is ready: 33 packets, made from your seed 'ref-mentor'.
+Open it in Wireshark on your computer. It is in your repository folder, in
+challenges/challenge-9-toolbox/part-1-wireshark/
+
+(lab) # tcpdump -nn -r capture.pcap
+reading from file capture.pcap, link-type EN10MB (Ethernet), snapshot length 262144
+16:32:36.903790 ARP, Request who-has 192.0.2.1 tell 192.0.2.10, length 28
+16:32:36.903850 ARP, Reply 192.0.2.1 is-at ba:82:65:e8:8b:1e, length 28
+16:32:36.903852 IP 192.0.2.10.58376 > 192.0.2.1.53: 43608+ [1au] A? www.lab.test. (53)
+16:32:36.904614 IP 192.0.2.1.53 > 192.0.2.10.58376: 43608* 1/0/1 A 203.0.113.80 (57)
+16:32:36.920381 IP 192.0.2.10.37559 > 203.0.113.53.53: 60780+ [1au] A? docs.lab.test. (54)
+16:32:41.925761 IP 192.0.2.10.36303 > 203.0.113.53.53: 60780+ [1au] A? docs.lab.test. (54)
+16:32:41.927294 IP 203.0.113.53.53 > 192.0.2.10.36303: 60780* 1/0/1 A 203.0.113.80 (58)
+16:32:41.944685 IP 192.0.2.10 > 192.0.2.1: ICMP echo request, id 271, seq 1, length 64
+16:32:41.944725 IP 192.0.2.1 > 192.0.2.10: ICMP echo reply, id 271, seq 1, length 64
+16:32:42.125422 ARP, Request who-has 192.0.2.10 tell 192.0.2.1, length 28
+16:32:42.125528 ARP, Reply 192.0.2.10 is-at 26:ff:8f:0f:8d:29, length 28
+16:32:42.961482 IP 192.0.2.10 > 192.0.2.1: ICMP echo request, id 271, seq 2, length 64
+16:32:42.961556 IP 192.0.2.1 > 192.0.2.10: ICMP echo reply, id 271, seq 2, length 64
+16:32:42.972194 IP 192.0.2.10.48452 > 203.0.113.80.80: Flags [S], seq 576157636, win 64240, options [mss 1460,sackOK,TS val 965882981 ecr 0,nop,wscale 7], length 0
+16:32:42.972431 IP 203.0.113.80.80 > 192.0.2.10.48452: Flags [S.], seq 333793012, ack 576157637, win 65160, options [mss 1460,sackOK,TS val 4205898183 ecr 965882981,nop,wscale 7], length 0
+16:32:42.972464 IP 192.0.2.10.48452 > 203.0.113.80.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 965882982 ecr 4205898183], length 0
+16:32:42.972523 IP 192.0.2.10.48452 > 203.0.113.80.80: Flags [P.], seq 1:76, ack 1, win 502, options [nop,nop,TS val 965882982 ecr 4205898183], length 75: HTTP: GET / HTTP/1.1
+16:32:42.972645 IP 203.0.113.80.80 > 192.0.2.10.48452: Flags [.], ack 76, win 509, options [nop,nop,TS val 4205898183 ecr 965882982], length 0
+16:32:42.973247 IP 203.0.113.80.80 > 192.0.2.10.48452: Flags [P.], seq 1:209, ack 76, win 509, options [nop,nop,TS val 4205898183 ecr 965882982], length 208: HTTP: HTTP/1.1 200 OK
+16:32:42.973376 IP 192.0.2.10.48452 > 203.0.113.80.80: Flags [.], ack 209, win 501, options [nop,nop,TS val 965882982 ecr 4205898183], length 0
+16:32:42.973455 IP 203.0.113.80.80 > 192.0.2.10.48452: Flags [FP.], seq 209:224, ack 76, win 509, options [nop,nop,TS val 4205898184 ecr 965882982], length 15: HTTP
+16:32:42.973564 IP 192.0.2.10.48452 > 203.0.113.80.80: Flags [F.], seq 76, ack 225, win 501, options [nop,nop,TS val 965882983 ecr 4205898184], length 0
+16:32:42.973659 IP 203.0.113.80.80 > 192.0.2.10.48452: Flags [.], ack 77, win 509, options [nop,nop,TS val 4205898184 ecr 965882983], length 0
+16:32:42.982054 IP 192.0.2.10.48453 > 203.0.113.80.80: Flags [S], seq 1083465382, win 64240, options [mss 1460,sackOK,TS val 965882991 ecr 0,nop,wscale 7], length 0
+16:32:42.982208 IP 203.0.113.80.80 > 192.0.2.10.48453: Flags [S.], seq 721847157, ack 1083465383, win 65160, options [mss 1460,sackOK,TS val 4205898192 ecr 965882991,nop,wscale 7], length 0
+16:32:42.982235 IP 192.0.2.10.48453 > 203.0.113.80.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 965882991 ecr 4205898192], length 0
+16:32:42.982270 IP 192.0.2.10.48453 > 203.0.113.80.80: Flags [P.], seq 1:76, ack 1, win 502, options [nop,nop,TS val 965882991 ecr 4205898192], length 75: HTTP: GET / HTTP/1.1
+16:32:42.982429 IP 203.0.113.80.80 > 192.0.2.10.48453: Flags [.], ack 76, win 509, options [nop,nop,TS val 4205898193 ecr 965882991], length 0
+16:32:42.982758 IP 203.0.113.80.80 > 192.0.2.10.48453: Flags [P.], seq 1:209, ack 76, win 509, options [nop,nop,TS val 4205898193 ecr 965882991], length 208: HTTP: HTTP/1.1 200 OK
+16:32:42.982793 IP 192.0.2.10.48453 > 203.0.113.80.80: Flags [.], ack 209, win 501, options [nop,nop,TS val 965882992 ecr 4205898193], length 0
+16:32:42.982828 IP 203.0.113.80.80 > 192.0.2.10.48453: Flags [FP.], seq 209:224, ack 76, win 509, options [nop,nop,TS val 4205898193 ecr 965882991], length 15: HTTP
+16:32:42.982934 IP 192.0.2.10.48453 > 203.0.113.80.80: Flags [F.], seq 76, ack 225, win 501, options [nop,nop,TS val 965882992 ecr 4205898193], length 0
+16:32:42.983051 IP 203.0.113.80.80 > 192.0.2.10.48453: Flags [.], ack 77, win 509, options [nop,nop,TS val 4205898193 ecr 965882992], length 0
+
+(lab) # tcpdump -nn -v -r capture.pcap 'src host 203.0.113.80' -c 2
+reading from file capture.pcap, link-type EN10MB (Ethernet), snapshot length 262144
+16:32:42.972431 IP (tos 0x0, ttl 107, id 0, offset 0, flags [DF], proto TCP (6), length 60)
+    203.0.113.80.80 > 192.0.2.10.48452: Flags [S.], cksum 0xfe89 (incorrect -> 0x4611), seq 333793012, ack 576157637, win 65160, options [mss 1460,sackOK,TS val 4205898183 ecr 965882981,nop,wscale 7], length 0
+16:32:42.972645 IP (tos 0x0, ttl 107, id 32009, offset 0, flags [DF], proto TCP (6), length 52)
+    203.0.113.80.80 > 192.0.2.10.48452: Flags [.], cksum 0xfe81 (incorrect -> 0x711d), ack 76, win 509, options [nop,nop,TS val 4205898183 ecr 965882982], length 0
+
+(lab) # tcpdump -nn -r capture.pcap 'dst host 203.0.113.80' | wc -l
+10
+
+--- The request the laptop sent, as text (Wireshark shows it with Follow, TCP Stream)
+(lab) # tcpdump -nn -A -r capture.pcap 'src host 192.0.2.10 and dst port 80 and tcp[tcpflags] & tcp-push != 0' -c 1
+reading from file capture.pcap, link-type EN10MB (Ethernet), snapshot length 262144
+16:32:42.972523 IP 192.0.2.10.48452 > 203.0.113.80.80: Flags [P.], seq 576157637:576157712, ack 333793013, win 502, options [nop,nop,TS val 965882982 ecr 4205898183], length 75: HTTP: GET / HTTP/1.1
+E....2@.@......
+..qP.D.P"Ww...F............
+9.4f....GET / HTTP/1.1
+Host: 203.0.113.80
+User-Agent: curl/8.5.0
+Accept: */*
+
+
+
+
+==================================================================
+PART 2: part-2-tcpdump (capture filters by port, host and net; -w, -r, -c)
+==================================================================
+
+(lab) # tcpdump -nn -r ../part-1-wireshark/capture.pcap port 53
+reading from file ../part-1-wireshark/capture.pcap, link-type EN10MB (Ethernet), snapshot length 262144
+16:32:36.903852 IP 192.0.2.10.58376 > 192.0.2.1.53: 43608+ [1au] A? www.lab.test. (53)
+16:32:36.904614 IP 192.0.2.1.53 > 192.0.2.10.58376: 43608* 1/0/1 A 203.0.113.80 (57)
+16:32:36.920381 IP 192.0.2.10.37559 > 203.0.113.53.53: 60780+ [1au] A? docs.lab.test. (54)
+16:32:41.925761 IP 192.0.2.10.36303 > 203.0.113.53.53: 60780+ [1au] A? docs.lab.test. (54)
+16:32:41.927294 IP 203.0.113.53.53 > 192.0.2.10.36303: 60780* 1/0/1 A 203.0.113.80 (58)
+
+(lab) # bash traffic.sh 40 &
+
+(lab) # ip netns exec laptop tcpdump -nn -i veth-laptop -c 10 -w dns-only.pcap port 53
+tcpdump: listening on veth-laptop, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+10 packets captured
+12 packets received by filter
+0 packets dropped by kernel
+
+(lab) # ip netns exec laptop tcpdump -nn -i veth-laptop -c 10 -w server-only.pcap host 203.0.113.80
+tcpdump: listening on veth-laptop, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+10 packets captured
+10 packets received by filter
+0 packets dropped by kernel
+
+(lab) # ip netns exec r1 tcpdump -nn -i veth-r1wan -c 20 -w public-net.pcap net 203.0.113.0/24
+tcpdump: listening on veth-r1wan, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+20 packets captured
+25 packets received by filter
+0 packets dropped by kernel
+
+(lab) # ip netns exec laptop tcpdump -nn -i veth-laptop -c 6 host 192.0.2.1
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on veth-laptop, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+16:25:55.508583 IP 192.0.2.10.46158 > 192.0.2.1.53: 23990+ [1au] A? www.lab.test. (53)
+16:25:55.509080 IP 192.0.2.1.53 > 192.0.2.10.46766: 22134* 1/0/1 A 203.0.113.80 (57)
+16:25:55.509094 IP 192.0.2.10 > 192.0.2.1: ICMP 192.0.2.10 udp port 46766 unreachable, length 93
+16:25:55.509102 IP 192.0.2.1.53 > 192.0.2.10.46158: 23990* 1/0/1 A 203.0.113.80 (57)
+16:25:56.789115 IP 192.0.2.10.53722 > 192.0.2.1.53: 58886+ [1au] A? www.lab.test. (53)
+16:25:56.789679 IP 192.0.2.1.53 > 192.0.2.10.53722: 58886* 1/0/1 A 203.0.113.80 (57)
+6 packets captured
+6 packets received by filter
+0 packets dropped by kernel
+
+(lab) # tcpdump -nn -r dns-only.pcap
+reading from file dns-only.pcap, link-type EN10MB (Ethernet), snapshot length 262144
+16:25:45.067394 IP 192.0.2.10.44469 > 192.0.2.1.53: 41492+ [1au] A? www.lab.test. (53)
+16:25:46.090482 IP 192.0.2.10.54935 > 203.0.113.53.53: 17407+ [1au] A? news.lab.test. (54)
+16:25:46.090703 IP 203.0.113.53.53 > 192.0.2.10.54935: 17407* 1/0/1 A 203.0.113.80 (58)
+16:25:47.141233 IP 192.0.2.10.33049 > 192.0.2.1.53: 61307+ [1au] A? www.lab.test. (53)
+16:25:47.141794 IP 192.0.2.1.53 > 192.0.2.10.44469: 41492* 1/0/1 A 203.0.113.80 (57)
+16:25:47.141817 IP 192.0.2.1.53 > 192.0.2.10.33049: 61307* 1/0/1 A 203.0.113.80 (57)
+16:25:47.173357 IP 192.0.2.10.52780 > 203.0.113.53.53: 8239+ [1au] A? news.lab.test. (54)
+16:25:47.173825 IP 203.0.113.53.53 > 192.0.2.10.52780: 8239* 1/0/1 A 203.0.113.80 (58)
+16:25:49.221490 IP 192.0.2.10.52586 > 192.0.2.1.53: 65125+ [1au] A? www.lab.test. (53)
+16:25:49.221982 IP 192.0.2.1.53 > 192.0.2.10.52586: 65125* 1/0/1 A 203.0.113.80 (57)
+
+(lab) # tcpdump -nn -r server-only.pcap
+reading from file server-only.pcap, link-type EN10MB (Ethernet), snapshot length 262144
+16:25:50.326678 IP 192.0.2.10.36734 > 203.0.113.80.80: Flags [S], seq 499834545, win 64240, options [mss 1460,sackOK,TS val 965470298 ecr 0,nop,wscale 7], length 0
+16:25:50.326831 IP 203.0.113.80.80 > 192.0.2.10.36734: Flags [S.], seq 598852734, ack 499834546, win 65160, options [mss 1460,sackOK,TS val 4205485499 ecr 965470298,nop,wscale 7], length 0
+16:25:50.326890 IP 192.0.2.10.36734 > 203.0.113.80.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 965470298 ecr 4205485499], length 0
+16:25:50.327007 IP 192.0.2.10.36734 > 203.0.113.80.80: Flags [P.], seq 1:76, ack 1, win 502, options [nop,nop,TS val 965470299 ecr 4205485499], length 75: HTTP: GET / HTTP/1.1
+16:25:50.327132 IP 203.0.113.80.80 > 192.0.2.10.36734: Flags [.], ack 76, win 509, options [nop,nop,TS val 4205485500 ecr 965470299], length 0
+16:25:50.327626 IP 203.0.113.80.80 > 192.0.2.10.36734: Flags [P.], seq 1:209, ack 76, win 509, options [nop,nop,TS val 4205485500 ecr 965470299], length 208: HTTP: HTTP/1.1 200 OK
+16:25:50.327661 IP 192.0.2.10.36734 > 203.0.113.80.80: Flags [.], ack 209, win 501, options [nop,nop,TS val 965470299 ecr 4205485500], length 0
+16:25:50.327701 IP 203.0.113.80.80 > 192.0.2.10.36734: Flags [FP.], seq 209:224, ack 76, win 509, options [nop,nop,TS val 4205485500 ecr 965470299], length 15: HTTP
+16:25:50.327818 IP 192.0.2.10.36734 > 203.0.113.80.80: Flags [F.], seq 76, ack 225, win 501, options [nop,nop,TS val 965470299 ecr 4205485500], length 0
+16:25:50.327978 IP 203.0.113.80.80 > 192.0.2.10.36734: Flags [.], ack 77, win 509, options [nop,nop,TS val 4205485501 ecr 965470299], length 0
+
+(lab) # tcpdump -nn -r public-net.pcap
+reading from file public-net.pcap, link-type EN10MB (Ethernet), snapshot length 262144
+16:25:51.349234 IP 198.51.100.1.45535 > 203.0.113.53.53: 38225+ [1au] A? www.lab.test. (53)
+16:25:51.349469 IP 203.0.113.53.53 > 198.51.100.1.45535: 38225* 1/0/1 A 203.0.113.80 (57)
+16:25:51.374565 IP 192.0.2.10.38851 > 203.0.113.53.53: 17419+ [1au] A? news.lab.test. (54)
+16:25:51.374747 IP 203.0.113.53.53 > 192.0.2.10.38851: 17419* 1/0/1 A 203.0.113.80 (58)
+16:25:51.395025 IP 192.0.2.10.36740 > 203.0.113.80.80: Flags [S], seq 1550640205, win 64240, options [mss 1460,sackOK,TS val 965471367 ecr 0,nop,wscale 7], length 0
+16:25:51.395168 IP 203.0.113.80.80 > 192.0.2.10.36740: Flags [S.], seq 1802890115, ack 1550640206, win 65160, options [mss 1460,sackOK,TS val 4205486568 ecr 965471367,nop,wscale 7], length 0
+16:25:51.395190 IP 192.0.2.10.36740 > 203.0.113.80.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 965471367 ecr 4205486568], length 0
+16:25:51.395277 IP 192.0.2.10.36740 > 203.0.113.80.80: Flags [P.], seq 1:76, ack 1, win 502, options [nop,nop,TS val 965471367 ecr 4205486568], length 75: HTTP: GET / HTTP/1.1
+16:25:51.395418 IP 203.0.113.80.80 > 192.0.2.10.36740: Flags [.], ack 76, win 509, options [nop,nop,TS val 4205486568 ecr 965471367], length 0
+16:25:51.395826 IP 203.0.113.80.80 > 192.0.2.10.36740: Flags [P.], seq 1:209, ack 76, win 509, options [nop,nop,TS val 4205486568 ecr 965471367], length 208: HTTP: HTTP/1.1 200 OK
+16:25:51.395859 IP 192.0.2.10.36740 > 203.0.113.80.80: Flags [.], ack 209, win 501, options [nop,nop,TS val 965471367 ecr 4205486568], length 0
+16:25:51.395889 IP 203.0.113.80.80 > 192.0.2.10.36740: Flags [FP.], seq 209:224, ack 76, win 509, options [nop,nop,TS val 4205486569 ecr 965471367], length 15: HTTP
+16:25:51.395945 IP 192.0.2.10.36740 > 203.0.113.80.80: Flags [F.], seq 76, ack 225, win 501, options [nop,nop,TS val 965471368 ecr 4205486569], length 0
+16:25:51.396020 IP 203.0.113.80.80 > 192.0.2.10.36740: Flags [.], ack 77, win 509, options [nop,nop,TS val 4205486569 ecr 965471368], length 0
+16:25:53.457745 IP 192.0.2.10.49361 > 203.0.113.53.53: 13525+ [1au] A? news.lab.test. (54)
+16:25:53.457970 IP 203.0.113.53.53 > 192.0.2.10.49361: 13525* 1/0/1 A 203.0.113.80 (58)
+16:25:54.483066 IP 192.0.2.10.36744 > 203.0.113.80.80: Flags [S], seq 1467750733, win 64240, options [mss 1460,sackOK,TS val 965474455 ecr 0,nop,wscale 7], length 0
+16:25:54.483299 IP 203.0.113.80.80 > 192.0.2.10.36744: Flags [S.], seq 260304685, ack 1467750734, win 65160, options [mss 1460,sackOK,TS val 4205489656 ecr 965474455,nop,wscale 7], length 0
+16:25:54.483321 IP 192.0.2.10.36744 > 203.0.113.80.80: Flags [.], ack 1, win 502, options [nop,nop,TS val 965474455 ecr 4205489656], length 0
+16:25:54.483446 IP 192.0.2.10.36744 > 203.0.113.80.80: Flags [P.], seq 1:76, ack 1, win 502, options [nop,nop,TS val 965474455 ecr 4205489656], length 75: HTTP: GET / HTTP/1.1
+
+(lab) # tcpdump -nn -r dns-only.pcap 'not port 53' | wc -l
+reading from file dns-only.pcap, link-type EN10MB (Ethernet), snapshot length 262144
+0
+
+
+==================================================================
+PART 3: part-3-mtr
+==================================================================
+
+--- Fault 1 (all four round 1 faults planted): loss from hop 2 to the last hop
+(lab) # ip netns exec laptop mtr -rn -c 50 -i 0.2 203.0.113.80
+Start: 2026-10-27T16:26:23+0000
+HOST: 9acde94c9099                Loss%   Snt   Last   Avg  Best  Wrst StDev
+  1.|-- 192.0.2.1                  0.0%    50    0.1   0.1   0.1   0.2   0.0
+  2.|-- 198.51.100.2              10.0%    50    0.1   0.1   0.1   0.2   0.0
+  3.|-- 203.0.113.80              10.0%    50    0.2   0.2   0.2   0.4   0.1
+
+--- iperf3 at the same moment, with fault 1 and fault 4 both in the network: the numbers mix
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5
+Connecting to host 203.0.113.80, port 5201
+[  5] local 192.0.2.10 port 47870 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  1.00 MBytes  8.38 Mbits/sec   82   1.41 KBytes       
+[  5]   1.00-2.00   sec   256 KBytes  2.10 Mbits/sec   18   2.83 KBytes       
+[  5]   2.00-3.00   sec   256 KBytes  2.10 Mbits/sec   38   2.83 KBytes       
+[  5]   3.00-4.00   sec   256 KBytes  2.10 Mbits/sec   18   1.41 KBytes       
+[  5]   4.00-5.00   sec   896 KBytes  7.32 Mbits/sec   69   1.41 KBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.00   sec  2.62 MBytes  4.40 Mbits/sec  225             sender
+[  5]   0.00-5.00   sec  2.50 MBytes  4.19 Mbits/sec                  receiver
+
+iperf Done.
+
+(lab) # ip netns exec r1 tc qdisc show
+qdisc noqueue 0: dev lo root refcnt 2 
+qdisc noqueue 0: dev veth-r1lan root refcnt 2 
+qdisc netem 802b: dev veth-r1wan root refcnt 21 limit 1000 loss 10%
+
+(lab) # ip netns exec r2 tc qdisc show dev veth-r2wan
+qdisc noqueue 0: root refcnt 2 
+
+(lab) # ip netns exec r1 tc qdisc del dev veth-r1wan root
+
+--- A router limiting itself: r1's icmp_ratelimit back at 1000, probes every 0.2 seconds
+(lab) # ip netns exec r1 sysctl -w net.ipv4.icmp_ratelimit=1000
+net.ipv4.icmp_ratelimit = 1000
+
+(lab) # ip netns exec laptop mtr -rn -c 50 -i 0.2 203.0.113.80
+Start: 2026-10-27T16:26:43+0000
+HOST: 9acde94c9099                Loss%   Snt   Last   Avg  Best  Wrst StDev
+  1.|-- 192.0.2.1                 70.0%    50    0.1   0.1   0.1   0.5   0.1
+  2.|-- 198.51.100.2               0.0%    50    0.1   0.1   0.1   0.2   0.0
+  3.|-- 203.0.113.80               0.0%    50    0.3   0.3   0.2   0.5   0.1
+
+--- The same limit, with mtr's default interval of 1 second: the burst covers 10 probes
+(lab) # ip netns exec laptop mtr -rn -c 10 203.0.113.80
+Start: 2026-10-27T16:26:58+0000
+HOST: 9acde94c9099                Loss%   Snt   Last   Avg  Best  Wrst StDev
+  1.|-- 192.0.2.1                  0.0%    10    0.1   0.1   0.1   0.1   0.0
+  2.|-- 198.51.100.2               0.0%    10    0.2   0.1   0.1   0.2   0.1
+  3.|-- 203.0.113.80               0.0%    10    0.3   0.3   0.2   0.3   0.1
+
+(lab) # ip netns exec r1 sysctl -w net.ipv4.icmp_ratelimit=0
+net.ipv4.icmp_ratelimit = 0
+
+--- After the fix: clean
+(lab) # ip netns exec laptop mtr -rn -c 50 -i 0.2 203.0.113.80
+Start: 2026-10-27T16:27:13+0000
+HOST: 9acde94c9099                Loss%   Snt   Last   Avg  Best  Wrst StDev
+  1.|-- 192.0.2.1                  0.0%    50    0.1   0.1   0.0   0.2   0.0
+  2.|-- 198.51.100.2               0.0%    50    0.1   0.1   0.1   0.2   0.0
+  3.|-- 203.0.113.80               0.0%    50    0.3   0.2   0.2   0.4   0.0
+
+--- For comparison, from separate runs of the same seed:
+(lab) # bash ../part-0-the-broken-network/faults.sh --clean
+(lab) # ip netns exec laptop mtr -rn -c 50 -i 0.2 203.0.113.80
+Start: 2026-10-27T16:29:00+0000
+HOST: 9acde94c9099                Loss%   Snt   Last   Avg  Best  Wrst StDev
+  1.|-- 192.0.2.1                  0.0%    50    0.1   0.1   0.1   0.2   0.0
+  2.|-- 198.51.100.2               0.0%    50    0.1   0.1   0.1   0.3   0.0
+  3.|-- 203.0.113.80               0.0%    50    0.1   0.1   0.1   0.3   0.0
+
+(lab) # bash ../part-0-the-broken-network/faults.sh --only 1
+(lab) # ip netns exec laptop mtr -rn -c 50 -i 0.2 203.0.113.80
+Start: 2026-10-27T16:29:29+0000
+HOST: 9acde94c9099                Loss%   Snt   Last   Avg  Best  Wrst StDev
+  1.|-- 192.0.2.1                  0.0%    50    0.1   0.1   0.1   0.3   0.0
+  2.|-- 198.51.100.2               8.0%    50    0.1   0.1   0.1   0.2   0.0
+  3.|-- 203.0.113.80               4.0%    50    0.2   0.1   0.1   0.3   0.1
+
+(lab) # bash ../part-0-the-broken-network/faults.sh --only 4
+(lab) # ip netns exec laptop mtr -rn -c 50 -i 0.2 203.0.113.80
+Start: 2026-10-27T16:30:03+0000
+HOST: 9acde94c9099                Loss%   Snt   Last   Avg  Best  Wrst StDev
+  1.|-- 192.0.2.1                  0.0%    50    0.1   0.1   0.1   0.3   0.0
+  2.|-- 198.51.100.2               0.0%    50    0.1   0.1   0.1   0.2   0.0
+  3.|-- 203.0.113.80               0.0%    50    0.3   0.3   0.2   0.5   0.1
+
+
+==================================================================
+PART 4: part-4-dig
+==================================================================
+
+(lab) # ip netns exec laptop dig @192.0.2.1 docs.lab.test
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.8-Ubuntu <<>> @192.0.2.1 docs.lab.test
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 14336
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1232
+;; QUESTION SECTION:
+;docs.lab.test.			IN	A
+
+;; ANSWER SECTION:
+docs.lab.test.		0	IN	A	203.0.113.153
+
+;; Query time: 4 msec
+;; SERVER: 192.0.2.1#53(192.0.2.1) (UDP)
+;; WHEN: Tue Oct 27 16:27:31 UTC 2026
+;; MSG SIZE  rcvd: 58
+
+
+(lab) # ip netns exec laptop dig @203.0.113.53 docs.lab.test
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.8-Ubuntu <<>> @203.0.113.53 docs.lab.test
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 45865
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1232
+;; QUESTION SECTION:
+;docs.lab.test.			IN	A
+
+;; ANSWER SECTION:
+docs.lab.test.		0	IN	A	203.0.113.80
+
+;; Query time: 4 msec
+;; SERVER: 203.0.113.53#53(203.0.113.53) (UDP)
+;; WHEN: Tue Oct 27 16:27:31 UTC 2026
+;; MSG SIZE  rcvd: 58
+
+
+(lab) # ip netns exec laptop dig +short docs.lab.test
+203.0.113.153
+
+--- dig +trace, in the lab itself (excerpt: the RRSIG and DS lines, the d to m root and .com server
+    lines, and the example.com name server lines are left out)
+(lab) # dig +trace @1.1.1.1 example.com
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.8-Ubuntu <<>> +trace @1.1.1.1 example.com
+; (1 server found)
+;; global options: +cmd
+.			510899	IN	NS	a.root-servers.net.
+.			510899	IN	NS	b.root-servers.net.
+.			510899	IN	NS	c.root-servers.net.
+;; Received 525 bytes from 1.1.1.1#53(1.1.1.1) in 24 ms
+
+com.			172800	IN	NS	a.gtld-servers.net.
+com.			172800	IN	NS	b.gtld-servers.net.
+com.			172800	IN	NS	c.gtld-servers.net.
+;; Received 1171 bytes from 192.5.5.241#53(f.root-servers.net) in 32 ms
+
+;; Received 506 bytes from 192.33.14.30#53(b.gtld-servers.net) in 172 ms
+
+example.com.		300	IN	A	104.20.23.154
+example.com.		300	IN	A	172.66.147.243
+
+
+--- dig +trace without @1.1.1.1, in the lab (a separate run): no delegation at all
+(lab) # dig +trace example.com
+
+; <<>> DiG 9.18.39-0ubuntu0.24.04.8-Ubuntu <<>> +trace example.com
+;; global options: +cmd
+;; Received 17 bytes from 192.168.65.7#53(192.168.65.7) in 2590 ms
+
+
+(lab) # echo nameserver 203.0.113.53 > /etc/netns/laptop/resolv.conf
+
+(lab) # ip netns exec laptop dig +short docs.lab.test; ip netns exec laptop curl -sS -m 5 http://docs.lab.test/
+203.0.113.80
+lab web server
+
+
+==================================================================
+PART 5: part-5-nmap
+==================================================================
+
+(lab) # ip netns exec laptop nmap -n 203.0.113.80
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-10-27 16:27 UTC
+Nmap scan report for 203.0.113.80
+Host is up (0.00059s latency).
+Not shown: 999 closed tcp ports (reset)
+PORT   STATE SERVICE
+80/tcp open  http
+
+Nmap done: 1 IP address (1 host up) scanned in 0.21 seconds
+
+(lab) # ip netns exec laptop nmap -n -p 1-10000 203.0.113.80
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-10-27 16:27 UTC
+Nmap scan report for 203.0.113.80
+Host is up (0.00042s latency).
+Not shown: 9997 closed tcp ports (reset)
+PORT     STATE    SERVICE
+80/tcp   open     http
+5201/tcp open     targus-getdata1
+7630/tcp filtered hawk
+
+Nmap done: 1 IP address (1 host up) scanned in 1.66 seconds
+
+(lab) # ip netns exec laptop nmap -n -p 80,81,7630 203.0.113.80
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-10-27 16:27 UTC
+Nmap scan report for 203.0.113.80
+Host is up (0.00019s latency).
+
+PORT     STATE    SERVICE
+80/tcp   open     http
+81/tcp   closed   hosts2-ns
+7630/tcp filtered hawk
+
+Nmap done: 1 IP address (1 host up) scanned in 1.43 seconds
+
+(lab) # ip netns exec server ss -ltn
+State  Recv-Q Send-Q Local Address:Port Peer Address:PortProcess
+LISTEN 0      9                  *:7630            *:*          
+LISTEN 0      4096               *:5201            *:*          
+LISTEN 0      9                  *:80              *:*          
+
+(lab) # ip netns exec r2 nft list ruleset
+table inet fault3 {
+	chain forward {
+		type filter hook forward priority filter; policy accept;
+		tcp dport 7630 drop
+	}
+}
+
+(lab) # ip netns exec r2 nft delete table inet fault3
+
+(lab) # ip netns exec laptop nmap -n -p 80,81,7630 203.0.113.80
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-10-27 16:27 UTC
+Nmap scan report for 203.0.113.80
+Host is up (0.00023s latency).
+
+PORT     STATE  SERVICE
+80/tcp   open   http
+81/tcp   closed hosts2-ns
+7630/tcp open   hawk
+
+Nmap done: 1 IP address (1 host up) scanned in 0.25 seconds
+
+
+==================================================================
+PART 6: part-6-iperf3
+==================================================================
+
+--- Fault 4 (fault 1 already cleared in part 3)
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5
+Connecting to host 203.0.113.80, port 5201
+[  5] local 192.0.2.10 port 52804 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  4.75 MBytes  39.8 Mbits/sec    0   1.14 MBytes       
+[  5]   1.00-2.00   sec  1.38 MBytes  11.5 Mbits/sec    0   1.21 MBytes       
+[  5]   2.00-3.00   sec  1.38 MBytes  11.5 Mbits/sec    0   1.29 MBytes       
+[  5]   3.00-4.00   sec  1.38 MBytes  11.5 Mbits/sec    0   1.36 MBytes       
+[  5]   4.00-5.00   sec  1.38 MBytes  11.5 Mbits/sec    0   1.43 MBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.00   sec  10.2 MBytes  17.2 Mbits/sec    0             sender
+[  5]   0.00-5.95   sec  8.75 MBytes  12.3 Mbits/sec                  receiver
+
+iperf Done.
+
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5 -R
+Connecting to host 203.0.113.80, port 5201
+Reverse mode, remote host 203.0.113.80 is sending
+[  5] local 192.0.2.10 port 54058 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate
+[  5]   0.00-1.00   sec  1003 MBytes  8.40 Gbits/sec                  
+[  5]   1.00-2.00   sec   672 MBytes  5.64 Gbits/sec                  
+[  5]   2.00-3.00   sec   900 MBytes  7.55 Gbits/sec                  
+[  5]   3.00-4.00   sec  1.26 GBytes  10.8 Gbits/sec                  
+[  5]   4.00-5.00   sec  1.21 GBytes  10.4 Gbits/sec                  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.00   sec  4.99 GBytes  8.57 Gbits/sec  1901             sender
+[  5]   0.00-5.00   sec  4.99 GBytes  8.56 Gbits/sec                  receiver
+
+iperf Done.
+
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5 -u -b 2M
+Connecting to host 203.0.113.80, port 5201
+[  5] local 192.0.2.10 port 55768 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate         Total Datagrams
+[  5]   0.00-1.00   sec   245 KBytes  2.00 Mbits/sec  173  
+[  5]   1.00-2.00   sec   245 KBytes  2.00 Mbits/sec  173  
+[  5]   2.00-3.00   sec   243 KBytes  1.99 Mbits/sec  172  
+[  5]   3.00-4.00   sec   245 KBytes  2.00 Mbits/sec  173  
+[  5]   4.00-5.00   sec   245 KBytes  2.00 Mbits/sec  173  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5]   0.00-5.00   sec  1.19 MBytes  2.00 Mbits/sec  0.000 ms  0/864 (0%)  sender
+[  5]   0.00-5.00   sec  1.19 MBytes  2.00 Mbits/sec  0.119 ms  0/864 (0%)  receiver
+
+iperf Done.
+
+--- UDP above the limit: the queue overflows, so UDP loses packets there
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5 -u -b 20M
+Connecting to host 203.0.113.80, port 5201
+[  5] local 192.0.2.10 port 60136 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate         Total Datagrams
+[  5]   0.00-1.00   sec  2.38 MBytes  20.0 Mbits/sec  1726  
+[  5]   1.00-2.00   sec  2.38 MBytes  20.0 Mbits/sec  1726  
+[  5]   2.00-3.00   sec  2.39 MBytes  20.0 Mbits/sec  1728  
+[  5]   3.00-4.00   sec  2.38 MBytes  20.0 Mbits/sec  1725  
+[  5]   4.00-5.00   sec  2.38 MBytes  20.0 Mbits/sec  1727  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5]   0.00-5.00   sec  11.9 MBytes  20.0 Mbits/sec  0.000 ms  0/8632 (0%)  sender
+[  5]   0.00-5.92   sec  8.91 MBytes  12.6 Mbits/sec  0.254 ms  2180/8629 (25%)  receiver
+
+iperf Done.
+
+(lab) # ip netns exec r2 tc qdisc show
+qdisc noqueue 0: dev lo root refcnt 2 
+qdisc noqueue 0: dev veth-r2wan root refcnt 2 
+qdisc noqueue 0: dev br-srv root refcnt 2 
+qdisc netem 802c: dev veth-r2srv root refcnt 21 limit 1000 rate 13Mbit
+qdisc noqueue 0: dev veth-r2dns root refcnt 2 
+
+(lab) # ip netns exec r2 tc qdisc del dev veth-r2srv root
+
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5
+Connecting to host 203.0.113.80, port 5201
+[  5] local 192.0.2.10 port 35356 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  1.84 GBytes  15.8 Gbits/sec    0   1.46 MBytes       
+[  5]   1.00-2.00   sec  2.29 GBytes  19.7 Gbits/sec    0   1.92 MBytes       
+[  5]   2.00-3.00   sec  2.42 GBytes  20.8 Gbits/sec    0   1.92 MBytes       
+[  5]   3.00-4.00   sec  2.37 GBytes  20.4 Gbits/sec    0   2.22 MBytes       
+[  5]   4.00-5.00   sec  2.48 GBytes  21.3 Gbits/sec    0   2.73 MBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.00   sec  11.4 GBytes  19.6 Gbits/sec    0             sender
+[  5]   0.00-5.00   sec  11.4 GBytes  19.6 Gbits/sec                  receiver
+
+iperf Done.
+
+--- Separate runs of the same seed: the clean network, fault 1 alone, fault 4 alone
+(lab) # bash ../part-0-the-broken-network/faults.sh --clean
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5
+Connecting to host 203.0.113.80, port 5201
+[  5] local 192.0.2.10 port 57796 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  1.80 GBytes  15.4 Gbits/sec   46   1.56 MBytes       
+[  5]   1.00-2.00   sec  1.91 GBytes  16.4 Gbits/sec   92   1.59 MBytes       
+[  5]   2.00-3.00   sec  2.10 GBytes  18.0 Gbits/sec  948   1.19 MBytes       
+[  5]   3.00-4.00   sec  1.77 GBytes  15.2 Gbits/sec  851   1.23 MBytes       
+[  5]   4.00-5.00   sec  2.35 GBytes  20.2 Gbits/sec  642   1.26 MBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.00   sec  9.96 GBytes  17.1 Gbits/sec  2579             sender
+[  5]   0.00-5.00   sec  9.96 GBytes  17.1 Gbits/sec                  receiver
+
+iperf Done.
+
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5 -R
+Connecting to host 203.0.113.80, port 5201
+Reverse mode, remote host 203.0.113.80 is sending
+[  5] local 192.0.2.10 port 46818 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate
+[  5]   0.00-1.00   sec  1.18 GBytes  10.1 Gbits/sec                  
+[  5]   1.00-2.00   sec  1.63 GBytes  14.0 Gbits/sec                  
+[  5]   2.00-3.00   sec  1.75 GBytes  15.1 Gbits/sec                  
+[  5]   3.00-4.00   sec  1.67 GBytes  14.3 Gbits/sec                  
+[  5]   4.00-5.00   sec  1.74 GBytes  14.9 Gbits/sec                  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.00   sec  7.97 GBytes  13.7 Gbits/sec  1577             sender
+[  5]   0.00-5.00   sec  7.97 GBytes  13.7 Gbits/sec                  receiver
+
+iperf Done.
+
+(lab) # bash ../part-0-the-broken-network/faults.sh --only 1
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5
+Connecting to host 203.0.113.80, port 5201
+[  5] local 192.0.2.10 port 33746 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  4.12 MBytes  34.6 Mbits/sec  252   2.83 KBytes       
+[  5]   1.00-2.00   sec   768 KBytes  6.29 Mbits/sec   97   2.83 KBytes       
+[  5]   2.00-3.00   sec  1.00 MBytes  8.39 Mbits/sec  103   5.66 KBytes       
+[  5]   3.00-4.00   sec  1.75 MBytes  14.7 Mbits/sec  205   1.41 KBytes       
+[  5]   4.00-5.00   sec  4.50 MBytes  37.7 Mbits/sec  354   1.41 KBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.00   sec  12.1 MBytes  20.3 Mbits/sec  1011             sender
+[  5]   0.00-5.00   sec  11.1 MBytes  18.7 Mbits/sec                  receiver
+
+iperf Done.
+
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5 -R
+Connecting to host 203.0.113.80, port 5201
+Reverse mode, remote host 203.0.113.80 is sending
+[  5] local 192.0.2.10 port 37580 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate
+[  5]   0.00-1.00   sec  1.79 GBytes  15.4 Gbits/sec                  
+[  5]   1.00-2.00   sec   847 MBytes  7.10 Gbits/sec                  
+[  5]   2.00-3.00   sec   626 MBytes  5.25 Gbits/sec                  
+[  5]   3.00-4.00   sec   590 MBytes  4.95 Gbits/sec                  
+[  5]   4.00-5.00   sec  1.68 GBytes  14.4 Gbits/sec                  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.21   sec  5.50 GBytes  9.07 Gbits/sec  1148             sender
+[  5]   0.00-5.00   sec  5.49 GBytes  9.43 Gbits/sec                  receiver
+
+iperf Done.
+
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5 -u -b 2M
+Connecting to host 203.0.113.80, port 5201
+[  5] local 192.0.2.10 port 50020 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate         Total Datagrams
+[  5]   0.00-1.00   sec   245 KBytes  2.00 Mbits/sec  173  
+[  5]   1.00-2.00   sec   245 KBytes  2.00 Mbits/sec  173  
+[  5]   2.00-3.00   sec   243 KBytes  1.99 Mbits/sec  172  
+[  5]   3.00-4.00   sec   245 KBytes  2.00 Mbits/sec  173  
+[  5]   4.00-5.00   sec   245 KBytes  2.00 Mbits/sec  173  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5]   0.00-5.00   sec  1.19 MBytes  2.00 Mbits/sec  0.000 ms  0/864 (0%)  sender
+[  5]   0.00-5.00   sec  1.07 MBytes  1.79 Mbits/sec  0.052 ms  92/864 (11%)  receiver
+
+iperf Done.
+
+(lab) # bash ../part-0-the-broken-network/faults.sh --only 4
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5
+Connecting to host 203.0.113.80, port 5201
+[  5] local 192.0.2.10 port 44812 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  4.50 MBytes  37.7 Mbits/sec    0   1.11 MBytes       
+[  5]   1.00-2.00   sec  1.38 MBytes  11.5 Mbits/sec    0   1.18 MBytes       
+[  5]   2.00-3.00   sec  1.38 MBytes  11.5 Mbits/sec    0   1.26 MBytes       
+[  5]   3.00-4.00   sec  1.38 MBytes  11.5 Mbits/sec    0   1.33 MBytes       
+[  5]   4.00-5.00   sec  1.38 MBytes  11.5 Mbits/sec    0   1.40 MBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.00   sec  10.0 MBytes  16.8 Mbits/sec    0             sender
+[  5]   0.00-5.91   sec  8.62 MBytes  12.2 Mbits/sec                  receiver
+
+iperf Done.
+
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5 -R
+Connecting to host 203.0.113.80, port 5201
+Reverse mode, remote host 203.0.113.80 is sending
+[  5] local 192.0.2.10 port 58396 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate
+[  5]   0.00-1.00   sec  1.93 GBytes  16.6 Gbits/sec                  
+[  5]   1.00-2.00   sec  2.06 GBytes  17.7 Gbits/sec                  
+[  5]   2.00-3.00   sec  2.30 GBytes  19.8 Gbits/sec                  
+[  5]   3.00-4.00   sec  2.32 GBytes  19.9 Gbits/sec                  
+[  5]   4.00-5.00   sec  1.83 GBytes  15.8 Gbits/sec                  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.00   sec  10.5 GBytes  17.9 Gbits/sec  217             sender
+[  5]   0.00-5.00   sec  10.4 GBytes  17.9 Gbits/sec                  receiver
+
+iperf Done.
+
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5 -u -b 2M
+Connecting to host 203.0.113.80, port 5201
+[  5] local 192.0.2.10 port 40617 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate         Total Datagrams
+[  5]   0.00-1.00   sec   245 KBytes  2.00 Mbits/sec  173  
+[  5]   1.00-2.00   sec   245 KBytes  2.00 Mbits/sec  173  
+[  5]   2.00-3.00   sec   243 KBytes  1.99 Mbits/sec  172  
+[  5]   3.00-4.00   sec   245 KBytes  2.00 Mbits/sec  173  
+[  5]   4.00-5.00   sec   245 KBytes  2.00 Mbits/sec  173  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5]   0.00-5.00   sec  1.19 MBytes  2.00 Mbits/sec  0.000 ms  0/864 (0%)  sender
+[  5]   0.00-5.00   sec  1.19 MBytes  2.00 Mbits/sec  0.032 ms  0/864 (0%)  receiver
+
+iperf Done.
+
+
+==================================================================
+PART 7: part-7-curl
+==================================================================
+
+(lab) # ip netns exec laptop curl -v http://www.lab.test/
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0* Host www.lab.test:80 was resolved.
+* IPv6: (none)
+* IPv4: 203.0.113.80
+*   Trying 203.0.113.80:80...
+* Connected to www.lab.test (203.0.113.80) port 80
+> GET / HTTP/1.1
+> Host: www.lab.test
+> User-Agent: curl/8.5.0
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Date: Tue, 27 Oct 2026 16:28:10 GMT
+< Connection: close
+< Content-type: text/html
+< Accept-Ranges: bytes
+< Last-Modified: Tue, 27 Oct 2026 16:25:23 GMT
+< ETag: "6ae0d073-f"
+< Content-Length: 15
+< 
+{ [15 bytes data]
+100    15  100    15    0     0     83      0 --:--:-- --:--:-- --:--:--    84
+* Closing connection
+lab web server
+
+(lab) # ip netns exec laptop curl -sS -o /dev/null -w 'time_namelookup=%{time_namelookup} time_connect=%{time_connect} time_starttransfer=%{time_starttransfer} time_total=%{time_total}\n' http://www.lab.test/
+time_namelookup=0.001876 time_connect=0.002322 time_starttransfer=0.003723 time_total=0.003864
+
+(lab) # ip netns exec laptop curl -sS -o /dev/null -w 'time_namelookup=%{time_namelookup} time_connect=%{time_connect} time_starttransfer=%{time_starttransfer} time_total=%{time_total}\n' http://www.lab.test/cgi-bin/slow
+time_namelookup=0.002831 time_connect=0.003474 time_starttransfer=4.011277 time_total=4.011456
+
+
+==================================================================
+THE GATE: the blind round
+==================================================================
+
+(lab) # bash ../part-0-the-broken-network/faults.sh --round 2
+--- building the lab network
+--- seed 'ref-mentor' (saved in fault-seed.txt)
+
+What should be true in this network (the service sheet):
+  www.lab.test, shop.lab.test, docs.lab.test, news.lab.test and mail.lab.test all mean 203.0.113.80.
+  The laptop asks the campus resolver, 192.0.2.1. The public resolver is 203.0.113.53.
+  The server has a web page on port 80, the app on port 7429, and an iperf3 server on port 5201.
+  Every cable is virtual. It carries more than 1 Gbit/s and loses nothing.
+
+The blind round: two of the four kinds of fault are planted, with new numbers. Which two? Find out.
+
+(lab) # ip netns exec laptop mtr -rn -c 50 -i 0.2 203.0.113.80
+Start: 2026-10-27T16:28:19+0000
+HOST: 9acde94c9099                Loss%   Snt   Last   Avg  Best  Wrst StDev
+  1.|-- 192.0.2.1                  0.0%    50    0.1   0.1   0.1   0.3   0.0
+  2.|-- 198.51.100.2               8.0%    50    0.1   0.1   0.1   0.2   0.0
+  3.|-- 203.0.113.80               6.0%    50    0.1   0.1   0.1   0.2   0.0
+
+(lab) # ip netns exec laptop dig @192.0.2.1 news.lab.test +noall +answer; ip netns exec laptop dig @203.0.113.53 news.lab.test +noall +answer
+news.lab.test.		0	IN	A	203.0.113.127
+news.lab.test.		0	IN	A	203.0.113.80
+
+(lab) # ip netns exec laptop nmap -n -p 1-10000 203.0.113.80
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2026-10-27 16:28 UTC
+Nmap scan report for 203.0.113.80
+Host is up (0.000080s latency).
+Not shown: 9997 closed tcp ports (reset)
+PORT     STATE SERVICE
+80/tcp   open  http
+5201/tcp open  targus-getdata1
+7429/tcp open  opi-sock
+
+Nmap done: 1 IP address (1 host up) scanned in 16.90 seconds
+
+(lab) # ip netns exec laptop iperf3 -c 203.0.113.80 -t 5
+Connecting to host 203.0.113.80, port 5201
+[  5] local 192.0.2.10 port 53918 connected to 203.0.113.80 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  7.50 MBytes  62.9 Mbits/sec  427   1.41 KBytes       
+[  5]   1.00-2.00   sec  8.12 MBytes  68.1 Mbits/sec  536   1.41 KBytes       
+[  5]   2.00-3.00   sec  5.62 MBytes  47.2 Mbits/sec  431   5.66 KBytes       
+[  5]   3.00-4.00   sec  1.88 MBytes  15.7 Mbits/sec  167   1.41 KBytes       
+[  5]   4.00-5.00   sec  0.00 Bytes  0.00 bits/sec   29   1.41 KBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-5.00   sec  23.1 MBytes  38.8 Mbits/sec  1590             sender
+[  5]   0.00-5.00   sec  22.5 MBytes  37.7 Mbits/sec                  receiver
+
+iperf Done.
+
+(Faults 1 and 2 are planted. mtr shows loss from hop 2 on. The two resolvers disagree on
+ news.lab.test. nmap shows the app's new port, 7429, open. iperf3 shows many retransmits:
+ loss, not a speed limit.)
