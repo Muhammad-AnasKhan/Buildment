@@ -1,0 +1,741 @@
+Challenge 7 (BGP): real lab sessions for the chapter writers
+=============================================================
+
+Recorded 2026-10-27 in the lab image networking-lab (Ubuntu 24.04, BIRD 2.14), Docker Desktop on Windows, --privileged.
+Every line below was copied from a real run. Nothing is invented or edited.
+Lines that start with "$ " are what a learner types. The lines under them are the exact output.
+Times (16:40:04.307 and so on), ping times and traceroute times differ on every run.
+
+The first block (PARTS 1 to 4) is a learner who filled every gap (the reference solution).
+The second block (TEMPLATE) is the learner template: the guided parts' tests run too early or with
+something broken, and the gapped parts run with every gap left empty, so each test fails and names the gap.
+
+Where to find things:
+  PART 1: birdc show protocols, show route, show route all 203.0.113.0/24, ip route on r1,
+          ping that works (with -I) and ping that fails (without -I), r3's view, bird -p, test.
+  PART 2: show route all on r1 and r2, the withdrawal (disable direct1), Network not found,
+          ip route without the route, "Network is unreachable", failed ping, Import withdraws,
+          the return (enable direct1), test.
+  PART 3: before and after the preference (the * moves), the cut (disable to_r1 on r2),
+          traffic on the backup (via 10.0.13.3, ttl=64), traceroute 2 hops then 1 hop, restore, test.
+  PART 4: before the hijack, during (the /25 wins, r2 answers .130, r1 still answers .1),
+          after the filter (r1 answers both, the /25 in show route filtered), test.
+
+################################################################################
+# BLOCK 1: GAPS FILLED
+################################################################################
+######## PART 1
+$ cd /work/challenges/challenge-7-bgp/part-1-three-networks
+$ bash three-networks.sh
+--- waiting for BGP (this takes about 5 seconds)
+--- r1's BGP sessions
+BIRD 2.14 ready.
+Name       Proto      Table      State  Since         Info
+device1    Device     ---        up     16:39:47.625  
+direct1    Direct     ---        up     16:39:47.625  
+kernel1    Kernel     master4    up     16:39:47.625  
+to_r2      BGP        ---        up     16:39:51.919  Established   
+--- r1's routes, as BIRD sees them
+BIRD 2.14 ready.
+Table master4:
+198.51.100.0/24      unicast [direct1 16:39:47.626] * (240)
+	dev dummy0
+203.0.113.0/24       unicast [to_r2 16:39:51.919] * (100) [AS64498i]
+	via 10.0.12.2 on veth-to-r2
+--- r1's routes, as Linux sees them
+10.0.12.0/24 dev veth-to-r2 proto kernel scope link src 10.0.12.1 
+198.51.100.0/24 dev dummy0 proto kernel scope link src 198.51.100.1 
+203.0.113.0/24 via 10.0.12.2 dev veth-to-r2 proto bird metric 32 
+--- r1 pings r3's block, from its own block
+PING 203.0.113.1 (203.0.113.1) from 198.51.100.1 : 56(84) bytes of data.
+64 bytes from 203.0.113.1: icmp_seq=1 ttl=63 time=0.137 ms
+64 bytes from 203.0.113.1: icmp_seq=2 ttl=63 time=0.097 ms
+
+--- 203.0.113.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1030ms
+rtt min/avg/max/mdev = 0.097/0.117/0.137/0.020 ms
+Done. Next: bash test.sh
+
+$ birdc -s /tmp/bird-r1.ctl show route all 203.0.113.0/24
+BIRD 2.14 ready.
+Table master4:
+203.0.113.0/24       unicast [to_r2 16:39:51.919] * (100) [AS64498i]
+	via 10.0.12.2 on veth-to-r2
+	Type: BGP univ
+	BGP.origin: IGP
+	BGP.as_path: 64497 64498
+	BGP.next_hop: 10.0.12.2
+	BGP.local_pref: 100
+
+$ ip netns exec r1 ip route
+10.0.12.0/24 dev veth-to-r2 proto kernel scope link src 10.0.12.1 
+198.51.100.0/24 dev dummy0 proto kernel scope link src 198.51.100.1 
+203.0.113.0/24 via 10.0.12.2 dev veth-to-r2 proto bird metric 32 
+
+$ ip netns exec r1 ping -c2 -W1 -I 198.51.100.1 203.0.113.1
+PING 203.0.113.1 (203.0.113.1) from 198.51.100.1 : 56(84) bytes of data.
+64 bytes from 203.0.113.1: icmp_seq=1 ttl=63 time=0.035 ms
+64 bytes from 203.0.113.1: icmp_seq=2 ttl=63 time=0.073 ms
+
+--- 203.0.113.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1007ms
+rtt min/avg/max/mdev = 0.035/0.054/0.073/0.019 ms
+
+$ ip netns exec r1 ping -c2 -W1 203.0.113.1
+PING 203.0.113.1 (203.0.113.1) 56(84) bytes of data.
+
+--- 203.0.113.1 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1018ms
+
+
+$ birdc -s /tmp/bird-r3.ctl show route all 198.51.100.0/24
+BIRD 2.14 ready.
+Table master4:
+198.51.100.0/24      unicast [to_r2 16:39:51.919] * (100) [AS64496i]
+	via 10.0.23.2 on veth-to-r2
+	Type: BGP univ
+	BGP.origin: IGP
+	BGP.as_path: 64497 64496
+	BGP.next_hop: 10.0.23.2
+	BGP.local_pref: 100
+
+$ bird -p -c r1.conf
+
+$ bash test.sh
+PASS namespaces r1, r2 and r3 exist
+PASS BIRD answers in r1
+PASS BIRD answers in r2
+PASS BIRD answers in r3
+PASS the BGP session to_r2 in r1 is Established
+PASS the BGP session to_r1 in r2 is Established
+PASS the BGP session to_r3 in r2 is Established
+PASS the BGP session to_r2 in r3 is Established
+PASS r1's BIRD has 203.0.113.0/24 via 10.0.12.2 (r2), AS path 64497 64498
+PASS Linux in r1 has the route: 203.0.113.0/24 via 10.0.12.2 dev veth-to-r2 proto bird metric 32 
+PASS r3's BIRD has 198.51.100.0/24 with AS path 64497 64496
+PASS a ping from 198.51.100.1 (r1) reaches 203.0.113.1 (r3)
+PASS a ping from the cable address 10.0.12.1 gets no answer (nobody announces 10.0.12.0/24)
+RESULT: all checks passed
+
+######## PART 2
+$ cd /work/challenges/challenge-7-bgp/part-2-read-and-withdraw
+$ bash withdraw.sh
+--- building part 1 again
+--- r1: show route all 203.0.113.0/24
+BIRD 2.14 ready.
+Table master4:
+203.0.113.0/24       unicast [to_r2 16:40:04.307] * (100) [AS64498i]
+	via 10.0.12.2 on veth-to-r2
+	Type: BGP univ
+	BGP.origin: IGP
+	BGP.as_path: 64497 64498
+	BGP.next_hop: 10.0.12.2
+	BGP.local_pref: 100
+--- r2: show route all 203.0.113.0/24
+BIRD 2.14 ready.
+Table master4:
+203.0.113.0/24       unicast [to_r3 16:40:03.989] * (100) [AS64498i]
+	via 10.0.23.3 on veth-to-r3
+	Type: BGP univ
+	BGP.origin: IGP
+	BGP.as_path: 64498
+	BGP.next_hop: 10.0.23.3
+	BGP.local_pref: 100
+--- r3 withdraws 203.0.113.0/24
+BIRD 2.14 ready.
+direct1: disabled
+### birdc -s /tmp/bird-r1.ctl show route all 203.0.113.0/24
+BIRD 2.14 ready.
+Network not found
+### ip netns exec r1 ip route
+10.0.12.0/24 dev veth-to-r2 proto kernel scope link src 10.0.12.1 
+198.51.100.0/24 dev dummy0 proto kernel scope link src 198.51.100.1 
+### ip netns exec r1 ping -c2 -W1 -I 198.51.100.1 203.0.113.1
+PING 203.0.113.1 (203.0.113.1) from 198.51.100.1 : 56(84) bytes of data.
+
+--- 203.0.113.1 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1024ms
+
+### the withdrawal r1 received (birdc -s /tmp/bird-r1.ctl show protocols all to_r2)
+    Routes:         0 imported, 1 exported, 0 preferred
+    Route change stats:     received   rejected   filtered    ignored   accepted
+      Import updates:              1          0          0          0          1
+      Import withdraws:            1          0        ---          0          1
+--- r3 announces 203.0.113.0/24 again
+BIRD 2.14 ready.
+direct1: enabled
+### ip netns exec r1 ip route
+10.0.12.0/24 dev veth-to-r2 proto kernel scope link src 10.0.12.1 
+198.51.100.0/24 dev dummy0 proto kernel scope link src 198.51.100.1 
+203.0.113.0/24 via 10.0.12.2 dev veth-to-r2 proto bird metric 32 
+### ip netns exec r1 ping -c2 -W1 -I 198.51.100.1 203.0.113.1
+PING 203.0.113.1 (203.0.113.1) from 198.51.100.1 : 56(84) bytes of data.
+64 bytes from 203.0.113.1: icmp_seq=1 ttl=63 time=0.055 ms
+64 bytes from 203.0.113.1: icmp_seq=2 ttl=63 time=0.059 ms
+
+--- 203.0.113.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1029ms
+rtt min/avg/max/mdev = 0.055/0.057/0.059/0.002 ms
+Done. Next: bash test.sh
+
+$ birdc -s /tmp/bird-r3.ctl show protocols
+BIRD 2.14 ready.
+Name       Proto      Table      State  Since         Info
+device1    Device     ---        up     16:39:59.812  
+direct1    Direct     ---        up     16:40:07.471  
+kernel1    Kernel     master4    up     16:39:59.812  
+to_r2      BGP        ---        up     16:40:03.989  Established   
+
+$ birdc -s /tmp/bird-r3.ctl disable direct1
+BIRD 2.14 ready.
+direct1: disabled
+
+$ birdc -s /tmp/bird-r3.ctl show protocols
+BIRD 2.14 ready.
+Name       Proto      Table      State  Since         Info
+device1    Device     ---        up     16:39:59.812  
+direct1    Direct     ---        down   16:40:08.518  
+kernel1    Kernel     master4    up     16:39:59.812  
+to_r2      BGP        ---        up     16:40:03.989  Established   
+
+$ birdc -s /tmp/bird-r1.ctl show route all 203.0.113.0/24
+BIRD 2.14 ready.
+Network not found
+
+$ ip netns exec r1 ip route
+10.0.12.0/24 dev veth-to-r2 proto kernel scope link src 10.0.12.1 
+198.51.100.0/24 dev dummy0 proto kernel scope link src 198.51.100.1 
+
+$ ip netns exec r1 ip route get 203.0.113.1
+RTNETLINK answers: Network is unreachable
+
+$ ip netns exec r1 ping -c2 -W1 -I 198.51.100.1 203.0.113.1
+PING 203.0.113.1 (203.0.113.1) from 198.51.100.1 : 56(84) bytes of data.
+
+--- 203.0.113.1 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1031ms
+
+
+$ birdc -s /tmp/bird-r3.ctl enable direct1
+BIRD 2.14 ready.
+direct1: enabled
+
+$ ip netns exec r1 ip route
+10.0.12.0/24 dev veth-to-r2 proto kernel scope link src 10.0.12.1 
+198.51.100.0/24 dev dummy0 proto kernel scope link src 198.51.100.1 
+203.0.113.0/24 via 10.0.12.2 dev veth-to-r2 proto bird metric 32 
+
+$ ip netns exec r1 ping -c2 -W1 -I 198.51.100.1 203.0.113.1
+PING 203.0.113.1 (203.0.113.1) from 198.51.100.1 : 56(84) bytes of data.
+64 bytes from 203.0.113.1: icmp_seq=1 ttl=63 time=0.062 ms
+64 bytes from 203.0.113.1: icmp_seq=2 ttl=63 time=0.044 ms
+
+--- 203.0.113.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1012ms
+rtt min/avg/max/mdev = 0.044/0.053/0.062/0.009 ms
+
+$ bash test.sh
+PASS the three networks of part 1 are running
+PASS route-all.txt shows the AS path 64497 64498 (step 2)
+PASS withdrawn.txt shows 'Network not found' and a ping with no answer (step 5)
+PASS back.txt shows the route again and a ping with 0% packet loss (step 6)
+PASS before the live test: r1 has 203.0.113.0/24 and the ping works
+PASS after r3 withdraws, r2 and r1 have no route to 203.0.113.0/24
+PASS r1's BIRD says: Network not found
+PASS with the route withdrawn, the ping from r1 gets no answer
+PASS r1's session to_r2 counted a withdrawal (Import withdraws)
+PASS after r3 announces again, r1 has the route and the ping works
+RESULT: all checks passed
+
+######## PART 3 (gaps filled)
+$ cd /work/challenges/challenge-7-bgp/part-3-backup-link
+$ bash backup-link.sh
+--- waiting for BGP (this takes about 5 seconds)
+--- before the preference: r1's routes to 203.0.113.0/24
+BIRD 2.14 ready.
+Table master4:
+203.0.113.0/24       unicast [to_r3 16:40:21.569] * (100) [AS64498i]
+	via 10.0.13.3 on veth-to-r3
+	Type: BGP univ
+	BGP.origin: IGP
+	BGP.as_path: 64498
+	BGP.next_hop: 10.0.13.3
+	BGP.local_pref: 100
+                     unicast [to_r2 16:40:21.584] (100) [AS64498i]
+	via 10.0.12.2 on veth-to-r2
+	Type: BGP univ
+	BGP.origin: IGP
+	BGP.as_path: 64497 64498
+	BGP.next_hop: 10.0.12.2
+	BGP.local_pref: 100
+BIRD 2.14 ready.
+Reading configuration from /work/challenges/challenge-7-bgp/part-3-backup-link/r1.conf
+Reconfigured
+BIRD 2.14 ready.
+Reading configuration from /work/challenges/challenge-7-bgp/part-3-backup-link/r3.conf
+Reconfigured
+--- after the preference: r1's routes to 203.0.113.0/24
+BIRD 2.14 ready.
+Table master4:
+203.0.113.0/24       unicast [to_r2 16:40:21.584] * (100) [AS64498i]
+	via 10.0.12.2 on veth-to-r2
+	Type: BGP univ
+	BGP.origin: IGP
+	BGP.as_path: 64497 64498
+	BGP.next_hop: 10.0.12.2
+	BGP.local_pref: 100
+                     unicast [to_r3 16:40:21.724] (100) [AS64498i]
+	via 10.0.13.3 on veth-to-r3
+	Type: BGP univ
+	BGP.origin: IGP
+	BGP.as_path: 64498
+	BGP.next_hop: 10.0.13.3
+	BGP.local_pref: 50
+BIRD 2.14 ready.
+to_r1: disabled
+--- the main link is cut
+### ip netns exec r1 ip route
+10.0.12.0/24 dev veth-to-r2 proto kernel scope link src 10.0.12.1 
+10.0.13.0/24 dev veth-to-r3 proto kernel scope link src 10.0.13.1 
+198.51.100.0/24 dev dummy0 proto kernel scope link src 198.51.100.1 
+203.0.113.0/24 via 10.0.13.3 dev veth-to-r3 proto bird metric 32 
+### ip netns exec r1 ping -c2 -W1 -I 198.51.100.1 203.0.113.1
+PING 203.0.113.1 (203.0.113.1) from 198.51.100.1 : 56(84) bytes of data.
+64 bytes from 203.0.113.1: icmp_seq=1 ttl=64 time=0.112 ms
+64 bytes from 203.0.113.1: icmp_seq=2 ttl=64 time=0.072 ms
+
+--- 203.0.113.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1013ms
+rtt min/avg/max/mdev = 0.072/0.092/0.112/0.020 ms
+### birdc -s /tmp/bird-r1.ctl show protocols
+BIRD 2.14 ready.
+Name       Proto      Table      State  Since         Info
+device1    Device     ---        up     16:40:17.091  
+direct1    Direct     ---        up     16:40:17.091  
+kernel1    Kernel     master4    up     16:40:17.091  
+to_r2      BGP        ---        start  16:40:22.203  Active        Received: Administrative shutdown
+to_r3      BGP        ---        up     16:40:21.569  Established   
+BIRD 2.14 ready.
+to_r1: enabled
+--- the main link is back
+### ip netns exec r1 ip route
+10.0.12.0/24 dev veth-to-r2 proto kernel scope link src 10.0.12.1 
+10.0.13.0/24 dev veth-to-r3 proto kernel scope link src 10.0.13.1 
+198.51.100.0/24 dev dummy0 proto kernel scope link src 198.51.100.1 
+203.0.113.0/24 via 10.0.12.2 dev veth-to-r2 proto bird metric 32 
+### ip netns exec r1 ping -c2 -W1 -I 198.51.100.1 203.0.113.1
+PING 203.0.113.1 (203.0.113.1) from 198.51.100.1 : 56(84) bytes of data.
+64 bytes from 203.0.113.1: icmp_seq=1 ttl=63 time=0.048 ms
+64 bytes from 203.0.113.1: icmp_seq=2 ttl=63 time=0.049 ms
+
+--- 203.0.113.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1006ms
+rtt min/avg/max/mdev = 0.048/0.048/0.049/0.000 ms
+Done. Next: bash test.sh
+
+$ birdc -s /tmp/bird-r1.ctl show route all 203.0.113.0/24 protocol to_r3
+BIRD 2.14 ready.
+Table master4:
+203.0.113.0/24       unicast [to_r3 16:40:21.724] (100) [AS64498i]
+	via 10.0.13.3 on veth-to-r3
+	Type: BGP univ
+	BGP.origin: IGP
+	BGP.as_path: 64498
+	BGP.next_hop: 10.0.13.3
+	BGP.local_pref: 50
+
+$ ip netns exec r1 traceroute -n -s 198.51.100.1 203.0.113.1
+traceroute to 203.0.113.1 (203.0.113.1), 30 hops max, 60 byte packets
+ 1  10.0.12.2  0.047 ms  0.004 ms  0.003 ms
+ 2  203.0.113.1  0.069 ms  0.006 ms  0.005 ms
+
+$ birdc -s /tmp/bird-r2.ctl disable to_r1
+BIRD 2.14 ready.
+to_r1: disabled
+
+$ ip netns exec r1 ip route
+10.0.12.0/24 dev veth-to-r2 proto kernel scope link src 10.0.12.1 
+10.0.13.0/24 dev veth-to-r3 proto kernel scope link src 10.0.13.1 
+198.51.100.0/24 dev dummy0 proto kernel scope link src 198.51.100.1 
+203.0.113.0/24 via 10.0.13.3 dev veth-to-r3 proto bird metric 32 
+
+$ ip netns exec r3 ip route
+10.0.13.0/24 dev veth-to-r1 proto kernel scope link src 10.0.13.3 
+10.0.23.0/24 dev veth-to-r2 proto kernel scope link src 10.0.23.3 
+198.51.100.0/24 via 10.0.13.1 dev veth-to-r1 proto bird metric 32 
+203.0.113.0/24 dev dummy0 proto kernel scope link src 203.0.113.1 
+
+$ ip netns exec r1 traceroute -n -s 198.51.100.1 203.0.113.1
+traceroute to 203.0.113.1 (203.0.113.1), 30 hops max, 60 byte packets
+ 1  203.0.113.1  0.041 ms  0.006 ms *
+
+$ ip netns exec r1 ping -c2 -W1 -I 198.51.100.1 203.0.113.1
+PING 203.0.113.1 (203.0.113.1) from 198.51.100.1 : 56(84) bytes of data.
+64 bytes from 203.0.113.1: icmp_seq=1 ttl=64 time=0.035 ms
+64 bytes from 203.0.113.1: icmp_seq=2 ttl=64 time=0.057 ms
+
+--- 203.0.113.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1032ms
+rtt min/avg/max/mdev = 0.035/0.046/0.057/0.011 ms
+
+$ birdc -s /tmp/bird-r2.ctl enable to_r1
+BIRD 2.14 ready.
+to_r1: enabled
+
+$ ip netns exec r1 ip route
+10.0.12.0/24 dev veth-to-r2 proto kernel scope link src 10.0.12.1 
+10.0.13.0/24 dev veth-to-r3 proto kernel scope link src 10.0.13.1 
+198.51.100.0/24 dev dummy0 proto kernel scope link src 198.51.100.1 
+203.0.113.0/24 via 10.0.12.2 dev veth-to-r2 proto bird metric 32 
+
+$ bash test.sh
+PASS namespaces r1, r2 and r3 exist, with the direct link r1 -- r3
+PASS BIRD answers in r1
+PASS BIRD answers in r2
+PASS BIRD answers in r3
+PASS GAP 1: r3 has a session called to_r1
+PASS GAP 1: the session over the direct link is Established (r1 to_r3, r3 to_r1)
+PASS GAP 1: before the preference, the direct link won on path length (before-preference.txt)
+PASS GAP 4: r2's session to r1 is on again
+PASS GAP 2: in r1 the direct route has local preference 50, and the best route goes via r2 (10.0.12.2)
+PASS GAP 2: in r3 the direct route has local preference 50, and the best route goes via r2 (10.0.23.2)
+PASS live: with r2's session to r1 cut, r1 and r3 both use the direct link
+PASS live: with the main link cut, the ping from r1 to r3 still works
+PASS live: with the main link back, r1 and r3 use r2 again, and the ping works
+PASS GAP 3: failover.txt shows r1 on the direct link, and a ping with 0% packet loss
+PASS GAP 4: restored.txt shows r1 back on r2 (via 10.0.12.2)
+RESULT: all checks passed
+
+######## PART 4 (gaps filled)
+$ cd /work/challenges/challenge-7-bgp/part-4-hijack-and-filter
+$ bash hijack.sh
+--- waiting for BGP (this takes about 5 seconds)
+--- before the hijack
+### birdc -s /tmp/bird-r3.ctl show route
+BIRD 2.14 ready.
+Table master4:
+198.51.100.0/24      unicast [to_r1 16:40:47.305] * (100) [AS64496i]
+	via 10.0.13.1 on veth-to-r1
+                     unicast [to_r2 16:40:47.991] (100) [AS64496i]
+	via 10.0.23.2 on veth-to-r2
+203.0.113.0/24       unicast [direct1 16:40:43.140] * (240)
+	dev dummy0
+### ip netns exec r3 ip route get 198.51.100.130
+198.51.100.130 via 10.0.13.1 dev veth-to-r1 src 10.0.13.3 uid 0 
+    cache 
+### r3 visits 198.51.100.130
+r1 (AS64496), the real owner of 198.51.100.0/24
+### r3 visits 198.51.100.1
+r1 (AS64496), the real owner of 198.51.100.0/24
+--- during the hijack
+### birdc -s /tmp/bird-r3.ctl show route
+BIRD 2.14 ready.
+Table master4:
+198.51.100.0/24      unicast [to_r1 16:40:47.305] * (100) [AS64496i]
+	via 10.0.13.1 on veth-to-r1
+                     unicast [to_r2 16:40:47.991] (100) [AS64496i]
+	via 10.0.23.2 on veth-to-r2
+198.51.100.128/25    unicast [to_r2 16:40:48.238] * (100) [AS64497i]
+	via 10.0.23.2 on veth-to-r2
+                     unicast [to_r1 16:40:48.238] (100) [AS64497i]
+	via 10.0.13.1 on veth-to-r1
+203.0.113.0/24       unicast [direct1 16:40:43.140] * (240)
+	dev dummy0
+### ip netns exec r3 ip route get 198.51.100.130
+198.51.100.130 via 10.0.23.2 dev veth-to-r2 src 10.0.23.3 uid 0 
+    cache 
+### r3 visits 198.51.100.130
+r2 (AS64497), the wrong network
+### r3 visits 198.51.100.1
+r1 (AS64496), the real owner of 198.51.100.0/24
+BIRD 2.14 ready.
+Reading configuration from /work/challenges/challenge-7-bgp/part-4-hijack-and-filter/r3.conf
+Reconfigured
+--- after the filter
+### birdc -s /tmp/bird-r3.ctl show route
+BIRD 2.14 ready.
+Table master4:
+198.51.100.0/24      unicast [to_r1 16:40:47.305] * (100) [AS64496i]
+	via 10.0.13.1 on veth-to-r1
+                     unicast [to_r2 16:40:47.991] (100) [AS64496i]
+	via 10.0.23.2 on veth-to-r2
+203.0.113.0/24       unicast [direct1 16:40:43.140] * (240)
+	dev dummy0
+### ip netns exec r3 ip route get 198.51.100.130
+198.51.100.130 via 10.0.13.1 dev veth-to-r1 src 10.0.13.3 uid 0 
+    cache 
+### r3 visits 198.51.100.130
+r1 (AS64496), the real owner of 198.51.100.0/24
+### r3 visits 198.51.100.1
+r1 (AS64496), the real owner of 198.51.100.0/24
+### birdc -s /tmp/bird-r3.ctl show route filtered
+BIRD 2.14 ready.
+Table master4:
+198.51.100.128/25    unicast [to_r2 16:40:48.279] * (100) [AS64497i]
+	via 10.0.23.2 on veth-to-r2
+                     unicast [to_r1 16:40:48.326] (100) [AS64497i]
+	via 10.0.13.1 on veth-to-r1
+Done. Next: bash test.sh
+
+$ birdc -s /tmp/bird-r3.ctl show route filtered
+BIRD 2.14 ready.
+Table master4:
+198.51.100.128/25    unicast [to_r2 16:40:48.279] * (100) [AS64497i]
+	via 10.0.23.2 on veth-to-r2
+                     unicast [to_r1 16:40:48.326] (100) [AS64497i]
+	via 10.0.13.1 on veth-to-r1
+
+$ birdc -s /tmp/bird-r1.ctl show route all 198.51.100.128/25
+BIRD 2.14 ready.
+Table master4:
+198.51.100.128/25    unicast [to_r2 16:40:48.238] * (100) [AS64497i]
+	via 10.0.12.2 on veth-to-r2
+	Type: BGP univ
+	BGP.origin: IGP
+	BGP.as_path: 64497
+	BGP.next_hop: 10.0.12.2
+	BGP.local_pref: 100
+
+$ birdc -s /tmp/bird-r3.ctl show protocols all to_r2 | grep -E "Input filter|Routes:"
+    Input filter:   owner_only
+    Routes:         1 imported, 1 filtered, 2 exported, 0 preferred
+
+$ bash test.sh
+PASS namespaces r1, r2 and r3 exist, with the direct link r1 -- r3
+PASS BIRD answers in r1
+PASS BIRD answers in r2
+PASS BIRD answers in r3
+PASS all six BGP sessions are Established
+PASS GAP 1: r2's dummy0 has 198.51.100.130/25
+PASS GAP 1: r2 announces 198.51.100.128/25 (r1 learns it with AS path 64497)
+PASS GAP 1: hijack.txt shows the /25 in r3, and r2 answered for 198.51.100.130
+PASS hijack.txt shows the split: 198.51.100.1 still went to r1
+PASS GAP 3: r3 uses owner_only on both sessions (Input filter: owner_only)
+PASS GAP 2: r3 accepts 198.51.100.0/24 from AS64496 (its best route has AS path 64496)
+PASS r3 has no route for the /25. BIRD lists it under 'show route filtered'
+PASS r3 reaches the real owner again: r1 (AS64496), the real owner of 198.51.100.0/24
+PASS after-filter.txt shows r1 answering for both addresses
+PASS a /24 announced by AS64497 (the wrong origin) is filtered by r3
+RESULT: all checks passed
+
+
+################################################################################
+# BLOCK 2: THE LEARNER TEMPLATE, TESTS FAILING ON PURPOSE
+################################################################################
+######## TEMPLATE part-1-three-networks: test before the script, and with r2's BIRD stopped
+$ cd /work/challenges/challenge-7-bgp/part-1-three-networks
+$ bash test.sh
+FAIL namespaces are missing. Run: bash three-networks.sh
+RESULT: 1 check(s) failed
+
+$ bash three-networks.sh   (output not shown)
+$ kill $(cat /tmp/networking-course-pids/bird-r2.pid)
+
+$ bash test.sh
+PASS namespaces r1, r2 and r3 exist
+PASS BIRD answers in r1
+FAIL BIRD does not answer in r2. Look at step 7, and at the log: cat /tmp/networking-course-pids/bird-r2.log
+PASS BIRD answers in r3
+FAIL the BGP session to_r2 in r1 is not Established. Look at step 6 (the neighbor address and AS number) and run: birdc -s /tmp/bird-r1.ctl show protocols
+FAIL the BGP session to_r1 in r2 is not Established. Look at step 6 (the neighbor address and AS number) and run: birdc -s /tmp/bird-r2.ctl show protocols
+FAIL the BGP session to_r3 in r2 is not Established. Look at step 6 (the neighbor address and AS number) and run: birdc -s /tmp/bird-r2.ctl show protocols
+FAIL the BGP session to_r2 in r3 is not Established. Look at step 6 (the neighbor address and AS number) and run: birdc -s /tmp/bird-r3.ctl show protocols
+FAIL r1's BIRD should have 203.0.113.0/24 via 10.0.12.2 with BGP.as_path: 64497 64498. It shows: BIRD 2.14 ready.
+Network not found
+FAIL Linux in r1 has no BIRD route to 203.0.113.0/24. Look at the kernel protocol in step 6. ip route says: ''
+FAIL r3's BIRD should have 198.51.100.0/24 with BGP.as_path: 64497 64496. It shows: BIRD 2.14 ready.
+Network not found
+FAIL a ping from 198.51.100.1 to 203.0.113.1 failed. Check forwarding in r2 (step 4) and the dummy addresses (step 5). Ping said: PING 203.0.113.1 (203.0.113.1) from 198.51.100.1 : 56(84) bytes of data.
+
+--- 203.0.113.1 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1019ms
+PASS a ping from the cable address 10.0.12.1 gets no answer (nobody announces 10.0.12.0/24)
+RESULT: 9 check(s) failed
+
+######## TEMPLATE part-2-read-and-withdraw: test without running withdraw.sh
+$ cd /work/challenges/challenge-7-bgp/part-2-read-and-withdraw
+$ bash ../part-1-three-networks/three-networks.sh   (output not shown)
+$ bash test.sh
+PASS the three networks of part 1 are running
+FAIL route-all.txt is missing, or has no 'BGP.as_path: 64497 64498'. Run bash withdraw.sh again (step 2)
+FAIL withdrawn.txt should show 'Network not found' and '0 received'. Run bash withdraw.sh again (steps 4 and 5)
+FAIL back.txt should show '203.0.113.0/24 via 10.0.12.2' and '0% packet loss'. Run bash withdraw.sh again (step 6)
+PASS before the live test: r1 has 203.0.113.0/24 and the ping works
+PASS after r3 withdraws, r2 and r1 have no route to 203.0.113.0/24
+PASS r1's BIRD says: Network not found
+PASS with the route withdrawn, the ping from r1 gets no answer
+PASS r1's session to_r2 counted a withdrawal (Import withdraws)
+PASS after r3 announces again, r1 has the route and the ping works
+RESULT: 3 check(s) failed
+
+######## TEMPLATE part-3-backup-link (gaps empty)
+$ cd /work/challenges/challenge-7-bgp/part-3-backup-link
+$ bash backup-link.sh
+--- waiting for BGP (this takes about 5 seconds)
+(r1's session to r3 is not up. Check Gap 1)
+(r1 does not use the direct link. Check Gap 1)
+(r1 knows only one way to 203.0.113.0/24. Check Gap 1)
+--- before the preference: r1's routes to 203.0.113.0/24
+BIRD 2.14 ready.
+Table master4:
+203.0.113.0/24       unicast [to_r2 16:48:17.362] * (100) [AS64498i]
+	via 10.0.12.2 on veth-to-r2
+	Type: BGP univ
+	BGP.origin: IGP
+	BGP.as_path: 64497 64498
+	BGP.next_hop: 10.0.12.2
+	BGP.local_pref: 100
+BIRD 2.14 ready.
+Reading configuration from /work/challenges/challenge-7-bgp/part-3-backup-link/r1.conf
+Reconfigured
+BIRD 2.14 ready.
+Reading configuration from /work/challenges/challenge-7-bgp/part-3-backup-link/r3.conf
+Reconfigured
+--- after the preference: r1's routes to 203.0.113.0/24
+BIRD 2.14 ready.
+Table master4:
+203.0.113.0/24       unicast [to_r2 16:48:17.362] * (100) [AS64498i]
+	via 10.0.12.2 on veth-to-r2
+	Type: BGP univ
+	BGP.origin: IGP
+	BGP.as_path: 64497 64498
+	BGP.next_hop: 10.0.12.2
+	BGP.local_pref: 100
+(r1 did not move to the direct link. Check Gap 3)
+--- the main link is cut
+### ip netns exec r1 ip route
+10.0.12.0/24 dev veth-to-r2 proto kernel scope link src 10.0.12.1 
+10.0.13.0/24 dev veth-to-r3 proto kernel scope link src 10.0.13.1 
+198.51.100.0/24 dev dummy0 proto kernel scope link src 198.51.100.1 
+203.0.113.0/24 via 10.0.12.2 dev veth-to-r2 proto bird metric 32 
+### ip netns exec r1 ping -c2 -W1 -I 198.51.100.1 203.0.113.1
+PING 203.0.113.1 (203.0.113.1) from 198.51.100.1 : 56(84) bytes of data.
+64 bytes from 203.0.113.1: icmp_seq=1 ttl=63 time=0.320 ms
+64 bytes from 203.0.113.1: icmp_seq=2 ttl=63 time=0.102 ms
+
+--- 203.0.113.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1009ms
+rtt min/avg/max/mdev = 0.102/0.211/0.320/0.109 ms
+### birdc -s /tmp/bird-r1.ctl show protocols
+BIRD 2.14 ready.
+Name       Proto      Table      State  Since         Info
+device1    Device     ---        up     16:48:12.887  
+direct1    Direct     ---        up     16:48:12.887  
+kernel1    Kernel     master4    up     16:48:12.887  
+to_r2      BGP        ---        up     16:48:17.358  Established   
+to_r3      BGP        ---        start  16:48:12.887  Active        Socket: Connection reset by peer
+--- the main link is back
+### ip netns exec r1 ip route
+10.0.12.0/24 dev veth-to-r2 proto kernel scope link src 10.0.12.1 
+10.0.13.0/24 dev veth-to-r3 proto kernel scope link src 10.0.13.1 
+198.51.100.0/24 dev dummy0 proto kernel scope link src 198.51.100.1 
+203.0.113.0/24 via 10.0.12.2 dev veth-to-r2 proto bird metric 32 
+### ip netns exec r1 ping -c2 -W1 -I 198.51.100.1 203.0.113.1
+PING 203.0.113.1 (203.0.113.1) from 198.51.100.1 : 56(84) bytes of data.
+64 bytes from 203.0.113.1: icmp_seq=1 ttl=63 time=0.290 ms
+64 bytes from 203.0.113.1: icmp_seq=2 ttl=63 time=0.122 ms
+
+--- 203.0.113.1 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1020ms
+rtt min/avg/max/mdev = 0.122/0.206/0.290/0.084 ms
+Done. Next: bash test.sh
+
+$ bash test.sh
+PASS namespaces r1, r2 and r3 exist, with the direct link r1 -- r3
+PASS BIRD answers in r1
+PASS BIRD answers in r2
+PASS BIRD answers in r3
+FAIL GAP 1: r3 has no session called to_r1. Add the protocol bgp to_r1 block in write_r3_conf
+FAIL GAP 1: the session over the direct link is not Established. In r3's to_r1 block, check: local as 64498; neighbor 10.0.13.1 as 64496. Run: birdc -s /tmp/bird-r3.ctl show protocols
+FAIL GAP 1: before-preference.txt should show the best route (marked *) via 10.0.13.3, the direct link. Is r3's session to r1 up?
+PASS GAP 4: r2's session to r1 is on again
+FAIL GAP 2: r1 has no route from the direct link, so its preference cannot be checked. Fix GAP 1 first
+FAIL GAP 2: r3 has no route from the direct link, so its preference cannot be checked. Fix GAP 1 first
+FAIL live: with r2's session to r1 cut, r1 should use 10.0.13.3 and r3 should use 10.0.13.1. r1 has: ''. Check GAP 1
+FAIL live: with the main link cut, the ping from 198.51.100.1 to 203.0.113.1 fails. The direct link must carry it. Check GAP 1
+PASS live: with the main link back, r1 and r3 use r2 again, and the ping works
+FAIL GAP 3: failover.txt should show '203.0.113.0/24 via 10.0.13.3' and '0% packet loss'. Did you disable r2's session to_r1? Then run bash backup-link.sh again
+PASS GAP 4: restored.txt shows r1 back on r2 (via 10.0.12.2)
+RESULT: 8 check(s) failed
+
+######## TEMPLATE part-4-hijack-and-filter (gaps empty)
+$ cd /work/challenges/challenge-7-bgp/part-4-hijack-and-filter
+$ bash hijack.sh
+--- waiting for BGP (this takes about 5 seconds)
+--- before the hijack
+### birdc -s /tmp/bird-r3.ctl show route
+BIRD 2.14 ready.
+Table master4:
+198.51.100.0/24      unicast [to_r1 16:50:23.107] * (100) [AS64496i]
+	via 10.0.13.1 on veth-to-r1
+                     unicast [to_r2 16:50:23.522] (100) [AS64496i]
+	via 10.0.23.2 on veth-to-r2
+203.0.113.0/24       unicast [direct1 16:50:18.800] * (240)
+	dev dummy0
+### ip netns exec r3 ip route get 198.51.100.130
+198.51.100.130 via 10.0.13.1 dev veth-to-r1 src 10.0.13.3 uid 0 
+    cache 
+### r3 visits 198.51.100.130
+r1 (AS64496), the real owner of 198.51.100.0/24
+### r3 visits 198.51.100.1
+r1 (AS64496), the real owner of 198.51.100.0/24
+(r3 has no route to 198.51.100.128/25. Check Gap 1)
+--- during the hijack
+### birdc -s /tmp/bird-r3.ctl show route
+BIRD 2.14 ready.
+Table master4:
+198.51.100.0/24      unicast [to_r1 16:50:23.103] * (100) [AS64496i]
+	via 10.0.13.1 on veth-to-r1
+                     unicast [to_r2 16:50:23.517] (100) [AS64496i]
+	via 10.0.23.2 on veth-to-r2
+203.0.113.0/24       unicast [direct1 16:50:18.796] * (240)
+	dev dummy0
+### ip netns exec r3 ip route get 198.51.100.130
+198.51.100.130 via 10.0.13.1 dev veth-to-r1 src 10.0.13.3 uid 0 
+    cache 
+### r3 visits 198.51.100.130
+r1 (AS64496), the real owner of 198.51.100.0/24
+### r3 visits 198.51.100.1
+r1 (AS64496), the real owner of 198.51.100.0/24
+BIRD 2.14 ready.
+Reading configuration from /work/challenges/challenge-7-bgp/part-4-hijack-and-filter/r3.conf
+Reconfigured
+--- after the filter
+### birdc -s /tmp/bird-r3.ctl show route
+BIRD 2.14 ready.
+Table master4:
+198.51.100.0/24      unicast [to_r1 16:50:23.103] * (100) [AS64496i]
+	via 10.0.13.1 on veth-to-r1
+                     unicast [to_r2 16:50:23.517] (100) [AS64496i]
+	via 10.0.23.2 on veth-to-r2
+203.0.113.0/24       unicast [direct1 16:50:18.796] * (240)
+	dev dummy0
+### ip netns exec r3 ip route get 198.51.100.130
+198.51.100.130 via 10.0.13.1 dev veth-to-r1 src 10.0.13.3 uid 0 
+    cache 
+### r3 visits 198.51.100.130
+r1 (AS64496), the real owner of 198.51.100.0/24
+### r3 visits 198.51.100.1
+r1 (AS64496), the real owner of 198.51.100.0/24
+### birdc -s /tmp/bird-r3.ctl show route filtered
+BIRD 2.14 ready.
+Done. Next: bash test.sh
+
+$ bash test.sh
+PASS namespaces r1, r2 and r3 exist, with the direct link r1 -- r3
+PASS BIRD answers in r1
+PASS BIRD answers in r2
+PASS BIRD answers in r3
+PASS all six BGP sessions are Established
+FAIL GAP 1: r2's dummy0 has no 198.51.100.130/25. Run: ip netns exec r2 ip addr show dev dummy0
+FAIL GAP 1: r1 does not learn 198.51.100.128/25 from r2. r2 is not announcing it
+FAIL GAP 1: hijack.txt should show 198.51.100.128/25 and the page 'r2 (AS64497), the wrong network'. Fill in Gap 1, then run bash hijack.sh again
+PASS hijack.txt shows the split: 198.51.100.1 still went to r1
+FAIL GAP 3: r3 should show 'Input filter: owner_only' on to_r2 and to_r1. Set R3_IMPORT. Run: birdc -s /tmp/bird-r3.ctl show protocols all to_r2
+PASS GAP 2: r3 accepts 198.51.100.0/24 from AS64496 (its best route has AS path 64496)
+FAIL r3 has no /25 to filter, because nobody announces one. Fill in GAP 1 first
+PASS r3 reaches the real owner again: r1 (AS64496), the real owner of 198.51.100.0/24
+PASS after-filter.txt shows r1 answering for both addresses
+FAIL GAP 3: r3 accepted 198.51.100.0/24 from AS64497, because it uses no filter. Set R3_IMPORT
+RESULT: 6 check(s) failed
+
