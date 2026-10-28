@@ -75,9 +75,9 @@ function plain(text: string): string {
 // id, then an optional shape with its text: ["a"], ("a"), (["a"]), [("a")], (("a")), {"a"}, [/a/], >a].
 const NODE = /^([A-Za-z_][\w-]*)(?:(\[\(|\(\(|\(\[|\[\/|\[\\|\[|\(|\{|>)\s*("[^"]*"|[^\])}"]*?)\s*(\)\]|\)\)|\]\)|\/\]|\\\]|\]|\)|\}))?/;
 const CLOSE: Record<string, string> = { "[(": ")]", "((": "))", "([": "])", "[/": "/]", "[\\": "\\]", "[": "]", "(": ")", "{": "}", ">": "]" };
-// -- text -->, == text ==>, -. text .->, or an arrow (-->, --->, -.->, ==>) or a plain
-// line (---, ----), with an optional |text|.
-const LINK = /^(?:(?:--|==)\s+([^|>]*?)\s+(-->|==>)|-\.\s+([^|>]*?)\s+\.->|(-{2,}>|-{3,}|-\.->|={2,}>)(?:\|([^|]*)\|)?)/;
+// -- text -->, -- text ---, == text ==>, -. text .-> or -.text.-> (and .- for a line), or an
+// arrow (-->, --->, -.->, ==>) or a line (---, -.-), with an optional |text|.
+const LINK = /^(?:(?:--|==)\s+([^|>]*?)\s+(-->|==>|---)|-\.(?![->])\s*("[^"]*"|[^|[\]"]+?)\s*\.(->|-)(?!>)|(<-{2,}>|<={2,}>|-{2,}>|-{3,}|-\.->|-\.-|={2,}>)(?:\|([^|]*)\|)?)/;
 const IGNORED = /^(classDef|class|style|linkStyle|click)\b/;
 
 type FlowNode = { id: string; label?: string; kind: "actor" | "box" | "decision" | "store" };
@@ -87,7 +87,7 @@ function flowchart(header: string, lines: string[]): Converted | null {
   const direction = dir === "LR" ? "right" : dir === "TD" || dir === "TB" ? "down" : null;
   if (!direction) return null;
   const nodes = new Map<string, FlowNode>();
-  const edges: { from: string; to: string; label?: string; dashed: boolean; head: boolean }[] = [];
+  const edges: { from: string; to: string; label?: string; dashed: boolean; head: boolean; both: boolean }[] = [];
 
   const readNode = (text: string): { node: FlowNode; rest: string } | null => {
     const match = NODE.exec(text);
@@ -106,37 +106,58 @@ function flowchart(header: string, lines: string[]): Converted | null {
     return { node, rest: text.slice(whole.length).trim() };
   };
 
+  // One or more nodes joined by "&" (A & B --> C means two arrows).
+  const readNodes = (text: string): { nodes: FlowNode[]; rest: string } | null => {
+    const found: FlowNode[] = [];
+    let rest = text;
+    for (;;) {
+      const read = readNode(rest);
+      if (!read) return null;
+      found.push(read.node);
+      rest = read.rest;
+      if (!rest.startsWith("&")) return { nodes: found, rest };
+      rest = rest.slice(1).trim();
+    }
+  };
+
   for (const line of lines) {
     if (IGNORED.test(line)) continue;
-    if (/^(subgraph|end|direction)\b/.test(line) || line.includes("&")) return null;
-    let read = readNode(line);
+    if (/^(subgraph|end|direction)\b/.test(line)) return null;
+    let read = readNodes(line);
     if (!read) return null;
     let { rest } = read;
     while (rest) {
       const link = LINK.exec(rest);
       if (!link) return null;
-      const [whole, textLabel, , dottedLabel, arrow, pipeLabel] = link;
-      const next = readNode(rest.slice(whole.length).trim());
+      const [whole, textLabel, textArrow, dottedLabel, dottedEnd, arrow, pipeLabel] = link;
+      const next = readNodes(rest.slice(whole.length).trim());
       if (!next) return null;
       const label = plain(textLabel ?? dottedLabel ?? pipeLabel ?? "");
-      const dashed = dottedLabel !== undefined || arrow === "-.->";
-      const head = arrow === undefined || arrow.endsWith(">");
-      edges.push({ from: read.node.id, to: next.node.id, label: label || undefined, dashed, head });
+      const dashed = dottedLabel !== undefined || arrow === "-.->" || arrow === "-.-";
+      const head = textArrow !== undefined ? textArrow !== "---" : dottedEnd !== undefined ? dottedEnd === "->" : arrow!.endsWith(">");
+      const both = arrow?.startsWith("<") ?? false;
+      for (const from of read.nodes) for (const to of next.nodes) edges.push({ from: from.id, to: to.id, label: label || undefined, dashed, head, both });
       read = next;
       rest = next.rest;
     }
   }
   if (!edges.length) return null;
 
-  const name = (id: string) => quoteIfNeeded(nodes.get(id)!.label ?? id);
-  const names = [...nodes.values()].map((node) => name(node.id));
-  if (new Set(names.map((n) => n.toLowerCase())).size !== names.length) return null;
+  // Boxes that share their text keep their Mermaid ids, written as [id], so arrows find the right one.
+  const text = (id: string) => nodes.get(id)!.label ?? id;
+  const count = new Map<string, number>();
+  for (const node of nodes.values()) count.set(text(node.id).toLowerCase(), (count.get(text(node.id).toLowerCase()) ?? 0) + 1);
+  const shared = (id: string) => count.get(text(id).toLowerCase())! > 1;
+  const declare = (id: string) => (shared(id) ? `[${id}] ` : "") + quoteIfNeeded(text(id));
+  const refer = (id: string) => (shared(id) ? `[${id}]` : quoteIfNeeded(text(id)));
+  const link = (edge: (typeof edges)[number]) =>
+    edge.both ? "<->" : edge.head ? (edge.dashed ? "-->" : "->") : edge.dashed ? "-.-" : "---";
   return {
     kind: "flow",
     lines: [
       `direction: ${direction}`,
-      ...[...nodes.values()].map((node) => `${node.kind} ${name(node.id)}`),
-      ...edges.map((edge) => `${name(edge.from)} ${edge.head ? (edge.dashed ? "-->" : "->") : "---"} ${name(edge.to)}${edge.label ? `: ${edge.label}` : ""}`),
+      ...[...nodes.values()].map((node) => `${node.kind} ${declare(node.id)}`),
+      ...edges.map((edge) => `${refer(edge.from)} ${link(edge)} ${refer(edge.to)}${edge.label ? `: ${edge.label}` : ""}`),
     ],
   };
 }

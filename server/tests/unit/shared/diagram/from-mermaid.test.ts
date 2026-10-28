@@ -70,17 +70,29 @@ describe("mermaidToDiagram", () => {
     });
   });
 
+  it("expands & and keeps dotted lines, loops and messages to self", () => {
+    expect(mermaidToDiagram("flowchart TD\n  A & B --> C\n  C -.-|together| A\n  C --> C", "T")?.source.split("\n").slice(5)).toEqual(["A -> C", "B -> C", "C -.- A: together", "C -> C"]);
+    expect(mermaidToDiagram("sequenceDiagram\n  A->>B: hi\n  B->>B: think", "T")?.source).toContain("B -> B: think");
+  });
+
+  it("gives boxes that share their text an [id], and keeps two-way arrows", () => {
+    expect(mermaidToDiagram("flowchart TD\n  A[Start] --> B[Say no]\n  A --> C[Say no]\n  B <-->|both| C", "T")?.source.split("\n").slice(2)).toEqual([
+      "box Start",
+      "box [B] Say no",
+      "box [C] Say no",
+      "Start -> [B]",
+      "Start -> [C]",
+      "[B] <-> [C]: both",
+    ]);
+  });
+
   it.each([
     ["a subgraph", "flowchart TD\n  subgraph S\n  A --> B\n  end"],
-    ["a dotted line without an arrow head", "flowchart TD\n  A -.- B"],
-    ["the & shorthand", "flowchart TD\n  A & B --> C"],
     ["a right-to-left flow", "flowchart RL\n  A --> B"],
     ["a note in a sequence", "sequenceDiagram\n  A->>B: hi\n  Note over A: thinks"],
     ["a loop in a sequence", "sequenceDiagram\n  loop every second\n  A->>B: ping\n  end"],
-    ["a message to itself", "sequenceDiagram\n  A->>B: hi\n  B->>B: think"],
     ["a state diagram", "stateDiagram-v2\n  [*] --> Open"],
-    ["two boxes with the same text", "flowchart TD\n  A[Same] --> B[Same]"],
-    ["more parts than a phone can show", `flowchart TD\n  ${Array.from({ length: 13 }, (_, i) => `N${i}`).join(" --> ")}`],
+    ["more parts than the limit", `flowchart TD\n  ${Array.from({ length: 31 }, (_, i) => `N${i}`).join(" --> ")}`],
     ["a keep-mermaid comment", "%% keep-mermaid\nflowchart TD\n  A --> B"],
   ])("keeps Mermaid for %s", (_name, chart) => {
     expect(mermaidToDiagram(chart, "T")).toBeNull();
