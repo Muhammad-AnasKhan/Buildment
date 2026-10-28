@@ -39,8 +39,8 @@ async function sendInviteEmail(input: { to: string; token: string; courseTitle: 
   const mentor = input.mentorName ?? "Your mentor";
   const result = await sendEmail({
     to: input.to,
-    subject: `${mentor} invited you to "${input.courseTitle}" on buildment`,
-    text: `${mentor} invited you to the course "${input.courseTitle}" on buildment.\n\nOpen this link to create your profile and start learning:\n${url}\n\nThe invite expires in ${INVITE_TTL_DAYS} days.`,
+    subject: `${mentor} invited you to "${input.courseTitle}" on Edorax`,
+    text: `${mentor} invited you to the course "${input.courseTitle}" on Edorax.\n\nOpen this link to create your profile and start learning:\n${url}\n\nThe invite expires in ${INVITE_TTL_DAYS} days.`,
     html: await renderEmailTemplate("send-invite-email", { mentorName: mentor, courseTitle: input.courseTitle, url, expiryDays: INVITE_TTL_DAYS }),
   });
   return result.sent;

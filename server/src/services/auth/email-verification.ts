@@ -26,9 +26,9 @@ export async function sendVerificationEmail(input: {
 }): Promise<{ sent: boolean; verifyUrl: string }> {
   const token = await createEmailVerificationToken(input.email);
   const verifyUrl = `${appBaseUrl()}/api/v1/auth/confirm-email?token=${encodeURIComponent(token)}`;
-  const subject = "Verify your Buildment email";
+  const subject = "Verify your Edorax email";
   const html = await renderEmailTemplate("send-verification-email", { greeting: input.name ? ` ${input.name}` : "", url: verifyUrl });
-  const text = `Hi ${input.name ?? "there"},\n\nWelcome to Buildment. Confirm your email address to finish setting up your account and start learning:\n${verifyUrl}\n\nThis link expires in 24 hours. If you did not create a Buildment account, you can ignore this email.`;
+  const text = `Hi ${input.name ?? "there"},\n\nWelcome to Edorax! Confirm your email address to finish setting up your account and start learning:\n${verifyUrl}\n\nThis link expires in 24 hours. If you did not create an Edorax account, you can ignore this email.`;
 
   const result = await sendEmail({
     to: input.email,
