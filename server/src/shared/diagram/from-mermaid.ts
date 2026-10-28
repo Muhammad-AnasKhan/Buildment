@@ -37,7 +37,11 @@ export function translateMermaid(chart: string, fallbackTitle?: string, title?: 
       ? sequence(lines.slice(1))
       : /^stateDiagram(-v2)?$/.test(header)
         ? states(lines.slice(1))
-        : null;
+        : header === "erDiagram"
+          ? entities(lines.slice(1))
+          : header === "mindmap"
+            ? mindmap(body.split("\n").filter((line) => line.trim() && !line.trim().startsWith("%%")).slice(1))
+            : null;
   if (!converted) return null;
   const name = cleanTitle(title?.trim() || converted.title || chartTitle || fallbackTitle || "Diagram");
   return { kind: converted.kind, source: [`title: ${name}`, ...converted.lines].join("\n") };
@@ -78,8 +82,8 @@ function plain(text: string): string {
 const NODE = /^([A-Za-z_][\w-]*)(?:(\[\(|\(\(|\(\[|\[\/|\[\\|\[|\(|\{|>)\s*("[^"]*"|[^\])}"]*?)\s*(\)\]|\)\)|\]\)|\/\]|\\\]|\]|\)|\}))?/;
 const CLOSE: Record<string, string> = { "[(": ")]", "((": "))", "([": "])", "[/": "/]", "[\\": "\\]", "[": "]", "(": ")", "{": "}", ">": "]" };
 // -- text -->, -- text ---, == text ==>, -. text .-> or -.text.-> (and .- for a line), or an
-// arrow (-->, --->, -.->, ==>) or a line (---, -.-), with an optional |text|.
-const LINK = /^(?:(?:--|==)\s+([^|>]*?)\s+(-->|==>|---)|-\.(?![->])\s*("[^"]*"|[^|[\]"]+?)\s*\.(->|-)(?!>)|(<-{2,}>|<={2,}>|-{2,}>|-{3,}|-\.->|-\.-|={2,}>)(?:\|([^|]*)\|)?)/;
+// arrow (-->, --->, -.->, ==>) or a line (---, -.-, ===), with an optional |text|.
+const LINK = /^(?:(?:--|==)\s+("[^"]*"|[^|>]*?)\s+(-->|==>|---|===)|-\.(?![->])\s*("[^"]*"|[^|[\]"]+?)\s*\.(->|-)(?!>)|(<-{2,}>|<={2,}>|-{2,}>|-{3,}|-\.->|-\.-|={2,}>|={3,})(?:\|([^|]*)\|)?)/;
 const IGNORED = /^(classDef|class|style|linkStyle|click)\b/;
 
 /** `group` is the index of the subgraph the node belongs to: where it got its label, else where it first appeared. */
@@ -91,7 +95,8 @@ const SUBGRAPH = /^subgraph\s+(?:([A-Za-z_][\w-]*)\s*\[\s*("[^"]*"|[^\]]*)\s*\]|
 
 function flowchart(header: string, lines: string[]): Converted | null {
   const dir = header.split(/\s+/)[1] ?? "TD";
-  const direction = dir === "LR" ? "right" : dir === "TD" || dir === "TB" ? "down" : null;
+  // Right to left and bottom to top are drawn mirrored (left to right, top to bottom); every arrow keeps its meaning.
+  const direction = dir === "LR" || dir === "RL" ? "right" : dir === "TD" || dir === "TB" || dir === "BT" ? "down" : null;
   if (!direction) return null;
   const nodes = new Map<string, FlowNode>();
   const edges: { from: string; to: string; label?: string; dashed: boolean; head: boolean; both: boolean }[] = [];
@@ -158,16 +163,18 @@ function flowchart(header: string, lines: string[]): Converted | null {
       if (!next) return null;
       const label = plain(textLabel ?? dottedLabel ?? pipeLabel ?? "");
       const dashed = dottedLabel !== undefined || arrow === "-.->" || arrow === "-.-";
-      const head = textArrow !== undefined ? textArrow !== "---" : dottedEnd !== undefined ? dottedEnd === "->" : arrow!.endsWith(">");
+      const head = textArrow !== undefined ? textArrow.endsWith(">") : dottedEnd !== undefined ? dottedEnd === "->" : arrow!.endsWith(">");
       const both = arrow?.startsWith("<") ?? false;
       for (const from of read.nodes) for (const to of next.nodes) edges.push({ from: from.id, to: to.id, label: label || undefined, dashed, head, both });
       read = next;
       rest = next.rest;
     }
   }
-  if (!edges.length || stack.length) return null;
-  // An arrow to a subgraph itself (A --> MyGroup) has no part to point at; keep Mermaid.
-  if (groups.some((group) => nodes.has(group.id) && nodes.get(group.id)!.label === undefined)) return null;
+  if ((!edges.length && !groups.length) || stack.length) return null;
+  // An arrow to a subgraph itself (A --> MyGroup) points at the whole group, by its [id].
+  const pointed = new Set(groups.filter((group) => nodes.has(group.id) && nodes.get(group.id)!.label === undefined).map((group) => group.id));
+  if ([...pointed].some((id) => !/^[A-Za-z0-9_-]+$/.test(id))) return null;
+  for (const id of pointed) nodes.delete(id);
 
   // Boxes that share their text keep their Mermaid ids, written as [id], so arrows find the right one.
   const text = (id: string) => nodes.get(id)!.label ?? id;
@@ -175,14 +182,14 @@ function flowchart(header: string, lines: string[]): Converted | null {
   for (const node of nodes.values()) count.set(text(node.id).toLowerCase(), (count.get(text(node.id).toLowerCase()) ?? 0) + 1);
   const shared = (id: string) => count.get(text(id).toLowerCase())! > 1;
   const declare = (id: string) => (shared(id) ? `[${id}] ` : "") + quoteIfNeeded(text(id));
-  const refer = (id: string) => (shared(id) ? `[${id}]` : quoteIfNeeded(text(id)));
+  const refer = (id: string) => (pointed.has(id) || shared(id) ? `[${id}]` : quoteIfNeeded(text(id)));
   const link = (edge: (typeof edges)[number]) =>
     edge.both ? "<->" : edge.head ? (edge.dashed ? "-->" : "->") : edge.dashed ? "-.-" : "---";
   // Parts, then each group as a block holding its parts and inner groups; empty groups are left out.
   const holds = (g: number): boolean => [...nodes.values()].some((node) => node.group === g) || groups.some((child, c) => child.parent === g && holds(c));
   const block = (parent: number | null, indent: string): string[] => [
     ...[...nodes.values()].filter((node) => node.group === parent).map((node) => `${indent}${node.kind} ${declare(node.id)}`),
-    ...groups.flatMap((group, g) => (group.parent === parent && holds(g) ? [`${indent}group ${group.label}`, ...block(g, `${indent}  `), `${indent}end`] : [])),
+    ...groups.flatMap((group, g) => (group.parent === parent && holds(g) ? [`${indent}group ${pointed.has(group.id) ? `[${group.id}] ` : ""}${group.label}`, ...block(g, `${indent}  `), `${indent}end`] : [])),
   ];
   return {
     kind: "flow",
@@ -377,6 +384,86 @@ function states(lines: string[]): Converted | null {
       `direction: ${direction}`,
       ...block(null, ""),
       ...transitions.map((t) => `${refer(t.from)} -> ${refer(t.to)}${t.label ? `: ${t.label}` : ""}`),
+    ],
+  };
+}
+
+// ---------------------------------------------------------------- entity diagrams
+
+// A |o--o{ B : label. Left ends: || |o }| }o; right ends: || o| |{ o{. -- is identifying, .. not.
+const RELATION = /^([\w-]+)\s*(\|\||\|o|\}\||\}o)(--|\.\.)(\|\||o\||\|\{|o\{)\s*([\w-]+)\s*:\s*(.+)$/;
+const ENTITY_OPEN = /^([\w-]+)\s*\{$/;
+const ATTRIBUTE = /^([\w.()[\]<>-]+)\s+([\w-]+)((?:\s+(?:PK|FK|UK)(?:\s*,\s*(?:PK|FK|UK))*)?)(?:\s+"([^"]*)")?$/;
+const HOW_MANY: Record<string, string> = { "||": "one", "|o": "zero or one", "o|": "zero or one", "}|": "one or more", "|{": "one or more", "}o": "zero or more", "o{": "zero or more" };
+
+/**
+ * An entity diagram becomes a flow of entity cards (name, then one row per field) joined by
+ * lines whose labels say how many on each side, as in "writes (one to zero or more)".
+ */
+function entities(lines: string[]): Converted | null {
+  const tables = new Map<string, string[]>();
+  const relations: { from: string; to: string; dashed: boolean; label: string }[] = [];
+  let open: string | null = null;
+  const table = (name: string) => { if (!tables.has(name)) tables.set(name, []); return tables.get(name)!; };
+
+  for (const line of lines) {
+    if (open) {
+      if (line === "}") { open = null; continue; }
+      const attribute = ATTRIBUTE.exec(line);
+      if (!attribute) return null;
+      const [, type, name, keys, comment] = attribute;
+      const tags = [type, ...keys.split(/[\s,]+/).filter(Boolean)].join(", ");
+      table(open).push(`${name} (${tags})${comment ? ` ${plain(comment)}` : ""}`);
+      continue;
+    }
+    const opened = ENTITY_OPEN.exec(line);
+    if (opened) { open = opened[1]; table(open); continue; }
+    const relation = RELATION.exec(line);
+    if (!relation) return null;
+    const [, from, left, link, right, to, label] = relation;
+    table(from);
+    table(to);
+    relations.push({ from, to, dashed: link === "..", label: `${plain(label)} (${HOW_MANY[left]} to ${HOW_MANY[right]})` });
+  }
+  if (open || !tables.size) return null;
+  return {
+    kind: "flow",
+    lines: [
+      "direction: right",
+      ...[...tables].map(([name, fields]) => ["entity " + quoteIfNeeded(name), ...fields].join(" | ")),
+      ...relations.map((r) => `${quoteIfNeeded(r.from)} ${r.dashed ? "-.-" : "---"} ${quoteIfNeeded(r.to)}: ${r.label}`),
+    ],
+  };
+}
+
+// ---------------------------------------------------------------- mind maps
+
+/**
+ * A mind map becomes a tree read left to right: the root first, then each idea joined to
+ * its parent by a plain line. Indentation sets the parent, as in Mermaid. Every idea gets
+ * an [id], since the same words can appear under two branches.
+ */
+function mindmap(lines: string[]): Converted | null {
+  const ideas: { label: string; depth: number; parent: number | null }[] = [];
+  const stack: number[] = [];
+  for (const line of lines) {
+    const text = line.trim();
+    if (text.startsWith("::")) continue; // icons and classes
+    const depth = line.length - line.trimStart().length;
+    // root((text)), (text), [text], {{text}}, ))text((, )text( or plain text.
+    const shaped = /^(?:[\w-]+)?\s*(?:\(\((.+)\)\)|\{\{(.+)\}\}|\)\)(.+)\(\(|\)(.+)\(|\((.+)\)|\[(.+)\])$/.exec(text);
+    const label = plain(shaped ? shaped.slice(1).find((part) => part !== undefined)! : text);
+    while (stack.length && ideas[stack[stack.length - 1]].depth >= depth) stack.pop();
+    ideas.push({ label, depth, parent: stack.length ? stack[stack.length - 1] : null });
+    stack.push(ideas.length - 1);
+  }
+  if (ideas.length < 2 || ideas.filter((idea) => idea.parent === null).length !== 1) return null;
+  return {
+    kind: "flow",
+    lines: [
+      "direction: right",
+      ...ideas.map((idea, i) => `${i === 0 ? "end" : "box"} [m${i}] ${quoteIfNeeded(idea.label)}`),
+      ...ideas.flatMap((idea, i) => (idea.parent === null ? [] : [`[m${idea.parent}] --- [m${i}]`])),
     ],
   };
 }
