@@ -19,6 +19,12 @@ describe("collectDiagramProblems", () => {
     ]);
   });
 
+  it("rejects a hand-written Diagram tag", () => {
+    expect(collectDiagramProblems('Text.\n\n<Diagram kind="flow" spec="title: X" />\n')).toEqual([
+      "Line 3: write a diagram as a ```flow or ```sequence fence, not a <Diagram> tag.",
+    ]);
+  });
+
   it("reports problems that have no line", () => {
     expect(collectDiagramProblems("```flow\nbox A\nbox B\nA -> B\n```")).toEqual([expect.stringMatching(/^The ```flow diagram on line 1: Add a title line/)]);
   });

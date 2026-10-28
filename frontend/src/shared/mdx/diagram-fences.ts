@@ -21,9 +21,14 @@ export function collectDiagramProblems(source: string): string[] {
     const fenceLine = node.position?.start.line ?? 0;
     const where = `The \`\`\`${node.lang} diagram on line ${fenceLine}`;
     for (const problem of result.problems) {
-      const line = /^Line (\d+): (.*)$/s.exec(problem);
+      const line = /^Line (\d+): ([\s\S]*)$/.exec(problem);
       problems.push(line ? `${where}, line ${fenceLine + Number(line[1])}: ${line[2]}` : `${where}: ${problem}`);
     }
+  });
+  // The fence is the one way to write a diagram, so every diagram gets these checks.
+  visit(tree, ["mdxJsxFlowElement", "mdxJsxTextElement"], (node) => {
+    if ((node as { name?: string | null }).name !== "Diagram") return;
+    problems.push(`Line ${node.position?.start.line ?? 0}: write a diagram as a \`\`\`flow or \`\`\`sequence fence, not a <Diagram> tag.`);
   });
   return problems;
 }

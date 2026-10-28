@@ -28,6 +28,7 @@ export const MDX_COMPONENT_NAMES = [
   "MermaidDiagram",
   "StateMachine",
   "EntityDiagram",
+  "Diagram",
   "Callout",
   "FaqGroup",
   "FaqItem",
