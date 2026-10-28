@@ -373,13 +373,13 @@ export function ChapterReaderShell({
                     {chapterTitle}
                   </h1>
                   {projectGoal && readerMode !== "QUIZ" ? (
-                    <p className="mt-4 border-l-2 border-border pl-3 text-sm leading-6 text-muted-foreground">
+                    <p className="mt-4 border border-border bg-card px-4 py-3 text-base leading-6 text-muted-foreground">
                       <span className="font-medium text-foreground">The project: </span>
                       {projectGoal.trim().replace(/\.+$/, "")}.
                     </p>
                   ) : null}
                   {variant && readerMode !== "QUIZ" ? (
-                    <p className="mt-2 border-l-2 border-primary pl-3 text-sm leading-6 text-muted-foreground">
+                    <p className="mt-2 bg-secondary px-4 py-3 text-base leading-6 text-muted-foreground">
                       <span className="font-medium text-foreground/80">You are building: </span>
                       {variant.productName} ({variant.label.toLowerCase()} variant)
                     </p>
@@ -425,7 +425,7 @@ export function ChapterReaderShell({
                         "prose-code:rounded prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[0.85em] prose-code:font-normal prose-code:before:content-none prose-code:after:content-none",
                         "prose-pre:max-w-none prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0",
                         "prose-figure:my-6",
-                        "prose-blockquote:rounded-r-lg prose-blockquote:border-l-4 prose-blockquote:border-border prose-blockquote:bg-muted/50 prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:not-italic",
+                        "prose-blockquote:rounded-lg prose-blockquote:border-0 prose-blockquote:bg-secondary prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:not-italic",
                         "prose-hr:border-border",
                         "prose-img:rounded-xl prose-img:border prose-img:border-border",
                         "prose-figure:my-8 prose-figcaption:text-center prose-figcaption:text-sm prose-figcaption:text-muted-foreground",

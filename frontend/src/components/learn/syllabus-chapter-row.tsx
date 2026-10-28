@@ -103,7 +103,7 @@ export function SyllabusChapterRow({
           chapter.locked && "opacity-90",
           chapter.status === "IN_PROGRESS" && "bg-muted/25",
           chapter.status === "COMPLETED" &&
-            "border-l-2 border-ok bg-emerald-500/[0.08] dark:bg-ok-soft"
+            "bg-ok-soft"
         )}
       >
         <span className="flex min-w-0 items-center gap-3">

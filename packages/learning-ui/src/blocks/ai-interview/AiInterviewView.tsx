@@ -170,7 +170,7 @@ function FeedbackCard({ session, config }: { session: AiInterviewSessionView; co
             {feedback.flags.map((flag, index) => (
               <li key={`${flag.name}-${index}`} className="rounded-lg border bg-brand-yellow/15 p-3 text-sm leading-6">
                 <p className="font-medium">{AI_INTERVIEW_FLAG_LABELS[flag.name]}</p>
-                <blockquote className="mt-1 border-l-2 border-brand-yellow pl-3 text-muted-foreground">{flag.quote}</blockquote>
+                <blockquote className="mt-1 bg-brand-yellow/15 px-3 py-2 text-muted-foreground">{flag.quote}</blockquote>
               </li>
             ))}
           </ul>
