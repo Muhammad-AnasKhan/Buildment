@@ -12,6 +12,8 @@
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jetbrains-mono);
   --font-heading: var(--font-sans);
+  --color-brand-cobalt: var(--brand-cobalt);
+  --color-brand-yellow: var(--brand-yellow);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -43,98 +45,101 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-xl: calc(var(--radius) * 1.25);
+  --radius-2xl: calc(var(--radius) * 1.5);
+  --radius-3xl: calc(var(--radius) * 1.75);
+  --radius-4xl: calc(var(--radius) * 2);
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.46 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-  --code-surface: #f6f8fa;
-  --code-toolbar: #eef1f4;
-  --code-border: #d0d7de;
-  --code-lang-fg: #57606a;
-  --code-fg: #24292f;
-  --ok: #12a36b;
-  --ok-soft: #dcf7ea;
+  /* Edorax identity: Cobalt on Paper, Ink for text, Marker yellow as a rare accent. */
+  --brand-cobalt: #2434e0;
+  --brand-yellow: #ffc933;
+  --background: #f6f7fb;
+  --foreground: #0a0f2c;
+  --card: #ffffff;
+  --card-foreground: #0a0f2c;
+  --popover: #ffffff;
+  --popover-foreground: #0a0f2c;
+  --primary: #2434e0;
+  --primary-foreground: #ffffff;
+  --secondary: #e8ebff;
+  --secondary-foreground: #0a0f2c;
+  --muted: #e8ebff;
+  --muted-foreground: #46507a;
+  --accent: #e8ebff;
+  --accent-foreground: #0a0f2c;
+  --destructive: oklch(0.52 0.21 27);
+  --border: #dce0f2;
+  --input: #dce0f2;
+  --ring: #2434e0;
+  --chart-1: #2434e0;
+  --chart-2: #7a8bff;
+  --chart-3: #0a0f2c;
+  --chart-4: #ffc933;
+  --chart-5: #46507a;
+  --radius: 0.25rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0a0f2c;
+  --sidebar-primary: #2434e0;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8ebff;
+  --sidebar-accent-foreground: #2434e0;
+  --sidebar-border: #dce0f2;
+  --sidebar-ring: #2434e0;
+  --code-surface: #f1f3fb;
+  --code-toolbar: #e8ebff;
+  --code-border: #dce0f2;
+  --code-lang-fg: #46507a;
+  --code-fg: #0a0f2c;
+  --ok: #0b6b45;
+  --ok-soft: #ddf3e8;
 }
 
 .dark {
-  /* Warm ink: deep stone canvas, lifted cards, hairline borders.
-     Hue ~78 keeps text warm instead of the previous blue-gray cast. */
-  --background: oklch(0.155 0.012 78);
-  --foreground: oklch(0.935 0.012 88);
-  --card: oklch(0.205 0.012 76);
-  --card-foreground: oklch(0.935 0.012 88);
-  --popover: oklch(0.235 0.013 76);
-  --popover-foreground: oklch(0.935 0.012 88);
-  --primary: oklch(0.935 0.012 88);
-  --primary-foreground: oklch(0.2 0.012 76);
-  --secondary: oklch(0.265 0.012 76);
-  --secondary-foreground: oklch(0.935 0.012 88);
-  --muted: oklch(0.25 0.012 76);
-  --muted-foreground: oklch(0.8 0.016 82);
-  --accent: oklch(0.29 0.014 76);
-  --accent-foreground: oklch(0.95 0.01 88);
-  --destructive: oklch(0.7 0.16 28);
-  --border: oklch(0.93 0.012 88 / 12%);
-  --input: oklch(0.29 0.012 76);
-  --ring: oklch(0.72 0.04 85);
-  --chart-1: oklch(0.76 0.12 162);
-  --chart-2: oklch(0.8 0.1 85);
-  --chart-3: oklch(0.74 0.09 250);
-  --chart-4: oklch(0.72 0.12 35);
-  --chart-5: oklch(0.7 0.08 305);
-  --sidebar: oklch(0.135 0.01 78);
-  --sidebar-foreground: oklch(0.935 0.012 88);
-  --sidebar-primary: oklch(0.78 0.12 162);
-  --sidebar-primary-foreground: oklch(0.18 0.02 160);
-  --sidebar-accent: oklch(0.25 0.012 76);
-  --sidebar-accent-foreground: oklch(0.95 0.01 88);
-  --sidebar-border: oklch(0.93 0.012 88 / 10%);
-  --sidebar-ring: oklch(0.72 0.04 85);
-  --code-surface: #161411;
-  --code-toolbar: #1e1c18;
-  --code-border: #3a352e;
-  --code-lang-fg: #a3998e;
-  --code-fg: #f0ebe4;
+  /* Ink ground, Paper text, light cobalt for actions. Flat: no glow, no gradient. */
+  --brand-cobalt: #7a8bff;
+  --background: #0a0f2c;
+  --foreground: #f6f7fb;
+  --card: #111836;
+  --card-foreground: #f6f7fb;
+  --popover: #151c44;
+  --popover-foreground: #f6f7fb;
+  --primary: #7a8bff;
+  --primary-foreground: #0a0f2c;
+  --secondary: #1a2150;
+  --secondary-foreground: #f6f7fb;
+  --muted: #172046;
+  --muted-foreground: #aab3de;
+  --accent: #1e2758;
+  --accent-foreground: #f6f7fb;
+  --destructive: oklch(0.7 0.17 25);
+  --border: rgb(246 247 251 / 14%);
+  --input: rgb(246 247 251 / 20%);
+  --ring: #7a8bff;
+  --chart-1: #7a8bff;
+  --chart-2: #ffc933;
+  --chart-3: #f6f7fb;
+  --chart-4: #aab3de;
+  --chart-5: #5a6bff;
+  --sidebar: #070b20;
+  --sidebar-foreground: #f6f7fb;
+  --sidebar-primary: #7a8bff;
+  --sidebar-primary-foreground: #0a0f2c;
+  --sidebar-accent: #172046;
+  --sidebar-accent-foreground: #f6f7fb;
+  --sidebar-border: rgb(246 247 251 / 12%);
+  --sidebar-ring: #7a8bff;
+  --code-surface: #070b20;
+  --code-toolbar: #111836;
+  --code-border: #26305f;
+  --code-lang-fg: #aab3de;
+  --code-fg: #e8ebff;
   --ok: #3ddc97;
-  --ok-soft: #123326;
+  --ok-soft: #0e3326;
 }
 
 /*
@@ -174,14 +179,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  .dark body {
-    background-image: radial-gradient(
-      ellipse 90% 46% at 50% -18%,
-      oklch(0.32 0.02 78 / 42%),
-      transparent 64%
-    );
-    background-attachment: fixed;
-  }
   .dark .chapter-mdx-editor .mdxeditor,
   .dark .chapter-mdx-editor .mdxeditor-toolbar,
   .dark .chapter-mdx-editor .mdxeditor-root-contenteditable,
@@ -194,8 +191,8 @@
     border-color: var(--border);
   }
   .dark ::selection {
-    background: oklch(0.55 0.04 82 / 48%);
-    color: oklch(0.97 0.01 88);
+    background: rgb(122 139 255 / 40%);
+    color: #f6f7fb;
   }
   /* Inline `code` in prose — not Shiki blocks */
   .prose :not(pre) > code {
@@ -275,39 +272,58 @@
    * so token variables alone are not enough in dark mode. Keep the long-form
    * reading layer explicit and high contrast instead of relying on opacity.
    */
+  .prose,
+  .prose.prose-neutral {
+    --tw-prose-body: var(--foreground);
+    --tw-prose-headings: var(--foreground);
+    --tw-prose-lead: var(--muted-foreground);
+    --tw-prose-links: var(--primary);
+    --tw-prose-bold: var(--foreground);
+    --tw-prose-counters: var(--muted-foreground);
+    --tw-prose-bullets: var(--muted-foreground);
+    --tw-prose-hr: var(--border);
+    --tw-prose-quotes: var(--foreground);
+    --tw-prose-quote-borders: var(--border);
+    --tw-prose-captions: var(--muted-foreground);
+    --tw-prose-code: var(--foreground);
+    --tw-prose-pre-code: var(--code-fg);
+    --tw-prose-pre-bg: var(--code-surface);
+    --tw-prose-th-borders: var(--border);
+    --tw-prose-td-borders: var(--border);
+  }
   .dark .prose,
   .dark .prose.prose-neutral {
     @apply prose-invert;
-    --tw-prose-body: oklch(0.88 0.012 84);
-    --tw-prose-headings: oklch(0.96 0.01 88);
-    --tw-prose-lead: oklch(0.84 0.012 84);
-    --tw-prose-links: oklch(0.93 0.014 88);
-    --tw-prose-bold: oklch(0.96 0.01 88);
-    --tw-prose-counters: oklch(0.76 0.014 82);
-    --tw-prose-bullets: oklch(0.62 0.016 80);
-    --tw-prose-hr: oklch(0.4 0.012 78);
-    --tw-prose-quotes: oklch(0.9 0.012 86);
-    --tw-prose-quote-borders: oklch(0.48 0.02 80);
-    --tw-prose-captions: oklch(0.74 0.014 82);
-    --tw-prose-code: oklch(0.94 0.012 88);
-    --tw-prose-pre-code: oklch(0.9 0.012 86);
-    --tw-prose-pre-bg: oklch(0.16 0.01 76);
-    --tw-prose-th-borders: oklch(0.42 0.012 78);
-    --tw-prose-td-borders: oklch(0.34 0.012 76);
+    --tw-prose-body: #d5daf0;
+    --tw-prose-headings: #f6f7fb;
+    --tw-prose-lead: #c9cfea;
+    --tw-prose-links: #7a8bff;
+    --tw-prose-bold: #f6f7fb;
+    --tw-prose-counters: #aab3de;
+    --tw-prose-bullets: #7a86b8;
+    --tw-prose-hr: #26305f;
+    --tw-prose-quotes: #e8ebff;
+    --tw-prose-quote-borders: #3a4580;
+    --tw-prose-captions: #aab3de;
+    --tw-prose-code: #f6f7fb;
+    --tw-prose-pre-code: #e8ebff;
+    --tw-prose-pre-bg: #070b20;
+    --tw-prose-th-borders: #2f3a70;
+    --tw-prose-td-borders: #1e2758;
   }
   .dark .prose.prose-neutral :is(p, li, td) {
-    color: oklch(0.88 0.012 84) !important;
+    color: #d5daf0 !important;
   }
   .dark .prose.prose-neutral :is(th, strong, h1, h2, h3, h4) {
-    color: oklch(0.96 0.01 88) !important;
+    color: #f6f7fb !important;
   }
   .dark .prose.prose-neutral figcaption {
-    color: oklch(0.76 0.014 82) !important;
+    color: #aab3de !important;
   }
   .dark .prose.prose-neutral blockquote {
-    color: oklch(0.88 0.012 84) !important;
-    border-color: oklch(0.46 0.018 78) !important;
-    background-color: oklch(0.24 0.012 76) !important;
+    color: #d5daf0 !important;
+    border-color: #3a4580 !important;
+    background-color: #151c47 !important;
   }
 }
 
@@ -753,20 +769,20 @@
 /* Mermaid erDiagram — fallback when inline SVG fills ignore themeVariables */
 .dark .mermaid-svg-dark svg .entityBox,
 .dark .mermaid-svg-dark svg .er.entityBox {
-  fill: oklch(0.265 0.012 76) !important;
-  stroke: oklch(0.93 0.012 88 / 28%) !important;
+  fill: #1a2150 !important;
+  stroke: rgb(246 247 251 / 28%) !important;
 }
 
 .dark .mermaid-svg-dark svg .attributeBoxOdd,
 .dark .mermaid-svg-dark svg .er.attributeBoxOdd {
-  fill: oklch(0.205 0.012 76) !important;
-  stroke: oklch(0.93 0.012 88 / 18%) !important;
+  fill: #111836 !important;
+  stroke: rgb(246 247 251 / 18%) !important;
 }
 
 .dark .mermaid-svg-dark svg .attributeBoxEven,
 .dark .mermaid-svg-dark svg .er.attributeBoxEven {
-  fill: oklch(0.235 0.012 76) !important;
-  stroke: oklch(0.93 0.012 88 / 18%) !important;
+  fill: #151c44 !important;
+  stroke: rgb(246 247 251 / 18%) !important;
 }
 
 .dark .mermaid-svg-dark svg .entityLabel text,
@@ -774,25 +790,25 @@
 .dark .mermaid-svg-dark svg .relationshipLabel text,
 .dark .mermaid-svg-dark svg text.entityLabel,
 .dark .mermaid-svg-dark svg text.attributeLabel {
-  fill: oklch(0.935 0.012 88) !important;
+  fill: #f6f7fb !important;
 }
 
 .dark .mermaid-svg-dark svg .relationshipLine,
 .dark .mermaid-svg-dark svg .er.relationshipLine,
 .dark .mermaid-svg-dark svg path.relationshipLine {
-  stroke: oklch(0.74 0.016 82) !important;
+  stroke: #aab3de !important;
 }
 
 .dark .mermaid-svg-dark svg marker path {
-  fill: oklch(0.74 0.016 82) !important;
-  stroke: oklch(0.74 0.016 82) !important;
+  fill: #aab3de !important;
+  stroke: #aab3de !important;
 }
 
 .dark .mermaid-svg-dark svg .node rect,
 .dark .mermaid-svg-dark svg .node polygon,
 .dark .mermaid-svg-dark svg .node circle,
 .dark .mermaid-svg-dark svg .node path {
-  stroke: oklch(0.93 0.012 88 / 28%);
+  stroke: rgb(246 247 251 / 28%);
 }
 
 .dark .mermaid-svg-dark svg .node .label text,
@@ -800,16 +816,16 @@
 .dark .mermaid-svg-dark svg .cluster-label text,
 .dark .mermaid-svg-dark svg .messageText,
 .dark .mermaid-svg-dark svg .actor text {
-  fill: oklch(0.935 0.012 88) !important;
+  fill: #f6f7fb !important;
 }
 
 .dark .mermaid-svg-dark svg .actor-line {
-  stroke: oklch(0.74 0.016 82) !important;
+  stroke: #aab3de !important;
 }
 
 .dark .mermaid-svg-dark svg .messageLine0,
 .dark .mermaid-svg-dark svg .messageLine1 {
-  stroke: oklch(0.74 0.016 82) !important;
+  stroke: #aab3de !important;
 }
 
 .dark .mermaid-svg-dark svg .loopLine,
