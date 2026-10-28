@@ -57,7 +57,7 @@ export async function inviteCourseInstructor(user: SessionUser, courseId: string
     to: email,
     subject: `Invitation to help teach ${course.title}`,
     html: await renderEmailTemplate("invite-course-instructor", { senderName: senderName, courseTitle: courseTitle, role: input.role === "COURSE_CREATOR" ? "Course creator" : "Submission evaluator", url: url }),
-    text: `${user.name ?? "A course instructor"} invited you to join the Buildment course team for "${course.title}" as ${input.role === "COURSE_CREATOR" ? "a course creator" : "a submission evaluator"}. Accept the invitation here: ${url}\n\nThis link expires in seven days. You must sign in with an instructor-enabled account to accept it.`,
+    text: `${user.name ?? "A course instructor"} invited you to join the Edorax course team for "${course.title}" as ${input.role === "COURSE_CREATOR" ? "a course creator" : "a submission evaluator"}. Accept the invitation here: ${url}\n\nThis link expires in seven days. You must sign in with an instructor-enabled account to accept it.`,
   });
   return { url, emailSent: sent.sent };
 }

@@ -31,9 +31,9 @@ export async function requestMagicLink(input: { email: string; redirectTo?: stri
 
   const result = await sendEmail({
     to: input.email,
-    subject: "Your Buildment sign-in link",
+    subject: "Your Edorax sign-in link",
     html: await renderEmailTemplate("request-magic-link", { url: url }),
-    text: `Sign in to Buildment: ${url}\n\nThis link expires in 15 minutes.`,
+    text: `Sign in to Edorax: ${url}\n\nThis link expires in 15 minutes.`,
   });
   if (!result.sent) {
     logger.info({ email: input.email, url: url.toString() }, "[auth] magic link (email delivery disabled)");

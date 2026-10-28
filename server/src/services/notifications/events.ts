@@ -543,12 +543,12 @@ export async function notifyUserInstructorAccessDecision(input: { userId: string
       const data = { name: name ?? "there", url: `${appBaseUrl()}${path}` };
       return input.approved
         ? {
-            subject: "Instructor access approved · Buildment",
+            subject: "Instructor access approved · Edorax",
             html: await renderEmailTemplate("notify-user-instructor-access-decision-approved", data),
             text: `Your instructor access was approved. Open: ${appBaseUrl()}${path}`,
           }
         : {
-            subject: "Instructor access update · Buildment",
+            subject: "Instructor access update · Edorax",
             html: await renderEmailTemplate("notify-user-instructor-access-decision-declined", data),
             text: `Your instructor access request was not approved. Dashboard: ${appBaseUrl()}${path}`,
           };
@@ -563,15 +563,15 @@ export async function notifyUserGrantedInstructorByAdmin(input: { userId: string
     recipients: [{ userId: input.userId }],
     dedupeKey: `instructor-granted:${input.userId}:${input.grantedAt.getTime()}`,
     title: "You have instructor access",
-    body: "A Buildment admin enabled instructor tools on your account.",
+    body: "An Edorax admin enabled instructor tools on your account.",
     url: "/workspace",
     email: async ({ name }) => ({
-      subject: "You have instructor access · Buildment",
+      subject: "You have instructor access · Edorax",
       html: await renderEmailTemplate("notify-user-granted-instructor-by-admin", {
         name: name ?? "there",
         url: `${appBaseUrl()}${path}`,
       }),
-      text: `You have instructor access on Buildment. Sign in: ${appBaseUrl()}${path}`,
+      text: `You have instructor access on Edorax. Sign in: ${appBaseUrl()}${path}`,
     }),
   });
 }
@@ -583,15 +583,15 @@ export async function notifyUserGrantedAdminByAdmin(input: { userId: string; gra
     recipients: [{ userId: input.userId }],
     dedupeKey: `admin-granted:${input.userId}:${input.grantedAt.getTime()}`,
     title: "You are now a platform admin",
-    body: "A Buildment admin granted your account platform administrator access.",
+    body: "An Edorax admin granted your account platform administrator access.",
     url: path,
     email: async ({ name }) => ({
-      subject: "You are now a platform admin · Buildment",
+      subject: "You are now a platform admin · Edorax",
       html: await renderEmailTemplate("notify-user-granted-admin-by-admin", {
         name: name ?? "there",
         url: `${appBaseUrl()}${path}`,
       }),
-      text: `You are now a platform admin on Buildment. Open: ${appBaseUrl()}${path}`,
+      text: `You are now a platform admin on Edorax. Open: ${appBaseUrl()}${path}`,
     }),
   });
 }
