@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { describeDiagram, stepCaptions } from "../../../../src/shared/diagram/describe.js";
 import { drawScene, packetPoint } from "../../../../src/shared/diagram/draw.js";
-import { layoutDiagram } from "../../../../src/shared/diagram/layout.js";
+import { layoutDiagram, pathPoint } from "../../../../src/shared/diagram/layout.js";
 import { parseDiagram, type DiagramKind, type DiagramSpec } from "../../../../src/shared/diagram/spec.js";
 import { diagramToSvg } from "../../../../src/shared/diagram/svg.js";
 import { textWidth, wrapText } from "../../../../src/shared/diagram/text.js";
@@ -74,6 +74,20 @@ describe("layout", () => {
     };
     expect(distance(centre(0), 0)).toBeLessThan(distance(centre(0), 1));
     expect(distance(centre(1), 1)).toBeLessThan(distance(centre(1), 0));
+  });
+
+  it.each([false, true])("bends a loop back arrow around the parts in its way (compact: %s)", (compact) => {
+    const s = spec("flow", "title: Loop\ndirection: down\nbox Complaints posted\nbox Good reviews seen\nbox New orders\nbox Happy customers\nComplaints posted -> Good reviews seen -> New orders -> Happy customers\nHappy customers -> Good reviews seen: fewer");
+    const scene = layoutDiagram(s, compact);
+    const back = scene.edges[3].path;
+    expect(back.control).toBeDefined();
+    const orders = scene.nodes.find((node) => node.id === "new orders")!.shape;
+    if (orders.type !== "rect") throw new Error("box expected");
+    for (let i = 1; i < 20; i++) {
+      const p = pathPoint(back, i / 20);
+      const inside = p.x > orders.x && p.x < orders.x + orders.w && p.y > orders.y && p.y < orders.y + orders.h;
+      expect(inside).toBe(false);
+    }
   });
 
   it("is deterministic", () => {

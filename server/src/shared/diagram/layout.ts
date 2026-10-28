@@ -49,7 +49,7 @@ function measure(node: DiagramNode, compact: boolean, labelBeside: boolean, crow
       return { node, lines: [node.label], inside: true, r, w: 2 * r, h: 2 * r, box: { left: r, right: r, top: r, bottom: r } };
     }
     const r = 24;
-    const lines = wrapText(node.label, NODE_FONT, compact ? 88 : 104, 2);
+    const lines = wrapText(node.label, NODE_FONT, compact ? 88 : 104, 3);
     const lw = linesWidth(lines, NODE_FONT);
     const box = labelBeside
       ? { left: r, right: r + 8 + lw, top: Math.max(r, (lines.length * lh) / 2), bottom: Math.max(r, (lines.length * lh) / 2) }
@@ -57,7 +57,7 @@ function measure(node: DiagramNode, compact: boolean, labelBeside: boolean, crow
     return { node, lines, inside: false, r, w: 2 * r, h: 2 * r, box };
   }
   // Three or more parts side by side on a phone get narrower boxes with up to three lines.
-  const lines = wrapText(node.label, NODE_FONT, crowded ? 84 : compact ? 112 : 128, crowded ? 3 : 2);
+  const lines = wrapText(node.label, NODE_FONT, crowded ? 84 : compact ? 112 : 128, 3);
   const w = Math.max(76, Math.ceil(linesWidth(lines, NODE_FONT) + 28));
   const h = 28 + lines.length * NODE_FONT * LINE_HEIGHT + (node.kind === "store" ? 12 : 0);
   return { node, lines, inside: true, r: 0, w, h, box: { left: w / 2, right: w / 2, top: h / 2, bottom: h / 2 } };
@@ -355,11 +355,16 @@ export function layoutFlow(spec: DiagramSpec, compact: boolean): Scene {
     let path = build();
     let labelSide = paired && !forward ? mul(side, -1) : side;
     if (hitsAny(path, others)) {
+      // A curve reaches half its control offset, so the offset is twice the room needed to
+      // pass the widest part in the way; try further out if that still clips something.
       const mid = mul(add(a, b), 0.5);
-      const bend = Math.max(...others.map((shape) => inflate(shape, 0).h), 40) * 0.6 + 36;
-      for (const sign of [1, -1]) {
-        const candidate = build(add(mid, mul(side, sign * bend)));
-        if (!hitsAny(candidate, others)) { path = candidate; labelSide = mul(side, sign); break; }
+      const across = Math.abs(side.x) > Math.abs(side.y) ? "w" : "h";
+      const half = Math.max(...others.map((shape) => inflate(shape, 0)[across] / 2), 20);
+      search: for (const scale of [1, 1.5, 2.2]) {
+        for (const sign of [1, -1]) {
+          const candidate = build(add(mid, mul(side, sign * scale * 2 * (half + 18))));
+          if (!hitsAny(candidate, others)) { path = candidate; labelSide = mul(side, sign); break search; }
+        }
       }
     }
     return { path, lines: edgeLines[index], side: labelSide, keepSide: paired };

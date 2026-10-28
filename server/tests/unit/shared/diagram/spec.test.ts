@@ -95,14 +95,22 @@ describe("parseDiagram: problems fail loudly", () => {
   });
 
   it("rejects long labels, names and titles", () => {
-    const longLabel = problems(parseDiagram("flow", `title: X\nbox A\nbox B\nA -> B: ${"word ".repeat(10)}`));
-    expect(longLabel[0]).toMatch(/shorten the label to 40 characters/);
-    expect(problems(parseDiagram("flow", `title: X\nbox ${"a".repeat(37)}\nbox B`))[0]).toMatch(/to 36 characters or fewer/);
+    const longLabel = problems(parseDiagram("flow", `title: X\nbox A\nbox B\nA -> B: ${"word ".repeat(13)}`));
+    expect(longLabel[0]).toMatch(/shorten the label to 60 characters/);
+    expect(problems(parseDiagram("flow", `title: X\nbox ${"a".repeat(61)}\nbox B`))[0]).toMatch(/to 60 characters or fewer/);
     expect(problems(parseDiagram("flow", `title: ${"t".repeat(81)}\nbox A\nbox B\nA -> B`))[0]).toMatch(/shorten the title to 80/);
   });
 
-  it("rejects a colon in a part's name", () => {
-    expect(problems(parseDiagram("flow", "title: X\nbox DNS: looks up names\nbox B"))[0]).toMatch(/cannot contain ":"/);
+  it("asks for quotes around a name with a colon, and accepts it quoted", () => {
+    expect(problems(parseDiagram("flow", "title: X\nbox DNS: looks up names\nbox B"))[0]).toMatch(/put a name with ":" in quotes/);
+    const quoted = parseDiagram("flow", 'title: X\nbox "Step 1: plan"\nbox "Step 2: act -> check"\n"Step 1: plan" -> "step 2: act -> check": then, at 9:30');
+    expect(quoted.ok && quoted.spec.nodes.map((node) => node.label)).toEqual(["Step 1: plan", "Step 2: act -> check"]);
+    expect(quoted.ok && quoted.spec.edges[0]).toMatchObject({ from: "step 1: plan", to: "step 2: act -> check", label: "then, at 9:30" });
+  });
+
+  it("accepts code-like names and rejects quote marks inside them", () => {
+    expect(parseDiagram("flow", "title: X\nbox pytest -q\nbox tests/test_hello.py\npytest -q -> tests/test_hello.py").ok).toBe(true);
+    expect(problems(parseDiagram("flow", 'title: X\nbox say "hi"\nbox B'))[0]).toMatch(/cannot contain a quote mark/);
   });
 
   it("rejects duplicate parts, titles and flow arrows", () => {
@@ -134,9 +142,9 @@ describe("parseDiagram: problems fail loudly", () => {
   });
 
   it("caps the size so a diagram fits a phone", () => {
-    const names = Array.from({ length: 9 }, (_, i) => `N${i}`);
+    const names = Array.from({ length: 13 }, (_, i) => `N${i}`);
     const flow = `title: Big\n${names.map((n) => `box ${n}`).join("\n")}\n${names.join(" -> ")}`;
-    expect(problems(parseDiagram("flow", flow))).toContain("A flow diagram fits a phone with up to 8 parts; this one has 9. Split it into two diagrams.");
+    expect(problems(parseDiagram("flow", flow))).toContain("A flow diagram fits a phone with up to 12 parts; this one has 13. Split it into two diagrams.");
     const lanes = names.slice(0, 6);
     const sequence = `title: Wide\n${lanes.map((n) => `box ${n}`).join("\n")}\n${lanes.join(" -> ")}`;
     expect(problems(parseDiagram("sequence", sequence))[0]).toMatch(/up to 5 parts; this one has 6/);

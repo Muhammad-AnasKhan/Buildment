@@ -31,10 +31,10 @@ export type DiagramParseResult = { ok: true; spec: DiagramSpec } | { ok: false; 
 
 export const DIAGRAM_LIMITS = {
   title: 80,
-  name: 36,
-  label: 40,
-  flowNodes: 8,
-  flowEdges: 12,
+  name: 60,
+  label: 60,
+  flowNodes: 12,
+  flowEdges: 16,
   sequenceNodes: 5,
   sequenceEdges: 12,
 } as const;
@@ -43,8 +43,9 @@ export function isDiagramKind(value: unknown): value is DiagramKind {
   return typeof value === "string" && (DIAGRAM_KINDS as readonly string[]).includes(value);
 }
 
-const NAME = /^[\p{L}\p{N}][\p{L}\p{N} .,'()/&+?-]*$/u;
-const ARROW = /\s*(-->|->)\s*/;
+// A bare name can hold anything but the characters the grammar uses; a quoted name can also hold ":".
+const BARE_NAME = /^[^:"|`]+$/;
+const QUOTED_NAME = /^[^"|`]+$/;
 const SETTING = /^(title|direction|packet)\s*:\s*(.*)$/i;
 const NODE_LINE = new RegExp(`^(${NODE_KINDS.join("|")})\\s+(.+)$`, "i");
 /** True when the text has a control character other than a tab. */
@@ -61,6 +62,38 @@ export function nodeId(name: string): string {
 }
 
 type RawEdge = { names: string[]; dashes: boolean[]; label?: string; line: number };
+type Name = { text: string; quoted: boolean };
+
+function readName(raw: string): Name {
+  const text = raw.trim();
+  const quoted = text.length >= 2 && text.startsWith("\"") && text.endsWith("\"");
+  return { text: (quoted ? text.slice(1, -1) : text).trim().replace(/\s+/g, " "), quoted };
+}
+
+/**
+ * Splits an arrow line outside quotes: the names between "->" and "-->", and
+ * the label after the first ":". Null when the line has no arrow.
+ */
+function splitArrows(text: string): { names: Name[]; dashes: boolean[]; label?: string } | null {
+  const names: Name[] = [];
+  const dashes: boolean[] = [];
+  let current = "";
+  let quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (char === "\"") quoted = !quoted;
+    else if (!quoted && text.startsWith("-->", i)) { names.push(readName(current)); dashes.push(true); current = ""; i += 2; continue; }
+    else if (!quoted && text.startsWith("->", i)) { names.push(readName(current)); dashes.push(false); current = ""; i += 1; continue; }
+    else if (!quoted && char === ":" && dashes.length) {
+      names.push(readName(current));
+      return { names, dashes, label: text.slice(i + 1).trim() };
+    }
+    current += char;
+  }
+  if (!dashes.length) return null;
+  names.push(readName(current));
+  return { names, dashes };
+}
 
 export function parseDiagram(kind: DiagramKind, source: string): DiagramParseResult {
   const problems: string[] = [];
@@ -100,21 +133,22 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
         if (kind !== "flow") at(line, "packet is for flow diagrams only. In a sequence, every arrow is already a step.");
         else if (packetLine) at(line, "the diagram already has a packet line. Keep one packet path.");
         else {
-          const parts = value.split(ARROW);
-          const names = parts.filter((_, i) => i % 2 === 0).map((name) => name.trim());
-          if (names.length < 2 || names.some((name) => !name)) at(line, "write the packet path as names joined by arrows, for example \"packet: You -> DNS -> Server\".");
-          else if (parts.some((part, i) => i % 2 === 1 && part === "-->")) at(line, "write the packet path with \"->\" only. It follows the arrows already drawn.");
-          else packetLine = { names, line };
+          const path = splitArrows(value);
+          if (!path || path.label !== undefined || path.names.some((name) => !name.text)) at(line, "write the packet path as names joined by arrows, for example \"packet: You -> DNS -> Server\".");
+          else if (path.dashes.some(Boolean)) at(line, "write the packet path with \"->\" only. It follows the arrows already drawn.");
+          else packetLine = { names: path.names.map((name) => name.text), line };
         }
       }
       return;
     }
 
+    const arrows = splitArrows(text);
     const nodeLine = NODE_LINE.exec(text);
-    if (nodeLine && !ARROW.test(text)) {
+    if (nodeLine && !arrows) {
       const nodeKind = nodeLine[1].toLowerCase() as NodeKind;
-      const label = nodeLine[2].trim().replace(/\s+/g, " ");
-      const nameProblem = checkName(label);
+      const name = readName(nodeLine[2]);
+      const label = name.text;
+      const nameProblem = checkName(name);
       if (nameProblem) {
         at(line, nameProblem);
         return;
@@ -131,13 +165,9 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
       return;
     }
 
-    if (ARROW.test(text)) {
-      const colon = text.indexOf(":");
-      const body = colon === -1 ? text : text.slice(0, colon);
-      const label = colon === -1 ? undefined : text.slice(colon + 1).trim();
-      const parts = body.split(ARROW);
-      const names = parts.filter((_, i) => i % 2 === 0).map((name) => name.trim());
-      const dashes = parts.filter((_, i) => i % 2 === 1).map((arrow) => arrow === "-->");
+    if (arrows) {
+      const { dashes, label } = arrows;
+      const names = arrows.names.map((name) => name.text);
       if (names.some((name) => !name)) {
         at(line, "an arrow needs a name on both sides, for example \"You -> DNS\".");
         return;
@@ -236,10 +266,11 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
   };
 }
 
-function checkName(name: string): string | null {
-  if (name.length > DIAGRAM_LIMITS.name) return `shorten "${shorten(name)}" to ${DIAGRAM_LIMITS.name} characters or fewer (it has ${name.length}).`;
-  if (name.includes(":")) return `a part's name cannot contain ":". To label something, label the arrow: "You -> DNS: asks for the address".`;
-  if (!NAME.test(name)) return `"${shorten(name)}" can use letters, digits, spaces and . , ' ( ) / & + ? - only.`;
+function checkName({ text, quoted }: Name): string | null {
+  if (!text) return "write a name after the kind, for example \"box DNS\".";
+  if (text.length > DIAGRAM_LIMITS.name) return `shorten "${shorten(text)}" to ${DIAGRAM_LIMITS.name} characters or fewer (it has ${text.length}).`;
+  if (!quoted && text.includes(":")) return `put a name with ":" in quotes, for example box "Step 1: plan".`;
+  if (!(quoted ? QUOTED_NAME : BARE_NAME).test(text)) return `"${shorten(text)}" cannot contain a quote mark, "|" or a backtick.`;
   return null;
 }
 
