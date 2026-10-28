@@ -34,6 +34,8 @@ const SWITCH: [number, string, string][] = [
 function switchClasses(wideWidth: number): { wide: string; compact: string } {
   const at = wideWidth * 0.85;
   if (at < 300) return { wide: "", compact: "hidden" };
+  // Wider than any reading column (a long left-to-right chain): always the top-to-bottom layout.
+  if (at > 800) return { wide: "hidden", compact: "" };
   const match = SWITCH.find(([width]) => width >= at) ?? SWITCH[SWITCH.length - 1];
   return { wide: match[1], compact: match[2] };
 }
