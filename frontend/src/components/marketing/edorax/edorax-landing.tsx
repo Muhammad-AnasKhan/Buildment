@@ -14,7 +14,7 @@ const unbounded = Unbounded({ subsets: ["latin"], weight: ["700"], variable: "--
 const dmSans = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-dm-sans", display: "swap" });
 
 function SignInLink() {
-  return <Link href="/login" style={{ color: "#0A0F2C", textDecoration: "none", fontWeight: 700, padding: "12px 0" }}>Sign in</Link>;
+  return <Link href="/login" style={{ color: "#0A0F2C", textDecoration: "none", fontWeight: 700, padding: "12px 0", whiteSpace: "nowrap" }}>Sign in</Link>;
 }
 
 function CatalogLink() {
@@ -26,25 +26,25 @@ export function EdoraxLanding() {
     <div className={`${unbounded.variable} ${dmSans.variable}`}>
     <div className={s.root} style={{ width: "100%", boxSizing: "border-box", background: "#F6F7FB", color: "#0A0F2C", fontFamily: "var(--font-dm-sans), system-ui, sans-serif", fontSize: "18px", lineHeight: "1.55" }}>
       <header style={{ width: "100%" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px 24px", boxSizing: "border-box", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
+        <div className={s.header} style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px 24px", boxSizing: "border-box", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
           <a href="#top" aria-label="Edorax home" style={{ display: "flex", alignItems: "center", textDecoration: "none" }}>
             <Wordmark tone="light" height={30} />
           </a>
-          <nav aria-label="Main" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px 28px", fontSize: "16px" }}>
-            <a href="#how" style={{ color: "#0A0F2C", textDecoration: "none", padding: "12px 0" }}>How it works</a>
-            <a href="#dot" style={{ color: "#0A0F2C", textDecoration: "none", padding: "12px 0" }}>Meet Dot</a>
-            <a href="#topics" style={{ color: "#0A0F2C", textDecoration: "none", padding: "12px 0" }}>What you can learn</a>
+          <nav aria-label="Main" className={s.nav} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px 28px", fontSize: "16px" }}>
+            <a href="#how" className={s.navLink} style={{ color: "#0A0F2C", textDecoration: "none", padding: "12px 0" }}>How it works</a>
+            <a href="#dot" className={s.navLink} style={{ color: "#0A0F2C", textDecoration: "none", padding: "12px 0" }}>Meet Dot</a>
+            <a href="#topics" className={s.navLink} style={{ color: "#0A0F2C", textDecoration: "none", padding: "12px 0" }}>What you can learn</a>
             <SignInLink />
-            <a href="#top" style={{ background: "#2434E0", color: "#F6F7FB", textDecoration: "none", fontWeight: "700", padding: "12px 22px" }}>Try a question</a>
+            <a href="#top" className={s.navCta} style={{ background: "#2434E0", color: "#F6F7FB", textDecoration: "none", fontWeight: "700", padding: "12px 22px" }}>Try a question</a>
           </nav>
         </div>
       </header>
       <section id="top" style={{ width: "100%" }}>
-        <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px 24px 96px", boxSizing: "border-box", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "56px" }}>
+        <div className={s.hero} style={{ maxWidth: "1200px", margin: "0 auto", padding: "40px 24px 96px", boxSizing: "border-box", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "56px" }}>
           <div style={{ flex: "1 1 480px", minWidth: "0" }}>
             <h1 className={s.h1} style={{ margin: "0", fontFamily: "var(--font-unbounded), sans-serif", fontWeight: "700", fontSize: "54px", lineHeight: "1.1", letterSpacing: "-0.035em" }}>Every lesson starts with a question you already wonder about.</h1>
             <p style={{ margin: "24px 0 0", fontSize: "20px", color: "#46507A", maxWidth: "520px" }}>Then you play with it, listen to it and prove it. Short chapters that work on a phone, on a slow connection, in your second language.</p>
-            <div style={{ marginTop: "36px", display: "flex", flexWrap: "wrap", gap: "14px" }}>
+            <div className={s.hideSm} style={{ marginTop: "36px", display: "flex", flexWrap: "wrap", gap: "14px" }}>
               <a href="#top" style={{ background: "#2434E0", color: "#F6F7FB", textDecoration: "none", fontWeight: "700", padding: "15px 28px" }}>Answer the question</a>
               <a href="#how" style={{ color: "#0A0F2C", textDecoration: "none", fontWeight: "700", padding: "13px 26px", border: "2px solid #0A0F2C" }}>See how a chapter works</a>
             </div>
@@ -56,7 +56,7 @@ export function EdoraxLanding() {
         <div className={s.pad} style={{ maxWidth: "1200px", margin: "0 auto", padding: "88px 24px", boxSizing: "border-box" }}>
           <h2 className={s.h2} style={{ margin: "0", fontFamily: "var(--font-unbounded), sans-serif", fontWeight: "700", fontSize: "36px", lineHeight: "1.15", letterSpacing: "-0.02em", maxWidth: "680px" }}>One chapter, four ways in.</h2>
           <p style={{ margin: "16px 0 0", color: "#46507A", maxWidth: "560px" }}>Read it, play with it, listen to it, prove it. Use all four, or only the ones that suit your day.</p>
-          <div style={{ marginTop: "48px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(250px, 100%), 1fr))", gap: "20px" }}>
+          <div className={s.rail} style={{ marginTop: "48px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(250px, 100%), 1fr))", gap: "20px" }}>
             <div style={{ border: "1px solid #DCE0F2", display: "flex", flexDirection: "column" }}>
               <div style={{ height: "170px", background: "#E8EBFF", padding: "22px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "center", gap: "10px" }}>
                 <div style={{ fontSize: "12px", fontWeight: "700", color: "#2434E0", letterSpacing: "0.06em", textTransform: "uppercase" }}>Starts with why</div>
@@ -133,7 +133,7 @@ export function EdoraxLanding() {
               <p style={{ margin: "16px 0 0", color: "#46507A", maxWidth: "560px" }}>Dot never nags and never blames. It shows up at the right moment, says one short thing, and gets out of your way.</p>
             </div>
           </div>
-          <div style={{ marginTop: "48px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(190px, 100%), 1fr))", gap: "16px" }}>
+          <div className={s.railTab} style={{ marginTop: "48px", display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: "16px" }}>
             <div style={{ background: "#FFFFFF", border: "1px solid #DCE0F2", padding: "22px 18px", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "10px" }}>
               <Dot mood="think" size={112} />
               <div style={{ fontWeight: "700", fontSize: "16px" }}>When you are stuck</div>
@@ -162,23 +162,23 @@ export function EdoraxLanding() {
           </div>
           <div style={{ marginTop: "40px", background: "#FFFFFF", border: "1px solid #DCE0F2", padding: "28px", boxSizing: "border-box" }}>
             <div style={{ fontFamily: "var(--font-unbounded), sans-serif", fontWeight: "700", fontSize: "20px", letterSpacing: "-0.02em" }}>Stuck? You choose how much help you get.</div>
-            <div style={{ marginTop: "24px", display: "flex", flexWrap: "wrap", gap: "16px", alignItems: "flex-end" }}>
-              <div style={{ flex: "1 1 180px", minWidth: "0", display: "flex", flexDirection: "column", gap: "10px" }}>
+            <div className={`${s.rail} ${s.railHalf}`} style={{ marginTop: "24px", display: "flex", gap: "16px", alignItems: "flex-end" }}>
+              <div style={{ flex: "1 1 0", minWidth: "0", display: "flex", flexDirection: "column", gap: "10px" }}>
                 <div style={{ fontWeight: "700", fontSize: "16px" }}>1. A nudge</div>
                 <div style={{ fontSize: "14px", color: "#46507A" }}>Which part matters most?</div>
                 <div style={{ height: "40px", borderRadius: "8px", background: "#DCE0F2" }} />
               </div>
-              <div style={{ flex: "1 1 180px", minWidth: "0", display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div style={{ flex: "1 1 0", minWidth: "0", display: "flex", flexDirection: "column", gap: "10px" }}>
                 <div style={{ fontWeight: "700", fontSize: "16px" }}>2. A hint</div>
                 <div style={{ fontSize: "14px", color: "#46507A" }}>The idea, not the answer.</div>
                 <div style={{ height: "70px", borderRadius: "8px", background: "#7A8BFF" }} />
               </div>
-              <div style={{ flex: "1 1 180px", minWidth: "0", display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div style={{ flex: "1 1 0", minWidth: "0", display: "flex", flexDirection: "column", gap: "10px" }}>
                 <div style={{ fontWeight: "700", fontSize: "16px" }}>3. An example</div>
                 <div style={{ fontSize: "14px", color: "#46507A" }}>A similar one, solved.</div>
                 <div style={{ height: "100px", borderRadius: "8px", background: "#2434E0" }} />
               </div>
-              <div style={{ flex: "1 1 180px", minWidth: "0", display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div style={{ flex: "1 1 0", minWidth: "0", display: "flex", flexDirection: "column", gap: "10px" }}>
                 <div style={{ fontWeight: "700", fontSize: "16px" }}>4. Come back later</div>
                 <div style={{ fontSize: "14px", color: "#46507A" }}>It waits at the end.</div>
                 <div style={{ height: "130px", borderRadius: "8px", background: "#FFC933" }} />
@@ -191,7 +191,7 @@ export function EdoraxLanding() {
         <div className={s.pad} style={{ maxWidth: "1200px", margin: "0 auto", padding: "88px 24px", boxSizing: "border-box" }}>
           <h2 className={s.h2} style={{ margin: "0", fontFamily: "var(--font-unbounded), sans-serif", fontWeight: "700", fontSize: "36px", lineHeight: "1.15", letterSpacing: "-0.02em", maxWidth: "720px" }}>How things work. And how people work.</h2>
           <p style={{ margin: "16px 0 0", color: "#46507A", maxWidth: "600px" }}>Tech skills and human skills, side by side. Here are a few of the questions courses start from, and more are on the way.</p>
-          <div style={{ marginTop: "48px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 1fr))", gap: "16px" }}>
+          <div className={s.rail} style={{ marginTop: "48px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(260px, 100%), 1fr))", gap: "16px" }}>
             <div style={{ minHeight: "168px", background: "#2434E0", color: "#F6F7FB", padding: "24px", boxSizing: "border-box", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "18px" }}>
               <span style={{ fontFamily: "var(--font-unbounded), sans-serif", fontWeight: "700", fontSize: "18px", lineHeight: "1.35", letterSpacing: "-0.01em" }}>Why does a video buffer at night but play fine in the morning?</span>
               <span style={{ fontSize: "14px", color: "#DCE0FF" }}>Networks</span>
