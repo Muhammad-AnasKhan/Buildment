@@ -9,12 +9,14 @@ import remarkParse from "remark-parse";
 import { unified } from "unified";
 import remarkGfm from "remark-gfm";
 import { collectCanvasProblems } from "../src/shared/mdx/canvas-tags.js";
+import { collectDiagramProblems } from "../src/shared/mdx/diagram-fences.js";
 import { isActivityOnlySource } from "../src/shared/mdx/extract-block-config.js";
 import { collectUnknownComponents } from "../src/shared/mdx/extract.js";
 import { mdxComponentAllowlist } from "../src/shared/mdx/component-allowlist.js";
 import { remarkChecklist } from "../src/shared/mdx/remark-checklist.js";
 import { remarkLearningLog } from "../src/shared/mdx/remark-learning-log.js";
 import { remarkMermaid } from "../src/shared/mdx/remark-mermaid.js";
+import { remarkDiagram } from "../src/shared/mdx/remark-diagram.js";
 import { restoreInteractiveBlockTags } from "../src/shared/mdx/restore-block-tags.js";
 import { collectContentTokenProblems, tokenInFieldProblem } from "../src/shared/lib/content-tokens.js";
 import { secretFieldsWithTokens } from "../src/utils/sanitize-block-config.js";
@@ -26,7 +28,7 @@ export type ChapterMdxFailure = { file: string; error: string };
 
 export function validateParsedLesson(lesson: ReturnType<typeof parseLesson>): void {
   const processor = unified().use(remarkParse).use(remarkMdx).use(remarkGfm)
-    .use(remarkChecklist).use(remarkLearningLog).use(remarkMermaid);
+    .use(remarkChecklist).use(remarkLearningLog).use(remarkDiagram).use(remarkMermaid);
   const source = restoreInteractiveBlockTags(lesson.source);
   if (lesson.readerMode === "QUIZ" && !isActivityOnlySource(source)) {
     throw new Error("Quiz flow supports activities only: Quiz, OpenQuestion, Predict, and CodeExercise.");
@@ -35,6 +37,8 @@ export function validateParsedLesson(lesson: ReturnType<typeof parseLesson>): vo
   if (unknown.length) throw new Error(`Unknown components: ${unknown.join(", ")}`);
   const canvasProblems = collectCanvasProblems(source);
   if (canvasProblems.length) throw new Error(canvasProblems.join(" "));
+  const diagramProblems = collectDiagramProblems(source);
+  if (diagramProblems.length) throw new Error(diagramProblems.join(" "));
   const tokenProblems = [
     tokenInFieldProblem("chapter title", lesson.title), tokenInFieldProblem("chapter summary", lesson.summary),
     ...collectContentTokenProblems(source),

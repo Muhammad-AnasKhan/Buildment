@@ -111,6 +111,17 @@ export const CourseManifestSchema = z.object({
     /** Words the voice gets wrong, mapped to a spelling it says correctly. */
     pronunciations: z.record(z.string().min(1), z.string().min(1)).default({}),
   }).optional(),
+  /**
+   * Branded diagrams written as ```flow and ```sequence fences (docs/diagram-components-plan.md).
+   * `pnpm diagrams:export --course <slug>` writes a static SVG of each one when exportSvg is on,
+   * for email, PDF and social posts. The course audit flags ```mermaid fences when flagMermaid is on.
+   */
+  diagrams: z.object({
+    exportSvg: z.boolean().default(false),
+    /** Exported files use the wide layout or the phone one (a flow top to bottom, numbered messages). */
+    layout: z.enum(["wide", "compact"]).default("wide"),
+    flagMermaid: z.boolean().default(true),
+  }).strict().optional(),
   /** Built-in family slug or the slug of variantFamily below. */
   family: z.string().optional(),
   /** Explicitly released tracks. Omit for the historical all-variants behavior. */

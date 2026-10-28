@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import { remarkChecklist } from "@/shared/mdx/remark-checklist";
 import { remarkLearningLog } from "@/shared/mdx/remark-learning-log";
 import { remarkMermaid } from "@/shared/mdx/remark-mermaid";
+import { remarkDiagram } from "@/shared/mdx/remark-diagram";
 import { mdxComponents } from "./components";
 import { collectUnknownComponents } from "@/shared/mdx/extract";
 import { restoreInteractiveBlockTags } from "@/shared/mdx/restore-block-tags";
@@ -78,7 +79,7 @@ export function ChapterMdx({ source, preview = false }: { source: string; previe
       components={components}
       options={{
         mdxOptions: {
-          remarkPlugins: [remarkGfm, remarkChecklist, remarkLearningLog, remarkMermaid],
+          remarkPlugins: [remarkGfm, remarkChecklist, remarkLearningLog, remarkDiagram, remarkMermaid],
           rehypePlugins: rehypePrettyCodePlugins,
         },
       }}

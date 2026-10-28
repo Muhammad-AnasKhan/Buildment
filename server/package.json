@@ -35,7 +35,8 @@
     "content:seed-predicts": "tsx scripts/seed-predict-fences.ts",
     "stats:backfill": "tsx scripts/backfill-block-stats.ts",
     "sync-shared": "node scripts/sync-shared.mjs",
-    "sync-shared:check": "node scripts/sync-shared.mjs --check"
+    "sync-shared:check": "node scripts/sync-shared.mjs --check",
+    "diagrams:export": "tsx scripts/export-diagrams.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1154.0",

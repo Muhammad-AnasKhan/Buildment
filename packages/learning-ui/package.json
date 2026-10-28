@@ -30,6 +30,7 @@
     "./labs/hld-visual-url-shortener/data": "./src/labs/hld-visual-url-shortener/data.ts",
     "./labs/hld-visual-url-shortener/solution": "./src/labs/hld-visual-url-shortener/solution.ts",
     "./lesson-blocks": "./src/lesson-blocks.tsx",
+    "./diagram/Diagram": "./src/diagram/Diagram.tsx",
     "./blocks/ai-interview/AiInterviewView": "./src/blocks/ai-interview/AiInterviewView.tsx",
     "./blocks/ai-interview/AiInterview": "./src/blocks/ai-interview/AiInterview.tsx",
     "./blocks/ai-interview/AiInterviewClient": "./src/blocks/ai-interview/AiInterviewClient.tsx",

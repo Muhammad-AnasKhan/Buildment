@@ -9,5 +9,10 @@
   "api/ai.ts",
   "blocks/ai-interview/schema.ts",
   "blocks/open-question/schema.ts",
-  "lib/safe-submission-url.ts"
+  "lib/safe-submission-url.ts",
+  "diagram/spec.ts",
+  "diagram/text.ts",
+  "diagram/layout.ts",
+  "diagram/draw.ts",
+  "diagram/describe.ts"
 ]

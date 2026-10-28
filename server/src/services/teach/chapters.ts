@@ -11,6 +11,7 @@ import { slugify } from "../../shared/lib/mdx-headings.js";
 import { mdxComponentAllowlist } from "../../shared/mdx/component-allowlist.js";
 import { collectUnknownComponents, diffBlocks } from "../../shared/mdx/extract.js";
 import { collectCanvasProblems } from "../../shared/mdx/canvas-tags.js";
+import { collectDiagramProblems } from "../../shared/mdx/diagram-fences.js";
 import { collectLabProblems } from "../../shared/mdx/lab-tags.js";
 import { blockConfigFromSource, isActivityOnlySource } from "../../shared/mdx/extract-block-config.js";
 import { remarkChecklist } from "../../shared/mdx/remark-checklist.js";
@@ -303,6 +304,7 @@ async function collectPublishProblems(
   }
 
   problems.push(...collectCanvasProblems(renderable));
+  problems.push(...collectDiagramProblems(renderable));
   problems.push(...collectLabProblems(renderable));
   problems.push(...collectContentTokenProblems(renderable));
 

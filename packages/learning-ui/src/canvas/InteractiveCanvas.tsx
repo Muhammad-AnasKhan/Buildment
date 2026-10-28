@@ -3,6 +3,7 @@ import { SequenceCanvas } from "./renderers/sequence/SequenceCanvas";
 import { SliderCanvas } from "./renderers/slider/SliderCanvas";
 import { StateMachineCanvas } from "./renderers/state-machine/StateMachineCanvas";
 import { SceneCanvas } from "./renderers/scene/SceneCanvas";
+import { Diagram } from "../diagram/Diagram";
 import { CANVAS_SLUGS, canvasRegistry, getCanvasSpec, type CanvasSpec } from "./registry";
 
 /**
@@ -28,6 +29,8 @@ export function CanvasForSpec({ spec }: { spec: CanvasSpec }) {
       return <FactorCanvas spec={spec} />;
     case "scene":
       return <SceneCanvas spec={spec} />;
+    case "diagram":
+      return <Diagram kind={spec.diagram} spec={spec.source} />;
     case "slider": {
       // Slider specs hold functions, so the client component looks its spec up by slug.
       const slug = CANVAS_SLUGS.find((candidate) => canvasRegistry[candidate] === spec);
