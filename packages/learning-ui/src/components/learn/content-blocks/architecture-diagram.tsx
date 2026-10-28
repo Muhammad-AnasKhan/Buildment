@@ -59,7 +59,7 @@ export function ArchitectureDiagram({ title, children }: ArchitectureDiagramProp
                 ARCH_LAYER_STYLES[node.layer] ?? ARCH_LAYER_STYLES.External
               )}
             >
-              <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                 {node.layer}
               </p>
               <div className="mt-2 text-sm font-medium leading-relaxed text-foreground">

@@ -53,7 +53,7 @@ export function TerminalBlock({ title, cwd, children }: TerminalBlockProps) {
     >
       {cwd ? (
         <div className="flex items-center gap-2 border-b border-[var(--code-border)] px-4 py-2">
-          <span className="rounded bg-[var(--code-border)]/40 px-2 py-0.5 font-mono text-[11px] text-[var(--code-lang-fg)]">
+          <span className="rounded bg-[var(--code-border)]/40 px-2 py-0.5 font-mono text-xs text-[var(--code-lang-fg)]">
             {cwd}
           </span>
         </div>
@@ -66,7 +66,7 @@ export function TerminalBlock({ title, cwd, children }: TerminalBlockProps) {
               className={cn(
                 line.type === "prompt" && "text-[#79c0ff]",
                 line.type === "output" && "text-[var(--code-lang-fg)]",
-                line.type === "error" && "text-amber-400"
+                line.type === "error" && "text-foreground"
               )}
             >
               {line.type === "prompt" ? "$ " : line.type === "error" ? "✗ " : ""}

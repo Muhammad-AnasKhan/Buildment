@@ -102,7 +102,7 @@ function ChecklistItemRow({
         className={cn(
           "group flex cursor-pointer items-start gap-3.5 rounded-xl px-3 py-3.5 transition-colors",
           "hover:bg-muted/60",
-          checked && "bg-emerald-500/10 hover:bg-emerald-500/15"
+          checked && "bg-ok-soft hover:bg-ok-soft"
         )}
       >
         <Checkbox
@@ -110,7 +110,7 @@ function ChecklistItemRow({
           onCheckedChange={(value) => onToggle(value === true)}
           className={cn(
             "mt-0.5 size-5 rounded-md border-2",
-            checked && "border-emerald-600 bg-emerald-600 dark:border-emerald-500 dark:bg-emerald-500"
+            checked && "border-ok bg-ok"
           )}
           aria-label={item.label.replace(/\*\*/g, "")}
         />
@@ -124,7 +124,7 @@ function ChecklistItemRow({
         </span>
         {checked ? (
           <CheckCircle2
-            className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400 opacity-100 transition-opacity"
+            className="mt-0.5 size-4 shrink-0 text-ok opacity-100 transition-opacity"
             aria-hidden
           />
         ) : (
@@ -144,7 +144,7 @@ const CARD_STYLES = {
   iconBg: "bg-primary/15",
   bodyBg: "bg-card",
   progress: "bg-muted",
-  progressFill: "bg-emerald-500",
+  progressFill: "bg-ok",
   badge: "bg-muted text-muted-foreground",
 } as const;
 
@@ -248,7 +248,7 @@ export function Checklist({
               <ListChecks className="size-5 text-muted-foreground" />
             </div>
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                 {label}
               </p>
               <p className={cn("mt-0.5 text-base font-semibold leading-snug", CARD_STYLES.headerText)}>
@@ -298,9 +298,9 @@ export function Checklist({
       </ul>
 
       {allDone ? (
-        <div className="border-t border-emerald-200/80 bg-emerald-50/80 px-5 py-3.5 dark:border-emerald-400/25 dark:bg-emerald-500/10">
-          <p className="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-100">
-            <CheckCircle2 className="size-4 shrink-0 text-emerald-700 dark:text-emerald-400" aria-hidden />
+        <div className="border-t border-ok bg-ok-soft px-5 py-3.5">
+          <p className="flex items-center gap-2 text-sm font-medium text-ok">
+            <CheckCircle2 className="size-4 shrink-0 text-ok" aria-hidden />
             All items complete — nice work!
           </p>
         </div>

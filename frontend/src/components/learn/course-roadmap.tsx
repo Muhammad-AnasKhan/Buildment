@@ -39,7 +39,7 @@ function ModuleDisclosure({ module }: { module: CourseModule }) {
       <ol className="divide-y border-t px-3 pl-14">
         {module.chapters.map((chapter) => (
           <li key={chapter.id} className="flex items-start justify-between gap-3 py-2.5 text-sm">
-            <span className="min-w-0 leading-5"><span className="mr-2 font-mono text-[11px] tabular-nums text-muted-foreground">{module.order}.{String(chapter.order).padStart(2, "0")}</span>{chapter.title}</span>
+            <span className="min-w-0 leading-5"><span className="mr-2 font-mono text-xs tabular-nums text-muted-foreground">{module.order}.{String(chapter.order).padStart(2, "0")}</span>{chapter.title}</span>
             {chapter.estimatedMinutes ? <span className="shrink-0 pt-0.5 text-xs text-muted-foreground">{chapter.estimatedMinutes} min</span> : null}
           </li>
         ))}

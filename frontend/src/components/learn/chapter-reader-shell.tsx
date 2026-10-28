@@ -31,7 +31,7 @@ import { PredictRevealProvider } from "@buildment/learning-ui/components/learn/p
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-muted px-1 font-mono text-[11px] text-foreground">
+    <kbd className="mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-muted px-1 font-mono text-xs text-foreground">
       {children}
     </kbd>
   );
@@ -389,8 +389,8 @@ export function ChapterReaderShell({
                     </p>
                   ) : null}
                   {isGateChapter && readerMode !== "QUIZ" ? (
-                    <p className="mt-3 inline-flex items-center gap-2 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-2 text-sm text-foreground">
-                      <span className="text-[11px] font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">
+                    <p className="mt-3 inline-flex items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-2 text-sm text-foreground">
+                      <span className="text-xs font-semibold uppercase tracking-widest text-primary">
                         Module gate
                       </span>
                       <span className="text-muted-foreground">

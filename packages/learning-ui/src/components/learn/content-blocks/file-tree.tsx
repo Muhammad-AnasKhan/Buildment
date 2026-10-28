@@ -88,7 +88,7 @@ export function FileTree({ title, root, children }: FileTreeProps) {
     <LearnPanelShell eyebrow="Repo" title={title}>
       {root ? (
         <div className="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5 sm:px-5">
-          <Folder className="size-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
+          <Folder className="size-4 shrink-0 text-foreground" aria-hidden />
           <span className="font-mono text-xs font-semibold text-foreground">{root}</span>
         </div>
       ) : null}
@@ -108,7 +108,7 @@ export function FileTree({ title, root, children }: FileTreeProps) {
               <Icon
                 className={cn(
                   "size-4 shrink-0",
-                  item.folder ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
+                  item.folder ? "text-foreground" : "text-muted-foreground"
                 )}
                 aria-hidden
               />
@@ -116,7 +116,7 @@ export function FileTree({ title, root, children }: FileTreeProps) {
                 {item.name}{item.folder ? "/" : ""}
               </span>
               {item.new ? (
-                <span className="ml-auto shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                <span className="ml-auto shrink-0 rounded bg-muted px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   new
                 </span>
               ) : null}
@@ -125,15 +125,15 @@ export function FileTree({ title, root, children }: FileTreeProps) {
         })}
       </ul>
       {items.some((i) => i.command) ? (
-        <div className="space-y-2 border-t border-border bg-neutral-950 px-4 py-3 sm:px-5">
+        <div className="space-y-2 border-t border-border bg-foreground px-4 py-3 sm:px-5">
           {items
             .filter((i) => i.command)
             .map((item) => (
               <div key={`cmd-${item.path}`}>
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-neutral-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {item.path.replace(/\/$/, "")}
                 </p>
-                <span className="mt-1 block font-mono text-xs text-emerald-400">{item.command}</span>
+                <span className="mt-1 block font-mono text-xs text-ok">{item.command}</span>
               </div>
             ))}
         </div>

@@ -60,7 +60,7 @@ function PrevLink({
         />
         Previous
       </span>
-      <span className="mt-1 font-mono text-[11px] text-muted-foreground">{lessonLabel(chapter)}</span>
+      <span className="mt-1 font-mono text-xs text-muted-foreground">{lessonLabel(chapter)}</span>
       <span className="mt-0.5 line-clamp-2 text-[15px] font-medium leading-snug text-foreground">
         {chapter.title}
       </span>
@@ -108,7 +108,7 @@ function NextLink({
           />
         )}
       </span>
-      <span className="mt-1 font-mono text-[11px] text-muted-foreground">{lessonLabel(chapter)}</span>
+      <span className="mt-1 font-mono text-xs text-muted-foreground">{lessonLabel(chapter)}</span>
       <span className="mt-0.5 line-clamp-2 text-[15px] font-medium leading-snug text-foreground">
         {chapter.title}
       </span>
@@ -145,7 +145,7 @@ function NextPrimary({
   return (
     <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6">
       <div className="min-w-0">
-        <p className="font-mono text-[11px] text-muted-foreground">{lessonLabel(chapter)}</p>
+        <p className="font-mono text-xs text-muted-foreground">{lessonLabel(chapter)}</p>
         <p className="mt-1 text-[15px] font-medium leading-snug text-foreground sm:text-base">
           {chapter.title}
         </p>

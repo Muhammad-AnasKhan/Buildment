@@ -87,7 +87,7 @@ export function WeeklyGoalEditor({ goal }: { goal: LearnerHabit["weeklyGoal"] })
             <div className="flex items-start gap-3.5">
               <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground"><Target className="size-5" aria-hidden /></span>
               <div>
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Your learning plan</p>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Your learning plan</p>
                 <h2 id="weekly-goal-title" className="text-xl font-semibold tracking-tight">{goal ? "Edit weekly goal" : "Set a weekly goal"}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">{step === 1 ? "Choose a target that fits your week." : "Make this goal yours."}</p>
               </div>

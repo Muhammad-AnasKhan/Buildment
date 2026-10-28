@@ -343,7 +343,7 @@ export function QuizChapterSessionClient({
             aria-label="Quiz progress"
           >
             <div
-              className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out dark:bg-emerald-500"
+              className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out dark:bg-ok"
               style={{ width: `${progressPct}%` }}
             />
           </div>
@@ -367,7 +367,7 @@ export function QuizChapterSessionClient({
             className={cn(
               "mt-8 rounded-xl border px-4 py-3 text-sm",
               perfectScore
-                ? "border-emerald-500/30 bg-emerald-500/10 text-foreground"
+                ? "border-ok bg-ok-soft text-foreground"
                 : "border-border bg-muted/40 text-foreground"
             )}
             role="status"

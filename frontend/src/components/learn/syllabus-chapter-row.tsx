@@ -18,7 +18,7 @@ export function ChapterStatusIcon({
   if (status === "COMPLETED") {
     return (
       <CheckCircle2
-        className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400"
+        className="size-4 shrink-0 text-ok"
         aria-hidden
       />
     );
@@ -55,7 +55,7 @@ function ChapterMeta({ chapter }: { chapter: SyllabusChapter }) {
 function SidebarChapterMeta({ chapter }: { chapter: SyllabusChapter }) {
   if (chapter.locked) {
     return (
-      <span className="text-[11px] text-muted-foreground">
+      <span className="text-xs text-muted-foreground">
         {chapter.unlocksAfter ? `Unlocks after ${chapter.unlocksAfter}` : "Locked until the previous lesson is complete"}
       </span>
     );
@@ -64,10 +64,10 @@ function SidebarChapterMeta({ chapter }: { chapter: SyllabusChapter }) {
     const completed = chapter.blocksCompleted ?? 0;
     const complete = completed === chapter.blockCount;
     return (
-      <span className="flex items-center gap-2 text-[11px] text-muted-foreground">
+      <span className="flex items-center gap-2 text-xs text-muted-foreground">
         <span className="h-1 w-10 overflow-hidden rounded-full bg-muted" aria-hidden>
           <span
-            className={cn("block h-full rounded-full", complete ? "bg-emerald-500" : "bg-foreground/45")}
+            className={cn("block h-full rounded-full", complete ? "bg-ok" : "bg-foreground/45")}
             style={{ width: `${Math.round((completed / chapter.blockCount) * 100)}%` }}
           />
         </span>
@@ -103,7 +103,7 @@ export function SyllabusChapterRow({
           chapter.locked && "opacity-90",
           chapter.status === "IN_PROGRESS" && "bg-muted/25",
           chapter.status === "COMPLETED" &&
-            "border-l-2 border-emerald-500/90 bg-emerald-500/[0.08] dark:border-emerald-400/80 dark:bg-emerald-950/35"
+            "border-l-2 border-ok bg-emerald-500/[0.08] dark:bg-ok-soft"
         )}
       >
         <span className="flex min-w-0 items-center gap-3">

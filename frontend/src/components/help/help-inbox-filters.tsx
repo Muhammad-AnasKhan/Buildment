@@ -52,7 +52,7 @@ export function HelpInboxFilters({
           <QueryFilterSelect
             name="courseId"
             defaultValue={courseId ?? ""}
-            className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground outline-none focus:border-neutral-400"
+            className="h-9 rounded-lg border border-border bg-card px-3 text-sm text-foreground outline-none focus:border-border"
           >
             <option value="">All courses</option>
             {courses.map((course) => (

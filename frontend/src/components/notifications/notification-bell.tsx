@@ -92,7 +92,7 @@ export function NotificationBell({ className }: { className?: string }) {
       >
         <Bell className="size-4" />
         {unreadCount > 0 ? (
-          <span className="absolute -right-1.5 -top-1.5 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none tabular-nums text-primary-foreground ring-2 ring-background">
+          <span className="absolute -right-1.5 -top-1.5 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-primary px-1 text-xs font-semibold leading-none tabular-nums text-primary-foreground ring-2 ring-background">
             {unreadLabel}
           </span>
         ) : null}

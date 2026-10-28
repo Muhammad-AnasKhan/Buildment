@@ -48,7 +48,7 @@ export function CodeBlockWrapper({
           >
             {copied ? (
               <>
-                <Check className="size-3 text-emerald-400" />
+                <Check className="size-3 text-ok" />
                 Copied
               </>
             ) : (
@@ -68,7 +68,7 @@ export function CodeBlockWrapper({
         >
           {copied ? (
             <>
-              <Check className="size-3 text-emerald-400" />
+              <Check className="size-3 text-ok" />
               Copied
             </>
           ) : (

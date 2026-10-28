@@ -25,7 +25,7 @@ export function VisualDiagramClient({ title, imageUrl, alt, caption, kind, legen
       <figure className="not-prose my-8 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground ">
         <figcaption className="flex items-center justify-between gap-4 border-b border-border bg-muted/35 px-5 py-4 sm:px-6">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {kind === "whiteboard" ? "Whiteboard" : kind === "system" ? "System diagram" : "Concept diagram"}
             </p>
             <h3 className="mt-1 text-lg font-semibold tracking-tight text-foreground">{title}</h3>

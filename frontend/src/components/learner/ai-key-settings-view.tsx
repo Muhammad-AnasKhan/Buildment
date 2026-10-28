@@ -120,7 +120,7 @@ export function AiKeySettingsView(props: AiKeySettingsViewProps) {
           </div>
 
           {props.message ? (
-            <p role="status" className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400">
+            <p role="status" className="flex items-center gap-2 text-sm text-ok">
               <CheckCircle2 className="size-4" aria-hidden /> {props.message}
             </p>
           ) : null}

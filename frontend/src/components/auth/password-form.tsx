@@ -27,7 +27,7 @@ export function PasswordForm() {
         <PasswordInput id="confirm-password" name="confirmPassword" autoComplete="new-password" required minLength={8} maxLength={128} />
       </div>
       {state.ok ? (
-        <p role="status" className="text-sm text-emerald-600 dark:text-emerald-400">Password updated. Other sessions have been signed out.</p>
+        <p role="status" className="text-sm text-ok">Password updated. Other sessions have been signed out.</p>
       ) : state.errors.length > 0 ? (
         <ul role="alert" className="text-sm text-destructive">{state.errors.map((error) => <li key={error}>{error}</li>)}</ul>
       ) : null}

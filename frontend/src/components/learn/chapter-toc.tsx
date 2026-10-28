@@ -116,7 +116,7 @@ export function ChapterToc({
         <button
           type="button"
           aria-label="Close table of contents"
-          className="fixed inset-0 z-40 bg-neutral-950/30 md:hidden"
+          className="fixed inset-0 z-40 bg-foreground md:hidden"
           onClick={onToggle}
         />
         <aside className="fixed inset-y-0 right-0 z-50 flex w-[min(16rem,85vw)] flex-col border-l border-border bg-card text-card-foreground md:hidden">

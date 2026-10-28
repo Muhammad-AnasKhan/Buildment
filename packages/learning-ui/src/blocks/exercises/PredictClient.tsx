@@ -15,15 +15,15 @@ type RespondResult = {
 };
 
 const METHOD_STYLES: Record<string, string> = {
-  GET: "bg-emerald-500 text-white",
-  POST: "bg-blue-600 text-white",
-  PATCH: "bg-amber-500 text-white",
-  PUT: "bg-slate-700 text-white dark:bg-slate-500",
-  DELETE: "bg-red-600 text-white",
+  GET: "bg-ok text-white",
+  POST: "bg-primary text-white",
+  PATCH: "bg-brand-yellow text-white",
+  PUT: "bg-muted-foreground text-white",
+  DELETE: "bg-destructive text-white",
 };
 
 function methodBadgeClass(method: string) {
-  return METHOD_STYLES[method.toUpperCase()] ?? "bg-slate-700 text-white dark:bg-slate-500";
+  return METHOD_STYLES[method.toUpperCase()] ?? "bg-muted-foreground text-white";
 }
 
 export type PredictInitialState = {
@@ -158,7 +158,7 @@ export function PredictClient({
             {ctx.method ? (
               <span
                 className={cn(
-                  "rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+                  "rounded-md px-2 py-0.5 text-xs font-bold uppercase tracking-wide",
                   methodBadgeClass(ctx.method)
                 )}
               >
@@ -195,15 +195,15 @@ export function PredictClient({
             className={cn(
               "flex items-start gap-2.5 rounded-lg p-3 text-sm",
               result.isCorrect
-                ? "border border-emerald-200 bg-emerald-50/60 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-100"
-                : "border border-red-300 bg-red-500/10 text-red-950 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-50"
+                ? "border border-ok bg-ok-soft text-ok"
+                : "border border-destructive bg-destructive/10 text-destructive"
             )}
             role="status"
           >
             {result.isCorrect ? (
-              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+              <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-ok" />
             ) : (
-              <XCircle className="mt-0.5 size-4 shrink-0 text-red-600 dark:text-red-400" />
+              <XCircle className="mt-0.5 size-4 shrink-0 text-destructive" />
             )}
             <div>
               <p className="font-semibold">

@@ -39,7 +39,7 @@ export function LearnPanelShell({
         <header className="mb-5">
           <div className="flex items-center gap-2">
             <Icon className="size-4 text-muted-foreground" aria-hidden />
-            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               {eyebrow}
             </p>
           </div>

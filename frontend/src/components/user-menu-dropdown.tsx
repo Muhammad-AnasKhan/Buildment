@@ -40,7 +40,7 @@ export function UserMenuDropdown({
         render={
           <button
             type="button"
-            className="rounded-full outline-none ring-offset-2 transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-neutral-300"
+            className="rounded-full outline-none ring-offset-2 transition-opacity hover:opacity-90 focus-visible:ring-2 focus-visible:ring-border"
             aria-label="Open account menu"
             disabled={pending}
             aria-busy={pending || undefined}

@@ -62,7 +62,7 @@ export function ProfileForm({
         <ul className="text-sm text-destructive">{state.errors.map((e) => <li key={e}>{e}</li>)}</ul>
       ) : null}
       {state.ok === true ? (
-        <p className="text-sm text-emerald-600 dark:text-emerald-400">Profile saved.</p>
+        <p className="text-sm text-ok">Profile saved.</p>
       ) : null}
       <Button type="submit" disabled={pending}>
         {pending ? "Saving…" : "Save profile"}

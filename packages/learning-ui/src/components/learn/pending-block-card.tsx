@@ -30,7 +30,7 @@ export function PendingBlockCard({
           <Sparkles className="size-4 text-primary/70 animate-pulse" aria-hidden />
           <span className={cn(readerEyebrow, "text-foreground/70")}>{typeLabel}</span>
         </div>
-        <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+        <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-primary">
           Pending setup
         </span>
       </div>
@@ -43,7 +43,7 @@ export function PendingBlockCard({
             "This interactive checkpoint is being finalized by the course mentor. You can continue reading or check back shortly."}
         </p>
         {blockId ? (
-          <div className="mt-3 flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground/60">
+          <div className="mt-3 flex items-center gap-1.5 font-mono text-xs text-muted-foreground/60">
             <span>Reference:</span>
             <span className="truncate max-w-[200px]">{blockId}</span>
           </div>

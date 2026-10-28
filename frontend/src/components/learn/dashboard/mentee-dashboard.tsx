@@ -147,7 +147,7 @@ function ActivityStrip({ days, maxSeconds }: { days: DashboardDay[]; maxSeconds:
               <div className="flex h-12 w-full items-end rounded-sm bg-muted">
                 <div className="w-full rounded-sm bg-primary" style={{ height: `${height}%` }} />
               </div>
-              <span className="text-[10px] text-muted-foreground">{weekdayLabel(day.day)}</span>
+              <span className="text-xs text-muted-foreground">{weekdayLabel(day.day)}</span>
             </div>
           );
         })}

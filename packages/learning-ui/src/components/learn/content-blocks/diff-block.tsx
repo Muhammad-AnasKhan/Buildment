@@ -83,14 +83,14 @@ function DiffLine({ row }: { row: DiffRow }) {
     <tr
       className={cn(
         "border-b border-border/25 last:border-b-0",
-        isRemoved && "bg-red-50/90 dark:bg-red-500/10",
-        isAdded && "bg-emerald-50/90 dark:bg-emerald-500/10"
+        isRemoved && "bg-destructive/10",
+        isAdded && "bg-ok-soft"
       )}
       aria-label={(isRemoved ? "Removed" : isAdded ? "Added" : "Unchanged") + " line " + (row.oldNumber ?? row.newNumber)}
     >
-      <td className={cn("w-10 min-w-10 border-r border-border/40 px-2 text-right text-[11px] text-muted-foreground select-none", isRemoved && "bg-red-100/70 dark:bg-red-500/10")}>{row.oldNumber ?? ""}</td>
-      <td className={cn("w-10 min-w-10 border-r border-border/40 px-2 text-right text-[11px] text-muted-foreground select-none", isAdded && "bg-emerald-100/70 dark:bg-emerald-500/10")}>{row.newNumber ?? ""}</td>
-      <td className={cn("w-7 min-w-7 py-1 pl-3 text-center font-semibold select-none", isRemoved && "text-red-700 dark:text-red-300", isAdded && "text-emerald-700 dark:text-emerald-300", row.kind === "context" && "text-muted-foreground")} aria-hidden="true">{sign}</td>
+      <td className={cn("w-10 min-w-10 border-r border-border/40 px-2 text-right text-xs text-muted-foreground select-none", isRemoved && "bg-destructive/10")}>{row.oldNumber ?? ""}</td>
+      <td className={cn("w-10 min-w-10 border-r border-border/40 px-2 text-right text-xs text-muted-foreground select-none", isAdded && "bg-ok-soft")}>{row.newNumber ?? ""}</td>
+      <td className={cn("w-7 min-w-7 py-1 pl-3 text-center font-semibold select-none", isRemoved && "text-destructive", isAdded && "text-ok", row.kind === "context" && "text-muted-foreground")} aria-hidden="true">{sign}</td>
       <td className="py-1 pr-5 pl-1 text-foreground/90">
         <span className="whitespace-pre">
           {row.segments?.length
@@ -98,8 +98,8 @@ function DiffLine({ row }: { row: DiffRow }) {
                 <span
                   key={index}
                   className={cn(
-                    part.highlighted && isRemoved && "rounded-[2px] bg-red-200/90 text-red-950 dark:bg-red-500/30 dark:text-red-100",
-                    part.highlighted && isAdded && "rounded-[2px] bg-emerald-200/90 text-emerald-950 dark:bg-emerald-500/30 dark:text-emerald-100"
+                    part.highlighted && isRemoved && "rounded-[2px] bg-destructive/10 text-destructive",
+                    part.highlighted && isAdded && "rounded-[2px] bg-ok-soft text-ok"
                   )}
                 >
                   {part.value}
@@ -122,8 +122,8 @@ export function DiffBlock({ title, language = "text", before = "", after = "" }:
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/40 px-4 py-2.5 sm:px-5">
         <span className="rounded-md border border-border bg-card px-2 py-0.5 font-mono text-xs text-foreground/80">{language}</span>
         <span className="flex items-center gap-3 font-mono text-xs" aria-label={added + " added lines, " + removed + " removed lines"}>
-          <span className="font-semibold text-emerald-700 dark:text-emerald-300">+{added}</span>
-          <span className="font-semibold text-red-700 dark:text-red-300">-{removed}</span>
+          <span className="font-semibold text-ok">+{added}</span>
+          <span className="font-semibold text-destructive">-{removed}</span>
         </span>
       </div>
       {rows.length ? (

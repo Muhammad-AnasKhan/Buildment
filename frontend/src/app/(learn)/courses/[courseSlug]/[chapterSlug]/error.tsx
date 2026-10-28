@@ -49,18 +49,18 @@ export default function ChapterReaderError({
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-12 pt-8">
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-900/50 dark:bg-amber-950/30">
-        <h1 className="text-lg font-semibold text-amber-950 dark:text-amber-100">
+      <div className="rounded-xl border border-brand-yellow bg-brand-yellow/15 p-6">
+        <h1 className="text-lg font-semibold text-foreground">
           This chapter can&apos;t be displayed right now
         </h1>
-        <p className="mt-2 text-sm leading-relaxed text-amber-900 dark:text-amber-200">
+        <p className="mt-2 text-sm leading-relaxed text-foreground">
           {connectionFailed ? (
             <>The server is temporarily unreachable. Please try again in a moment.</>
           ) : schemaStale ? (
             <>
               The app database schema is out of date with the code (common after pulling
               updates). An admin should run{" "}
-              <code className="rounded bg-amber-100/80 px-1 py-0.5 text-xs dark:bg-amber-900/40">
+              <code className="rounded bg-brand-yellow/15 px-1 py-0.5 text-xs">
                 pnpm db:ready
               </code>{" "}
               and restart the dev server, then reload this page.
@@ -79,7 +79,7 @@ export default function ChapterReaderError({
             type="button"
             size="sm"
             variant="default"
-            className="gap-1.5 bg-amber-950 text-white hover:bg-amber-800 dark:bg-amber-700 dark:hover:bg-amber-600"
+            className="gap-1.5 bg-brand-yellow text-white hover:bg-brand-yellow"
             onClick={() => reset()}
           >
             <RotateCcw className="size-3.5" aria-hidden />
@@ -104,7 +104,7 @@ export default function ChapterReaderError({
           ) : null}
           <Link
             href={askHelpHref}
-            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-amber-300 bg-card px-3 text-sm font-medium text-foreground hover:bg-amber-50 dark:border-amber-800 dark:hover:bg-amber-950/40"
+            className="inline-flex h-8 items-center gap-1.5 rounded-md border border-brand-yellow bg-card px-3 text-sm font-medium text-foreground hover:bg-brand-yellow/15"
           >
             <HandHelping className="size-3.5" aria-hidden />
             Ask mentor
@@ -112,7 +112,7 @@ export default function ChapterReaderError({
         </div>
 
         {error.digest ? (
-          <p className="mt-4 font-mono text-xs text-amber-700">ref: {error.digest}</p>
+          <p className="mt-4 font-mono text-xs text-foreground">ref: {error.digest}</p>
         ) : null}
       </div>
     </div>

@@ -247,7 +247,7 @@ export function MermaidDiagram({ chart, title, legend, scriptSrc }: MermaidDiagr
 
   if (error) {
     return (
-      <pre className="not-prose my-6 overflow-x-auto rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-400/25 dark:bg-red-500/10 dark:text-red-200">
+      <pre className="not-prose my-6 overflow-x-auto rounded-xl border border-destructive bg-destructive/10 p-4 text-sm text-destructive">
         {error}
       </pre>
     );

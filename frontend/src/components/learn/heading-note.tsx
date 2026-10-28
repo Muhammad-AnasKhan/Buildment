@@ -58,7 +58,7 @@ export function HeadingNoteButton({ headingId }: { headingId: string }) {
           aria-expanded={open}
           className={cn(
             "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs transition-colors hover:bg-muted hover:text-foreground",
-            saved ? "font-medium text-amber-700 dark:text-amber-300" : "text-muted-foreground"
+            saved ? "font-medium text-foreground" : "text-muted-foreground"
           )}
         >
           <StickyNote className="size-3.5" aria-hidden />

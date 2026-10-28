@@ -124,7 +124,7 @@ function FeedbackCard({ session, config }: { session: AiInterviewSessionView; co
   const feedback = session.feedback!;
   return (
     <div className="space-y-5" data-testid="ai-interview-feedback">
-      <p role="status" className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-800 dark:text-emerald-300">
+      <p role="status" className="rounded-lg border border-ok bg-ok-soft px-3 py-2 text-sm text-ok">
         Interview finished. This block is complete.
       </p>
       <div>
@@ -168,9 +168,9 @@ function FeedbackCard({ session, config }: { session: AiInterviewSessionView; co
           <p className="mt-1 text-xs text-muted-foreground">These came from your own words. Each one is a habit you can change.</p>
           <ul className="mt-2 space-y-2">
             {feedback.flags.map((flag, index) => (
-              <li key={`${flag.name}-${index}`} className="rounded-lg border bg-amber-500/10 p-3 text-sm leading-6">
+              <li key={`${flag.name}-${index}`} className="rounded-lg border bg-brand-yellow/15 p-3 text-sm leading-6">
                 <p className="font-medium">{AI_INTERVIEW_FLAG_LABELS[flag.name]}</p>
-                <blockquote className="mt-1 border-l-2 border-amber-500/60 pl-3 text-muted-foreground">{flag.quote}</blockquote>
+                <blockquote className="mt-1 border-l-2 border-brand-yellow pl-3 text-muted-foreground">{flag.quote}</blockquote>
               </li>
             ))}
           </ul>

@@ -35,18 +35,18 @@ function ResultBanner({ result }: { result: RespondResult }) {
       className={cn(
         "rounded-xl border px-4 py-3.5 text-sm",
         correct
-          ? "border-emerald-300 bg-emerald-500/10 text-emerald-950 dark:border-emerald-800 dark:text-emerald-100"
-          : "border-red-300 bg-red-500/10 text-red-950 dark:border-red-900/80 dark:bg-red-950/30 dark:text-red-50"
+          ? "border-ok bg-ok-soft text-ok"
+          : "border-destructive bg-destructive/10 text-destructive"
       )}
       role="status"
     >
       <div className="flex items-start gap-3">
         {correct ? (
-          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-white dark:bg-emerald-400 dark:text-emerald-950">
+          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-ok text-white dark:text-ok">
             <CheckCircle2 className="size-4" />
           </div>
         ) : (
-          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-red-500/20 text-red-700 dark:text-red-400">
+          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
             <XCircle className="size-4" />
           </div>
         )}
@@ -56,7 +56,7 @@ function ResultBanner({ result }: { result: RespondResult }) {
               {correct ? "Correct! Well done" : "Wrong answer. Select the correct option."}
             </p>
             {correct ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">
+              <span className="inline-flex items-center gap-1 rounded-full bg-ok-soft px-2 py-0.5 text-xs font-medium text-ok">
                 <Sparkles className="size-3" />
                 +100%
               </span>
@@ -355,7 +355,7 @@ export function QuizClient({
           <span className="text-xs font-semibold">Q</span>
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Knowledge check
           </p>
           <div className={cn("mt-2", readerTitle)}>

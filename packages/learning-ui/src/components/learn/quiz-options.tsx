@@ -54,9 +54,9 @@ export function QuizOptions({
                   !disabled &&
                   "border-foreground/25 bg-muted/60 ring-1 ring-inset ring-foreground/10",
                 isIncorrect &&
-                  "border-red-500/50 bg-red-500/10 text-foreground dark:border-red-400/45 dark:bg-red-950/35",
+                  "border-destructive bg-destructive/10 text-foreground",
                 isCorrect &&
-                  "border-emerald-500/45 bg-emerald-500/10 dark:border-emerald-400/40 dark:bg-emerald-950/30"
+                  "border-ok bg-ok-soft"
               )}
             >
               <span className="shrink-0" aria-hidden>
@@ -64,8 +64,8 @@ export function QuizOptions({
                   <span
                     className={cn(
                       "flex size-5 items-center justify-center rounded-md border-2 transition-colors",
-                      isIncorrect && "border-red-500 bg-red-500/20",
-                      isCorrect && "border-emerald-600 bg-emerald-500/20",
+                      isIncorrect && "border-destructive bg-destructive/10",
+                      isCorrect && "border-ok bg-ok-soft",
                       !isIncorrect &&
                         !isCorrect &&
                         (isSelected
@@ -89,8 +89,8 @@ export function QuizOptions({
                   <span
                     className={cn(
                       "flex size-5 items-center justify-center rounded-full border-2 transition-colors",
-                      isIncorrect && "border-red-500",
-                      isCorrect && "border-emerald-600",
+                      isIncorrect && "border-destructive",
+                      isCorrect && "border-ok",
                       !isIncorrect && !isCorrect && (isSelected ? "border-foreground" : "border-muted-foreground/40")
                     )}
                   >
@@ -111,10 +111,10 @@ export function QuizOptions({
                 {option.label}
               </span>
               {isIncorrect ? (
-                <XCircle className="size-4 shrink-0 text-red-600 dark:text-red-400" aria-hidden />
+                <XCircle className="size-4 shrink-0 text-destructive" aria-hidden />
               ) : null}
               {isCorrect ? (
-                <CheckCircle2 className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden />
+                <CheckCircle2 className="size-4 shrink-0 text-ok" aria-hidden />
               ) : null}
             </button>
           </li>

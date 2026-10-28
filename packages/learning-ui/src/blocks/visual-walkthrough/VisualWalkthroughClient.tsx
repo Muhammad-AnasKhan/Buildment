@@ -33,7 +33,7 @@ export function VisualWalkthroughClient({ title, steps }: VisualWalkthroughConfi
         <nav className="flex gap-2 overflow-x-auto border-b border-border bg-muted/15 px-4 py-3 sm:px-5" aria-label={`${title} steps`}>
           {steps.map((item, index) => (
             <button key={item.id} type="button" onClick={() => setActive(index)} aria-current={index === active ? "step" : undefined} className={cn("flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm font-medium transition-colors", index === active ? "border-foreground/25 bg-card text-foreground " : "border-transparent text-muted-foreground hover:border-border hover:bg-card")}>
-              <span className={cn("flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold", index === active ? "bg-foreground text-background" : "bg-muted text-muted-foreground")}>{index + 1}</span>
+              <span className={cn("flex size-5 shrink-0 items-center justify-center rounded-full text-xs font-semibold", index === active ? "bg-foreground text-background" : "bg-muted text-muted-foreground")}>{index + 1}</span>
               <span className="max-w-40 truncate">{item.title}</span>
             </button>
           ))}

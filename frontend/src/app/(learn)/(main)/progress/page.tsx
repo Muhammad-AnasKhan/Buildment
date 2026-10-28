@@ -23,8 +23,8 @@ function percentage(score: number, maxScore: number) {
 
 function accuracyState(value: number | null) {
   if (value === null) return { label: "Not scored yet", detail: "Complete a scored quiz, prediction, test, or code check to establish accuracy.", className: "text-muted-foreground", icon: Target };
-  if (value >= 80) return { label: "Strong understanding", detail: "Your scored checkpoints show reliable understanding.", className: "text-emerald-700 dark:text-emerald-400", icon: CheckCircle2 };
-  if (value >= 60) return { label: "Developing understanding", detail: "Review missed checkpoints before moving too far ahead.", className: "text-amber-700 dark:text-amber-400", icon: CircleAlert };
+  if (value >= 80) return { label: "Strong understanding", detail: "Your scored checkpoints show reliable understanding.", className: "text-ok", icon: CheckCircle2 };
+  if (value >= 60) return { label: "Developing understanding", detail: "Review missed checkpoints before moving too far ahead.", className: "text-foreground", icon: CircleAlert };
   return { label: "Needs review", detail: "Revisit the scored chapters below and try the checks again.", className: "text-destructive", icon: CircleAlert };
 }
 
@@ -220,7 +220,7 @@ function ModuleProgressCard({ module }: { module: LearnerProgressModule }) {
       <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label={`${module.title} completion`} aria-valuenow={completion} aria-valuemin={0} aria-valuemax={100}>
         <div className="h-full rounded-full bg-primary/80" style={{ width: `${completion}%` }} />
       </div>
-      <div className="mt-2.5 flex flex-wrap justify-between gap-x-2 text-[11px] tabular-nums">
+      <div className="mt-2.5 flex flex-wrap justify-between gap-x-2 text-xs tabular-nums">
         <span className="text-muted-foreground">{module.completed}/{module.total} chapters</span>
         <span className={accuracyState(accuracy).className}>{accuracy === null ? "Not scored" : `${accuracy}% correct`}</span>
       </div>
