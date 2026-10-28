@@ -13,6 +13,9 @@ const KIND_WORD: Record<NodeKind, string | null> = {
   store: "stored data",
   external: "an outside service",
   decision: "a question",
+  state: "a state",
+  start: null,
+  stop: null,
 };
 
 export function describeDiagram(spec: DiagramSpec): string {

@@ -9,7 +9,7 @@
 export const DIAGRAM_KINDS = ["flow", "sequence"] as const;
 export type DiagramKind = (typeof DIAGRAM_KINDS)[number];
 
-export const NODE_KINDS = ["actor", "box", "decision", "end", "store", "external"] as const;
+export const NODE_KINDS = ["actor", "box", "decision", "end", "store", "external", "state", "start", "stop"] as const;
 export type NodeKind = (typeof NODE_KINDS)[number];
 
 /** `group` is the index of the innermost group the part sits in, or null. */

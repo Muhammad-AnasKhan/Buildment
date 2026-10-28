@@ -83,6 +83,11 @@ function measure(node: DiagramNode, compact: boolean, labelBeside: boolean, crow
       : { left: Math.max(r, lw / 2), right: Math.max(r, lw / 2), top: r, bottom: r + 6 + lines.length * lh };
     return { node, lines, inside: false, r, w: 2 * r, h: 2 * r, box };
   }
+  if (node.kind === "start" || node.kind === "stop") {
+    // A start or finish dot: its name is for the text alternative, not drawn.
+    const r = node.kind === "start" ? 10 : 13;
+    return { node, lines: [], inside: true, r, w: 2 * r, h: 2 * r, box: { left: r, right: r, top: r, bottom: r } };
+  }
   if (node.kind === "decision") {
     // Text fits a diamond when its width share plus its height share of the diamond is under 1,
     // so the diamond is about 1.5 times the text's width and tall enough for the rest.
@@ -105,6 +110,9 @@ function measure(node: DiagramNode, compact: boolean, labelBeside: boolean, crow
 function placeNode(m: Measured, cx: number, cy: number, labelBeside: boolean): SceneNode {
   const lh = NODE_FONT * LINE_HEIGHT;
   const centred = (y: number, count: number) => y - ((count - 1) * lh) / 2 + NODE_FONT * 0.35;
+  if (m.node.kind === "start" || m.node.kind === "stop") {
+    return { id: m.node.id, kind: m.node.kind, shape: { type: "circle", cx, cy, r: m.r }, labelInside: true, label: { lines: [], x: cx, y: cy, anchor: "middle", size: NODE_FONT } };
+  }
   if (m.node.kind === "actor") {
     const shape = { type: "circle" as const, cx, cy, r: m.r };
     if (m.inside) return { id: m.node.id, kind: m.node.kind, shape, labelInside: true, label: { lines: m.lines, x: cx, y: centred(cy, 1), anchor: "middle", size: NODE_FONT } };
@@ -330,7 +338,11 @@ function ranks(spec: DiagramSpec): Map<string, number> {
     }
     state.set(id, "done");
   };
-  spec.nodes.forEach((node) => { if (!state.has(node.id)) visit(node.id); });
+  // Walk from start dots first, then parts nothing points at, then the rest in the order written,
+  // so the flow begins where the story begins and replies count as going back.
+  const pointedAt = new Set(spec.edges.filter((edge) => edge.from !== edge.to).map((edge) => edge.to));
+  const rootOrder = (node: { id: string; kind: string }) => (node.kind === "start" ? 0 : pointedAt.has(node.id) ? 2 : 1);
+  [...spec.nodes].sort((a, b) => rootOrder(a) - rootOrder(b)).forEach((node) => { if (!state.has(node.id)) visit(node.id); });
 
   const rank = new Map(spec.nodes.map((node) => [node.id, 0]));
   // Longest path over the forward arrows; at most one pass per part.
