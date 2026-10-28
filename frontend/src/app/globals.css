@@ -9,9 +9,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  --font-sans: var(--font-dm-sans);
   --font-mono: var(--font-jetbrains-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-unbounded);
   --color-brand-cobalt: var(--brand-cobalt);
   --color-brand-yellow: var(--brand-yellow);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -175,7 +175,6 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -265,6 +264,14 @@
   }
   html {
     @apply font-sans;
+  }
+  /* Edorax headings: Unbounded 700, tight tracking. h4 and below stay in the body face. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
   }
 
   /*

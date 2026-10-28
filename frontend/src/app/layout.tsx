@@ -1,14 +1,22 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { DM_Sans, IBM_Plex_Sans, JetBrains_Mono, Space_Grotesk, Unbounded } from "next/font/google";
 import { PostHogProvider } from "@/components/posthog-provider";
 import { AppToast } from "@/components/ui/app-toast";
 import { ThemeProvider } from "@/components/theme-provider";
 import { THEME_INIT_SCRIPT } from "@/lib/theme-init-script";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+// Edorax type: DM Sans for everything you read, Unbounded 700 for headings.
+const dmSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const unbounded = Unbounded({
+  variable: "--font-unbounded",
+  subsets: ["latin"],
+  weight: ["700"],
   display: "swap",
 });
 
@@ -52,7 +60,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} ${ibmPlexSans.variable} h-full antialiased`}
+      className={`${dmSans.variable} ${unbounded.variable} ${jetbrainsMono.variable} ${spaceGrotesk.variable} ${ibmPlexSans.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <script
