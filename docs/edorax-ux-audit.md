@@ -48,7 +48,7 @@ Ranked by impact on a learner. Each item says where, why it hurts, and the fix.
 - Where: `frontend/src/app/layout.tsx` (Inter, JetBrains Mono, Space Grotesk, IBM Plex Sans in three weights).
 - Problem: Space Grotesk and IBM Plex are used only by the system design lab board, but every route pays for them.
 - Why it hurts: extra requests and text that flashes on slow connections.
-- Fix: Edorax needs two families (DM Sans for body, Unbounded for headings). Load them with `next/font`, keep JetBrains Mono only where code appears, and load the lab fonts only on the lab route. Done in the theme step of this work, except moving the lab fonts (left for the page work).
+- Fix: Edorax needs two families (DM Sans for body, Unbounded for headings). Load them with `next/font`, keep JetBrains Mono only where code appears, and load the lab fonts only on the lab route. The theme step swapped Inter for DM Sans and added Unbounded, so the count is still five until the lab fonts move to the lab route. That move is left for the page work.
 
 ## 7. The chapter error page talks to developers
 
