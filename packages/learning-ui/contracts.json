@@ -14,5 +14,6 @@
   "diagram/text.ts",
   "diagram/layout.ts",
   "diagram/draw.ts",
-  "diagram/describe.ts"
+  "diagram/describe.ts",
+  "diagram/from-mermaid.ts"
 ]

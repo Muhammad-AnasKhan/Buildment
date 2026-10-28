@@ -16,9 +16,19 @@ export type ConvertedMermaid = { kind: DiagramKind; source: string };
 
 export const KEEP_MERMAID = /^\s*%%\s*keep-mermaid\b/;
 
-export function mermaidToDiagram(chart: string, fallbackTitle?: string): ConvertedMermaid | null {
+/**
+ * `title` (a MermaidDiagram tag's own title) wins over the chart's title, which
+ * wins over `fallbackTitle` (the heading above a fence).
+ */
+export function mermaidToDiagram(chart: string, fallbackTitle?: string, title?: string): ConvertedMermaid | null {
+  const converted = translateMermaid(chart, fallbackTitle, title);
+  return converted && parseDiagram(converted.kind, converted.source).ok ? converted : null;
+}
+
+/** The translation before validation, so tooling can report why a chart stays on Mermaid. */
+export function translateMermaid(chart: string, fallbackTitle?: string, title?: string): ConvertedMermaid | null {
   if (KEEP_MERMAID.test(chart)) return null;
-  const { title, body } = frontmatterTitle(chart.replace(/\r\n?/g, "\n"));
+  const { title: chartTitle, body } = frontmatterTitle(chart.replace(/\r\n?/g, "\n"));
   const lines = body.split("\n").map((line) => line.trim()).filter((line) => line && !line.startsWith("%%"));
   if (!lines.length) return null;
   const header = lines[0];
@@ -28,9 +38,8 @@ export function mermaidToDiagram(chart: string, fallbackTitle?: string): Convert
       ? sequence(lines.slice(1))
       : null;
   if (!converted) return null;
-  const name = cleanTitle(converted.title ?? title ?? fallbackTitle ?? "Diagram");
-  const source = [`title: ${name}`, ...converted.lines].join("\n");
-  return parseDiagram(converted.kind, source).ok ? { kind: converted.kind, source } : null;
+  const name = cleanTitle(title?.trim() || converted.title || chartTitle || fallbackTitle || "Diagram");
+  return { kind: converted.kind, source: [`title: ${name}`, ...converted.lines].join("\n") };
 }
 
 type Converted = { kind: DiagramKind; title?: string; lines: string[] };
@@ -67,8 +76,9 @@ function plain(text: string): string {
 // id, then an optional shape with its text: ["a"], ("a"), (["a"]), [("a")], (("a")), {"a"}, [/a/], >a].
 const NODE = /^([A-Za-z_][\w-]*)(?:(\[\(|\(\(|\(\[|\[\/|\[\\|\[|\(|\{|>)\s*("[^"]*"|[^\])}"]*?)\s*(\)\]|\)\)|\]\)|\/\]|\\\]|\]|\)|\}))?/;
 const CLOSE: Record<string, string> = { "[(": ")]", "((": "))", "([": "])", "[/": "/]", "[\\": "\\]", "[": "]", "(": ")", "{": "}", ">": "]" };
-// -- text -->, == text ==>, -. text .->, or -->, ---, -.->, ==> with an optional |text|.
-const LINK = /^(?:(?:--|==)\s+([^|>]*?)\s+(-->|==>)|-\.\s+([^|>]*?)\s+\.->|(-->|---|-\.->|==>)(?:\|([^|]*)\|)?)/;
+// -- text -->, == text ==>, -. text .->, or an arrow (-->, --->, -.->, ==>) or a plain
+// line (---, ----), with an optional |text|.
+const LINK = /^(?:(?:--|==)\s+([^|>]*?)\s+(-->|==>)|-\.\s+([^|>]*?)\s+\.->|(-{2,}>|-{3,}|-\.->|={2,}>)(?:\|([^|]*)\|)?)/;
 const IGNORED = /^(classDef|class|style|linkStyle|click)\b/;
 
 type FlowNode = { id: string; label?: string; kind: "actor" | "box" | "store" };
@@ -78,7 +88,7 @@ function flowchart(header: string, lines: string[]): Converted | null {
   const direction = dir === "LR" ? "right" : dir === "TD" || dir === "TB" ? "down" : null;
   if (!direction) return null;
   const nodes = new Map<string, FlowNode>();
-  const edges: { from: string; to: string; label?: string; dashed: boolean }[] = [];
+  const edges: { from: string; to: string; label?: string; dashed: boolean; head: boolean }[] = [];
 
   const readNode = (text: string): { node: FlowNode; rest: string } | null => {
     const match = NODE.exec(text);
@@ -107,12 +117,12 @@ function flowchart(header: string, lines: string[]): Converted | null {
       const link = LINK.exec(rest);
       if (!link) return null;
       const [whole, textLabel, , dottedLabel, arrow, pipeLabel] = link;
-      if (arrow === "---") return null;
       const next = readNode(rest.slice(whole.length).trim());
       if (!next) return null;
       const label = plain(textLabel ?? dottedLabel ?? pipeLabel ?? "");
       const dashed = dottedLabel !== undefined || arrow === "-.->";
-      edges.push({ from: read.node.id, to: next.node.id, label: label || undefined, dashed });
+      const head = arrow === undefined || arrow.endsWith(">");
+      edges.push({ from: read.node.id, to: next.node.id, label: label || undefined, dashed, head });
       read = next;
       rest = next.rest;
     }
@@ -127,7 +137,7 @@ function flowchart(header: string, lines: string[]): Converted | null {
     lines: [
       `direction: ${direction}`,
       ...[...nodes.values()].map((node) => `${node.kind} ${name(node.id)}`),
-      ...edges.map((edge) => `${name(edge.from)} ${edge.dashed ? "-->" : "->"} ${name(edge.to)}${edge.label ? `: ${edge.label}` : ""}`),
+      ...edges.map((edge) => `${name(edge.from)} ${edge.head ? (edge.dashed ? "-->" : "->") : "---"} ${name(edge.to)}${edge.label ? `: ${edge.label}` : ""}`),
     ],
   };
 }

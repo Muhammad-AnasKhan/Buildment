@@ -35,6 +35,33 @@ describe("mermaidToDiagram", () => {
     expect(converted?.source.split("\n").slice(0, 2)).toEqual(["title: Pipeline", "direction: right"]);
   });
 
+  it("lets a MermaidDiagram tag's own title win", () => {
+    const converted = mermaidToDiagram("---\ntitle: Pipeline\n---\nflowchart LR\n  A[Load] --> B[Embed]", "Heading", "From the tag");
+    expect(converted?.source.split("\n")[0]).toBe("title: From the tag");
+  });
+
+  // The diagram a learner reported in Networking 01.01, written as a <MermaidDiagram> tag.
+  it("converts plain lines and longer arrows, as in Networking 01.01", () => {
+    const chart = [
+      "flowchart LR",
+      '  A["Your computer says 192.168.1.23"] -->|"your home side"| B["Router, inside: 192.168.1.1"]',
+      '  B --- C["Router, outside: 203.0.113.45"]',
+      '  C --->|"the internet side"| D["The website sees 203.0.113.45"]',
+      "",
+    ].join("\n");
+    expect(mermaidToDiagram(chart, undefined, "One computer, two numbers")?.source).toBe([
+      "title: One computer, two numbers",
+      "direction: right",
+      "box Your computer says 192.168.1.23",
+      'box "Router, inside: 192.168.1.1"',
+      'box "Router, outside: 203.0.113.45"',
+      "box The website sees 203.0.113.45",
+      'Your computer says 192.168.1.23 -> "Router, inside: 192.168.1.1": your home side',
+      '"Router, inside: 192.168.1.1" --- "Router, outside: 203.0.113.45"',
+      '"Router, outside: 203.0.113.45" -> The website sees 203.0.113.45: the internet side',
+    ].join("\n"));
+  });
+
   it("converts a sequence diagram with participants and replies", () => {
     const chart = "sequenceDiagram\n  autonumber\n  actor U as Shopper\n  participant A as API\n  U->>A: POST /orders\n  A-->>U: 201 Created";
     expect(mermaidToDiagram(chart, "Placing an order")).toEqual({
@@ -45,7 +72,7 @@ describe("mermaidToDiagram", () => {
 
   it.each([
     ["a subgraph", "flowchart TD\n  subgraph S\n  A --> B\n  end"],
-    ["a line without an arrow head", "flowchart TD\n  A --- B"],
+    ["a dotted line without an arrow head", "flowchart TD\n  A -.- B"],
     ["the & shorthand", "flowchart TD\n  A & B --> C"],
     ["a right-to-left flow", "flowchart RL\n  A --> B"],
     ["a note in a sequence", "sequenceDiagram\n  A->>B: hi\n  Note over A: thinks"],
