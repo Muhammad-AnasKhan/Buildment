@@ -12,6 +12,7 @@ import { milestoneReflectionBlocked } from "./reflection.js";
 import { notifyCourseCompleted } from "../notifications/events.js";
 import { awardChapterCompletionXp, awardXp } from "../gamification/xp.js";
 import { xpKeys } from "../../shared/gamification/xp.js";
+import { calculateQuizAssessment } from "./quiz-assessment.js";
 
 // Recomputes denormalized rollups after a new Response is written — see
 // docs/04-progress-and-gating.mdx and the append-only-Response invariant in
@@ -45,7 +46,7 @@ export async function recomputeChapterProgress(
     }),
     tx.chapter.findUnique({
       where: { id: chapterId },
-      select: { isMilestone: true, source: true, compiled: true, readerMode: true },
+      select: { isMilestone: true, source: true, compiled: true, readerMode: true, quizPassingScore: true },
     }),
   ]);
 
@@ -55,6 +56,7 @@ export async function recomputeChapterProgress(
   let blocksTotal = 0;
 
   const learnerUserId = enrollment.userId;
+  const latestByBlock = new Map<string, Awaited<ReturnType<typeof tx.response.findFirst>>>();
   for (const block of blocks) {
     if (!isCompletableBlock(block)) continue;
     const latest = learnerUserId
@@ -63,6 +65,7 @@ export async function recomputeChapterProgress(
           orderBy: { attempt: "desc" },
         })
       : null;
+    latestByBlock.set(block.id, latest);
     const satisfied = checkpointSatisfied({
       type: block.type,
       config: block.config,
@@ -77,6 +80,35 @@ export async function recomputeChapterProgress(
     blocksCompleted += 1;
     if (latest?.score != null) score += latest.score;
     if (latest?.maxScore != null) maxScore += latest.maxScore;
+  }
+
+  if (chapter?.readerMode === "QUIZ") {
+    const assessmentBlocks = blocks.filter(isCompletableBlock);
+    const assessment = calculateQuizAssessment({
+      blocks: assessmentBlocks,
+      responses: assessmentBlocks.flatMap((block) => {
+        const response = latestByBlock.get(block.id);
+        return response ? [{ blockId: block.id, status: response.status, score: response.score, maxScore: response.maxScore }] : [];
+      }),
+      passingScore: chapter.quizPassingScore,
+    });
+    if (assessment) {
+      score = assessment.score;
+      maxScore = assessment.maxScore;
+      const scoredIds = new Set(assessmentBlocks.filter((block) =>
+        ["QUIZ", "PREDICT", "CODE"].includes(block.type) ||
+        (block.type === "OPEN_QUESTION" && (block.config as { autoGrade?: unknown } | null)?.autoGrade === "llm")
+      ).map((block) => block.id));
+      const nonScoredCompleted = assessmentBlocks.filter((block) =>
+        !scoredIds.has(block.id) && checkpointSatisfied({
+          type: block.type,
+          config: block.config,
+          status: latestByBlock.get(block.id)?.status ?? null,
+          isCorrect: latestByBlock.get(block.id)?.isCorrect ?? null,
+        })
+      ).length;
+      blocksCompleted = nonScoredCompleted + (assessment.passed ? scoredIds.size : 0);
+    }
   }
 
   const reflectionBlocked = Boolean(

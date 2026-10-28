@@ -1,11 +1,21 @@
 import Link from "next/link";
+import {
+  AlertCircle,
+  ArrowUpRight,
+  BookOpen,
+  KeyRound,
+  Layers3,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 import type { AdminOrganizationDetail } from "@/shared/api/admin";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
+import { cn } from "@/lib/utils";
 import { CredentialReveal } from "@/components/admin/credential-reveal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AdminActionForm } from "@/components/admin/admin-action-form";
-import { BulkCourseAllocationForm } from "@/components/admin/bulk-course-allocation-form";
+import { OrganizationCourseDrawer } from "@/components/admin/organization-course-drawer";
 import { rotateOrganizationCredentialFormAction, setAllocationLeaderboardAction } from "@/server/actions/admin/organizations";
 import {
   AdminBackLink,
@@ -30,7 +40,7 @@ export default async function AdminOrganizationDetailPage({
   const { orgId } = await params;
   const query = await searchParams;
 
-  const { organization: org, credentials, allocations, pendingRequests, publishedCourses, publishedCoursesTruncated } =
+  const { organization: org, credentials, allocations, pendingRequests, publishedCourses } =
     await serverApiFetchOrNotFound<AdminOrganizationDetail>(`/api/v1/admin/organizations/${encodeURIComponent(orgId)}`);
 
   const allocationByCourseId = new Map(allocations.map((row) => [row.course.id, row]));
@@ -49,28 +59,28 @@ export default async function AdminOrganizationDetailPage({
   };
 
   const allPublishedCourses = publishedCourses.map(mapCourseForBulk);
-  const coursesInCatalog = publishedCourses
-    .filter((course) => allocationByCourseId.has(course.id))
-    .map(mapCourseForBulk);
-
   return (
-    <div>
+    <div className="space-y-8 pb-12">
       <AdminBackLink href="/admin/organizations">← Back to organizations</AdminBackLink>
 
-      <div className="mt-4">
-        <AdminPageHeader
-          eyebrow="Organization"
-          title={org.name}
-          description={
-            <>
-              <span className="font-mono text-xs">{org.slug}</span>
-              <span className="mt-1 block">
-                {org.enrollmentCount} integration enrollment
-                {org.enrollmentCount === 1 ? "" : "s"}
-              </span>
-            </>
-          }
-          actions={
+      <AdminPageHeader
+        eyebrow="Organization"
+        title={org.name}
+        description={
+          <>
+            <span className="font-mono text-xs">{org.slug}</span>
+            <span className="mt-1 block">
+              {org.enrollmentCount} integration enrollment
+              {org.enrollmentCount === 1 ? "" : "s"}
+            </span>
+          </>
+        }
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <OrganizationCourseDrawer
+              organizationId={org.id}
+              courses={allPublishedCourses}
+            />
             <AdminActionForm
               action={rotateOrganizationCredentialFormAction}
               submitLabel="Rotate API credentials"
@@ -85,33 +95,50 @@ export default async function AdminOrganizationDetailPage({
             >
               <input type="hidden" name="organizationId" value={org.id} />
             </AdminActionForm>
-          }
-        />
+          </div>
+        }
+      />
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard icon={Users} label="Integration enrollments" value={org.enrollmentCount.toLocaleString()} detail="Learners connected" />
+        <MetricCard icon={BookOpen} label="Catalog courses" value={allocations.length.toLocaleString()} detail="Allocated to this org" />
+        <MetricCard icon={KeyRound} label="API credentials" value={credentials.filter((credential) => credential.active).length.toLocaleString()} detail="Active access keys" />
+        <MetricCard icon={Layers3} label="Pending requests" value={pendingRequests.length.toLocaleString()} detail={pendingRequests.length ? "Needs review" : "Everything is up to date"} highlight={pendingRequests.length > 0} />
       </div>
 
       {query.accessKey && query.secret ? (
-        <div className="mt-6">
-          <CredentialReveal accessKey={query.accessKey} secret={query.secret} />
-        </div>
+        <CredentialReveal accessKey={query.accessKey} secret={query.secret} />
       ) : null}
 
       {pendingRequests.length > 0 ? (
-        <AdminPanel className="mt-6 border-primary/20 bg-primary/5">
-          <h2 className="text-sm font-semibold">Pending course requests</h2>
-          <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
+        <AdminPanel className="border-primary/20 bg-primary/[0.04] p-0">
+          <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6">
+            <div className="flex items-start gap-3">
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                <AlertCircle className="size-4" aria-hidden />
+              </span>
+              <div>
+                <h2 className="text-sm font-semibold">Pending course requests</h2>
+                <p className="mt-1 text-sm text-muted-foreground">This organization is waiting for access to the following courses.</p>
+              </div>
+            </div>
+            <Link href="/admin/requests" className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-primary hover:underline">
+              Open request queue <ArrowUpRight className="size-3.5" aria-hidden />
+            </Link>
+          </div>
+          <ul className="divide-y divide-border border-t border-border">
             {pendingRequests.map((r) => (
-              <li key={r.id}>
-                {r.courseTitle}{" "}
-                <Link href="/admin/requests" className="font-medium text-foreground underline-offset-4 hover:underline">
-                  Review in queue →
-                </Link>
+              <li key={r.id} className="flex items-center justify-between gap-4 px-5 py-3 text-sm sm:px-6">
+                <span className="font-medium">{r.courseTitle}</span>
+                <span className="text-xs text-muted-foreground">Awaiting review</span>
               </li>
             ))}
           </ul>
         </AdminPanel>
       ) : null}
 
-      <AdminSection title="API credentials">
+      <AdminSection title="Access & credentials" description="Manage the keys used by this organization’s integration." className="mt-0">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
         <AdminTable minWidth="560px">
           <AdminTableHead>
             <tr>
@@ -142,11 +169,25 @@ export default async function AdminOrganizationDetailPage({
             ))}
           </AdminTableBody>
         </AdminTable>
+        <AdminPanel className="flex flex-col justify-between bg-muted/25">
+          <div>
+            <span className="grid size-10 place-items-center rounded-xl bg-background text-primary shadow-sm">
+              <ShieldCheck className="size-5" aria-hidden />
+            </span>
+            <h3 className="mt-5 text-sm font-semibold">Credential hygiene</h3>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">Keep keys private, rotate them after a team change, and update the external integration immediately.</p>
+          </div>
+          <Link href="/integrations" className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+            View integration docs <ArrowUpRight className="size-3.5" aria-hidden />
+          </Link>
+        </AdminPanel>
+        </div>
       </AdminSection>
 
       <AdminSection
         title="Courses in catalog"
         description="Published courses currently allocated to this organization. Caps and expiry are enforced on integration enrollments."
+        className="mt-12"
       >
         <AdminTable minWidth="860px">
           <AdminTableHead>
@@ -213,42 +254,43 @@ export default async function AdminOrganizationDetailPage({
         </AdminTable>
       </AdminSection>
 
-      <AdminSection
-        title="Add courses to catalog"
-        description="Browse published courses. Rows marked Added to catalog are already allocated — select Not in catalog courses to add. Pending requests show a Requested badge."
-        className="mt-10"
-      >
-        <AdminPanel className="max-w-4xl">
-          {publishedCoursesTruncated ? (
-            <p className="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100">
-              This catalog is larger than the {publishedCourses.length}-course cap, so only the first part is
-              listed here. Use search to find a specific course, or allocate from the course side.
-            </p>
-          ) : null}
-          <BulkCourseAllocationForm
-            organizationId={org.id}
-            courses={allPublishedCourses}
-            intent="add"
-            emptyMessage="No published courses on the platform yet."
-          />
-        </AdminPanel>
-      </AdminSection>
+      <AdminPanel className="border-dashed bg-muted/15">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold">Need to change access?</p>
+            <p className="mt-1 text-sm text-muted-foreground">Use the catalog controls above to add courses or update caps and expiry dates.</p>
+          </div>
+          <p className="text-xs font-medium text-muted-foreground">{publishedCourses.length.toLocaleString()} published courses available</p>
+        </div>
+      </AdminPanel>
+    </div>
+  );
+}
 
-      {coursesInCatalog.length > 0 ? (
-        <AdminSection
-          title="Update catalog courses"
-          description="Change max enrollments or expiry for courses already in this organization's catalog."
-          className="mt-10"
-        >
-          <AdminPanel className="max-w-4xl">
-            <BulkCourseAllocationForm
-              organizationId={org.id}
-              courses={coursesInCatalog}
-              intent="update"
-            />
-          </AdminPanel>
-        </AdminSection>
-      ) : null}
+function MetricCard({
+  icon: Icon,
+  label,
+  value,
+  detail,
+  highlight = false,
+}: {
+  icon: typeof Users;
+  label: string;
+  value: string;
+  detail: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className={cn("rounded-2xl border border-border bg-card p-4 shadow-sm", highlight && "border-primary/30 bg-primary/[0.04]")}>
+      <div className="flex items-center justify-between gap-3">
+        <span className={cn("grid size-9 place-items-center rounded-xl bg-muted text-muted-foreground", highlight && "bg-primary/10 text-primary")}>
+          <Icon className="size-4" aria-hidden />
+        </span>
+        {highlight ? <span className="size-2 rounded-full bg-primary" aria-label="Needs attention" /> : null}
+      </div>
+      <p className="mt-5 text-2xl font-semibold tracking-tight tabular-nums">{value}</p>
+      <p className="mt-1 text-sm font-medium">{label}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
     </div>
   );
 }

@@ -175,6 +175,7 @@ enum StudySessionStatus {
 
 enum AiProvider {
   OPENROUTER
+  GEMINI
 }
 
 enum AiInterviewStatus {
@@ -444,6 +445,8 @@ model Chapter {
   order             Int
   estimatedMinutes  Int?
   readerMode        ChapterReaderMode @default(DEFAULT)
+  /// Minimum weighted assessment percentage required in quiz mode.
+  quizPassingScore  Int               @default(70)
   source            String            @db.Text // raw MDX (draft)
   compiled          String?           @db.Text // compiled MDX at publish
   publishedAt       DateTime?
@@ -472,6 +475,7 @@ model CourseChapterDraft {
   summary String?
   estimatedMinutes Int?
   readerMode ChapterReaderMode
+  quizPassingScore Int @default(70)
   isMilestone Boolean
   source String @db.Text
   updatedAt DateTime @updatedAt

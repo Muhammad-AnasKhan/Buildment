@@ -33,6 +33,7 @@ export type BlockResponseResult = {
   status: GradeResult["status"];
   explanation?: string;
   hint?: string;
+  guidance?: string;
   attempt?: number;
   solution?: string;
   failedTestName?: string;
@@ -96,7 +97,7 @@ async function gradeLlmOpenQuestion(input: {
     });
     const storedPayload: OpenQuestionStoredPayload = {
       ...input.payload,
-      llmFeedback: { why: llm.why, hint: llm.hint },
+      llmFeedback: { why: llm.why, hint: llm.hint, guidance: llm.guidance },
     };
     return {
       score: llm.isCorrect ? 1 : 0,
@@ -105,6 +106,7 @@ async function gradeLlmOpenQuestion(input: {
       status: "AUTO_GRADED",
       explanation: llm.why,
       hint: llm.hint ?? undefined,
+      guidance: llm.guidance ?? undefined,
       attempt: input.attempt,
       storedPayload,
     };
@@ -147,6 +149,15 @@ export async function submitBlockResponse(input: {
 
   if (block.type === "OPEN_QUESTION" && isLlmGradedOpenQuestion(block.config)) {
     const config = OpenQuestionConfigSchema.parse(block.config);
+    const latest = await prisma.response.findFirst({
+      where: { blockId, userId: learner.id, status: { not: "DRAFT" } },
+      orderBy: { attempt: "desc" },
+      select: { isCorrect: true },
+    });
+    if (latest?.isCorrect) throw new BadRequestError("This answer has already passed.", "ANSWER_ALREADY_PASSED");
+    if (previousAttempts >= config.maxAttempts) {
+      throw new BadRequestError("You have used all three graded attempts. Review the guidance and ask your mentor if you need another attempt.", "ATTEMPT_LIMIT_REACHED");
+    }
     const parsedPayload = OpenQuestionPayloadSchema.parse(payload);
     const llmGraded = await gradeLlmOpenQuestion({
       config,
@@ -204,6 +215,7 @@ export async function submitBlockResponse(input: {
         )
       ),
     hint: graded.hint,
+    guidance: graded.guidance,
     solution: graded.solution,
     failedTestName: graded.failedTestName,
     errorMessage: graded.errorMessage,

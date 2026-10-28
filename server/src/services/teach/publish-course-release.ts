@@ -17,7 +17,7 @@ function plainSource(source: string, ids: string[]) {
 
 async function equivalent(tx: Prisma.TransactionClient, chapter: ReleaseChapter | undefined, lesson: Lesson): Promise<boolean> {
   if (!chapter || chapter.title !== lesson.title || chapter.estimatedMinutes !== lesson.estimatedMinutes ||
-      chapter.readerMode !== lesson.readerMode || chapter.isMilestone !== lesson.isMilestone) return false;
+      chapter.readerMode !== lesson.readerMode || chapter.quizPassingScore !== (lesson.quizPassingScore ?? 70) || chapter.isMilestone !== lesson.isMilestone) return false;
   const old = await tx.chapter.findUnique({ where: { id: chapter.id }, include: { blocks: { where: { archivedAt: null }, orderBy: { order: "asc" } } } });
   if (!old || old.summary !== lesson.summary || old.blocks.length !== lesson.blocks.length) return false;
   if (plainSource(old.source, old.blocks.map(block => block.id)) !== plainSource(lesson.source, lesson.blocks.map(block => block.id))) return false;
@@ -36,11 +36,11 @@ export async function createReleaseChapter(tx: Prisma.TransactionClient, courseI
   // DB slugs and content keys are unique across releases. The release keeps the stable public slug/key.
   await tx.chapter.create({ data: { id, courseId, moduleId, slug: `${logicalSlug}--${id.toLowerCase()}`,
     title: lesson.title, summary: lesson.summary, source, compiled: source, publishedAt: new Date(),
-    order: lesson.lessonNum, estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode,
+    order: lesson.lessonNum, estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode, quizPassingScore: lesson.quizPassingScore ?? 70,
     isMilestone: lesson.isMilestone } });
   if (blocks.length) await tx.block.createMany({ data: blocks });
   return { id, key: lesson.key ?? null, slug: logicalSlug, title: lesson.title, order: lesson.lessonNum,
-    estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode, isMilestone: lesson.isMilestone };
+    estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode, quizPassingScore: lesson.quizPassingScore ?? 70, isMilestone: lesson.isMilestone };
 }
 
 function locate(modules: ReleaseModule[], key: string | null, id: string | null) {
@@ -229,7 +229,7 @@ export async function publishDashboardNewChapterRelease(tx: Prisma.TransactionCl
     }
     if (module.chapters.some(item => item.id === chapterId)) continue;
     module.chapters.push({ id: chapter.id, key: chapter.contentKey, slug: chapter.slug, title: chapter.title,
-      order: chapter.order, estimatedMinutes: chapter.estimatedMinutes, readerMode: chapter.readerMode,
+      order: chapter.order, estimatedMinutes: chapter.estimatedMinutes, readerMode: chapter.readerMode, quizPassingScore: chapter.quizPassingScore,
       isMilestone: chapter.isMilestone });
     module.chapters.sort((a, b) => a.order - b.order);
     modules.sort((a, b) => a.order - b.order);

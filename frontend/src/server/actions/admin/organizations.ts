@@ -59,7 +59,8 @@ export async function bulkUpsertOrganizationCourseAllocationsAction(
   if (!organizationId) return { ok: false, message: "Missing organization." };
 
   const courseIds = [...new Set(formData.getAll("courseIds").map(String).filter(Boolean))];
-  if (courseIds.length === 0) return { ok: false, message: "Select at least one course." };
+  const removeCourseIds = [...new Set(formData.getAll("removeCourseIds").map(String).filter(Boolean))];
+  if (courseIds.length === 0 && removeCourseIds.length === 0) return { ok: false, message: "No course access changes selected." };
 
   return runAdminAction(async () => {
     await adminCall<void>(`/api/v1/admin/organizations/${encodeURIComponent(organizationId)}/allocations`, {
@@ -71,6 +72,7 @@ export async function bulkUpsertOrganizationCourseAllocationsAction(
           maxEnrollments: Number(formData.get(`maxEnrollments_${courseId}`) ?? 0),
           expiresAt: String(formData.get(`expiresAt_${courseId}`) ?? "").trim(),
         })),
+        removeCourseIds,
       },
     });
 

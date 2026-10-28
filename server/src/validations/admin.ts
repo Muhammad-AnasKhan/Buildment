@@ -52,7 +52,8 @@ const expiresAt = z
 
 export const allocationsBody = z.object({
   isAllowed: z.boolean(),
-  courses: z.array(z.object({ courseId: id, maxEnrollments, expiresAt })).min(1).max(500),
+  courses: z.array(z.object({ courseId: id, maxEnrollments, expiresAt })).max(500),
+  removeCourseIds: z.array(id).max(500).default([]),
 });
 export type AllocationsBody = z.infer<typeof allocationsBody>;
 

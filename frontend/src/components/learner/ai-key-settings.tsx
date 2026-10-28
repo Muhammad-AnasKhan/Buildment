@@ -12,6 +12,7 @@ export function AiKeySettings({ initial }: { initial: AiCredentialStatus }) {
   const [status, setStatus] = useState(initial);
   const [keyDraft, setKeyDraft] = useState("");
   const [modelDraft, setModelDraft] = useState(initial.model ?? "");
+  const [providerDraft, setProviderDraft] = useState<"OPENROUTER" | "GEMINI">(initial.provider);
   const [replacing, setReplacing] = useState(false);
   const [busy, setBusy] = useState<AiKeyBusy>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -32,18 +33,19 @@ export function AiKeySettings({ initial }: { initial: AiCredentialStatus }) {
 
   const save = () =>
     run("saving", async () => {
-      const next = await apiFetch<AiCredentialStatus>(PATH, { method: "PUT", json: { apiKey: keyDraft.trim(), model: modelDraft.trim() || null } });
+      const next = await apiFetch<AiCredentialStatus>(PATH, { method: "PUT", json: { provider: providerDraft, apiKey: keyDraft.trim(), model: modelDraft.trim() || null } });
       // The key leaves this component the moment OpenRouter accepts it.
       setKeyDraft("");
       setReplacing(false);
       setStatus(next);
+      setProviderDraft(next.provider);
       return "Key checked and saved.";
     });
 
   const test = () =>
     run("testing", async () => {
       setStatus(await apiFetch<AiCredentialStatus>(`${PATH}/test`, { method: "POST" }));
-      return "OpenRouter accepted your key.";
+      return `${status.provider === "GEMINI" ? "Gemini" : "OpenRouter"} accepted your key.`;
     });
 
   const saveModel = () =>
@@ -71,12 +73,14 @@ export function AiKeySettings({ initial }: { initial: AiCredentialStatus }) {
       status={status}
       keyDraft={keyDraft}
       modelDraft={modelDraft}
+      providerDraft={providerDraft}
       replacing={replacing}
       busy={busy}
       message={message}
       error={error}
       onKeyChange={setKeyDraft}
       onModelChange={setModelDraft}
+      onProviderChange={setProviderDraft}
       onSave={save}
       onTest={test}
       onSaveModel={saveModel}

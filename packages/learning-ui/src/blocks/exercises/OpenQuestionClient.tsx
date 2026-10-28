@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { CheckCircle2, Clock3, KeyRound, Lightbulb, Link2, PenLine, RotateCcw, SendHorizontal, XCircle } from "lucide-react";
+import { BookOpen, CheckCircle2, Clock3, KeyRound, Lightbulb, Link2, PenLine, RotateCcw, SendHorizontal, XCircle } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { cn } from "../../lib/utils";
@@ -26,6 +26,7 @@ export type OpenQuestionInitialState = {
   isCorrect?: boolean | null;
   explanation?: string | null;
   hint?: string | null;
+  guidance?: string | null;
 };
 
 export type OpenQuestionAiStatus = {
@@ -38,6 +39,7 @@ export type OpenQuestionRespondResult = {
   status?: string;
   explanation?: string;
   hint?: string;
+  guidance?: string;
   attempt?: number;
 };
 
@@ -90,6 +92,7 @@ export function OpenQuestionClient({
       isCorrect: initialState.isCorrect,
       explanation: initialState.explanation ?? undefined,
       hint: initialState.hint ?? undefined,
+      guidance: initialState.guidance ?? undefined,
       attempt: initialState.attempt,
       status: initialState.status,
     };
@@ -143,7 +146,7 @@ export function OpenQuestionClient({
       return;
     }
     if (keyBlocked) {
-      setError("Add your OpenRouter key in settings to get instant feedback.");
+      setError("Add your AI provider key in settings to get instant feedback.");
       onFeedback?.("error");
       return;
     }
@@ -201,6 +204,9 @@ export function OpenQuestionClient({
 
   const showEditor = !submitted;
   const wrongLlm = llmMode && llmResult?.isCorrect === false;
+  const attempt = llmResult?.attempt ?? initialState?.attempt ?? 0;
+  const exhausted = llmMode && wrongLlm && attempt >= config.maxAttempts;
+  const attemptsRemaining = Math.max(0, config.maxAttempts - attempt);
 
   return (
     <div
@@ -263,7 +269,7 @@ export function OpenQuestionClient({
                 <div className="flex items-start gap-3 px-4 py-3">
                   <KeyRound className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
                   <div className="min-w-0 flex-1 space-y-2">
-                    <p className="text-sm font-medium text-foreground">Add your OpenRouter key for instant feedback</p>
+                    <p className="text-sm font-medium text-foreground">Add your AI provider key for instant feedback</p>
                     <p className="text-sm text-muted-foreground">
                       This short answer is graded with your own key. Paste it in settings, then come back and submit.
                     </p>
@@ -312,6 +318,24 @@ export function OpenQuestionClient({
                       Hint
                     </p>
                     <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{llmResult.hint}</p>
+                  </div>
+                ) : null}
+                {llmResult.guidance ? (
+                  <div className="border-t border-rose-200/70 px-4 py-3 dark:border-rose-400/20">
+                    <p className="mb-1 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-foreground">
+                      <BookOpen className="size-3.5" aria-hidden />
+                      Guided review
+                    </p>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{llmResult.guidance}</p>
+                    {config.reviewChapterSlugs.length > 0 ? (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {config.reviewChapterSlugs.map((slug) => (
+                          <a key={slug} href={`../${encodeURIComponent(slug)}`} className="inline-flex h-8 items-center rounded-md border bg-background px-3 text-xs font-medium hover:bg-muted">
+                            Review {slug.replaceAll("-", " ")}
+                          </a>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
               </div>
@@ -436,7 +460,9 @@ export function OpenQuestionClient({
                     ) : (
                       <span>
                         {llmMode
-                          ? "Instant feedback uses your OpenRouter key. Paste is blocked during quiz sittings."
+                          ? exhausted
+                            ? "Three graded attempts used. Use the guided review to rewrite in your own words, then ask your mentor if you need another graded attempt."
+                            : `Instant AI feedback · ${attemptsRemaining} graded attempt${attemptsRemaining === 1 ? "" : "s"} remaining.`
                           : "No word minimum — aim for a clear, complete answer."}
                       </span>
                     )}
@@ -449,13 +475,13 @@ export function OpenQuestionClient({
                       className="gap-1.5"
                       onClick={submit}
                       loading={submitting}
-                      disabled={!canSubmit}
+                      disabled={!canSubmit || exhausted}
                     >
                       {submitting ? (
                         llmMode ? "Checking…" : "Submitting…"
                       ) : (
                         <>
-                          {needsRevision || wrongLlm ? "Try again" : llmMode ? "Check answer" : "Submit answer"}
+                          {exhausted ? "Attempt limit reached" : needsRevision || wrongLlm ? "Try again" : llmMode ? "Check answer" : "Submit answer"}
                           <SendHorizontal className="size-3.5" aria-hidden />
                         </>
                       )}

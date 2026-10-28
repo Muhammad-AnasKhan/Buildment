@@ -134,6 +134,7 @@ async function blockStateFor(block: Block, user: SessionUser | undefined): Promi
                     isCorrect: submitted.isCorrect,
                     explanation: llmFeedback?.why ?? null,
                     hint: llmFeedback?.hint ?? null,
+                    guidance: llmFeedback?.guidance ?? null,
                   }
                 : {}),
             }

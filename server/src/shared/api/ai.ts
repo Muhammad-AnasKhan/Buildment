@@ -8,7 +8,7 @@ export type AiCredentialStatus = {
   /** False when the server has no AI_KEY_ENCRYPTION_KEY, so keys cannot be stored. */
   configured: boolean;
   hasKey: boolean;
-  provider: "OPENROUTER";
+  provider: "OPENROUTER" | "GEMINI";
   lastFour: string | null;
   /** The learner's chosen model, or null for the server default. */
   model: string | null;
@@ -17,7 +17,7 @@ export type AiCredentialStatus = {
   lastUsedAt: string | null;
 };
 
-export type AiCredentialSaveInput = { apiKey: string; model?: string | null };
+export type AiCredentialSaveInput = { provider: "OPENROUTER" | "GEMINI"; apiKey: string; model?: string | null };
 export type AiCredentialModelInput = { model: string | null };
 
 export const AI_MODEL_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:/-]{1,119}$/;

@@ -70,6 +70,7 @@ export type ImportPlan = {
   modules: { key?: string; order?: number; title: string; lessons: {
     key?: string; lessonNum: number; slugPart: string; title: string; summary: string | null;
     source: string; estimatedMinutes: number | null; readerMode: "DEFAULT" | "QUIZ";
+    quizPassingScore?: number;
     isMilestone: boolean;
     blocks: { id: string; type: Prisma.BlockCreateManyInput["type"]; config: Prisma.InputJsonValue; required: boolean }[];
   }[] }[];
@@ -162,6 +163,7 @@ async function runCourseImport(user: SessionUser, buffer: Buffer, source: Course
             slug: `${index + 1}-${lesson.lessonNum}-${lesson.slugPart}`,
             title: lesson.title, summary: lesson.summary, source: lesson.source, compiled: lesson.source,
             order: lesson.lessonNum, estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode,
+            quizPassingScore: lesson.quizPassingScore ?? 70,
             isMilestone: lesson.isMilestone,
           });
           blocks.push(...lesson.blocks.map((block, i) => ({

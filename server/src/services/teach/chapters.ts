@@ -51,7 +51,7 @@ async function requireChapter(user: SessionUser, chapterId: string) {
 }
 
 async function releasedChapterDraft(chapter: { id: string; courseId: string; title: string; summary: string | null;
-  estimatedMinutes: number | null; readerMode: "DEFAULT" | "QUIZ"; isMilestone: boolean; source: string; compiled: string | null },
+  estimatedMinutes: number | null; readerMode: "DEFAULT" | "QUIZ"; quizPassingScore: number; isMilestone: boolean; source: string; compiled: string | null },
   status: string) {
   if (status !== "PUBLISHED" && status !== "ARCHIVED") return null;
   const release = await prisma.$transaction(tx => ensureBaselineRelease(tx, chapter.courseId));
@@ -61,7 +61,7 @@ async function releasedChapterDraft(chapter: { id: string; courseId: string; tit
   return prisma.courseChapterDraft.upsert({ where: { chapterId: chapter.id },
     create: { chapterId: chapter.id, courseId: chapter.courseId, baseReleaseId: release.id,
       title: chapter.title, summary: chapter.summary, estimatedMinutes: chapter.estimatedMinutes,
-      readerMode: chapter.readerMode, isMilestone: chapter.isMilestone, source: chapter.compiled ?? chapter.source },
+      readerMode: chapter.readerMode, quizPassingScore: chapter.quizPassingScore, isMilestone: chapter.isMilestone, source: chapter.compiled ?? chapter.source },
     update: {} });
 }
 
@@ -144,6 +144,7 @@ export async function loadChapterEditor(user: SessionUser, chapterId: string): P
     summary: draft?.summary ?? chapter.summary,
     estimatedMinutes: draft?.estimatedMinutes ?? chapter.estimatedMinutes,
     readerMode: draft?.readerMode ?? chapter.readerMode,
+    quizPassingScore: draft?.quizPassingScore ?? chapter.quizPassingScore,
     isMilestone: draft?.isMilestone ?? chapter.isMilestone,
     publishedAt: chapter.publishedAt?.toISOString() ?? null,
     hasUnpublishedChanges: Boolean(draft) || (chapter.publishedAt !== null && chapter.compiled !== chapter.source),
@@ -159,7 +160,7 @@ export async function updateChapterSettings(user: SessionUser, chapterId: string
   const draft = await releasedChapterDraft(chapter, course.status);
   if (draft) await prisma.courseChapterDraft.update({ where: { chapterId: chapter.id }, data: {
     title: input.title, summary: input.summary || null, estimatedMinutes: input.estimatedMinutes,
-    readerMode: input.readerMode, isMilestone: input.isMilestone,
+    readerMode: input.readerMode, quizPassingScore: input.quizPassingScore, isMilestone: input.isMilestone,
   } });
   else await prisma.chapter.update({
     where: { id: chapter.id },
@@ -168,6 +169,7 @@ export async function updateChapterSettings(user: SessionUser, chapterId: string
       summary: input.summary || null,
       estimatedMinutes: input.estimatedMinutes,
       readerMode: input.readerMode,
+      quizPassingScore: input.quizPassingScore,
       isMilestone: input.isMilestone,
     },
   });
@@ -219,7 +221,7 @@ export async function publishChapter(user: SessionUser, chapterId: string): Prom
       await publishDashboardChapterRelease(tx, chapter.courseId, chapter.id, draft.baseReleaseId, {
         key: chapter.contentKey ?? undefined, lessonNum: chapter.order, slugPart: chapter.slug,
         title: draft.title, summary: draft.summary, estimatedMinutes: draft.estimatedMinutes,
-        readerMode: draft.readerMode, isMilestone: draft.isMilestone, source: draft.source, blocks,
+        readerMode: draft.readerMode, quizPassingScore: draft.quizPassingScore, isMilestone: draft.isMilestone, source: draft.source, blocks,
       });
       await tx.courseChapterDraft.delete({ where: { chapterId } });
     }, { isolationLevel: "Serializable", timeout: 60000 });

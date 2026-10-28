@@ -135,7 +135,7 @@ export async function startAiInterview(
 ): Promise<AiInterviewSessionView> {
   const { config, learner } = await loadInterviewBlock(input.blockId, input.user);
   if (!serverKeyReady(deps)) throw new AiError("AI_NOT_CONFIGURED");
-  const credential = await prisma.aiCredential.findUnique({ where: { userId: learner.id }, select: { model: true } });
+  const credential = await prisma.aiCredential.findUnique({ where: { userId: learner.id }, select: { provider: true, model: true } });
   if (!credential) throw new AiError("AI_KEY_REQUIRED");
 
   // Resume instead of starting a second session after a reload.
@@ -173,7 +173,7 @@ export async function startAiInterview(
       context: values.context,
       contextWork: values.contextWork,
       transcript: [opening] as unknown as Prisma.InputJsonValue,
-      model: credential.model ?? defaultInterviewModel(),
+      model: credential.model ?? defaultInterviewModel(credential.provider),
     },
   });
   return toSessionView(created, config);
@@ -207,12 +207,13 @@ export async function answerAiInterview(
 
   // The last allowed answer needs no further question, so it costs nothing.
   if (turnCount < config.maxTurns) {
-    const { apiKey, model: chosen } = await loadAiKeyForUse(learner.id, deps);
+    const { provider, apiKey, model: chosen } = await loadAiKeyForUse(learner.id, deps);
     model = chosen;
     const plan = planNextQuestion(config, withAnswer);
     const messages = buildInterviewMessages(config, plan, withAnswer, interviewContext(config.context, session));
     const reply = await createChatCompletion({
       apiKey,
+      provider,
       model: chosen,
       messages,
       maxTokens: QUESTION_MAX_TOKENS,
@@ -276,6 +277,7 @@ function normaliseFeedback(raw: unknown, config: AiInterviewConfig, transcript: 
 }
 
 async function requestFeedback(
+  provider: "OPENROUTER" | "GEMINI",
   apiKey: string,
   model: string,
   config: AiInterviewConfig,
@@ -284,7 +286,7 @@ async function requestFeedback(
   fetchImpl: typeof fetch | undefined
 ): Promise<AiInterviewFeedback> {
   const messages = buildFeedbackMessages(config, transcript, context);
-  const base = { apiKey, model, messages, maxTokens: FEEDBACK_MAX_TOKENS, temperature: 0.3, timeoutMs: FEEDBACK_TIMEOUT_MS, fetchImpl };
+  const base = { provider, apiKey, model, messages, maxTokens: FEEDBACK_MAX_TOKENS, temperature: 0.3, timeoutMs: FEEDBACK_TIMEOUT_MS, fetchImpl };
   let reply: string;
   try {
     reply = await createChatCompletion({
@@ -317,8 +319,8 @@ export async function finishAiInterview(
   }
 
   const transcript = readTranscript(session.transcript);
-  const { apiKey, model } = await loadAiKeyForUse(learner.id, deps);
-  const feedback = await requestFeedback(apiKey, model, config, transcript, interviewContext(config.context, session), deps.fetchImpl);
+  const { provider, apiKey, model } = await loadAiKeyForUse(learner.id, deps);
+  const feedback = await requestFeedback(provider, apiKey, model, config, transcript, interviewContext(config.context, session), deps.fetchImpl);
 
   const finishedAt = new Date();
   const payload: AiInterviewPayload = { sessionId: session.id, turns: session.turnCount, transcript, feedback };
