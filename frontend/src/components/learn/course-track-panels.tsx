@@ -23,7 +23,7 @@ const CHANNEL_ICONS: Array<[RegExp, LucideIcon]> = [
   [/messag|sms|phone/i, Smartphone],
 ];
 
-function channelIcon(label: string): LucideIcon {
+export function channelIcon(label: string): LucideIcon {
   return CHANNEL_ICONS.find(([pattern]) => pattern.test(label))?.[1] ?? MessageSquare;
 }
 
