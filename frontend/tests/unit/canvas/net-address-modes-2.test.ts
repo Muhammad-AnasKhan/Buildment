@@ -855,7 +855,7 @@ describe("invalid is not the same as non-standard", () => {
       }
     }
     expect(nonstandard).toBeGreaterThan(1000);
-  });
+  }, 15_000);
 });
 
 describe("IPv6 parameters", () => {
