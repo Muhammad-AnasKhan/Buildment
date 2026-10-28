@@ -45,7 +45,8 @@ export function MenteeWorkspaceShell({
     { label: "Home", href: "/dashboard", icon: Home, active: pathname === "/dashboard" },
     {
       label: "Courses",
-      href: "/my-courses",
+      // Opens on every course; "My courses" is the tab next to it.
+      href: "/catalog",
       icon: BookOpenText,
       active: pathname === "/my-courses" || pathname.startsWith("/catalog"),
       count: assignedCourses,
