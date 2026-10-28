@@ -43,8 +43,8 @@ const ibmPlexSans = IBM_Plex_Sans({
 
 export const metadata: Metadata = {
   title: {
-    default: "buildment — learn by building",
-    template: "%s · buildment",
+    default: "Edorax",
+    template: "%s · Edorax",
   },
   description:
     "Project-based courses with interactive checkpoints, real mentor feedback, and progress you can trust.",
