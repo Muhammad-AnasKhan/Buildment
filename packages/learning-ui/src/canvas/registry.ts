@@ -4,6 +4,7 @@ import type { FactorSpec } from "./renderers/factor/types";
 import type { SequenceSpec } from "./renderers/sequence/types";
 import type { SliderSpec } from "./renderers/slider/types";
 import type { StateMachineSpec } from "./renderers/state-machine/types";
+import type { DiagramKind } from "../shared/diagram/spec";
 import { freshmarketMarkPacked } from "./freshmarket-mark-packed/data";
 import { freshmarketOrderStatus } from "./freshmarket-order-status/data";
 import { freshmarketCartSplit } from "./freshmarket-cart-split/data";
@@ -1156,7 +1157,10 @@ export type CustomCanvasSpec = {
   component: ComponentType<{ title: string; purpose: string; limits: string }>;
 };
 
-export type CanvasSpec = SequenceSpec | StateMachineSpec | FactorSpec | SliderSpec | CustomCanvasSpec | SceneSpec;
+/** A ```flow or ```sequence spec under a slug, for a diagram several chapters share. Drawn by Diagram. */
+export type DiagramCanvasSpec = { kind: "diagram"; diagram: DiagramKind; source: string };
+
+export type CanvasSpec = SequenceSpec | StateMachineSpec | FactorSpec | SliderSpec | CustomCanvasSpec | SceneSpec | DiagramCanvasSpec;
 
 export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "weighted-matrix-two-offers": weightedMatrixTwoOffers,

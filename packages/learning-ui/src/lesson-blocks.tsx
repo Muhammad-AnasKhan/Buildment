@@ -9,6 +9,7 @@ import { Steps } from "./blocks/steps/Steps";
 import { VisualDiagramClient } from "./blocks/visual-diagram/VisualDiagramClient";
 import { VisualWalkthroughClient } from "./blocks/visual-walkthrough/VisualWalkthroughClient";
 import { InteractiveCanvas } from "./canvas/InteractiveCanvas";
+import { Diagram } from "./diagram/Diagram";
 import { Lab } from "./labs/Lab";
 import { getLabSpec } from "./labs/registry";
 import { ApiRequest, ApiRequestPanel } from "./components/learn/api-request-panel";
@@ -44,6 +45,7 @@ export const sharedLessonBlocks: Record<string, ComponentType<any>> = {
   Steps,
   VisualDiagram: VisualDiagramClient,
   VisualWalkthrough: VisualWalkthroughClient,
+  Diagram,
   InteractiveCanvas,
   Lab: LabBlock,
   ApiRequest,
