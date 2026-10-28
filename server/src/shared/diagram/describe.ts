@@ -29,7 +29,7 @@ export function describeDiagram(spec: DiagramSpec): string {
 /** One caption per step. A flow's steps are the packet's stops; a sequence's are its messages. */
 export function stepCaptions(spec: DiagramSpec): string[] {
   const name = new Map(spec.nodes.map((node) => [node.id, node.label]));
-  if (spec.kind === "sequence") return spec.edges.map((edge) => arrowText(name, edge));
+  if (spec.kind === "sequence") return spec.edges.map((edge) => arrowText(name, edge, false));
   if (!spec.packet.length) return [];
   return [
     `The packet starts at ${name.get(spec.packet[0])}.`,
@@ -42,8 +42,9 @@ export function stepCaptions(spec: DiagramSpec): string[] {
   ];
 }
 
-function arrowText(name: Map<string, string>, edge: { from: string; to: string; label?: string; dashed: boolean }): string {
-  const base = `${name.get(edge.from)} to ${name.get(edge.to)}${edge.dashed ? " (dashed)" : ""}`;
+/** `markDashed` names the dashed line for a screen reader; captions under the picture leave it out. */
+function arrowText(name: Map<string, string>, edge: { from: string; to: string; label?: string; dashed: boolean }, markDashed = true): string {
+  const base = `${name.get(edge.from)} to ${name.get(edge.to)}${markDashed && edge.dashed ? " (dashed arrow)" : ""}`;
   return edge.label ? `${base}: ${edge.label}` : base;
 }
 

@@ -59,6 +59,23 @@ describe("layout", () => {
     expect(scene.lifelines).toHaveLength(3);
   });
 
+  it.each([false, true])("keeps each label of a request and reply pair by its own arrow (compact: %s)", (compact) => {
+    const s = spec("flow", "title: Pay\ndirection: down\nbox Shop app\nexternal Payment provider\nstore Orders\nShop app -> Payment provider: charge 1,200\nPayment provider --> Shop app: approved\nShop app -> Orders: save the order");
+    const scene = layoutDiagram(s, compact);
+    const centre = (i: number) => {
+      const label = scene.edges[i].label!;
+      const width = textWidth(label.lines[0], label.size);
+      const left = label.anchor === "middle" ? label.x - width / 2 : label.anchor === "start" ? label.x : label.x - width;
+      return { x: left + width / 2, y: label.y };
+    };
+    const distance = (p: { x: number; y: number }, i: number) => {
+      const mid = { x: (scene.edges[i].path.start.x + scene.edges[i].path.end.x) / 2, y: (scene.edges[i].path.start.y + scene.edges[i].path.end.y) / 2 };
+      return Math.hypot(p.x - mid.x, p.y - mid.y);
+    };
+    expect(distance(centre(0), 0)).toBeLessThan(distance(centre(0), 1));
+    expect(distance(centre(1), 1)).toBeLessThan(distance(centre(1), 0));
+  });
+
   it("is deterministic", () => {
     expect(layoutDiagram(spec("flow", FLOW), false)).toEqual(layoutDiagram(spec("flow", FLOW), false));
   });
@@ -111,18 +128,18 @@ describe("drawing", () => {
 describe("text alternative", () => {
   it("names every part, arrow and the packet path", () => {
     expect(describeDiagram(spec("flow", FLOW))).toBe(
-      "Find a site. A flow diagram with 3 parts: You (a person), DNS and Server (the end point). Arrows: You to DNS: Where is it?; DNS to You (dashed): Here; You to Server. A packet travels You, then DNS, then You, then Server.",
+      "Find a site. A flow diagram with 3 parts: You (a person), DNS and Server (the end point). Arrows: You to DNS: Where is it?; DNS to You (dashed arrow): Here; You to Server. A packet travels You, then DNS, then You, then Server.",
     );
   });
 
   it("numbers the messages of a sequence", () => {
     expect(describeDiagram(spec("sequence", SEQUENCE))).toBe(
-      "Look up a name. A sequence of 3 messages between You (a person), DNS resolver and Web server (the end point). 1. You to DNS resolver: Which address?. 2. DNS resolver to You (dashed): 93.184.215.14. 3. You to Web server: Send the page.",
+      "Look up a name. A sequence of 3 messages between You (a person), DNS resolver and Web server (the end point). 1. You to DNS resolver: Which address?. 2. DNS resolver to You (dashed arrow): 93.184.215.14. 3. You to Web server: Send the page.",
     );
   });
 
   it("writes one caption per step", () => {
     expect(stepCaptions(spec("flow", FLOW))).toEqual(["The packet starts at You.", "You to DNS: Where is it?", "DNS to You: Here", "You to Server."]);
-    expect(stepCaptions(spec("sequence", SEQUENCE))).toHaveLength(3);
+    expect(stepCaptions(spec("sequence", SEQUENCE))[1]).toBe("DNS resolver to You: 93.184.215.14");
   });
 });

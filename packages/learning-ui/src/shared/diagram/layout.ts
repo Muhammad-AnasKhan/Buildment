@@ -166,7 +166,7 @@ const contains = (a: Rect, p: Point) => p.x > a.x && p.x < a.x + a.w && p.y > a.
  * Tries the middle of the arrow on its usual side first, then nearby spots;
  * if every spot clashes, it keeps the one with the fewest clashes.
  */
-function placeLabels(nodes: SceneNode[], edges: { path: EdgePath; lines: string[]; side: Point }[]): (SceneLabel | undefined)[] {
+function placeLabels(nodes: SceneNode[], edges: { path: EdgePath; lines: string[]; side: Point; keepSide: boolean }[]): (SceneLabel | undefined)[] {
   const solid: Rect[] = nodes.flatMap((node) => [inflate(node.shape, 4), labelBox(node.label)]);
   const samples = edges.map((edge) => Array.from({ length: 33 }, (_, i) => pathPoint(edge.path, i / 32)));
   const placed: Rect[] = [];
@@ -174,7 +174,8 @@ function placeLabels(nodes: SceneNode[], edges: { path: EdgePath; lines: string[
     if (!edge.lines.length) return undefined;
     let best: { label: SceneLabel; clashes: number } | undefined;
     for (const t of [0.5, 0.4, 0.6, 0.3, 0.7]) {
-      for (const sign of [1, -1]) {
+      // A label on one of a pair of arrows stays on its own outer side, or it reads as the other one's.
+      for (const sign of edge.keepSide ? [1] : [1, -1]) {
         for (const gap of [0, 10, 22]) {
           const label = edgeLabel(edge.lines, pathPoint(edge.path, t), mul(edge.side, sign), gap);
           const box = labelBox(label);
@@ -359,7 +360,7 @@ export function layoutFlow(spec: DiagramSpec, compact: boolean): Scene {
         if (!hitsAny(candidate, others)) { path = candidate; labelSide = mul(side, sign); break; }
       }
     }
-    return { path, lines: edgeLines[index], side: labelSide };
+    return { path, lines: edgeLines[index], side: labelSide, keepSide: paired };
   });
   const labels = placeLabels(nodes, routed);
   const edges: SceneEdge[] = spec.edges.map((edge, index) => ({ index, dashed: edge.dashed, path: routed[index].path, label: labels[index] }));
