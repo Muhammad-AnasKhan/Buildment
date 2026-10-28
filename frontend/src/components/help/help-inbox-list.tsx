@@ -21,9 +21,9 @@ export function InboxEmptyState({
 }) {
   return (
     <div className="mt-12 flex flex-col items-center gap-2 text-center">
-      <Inbox className="size-8 text-neutral-300" aria-hidden />
+      <Inbox className="size-8 text-foreground" aria-hidden />
       <p className="text-sm font-medium text-foreground">{title}</p>
-      <p className="max-w-md text-sm text-neutral-400">{description}</p>
+      <p className="max-w-md text-sm text-muted-foreground">{description}</p>
     </div>
   );
 }
@@ -54,13 +54,13 @@ export function HelpInboxList({ rows }: { rows: HelpInboxRow[] }) {
                   <span
                     key={badge.text}
                     className={cn(
-                      "text-[10px] font-semibold uppercase tracking-wide",
+                      "text-xs font-semibold uppercase tracking-wide",
                       badge.tone === "waiting" &&
-                        "rounded-md bg-amber-500/10 px-2 py-0.5 text-amber-800 dark:text-amber-300",
-                      badge.tone === "muted" && "text-neutral-400",
+                        "rounded-md bg-brand-yellow/15 px-2 py-0.5 text-foreground",
+                      badge.tone === "muted" && "text-muted-foreground",
                       badge.tone === "status" &&
                         "rounded-md bg-muted px-2 py-0.5 text-foreground",
-                      badge.tone === "plain" && "text-xs font-normal normal-case text-neutral-400"
+                      badge.tone === "plain" && "text-xs font-normal normal-case text-muted-foreground"
                     )}
                   >
                     {badge.text}
@@ -74,7 +74,7 @@ export function HelpInboxList({ rows }: { rows: HelpInboxRow[] }) {
                 </p>
               )}
             </div>
-            <ChevronRight className="size-4 shrink-0 text-neutral-300" aria-hidden />
+            <ChevronRight className="size-4 shrink-0 text-foreground" aria-hidden />
           </Link>
         </li>
       ))}

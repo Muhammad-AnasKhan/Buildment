@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useCallback, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { ChapterSidebar, SidebarToggle } from "@/components/learn/chapter-sidebar";
 import { ChapterToc, TocToggle } from "@/components/learn/chapter-toc";
 import { ChapterNav } from "@/components/learn/chapter-nav";
@@ -31,7 +32,7 @@ import { PredictRevealProvider } from "@buildment/learning-ui/components/learn/p
 
 function Kbd({ children }: { children: React.ReactNode }) {
   return (
-    <kbd className="mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-muted px-1 font-mono text-[11px] text-foreground">
+    <kbd className="mx-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded border border-border bg-muted px-1 font-mono text-xs text-foreground">
       {children}
     </kbd>
   );
@@ -267,35 +268,26 @@ export function ChapterReaderShell({
 
       <ReaderShellFade>
         {!focusMode && (
-          <header className="shrink-0 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-            <div className="flex items-center gap-2 px-3 py-2 sm:px-4">
-              <SidebarToggle
-                collapsed={leftCollapsed}
-                onClick={() => setLeftCollapsed(!leftCollapsed)}
-              />
-              <nav
-                aria-label="Breadcrumb"
-                className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-xs text-muted-foreground"
+          <header className="shrink-0 border-b border-border bg-card">
+            <div className="flex min-h-14 items-center gap-1 px-2 py-1 sm:gap-2 sm:px-4">
+              <Link
+                href={`/courses/${courseSlug}`}
+                aria-label={`Back to ${courseTitle}`}
+                className="grid size-11 place-items-center rounded-md text-foreground outline-none transition-colors hover:bg-muted focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-brand-yellow"
               >
-                <Link href="/dashboard" className="hidden shrink-0 transition-colors hover:text-foreground lg:inline">
-                  Dashboard
-                </Link>
-                <span aria-hidden className="hidden shrink-0 text-border lg:inline">/</span>
-                <Link
-                  href={`/courses/${courseSlug}`}
-                  className="truncate transition-colors hover:text-foreground"
-                >
-                  {courseTitle}
-                </Link>
-                <span aria-hidden className="hidden shrink-0 text-border sm:inline">/</span>
-                <span className="hidden truncate text-foreground sm:inline">{chapterTitle}</span>
-              </nav>
+                <ArrowLeft className="size-5" aria-hidden />
+              </Link>
+              <div className="min-w-0 flex-1 px-1">
+                <p className="truncate text-[13px] text-muted-foreground">{lessonLabel}</p>
+                <p className="truncate text-[15px] font-bold leading-tight text-foreground">{chapterTitle}</p>
+              </div>
               <CheckpointHeaderLabel
                 completed={checkpointsCompleted}
                 total={checkpointsTotal}
                 chapterComplete={chapterComplete}
               />
               <StudyClock
+                className="hidden sm:flex"
                 status={study.status}
                 pauseReason={study.pauseReason}
                 busy={study.busy}
@@ -307,7 +299,11 @@ export function ChapterReaderShell({
                 onResume={study.resume}
                 onStop={study.stop}
               />
-              <div className="flex shrink-0 items-center gap-1.5">
+              <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+                <SidebarToggle
+                  collapsed={leftCollapsed}
+                  onClick={() => setLeftCollapsed(!leftCollapsed)}
+                />
                 <AskHelpDialog
                   courseId={courseId}
                   courseSlug={courseSlug}
@@ -320,10 +316,12 @@ export function ChapterReaderShell({
                   <ThemeToggle />
                   <FocusModeToggle active={focusMode} onClick={toggleFocusMode} />
                 </div>
-                <TocToggle
+                <div className="hidden md:block">
+                  <TocToggle
                   collapsed={rightCollapsed}
                   onClick={() => setRightCollapsed(!rightCollapsed)}
                 />
+                </div>
                 <UserMenuDropdown user={user} compact signOutAction={signOutAction} />
               </div>
             </div>
@@ -377,20 +375,20 @@ export function ChapterReaderShell({
                     {chapterTitle}
                   </h1>
                   {projectGoal && readerMode !== "QUIZ" ? (
-                    <p className="mt-4 border-l-2 border-border pl-3 text-sm leading-6 text-muted-foreground">
+                    <p className="mt-4 border border-border bg-card px-4 py-3 text-base leading-6 text-muted-foreground">
                       <span className="font-medium text-foreground">The project: </span>
                       {projectGoal.trim().replace(/\.+$/, "")}.
                     </p>
                   ) : null}
                   {variant && readerMode !== "QUIZ" ? (
-                    <p className="mt-2 border-l-2 border-primary pl-3 text-sm leading-6 text-muted-foreground">
+                    <p className="mt-2 bg-secondary px-4 py-3 text-base leading-6 text-muted-foreground">
                       <span className="font-medium text-foreground/80">You are building: </span>
                       {variant.productName} ({variant.label.toLowerCase()} variant)
                     </p>
                   ) : null}
                   {isGateChapter && readerMode !== "QUIZ" ? (
-                    <p className="mt-3 inline-flex items-center gap-2 rounded-lg border border-violet-500/30 bg-violet-500/10 px-3 py-2 text-sm text-foreground">
-                      <span className="text-[11px] font-semibold uppercase tracking-widest text-violet-600 dark:text-violet-300">
+                    <p className="mt-3 inline-flex items-center gap-2 rounded-lg border border-border bg-secondary px-3 py-2 text-sm text-foreground">
+                      <span className="text-xs font-semibold uppercase tracking-widest text-primary">
                         Module gate
                       </span>
                       <span className="text-muted-foreground">
@@ -429,7 +427,7 @@ export function ChapterReaderShell({
                         "prose-code:rounded prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:text-[0.85em] prose-code:font-normal prose-code:before:content-none prose-code:after:content-none",
                         "prose-pre:max-w-none prose-pre:p-0 prose-pre:bg-transparent prose-pre:border-0",
                         "prose-figure:my-6",
-                        "prose-blockquote:rounded-r-lg prose-blockquote:border-l-4 prose-blockquote:border-border prose-blockquote:bg-muted/50 prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:not-italic",
+                        "prose-blockquote:rounded-lg prose-blockquote:border-0 prose-blockquote:bg-secondary prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:not-italic",
                         "prose-hr:border-border",
                         "prose-img:rounded-xl prose-img:border prose-img:border-border",
                         "prose-figure:my-8 prose-figcaption:text-center prose-figcaption:text-sm prose-figcaption:text-muted-foreground",

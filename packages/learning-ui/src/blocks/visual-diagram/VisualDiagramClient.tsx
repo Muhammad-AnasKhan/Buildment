@@ -22,10 +22,10 @@ export function VisualDiagramClient({ title, imageUrl, alt, caption, kind, legen
 
   return (
     <>
-      <figure className="not-prose my-8 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+      <figure className="not-prose my-8 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground ">
         <figcaption className="flex items-center justify-between gap-4 border-b border-border bg-muted/35 px-5 py-4 sm:px-6">
           <div>
-            <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {kind === "whiteboard" ? "Whiteboard" : kind === "system" ? "System diagram" : "Concept diagram"}
             </p>
             <h3 className="mt-1 text-lg font-semibold tracking-tight text-foreground">{title}</h3>
@@ -59,7 +59,7 @@ export function VisualDiagramClient({ title, imageUrl, alt, caption, kind, legen
           ref={dialogRef}
           aria-label={title}
           onClose={() => setOpen(false)}
-          className="fixed inset-0 m-auto h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-none rounded-xl border border-border bg-card p-0 text-card-foreground shadow-2xl backdrop:bg-black/75 open:flex open:flex-col"
+          className="fixed inset-0 m-auto h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-none rounded-xl border border-border bg-card p-0 text-card-foreground backdrop:bg-black/75 open:flex open:flex-col"
         >
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
             <h2 className="text-base font-semibold">{title}</h2>

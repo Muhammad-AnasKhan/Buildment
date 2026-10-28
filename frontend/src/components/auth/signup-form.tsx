@@ -44,10 +44,10 @@ export function SignupForm() {
       action={formAction}
       onSubmit={handleSubmit}
       noValidate
-      className="space-y-3.5"
+      className="space-y-4"
     >
       <div className="space-y-1.5">
-        <Label htmlFor="name" className="text-sm font-semibold">
+        <Label htmlFor="name" className="text-[15px]">
           Name
         </Label>
         <Input
@@ -56,19 +56,18 @@ export function SignupForm() {
           required
           maxLength={120}
           autoComplete="name"
-          className="h-12 rounded-xl bg-background px-3.5 dark:bg-background"
           onChange={() => clearField("name")}
           aria-invalid={Boolean(nameError)}
           aria-describedby={nameError ? "signup-name-error" : undefined}
         />
         {nameError ? (
-          <p id="signup-name-error" className="text-[13px] text-destructive">
+          <p id="signup-name-error" className="text-sm text-destructive">
             {nameError}
           </p>
         ) : null}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="email" className="text-sm font-semibold">
+        <Label htmlFor="email" className="text-[15px]">
           Email
         </Label>
         <Input
@@ -77,19 +76,18 @@ export function SignupForm() {
           type="email"
           required
           autoComplete="email"
-          className="h-12 rounded-xl bg-background px-3.5 dark:bg-background"
           onChange={() => clearField("email")}
           aria-invalid={Boolean(emailError)}
           aria-describedby={emailError ? "signup-email-error" : undefined}
         />
         {emailError ? (
-          <p id="signup-email-error" className="text-[13px] text-destructive">
+          <p id="signup-email-error" className="text-sm text-destructive">
             {emailError}
           </p>
         ) : null}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="password" className="text-sm font-semibold">
+        <Label htmlFor="password" className="text-[15px]">
           Password
         </Label>
         <PasswordInput
@@ -99,7 +97,7 @@ export function SignupForm() {
           minLength={8}
           maxLength={128}
           autoComplete="new-password"
-          className="h-12 rounded-xl bg-background px-3.5 dark:bg-background pr-11"
+          className="pr-12"
           onChange={() => clearField("password")}
           aria-invalid={Boolean(passwordError)}
           aria-describedby={passwordError ? "signup-password-error" : undefined}
@@ -107,7 +105,7 @@ export function SignupForm() {
         {passwordError ? (
           <p
             id="signup-password-error"
-            className="text-[13px] text-destructive"
+            className="text-sm text-destructive"
           >
             {passwordError}
           </p>
@@ -116,14 +114,14 @@ export function SignupForm() {
       {formError ? (
         <p
           role="alert"
-          className="rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-sm text-destructive"
+          className="border-2 border-destructive bg-card px-3.5 py-3 text-[15px] text-destructive"
         >
           {formError}
         </p>
       ) : null}
       <Button
         type="submit"
-        className="h-[50px] w-full cursor-pointer rounded-[13px] bg-foreground text-[15px] font-semibold text-background transition-[transform,box-shadow] hover:-translate-y-0.5 hover:bg-foreground hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.35)] disabled:translate-y-0 disabled:opacity-70 motion-reduce:transform-none"
+        className="w-full"
         disabled={pending}
       >
         {pending ? (

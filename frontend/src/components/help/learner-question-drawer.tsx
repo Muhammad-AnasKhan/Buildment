@@ -103,7 +103,7 @@ export function LearnerQuestionDrawer({
       aria-labelledby="learner-question-title"
       className="fixed inset-0 z-50 m-0 h-dvh max-h-none w-full max-w-none border-0 bg-transparent p-0 text-foreground backdrop:bg-black/60 open:flex"
     >
-      <div className="ml-auto flex h-full w-full max-w-[44rem] flex-col border-l bg-background shadow-2xl">
+      <div className="ml-auto flex h-full w-full max-w-[44rem] flex-col border-l bg-background ">
         <header className="shrink-0 border-b px-4 py-4 sm:px-6">
           <div className="flex items-center justify-between gap-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">

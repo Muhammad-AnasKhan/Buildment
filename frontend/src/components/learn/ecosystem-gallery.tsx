@@ -42,7 +42,7 @@ const blockTypes = [
 
 function GalleryGroup({ title, description, children }: { title: string; description: string; children: ReactNode }) {
   return (
-    <details className="not-prose my-5 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+    <details className="not-prose my-5 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground ">
       <summary className="cursor-pointer bg-muted/50 px-5 py-4 text-base font-semibold text-foreground marker:text-muted-foreground">
         {title}
         <span className="mt-1 block text-sm font-normal text-muted-foreground">{description}</span>

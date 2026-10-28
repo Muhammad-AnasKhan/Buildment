@@ -80,7 +80,9 @@ export function ChapterAudio({ src, minutes, bytes, title, className }: { src: s
   const label = status === "playing" ? "Pause" : status === "loading" ? "Loading" : "Play";
 
   return (
-    <section aria-label="Listen to this chapter" className={cn("rounded-lg border border-border bg-card px-4 py-3 text-card-foreground", pinned && "sticky z-30 shadow-md", className)}
+    <section
+      aria-label="Listen to this chapter"
+      className={cn("rounded-lg border border-border bg-card p-4 text-card-foreground sm:p-5", pinned && "sticky z-30", className)}
       style={pinned ? { top: "calc(var(--reader-pt, 0px) * -1)" } : undefined}
     >
       <audio
@@ -113,34 +115,49 @@ export function ChapterAudio({ src, minutes, bytes, title, className }: { src: s
           }
         }}
       />
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <button
           type="button"
           onClick={toggle}
           aria-label={`${label}: ${title}`}
-          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="flex size-14 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground outline-none transition-colors hover:bg-primary/90 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
         >
-          {status === "playing" ? <Pause className="size-4" aria-hidden /> : <Play className="size-4 translate-x-px" aria-hidden />}
+          {status === "playing" ? <Pause className="size-6" aria-hidden /> : <Play className="size-6 translate-x-px" aria-hidden />}
         </button>
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium text-foreground">
-            Listen to this chapter <span className="font-normal text-muted-foreground">· {formatListenMinutes(minutes)}</span>
-          </p>
-          <p className="text-xs text-muted-foreground" aria-live="polite">
+          <p className="text-base font-bold text-foreground">Listen to this chapter</p>
+          <p className="mt-0.5 text-sm text-muted-foreground" aria-live="polite">
             {status === "error"
               ? "The audio did not load. Check your connection and press play to try again."
               : status === "loading"
-                ? "Loading the audio…"
+                ? "Loading the audio..."
                 : duration > 0
-                  ? `${formatClock(time)} / ${formatClock(duration)}`
-                  : `Plays when you press play · ${formatMegabytes(bytes)}`}
+                  ? `${formatClock(time)} of ${formatClock(duration)}`
+                  : `${formatListenMinutes(minutes)}. Nothing downloads until you press play.`}
           </p>
         </div>
+      </div>
+      <div className="mt-4 flex items-center gap-3 text-sm text-muted-foreground">
+        <span className="w-10 tabular-nums">{formatClock(time)}</span>
+        <input
+          type="range"
+          min={0}
+          max={duration || 1}
+          step={1}
+          value={Math.min(time, duration || 1)}
+          disabled={!duration}
+          onChange={(event) => seek(Number(event.target.value))}
+          aria-label="Audio position"
+          className={cn("h-6 min-w-0 flex-1 cursor-pointer accent-primary", !duration && "opacity-40")}
+        />
+        <span className="w-10 text-right tabular-nums">{duration > 0 ? formatClock(duration) : "--:--"}</span>
+      </div>
+      <div className="mt-4 flex gap-3">
         <select
           value={speed}
           onChange={(event) => changeSpeed(Number(event.target.value))}
           aria-label="Playback speed"
-          className="shrink-0 cursor-pointer rounded-md border border-border bg-background px-1.5 py-1 font-mono text-xs tabular-nums text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="min-h-11 shrink-0 cursor-pointer rounded-md border-2 border-foreground bg-card px-3 text-[15px] font-bold tabular-nums text-foreground outline-none hover:bg-muted focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
         >
           {NARRATION_SPEEDS.map((option) => (
             <option key={option} value={option}>
@@ -151,23 +168,12 @@ export function ChapterAudio({ src, minutes, bytes, title, className }: { src: s
         <a
           href={src}
           download
-          aria-label={`Download the audio (${formatMegabytes(bytes)})`}
-          className="shrink-0 rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          className="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-md border-2 border-foreground px-3 text-[15px] font-bold text-foreground outline-none hover:bg-muted focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
         >
-          <Download className="size-4" aria-hidden />
+          <Download className="size-5" aria-hidden />
+          Save for offline, {formatMegabytes(bytes)}
         </a>
       </div>
-      <input
-        type="range"
-        min={0}
-        max={duration || 1}
-        step={1}
-        value={Math.min(time, duration || 1)}
-        disabled={!duration}
-        onChange={(event) => seek(Number(event.target.value))}
-        aria-label="Audio position"
-        className={cn("mt-3 h-1 w-full cursor-pointer accent-primary", !duration && "opacity-40")}
-      />
     </section>
   );
 }

@@ -6,8 +6,7 @@ function ShimmerBar({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-md bg-muted",
-        "motion-reduce:after:animate-none after:absolute after:inset-0 after:-translate-x-full after:animate-[reader-shimmer_1.4s_ease-in-out_infinite] after:bg-gradient-to-r after:from-transparent after:via-background/50 after:to-transparent dark:after:via-foreground/10",
+        "relative overflow-hidden rounded-md bg-muted animate-pulse motion-reduce:animate-none",
         className
       )}
     />

@@ -11,7 +11,7 @@ const initial: ProfileUpdateState = { ok: false, errors: [] };
 export function PasswordForm() {
   const [state, action, pending] = useActionState(updatePasswordAction, initial);
   return (
-    <form action={action} className="space-y-4 rounded-xl border bg-card p-6 shadow-sm">
+    <form action={action} className="space-y-4 rounded-xl border bg-card p-6 ">
       <h2 className="text-lg font-semibold">Change password</h2>
       <p className="text-sm text-muted-foreground">Use at least 8 characters. Changing your password signs out your other sessions.</p>
       <div className="space-y-2">
@@ -27,7 +27,7 @@ export function PasswordForm() {
         <PasswordInput id="confirm-password" name="confirmPassword" autoComplete="new-password" required minLength={8} maxLength={128} />
       </div>
       {state.ok ? (
-        <p role="status" className="text-sm text-emerald-600 dark:text-emerald-400">Password updated. Other sessions have been signed out.</p>
+        <p role="status" className="text-sm text-ok">Password updated. Other sessions have been signed out.</p>
       ) : state.errors.length > 0 ? (
         <ul role="alert" className="text-sm text-destructive">{state.errors.map((error) => <li key={error}>{error}</li>)}</ul>
       ) : null}

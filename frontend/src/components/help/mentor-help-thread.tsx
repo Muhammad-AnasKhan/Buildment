@@ -66,7 +66,7 @@ export function MentorHelpThread({
         </section>
 
         {error && (
-          <p className="text-sm text-red-600" role="alert">
+          <p className="text-sm text-destructive" role="alert">
             {error}
           </p>
         )}
@@ -100,7 +100,7 @@ export function MentorHelpThread({
                 {pending ? (
                   <Loader2 className="size-4 animate-spin" aria-hidden />
                 ) : (
-                  <CheckCircle2 className="size-4 text-emerald-600" aria-hidden />
+                  <CheckCircle2 className="size-4 text-ok" aria-hidden />
                 )}
                 Mark resolved
               </Button>
@@ -125,12 +125,12 @@ export function MentorHelpThread({
 
       <aside className="space-y-4 lg:sticky lg:top-8 lg:self-start">
         <div className="rounded-xl border border-border bg-card p-4">
-          <p className="text-xs font-medium uppercase tracking-wide text-neutral-400">Mentee</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Mentee</p>
           <p className="mt-1 text-sm font-semibold text-foreground">{menteeName}</p>
         </div>
         <div className="rounded-xl border border-dashed border-border bg-muted/50 p-4">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-            <Phone className="size-4 text-neutral-400" aria-hidden />
+            <Phone className="size-4 text-muted-foreground" aria-hidden />
             Meet with mentee
           </div>
           <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
@@ -141,7 +141,7 @@ export function MentorHelpThread({
             variant="outline"
             size="sm"
             disabled
-            className="mt-3 h-9 w-full rounded-lg border-border text-neutral-400"
+            className="mt-3 h-9 w-full rounded-lg border-border text-muted-foreground"
           >
             Start call (coming soon)
           </Button>

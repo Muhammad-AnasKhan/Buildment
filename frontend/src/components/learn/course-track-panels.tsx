@@ -59,7 +59,7 @@ export function VariantDetails({ variant }: { variant: CourseVariant }) {
     <div className="space-y-3">
       <p className="text-sm leading-6">{variant.summary}</p>
       {variant.channels?.length ? <VariantChannels channels={variant.channels} /> : null}
-      <div className="rounded-lg border-l-4 border-primary bg-muted/60 px-3 py-2">
+      <div className="rounded-lg border border-border bg-secondary px-3 py-2">
         <p className="text-xs font-semibold tracking-wide text-primary uppercase">Hard problem</p>
         <p className="mt-0.5 text-sm leading-6">{variant.hardestConstraint}</p>
       </div>

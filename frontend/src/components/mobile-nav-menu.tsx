@@ -46,7 +46,7 @@ export function MobileNavMenu({
               >
                 <span className="min-w-0 flex-1 truncate">{link.label}</span>
                 {link.badge != null && link.badge > 0 ? (
-                  <span className="min-w-5 rounded-full bg-foreground px-1.5 py-0.5 text-center text-[10px] font-semibold tabular-nums text-background">
+                  <span className="min-w-5 rounded-full bg-foreground px-1.5 py-0.5 text-center text-xs font-semibold tabular-nums text-background">
                     {link.badge > 99 ? "99+" : link.badge}
                   </span>
                 ) : null}

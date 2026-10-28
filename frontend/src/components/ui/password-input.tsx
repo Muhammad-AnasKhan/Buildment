@@ -12,7 +12,7 @@ function PasswordInput({ className, ...props }: Omit<React.ComponentProps<"input
     <div className="relative">
       <Input
         type={visible ? "text" : "password"}
-        className={cn("pr-9", className)}
+        className={cn("pr-12", className)}
         {...props}
       />
       <button
@@ -20,7 +20,7 @@ function PasswordInput({ className, ...props }: Omit<React.ComponentProps<"input
         onClick={() => setVisible((current) => !current)}
         aria-label={visible ? "Hide password" : "Show password"}
         aria-pressed={visible}
-        className="absolute inset-y-0 right-0 grid w-8 place-items-center rounded-r-lg text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50"
+        className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-r-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-brand-yellow disabled:pointer-events-none disabled:opacity-50"
       >
         {visible ? (
           <EyeOff className="size-4" aria-hidden="true" />

@@ -38,8 +38,8 @@ export function ComparePanel({
   const hasDirectColumns = Boolean(leftLabel || rightLabel);
 
   return (
-    <LearnPanelShell eyebrow="Compare" title={title} contentClassName="border-0 bg-transparent shadow-none">
-      <div className="grid grid-cols-1 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm lg:grid-cols-2 lg:divide-x lg:divide-border">
+    <LearnPanelShell eyebrow="Compare" title={title} contentClassName="border-0 bg-transparent ">
+      <div className="grid grid-cols-1 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground lg:grid-cols-2 lg:divide-x lg:divide-border">
         {children}
         {hasDirectColumns && !children ? (
           <>

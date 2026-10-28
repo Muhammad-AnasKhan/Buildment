@@ -39,7 +39,7 @@ export function LearnPanelShell({
         <header className="mb-5">
           <div className="flex items-center gap-2">
             <Icon className="size-4 text-muted-foreground" aria-hidden />
-            <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
               {eyebrow}
             </p>
           </div>
@@ -53,7 +53,7 @@ export function LearnPanelShell({
       )}
       <div
         className={cn(
-          "overflow-hidden rounded-2xl border border-border/90 bg-card text-card-foreground shadow-[0_1px_2px_rgb(0_0_0/0.04)]",
+          "overflow-hidden rounded-2xl border border-border/90 bg-card text-card-foreground ",
           contentClassName
         )}
       >

@@ -25,11 +25,7 @@ export function LoginCardTabs({
 
   return (
     <>
-      <div
-        role="tablist"
-        aria-label="Sign-in method"
-        className="mb-5 grid grid-cols-2 gap-1 rounded-[14px] border border-border bg-background p-1"
-      >
+      <div role="tablist" aria-label="Sign-in method" className="mb-6 grid grid-cols-2 gap-2">
         {TABS.map((item) => {
           const selected = tab === item.id;
           return (
@@ -42,10 +38,10 @@ export function LoginCardTabs({
               aria-controls={`login-panel-${item.id}`}
               onClick={() => setTab(item.id)}
               className={cn(
-                "rounded-[10px] p-[9px] text-sm font-semibold outline-none transition-all duration-200 focus-visible:ring-3 focus-visible:ring-ring/50",
+                "min-h-12 rounded-md border-2 px-4 text-[15px] font-bold outline-none transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow",
                 selected
-                  ? "bg-card text-foreground shadow-[0_2px_8px_-2px_rgba(0,0,0,0.2)]"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-input bg-card text-foreground hover:border-primary",
               )}
             >
               {item.label}
@@ -57,13 +53,13 @@ export function LoginCardTabs({
       {tab === "password" ? (
         <div role="tabpanel" id="login-panel-password" aria-labelledby="login-tab-password">
           <PasswordLoginForm redirectTo={redirectTo} defaultEmail={defaultEmail} />
-          <p className="mt-[18px] text-center text-[15px] text-muted-foreground">{switchToSignup}</p>
+          <p className="mt-6 text-center text-base text-muted-foreground">{switchToSignup}</p>
         </div>
       ) : (
         <div role="tabpanel" id="login-panel-magic" aria-labelledby="login-tab-magic">
           <MagicLinkForm redirectTo={redirectTo} />
-          <p className="mt-[18px] text-center text-[15px] text-muted-foreground">
-            We&rsquo;ll email a one-time link. No password needed.
+          <p className="mt-6 text-center text-base text-muted-foreground">
+            We email you a link. No password needed.
           </p>
         </div>
       )}

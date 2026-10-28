@@ -116,10 +116,10 @@ export function ChapterToc({
         <button
           type="button"
           aria-label="Close table of contents"
-          className="fixed inset-0 z-40 bg-neutral-950/30 md:hidden"
+          className="fixed inset-0 z-40 bg-foreground md:hidden"
           onClick={onToggle}
         />
-        <aside className="fixed inset-y-0 right-0 z-50 flex w-[min(16rem,85vw)] flex-col border-l border-border bg-card text-card-foreground shadow-xl md:hidden">
+        <aside className="fixed inset-y-0 right-0 z-50 flex w-[min(16rem,85vw)] flex-col border-l border-border bg-card text-card-foreground md:hidden">
           <TocPanel headings={headings} activeId={activeId} onToggle={onToggle} />
         </aside>
       </>
@@ -144,8 +144,8 @@ export function TocToggle({
     <button
       type="button"
       onClick={onClick}
-      className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      aria-label={collapsed ? "Expand table of contents" : "Collapse table of contents"}
+      className="grid size-11 place-items-center rounded-md text-foreground outline-none transition-colors hover:bg-muted focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-brand-yellow"
+      aria-label={collapsed ? "Show this page's headings" : "Hide this page's headings"}
     >
       {collapsed ? (
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="size-4">

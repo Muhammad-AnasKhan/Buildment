@@ -16,6 +16,10 @@ type QuizOptionsProps = {
   showAnswerState?: boolean;
 };
 
+/**
+ * Answer choices. One answer is a radio group and several answers are checkboxes, so a screen reader
+ * announces them correctly. Each row is a full-width target of at least 56px with 17px text.
+ */
 export function QuizOptions({
   options,
   selected,
@@ -30,96 +34,58 @@ export function QuizOptions({
   const correctSet = new Set(correctOptionIds);
 
   return (
-    <ul className="flex flex-col gap-3" role="listbox" aria-multiselectable={multiple}>
+    <div role={multiple ? "group" : "radiogroup"} className="flex flex-col gap-3">
       {options.map((option) => {
         const isSelected = selected.includes(option.id);
         const isIncorrect = showAnswerState && incorrectSet.has(option.id);
         const isCorrect = showAnswerState && correctSet.has(option.id);
+        const plain = !isIncorrect && !isCorrect;
 
         return (
-          <li key={option.id}>
-            <button
-              type="button"
-              role="option"
-              aria-selected={isSelected}
-              onClick={() => !disabled && onToggle(option.id)}
-              disabled={disabled}
-              className={cn(
-                "flex w-full cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 text-left text-sm transition-colors",
-                !disabled && !isIncorrect && !isCorrect && "border-border bg-card hover:bg-muted/50",
-                disabled && !isIncorrect && !isCorrect && "cursor-default border-border bg-card",
-                isSelected &&
-                  !isIncorrect &&
-                  !isCorrect &&
-                  !disabled &&
-                  "border-foreground/25 bg-muted/60 ring-1 ring-inset ring-foreground/10",
-                isIncorrect &&
-                  "border-red-500/50 bg-red-500/10 text-foreground dark:border-red-400/45 dark:bg-red-950/35",
-                isCorrect &&
-                  "border-emerald-500/45 bg-emerald-500/10 dark:border-emerald-400/40 dark:bg-emerald-950/30"
-              )}
-            >
-              <span className="shrink-0" aria-hidden>
-                {multiple ? (
-                  <span
-                    className={cn(
-                      "flex size-5 items-center justify-center rounded-md border-2 transition-colors",
-                      isIncorrect && "border-red-500 bg-red-500/20",
-                      isCorrect && "border-emerald-600 bg-emerald-500/20",
-                      !isIncorrect &&
-                        !isCorrect &&
-                        (isSelected
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border bg-background")
-                    )}
-                  >
-                    {isSelected && !isIncorrect && !isCorrect ? (
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path
-                          d="M2 6l3 3 5-5"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    ) : null}
-                  </span>
-                ) : (
-                  <span
-                    className={cn(
-                      "flex size-5 items-center justify-center rounded-full border-2 transition-colors",
-                      isIncorrect && "border-red-500",
-                      isCorrect && "border-emerald-600",
-                      !isIncorrect && !isCorrect && (isSelected ? "border-foreground" : "border-muted-foreground/40")
-                    )}
-                  >
-                    {isSelected && !isIncorrect && !isCorrect ? (
-                      <span className="size-2.5 rounded-full bg-foreground" />
-                    ) : null}
-                  </span>
-                )}
-              </span>
+          <button
+            key={option.id}
+            type="button"
+            role={multiple ? "checkbox" : "radio"}
+            aria-checked={isSelected}
+            onClick={() => !disabled && onToggle(option.id)}
+            disabled={disabled}
+            className={cn(
+              "flex min-h-14 w-full items-center gap-3.5 rounded-md border-2 px-4 py-3 text-left text-[17px] leading-snug outline-none transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow",
+              plain && !isSelected && "border-border bg-card text-foreground",
+              plain && !isSelected && !disabled && "cursor-pointer hover:border-primary",
+              plain && isSelected && "border-primary bg-secondary font-bold text-foreground",
+              disabled && plain && !isSelected && "cursor-default text-muted-foreground",
+              isIncorrect && "border-foreground bg-brand-yellow/15 text-foreground",
+              isCorrect && "border-ok bg-ok-soft font-bold text-foreground"
+            )}
+          >
+            <span aria-hidden className="shrink-0">
               <span
                 className={cn(
-                  "min-w-0 flex-1 leading-relaxed",
-                  isSelected && "font-medium text-foreground",
-                  !isSelected && "text-foreground",
-                  disabled && !isSelected && !isIncorrect && "text-muted-foreground"
+                  "flex size-6 items-center justify-center border-2 transition-colors",
+                  multiple ? "rounded-sm" : "rounded-full",
+                  isIncorrect && "border-foreground",
+                  isCorrect && "border-ok",
+                  plain && (isSelected ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground bg-card")
                 )}
               >
-                {option.label}
+                {plain && isSelected ? (
+                  multiple ? (
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  ) : (
+                    <span className="size-2.5 rounded-full bg-primary-foreground" />
+                  )
+                ) : null}
               </span>
-              {isIncorrect ? (
-                <XCircle className="size-4 shrink-0 text-red-600 dark:text-red-400" aria-hidden />
-              ) : null}
-              {isCorrect ? (
-                <CheckCircle2 className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden />
-              ) : null}
-            </button>
-          </li>
+            </span>
+            <span className="min-w-0 flex-1">{option.label}</span>
+            {isIncorrect ? <XCircle className="size-5 shrink-0 text-foreground" aria-label="Not right" /> : null}
+            {isCorrect ? <CheckCircle2 className="size-5 shrink-0 text-ok" aria-label="Right" /> : null}
+          </button>
         );
       })}
-    </ul>
+    </div>
   );
 }

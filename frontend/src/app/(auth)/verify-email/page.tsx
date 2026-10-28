@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { MailCheck } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
+import { AuthMessage } from "@/components/auth/auth-message";
 import { ResendVerificationButton } from "@/components/auth/resend-verification-button";
 import { getSessionUser } from "@/server/auth/guards";
 import { homeRouteForRole } from "@/server/auth/access-rules";
@@ -19,29 +18,22 @@ export default async function VerifyEmailPage({
   const signedIn = Boolean(user);
 
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-background px-6 py-24">
-      <Logo size="lg" />
-      <div className="mt-10 w-full max-w-sm text-center">
-        <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/40">
-          <MailCheck className="size-5 text-indigo-600 dark:text-indigo-400" />
-        </div>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight">
-          {signup ? "Verify your email" : "Email verification required"}
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          {signup
-            ? "Your account was created. Open the link we sent to your inbox to activate it, then sign in."
-            : "Verify your email before using Buildment. Check your inbox for the link, or resend below."}
-        </p>
-        <div className="mt-6">
-          <ResendVerificationButton signedIn={signedIn} />
-        </div>
-        <p className="mt-8 text-sm text-muted-foreground">
-          <Link href="/login" className="text-primary underline-offset-4 hover:underline">
-            Back to sign in
-          </Link>
-        </p>
-      </div>
-    </div>
+    <AuthMessage
+      mood="wave"
+      line="Almost there."
+      title={signup ? "Verify your email" : "Verify your email to start"}
+      text={
+        signup
+          ? "Your account is ready. Open the link we sent you, then sign in."
+          : "Open the link we sent you, or send it again below."
+      }
+    >
+      <ResendVerificationButton signedIn={signedIn} />
+      <p className="mt-8 text-base text-muted-foreground">
+        <Link href="/login" className="font-bold text-primary underline underline-offset-4">
+          Back to sign in
+        </Link>
+      </p>
+    </AuthMessage>
   );
 }

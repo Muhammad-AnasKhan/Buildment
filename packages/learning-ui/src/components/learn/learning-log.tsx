@@ -73,7 +73,7 @@ function LearningLogQuestion({
           className={cn(
             "flex size-8 shrink-0 items-center justify-center rounded-md text-sm font-semibold tabular-nums",
             answered
-              ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:ring-emerald-900"
+              ? "bg-ok-soft text-ok ring-1 ring-ok"
               : "bg-muted text-muted-foreground"
           )}
         >
@@ -222,7 +222,7 @@ export function LearningLog({
   return (
     <div
       className={cn(
-        "not-prose my-8 overflow-hidden rounded-xl border shadow-[0_1px_2px_rgb(0_0_0/0.04)]",
+        "not-prose my-8 overflow-hidden rounded-xl border ",
         styles.border,
         styles.bodyBg
       )}
@@ -245,7 +245,7 @@ export function LearningLog({
             <div>
               <p
                 className={cn(
-                  "text-[11px] font-bold uppercase tracking-widest",
+                  "text-xs font-bold uppercase tracking-widest",
                   styles.subText
                 )}
               >
@@ -295,7 +295,7 @@ export function LearningLog({
           {saveStatus === "saving" ? (
             <Loader2 className="size-3.5 animate-spin" aria-hidden />
           ) : saveStatus === "error" ? (
-            <CloudOff className="size-3.5 text-amber-500" aria-hidden />
+            <CloudOff className="size-3.5 text-foreground" aria-hidden />
           ) : (
             <Save className="size-3.5 opacity-70" aria-hidden />
           )}
@@ -322,9 +322,9 @@ export function LearningLog({
       </ol>
 
       {allAnswered ? (
-        <div className="border-t border-emerald-200/80 bg-emerald-50/80 px-5 py-3.5 dark:border-emerald-400/25 dark:bg-emerald-500/10">
-          <p className="flex items-center gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-100">
-            <CheckCircle2 className="size-4 shrink-0 text-emerald-700 dark:text-emerald-400" />
+        <div className="border-t border-ok bg-ok-soft px-5 py-3.5">
+          <p className="flex items-center gap-2 text-sm font-medium text-ok">
+            <CheckCircle2 className="size-4 shrink-0 text-ok" />
             Reflection saved — you have captured what you learned in this chapter.
           </p>
         </div>

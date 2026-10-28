@@ -26,21 +26,21 @@ function renderReview(isCorrect: boolean, dirty = false) {
 describe("quiz review rendering", () => {
   it("renders a saved correct answer and locks its options immediately", () => {
     const html = renderReview(true);
-    expect(html).toContain("Correct! Well done");
-    expect(html).toContain('aria-selected="true"');
+    expect(html).toContain("Correct. Well done.");
+    expect(html).toContain('aria-checked="true"');
     expect(html).toContain('disabled=""');
     expect(html).toContain("Review feedback");
   });
 
   it("renders an incorrect answer without locking retries", () => {
     const html = renderReview(false);
-    expect(html).toContain("Wrong answer");
+    expect(html).toContain("Not quite");
     expect(html).not.toContain('disabled=""');
   });
 
   it("hides the previous grade while an answer is being edited", () => {
     const html = renderReview(true, true);
-    expect(html).not.toContain("Correct! Well done");
+    expect(html).not.toContain("Correct. Well done.");
     expect(html).not.toContain("Review feedback");
     expect(html).not.toContain('disabled=""');
   });

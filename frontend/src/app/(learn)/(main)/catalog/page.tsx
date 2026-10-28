@@ -5,6 +5,8 @@ import { serverApiFetch } from "@/lib/api-server";
 import { COURSE_CATEGORY_INFO, categoryFromParam } from "@/lib/course-categories";
 import { CatalogCourseCard } from "@/components/learn/catalog-course-card";
 import { CatalogCategoryTiles } from "@/components/learn/catalog-category-tiles";
+import { CoursesTabs } from "@/components/learn/courses-tabs";
+import { Dot } from "@/components/brand/dot";
 
 function CourseGrid({ courses }: { courses: CatalogCourseSummary[] }) {
   return (
@@ -55,28 +57,32 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
-      <header className="border-b border-border pb-7">
-        <p className="text-sm font-medium text-muted-foreground">Explore</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">Course catalog</h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-          Enroll in published courses. Paid courses use a checkout stub until Stripe is connected.
-        </p>
+      <header>
+        <h1 className="text-[32px] leading-tight tracking-[-0.035em] sm:text-[40px]">Courses</h1>
+        <p className="mt-2 max-w-2xl text-lg text-muted-foreground">Pick one and keep going. Your place is saved.</p>
+        <div className="mt-6">
+          <CoursesTabs active="all" />
+        </div>
         {courses.length > 0 ? <CatalogCategoryTiles counts={counts} total={courses.length} active={active} /> : null}
       </header>
 
       {courses.length === 0 ? (
-        <p className="mt-10 text-sm text-muted-foreground">No published courses yet.</p>
+        <div className="mt-10 flex flex-col items-center border border-border bg-card px-6 py-14 text-center">
+          <Dot mood="sleep" size={112} />
+          <h2 className="mt-4 text-xl tracking-[-0.02em]">No courses yet</h2>
+          <p className="mt-2 max-w-sm text-base text-muted-foreground">New courses show up here when they are published.</p>
+        </div>
       ) : (
         sections.map((section) => (
-          <section key={section.value} aria-labelledby={`catalog-${section.param}`} className="mt-9">
-            <h2 id={`catalog-${section.param}`} className="text-xl font-semibold tracking-tight">
+          <section key={section.value} aria-labelledby={`catalog-${section.param}`} className="mt-10">
+            <h2 id={`catalog-${section.param}`} className="text-2xl tracking-[-0.02em]">
               {section.label}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">{section.description}</p>
+            <p className="mt-1 text-base text-muted-foreground">{section.description}</p>
             {section.courses.length > 0 ? (
               <CourseGrid courses={section.courses} />
             ) : (
-              <p className="mt-5 text-sm text-muted-foreground">No courses in this category yet.</p>
+              <p className="mt-5 text-base text-muted-foreground">No courses in this category yet.</p>
             )}
           </section>
         ))

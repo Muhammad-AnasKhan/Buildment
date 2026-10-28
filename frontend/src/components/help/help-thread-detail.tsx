@@ -179,7 +179,7 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
               {pending ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden />
               ) : (
-                <CheckCircle2 className="size-4 text-emerald-600" aria-hidden />
+                <CheckCircle2 className="size-4 text-ok" aria-hidden />
               )}
               Mark resolved
             </button>

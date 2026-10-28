@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { Camera, CameraOff, Maximize, ShieldCheck, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { Camera, CameraOff, Eye, Maximize, ShieldCheck, X } from "lucide-react";
+import { Dot } from "@/components/brand/dot";
 import { Button } from "@/components/ui/button";
 import type { QuizIntegrity } from "@/lib/integrity/use-quiz-integrity";
 import { INTEGRITY_LIMITS } from "@/shared/api/integrity";
@@ -27,11 +30,13 @@ const CAMERA_HELP: Record<string, string> = {
   error: "The camera did not start.",
 };
 
-function IntegrityDialog({ integrity }: { integrity: QuizIntegrity }) {
+function IntegrityDialog({ integrity, questionCount }: { integrity: QuizIntegrity; questionCount: number }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const params = useParams<{ courseSlug?: string }>();
   const { dialog, camera, session } = integrity;
   const open = dialog !== null && session !== null;
   const intro = dialog === "intro";
+  const [useCamera, setUseCamera] = useState(false);
 
   useEffect(() => {
     const element = ref.current;
@@ -40,115 +45,130 @@ function IntegrityDialog({ integrity }: { integrity: QuizIntegrity }) {
     if (!open && element.open) element.close();
   }, [open]);
 
-  // Closing the intro (X or Esc) starts the quiz without the camera: never a dead end.
-  const close = () => {
-    if (intro) integrity.begin(false);
-    else integrity.closeInfo();
-  };
+  const retention = session?.camera.retentionDays ?? INTEGRITY_LIMITS.retentionDays;
+  const details = (
+    <>
+      <ul className="mt-3 grid gap-2 pl-5 text-base leading-6 text-foreground marker:text-muted-foreground">
+        {NOTED.map((item) => <li key={item} className="list-disc">{item}</li>)}
+      </ul>
+      {integrity.fullscreenSupported ? (
+        <p className="mt-3 text-sm leading-5 text-muted-foreground">The quiz opens in full screen. You can leave it with Esc. That is noted, never blocked.</p>
+      ) : null}
+      {camera.enabled ? (
+        <p className="mt-3 text-sm leading-5 text-muted-foreground">
+          Camera photos are small stills about once a minute, with no video or sound. Mentors of this course and admins can see them. They are deleted after {retention} days. If the camera is off or stops, the quiz keeps going.
+        </p>
+      ) : null}
+    </>
+  );
 
   return (
     <dialog
       ref={ref}
       aria-labelledby="quiz-integrity-title"
-      aria-describedby="quiz-integrity-description"
       onCancel={(event) => {
+        // Esc never starts the quiz. Before the quiz it does nothing; later it closes the notes.
         event.preventDefault();
-        close();
+        if (!intro) integrity.closeInfo();
       }}
-      className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-0 backdrop:bg-background/70 open:flex open:items-center open:justify-center open:p-4"
+      className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-0 backdrop:bg-foreground/50 open:flex open:items-center open:justify-center open:p-4"
     >
       {open ? (
-        <div className="flex max-h-[min(44rem,calc(100dvh-2rem))] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-2xl">
-          <div className="flex shrink-0 items-start justify-between gap-4 border-b px-5 py-4 sm:px-6 sm:py-5">
-            <div>
-              <div className="flex items-center gap-2 text-primary">
-                <ShieldCheck className="size-4" aria-hidden />
-                <p className="text-xs font-semibold uppercase tracking-wider">Proctored quiz</p>
+        <div className="flex max-h-[min(46rem,calc(100dvh-2rem))] w-full max-w-xl flex-col overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
+          <div className="min-h-0 overflow-y-auto px-5 py-6 sm:px-8 sm:py-8">
+            {intro ? (
+              <>
+                <p className="text-sm font-bold text-primary">Before you start</p>
+                <h2 id="quiz-integrity-title" className="mt-2 text-[28px] leading-[1.15] tracking-[-0.035em]">Ready when you are</h2>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {questionCount > 0 ? <span className="rounded-sm bg-secondary px-2.5 py-1 text-[15px] font-bold text-primary">{questionCount} questions</span> : null}
+                  <span className="rounded-sm bg-secondary px-2.5 py-1 text-[15px] font-bold text-primary">No timer</span>
+                </div>
+                <div className="mt-6 flex items-center gap-3">
+                  <Dot mood="happy" size={72} />
+                  <p className="border border-border bg-card px-4 py-3 text-base font-bold leading-snug">Questions show up one at a time. Take your time.</p>
+                </div>
+                <div className="mt-6 flex items-start gap-3.5">
+                  <Eye className="mt-0.5 size-6 shrink-0 text-primary" aria-hidden />
+                  <p className="text-base leading-6">Your mentor can see if you leave this page. This does not change your score.</p>
+                </div>
+                {camera.enabled ? (
+                  <div className="mt-4 flex min-h-14 items-center gap-3.5 border-2 border-input px-4 py-2">
+                    <Camera className="size-6 shrink-0 text-primary" aria-hidden />
+                    <span id="quiz-camera-label" className="flex-1 text-base font-bold">Use my camera (optional)</span>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={useCamera}
+                      aria-labelledby="quiz-camera-label"
+                      onClick={() => setUseCamera((on) => !on)}
+                      className={cn(
+                        "relative h-8 w-14 shrink-0 rounded-full border-2 outline-none transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow",
+                        useCamera ? "border-primary bg-primary" : "border-muted-foreground bg-card"
+                      )}
+                    >
+                      <span className={cn("absolute top-0.5 size-6 rounded-full transition-all", useCamera ? "left-[calc(100%-1.625rem)] bg-primary-foreground" : "left-0.5 bg-muted-foreground")} />
+                    </button>
+                  </div>
+                ) : null}
+                <details className="mt-3 group">
+                  <summary className="flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-base font-bold text-primary underline underline-offset-4 [&::-webkit-details-marker]:hidden">
+                    What gets noted?
+                  </summary>
+                  {details}
+                </details>
+              </>
+            ) : (
+              <>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="flex items-center gap-2 text-sm font-bold text-primary"><ShieldCheck className="size-4" aria-hidden />Proctored quiz</p>
+                    <h2 id="quiz-integrity-title" className="mt-2 text-[28px] leading-[1.15] tracking-[-0.035em]">What gets noted</h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={integrity.closeInfo}
+                    aria-label="Close"
+                    className="grid size-11 shrink-0 place-items-center rounded-md text-foreground outline-none hover:bg-muted focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
+                  >
+                    <X className="size-5" aria-hidden />
+                  </button>
+                </div>
+                <p className="mt-2 text-base text-muted-foreground">These notes do not change your score. Your mentor reads them and decides.</p>
+                {details}
+              </>
+            )}
+          </div>
+
+          <div className="shrink-0 border-t border-border px-5 py-4 sm:px-8">
+            {intro ? (
+              <div className="flex flex-col gap-2">
+                <Button type="button" size="lg" className="w-full" onClick={() => integrity.begin(camera.enabled && useCamera)}>
+                  Start quiz
+                </Button>
+                <Link
+                  href={params.courseSlug ? `/courses/${params.courseSlug}` : "/my-courses"}
+                  className="inline-flex min-h-11 items-center justify-center text-base font-bold text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                >
+                  Not now, back to the course
+                </Link>
               </div>
-              <h2 id="quiz-integrity-title" className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl">
-                Your mentor can review this quiz
-              </h2>
-              <p id="quiz-integrity-description" className="mt-1 text-sm leading-6 text-muted-foreground">
-                These notes do not change your score or stop your quiz. Your mentor reads them and decides.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={close}
-              aria-label={intro && camera.enabled ? "Start without camera" : intro ? "Start quiz" : "Close"}
-              className="shrink-0 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-            >
-              <X className="size-4" aria-hidden />
-            </button>
-          </div>
-
-          <div className="min-h-0 space-y-4 overflow-y-auto px-5 py-4 sm:px-6">
-            <section aria-labelledby="quiz-signals-title" className="rounded-xl border bg-muted/20 p-4">
-              <h3 id="quiz-signals-title" className="text-sm font-semibold">What your mentor can see</h3>
-              <ul className="mt-2 grid gap-1.5 pl-5 text-sm leading-5 text-foreground/85 marker:text-muted-foreground sm:grid-cols-2 sm:gap-x-7">
-                {NOTED.map((item) => <li key={item} className="list-disc">{item}</li>)}
-              </ul>
-              {integrity.fullscreenSupported ? (
-                <p className="mt-3 text-xs leading-5 text-muted-foreground">The quiz opens in full screen. You can leave it with Esc; that is noted, never blocked.</p>
-              ) : null}
-            </section>
-
-            {camera.enabled ? (
-              <section aria-labelledby="quiz-camera-title" className="rounded-xl border border-primary/25 bg-primary/5 p-4">
-                <h3 id="quiz-camera-title" className="flex items-center gap-2 text-sm font-semibold">
-                  <Camera className="size-4 text-primary" aria-hidden />
-                  Camera photos: your choice
-                </h3>
-                <p className="mt-1 text-sm leading-5 text-foreground/85">
-                  This course asks for small still photos while you take the quiz. There is no video or sound.
-                </p>
-                <dl className="mt-3 grid gap-x-5 gap-y-2 text-xs leading-5 sm:grid-cols-2">
-                  <div><dt className="font-semibold">Photo</dt><dd className="text-muted-foreground">{INTEGRITY_LIMITS.snapshotWidth} × {INTEGRITY_LIMITS.snapshotHeight} pixels, about once a minute</dd></div>
-                  <div><dt className="font-semibold">Who sees it</dt><dd className="text-muted-foreground">This course&apos;s mentors and Buildment admins</dd></div>
-                  <div><dt className="font-semibold">Automatic deletion</dt><dd className="text-muted-foreground">After {session?.camera.retentionDays ?? INTEGRITY_LIMITS.retentionDays} days; the activity report remains</dd></div>
-                  <div><dt className="font-semibold">No camera, or it stops?</dt><dd className="text-muted-foreground">The quiz keeps going. Your mentor sees &quot;camera off&quot;.</dd></div>
-                </dl>
-              </section>
-            ) : null}
-          </div>
-
-          <div className="shrink-0 border-t bg-card px-5 py-4 sm:px-6">
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-              {intro ? (
-                camera.enabled ? (
-                  <>
-                    <Button type="button" variant="outline" onClick={() => integrity.begin(false)}>
-                      Start without camera
-                    </Button>
-                    <Button type="button" onClick={() => integrity.begin(true)} className="gap-1.5">
-                      <Camera className="size-4" aria-hidden />
-                      Turn on camera and start
-                    </Button>
-                  </>
-                ) : (
-                  <Button type="button" onClick={() => integrity.begin(false)}>
-                    Start quiz
+            ) : (
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                {camera.enabled && camera.status === "ON" ? (
+                  <Button type="button" variant="outline" onClick={() => { camera.turnOff(); integrity.closeInfo(); }}>
+                    <CameraOff aria-hidden />
+                    Turn camera off
                   </Button>
-                )
-              ) : (
-                <>
-                  {camera.enabled && camera.status === "ON" ? (
-                    <Button type="button" variant="outline" onClick={() => { camera.turnOff(); integrity.closeInfo(); }} className="gap-1.5">
-                      <CameraOff className="size-4" aria-hidden />
-                      Turn camera off
-                    </Button>
-                  ) : camera.enabled ? (
-                    <Button type="button" variant="outline" onClick={() => { void camera.start(); integrity.closeInfo(); }} className="gap-1.5">
-                      <Camera className="size-4" aria-hidden />
-                      Turn camera on
-                    </Button>
-                  ) : null}
-                  <Button type="button" onClick={integrity.closeInfo}>
-                    Back to the quiz
+                ) : camera.enabled ? (
+                  <Button type="button" variant="outline" onClick={() => { void camera.start(); integrity.closeInfo(); }}>
+                    <Camera aria-hidden />
+                    Turn camera on
                   </Button>
-                </>
-              )}
-            </div>
+                ) : null}
+                <Button type="button" onClick={integrity.closeInfo}>Back to the quiz</Button>
+              </div>
+            )}
           </div>
         </div>
       ) : null}
@@ -165,14 +185,14 @@ function CameraPreview({ attach, visible }: { attach: (element: HTMLVideoElement
       playsInline
       aria-hidden
       className={cn(
-        "pointer-events-none fixed bottom-20 right-3 z-40 h-[54px] w-[72px] rounded-md border border-border bg-muted object-cover shadow-sm sm:bottom-4",
+        "pointer-events-none fixed bottom-20 right-3 z-40 h-[54px] w-[72px] rounded-md border border-border bg-muted object-cover  sm:bottom-4",
         !visible && "hidden"
       )}
     />
   );
 }
 
-export function QuizIntegrityPanel({ integrity }: { integrity: QuizIntegrity }) {
+export function QuizIntegrityPanel({ integrity, questionCount = 0 }: { integrity: QuizIntegrity; questionCount?: number }) {
   const { camera, notice } = integrity;
   const cameraOn = camera.status === "ON";
 
@@ -186,11 +206,11 @@ export function QuizIntegrityPanel({ integrity }: { integrity: QuizIntegrity }) 
               type="button"
               onClick={integrity.openInfo}
               aria-label={`Proctored quiz. ${integrity.flagCount} ${integrity.flagCount === 1 ? "note" : "notes"} for your mentor. Show what is noted.`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-primary/15"
+              className="inline-flex min-h-11 items-center gap-2 rounded-md border-2 border-input bg-card px-3 text-sm font-bold text-foreground transition-colors hover:border-primary"
             >
               <ShieldCheck className="size-3.5 text-primary" aria-hidden />
               Proctored
-              <span className="rounded-full bg-primary/15 px-1.5 font-mono tabular-nums">{integrity.flagCount}</span>
+              <span className="rounded-sm bg-secondary px-1.5 font-mono tabular-nums">{integrity.flagCount}</span>
             </button>
             {camera.enabled ? (
               <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
@@ -230,7 +250,7 @@ export function QuizIntegrityPanel({ integrity }: { integrity: QuizIntegrity }) 
           ) : null}
         </div>
       ) : null}
-      <IntegrityDialog integrity={integrity} />
+      <IntegrityDialog integrity={integrity} questionCount={questionCount} />
     </>
   );
 }

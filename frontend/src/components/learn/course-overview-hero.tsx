@@ -49,18 +49,18 @@ export function CourseOverviewHero({
   const { lead, rest } = splitTitle(title);
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+    <section className="overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
       <CourseCover coverUrl={coverUrl} title={title} aspect="banner" className="rounded-none border-b border-border" />
 
       <div className="grid lg:grid-cols-[minmax(0,1fr)_18rem]">
         <div className="p-6 sm:p-8">
           <div className="flex flex-wrap items-center gap-2">
             {difficulty ? (
-              <span className="rounded-full border border-border bg-muted/40 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <span className="rounded-sm bg-secondary px-2.5 py-1 text-sm font-bold capitalize text-primary">
                 {difficulty}
               </span>
             ) : null}
-            {lead ? <span className="text-xs font-semibold text-muted-foreground">{lead}</span> : null}
+            {lead ? <span className="text-sm font-bold text-muted-foreground">{lead}</span> : null}
             {pendingReviews > 0 ? (
               <Badge variant="secondary" className="gap-1">
                 <MessageSquareText className="size-3" aria-hidden />
@@ -69,34 +69,34 @@ export function CourseOverviewHero({
             ) : null}
           </div>
 
-          <h1 className="mt-4 max-w-3xl text-3xl font-semibold leading-[1.08] tracking-[-0.045em] lg:text-[2rem]">
+          <h1 className="mt-4 max-w-3xl text-[28px] leading-[1.15] tracking-[-0.035em] lg:text-[34px]">
             {rest}
           </h1>
 
           {instructorName ? (
-            <p className="mt-2 text-sm text-muted-foreground">Instructor · {instructorName}</p>
+            <p className="mt-2 text-base text-muted-foreground">With {instructorName}</p>
           ) : null}
 
           {description ? (
-            <p className="mt-4 max-w-3xl text-sm leading-7 text-muted-foreground lg:text-[15px]">
+            <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground">
               {description}
             </p>
           ) : null}
 
-          <dl className="mt-6 flex flex-wrap gap-x-5 gap-y-3 border-t border-border pt-5 text-xs text-muted-foreground">
+          <dl className="mt-6 flex flex-wrap gap-x-5 gap-y-3 border-t border-border pt-5 text-[15px] text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Layers3 className="size-3.5" />
+              <Layers3 className="size-4" />
               <dt className="sr-only">Modules</dt>
               <dd>{moduleCount} modules</dd>
             </div>
             <div className="flex items-center gap-2">
-              <BookOpen className="size-3.5" />
+              <BookOpen className="size-4" />
               <dt className="sr-only">Lessons</dt>
               <dd>{chapterCount} lessons</dd>
             </div>
             {estimatedHours ? (
               <div className="flex items-center gap-2">
-                <Clock3 className="size-3.5" />
+                <Clock3 className="size-4" />
                 <dt className="sr-only">Estimated duration</dt>
                 <dd>~{estimatedHours} hours</dd>
               </div>
@@ -112,38 +112,38 @@ export function CourseOverviewHero({
           </dl>
         </div>
 
-        <aside className="flex flex-col justify-between border-t border-border bg-muted/15 p-6 lg:border-l lg:border-t-0 lg:p-7">
+        <aside className="flex flex-col justify-between border-t border-border bg-secondary p-6 lg:border-l lg:border-t-0 lg:p-7">
           {projectGoal ? (
             <div>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
                 <Target className="size-4" /> What you&apos;ll build
               </div>
-              <p className="mt-3 text-sm leading-6 text-foreground">{projectGoal}</p>
+              <p className="mt-3 text-base leading-6 text-foreground">{projectGoal}</p>
             </div>
           ) : (
-            <p className="text-sm leading-6 text-muted-foreground">
-              Work through lessons in order, complete checkpoints, and track progress here.
+            <p className="text-base leading-6 text-muted-foreground">
+              Work through the lessons in order. Your place is saved.
             </p>
           )}
 
           <div className={cn(projectGoal ? "mt-7" : "mt-auto pt-6")}>
-            <div className="flex items-center justify-between gap-4 text-xs">
-              <span className="font-medium text-foreground">Your progress</span>
+            <div className="flex items-center justify-between gap-4 text-sm">
+              <span className="font-bold text-foreground">Your progress</span>
               <span className="font-mono tabular-nums text-muted-foreground">{percentComplete}%</span>
             </div>
-            <div className="mt-2 h-2 overflow-hidden rounded-full bg-muted">
+            <div className="mt-2 h-2 overflow-hidden rounded-sm bg-card">
               <div
-                className="h-full rounded-full bg-primary transition-[width]"
+                className="h-full rounded-sm bg-primary transition-[width]"
                 style={{ width: `${Math.min(100, Math.max(0, percentComplete))}%` }}
               />
             </div>
             {continueHref ? (
               <Link
                 href={continueHref}
-                className={cn(buttonVariants({ size: "lg" }), "mt-5 h-11 w-full gap-2 px-4")}
+                className={cn(buttonVariants(), "mt-5 w-full")}
               >
                 {continueLabel}
-                <ArrowRight className="size-4" />
+                <ArrowRight aria-hidden />
               </Link>
             ) : null}
           </div>

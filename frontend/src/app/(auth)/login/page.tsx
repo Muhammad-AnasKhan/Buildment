@@ -28,16 +28,18 @@ export default async function LoginPage({
   return (
     <AuthPageShell>
       <AuthCard
-        title="Welcome back"
-        description="Sign in to pick up where you left off."
+        title="Sign in"
+        description="Use your email and password, or get a link by email."
+        mood="wave"
+        line="Welcome back."
       >
         {verifiedBanner ? (
-          <p className="mb-4 rounded-xl border border-ok/30 bg-ok-soft px-3.5 py-2.5 text-sm text-ok">
+          <p className="mb-4 border-2 border-ok bg-ok-soft px-3.5 py-3 text-[15px] text-ok">
             {verifiedBanner}
           </p>
         ) : null}
         {errorMessage ? (
-          <p className="mb-4 rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-sm text-destructive">
+          <p className="mb-4 border-2 border-destructive bg-card px-3.5 py-3 text-[15px] text-destructive">
             {errorMessage}
           </p>
         ) : null}
@@ -50,7 +52,7 @@ export default async function LoginPage({
               No account?{" "}
               <Link
                 href="/signup"
-                className="font-semibold text-primary underline-offset-4 hover:underline"
+                className="font-bold text-primary underline underline-offset-4"
               >
                 Sign up
               </Link>

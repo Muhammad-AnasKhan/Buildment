@@ -8,40 +8,40 @@ import { cn } from "../../lib/utils";
 
 const METHOD_STYLES: Record<string, { badge: string; bar: string }> = {
   GET: {
-    badge: "bg-emerald-500 text-white",
-    bar: "border-emerald-200/80 bg-emerald-50/40 dark:border-emerald-400/25 dark:bg-emerald-500/10",
+    badge: "bg-ok text-white",
+    bar: "border-ok bg-ok-soft",
   },
   POST: {
-    badge: "bg-blue-600 text-white",
-    bar: "border-blue-200/80 bg-blue-50/40 dark:border-blue-400/25 dark:bg-blue-500/10",
+    badge: "bg-primary text-white",
+    bar: "border-border bg-secondary",
   },
   PATCH: {
-    badge: "bg-amber-500 text-white",
-    bar: "border-amber-200/80 bg-amber-50/40 dark:border-amber-400/25 dark:bg-amber-500/10",
+    badge: "bg-brand-yellow text-white",
+    bar: "border-brand-yellow bg-brand-yellow/15",
   },
   PUT: {
-    badge: "bg-violet-600 text-white",
-    bar: "border-violet-200/80 bg-violet-50/40 dark:border-violet-400/25 dark:bg-violet-500/10",
+    badge: "bg-primary text-white",
+    bar: "border-border bg-secondary",
   },
   DELETE: {
-    badge: "bg-red-600 text-white",
-    bar: "border-red-200/80 bg-red-50/40 dark:border-red-400/25 dark:bg-red-500/10",
+    badge: "bg-destructive text-white",
+    bar: "border-destructive bg-destructive/10",
   },
 };
 
 function methodStyles(method: string) {
   return (
     METHOD_STYLES[method.toUpperCase()] ?? {
-      badge: "bg-indigo-600 text-white",
-      bar: "border-indigo-200/80 bg-indigo-50/40 dark:border-indigo-400/25 dark:bg-indigo-500/10",
+      badge: "bg-primary text-white",
+      bar: "border-border bg-secondary",
     }
   );
 }
 
 function statusTone(status: number) {
-  if (status >= 200 && status < 300) return "text-emerald-700 bg-emerald-50 ring-emerald-200/80 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-emerald-400/25";
-  if (status >= 400 && status < 500) return "text-amber-800 bg-amber-50 ring-amber-200/80 dark:bg-amber-500/15 dark:text-amber-100 dark:ring-amber-400/25";
-  if (status >= 500) return "text-red-700 bg-red-50 ring-red-200/80 dark:bg-red-500/15 dark:text-red-200 dark:ring-red-400/25";
+  if (status >= 200 && status < 300) return "text-ok bg-ok-soft ring-ok";
+  if (status >= 400 && status < 500) return "text-foreground bg-brand-yellow/15 ring-brand-yellow";
+  if (status >= 500) return "text-destructive bg-destructive/10 ring-destructive";
   return "bg-muted text-muted-foreground ring-border";
 }
 
@@ -59,7 +59,7 @@ export function ApiRequestPanel({ title, children }: ApiRequestPanelProps) {
     >
       {title ? (
         <header className="mb-5">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
             API lab
           </p>
           <h3 className="mt-1 text-lg font-semibold tracking-tight text-foreground">{title}</h3>
@@ -136,7 +136,7 @@ export function ApiRequest({
 
   return (
     <article
-      className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm"
+      className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground "
       aria-label={label ?? `${normalizedMethod} ${url}`}
       data-api-request
     >
@@ -156,7 +156,7 @@ export function ApiRequest({
         <div className="flex shrink-0 items-center border-r border-border px-3 sm:px-4">
           <span
             className={cn(
-              "inline-flex min-w-[4.25rem] items-center justify-center rounded-md px-2.5 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wide shadow-sm",
+              "inline-flex min-w-[4.25rem] items-center justify-center rounded-md px-2.5 py-1.5 font-mono text-xs font-bold uppercase tracking-wide ",
               styles.badge
             )}
           >
@@ -204,7 +204,7 @@ export function ApiRequest({
             </span>
             <span
               className={cn(
-                "rounded-md px-2 py-0.5 font-mono text-[11px] font-bold ring-1 ring-inset",
+                "rounded-md px-2 py-0.5 font-mono text-xs font-bold ring-1 ring-inset",
                 statusTone(responseStatus)
               )}
             >
@@ -240,7 +240,7 @@ function TabButton({
       className={cn(
         "rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
         active
-          ? "bg-card text-foreground shadow-sm ring-1 ring-border"
+          ? "bg-card text-foreground  ring-1 ring-border"
           : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
       )}
     >

@@ -27,7 +27,7 @@ export function NavBar({
             >
               {link.label}
               {link.badge != null && link.badge > 0 && (
-                <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-neutral-900 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-white">
+                <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-foreground px-1.5 py-0.5 text-xs font-semibold tabular-nums text-white">
                   {link.badge > 99 ? "99+" : link.badge}
                 </span>
               )}

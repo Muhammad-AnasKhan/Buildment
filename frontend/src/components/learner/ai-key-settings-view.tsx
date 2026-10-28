@@ -52,7 +52,7 @@ export function AiKeySettingsView(props: AiKeySettingsViewProps) {
   const idle = busy === null;
 
   return (
-    <section id="ai-interviews" aria-labelledby="ai-interviews-title" className="scroll-mt-24 space-y-4 rounded-xl border bg-card p-4 shadow-sm sm:p-6">
+    <section id="ai-interviews" aria-labelledby="ai-interviews-title" className="scroll-mt-24 space-y-4 rounded-xl border bg-card p-4 sm:p-6">
       <div>
         <h2 id="ai-interviews-title" className="text-lg font-semibold">
           AI interviews
@@ -120,7 +120,7 @@ export function AiKeySettingsView(props: AiKeySettingsViewProps) {
           </div>
 
           {props.message ? (
-            <p role="status" className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400">
+            <p role="status" className="flex items-center gap-2 text-sm text-ok">
               <CheckCircle2 className="size-4" aria-hidden /> {props.message}
             </p>
           ) : null}

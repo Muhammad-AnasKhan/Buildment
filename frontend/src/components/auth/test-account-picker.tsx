@@ -21,7 +21,7 @@ export function TestAccountPicker({
   return (
     <section
       aria-labelledby="test-accounts-heading"
-      className="w-full max-w-[440px] rounded-3xl border border-dashed border-border bg-card/60 px-5 py-4 text-card-foreground"
+      className="w-full max-w-[420px] rounded-md border-2 border-dashed border-border bg-card px-5 py-4 text-card-foreground"
     >
       <h3 id="test-accounts-heading" className="text-sm font-semibold">
         Test accounts
@@ -41,7 +41,7 @@ export function TestAccountPicker({
             aria-label={`${account.roleLabel}, ${account.email}`}
             disabled={pending}
             onClick={() => setChosen(account.email)}
-            className="flex min-w-0 cursor-pointer items-center gap-2 rounded-xl border border-border bg-background px-3 py-2 text-left text-sm outline-none transition-colors hover:border-foreground/30 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-default disabled:opacity-70"
+            className="flex min-w-0 cursor-pointer items-center gap-2 min-h-11 rounded-md border-2 border-border bg-background px-3 py-2 text-left text-sm outline-none transition-colors hover:border-foreground/30 focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-default disabled:opacity-70"
           >
             <span className="w-16 shrink-0 font-semibold">{account.roleLabel}</span>
             <span className="min-w-0 truncate text-muted-foreground">{account.email}</span>
@@ -57,7 +57,7 @@ export function TestAccountPicker({
       {state.formError ? (
         <p
           role="alert"
-          className="mt-3 rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-sm text-destructive"
+          className="mt-3 border-2 border-destructive bg-card px-3.5 py-3 text-[15px] text-destructive"
         >
           {state.formError}
         </p>

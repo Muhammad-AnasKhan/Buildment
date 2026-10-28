@@ -13,7 +13,7 @@ export function StepsClient({
   return (
     <div
       className={cn(
-        "not-prose my-8 overflow-hidden rounded-xl border border-border/90 bg-card text-card-foreground shadow-[0_1px_2px_rgb(0_0_0/0.04)]"
+        "not-prose my-8 overflow-hidden rounded-xl border border-border/90 bg-card text-card-foreground "
       )}
     >
       {title ? (

@@ -36,7 +36,7 @@ export function CodeBlockWrapper({
   };
 
   return (
-    <div className="not-prose group relative my-6 overflow-hidden rounded-xl border border-[var(--code-border)] bg-[var(--code-surface)] shadow-sm">
+    <div className="not-prose group relative my-6 overflow-hidden rounded-xl border border-[var(--code-border)] bg-[var(--code-surface)] ">
       {filename ? (
         <div className="flex items-center justify-between border-b border-[var(--code-border)] bg-[var(--code-toolbar)] px-4 py-2">
           <span className="text-xs font-medium text-[var(--code-lang-fg)]">{decodeURIComponent(filename)}</span>
@@ -48,7 +48,7 @@ export function CodeBlockWrapper({
           >
             {copied ? (
               <>
-                <Check className="size-3 text-emerald-400" />
+                <Check className="size-3 text-ok" />
                 Copied
               </>
             ) : (
@@ -68,7 +68,7 @@ export function CodeBlockWrapper({
         >
           {copied ? (
             <>
-              <Check className="size-3 text-emerald-400" />
+              <Check className="size-3 text-ok" />
               Copied
             </>
           ) : (

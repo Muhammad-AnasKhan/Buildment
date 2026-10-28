@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Dot } from "./dot";
+import { Dot } from "@/components/brand/dot";
 import s from "./edorax-landing.module.css";
 
 type Answer = { key: "A" | "B" | "C"; label: string; feedback: string };

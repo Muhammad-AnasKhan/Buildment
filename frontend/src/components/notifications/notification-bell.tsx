@@ -92,7 +92,7 @@ export function NotificationBell({ className }: { className?: string }) {
       >
         <Bell className="size-4" />
         {unreadCount > 0 ? (
-          <span className="absolute -right-1.5 -top-1.5 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none tabular-nums text-primary-foreground ring-2 ring-background">
+          <span className="absolute -right-1.5 -top-1.5 grid h-4.5 min-w-4.5 place-items-center rounded-full bg-primary px-1 text-xs font-semibold leading-none tabular-nums text-primary-foreground ring-2 ring-background">
             {unreadLabel}
           </span>
         ) : null}
@@ -100,7 +100,7 @@ export function NotificationBell({ className }: { className?: string }) {
 
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-foreground/25 backdrop-blur-[2px] transition-opacity duration-300 data-ending-style:opacity-0 data-starting-style:opacity-0" />
-        <Dialog.Popup className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l bg-background text-foreground shadow-2xl outline-none transition-transform duration-300 ease-out data-ending-style:translate-x-full data-starting-style:translate-x-full">
+        <Dialog.Popup className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l bg-background text-foreground outline-none transition-transform duration-300 ease-out data-ending-style:translate-x-full data-starting-style:translate-x-full">
           {/* Header */}
           <div className="flex items-start justify-between gap-4 border-b px-5 pb-4 pt-5 sm:px-6">
             <div className="min-w-0">
@@ -219,7 +219,7 @@ function NotificationCard({ item, onSelect }: { item: NotificationItem; onSelect
     <div
       className={cn(
         "group relative flex gap-3 rounded-xl border p-3.5 transition-colors focus-within:ring-2 focus-within:ring-ring",
-        unread ? "border-foreground/10 bg-card shadow-sm" : "bg-card/60 hover:bg-card"
+        unread ? "border-foreground/10 bg-card " : "bg-card/60 hover:bg-card"
       )}
     >
       <span
@@ -297,7 +297,7 @@ function EmptyState({
 }) {
   return (
     <div className="flex flex-col items-center px-8 py-16 text-center">
-      <span aria-hidden className="grid size-12 place-items-center rounded-full border bg-card text-muted-foreground shadow-sm">
+      <span aria-hidden className="grid size-12 place-items-center rounded-full border bg-card text-muted-foreground ">
         <Icon className="size-5" />
       </span>
       <p className="mt-4 text-sm font-semibold">{title}</p>

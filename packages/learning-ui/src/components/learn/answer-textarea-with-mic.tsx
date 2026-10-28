@@ -83,7 +83,7 @@ export function AnswerTextareaWithMic({
             variant={listening ? "default" : "ghost"}
             className={cn(
               "absolute right-2 top-2 size-9 shrink-0",
-              listening && "bg-rose-600 hover:bg-rose-700"
+              listening && "bg-destructive hover:bg-destructive"
             )}
             onClick={toggle}
             disabled={disabled}
@@ -97,9 +97,9 @@ export function AnswerTextareaWithMic({
       {enableSpeech && !supported ? (
         <p className="text-xs text-muted-foreground">Speech input is not available in this browser. Type your answer.</p>
       ) : null}
-      {error ? <p className="text-xs text-amber-700">{error}</p> : null}
+      {error ? <p className="text-xs text-foreground">{error}</p> : null}
       {listening ? (
-        <p className="text-xs font-medium text-rose-600">Listening… words appear as you speak.</p>
+        <p className="text-xs font-medium text-destructive">Listening… words appear as you speak.</p>
       ) : null}
     </div>
   );

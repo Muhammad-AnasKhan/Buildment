@@ -1,22 +1,12 @@
-import { MailCheck } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
+import { AuthMessage } from "@/components/auth/auth-message";
 
 export default function VerifyRequestPage() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-background px-6 py-24">
-      <Logo size="lg" />
-      <div className="mt-10 w-full max-w-sm text-center">
-        <div className="mx-auto flex size-12 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/15">
-          <MailCheck className="size-5 text-indigo-600" />
-        </div>
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">
-          Check your email
-        </h1>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-          We sent you a one-time sign-in link. It expires shortly, so use it soon. Didn&apos;t
-          get it? Check spam, or go back and try again.
-        </p>
-      </div>
-    </div>
+    <AuthMessage
+      mood="happy"
+      line="Almost there."
+      title="Check your email"
+      text="We sent you a link to sign in. It stops working soon, so use it now. No email? Look in your spam folder, or go back and try again."
+    />
   );
 }

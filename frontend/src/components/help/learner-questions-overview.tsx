@@ -17,10 +17,10 @@ import { LearnerQuestionDrawer } from "./learner-question-drawer";
 type View = "all" | "new" | "waiting" | "resolved";
 
 function questionState(thread: HelpThreadSummary) {
-  if (thread.unread) return { label: "New reply", tone: "text-emerald-700 bg-emerald-500/10 dark:text-emerald-400", icon: MessageCircle };
+  if (thread.unread) return { label: "New reply", tone: "text-ok bg-ok-soft", icon: MessageCircle };
   if (thread.status === "RESOLVED") return { label: "Resolved", tone: "text-muted-foreground bg-muted", icon: CheckCheck };
   if (thread.preview?.fromMentor) return { label: "Mentor replied", tone: "text-foreground bg-primary/10", icon: MessageCircle };
-  return { label: "Waiting for mentor", tone: "text-amber-700 bg-amber-500/10 dark:text-amber-400", icon: Clock3 };
+  return { label: "Waiting for mentor", tone: "text-foreground bg-brand-yellow/15", icon: Clock3 };
 }
 
 function when(iso: string) {
@@ -102,11 +102,11 @@ export function LearnerQuestionsOverview({
     <>
       <div className="mt-7 grid gap-3 sm:grid-cols-3">
         <button type="button" aria-pressed={view === "new"} onClick={() => setView("new")} className={cn("flex items-center gap-4 rounded-2xl border bg-card p-4 text-left transition-colors hover:border-foreground/30 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", view === "new" && "border-foreground/40 ring-1 ring-foreground/10")}>
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"><MessageCircle className="size-5" aria-hidden /></span>
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-ok-soft text-ok"><MessageCircle className="size-5" aria-hidden /></span>
           <span><span className="block text-2xl font-semibold leading-none">{newCount}</span><span className="mt-1 block text-sm text-muted-foreground">New replies</span></span>
         </button>
         <button type="button" aria-pressed={view === "waiting"} onClick={() => setView("waiting")} className={cn("flex items-center gap-4 rounded-2xl border bg-card p-4 text-left transition-colors hover:border-foreground/30 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", view === "waiting" && "border-foreground/40 ring-1 ring-foreground/10")}>
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400"><Clock3 className="size-5" aria-hidden /></span>
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand-yellow/15 text-foreground"><Clock3 className="size-5" aria-hidden /></span>
           <span><span className="block text-2xl font-semibold leading-none">{waitingCount}</span><span className="mt-1 block text-sm text-muted-foreground">Waiting for mentor</span></span>
         </button>
         <button type="button" aria-pressed={view === "resolved"} onClick={() => setView("resolved")} className={cn("flex items-center gap-4 rounded-2xl border bg-card p-4 text-left transition-colors hover:border-foreground/30 hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", view === "resolved" && "border-foreground/40 ring-1 ring-foreground/10")}>
@@ -128,7 +128,7 @@ export function LearnerQuestionsOverview({
           <div className="flex flex-col gap-3 border-b p-4 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
             <div aria-label="Filter questions by status" className="flex w-full gap-1 overflow-x-auto rounded-xl bg-muted/60 p-1 lg:w-auto">
               {tabs.map((tab) => (
-                <button key={tab.id} type="button" aria-pressed={view === tab.id} onClick={() => setView(tab.id)} className={cn("flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", view === tab.id && "bg-background text-foreground shadow-sm")}>
+                <button key={tab.id} type="button" aria-pressed={view === tab.id} onClick={() => setView(tab.id)} className={cn("flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", view === tab.id && "bg-background text-foreground ")}>
                   {tab.label}<span className="text-xs tabular-nums opacity-65">{tab.count}</span>
                 </button>
               ))}

@@ -11,7 +11,7 @@ import { ChevronRight } from "lucide-react";
 export function GoDeeper({ title, children }: { title?: string; children: ReactNode }) {
   return (
     <details className="group my-5 rounded-xl border border-border bg-muted/20 px-4 open:pb-3">
-      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-[15px] font-semibold text-blue-700 outline-none focus-visible:ring-2 focus-visible:ring-blue-600 dark:text-blue-300 [&::-webkit-details-marker]:hidden">
+      <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 text-[15px] font-semibold text-primary outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
         <ChevronRight aria-hidden className="size-4 shrink-0 transition-transform duration-200 group-open:rotate-90 motion-reduce:transition-none" />
         {title ?? "Go deeper"}
       </summary>

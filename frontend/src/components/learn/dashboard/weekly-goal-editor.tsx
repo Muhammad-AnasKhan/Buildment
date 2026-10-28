@@ -72,7 +72,7 @@ export function WeeklyGoalEditor({ goal }: { goal: LearnerHabit["weeklyGoal"] })
 
   return (
     <>
-      <Button type="button" size="lg" onClick={openEditor} className="h-10 gap-2 rounded-xl px-4 shadow-sm">
+      <Button type="button" size="lg" onClick={openEditor} className="h-10 gap-2 rounded-xl px-4 ">
         <Target className="size-4" aria-hidden /> {goal ? "Edit weekly goal" : "Set weekly goal"}
       </Button>
       <dialog
@@ -82,12 +82,12 @@ export function WeeklyGoalEditor({ goal }: { goal: LearnerHabit["weeklyGoal"] })
         className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-0 backdrop:bg-background/70 open:flex open:items-center open:justify-center open:p-4"
         aria-labelledby="weekly-goal-title"
       >
-        <div className="flex max-h-[min(92dvh,39rem)] w-full max-w-[34rem] flex-col overflow-hidden rounded-[1.5rem] border bg-card text-card-foreground shadow-2xl">
+        <div className="flex max-h-[min(92dvh,39rem)] w-full max-w-[34rem] flex-col overflow-hidden rounded-[1.5rem] border bg-card text-card-foreground ">
           <div className="flex shrink-0 items-start justify-between gap-4 px-5 pb-4 pt-5 sm:px-7 sm:pt-6">
             <div className="flex items-start gap-3.5">
               <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground"><Target className="size-5" aria-hidden /></span>
               <div>
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Your learning plan</p>
+                <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Your learning plan</p>
                 <h2 id="weekly-goal-title" className="text-xl font-semibold tracking-tight">{goal ? "Edit weekly goal" : "Set a weekly goal"}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">{step === 1 ? "Choose a target that fits your week." : "Make this goal yours."}</p>
               </div>

@@ -55,9 +55,9 @@ function BestWeek({ xp, best }: { xp: number; best: number }) {
 }
 
 const MEDAL_TONES: Record<number, string> = {
-  1: "bg-amber-400/20 text-amber-700 ring-amber-500/40 dark:text-amber-300",
-  2: "bg-slate-400/20 text-slate-600 ring-slate-400/40 dark:text-slate-300",
-  3: "bg-orange-600/15 text-orange-800 ring-orange-600/35 dark:text-orange-300",
+  1: "bg-brand-yellow/15 text-foreground ring-brand-yellow",
+  2: "bg-muted-foreground text-muted-foreground ring-border dark:text-foreground",
+  3: "bg-brand-yellow/15 text-foreground ring-brand-yellow",
 };
 
 function LastWeekWinners({ winners }: { winners: LeaderboardEntry[] }) {
@@ -70,7 +70,7 @@ function LastWeekWinners({ winners }: { winners: LeaderboardEntry[] }) {
             key={winner.rank}
             className={cn(
               "flex min-w-0 flex-col items-center rounded-xl border px-1.5 py-2.5 text-center",
-              winner.isYou ? "border-amber-500/40 bg-amber-500/5" : "bg-muted/30"
+              winner.isYou ? "border-brand-yellow bg-brand-yellow/15" : "bg-muted/30"
             )}
           >
             <span
@@ -83,7 +83,7 @@ function LastWeekWinners({ winners }: { winners: LeaderboardEntry[] }) {
               <span className="sr-only">Place {winner.rank}: </span>
               {winner.isYou ? "You" : winner.name}
             </span>
-            <span className="text-[11px] tabular-nums text-muted-foreground">{numberFormat.format(winner.xp)} XP</span>
+            <span className="text-xs tabular-nums text-muted-foreground">{numberFormat.format(winner.xp)} XP</span>
           </li>
         ))}
       </ol>

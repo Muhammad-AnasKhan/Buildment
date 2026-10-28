@@ -1,14 +1,14 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import type { MascotReaction } from "@/shared/engagement/engine";
 import { useMascotReactions } from "@/lib/engagement/use-mascot";
 import { requestAskHelp } from "@/lib/engagement/ask-help";
-import { MascotRig } from "@/components/mascot/mascot-rig";
+import { Dot } from "@/components/brand/dot";
+import { dotMoodForState } from "@/components/mascot/dot-mood";
 
 // The one place mascot reactions are drawn. Everything above it (rules, cooldowns, which mascot
 // plays which role) lives in shared/engagement; swapping the drawing for a Rive animation later
@@ -38,61 +38,6 @@ const TYPE_MAX_MS = 1_100;
 const TYPE_STEP_MS = 28;
 const MODAL_SELECTOR = "dialog[open], [role='dialog'][aria-modal='true']";
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
-/** Voice is on unless the learner mutes it with the speaker button on a voiced reaction. */
-const VOICE_PREFERENCE_KEY = "buildment:mascot:voice";
-const voiceListeners = new Set<() => void>();
-
-function voiceEnabled(): boolean {
-  try {
-    return window.localStorage.getItem(VOICE_PREFERENCE_KEY) !== "off";
-  } catch {
-    return true;
-  }
-}
-
-function setVoiceEnabled(on: boolean) {
-  try {
-    window.localStorage.setItem(VOICE_PREFERENCE_KEY, on ? "on" : "off");
-  } catch {
-    // Storage blocked: the choice lasts until the page reloads.
-  }
-  voiceListeners.forEach((listener) => listener());
-}
-
-function subscribeToVoicePreference(onChange: () => void) {
-  voiceListeners.add(onChange);
-  window.addEventListener("storage", onChange);
-  return () => {
-    voiceListeners.delete(onChange);
-    window.removeEventListener("storage", onChange);
-  };
-}
-
-/**
- * Starts a reaction's clip as the current one and reports while it is audible, so the mouth moves
- * with the sound. A missing file or a blocked autoplay just stays silent.
- */
-function playClip(
-  voice: string,
-  current: RefObject<HTMLAudioElement | null>,
-  onSpeaking: (speaking: boolean) => void
-) {
-  current.current?.pause();
-  const audio = new Audio(`/mascots/voice/${voice.split("/").map(encodeURIComponent).join("/")}.mp3`);
-  current.current = audio;
-  const report = () => {
-    if (current.current === audio) onSpeaking(!audio.paused && !audio.ended);
-  };
-  for (const type of ["playing", "pause", "ended", "error"]) audio.addEventListener(type, report);
-  audio.play().catch(() => undefined);
-}
-
-function stopClip(current: RefObject<HTMLAudioElement | null>, onSpeaking: (speaking: boolean) => void) {
-  current.current?.pause();
-  current.current = null;
-  onSpeaking(false);
-}
-
 function modalOpen(): boolean {
   return document.querySelector(MODAL_SELECTOR) !== null;
 }
@@ -138,34 +83,26 @@ function useReducedMotion(): boolean {
 }
 
 const ACTION_BUTTON =
-  "inline-flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
+  "inline-flex items-center gap-1 rounded-md bg-primary px-3 py-1.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
 
 const BUBBLE_BUTTON =
-  "grid size-6 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "grid size-8 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 /** One reaction: the character and its speech bubble. Mounted fresh (keyed) for every reaction. */
 function ReactionBubble({
   reaction,
   animate,
-  speaking,
-  voiceOn,
-  onToggleVoice,
   onPause,
   onDismiss,
 }: {
   reaction: MascotReaction;
   animate: boolean;
-  /** The line's clip is playing; the mouth keeps moving until it ends. */
-  speaking: boolean;
-  voiceOn: boolean;
-  onToggleVoice: () => void;
   onPause: (paused: boolean) => void;
   onDismiss: () => void;
 }) {
   const line = reaction.message;
   const [typed, setTyped] = useState(() => (animate ? 0 : line.length));
   const typing = typed < line.length;
-  const talking = typing || speaking;
 
   useEffect(() => {
     if (!typing) return;
@@ -174,9 +111,7 @@ function ReactionBubble({
     return () => window.clearInterval(timer);
   }, [typing, line.length]);
 
-  const expression = reaction.asset.expression;
   const action = reaction.action;
-  const motion = animate && expression?.motion && expression.motion !== "none" ? `mascot-motion-${expression.motion}` : "";
 
   return (
     <div
@@ -186,22 +121,11 @@ function ReactionBubble({
       onFocus={() => onPause(true)}
       onBlur={() => onPause(false)}
     >
-      <div className={`mascot-body size-16 shrink-0 drop-shadow-sm sm:size-18 ${motion}`}>
-        {reaction.rig && expression ? (
-          <MascotRig
-            character={reaction.rig}
-            expression={expression}
-            talking={talking}
-            animate={animate}
-            label={reaction.asset.alt}
-            className="size-full"
-          />
-        ) : (
-          <Image src={reaction.asset.image} alt={reaction.asset.alt} width={72} height={72} unoptimized className="size-full" />
-        )}
+      <div className="mascot-body shrink-0">
+        <Dot mood={dotMoodForState(reaction.state)} size={72} />
       </div>
       <div
-        className={`relative mb-2 rounded-2xl rounded-bl-sm border bg-card py-2 pl-3 ${reaction.voice ? "pr-14" : "pr-8"} text-sm font-medium text-card-foreground shadow-lg`}
+        className="relative mb-2 border border-border bg-card py-2.5 pl-3.5 pr-10 text-base font-medium text-card-foreground"
       >
         {/* The full line reserves the bubble's size so it does not grow while typing. */}
         <span aria-hidden className="grid">
@@ -240,17 +164,6 @@ function ReactionBubble({
           </span>
         ) : null}
         <div className="absolute right-1.5 top-1.5 flex">
-          {reaction.voice ? (
-            <button
-              type="button"
-              onClick={onToggleVoice}
-              aria-label={`${reaction.mascotName}'s voice`}
-              aria-pressed={voiceOn}
-              className={BUBBLE_BUTTON}
-            >
-              {voiceOn ? <Volume2 className="size-3.5" aria-hidden /> : <VolumeX className="size-3.5" aria-hidden />}
-            </button>
-          ) : null}
           <button type="button" onClick={onDismiss} aria-label="Dismiss" className={BUBBLE_BUTTON}>
             <X className="size-3.5" aria-hidden />
           </button>
@@ -265,17 +178,12 @@ export function MascotPlayer() {
   const [paused, setPaused] = useState(false);
   const [modalHost, setModalHost] = useState<HTMLDialogElement | null>(null);
   const layerRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [speaking, setSpeaking] = useState(false);
-  const speakingRef = useRef(false);
   const reducedMotion = useReducedMotion();
 
-  useEffect(() => {
-    speakingRef.current = speaking;
-  }, [speaking]);
-  const voiceOn = useSyncExternalStore(subscribeToVoicePreference, voiceEnabled, () => true);
 
   useMascotReactions((reaction, seq) => {
+    // Dot stays out of a quiz. The result card has its own Dot once the quiz is done.
+    if (document.getElementById("quiz-chapter-session")) return;
     setPaused(false);
     setShown({ reaction, seq });
   });
@@ -290,8 +198,6 @@ export function MascotPlayer() {
         remaining = visibleMs;
         return;
       }
-      // A calm voice can outlast the bubble's time; it never cuts the mascot off mid-sentence.
-      if (speakingRef.current) return;
       remaining -= TICK_MS;
       if (remaining <= 0) setShown(null);
     }, TICK_MS);
@@ -325,21 +231,6 @@ export function MascotPlayer() {
     };
   }, [shown, modalHost]);
 
-  // Each reaction speaks once as it appears; it falls silent when the bubble goes.
-  useEffect(() => {
-    const voice = shown?.reaction.voice;
-    if (voice && voiceEnabled()) playClip(voice, audioRef, setSpeaking);
-    return () => stopClip(audioRef, setSpeaking);
-  }, [shown]);
-
-  /** Turning the voice on says the current line, so the learner hears what they chose. */
-  function toggleVoice() {
-    const on = !voiceEnabled();
-    setVoiceEnabled(on);
-    if (on && shown?.reaction.voice) playClip(shown.reaction.voice, audioRef, setSpeaking);
-    else stopClip(audioRef, setSpeaking);
-  }
-
   const reaction = shown?.reaction;
 
   const layer = (
@@ -354,9 +245,6 @@ export function MascotPlayer() {
           key={shown.seq}
           reaction={shown.reaction}
           animate={!reducedMotion}
-          speaking={speaking}
-          voiceOn={voiceOn}
-          onToggleVoice={toggleVoice}
           onPause={setPaused}
           onDismiss={() => {
             setPaused(false);

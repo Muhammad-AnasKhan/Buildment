@@ -59,7 +59,7 @@ export function CourseProjectShowcase({ courseSlug }: { courseSlug: string }) {
     >
       <div className="flex flex-col gap-5 border-b border-border px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-7">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             What you&apos;re going to build
           </p>
           <h2 className="mt-1.5 text-xl font-semibold tracking-[-0.025em] sm:text-2xl">

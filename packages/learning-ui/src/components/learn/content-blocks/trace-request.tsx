@@ -40,9 +40,9 @@ function collectSteps(children: ReactNode): TraceStepProps[] {
 }
 
 function statusTone(status: number) {
-  if (status >= 200 && status < 300) return "text-emerald-700 bg-emerald-50 ring-emerald-200/80 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-emerald-400/25";
-  if (status >= 400 && status < 500) return "text-amber-800 bg-amber-50 ring-amber-200/80 dark:bg-amber-500/15 dark:text-amber-100 dark:ring-amber-400/25";
-  if (status >= 500) return "text-red-700 bg-red-50 ring-red-200/80 dark:bg-red-500/15 dark:text-red-200 dark:ring-red-400/25";
+  if (status >= 200 && status < 300) return "text-ok bg-ok-soft ring-ok";
+  if (status >= 400 && status < 500) return "text-foreground bg-brand-yellow/15 ring-brand-yellow";
+  if (status >= 500) return "text-destructive bg-destructive/10 ring-destructive";
   return "bg-muted text-muted-foreground ring-border";
 }
 
@@ -137,14 +137,14 @@ export function TraceRequestClient({ title, steps }: TraceRequestClientProps) {
                   className={cn(
                     "min-w-0 flex-1 rounded-xl border px-4 py-3 text-left transition-colors",
                     isActive
-                      ? "border-border bg-muted shadow-sm"
+                      ? "border-border bg-muted "
                       : "border-transparent hover:bg-muted/70"
                   )}
                 >
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={cn(
-                        "rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ring-1 ring-inset",
+                        "rounded-md px-2 py-0.5 text-xs font-bold uppercase tracking-wide ring-1 ring-inset",
                         styles.badge
                       )}
                     >
@@ -153,7 +153,7 @@ export function TraceRequestClient({ title, steps }: TraceRequestClientProps) {
                     {step.status != null ? (
                       <span
                         className={cn(
-                          "rounded-md px-2 py-0.5 font-mono text-[11px] font-bold ring-1 ring-inset",
+                          "rounded-md px-2 py-0.5 font-mono text-xs font-bold ring-1 ring-inset",
                           statusTone(step.status)
                         )}
                       >

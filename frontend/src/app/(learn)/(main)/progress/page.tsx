@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  BookOpen,
   ChevronDown,
   CheckCircle2,
   CircleAlert,
@@ -9,7 +8,8 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import type { LearnerProgressModule, LearnerProgressView } from "@/shared/api/learner";
+import type { LearnerProgressModule, LearnerProgressView, MenteeDashboardViewModel } from "@/shared/api/learner";
+import { Dot } from "@/components/brand/dot";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { formatStudyAmount } from "@/lib/format-study-duration";
@@ -23,14 +23,20 @@ function percentage(score: number, maxScore: number) {
 
 function accuracyState(value: number | null) {
   if (value === null) return { label: "Not scored yet", detail: "Complete a scored quiz, prediction, test, or code check to establish accuracy.", className: "text-muted-foreground", icon: Target };
-  if (value >= 80) return { label: "Strong understanding", detail: "Your scored checkpoints show reliable understanding.", className: "text-emerald-700 dark:text-emerald-400", icon: CheckCircle2 };
-  if (value >= 60) return { label: "Developing understanding", detail: "Review missed checkpoints before moving too far ahead.", className: "text-amber-700 dark:text-amber-400", icon: CircleAlert };
-  return { label: "Needs review", detail: "Revisit the scored chapters below and try the checks again.", className: "text-destructive", icon: CircleAlert };
+  if (value >= 80) return { label: "Strong understanding", detail: "Your scored checkpoints show reliable understanding.", className: "text-ok", icon: CheckCircle2 };
+  if (value >= 60) return { label: "Developing understanding", detail: "Review missed checkpoints before moving too far ahead.", className: "text-foreground", icon: CircleAlert };
+  return { label: "Look at these again", detail: "Revisit the scored chapters below and try the checks again.", className: "text-destructive", icon: CircleAlert };
 }
 
 export default async function MenteeProgressPage({ searchParams }: { searchParams: Promise<{ course?: string }> }) {
   await requireLearnSurface();
-  const { courses: courseProgress, closedWrong, overall } = await serverApiFetch<LearnerProgressView>("/api/v1/learner/progress");
+  const [{ courses: courseProgress, closedWrong, overall }, dashboard] = await Promise.all([
+    serverApiFetch<LearnerProgressView>("/api/v1/learner/progress"),
+    serverApiFetch<MenteeDashboardViewModel>("/api/v1/learner/dashboard").catch(() => null),
+  ]);
+  const streak = dashboard?.habit.streakCount ?? 0;
+  const weeklyGoal = dashboard?.habit.weeklyGoal ?? null;
+  const nextUp = courseProgress.find((item) => item.continueHref) ?? null;
   const { course: requestedCourse } = await searchParams;
   const selectedCourse = courseProgress.find((item) => item.course.slug === requestedCourse) ?? null;
   const visibleCourses = selectedCourse ? [selectedCourse] : courseProgress;
@@ -45,43 +51,81 @@ export default async function MenteeProgressPage({ searchParams }: { searchParam
       }
     : overall;
   const visibleWrong = selectedCourse ? closedWrong.filter((row) => row.course.slug === selectedCourse.course.slug) : closedWrong;
-  const overallAccuracy = percentage(selectedSummary.score, selectedSummary.maxScore);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
       <header className="flex flex-col gap-6 border-b pb-7 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-muted-foreground">Learning overview</p>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">My progress</h1>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
-            See what you have completed and how your study time is growing.
-          </p>
+          <h1 className="text-[32px] leading-tight tracking-[-0.035em] sm:text-[40px]">Progress</h1>
+          <p className="mt-2 max-w-xl text-lg text-muted-foreground">Where you are, and what to do next.</p>
         </div>
         {courseProgress.length > 0 ? <ProgressCourseSelector courses={courseProgress} selectedSlug={selectedCourse?.course.slug ?? null} /> : null}
       </header>
 
       {courseProgress.length === 0 ? (
-        <div className="mt-8 flex flex-col items-center rounded-2xl border border-dashed bg-muted/20 px-6 py-16 text-center">
-          <BookOpen className="size-8 text-muted-foreground" aria-hidden />
-          <h2 className="mt-4 text-lg font-semibold">No progress to show yet</h2>
-          <p className="mt-2 max-w-sm text-sm text-muted-foreground">Assigned courses will appear here with completion and correctness signals.</p>
-          <Link href="/dashboard" className={cn(buttonVariants({ variant: "outline" }), "mt-6")}>Back to dashboard</Link>
+        <div className="mt-8 flex flex-col items-center border border-border bg-card px-6 py-14 text-center">
+          <Dot mood="sleep" size={112} />
+          <h2 className="mt-4 text-xl tracking-[-0.02em]">Nothing to show yet</h2>
+          <p className="mt-2 max-w-sm text-base text-muted-foreground">Start a chapter and your progress shows up here.</p>
+          <Link href="/catalog" className={cn(buttonVariants(), "mt-6")}>Browse courses</Link>
         </div>
       ) : (
         <>
-          <section aria-label="Progress summary" className="mt-8 grid overflow-hidden rounded-2xl border bg-card sm:grid-cols-2 xl:grid-cols-4">
-            <SummaryMetric label={selectedCourse ? "Course progress" : "Courses"} value={selectedCourse ? `${selectedCourse.percentComplete}%` : String(courseProgress.length)} detail={selectedCourse ? "Of this course complete" : "Courses in your learning plan"} />
-            <SummaryMetric label="Chapters complete" value={`${selectedSummary.chaptersCompleted}/${selectedSummary.totalChapters}`} detail={`${percentage(selectedSummary.chaptersCompleted, selectedSummary.totalChapters) ?? 0}% of the curriculum`} />
-            <SummaryMetric label="Scored accuracy" value={overallAccuracy === null ? "—" : `${overallAccuracy}%`} detail={selectedSummary.maxScore > 0 ? `${selectedSummary.score} of ${selectedSummary.maxScore} points` : "No scored checks yet"} />
-            <SummaryMetric label="Study this week" value={formatStudyAmount(selectedSummary.weekSeconds)} detail={selectedSummary.pendingReviews > 0 ? `${selectedSummary.pendingReviews} awaiting review` : "Active learning time in the last 7 days"} />
+          <section aria-label="Your week" className="mt-8 grid gap-4 lg:grid-cols-3">
+            <div className="border border-border bg-card p-6">
+              <p className="text-sm font-bold text-muted-foreground">Streak</p>
+              <p className="mt-2 font-[family-name:var(--font-heading)] text-[40px] font-bold leading-none tracking-[-0.035em]">
+                {streak > 0 ? `${streak} ${streak === 1 ? "day" : "days"}` : "Start today"}
+              </p>
+              <p className="mt-4 text-base text-muted-foreground">
+                {streak > 0 ? "Days in a row you studied. Today is still open." : "One short chapter starts a streak."}
+              </p>
+            </div>
+            <div className="border border-border bg-card p-6">
+              <p className="text-sm font-bold text-muted-foreground">This week</p>
+              <p className="mt-2 font-[family-name:var(--font-heading)] text-[40px] font-bold leading-none tracking-[-0.035em]">
+                {formatStudyAmount(selectedSummary.weekSeconds)}
+              </p>
+              {weeklyGoal ? (
+                <>
+                  <div className="mt-4 h-2 overflow-hidden rounded-sm bg-secondary">
+                    <div className="h-full rounded-sm bg-primary" style={{ width: `${Math.min(100, Math.round((weeklyGoal.progress / Math.max(1, weeklyGoal.target)) * 100))}%` }} />
+                  </div>
+                  <p className="mt-2 text-base text-muted-foreground">
+                    {weeklyGoal.progress} of {weeklyGoal.target} {weeklyGoal.kind === "SESSIONS" ? "study sessions" : "chapters"} this week.
+                  </p>
+                </>
+              ) : (
+                <p className="mt-4 text-base text-muted-foreground">
+                  {selectedSummary.chaptersCompleted} of {selectedSummary.totalChapters} chapters done
+                  {selectedSummary.pendingReviews > 0 ? `. ${selectedSummary.pendingReviews} waiting for review.` : "."}
+                </p>
+              )}
+            </div>
+            <div className="border border-border bg-card p-6">
+              <p className="text-sm font-bold text-primary">Next up</p>
+              {nextUp ? (
+                <>
+                  <p className="mt-2 text-lg font-bold leading-snug tracking-[-0.02em]">{nextUp.course.title}</p>
+                  <p className="mt-1 text-base text-muted-foreground">
+                    {nextUp.chaptersCompleted} of {nextUp.totalChapters} chapters done
+                  </p>
+                  <Link href={nextUp.continueHref!} className={cn(buttonVariants(), "mt-5")}>
+                    Continue <ArrowRight data-icon="inline-end" />
+                  </Link>
+                </>
+              ) : (
+                <p className="mt-2 text-base text-muted-foreground">You have finished what is open. Pick another course.</p>
+              )}
+            </div>
           </section>
 
           <ActivityInsights courses={visibleCourses} />
 
           {visibleWrong.length > 0 ? (
             <section aria-labelledby="closed-wrong-heading" className="mt-8">
-              <h2 id="closed-wrong-heading" className="text-lg font-semibold tracking-tight">Saved without a retry</h2>
-              <p className="mt-1 text-sm text-muted-foreground">These checks counted on a wrong answer because retry was off.</p>
+              <h2 id="closed-wrong-heading" className="text-2xl tracking-[-0.02em]">Questions to look at again</h2>
+              <p className="mt-1 text-base text-muted-foreground">These counted with a wrong answer. Open one to go back over it.</p>
               <ul className="mt-4 divide-y divide-border overflow-hidden rounded-xl border bg-card">
                 {visibleWrong.map((row) => (
                   <li key={row.blockId}>
@@ -198,16 +242,6 @@ export default async function MenteeProgressPage({ searchParams }: { searchParam
   );
 }
 
-function SummaryMetric({ label, value, detail }: { label: string; value: string; detail: string }) {
-  return (
-    <div className="border-b p-5 last:border-b-0 sm:[&:nth-child(even)]:border-l sm:[&:nth-child(n+3)]:border-b-0 xl:border-b-0 xl:border-l xl:first:border-l-0">
-      <p className="text-xs font-medium text-muted-foreground">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tabular-nums">{value}</p>
-      <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
-    </div>
-  );
-}
-
 function ModuleProgressCard({ module }: { module: LearnerProgressModule }) {
   const completion = percentage(module.completed, module.total) ?? 0;
   const accuracy = percentage(module.score, module.maxScore);
@@ -220,7 +254,7 @@ function ModuleProgressCard({ module }: { module: LearnerProgressModule }) {
       <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label={`${module.title} completion`} aria-valuenow={completion} aria-valuemin={0} aria-valuemax={100}>
         <div className="h-full rounded-full bg-primary/80" style={{ width: `${completion}%` }} />
       </div>
-      <div className="mt-2.5 flex flex-wrap justify-between gap-x-2 text-[11px] tabular-nums">
+      <div className="mt-2.5 flex flex-wrap justify-between gap-x-2 text-xs tabular-nums">
         <span className="text-muted-foreground">{module.completed}/{module.total} chapters</span>
         <span className={accuracyState(accuracy).className}>{accuracy === null ? "Not scored" : `${accuracy}% correct`}</span>
       </div>

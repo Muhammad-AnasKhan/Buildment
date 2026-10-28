@@ -2,27 +2,10 @@
 
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import {
-  BookOpenText,
-  CircleHelp,
-  Gauge,
-  GraduationCap,
-  Menu,
-  TrendingUp,
-  type LucideIcon,
-} from "lucide-react";
+import { usePathname } from "next/navigation";
+import { BookOpenText, CircleHelp, Home, TrendingUp, type LucideIcon } from "lucide-react";
 import { WorkspaceAccountMenu } from "@/components/workspace/workspace-account-menu";
 import { Logo } from "@/components/brand/logo";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { helpUiCopy } from "@/shared/lib/help-ui-copy";
@@ -54,39 +37,20 @@ export function MenteeWorkspaceShell({
   signOutAction: () => Promise<void>;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
 
   // Course overviews and chapter readers have their own focused navigation.
   if (pathname.startsWith("/courses/")) return children;
 
-  const mainItems: LearnerNavItem[] = [
+  const items: LearnerNavItem[] = [
+    { label: "Home", href: "/dashboard", icon: Home, active: pathname === "/dashboard" },
     {
-      label: "Dashboard",
-      href: "/dashboard",
-      icon: Gauge,
-      active: pathname === "/dashboard",
-    },
-    {
-      label: "Catalog",
-      href: "/catalog",
-      icon: GraduationCap,
-      active: pathname.startsWith("/catalog"),
-    },
-    {
-      label: "My courses",
+      label: "Courses",
       href: "/my-courses",
       icon: BookOpenText,
-      active: pathname === "/my-courses",
+      active: pathname === "/my-courses" || pathname.startsWith("/catalog"),
       count: assignedCourses,
     },
-    {
-      label: "My progress",
-      href: "/progress",
-      icon: TrendingUp,
-      active: pathname === "/progress",
-    },
-  ];
-  const supportItems: LearnerNavItem[] = [
+    { label: "Progress", href: "/progress", icon: TrendingUp, active: pathname === "/progress" },
     {
       label: helpUiCopy.learnerNav,
       href: "/my-questions",
@@ -98,72 +62,58 @@ export function MenteeWorkspaceShell({
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
-      <div className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur lg:hidden">
-        <Link href="/dashboard" aria-label="Learner dashboard">
+      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-border bg-card px-4 lg:hidden">
+        <Link href="/dashboard" aria-label="Edorax home" className="text-foreground">
           <Logo size="sm" />
         </Link>
         <div className="flex items-center gap-1">
           <NotificationBell />
           <WorkspaceAccountMenu current="learn" user={user} instructorAccess={instructorAccess} signOutAction={signOutAction} compact />
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <button
-                  type="button"
-                  className="grid size-9 place-items-center rounded-lg border bg-card outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring"
-                  aria-label="Open learner workspace navigation"
-                />
-              }
-            >
-              <Menu className="size-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[min(21rem,calc(100vw-2rem))] p-1.5">
-              <MobileItems label="Learning" items={mainItems} onNavigate={router.push} />
-              <DropdownMenuSeparator />
-              <MobileItems label="Support" items={supportItems} onNavigate={router.push} />
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
-      </div>
+      </header>
 
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 border-r bg-card lg:flex lg:flex-col">
-        <div className="flex h-16 shrink-0 items-center justify-between gap-3 border-b px-4">
-          <Link
-            href="/dashboard"
-            className="inline-flex outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 border-r border-border bg-card lg:flex lg:flex-col">
+        <div className="flex h-16 shrink-0 items-center justify-between gap-3 px-5">
+          <Link href="/dashboard" aria-label="Edorax home" className="inline-flex text-foreground outline-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow">
             <Logo size="sm" />
           </Link>
           <NotificationBell />
         </div>
 
-        <nav aria-label="Learner workspace" className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
-          <SidebarGroup label="Learning" items={mainItems} />
-          <SidebarGroup label="Support" items={supportItems} />
+        <nav aria-label="Learner workspace" className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 py-4">
+          {items.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={item.active ? "page" : undefined}
+                className={cn(
+                  "flex min-h-11 items-center gap-3 rounded-md px-3.5 text-base outline-none transition-colors focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow",
+                  item.active ? "bg-secondary font-bold text-primary" : "font-medium text-foreground hover:bg-muted"
+                )}
+              >
+                <Icon className="size-5" aria-hidden />
+                <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                {item.count ? <Count value={item.count} /> : null}
+              </Link>
+            );
+          })}
           {pendingReviews > 0 ? (
-            <p className="px-2 text-xs leading-5 text-muted-foreground">
+            <p className="px-3.5 pt-3 text-sm leading-5 text-muted-foreground">
               {pendingReviews} submission{pendingReviews === 1 ? "" : "s"} awaiting review
             </p>
           ) : null}
         </nav>
 
-        <div className="shrink-0 border-t p-2">
+        <div className="shrink-0 border-t border-border p-2">
           <WorkspaceAccountMenu current="learn" user={user} instructorAccess={instructorAccess} signOutAction={signOutAction} />
         </div>
       </aside>
 
-      <main className="min-h-dvh lg:pl-60">{children}</main>
-    </div>
-  );
-}
+      <main className="min-h-dvh pb-20 lg:pb-0 lg:pl-60">{children}</main>
 
-function SidebarGroup({ label, items }: { label: string; items: LearnerNavItem[] }) {
-  return (
-    <div>
-      <p className="px-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-        {label}
-      </p>
-      <div className="mt-1.5 space-y-1">
+      <nav aria-label="Learner workspace" className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-card pb-[env(safe-area-inset-bottom)] lg:hidden">
         {items.map((item) => {
           const Icon = item.icon;
           return (
@@ -172,61 +122,26 @@ function SidebarGroup({ label, items }: { label: string; items: LearnerNavItem[]
               href={item.href}
               aria-current={item.active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                item.active
-                  ? "bg-foreground text-background shadow-sm"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                "relative flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-[13px] outline-none focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-brand-yellow",
+                item.active ? "font-bold text-primary" : "font-medium text-muted-foreground"
               )}
             >
-              <Icon className="size-4" />
-              <span className="min-w-0 flex-1 truncate">{item.label}</span>
-              {item.count !== undefined ? <Count value={item.count} active={item.active} /> : null}
+              <Icon className="size-[22px]" aria-hidden />
+              {item.label}
+              {item.count ? (
+                <span className="absolute right-[calc(50%-24px)] top-2 grid size-2.5 rounded-full bg-brand-yellow" aria-label={`${item.count} open`} />
+              ) : null}
             </Link>
           );
         })}
-      </div>
+      </nav>
     </div>
   );
 }
 
-function MobileItems({
-  label,
-  items,
-  onNavigate,
-}: {
-  label: string;
-  items: LearnerNavItem[];
-  onNavigate: (href: string) => void;
-}) {
+function Count({ value }: { value: number }) {
   return (
-    <DropdownMenuGroup>
-      <DropdownMenuLabel>{label}</DropdownMenuLabel>
-      {items.map((item) => {
-        const Icon = item.icon;
-        return (
-          <DropdownMenuItem
-            key={item.href}
-            className={cn(item.active && "bg-accent font-medium")}
-            onClick={() => onNavigate(item.href)}
-          >
-            <Icon className="size-4" />
-            <span className="min-w-0 flex-1 truncate">{item.label}</span>
-            {item.count !== undefined ? <Count value={item.count} active={false} /> : null}
-          </DropdownMenuItem>
-        );
-      })}
-    </DropdownMenuGroup>
-  );
-}
-
-function Count({ value, active }: { value: number; active: boolean }) {
-  return (
-    <span
-      className={cn(
-        "min-w-5 rounded-full px-1.5 py-0.5 text-center text-[10px] font-semibold tabular-nums",
-        active ? "bg-background/15 text-background" : "bg-muted text-muted-foreground"
-      )}
-    >
+    <span className="min-w-6 rounded-sm bg-secondary px-1.5 py-0.5 text-center text-xs font-bold tabular-nums text-foreground">
       {value > 99 ? "99+" : value}
     </span>
   );

@@ -58,7 +58,7 @@ function CodeEditor({
   }, [syncScroll]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[var(--code-border)] bg-[var(--code-surface)] shadow-inner">
+    <div className="overflow-hidden rounded-xl border border-[var(--code-border)] bg-[var(--code-surface)] ">
       {/* Editor title bar */}
       <div className="flex items-center justify-between gap-3 border-b border-[var(--code-border)] bg-[var(--code-toolbar)] px-3 py-2.5 sm:px-4">
         <div className="flex min-w-0 items-center gap-3">
@@ -69,12 +69,12 @@ function CodeEditor({
           </div>
           <div className="flex min-w-0 items-center gap-2 font-mono text-xs">
             <span className="truncate text-[var(--code-fg)]">{filename}</span>
-            <span className="shrink-0 rounded bg-[var(--code-border)]/40 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-[var(--code-lang-fg)]">
+            <span className="shrink-0 rounded bg-[var(--code-border)]/40 px-1.5 py-0.5 text-xs uppercase tracking-wide text-[var(--code-lang-fg)]">
               {language}
             </span>
           </div>
         </div>
-        <span className="shrink-0 text-[10px] text-[var(--code-lang-fg)]">Editable</span>
+        <span className="shrink-0 text-xs text-[var(--code-lang-fg)]">Editable</span>
       </div>
 
       <div className="flex max-h-[min(420px,55vh)] min-h-[220px]">
@@ -101,7 +101,7 @@ function CodeEditor({
           className={cn(
             "block min-h-[220px] w-full flex-1 resize-none bg-transparent py-4 pr-4 pl-4 font-mono text-[13px] leading-[1.65] text-[var(--code-fg)] outline-none sm:pl-3",
             "placeholder:text-[var(--code-lang-fg)] caret-indigo-400",
-            "selection:bg-indigo-500/30",
+            "selection:bg-secondary",
             readOnly && "opacity-90"
           )}
           aria-label={`Code editor for ${filename}`}
@@ -109,7 +109,7 @@ function CodeEditor({
       </div>
 
       {/* Status bar */}
-      <div className="flex items-center justify-between border-t border-[var(--code-border)] bg-[var(--code-toolbar)] px-3 py-1.5 font-mono text-[10px] text-[var(--code-lang-fg)] sm:px-4">
+      <div className="flex items-center justify-between border-t border-[var(--code-border)] bg-[var(--code-toolbar)] px-3 py-1.5 font-mono text-xs text-[var(--code-lang-fg)] sm:px-4">
         <span>{lines} line{lines === 1 ? "" : "s"}</span>
         <span>UTF-8 · Spaces: 2</span>
       </div>
@@ -190,15 +190,15 @@ export function CodeExerciseClient({
     config.mode === "complete"
       ? {
           label: "Complete the code",
-          badge: "bg-amber-100 text-amber-800 ring-amber-200/80 dark:bg-amber-500/15 dark:text-amber-100 dark:ring-amber-400/25",
-          accent: "text-amber-700 dark:text-amber-300",
-          iconBg: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+          badge: "bg-brand-yellow/15 text-foreground ring-brand-yellow",
+          accent: "text-foreground",
+          iconBg: "bg-brand-yellow/15 text-foreground",
         }
       : {
           label: "Implement this",
-          badge: "bg-violet-100 text-violet-800 ring-violet-200/80 dark:bg-violet-500/15 dark:text-violet-200 dark:ring-violet-400/25",
-          accent: "text-violet-700 dark:text-violet-300",
-          iconBg: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
+          badge: "bg-secondary text-primary ring-ring",
+          accent: "text-primary",
+          iconBg: "bg-secondary text-primary",
         };
 
   async function submit() {
@@ -233,7 +233,7 @@ export function CodeExerciseClient({
   return (
     <div
       {...(id.startsWith("preview-") ? {} : checkpointAttrs(id, settled))}
-      className="not-prose my-10 scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm"
+      className="not-prose my-10 scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground "
       data-code-exercise
     >
       {/* Prompt header — matches quiz / checklist cards */}
@@ -249,12 +249,12 @@ export function CodeExerciseClient({
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                 Code lab
               </p>
               <span
                 className={cn(
-                  "rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ring-1 ring-inset",
+                  "rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide ring-1 ring-inset",
                   modeMeta.badge
                 )}
               >
@@ -286,8 +286,8 @@ export function CodeExerciseClient({
         />
 
         {hintIndex >= 0 && hints[hintIndex] ? (
-          <div className="flex gap-2.5 rounded-xl border border-amber-200/80 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-400/25 dark:bg-amber-500/10 dark:text-amber-100">
-            <Lightbulb className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400" />
+          <div className="flex gap-2.5 rounded-xl border border-brand-yellow bg-brand-yellow/15 px-4 py-3 text-sm text-foreground">
+            <Lightbulb className="mt-0.5 size-4 shrink-0 text-foreground" />
             <p>
               <span className="font-semibold">Hint {hintIndex + 1}:</span> {hints[hintIndex]}
             </p>
@@ -300,24 +300,24 @@ export function CodeExerciseClient({
               className={cn(
                 "flex items-start gap-3 rounded-xl border px-4 py-3.5",
                 passed
-                  ? "border-emerald-200 bg-emerald-50/90 dark:border-emerald-400/25 dark:bg-emerald-500/10"
-                  : "border-amber-200 bg-amber-50/90 dark:border-amber-400/25 dark:bg-amber-500/10"
+                  ? "border-ok bg-ok-soft"
+                  : "border-brand-yellow bg-brand-yellow/15"
               )}
             >
               {passed ? (
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-ok" />
               ) : (
-                <XCircle className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                <XCircle className="mt-0.5 size-5 shrink-0 text-foreground" />
               )}
               <div className="min-w-0 text-sm">
-                <p className={cn("font-semibold", passed ? "text-emerald-900 dark:text-emerald-100" : "text-amber-900 dark:text-amber-100")}>
+                <p className={cn("font-semibold", passed ? "text-ok" : "text-foreground")}>
                   {passed ? "All checks passed — well done!" : id.startsWith("preview-") ? "Editor preview" : "Not quite yet — adjust and retry"}
                 </p>
                 {!passed && result.failedTestName ? (
-                  <p className="mt-1.5 text-amber-900/90 dark:text-amber-100/90">
+                  <p className="mt-1.5 text-foreground">
                     Failed: <span className="font-medium">{result.failedTestName}</span>
                     {result.errorMessage ? (
-                      <code className="mt-2 block overflow-x-auto rounded-lg bg-amber-100/80 px-2.5 py-2 font-mono text-xs text-amber-950 dark:bg-amber-950/40 dark:text-amber-100">
+                      <code className="mt-2 block overflow-x-auto rounded-lg bg-brand-yellow/15 px-2.5 py-2 font-mono text-xs text-foreground">
                         {result.errorMessage}
                       </code>
                     ) : null}
@@ -332,7 +332,7 @@ export function CodeExerciseClient({
             {passed && result.solution ? (
               <div className="space-y-2">
                 <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <Sparkles className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                  <Sparkles className="size-3.5 text-ok" />
                   Reference solution
                 </p>
                 <ReadOnlyCodeBlock source={result.solution} label={filename} />
@@ -352,7 +352,7 @@ export function CodeExerciseClient({
                 onClick={submit}
                 loading={submitting}
                 disabled={!source.trim() || submitting}
-                className="h-9 gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background shadow-sm hover:bg-foreground/90"
+                className="h-9 gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background hover:bg-foreground/90"
               >
                 <CirclePlay className="size-4" />
                 {submitting ? "Running checks…" : id.startsWith("preview-") ? "Try editor" : "Check my code"}

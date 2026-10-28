@@ -11,7 +11,7 @@ export function ReaderFocusDock({ onExitFocus }: { onExitFocus: () => void }) {
         onClick={onExitFocus}
         title="Exit focus mode"
         aria-label="Exit focus mode"
-        className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full bg-foreground text-background shadow-lg shadow-foreground/15 transition-colors hover:bg-foreground/90"
+        className="pointer-events-auto inline-flex size-10 items-center justify-center rounded-full bg-foreground text-background shadow-foreground/15 transition-colors hover:bg-foreground/90"
       >
         <Minimize2 className="size-4 shrink-0" aria-hidden />
       </button>

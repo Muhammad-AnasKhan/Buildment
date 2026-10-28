@@ -32,8 +32,8 @@ export function VisualWalkthroughClient({ title, steps }: VisualWalkthroughConfi
 
         <nav className="flex gap-2 overflow-x-auto border-b border-border bg-muted/15 px-4 py-3 sm:px-5" aria-label={`${title} steps`}>
           {steps.map((item, index) => (
-            <button key={item.id} type="button" onClick={() => setActive(index)} aria-current={index === active ? "step" : undefined} className={cn("flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm font-medium transition-colors", index === active ? "border-foreground/25 bg-card text-foreground shadow-sm" : "border-transparent text-muted-foreground hover:border-border hover:bg-card")}>
-              <span className={cn("flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-semibold", index === active ? "bg-foreground text-background" : "bg-muted text-muted-foreground")}>{index + 1}</span>
+            <button key={item.id} type="button" onClick={() => setActive(index)} aria-current={index === active ? "step" : undefined} className={cn("flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm font-medium transition-colors", index === active ? "border-foreground/25 bg-card text-foreground " : "border-transparent text-muted-foreground hover:border-border hover:bg-card")}>
+              <span className={cn("flex size-5 shrink-0 items-center justify-center rounded-full text-xs font-semibold", index === active ? "bg-foreground text-background" : "bg-muted text-muted-foreground")}>{index + 1}</span>
               <span className="max-w-40 truncate">{item.title}</span>
             </button>
           ))}
@@ -44,7 +44,7 @@ export function VisualWalkthroughClient({ title, steps }: VisualWalkthroughConfi
             {/* Keep each illustration's actual aspect ratio rather than forcing a video frame. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img key={step.id} src={step.imageUrl} alt={step.alt} className="block h-auto max-h-[38rem] max-w-full object-contain" loading="lazy" />
-            <button type="button" onClick={() => { setZoom(100); setOpen(true); }} className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-lg border border-border bg-card/95 px-3 py-2 text-xs font-semibold text-foreground shadow-sm hover:bg-muted" aria-label={`Expand ${step.title} image`}><Expand className="size-3.5" aria-hidden /> Expand</button>
+            <button type="button" onClick={() => { setZoom(100); setOpen(true); }} className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-lg border border-border bg-card/95 px-3 py-2 text-xs font-semibold text-foreground hover:bg-muted" aria-label={`Expand ${step.title} image`}><Expand className="size-3.5" aria-hidden /> Expand</button>
           </div>
           <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-2xl">
@@ -61,7 +61,7 @@ export function VisualWalkthroughClient({ title, steps }: VisualWalkthroughConfi
       </section>
 
       {open ? createPortal(
-        <dialog ref={dialogRef} aria-label={`${title}: ${step.title}`} onClose={() => setOpen(false)} className="fixed inset-0 m-auto h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-none rounded-xl border border-border bg-card p-0 text-card-foreground shadow-2xl backdrop:bg-black/75 open:flex open:flex-col">
+        <dialog ref={dialogRef} aria-label={`${title}: ${step.title}`} onClose={() => setOpen(false)} className="fixed inset-0 m-auto h-[calc(100dvh-2rem)] w-[calc(100vw-2rem)] max-w-none rounded-xl border border-border bg-card p-0 text-card-foreground backdrop:bg-black/75 open:flex open:flex-col">
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
             <div><p className={readerEyebrow}>Step {active + 1} of {steps.length}</p><h2 className="text-base font-semibold">{step.title}</h2></div>
             <div className="flex items-center gap-2">

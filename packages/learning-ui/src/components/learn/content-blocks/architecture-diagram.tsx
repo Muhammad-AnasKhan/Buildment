@@ -55,11 +55,11 @@ export function ArchitectureDiagram({ title, children }: ArchitectureDiagramProp
           <div key={index} className="flex flex-col items-center">
             <div
               className={cn(
-                "w-full rounded-xl border px-5 py-4 shadow-sm",
+                "w-full rounded-xl border px-5 py-4 ",
                 ARCH_LAYER_STYLES[node.layer] ?? ARCH_LAYER_STYLES.External
               )}
             >
-              <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
                 {node.layer}
               </p>
               <div className="mt-2 text-sm font-medium leading-relaxed text-foreground">

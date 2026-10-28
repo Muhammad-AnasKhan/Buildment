@@ -24,7 +24,7 @@ export function ProfileForm({
       action={formAction}
       className={
         variant === "card"
-          ? "space-y-4 rounded-xl border bg-card p-6 shadow-sm"
+          ? "space-y-4 rounded-xl border bg-card p-6 "
           : "space-y-4"
       }
     >
@@ -62,7 +62,7 @@ export function ProfileForm({
         <ul className="text-sm text-destructive">{state.errors.map((e) => <li key={e}>{e}</li>)}</ul>
       ) : null}
       {state.ok === true ? (
-        <p className="text-sm text-emerald-600 dark:text-emerald-400">Profile saved.</p>
+        <p className="text-sm text-ok">Profile saved.</p>
       ) : null}
       <Button type="submit" disabled={pending}>
         {pending ? "Saving…" : "Save profile"}

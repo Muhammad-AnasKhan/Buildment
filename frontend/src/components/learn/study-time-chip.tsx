@@ -69,7 +69,7 @@ export function StudyClock({
       <div
         className={cn(
           "flex h-8 items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 text-foreground",
-          status === "running" && "border-emerald-500/40"
+          status === "running" && "border-ok"
         )}
         title={
           chapterLabel
@@ -80,7 +80,7 @@ export function StudyClock({
         {busy ? <Loader2 className="size-3.5 shrink-0 animate-spin motion-reduce:animate-none" aria-label="Updating study timer" /> : <Clock
           className={cn(
             "hidden size-3.5 shrink-0 sm:block",
-            status === "running" ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"
+            status === "running" ? "text-ok" : "text-muted-foreground"
           )}
           aria-hidden
         />}

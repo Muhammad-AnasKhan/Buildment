@@ -31,9 +31,9 @@ export function Video({
   }
 
   return (
-    <section className="not-prose my-8 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+    <section className="not-prose my-8 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground ">
       <header className="flex items-center justify-between border-b border-border bg-muted/30 px-5 py-3.5 sm:px-6">
-        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           <PlaySquare className="size-4 text-primary" />
           <span>Video walkthrough</span>
         </div>
@@ -59,7 +59,7 @@ export function Video({
 
         <div
           className={cn(
-            "overflow-hidden rounded-xl border border-border bg-neutral-950 shadow-md",
+            "overflow-hidden rounded-xl border border-border bg-foreground ",
             resolved.kind === "iframe" && "aspect-video"
           )}
         >

@@ -13,7 +13,7 @@ export function CheckpointHeaderLabel({
 
   if (chapterComplete) {
     return (
-      <span className="hidden h-7 shrink-0 items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2.5 text-xs font-medium text-emerald-700 dark:text-emerald-300 md:inline-flex">
+      <span className="hidden h-7 shrink-0 items-center gap-1 rounded-full border border-ok bg-ok-soft px-2.5 text-xs font-medium text-ok md:inline-flex">
         <CheckCircle2 className="size-3.5" aria-hidden />
         Complete
       </span>
@@ -31,7 +31,7 @@ export function CheckpointHeaderLabel({
             key={index}
             className={
               index < completed
-                ? "size-1.5 rounded-full bg-emerald-500"
+                ? "size-1.5 rounded-full bg-ok"
                 : "size-1.5 rounded-full bg-muted-foreground/30"
             }
           />

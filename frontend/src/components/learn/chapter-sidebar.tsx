@@ -82,9 +82,9 @@ function SidebarPanel({
               >
                 <span
                   className={cn(
-                    "flex size-6 shrink-0 items-center justify-center rounded-md font-mono text-[11px] font-bold tabular-nums",
+                    "flex size-6 shrink-0 items-center justify-center rounded-md font-mono text-xs font-bold tabular-nums",
                     moduleComplete
-                      ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                      ? "bg-ok-soft text-ok"
                       : moduleHasActive
                         ? "bg-foreground text-background"
                         : "bg-muted text-muted-foreground"
@@ -96,12 +96,12 @@ function SidebarPanel({
                   {mod.title}
                 </span>
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     {mod.completedCount}/{mod.chapters.length}
                   </span>
                   {moduleComplete ? (
                     <CheckCircle2
-                      className="size-4 text-emerald-600 dark:text-emerald-400"
+                      className="size-4 text-ok"
                       aria-hidden
                     />
                   ) : null}
@@ -210,10 +210,10 @@ export function ChapterSidebar({
         <button
           type="button"
           aria-label="Close menu"
-          className="fixed inset-0 z-40 bg-neutral-950/30 md:hidden"
+          className="fixed inset-0 z-40 bg-foreground md:hidden"
           onClick={onToggle}
         />
-        <aside className="fixed inset-y-0 left-0 z-50 flex w-[min(18rem,85vw)] flex-col border-r border-border bg-card text-card-foreground shadow-xl md:hidden">
+        <aside className="fixed inset-y-0 left-0 z-50 flex w-[min(18rem,85vw)] flex-col border-r border-border bg-card text-card-foreground md:hidden">
           <SidebarPanel {...panelProps} />
         </aside>
       </>
@@ -238,10 +238,10 @@ export function SidebarToggle({
     <button
       type="button"
       onClick={onClick}
-      className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      className="grid size-11 place-items-center rounded-md text-foreground outline-none transition-colors hover:bg-muted focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-brand-yellow"
+      aria-label={collapsed ? "Show contents" : "Hide contents"}
     >
-      {collapsed ? <Menu className="size-4" /> : <X className="size-4" />}
+      {collapsed ? <Menu className="size-5" /> : <X className="size-5" />}
     </button>
   );
 }

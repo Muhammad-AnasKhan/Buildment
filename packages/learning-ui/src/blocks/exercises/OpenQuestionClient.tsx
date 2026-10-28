@@ -223,11 +223,11 @@ export function OpenQuestionClient({
             className={cn(
               "flex size-9 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold tabular-nums",
               submitted
-                ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-500/15 dark:text-emerald-200"
+                ? "border-ok bg-ok-soft text-ok"
                 : wrongLlm
-                  ? "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/25 dark:bg-rose-500/15 dark:text-rose-100"
+                  ? "border-destructive bg-destructive/10 text-destructive"
                   : needsRevision
-                    ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/25 dark:bg-amber-500/15 dark:text-amber-100"
+                    ? "border-brand-yellow bg-brand-yellow/15 text-foreground"
                     : "border-border bg-muted text-foreground"
             )}
             aria-hidden
@@ -237,11 +237,11 @@ export function OpenQuestionClient({
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <p className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 {isGrouped ? `Question ${questionIndex + 1} of ${questionTotal}` : "Your turn"}
               </p>
               {!submitted ? (
-                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
                   <PenLine className="size-3" aria-hidden />
                   {llmMode ? "Instant short answer" : urlMeta.showUrl ? "Answer or link" : "Short answer"}
                 </span>
@@ -253,7 +253,7 @@ export function OpenQuestionClient({
             </p>
 
             {aiUnavailable ? (
-              <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-950 dark:border-amber-400/25 dark:bg-amber-500/10 dark:text-amber-100">
+              <div className="mt-4 rounded-lg border border-brand-yellow bg-brand-yellow/15 px-4 py-3 text-sm text-foreground">
                 Instant short-answer grading is not available on this server yet.
               </div>
             ) : null}
@@ -279,10 +279,10 @@ export function OpenQuestionClient({
             ) : null}
 
             {needsRevision && !submitted && initialState?.feedback && (
-              <div className="mt-4 overflow-hidden rounded-lg border border-amber-200 bg-amber-50/70 dark:border-amber-400/25 dark:bg-amber-500/10">
-                <div className="flex items-center gap-2 border-b border-amber-200/70 px-4 py-2.5 dark:border-amber-400/20">
-                  <RotateCcw className="size-4 shrink-0 text-amber-600 dark:text-amber-400" />
-                  <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+              <div className="mt-4 overflow-hidden rounded-lg border border-brand-yellow bg-brand-yellow/15">
+                <div className="flex items-center gap-2 border-b border-brand-yellow px-4 py-2.5">
+                  <RotateCcw className="size-4 shrink-0 text-foreground" />
+                  <p className="text-sm font-medium text-foreground">
                     Your mentor asked for a revision (attempt {initialState.attempt})
                   </p>
                 </div>
@@ -293,10 +293,10 @@ export function OpenQuestionClient({
             )}
 
             {wrongLlm && llmResult ? (
-              <div className="mt-4 overflow-hidden rounded-lg border border-rose-200 bg-rose-50/70 dark:border-rose-400/25 dark:bg-rose-500/10">
-                <div className="flex items-center gap-2 border-b border-rose-200/70 px-4 py-2.5 dark:border-rose-400/20">
-                  <XCircle className="size-4 shrink-0 text-rose-600 dark:text-rose-400" />
-                  <p className="text-sm font-medium text-rose-900 dark:text-rose-100">
+              <div className="mt-4 overflow-hidden rounded-lg border border-destructive bg-destructive/10">
+                <div className="flex items-center gap-2 border-b border-destructive px-4 py-2.5">
+                  <XCircle className="size-4 shrink-0 text-destructive" />
+                  <p className="text-sm font-medium text-destructive">
                     Not quite{typeof llmResult.attempt === "number" ? ` (try ${llmResult.attempt})` : ""}
                   </p>
                 </div>
@@ -306,8 +306,8 @@ export function OpenQuestionClient({
                   </p>
                 ) : null}
                 {llmResult.hint ? (
-                  <div className="border-t border-rose-200/70 px-4 py-3 dark:border-rose-400/20">
-                    <p className="mb-1 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-200">
+                  <div className="border-t border-destructive px-4 py-3">
+                    <p className="mb-1 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-foreground">
                       <Lightbulb className="size-3.5" aria-hidden />
                       Hint
                     </p>
@@ -318,13 +318,13 @@ export function OpenQuestionClient({
             ) : null}
 
             {submitted ? (
-              <div className="mt-4 overflow-hidden rounded-lg border border-emerald-200/80 bg-emerald-50/60 dark:border-emerald-400/25 dark:bg-emerald-500/10">
-                <div className="flex items-center gap-2 border-b border-emerald-200/60 px-4 py-2.5 dark:border-emerald-400/20">
-                  <CheckCircle2 className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                  <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100">
+              <div className="mt-4 overflow-hidden rounded-lg border border-ok bg-ok-soft">
+                <div className="flex items-center gap-2 border-b border-ok px-4 py-2.5">
+                  <CheckCircle2 className="size-4 shrink-0 text-ok" />
+                  <p className="text-sm font-medium text-ok">
                     {llmMode ? "Correct" : "Answer submitted"}
                   </p>
-                  <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-card/80 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-200">
+                  <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-card/80 px-2 py-0.5 text-xs font-medium text-ok">
                     {llmMode ? (
                       "Instant feedback"
                     ) : (
@@ -343,16 +343,16 @@ export function OpenQuestionClient({
                   </p>
                 )}
                 {llmMode && (llmResult?.explanation || initialState?.explanation) ? (
-                  <p className="border-t border-emerald-200/60 px-4 py-3 text-sm leading-relaxed text-foreground dark:border-emerald-400/20">
+                  <p className="border-t border-ok px-4 py-3 text-sm leading-relaxed text-foreground">
                     {llmResult?.explanation || initialState?.explanation}
                   </p>
                 ) : null}
                 {submittedUrl && (
-                  <p className="border-t border-emerald-200/60 px-4 py-3 text-sm">
-                    <span className="font-medium text-emerald-800 dark:text-emerald-100">Link: </span>
+                  <p className="border-t border-ok px-4 py-3 text-sm">
+                    <span className="font-medium text-ok">Link: </span>
                     <a
                       href={submittedUrl}
-                      className="break-all text-indigo-700 underline dark:text-indigo-300"
+                      className="break-all text-primary underline"
                       target="_blank"
                       rel="noreferrer noopener"
                     >
@@ -361,13 +361,13 @@ export function OpenQuestionClient({
                   </p>
                 )}
                 {!llmMode && initialState?.verdict !== "APPROVED" ? (
-                  <p className="border-t border-emerald-200/60 px-4 py-3 text-sm leading-relaxed text-foreground dark:border-emerald-400/20">
+                  <p className="border-t border-ok px-4 py-3 text-sm leading-relaxed text-foreground">
                     Submitted. You can continue to the next lesson. Your mentor will still reply.
                   </p>
                 ) : null}
                 {!llmMode && initialState?.verdict === "APPROVED" && initialState.feedback && (
-                  <p className="border-t border-emerald-200/60 whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-foreground dark:border-emerald-400/20">
-                    <span className="font-medium text-emerald-800 dark:text-emerald-100">Mentor feedback: </span>
+                  <p className="border-t border-ok whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-foreground">
+                    <span className="font-medium text-ok">Mentor feedback: </span>
                     {initialState.feedback}
                   </p>
                 )}
@@ -390,7 +390,7 @@ export function OpenQuestionClient({
                     }
                     ariaLabel={`Answer for question ${questionIndex + 1}`}
                     rows={5}
-                    className="min-h-[7.5rem] rounded-lg border-border bg-muted/40 focus-visible:border-indigo-400 focus-visible:bg-background focus-visible:ring-indigo-500/20"
+                    className="min-h-[7.5rem] rounded-lg border-border bg-muted/40 focus-visible:border-border focus-visible:bg-background focus-visible:ring-ring"
                   />
                 </div>
 
@@ -400,7 +400,7 @@ export function OpenQuestionClient({
                       <Link2 className="size-4 text-muted-foreground" aria-hidden />
                       {urlMeta.urlLabel}
                       {urlMeta.urlRequired ? (
-                        <span className="text-xs font-normal text-rose-600">Required</span>
+                        <span className="text-xs font-normal text-destructive">Required</span>
                       ) : null}
                     </label>
                     {urlMeta.urlHint ? (
@@ -420,14 +420,14 @@ export function OpenQuestionClient({
                   <div className="flex items-center gap-3 text-xs text-muted-foreground">
                     {config.minWords > 0 ? (
                       <div className="flex items-center gap-2">
-                        <span className={cn(tooShort && wordCount > 0 && "text-amber-700 dark:text-amber-400")}>
+                        <span className={cn(tooShort && wordCount > 0 && "text-foreground")}>
                           {wordCount} / {config.minWords} words minimum
                         </span>
                         <div className="h-1.5 w-20 overflow-hidden rounded-full bg-muted">
                           <div
                             className={cn(
                               "h-full rounded-full transition-all duration-500",
-                              wordProgress >= 100 ? "bg-emerald-500" : "bg-indigo-500"
+                              wordProgress >= 100 ? "bg-ok" : "bg-primary"
                             )}
                             style={{ width: `${wordProgress}%` }}
                           />

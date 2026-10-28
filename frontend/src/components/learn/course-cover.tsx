@@ -1,18 +1,42 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Printed cover colors for courses without a photo. White text stays readable in
- * both themes and nothing is downloaded, which matters on slow links.
+ * Flat Edorax covers for courses without a photo: one brand colour and a few plain shapes, no images
+ * to download. They keep the same rhythm everywhere a course is listed.
  */
 const GENERATED_COVERS = [
-  { from: "#193b4b", accent: "#b9d4df" },
-  { from: "#4a3049", accent: "#dfc0da" },
-  { from: "#234837", accent: "#b9dbbf" },
-  { from: "#653c2e", accent: "#e8c7b8" },
-  { from: "#343b65", accent: "#c3caec" },
-  { from: "#524723", accent: "#e4d79e" },
-  { from: "#623844", accent: "#ecc1cd" },
-  { from: "#264c4e", accent: "#b9e2df" },
+  {
+    bg: "#2434E0",
+    shapes: '<rect x="30" y="92" width="22" height="40" fill="#F6F7FB"/><rect x="62" y="68" width="22" height="64" fill="#F6F7FB"/><rect x="94" y="40" width="22" height="92" fill="#FFC933"/>',
+  },
+  {
+    bg: "#0A0F2C",
+    shapes: '<circle cx="80" cy="70" r="40" fill="none" stroke="#7A8BFF" stroke-width="14"/><circle cx="80" cy="70" r="14" fill="#FFC933"/>',
+  },
+  {
+    bg: "#FFC933",
+    shapes: '<rect x="36" y="36" width="52" height="52" fill="#0A0F2C"/><rect x="72" y="72" width="52" height="52" fill="#2434E0"/>',
+  },
+  {
+    bg: "#E8EBFF",
+    shapes: '<circle cx="48" cy="70" r="16" fill="#2434E0"/><circle cx="88" cy="70" r="16" fill="#0A0F2C"/><circle cx="128" cy="70" r="16" fill="#FFC933"/>',
+  },
+  {
+    bg: "#7A8BFF",
+    shapes: '<rect x="34" y="60" width="92" height="20" fill="#0A0F2C"/><rect x="34" y="92" width="60" height="20" fill="#F6F7FB"/><circle cx="128" cy="38" r="12" fill="#FFC933"/>',
+  },
+  {
+    bg: "#DCE0F2",
+    shapes: '<circle cx="80" cy="70" r="44" fill="#2434E0"/><rect x="62" y="52" width="36" height="36" fill="#FFC933"/>',
+  },
+  {
+    bg: "#46507A",
+    shapes: '<rect x="30" y="86" width="26" height="46" fill="#FFC933"/><rect x="66" y="56" width="26" height="76" fill="#F6F7FB"/><rect x="102" y="26" width="26" height="106" fill="#7A8BFF"/>',
+  },
+  {
+    bg: "#0A0F2C",
+    shapes: '<rect x="36" y="36" width="88" height="88" fill="none" stroke="#FFC933" stroke-width="12"/><circle cx="80" cy="80" r="14" fill="#7A8BFF"/>',
+  },
 ] as const;
 
 function coverIndex(title: string) {
@@ -57,45 +81,13 @@ export function CourseCover({
         // eslint-disable-next-line @next/next/no-img-element
         <img src={coverUrl} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
       ) : (
-        <div
-          aria-hidden
-          className="absolute inset-0 flex flex-col justify-end"
-          style={{ backgroundColor: palette.from }}
-        >
-          <div
-            className="absolute inset-0 opacity-20"
-            style={{
-              backgroundImage: `repeating-linear-gradient(${45 + index * 15}deg, transparent, transparent 22px, ${palette.accent} 22px, ${palette.accent} 23px)`,
-            }}
+        <div aria-hidden className="absolute inset-0" style={{ backgroundColor: palette.bg }}>
+          <svg
+            viewBox="0 0 160 140"
+            preserveAspectRatio="xMidYMid slice"
+            className="size-full"
+            dangerouslySetInnerHTML={{ __html: palette.shapes }}
           />
-          <div
-            className="absolute -right-6 -top-8 size-40 rounded-full border-[24px] opacity-20"
-            style={{ borderColor: palette.accent }}
-          />
-          {paletteIndex !== undefined ? (
-            <span className="relative p-4 font-serif text-6xl leading-none text-white">
-              {String(paletteIndex + 1).padStart(2, "0")}
-            </span>
-          ) : aspect === "thumb" ? (
-            <span className="relative line-clamp-3 p-2 text-[11px] font-semibold leading-tight text-white">
-              {title}
-            </span>
-          ) : (
-            <div className={cn("relative", aspect === "banner" ? "p-6 sm:p-10" : "p-3")}>
-              <span
-                className={cn("block h-1 rounded-full", aspect === "banner" ? "mb-2 w-10" : "mb-1.5 w-7")}
-                style={{ backgroundColor: palette.accent }}
-              />
-              <span
-                className={cn(
-                  "block max-w-[22ch] font-semibold leading-tight tracking-tight text-white text-balance",
-                  aspect === "banner" ? "text-2xl sm:text-4xl" : "line-clamp-2 text-[15px]"
-                )}
-              >
-                {title}
-              </span>
-            </div>
-          )}
         </div>
       )}
     </div>

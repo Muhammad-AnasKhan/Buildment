@@ -27,7 +27,7 @@ export function RoadmapClient({ title, milestones }: RoadmapConfig) {
               <div className={cn("min-w-0 flex-1 rounded-xl border px-4 py-3.5", current ? "border-foreground/25 bg-muted/50" : "border-border bg-card")}>
                 <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1">
                   <h4 className="text-sm font-semibold leading-snug text-foreground sm:text-base">{milestone.title}</h4>
-                  <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide", current ? "border-foreground/20 bg-foreground text-background" : "border-border bg-muted/50 text-muted-foreground")}>
+                  <span className={cn("rounded-full border px-2 py-0.5 text-xs font-semibold uppercase tracking-wide", current ? "border-foreground/20 bg-foreground text-background" : "border-border bg-muted/50 text-muted-foreground")}>
                     {current ? "You are here" : goal ? "Goal" : "Upcoming"}
                   </span>
                 </div>

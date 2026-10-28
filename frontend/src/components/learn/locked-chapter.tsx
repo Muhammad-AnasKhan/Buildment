@@ -107,8 +107,8 @@ export function LockedChapterView({
               <div className="h-4 w-11/12 rounded bg-muted" />
               <div className="h-40 rounded-xl bg-muted" />
             </div>
-            <div className="absolute inset-0 flex items-center justify-center bg-background/75 p-6 backdrop-blur-sm">
-            <div className="mx-auto w-full max-w-lg rounded-2xl border border-border bg-card p-8 text-center shadow-xl">
+            <div className="absolute inset-0 flex items-center justify-center bg-background/75 p-6 ">
+            <div className="mx-auto w-full max-w-lg rounded-2xl border border-border bg-card p-8 text-center ">
               <div className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
                 <Lock className="size-5" aria-hidden />
               </div>

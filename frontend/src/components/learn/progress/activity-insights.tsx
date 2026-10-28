@@ -61,7 +61,7 @@ function WeeklyStudyChart({ days }: { days: Day[] }) {
                 <div key={`${week.start}-${index}`} className="flex h-full min-w-0 flex-1 items-end justify-center" title={`${dateLabel(week.start)}–${dateLabel(week.end)}: ${formatStudyAmount(week.seconds)}`}>
                   {week.seconds > 0 ? (
                     <div className="relative w-full max-w-12 rounded-t-md bg-primary/85 transition-colors hover:bg-primary" style={{ height: `${height}%` }}>
-                      <span className="absolute bottom-full left-1/2 mb-1.5 hidden -translate-x-1/2 whitespace-nowrap text-[11px] font-medium tabular-nums text-foreground sm:block">{formatStudyAmount(week.seconds)}</span>
+                      <span className="absolute bottom-full left-1/2 mb-1.5 hidden -translate-x-1/2 whitespace-nowrap text-xs font-medium tabular-nums text-foreground sm:block">{formatStudyAmount(week.seconds)}</span>
                     </div>
                   ) : <div className="h-1 w-full max-w-12 rounded-t-sm bg-muted" />}
                 </div>
@@ -73,7 +73,7 @@ function WeeklyStudyChart({ days }: { days: Day[] }) {
       </div>
       <div className="ml-[4.25rem] flex gap-1.5 px-1 pt-3 sm:gap-3 sm:px-3">
         {weeks.map((week, index) => (
-          <span key={`${week.start}-${index}`} className="min-w-0 flex-1 text-center text-[10px] text-muted-foreground sm:text-xs">
+          <span key={`${week.start}-${index}`} className="min-w-0 flex-1 text-center text-xs text-muted-foreground sm:text-xs">
             {index % 3 === 0 || index === 11 ? dateLabel(week.start) : ""}
           </span>
         ))}

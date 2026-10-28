@@ -43,7 +43,7 @@ function StreakRow({ streak, freezes }: { streak: number; freezes: GamificationS
       <span
         className={cn(
           "flex size-10 shrink-0 items-center justify-center rounded-xl",
-          streak > 0 ? "bg-amber-500/10 text-amber-700 dark:text-amber-400" : "bg-muted text-muted-foreground"
+          streak > 0 ? "bg-brand-yellow/15 text-foreground" : "bg-muted text-muted-foreground"
         )}
         aria-hidden
       >

@@ -45,9 +45,9 @@ function ModuleCard({
     <Collapsible open={open} onOpenChange={setOpen}>
       <article
         className={cn(
-          "overflow-hidden rounded-xl border border-border shadow-sm",
+          "overflow-hidden rounded-xl border border-border ",
           moduleComplete
-            ? "border-emerald-500/20 bg-emerald-500/[0.12] dark:border-emerald-400/25 dark:bg-emerald-500/15"
+            ? "border-ok bg-emerald-500/[0.12] dark:bg-ok-soft"
             : textControls ? "bg-background" : "bg-muted/20 dark:bg-muted/30"
         )}
       >
@@ -80,7 +80,7 @@ function ModuleCard({
           <div className="flex shrink-0 items-center gap-2">
             {!textControls && moduleComplete ? (
               <CheckCircle2
-                className="size-4 text-emerald-600/80 dark:text-emerald-400/80"
+                className="size-4 text-ok"
                 aria-hidden
               />
             ) : null}
@@ -206,7 +206,7 @@ export function CourseSyllabus({
           <div className="min-w-[8rem] flex-1 sm:max-w-xs">
             <div className="h-2 overflow-hidden rounded-full bg-muted">
               <div
-                className="h-full rounded-full bg-primary dark:bg-emerald-500"
+                className="h-full rounded-full bg-primary dark:bg-ok"
                 style={{ width: `${percentComplete}%` }}
               />
             </div>
