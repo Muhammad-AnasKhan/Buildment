@@ -28,7 +28,6 @@ export function ResendVerificationButton({ signedIn = false }: { signedIn?: bool
           required
           placeholder="Email address"
           aria-label="Email address"
-          className="h-10"
         />
       )}
       <Button type="submit" variant="outline" className="w-full" loading={pending} disabled={pending}>

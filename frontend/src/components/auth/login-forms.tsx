@@ -52,13 +52,13 @@ export function PasswordLoginForm({
       action={action}
       onSubmit={handleSubmit}
       noValidate
-      className="space-y-3.5"
+      className="space-y-4"
     >
       {redirectTo && (
         <input type="hidden" name="redirectTo" value={redirectTo} />
       )}
       <div className="space-y-1.5">
-        <Label htmlFor="email" className="text-sm font-semibold">
+        <Label htmlFor="email" className="text-[15px]">
           Email
         </Label>
         <Input
@@ -68,20 +68,19 @@ export function PasswordLoginForm({
           placeholder="you@example.com"
           required
           autoComplete="email"
-          className="h-12 rounded-xl bg-background px-3.5 dark:bg-background"
           defaultValue={defaultEmail ?? ""}
           onChange={() => clearField("email")}
           aria-invalid={Boolean(emailError)}
           aria-describedby={emailError ? "login-email-error" : undefined}
         />
         {emailError ? (
-          <p id="login-email-error" className="text-[13px] text-destructive">
+          <p id="login-email-error" className="text-sm text-destructive">
             {emailError}
           </p>
         ) : null}
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="password" className="text-sm font-semibold">
+        <Label htmlFor="password" className="text-[15px]">
           Password
         </Label>
         <PasswordInput
@@ -90,20 +89,20 @@ export function PasswordLoginForm({
           required
           maxLength={128}
           autoComplete="current-password"
-          className="h-12 rounded-xl bg-background px-3.5 dark:bg-background pr-11"
+          className="pr-12"
           onChange={() => clearField("password")}
           aria-invalid={Boolean(passwordError)}
           aria-describedby={passwordError ? "login-password-error" : undefined}
         />
         {passwordError ? (
-          <p id="login-password-error" className="text-[13px] text-destructive">
+          <p id="login-password-error" className="text-sm text-destructive">
             {passwordError}
           </p>
         ) : null}
       </div>
       {state.mfaRequired ? (
         <div className="space-y-1.5">
-          <Label htmlFor="code" className="text-sm font-semibold">
+          <Label htmlFor="code" className="text-[15px]">
             Authentication code
           </Label>
           <Input
@@ -117,21 +116,20 @@ export function PasswordLoginForm({
             maxLength={40}
             placeholder="123456 or ABCD-EFGH-IJKL-MNOP"
             autoFocus
-            className="h-12 rounded-xl bg-background px-3.5 dark:bg-background"
           />
         </div>
       ) : null}
       {formError ? (
         <p
           role="alert"
-          className="rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-sm text-destructive"
+          className="border-2 border-destructive bg-card px-3.5 py-3 text-[15px] text-destructive"
         >
           {formError}
         </p>
       ) : null}
       <Button
         type="submit"
-        className="h-[50px] w-full cursor-pointer rounded-[13px] bg-foreground text-[15px] font-semibold text-background transition-[transform,box-shadow] hover:-translate-y-0.5 hover:bg-foreground hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.35)] disabled:translate-y-0 disabled:opacity-70 motion-reduce:transform-none"
+        className="w-full"
         disabled={pending}
       >
         {pending ? (
@@ -175,13 +173,13 @@ export function MagicLinkForm({ redirectTo }: { redirectTo?: string | null }) {
       action={action}
       onSubmit={handleSubmit}
       noValidate
-      className="space-y-3.5"
+      className="space-y-4"
     >
       {redirectTo && (
         <input type="hidden" name="redirectTo" value={redirectTo} />
       )}
       <div className="space-y-1.5">
-        <Label htmlFor="magic-email" className="text-sm font-semibold">
+        <Label htmlFor="magic-email" className="text-[15px]">
           Email for magic link
         </Label>
         <Input
@@ -191,13 +189,12 @@ export function MagicLinkForm({ redirectTo }: { redirectTo?: string | null }) {
           placeholder="you@example.com"
           required
           autoComplete="email"
-          className="h-12 rounded-xl bg-background px-3.5 dark:bg-background"
           onChange={() => clearField("email")}
           aria-invalid={Boolean(emailError)}
           aria-describedby={emailError ? "magic-email-error" : undefined}
         />
         {emailError ? (
-          <p id="magic-email-error" className="text-[13px] text-destructive">
+          <p id="magic-email-error" className="text-sm text-destructive">
             {emailError}
           </p>
         ) : null}
@@ -205,14 +202,14 @@ export function MagicLinkForm({ redirectTo }: { redirectTo?: string | null }) {
       {formError ? (
         <p
           role="alert"
-          className="rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-sm text-destructive"
+          className="border-2 border-destructive bg-card px-3.5 py-3 text-[15px] text-destructive"
         >
           {formError}
         </p>
       ) : null}
       <Button
         type="submit"
-        className="h-[50px] w-full rounded-[13px] cursor-pointer bg-foreground text-[15px] font-semibold text-background transition-[transform,box-shadow] hover:-translate-y-0.5 hover:bg-foreground hover:shadow-[0_20px_50px_-24px_rgba(0,0,0,0.35)] disabled:translate-y-0 disabled:opacity-70 motion-reduce:transform-none"
+        className="w-full"
         disabled={pending}
       >
         {pending ? (
