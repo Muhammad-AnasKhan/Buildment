@@ -7,14 +7,16 @@ export default function SignupPage() {
     <AuthPageShell>
       <AuthCard
         title="Create your account"
-        description="Join a course and start building in minutes. We’ll email a verification link first."
+        description="We email you a link to confirm. Then you can start."
+        mood="happy"
+        line="Glad you are here."
       >
         <SignupForm />
-        <p className="mt-[18px] text-center text-[15px] text-muted-foreground">
+        <p className="mt-6 text-center text-base text-muted-foreground">
           Already have an account?{" "}
           <Link
             href="/login"
-            className="font-semibold text-primary underline-offset-4 hover:underline"
+            className="font-bold text-primary underline underline-offset-4"
           >
             Sign in
           </Link>
