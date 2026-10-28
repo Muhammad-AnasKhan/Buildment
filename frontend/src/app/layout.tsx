@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans, IBM_Plex_Sans, JetBrains_Mono, Space_Grotesk, Unbounded } from "next/font/google";
 import { PostHogProvider } from "@/components/posthog-provider";
 import { AppToast } from "@/components/ui/app-toast";
@@ -48,7 +48,16 @@ export const metadata: Metadata = {
   },
   description:
     "Project-based courses with interactive checkpoints, real mentor feedback, and progress you can trust.",
-  icons: { icon: "/logo.svg" },
+  icons: { icon: "/logo.svg", apple: "/icons/apple-touch-icon.png" },
+  // iOS reads these when a learner adds Edorax to the home screen (see app/manifest.ts).
+  appleWebApp: { capable: true, title: "Edorax", statusBarStyle: "default" },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F6F7FB" },
+    { media: "(prefers-color-scheme: dark)", color: "#0A0F2C" },
+  ],
 };
 
 export default function RootLayout({
