@@ -44,7 +44,7 @@ describe("remarkDiagram with Mermaid fences", () => {
   });
 
   it("leaves Mermaid it cannot convert, and fences marked keep-mermaid, for remark-mermaid", () => {
-    const children = run("```mermaid\nstateDiagram-v2\n  [*] --> Open\n```\n\n```mermaid\n%% keep-mermaid\nflowchart LR\n  A --> B\n```\n");
+    const children = run("```mermaid\ngantt\n  title Plan\n```\n\n```mermaid\n%% keep-mermaid\nflowchart LR\n  A --> B\n```\n");
     expect(children.map((child) => child.type)).toEqual(["code", "code"]);
   });
 });
