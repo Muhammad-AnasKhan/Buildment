@@ -316,10 +316,12 @@ export function ChapterReaderShell({
                   <ThemeToggle />
                   <FocusModeToggle active={focusMode} onClick={toggleFocusMode} />
                 </div>
-                <TocToggle
+                <div className="hidden md:block">
+                  <TocToggle
                   collapsed={rightCollapsed}
                   onClick={() => setRightCollapsed(!rightCollapsed)}
                 />
+                </div>
                 <UserMenuDropdown user={user} compact signOutAction={signOutAction} />
               </div>
             </div>

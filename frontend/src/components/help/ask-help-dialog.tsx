@@ -53,7 +53,7 @@ export function AskHelpDialog({
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "inline-flex min-h-11 items-center gap-2 rounded-md border-2 px-3 text-[15px] font-bold transition-colors outline-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow sm:px-4",
+          "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-md border-2 px-2.5 text-[15px] font-bold transition-colors outline-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow sm:px-4",
           mentorReplied
             ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90"
             : isOpen
@@ -63,7 +63,7 @@ export function AskHelpDialog({
       >
         <HandHelping className="size-5 shrink-0" aria-hidden />
         <span className="hidden sm:inline">{triggerLabel}</span>
-        <span className="sm:hidden">{copy.askQuestionShort}</span>
+        <span className="sr-only sm:hidden">{copy.askQuestionShort}</span>
       </button>
 
       <dialog
