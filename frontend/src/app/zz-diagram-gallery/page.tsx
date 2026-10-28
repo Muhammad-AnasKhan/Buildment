@@ -9,7 +9,20 @@ const dmSans = DM_Sans({ variable: "--font-dm-sans", subsets: ["latin"], weight:
 
 const TICKS = "```";
 
-const EXAMPLES: { name: string; note: string; kind: "flow" | "sequence"; spec: string }[] = [
+const EXAMPLES: { name: string; note: string; kind: "flow" | "sequence" | "mermaid"; spec: string }[] = [
+  {
+    name: "An existing Mermaid fence, drawn automatically",
+    note: "No edit to the chapter: a Mermaid flowchart that maps exactly is drawn as a Diagram, titled by its Mermaid title or the heading above it. Anything else stays on Mermaid.",
+    kind: "mermaid",
+    spec: `---
+title: Writing a plan with your mentor
+---
+flowchart TD
+  A["Step 1: write the plan"] -->|"share it"| B["Mentor reads it"]
+  B --> C{"Clear enough?"}
+  C -->|"yes"| D["Step 2: build"]
+  C -.->|"not yet"| A`,
+  },
   {
     name: "A straight path with a packet",
     note: "The landing page's Play card as a fence. Drag the yellow packet, or use Back and Next.",
