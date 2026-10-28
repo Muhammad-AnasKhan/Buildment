@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";
+import { Dot } from "@/components/brand/dot";
 import { Button } from "@/components/ui/button";
 import { playFeedback } from "@/lib/sound-feedback";
 import { apiFetch } from "@/lib/api-client";
@@ -86,6 +87,8 @@ export function QuizChapterSessionClient({
   const [submitting, setSubmitting] = useState(false);
   const [movingNext, setMovingNext] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  // Step indexes of questions with no answer, shown as an inline note instead of a browser pop-up.
+  const [unanswered, setUnanswered] = useState<number[]>([]);
   const [scoreSummary, setScoreSummary] = useState<QuizResultSummary | null>(initialScoreSummary);
   const [blockGrades, setBlockGrades] = useState<Record<string, QuizBlockGrade>>(initialBlockGrades);
   const [dirtyBlockIds, setDirtyBlockIds] = useState<Set<string>>(() => new Set());
@@ -152,6 +155,7 @@ export function QuizChapterSessionClient({
         return next;
       });
       setSubmitError(null);
+      setUnanswered((previous) => (previous.length > 0 ? previous.filter((stepIndex) => stepIds[stepIndex] !== detail.blockId) : previous));
     };
     window.addEventListener("buildment:quiz-answer-change", onAnswerChange);
     return () => {
@@ -159,7 +163,7 @@ export function QuizChapterSessionClient({
     };
   }, []);
 
-  const submitQuiz = async () => {
+  const submitQuiz = async (force = false) => {
     if (submitting || perfectScore || quizBlockIds.length === 0) return;
     setSubmitting(true);
     setSubmitError(null);
@@ -183,18 +187,13 @@ export function QuizChapterSessionClient({
       }
       return { blockId, selected };
     });
-    const unanswered = answers.filter((answer) => answer.selected.length === 0).length;
-    if (
-      unanswered > 0 &&
-      !integrity.withoutFlags(() =>
-        window.confirm(
-          `${unanswered} question${unanswered === 1 ? " is" : "s are"} unanswered. Submit anyway? Unanswered questions will be marked incorrect.`
-        )
-      )
-    ) {
+    const missing = answers.flatMap((answer) => (answer.selected.length === 0 ? [stepIds.indexOf(answer.blockId)] : []));
+    if (missing.length > 0 && !force) {
+      setUnanswered(missing.filter((stepIndex) => stepIndex >= 0));
       setSubmitting(false);
       return;
     }
+    setUnanswered([]);
     integrity.checkPace(reviewMode ? quizBlockIds.filter((blockId) => dirtyBlockIds.has(blockId)) : quizBlockIds);
 
     try {
@@ -316,26 +315,20 @@ export function QuizChapterSessionClient({
     <QuizSessionContext.Provider value={sessionValue}>
       <section ref={sectionRef} id="quiz-chapter-session" className="not-prose mb-10 scroll-mt-24" aria-label="Quiz session">
         <header className="mb-8 border-b border-border pb-6">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          <h1 className="text-2xl tracking-[-0.035em] text-foreground sm:text-3xl">
             Quiz: {chapterTitle}
           </h1>
-          <p className="mt-3 text-sm font-medium text-muted-foreground">
+          <p className="mt-3 text-base font-bold text-muted-foreground">
             Question {position + 1} of {visibleIndices.length}{retryMissed && !perfectScore ? " to retry" : ""}
           </p>
-          <QuizIntegrityPanel integrity={integrity} />
+          <QuizIntegrityPanel integrity={integrity} questionCount={total} />
           {individualActivityCount > 0 && (
-            <p className="mt-2 text-sm text-muted-foreground">
-              Submit each open question, prediction, or code exercise with its own button. Mentor-reviewed writing is separate from the multiple-choice score; instant short answers use your OpenRouter key and count when correct.
+            <p className="mt-2 text-base text-muted-foreground">
+              Open questions and code exercises have their own Submit button.
             </p>
           )}
-          {scoreSummary ? (
-            <p className="mt-2 text-sm text-foreground">
-              Multiple-choice score {scoreSummary.score}/{scoreSummary.maxScore}
-              {perfectScore ? " · all correct" : ` · ${missedIndices.length} to retry`}
-            </p>
-          ) : null}
           <div
-            className="mt-4 h-1.5 overflow-hidden rounded-full bg-muted"
+            className="mt-4 h-2 overflow-hidden rounded-sm bg-secondary"
             role="progressbar"
             aria-valuenow={position + 1}
             aria-valuemin={1}
@@ -343,11 +336,79 @@ export function QuizChapterSessionClient({
             aria-label="Quiz progress"
           >
             <div
-              className="h-full rounded-full bg-primary transition-[width] duration-300 ease-out dark:bg-ok"
+              className="h-full rounded-sm bg-primary transition-[width] duration-300 ease-out"
               style={{ width: `${progressPct}%` }}
             />
           </div>
         </header>
+
+        {scoreSummary ? (
+          <div role="status" className="mb-8 border border-border bg-card p-5 sm:p-7">
+            <p className="text-sm font-bold text-primary">Result</p>
+            <div className="mt-2 flex items-end gap-3">
+              <span className="font-[family-name:var(--font-heading)] text-[56px] font-bold leading-none tracking-[-0.035em] sm:text-[72px]">
+                {scoreSummary.score} of {scoreSummary.maxScore}
+              </span>
+              <span className="pb-1 text-xl font-bold">correct</span>
+            </div>
+            <div className="mt-5 flex items-center gap-3">
+              <Dot mood={perfectScore ? "cheer" : "determined"} size={72} />
+              <p className="bg-secondary px-4 py-3 text-base font-bold leading-snug">
+                {perfectScore
+                  ? individualActivityCount > 0
+                    ? "All multiple-choice answers are right."
+                    : "All correct. Well done."
+                  : `${missedIndices.length} ${missedIndices.length === 1 ? "idea" : "ideas"} to look at again. Retry when you are ready.`}
+              </p>
+            </div>
+            {!perfectScore && missedIndices.length > 0 ? (
+              <>
+                <p className="mt-6 text-lg font-bold">Look at again</p>
+                <ul className="mt-2 flex flex-wrap gap-2">
+                  {missedIndices.map((stepIndex) => (
+                    <li key={stepIndex}>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setRetryMissed(true);
+                          setIndex(stepIndex);
+                        }}
+                      >
+                        Question {stepIndex + 1}
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-5 flex flex-col gap-2 sm:flex-row">
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      setRetryMissed(true);
+                      setIndex(missedIndices[0] ?? 0);
+                    }}
+                    className="sm:min-w-64"
+                  >
+                    <RotateCcw aria-hidden />
+                    Retry {missedIndices.length} missed {missedIndices.length === 1 ? "question" : "questions"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setRetryMissed(false);
+                      setIndex(0);
+                    }}
+                  >
+                    Review all answers
+                  </Button>
+                </div>
+                <p className="mt-3 text-sm text-muted-foreground">Your best score is kept.</p>
+              </>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="relative min-h-[12rem]">
           {steps.map((step, stepIndex) => (
@@ -362,34 +423,23 @@ export function QuizChapterSessionClient({
           ))}
         </div>
 
-        {scoreSummary ? (
-          <div
-            className={cn(
-              "mt-8 rounded-xl border px-4 py-3 text-sm",
-              perfectScore
-                ? "border-ok bg-ok-soft text-foreground"
-                : "border-border bg-muted/40 text-foreground"
-            )}
-            role="status"
-          >
-            {perfectScore
-              ? `${individualActivityCount > 0 ? "Multiple-choice complete" : "Quiz complete"} · ${scoreSummary.score}/${scoreSummary.maxScore} correct.`
-              : `${scoreSummary.score}/${scoreSummary.maxScore} correct so far. Retry the ${missedIndices.length} missed question${missedIndices.length === 1 ? "" : "s"}, then submit again.`}
-            {!perfectScore && missedIndices.length > 0 ? (
-              <div className="mt-3">
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setRetryMissed(!retryMissed);
-                    setIndex(retryMissed ? 0 : missedIndices[0]);
-                  }}
-                >
-                  {retryMissed ? "Review all questions" : `Retry ${missedIndices.length} missed question${missedIndices.length === 1 ? "" : "s"}`}
+        {unanswered.length > 0 ? (
+          <div role="status" className="mt-8 border-2 border-brand-yellow bg-brand-yellow/15 p-4 text-base leading-6">
+            <p>
+              <b>{unanswered.length === 1 ? "1 question has no answer yet." : `${unanswered.length} questions have no answer yet.`}</b>{" "}
+              Tap a number to go there.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {unanswered.map((stepIndex) => (
+                <Button key={stepIndex} type="button" size="sm" variant="outline" className="min-w-14" onClick={() => setIndex(stepIndex)}>
+                  {stepIndex + 1}
                 </Button>
-              </div>
-            ) : null}
+              ))}
+              <Button type="button" size="sm" variant="ghost" onClick={() => void submitQuiz(true)}>
+                Submit anyway
+              </Button>
+            </div>
+            <p className="mt-2 text-sm text-muted-foreground">Questions without an answer are marked wrong.</p>
           </div>
         ) : null}
 
