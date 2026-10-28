@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  BookOpen,
   ChevronDown,
   CheckCircle2,
   CircleAlert,
@@ -52,7 +51,6 @@ export default async function MenteeProgressPage({ searchParams }: { searchParam
       }
     : overall;
   const visibleWrong = selectedCourse ? closedWrong.filter((row) => row.course.slug === selectedCourse.course.slug) : closedWrong;
-  const overallAccuracy = percentage(selectedSummary.score, selectedSummary.maxScore);
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">

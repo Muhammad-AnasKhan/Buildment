@@ -161,7 +161,7 @@ export function QuizChapterSessionClient({
     return () => {
       window.removeEventListener("buildment:quiz-answer-change", onAnswerChange);
     };
-  }, []);
+  }, [stepIds]);
 
   const submitQuiz = async (force = false) => {
     if (submitting || perfectScore || quizBlockIds.length === 0) return;
