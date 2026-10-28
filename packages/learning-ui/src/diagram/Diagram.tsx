@@ -13,11 +13,11 @@ import { isDiagramKind, parseDiagram, type DiagramSpec } from "../shared/diagram
  * before any script arrives. Steps: Back and Next, the arrow keys on the
  * controls, or dragging the yellow packet.
  */
-export function Diagram({ kind, spec }: { kind?: unknown; spec?: unknown }) {
+export function Diagram({ kind, spec, legend }: { kind?: unknown; spec?: unknown; legend?: string }) {
   const parsed = useMemo(() => (isDiagramKind(kind) && typeof spec === "string" ? parseDiagram(kind, spec) : null), [kind, spec]);
   if (!parsed) return <DiagramProblems problems={["This diagram has no spec. Write it inside a ```flow or ```sequence fence."]} />;
   if (!parsed.ok) return <DiagramProblems problems={parsed.problems} />;
-  return <DiagramView spec={parsed.spec} />;
+  return <DiagramView spec={parsed.spec} legend={legend} />;
 }
 
 // The phone layout takes over once the wide one would shrink below about 85%.
@@ -40,7 +40,8 @@ function switchClasses(wideWidth: number): { wide: string; compact: string } {
   return { wide: match[1], compact: match[2] };
 }
 
-export function DiagramView({ spec }: { spec: DiagramSpec }) {
+/** `legend` is the short note a MermaidDiagram tag carries, shown under the picture. */
+export function DiagramView({ spec, legend }: { spec: DiagramSpec; legend?: string }) {
   const id = useId();
   const wide = useMemo(() => layoutDiagram(spec, false), [spec]);
   const compact = useMemo(() => layoutDiagram(spec, true), [spec]);
@@ -103,6 +104,11 @@ export function DiagramView({ spec }: { spec: DiagramSpec }) {
       ) : (
         <div className="pb-2" />
       )}
+      {legend ? (
+        <p className="px-4 pb-4 text-[15px] leading-snug sm:px-5" style={{ color: BRAND.muted }}>
+          {legend}
+        </p>
+      ) : null}
     </figure>
   );
 }

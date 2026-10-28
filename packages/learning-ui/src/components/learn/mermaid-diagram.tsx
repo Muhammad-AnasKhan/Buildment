@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
+import { Diagram } from "../../diagram/Diagram";
+import { mermaidToDiagram } from "../../shared/diagram/from-mermaid";
 import { cn } from "../../lib/utils";
 import { patchMermaidSvgForDarkMode } from "../../lib/mermaid-dark-patch";
 
@@ -198,7 +200,19 @@ function enqueueRender(id: string, chart: string, isDark: boolean, scriptSrc?: s
   return run;
 }
 
+/**
+ * A Mermaid chart that maps exactly to a diagram spec (diagram/from-mermaid) is
+ * drawn as the branded Diagram block, on the server and with no Mermaid
+ * download. That covers <MermaidDiagram> tags written in chapters as well as
+ * ```mermaid fences. Anything else still renders with Mermaid.
+ */
 export function MermaidDiagram({ chart, title, legend, scriptSrc }: MermaidDiagramProps) {
+  const converted = useMemo(() => (typeof chart === "string" ? mermaidToDiagram(chart, undefined, title) : null), [chart, title]);
+  if (converted) return <Diagram kind={converted.kind} spec={converted.source} legend={legend} />;
+  return <MermaidChart chart={chart} title={title} legend={legend} scriptSrc={scriptSrc} />;
+}
+
+function MermaidChart({ chart, title, legend, scriptSrc }: MermaidDiagramProps) {
   const reactId = useId().replace(/:/g, "");
   const [svg, setSvg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
