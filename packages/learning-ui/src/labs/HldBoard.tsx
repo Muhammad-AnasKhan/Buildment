@@ -35,6 +35,7 @@ import {
   type Connection,
   type Edge,
   type EdgeProps,
+  type FinalConnectionState,
   type Node,
   type NodeProps,
 } from "@xyflow/react";
@@ -423,7 +424,7 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
 
   // Links can be drawn between any two dots in either direction; we orient each one
   // along the request flow the catalog allows, and refuse pairs that never talk.
-  const kindOf = (id?: string | null) => nodes.find((n) => n.id === id)?.data.kind;
+  const kindOf = (id?: string | null): ComponentKind | undefined => nodes.find((n) => n.id === id)?.data.kind;
   const orient = (a?: string | null, b?: string | null) => {
     const ka = kindOf(a);
     const kb = kindOf(b);
@@ -641,7 +642,7 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
                 onNodesChange={onNodesChange}
                 onEdgesChange={onEdgesChange}
                 onConnect={connect}
-                onConnectEnd={(_, state) => {
+                onConnectEnd={(_: MouseEvent | TouchEvent, state: FinalConnectionState) => {
                   if (!state.isValid && state.fromNode && state.toNode) explainFailedLink(state.fromNode.id, state.toNode.id);
                 }}
                 isValidConnection={isValidConnection}

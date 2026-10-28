@@ -6,11 +6,11 @@ const dirname = fileURLToPath(new URL(".", import.meta.url));
 
 export default defineConfig({
   resolve: {
-    tsconfigPaths: true,
-    alias: {
+    alias: [
+      { find: /^@\//, replacement: fileURLToPath(new URL("./src/", import.meta.url)) },
       // "server-only" throws by design outside Next.js's bundler — stub it for tests.
-      "server-only": path.resolve(dirname, "./tests/stubs/server-only.ts"),
-    },
+      { find: "server-only", replacement: path.resolve(dirname, "./tests/stubs/server-only.ts") },
+    ],
   },
   test: {
     environment: "node",

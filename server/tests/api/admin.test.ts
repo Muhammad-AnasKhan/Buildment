@@ -325,6 +325,25 @@ describe("list filters and paging", () => {
   });
 
   it("pages the pending and recently-reviewed request lists independently", async () => {
+    // Keep this pagination test self-contained: the test database starts empty,
+    // and the earlier request test removes the request it creates.
+    await prisma.organizationCourseRequest.createMany({
+      data: Array.from({ length: 11 }, () => ({
+        organizationId: org.organization.id,
+        courseId: fx.course.id,
+        status: "PENDING" as const,
+      })),
+    });
+    await prisma.organizationCourseRequest.createMany({
+      data: Array.from({ length: 11 }, (_, index) => ({
+        organizationId: org.organization.id,
+        courseId: fx.course.id,
+        status: index % 2 === 0 ? "APPROVED" as const : "REJECTED" as const,
+        reviewedAt: new Date(Date.now() - index * 1_000),
+        reviewedById: adminId,
+      })),
+    });
+
     const first = await request(app).get("/api/v1/admin/course-requests").query({ pageSize: 5 }).set(admin());
     expect(first.body.data.pending).toHaveLength(5);
     expect(first.body.data.pendingPage).toMatchObject({ page: 1, pageSize: 5 });

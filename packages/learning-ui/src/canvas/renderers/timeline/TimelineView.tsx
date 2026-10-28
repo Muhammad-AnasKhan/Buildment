@@ -69,7 +69,7 @@ function Axis({ g, unit }: { g: TimelineGeometry; unit: string }) {
   return (
     <g aria-hidden>
       <line x1={g.plotLeft} x2={g.plotRight} y1={g.axisY} y2={g.axisY} className={NEUTRAL.faintStroke} vectorEffect="non-scaling-stroke" />
-      {g.ticks.map((tick) => (
+      {g.ticks.map((tick: number) => (
         <g key={tick}>
           <line x1={g.x(tick)} x2={g.x(tick)} y1={g.axisY} y2={g.axisY + 5} className={NEUTRAL.faintStroke} vectorEffect="non-scaling-stroke" />
           <text x={g.x(tick)} y={g.axisY + 18} textAnchor="middle" className={cn(NEUTRAL.mutedText, "text-[10.5px] tabular-nums")}>

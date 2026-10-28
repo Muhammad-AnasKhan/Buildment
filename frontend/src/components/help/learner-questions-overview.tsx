@@ -181,7 +181,7 @@ function WindowedQuestionHistory({ threads, onOpen }: { threads: HelpThreadSumma
   const virtualizer = useVirtualizer({
     count: threads.length,
     getScrollElement: () => scrollRef.current,
-    getItemKey: (index) => threads[index]?.id ?? index,
+    getItemKey: (index: number) => threads[index]?.id ?? index,
     estimateSize: () => 160,
     overscan: 5,
     useFlushSync: false,
