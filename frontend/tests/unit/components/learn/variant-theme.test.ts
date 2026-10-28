@@ -50,16 +50,16 @@ describe("variant theme tokens", () => {
     });
   });
 
-  it("maps them onto the primary and ring tokens in light and dark mode", () => {
+  it("exposes the accent as a marker colour and leaves the primary token on Edorax cobalt", () => {
     const light = globals.match(/\n\[data-variant\] \{([^}]*)\}/)?.[1] ?? "";
     const dark = globals.match(/\n\.dark \[data-variant\] \{([^}]*)\}/)?.[1] ?? "";
     for (const [block, mode] of [
       [light, "light"],
       [dark, "dark"],
     ] as const) {
-      expect(block).toContain(`--primary: var(--variant-accent-${mode})`);
-      expect(block).toContain(`--primary-foreground: var(--variant-on-accent-${mode})`);
-      expect(block).toContain(`--ring: var(--variant-accent-${mode})`);
+      expect(block).toContain(`--variant-accent: var(--variant-accent-${mode})`);
+      expect(block).not.toContain("--primary");
+      expect(block).not.toContain("--ring");
     }
   });
 });

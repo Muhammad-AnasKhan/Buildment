@@ -33,10 +33,10 @@ function ResultBanner({ result }: { result: RespondResult }) {
   return (
     <div
       className={cn(
-        "rounded-xl border px-4 py-3.5 text-sm",
+        "rounded-lg border-2 px-4 py-3.5 text-base",
         correct
           ? "border-ok bg-ok-soft text-ok"
-          : "border-destructive bg-destructive/10 text-destructive"
+          : "border-foreground bg-brand-yellow/15 text-foreground"
       )}
       role="status"
     >
@@ -46,14 +46,14 @@ function ResultBanner({ result }: { result: RespondResult }) {
             <CheckCircle2 className="size-4" />
           </div>
         ) : (
-          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+          <div className="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-yellow text-[#0A0F2C]">
             <XCircle className="size-4" />
           </div>
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <p className="font-semibold tracking-tight">
-              {correct ? "Correct! Well done" : "Wrong answer. Select the correct option."}
+            <p className="font-bold">
+              {correct ? "Correct. Well done." : "Not quite. Try another answer."}
             </p>
             {correct ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-ok-soft px-2 py-0.5 text-xs font-medium text-ok">
