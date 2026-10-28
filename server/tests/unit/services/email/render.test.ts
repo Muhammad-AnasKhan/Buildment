@@ -7,7 +7,8 @@ const url = "https://buildment.example/verify?token=example&source=email";
 describe("EJS emails", () => {
   it("escapes names and preserves the verification action and expiry", async () => {
     const html = await renderEmailTemplate("send-verification-email", { greeting: ' <img src=x onerror="alert(1)">', url });
-    expect(html).not.toContain("<img");
+    // Dot's own <img> is expected; the injected one must arrive escaped.
+    expect(html).not.toContain("<img src=x");
     expect(html).toContain("&lt;img");
     expect(html).toContain("Verify email");
     expect(html).toContain("24 hours");
@@ -49,6 +50,16 @@ describe("EJS emails", () => {
       const html = await renderEmailTemplate(file.replace(/\.ejs$/, ""), data);
       expect(html, file).not.toMatch(/<%|undefined/);
     }
+  });
+
+  it("shows the Edorax wordmark and Dot from the app's brand folder", async () => {
+    const page = await renderEmailLayout({ subject: "Hi", html: "<p>Hello</p>", text: "Hello" }, "https://edorax.example");
+    expect(page).toContain('src="https://edorax.example/brand/edorax-wordmark.png"');
+    const nudge = await renderEmailTemplate("send-inactivity-nudges-for-course", { name: "Alex", courseTitle: "Networks", appUrl: "https://edorax.example" });
+    expect(nudge).toContain('src="https://edorax.example/brand/dot/miss.png"');
+    expect(nudge).toContain("I missed you!");
+    const fallback = await renderEmailTemplate("dot", { appUrl: "https://edorax.example", mood: "../evil" });
+    expect(fallback).toContain("/brand/dot/happy.png");
   });
 
   it("rejects template paths outside the template directory", async () => {

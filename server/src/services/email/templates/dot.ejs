@@ -1,0 +1,3 @@
+<%# Dot, the Edorax mascot, at the top of an email. Moods match /brand/dot/<mood>.png. %>
+<% const dotMood = (typeof mood === "string" && /^[a-z]+$/.test(mood)) ? mood : "happy"; %>
+<img src="<%= appUrl %>/brand/dot/<%= dotMood %>.png" width="96" height="96" alt="Dot, the Edorax mascot" style="display:block;border:0;width:96px;height:96px;margin:0 0 16px;">
