@@ -75,6 +75,24 @@ describe("mermaidToDiagram", () => {
     expect(mermaidToDiagram("sequenceDiagram\n  A->>B: hi\n  B->>B: think", "T")?.source).toContain("B -> B: think");
   });
 
+  it("turns subgraphs into groups, placing a node where it gets its text", () => {
+    const chart = 'flowchart LR\n  S["Phones"] -->|every request| App\n  subgraph Server["One rented server"]\n    direction TB\n    App["App code"] --> DB[("Database")]\n  end';
+    expect(mermaidToDiagram(chart, "T")?.source.split("\n").slice(1)).toEqual([
+      "direction: right",
+      "box Phones",
+      "group One rented server",
+      "  box App code",
+      "  store Database",
+      "end",
+      "Phones -> App code: every request",
+      "App code -> Database",
+    ]);
+  });
+
+  it("keeps Mermaid when an arrow points at a subgraph itself", () => {
+    expect(mermaidToDiagram("flowchart LR\n  A --> G\n  subgraph G[Group]\n    B --> C\n  end", "T")).toBeNull();
+  });
+
   it("gives boxes that share their text an [id], and keeps two-way arrows", () => {
     expect(mermaidToDiagram("flowchart TD\n  A[Start] --> B[Say no]\n  A --> C[Say no]\n  B <-->|both| C", "T")?.source.split("\n").slice(2)).toEqual([
       "box Start",
@@ -87,7 +105,7 @@ describe("mermaidToDiagram", () => {
   });
 
   it.each([
-    ["a subgraph", "flowchart TD\n  subgraph S\n  A --> B\n  end"],
+    ["an unclosed subgraph", "flowchart TD\n  subgraph S\n  A --> B"],
     ["a right-to-left flow", "flowchart RL\n  A --> B"],
     ["a note in a sequence", "sequenceDiagram\n  A->>B: hi\n  Note over A: thinks"],
     ["a loop in a sequence", "sequenceDiagram\n  loop every second\n  A->>B: ping\n  end"],

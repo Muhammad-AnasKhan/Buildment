@@ -81,7 +81,12 @@ const CLOSE: Record<string, string> = { "[(": ")]", "((": "))", "([": "])", "[/"
 const LINK = /^(?:(?:--|==)\s+([^|>]*?)\s+(-->|==>|---)|-\.(?![->])\s*("[^"]*"|[^|[\]"]+?)\s*\.(->|-)(?!>)|(<-{2,}>|<={2,}>|-{2,}>|-{3,}|-\.->|-\.-|={2,}>)(?:\|([^|]*)\|)?)/;
 const IGNORED = /^(classDef|class|style|linkStyle|click)\b/;
 
-type FlowNode = { id: string; label?: string; kind: "actor" | "box" | "decision" | "store" };
+/** `group` is the index of the subgraph the node belongs to: where it got its label, else where it first appeared. */
+type FlowNode = { id: string; label?: string; kind: "actor" | "box" | "decision" | "store"; group: number | null };
+type FlowGroup = { id: string; label: string; parent: number | null };
+
+// subgraph ID["Label"], subgraph ID[Label], subgraph "Label", or subgraph Some words.
+const SUBGRAPH = /^subgraph\s+(?:([A-Za-z_][\w-]*)\s*\[\s*("[^"]*"|[^\]]*)\s*\]|("[^"]*")|(.+))$/;
 
 function flowchart(header: string, lines: string[]): Converted | null {
   const dir = header.split(/\s+/)[1] ?? "TD";
@@ -89,6 +94,9 @@ function flowchart(header: string, lines: string[]): Converted | null {
   if (!direction) return null;
   const nodes = new Map<string, FlowNode>();
   const edges: { from: string; to: string; label?: string; dashed: boolean; head: boolean; both: boolean }[] = [];
+  const groups: FlowGroup[] = [];
+  const stack: number[] = [];
+  const current = () => (stack.length ? stack[stack.length - 1] : null);
 
   const readNode = (text: string): { node: FlowNode; rest: string } | null => {
     const match = NODE.exec(text);
@@ -97,9 +105,11 @@ function flowchart(header: string, lines: string[]): Converted | null {
     if (open && CLOSE[open] !== close) return null;
     const kind = open === "[(" ? "store" : open === "((" ? "actor" : open === "{" ? "decision" : "box";
     const existing = nodes.get(id);
-    const node: FlowNode = existing ?? { id, kind };
+    const node: FlowNode = existing ?? { id, kind, group: current() };
     if (open) {
       if (existing?.label !== undefined && existing.label !== plain(label)) return null;
+      // A node belongs where it is given its text, even if an arrow outside mentioned it first.
+      if (existing && existing.label === undefined) node.group = current();
       node.label = plain(label);
       node.kind = kind;
     }
@@ -122,8 +132,20 @@ function flowchart(header: string, lines: string[]): Converted | null {
   };
 
   for (const line of lines) {
-    if (IGNORED.test(line)) continue;
-    if (/^(subgraph|end|direction)\b/.test(line)) return null;
+    if (IGNORED.test(line) || /^direction\s+\w+$/.test(line)) continue;
+    const subgraph = SUBGRAPH.exec(line);
+    if (subgraph) {
+      const [, id, bracketLabel, quotedLabel, words] = subgraph;
+      const label = plain(bracketLabel ?? quotedLabel ?? words ?? "");
+      groups.push({ id: id ?? label, label, parent: current() });
+      stack.push(groups.length - 1);
+      continue;
+    }
+    if (line === "end") {
+      if (!stack.length) return null;
+      stack.pop();
+      continue;
+    }
     let read = readNodes(line);
     if (!read) return null;
     let { rest } = read;
@@ -142,7 +164,9 @@ function flowchart(header: string, lines: string[]): Converted | null {
       rest = next.rest;
     }
   }
-  if (!edges.length) return null;
+  if (!edges.length || stack.length) return null;
+  // An arrow to a subgraph itself (A --> MyGroup) has no part to point at; keep Mermaid.
+  if (groups.some((group) => nodes.has(group.id) && nodes.get(group.id)!.label === undefined)) return null;
 
   // Boxes that share their text keep their Mermaid ids, written as [id], so arrows find the right one.
   const text = (id: string) => nodes.get(id)!.label ?? id;
@@ -153,11 +177,17 @@ function flowchart(header: string, lines: string[]): Converted | null {
   const refer = (id: string) => (shared(id) ? `[${id}]` : quoteIfNeeded(text(id)));
   const link = (edge: (typeof edges)[number]) =>
     edge.both ? "<->" : edge.head ? (edge.dashed ? "-->" : "->") : edge.dashed ? "-.-" : "---";
+  // Parts, then each group as a block holding its parts and inner groups; empty groups are left out.
+  const holds = (g: number): boolean => [...nodes.values()].some((node) => node.group === g) || groups.some((child, c) => child.parent === g && holds(c));
+  const block = (parent: number | null, indent: string): string[] => [
+    ...[...nodes.values()].filter((node) => node.group === parent).map((node) => `${indent}${node.kind} ${declare(node.id)}`),
+    ...groups.flatMap((group, g) => (group.parent === parent && holds(g) ? [`${indent}group ${group.label}`, ...block(g, `${indent}  `), `${indent}end`] : [])),
+  ];
   return {
     kind: "flow",
     lines: [
       `direction: ${direction}`,
-      ...[...nodes.values()].map((node) => `${node.kind} ${declare(node.id)}`),
+      ...block(null, ""),
       ...edges.map((edge) => `${refer(edge.from)} ${link(edge)} ${refer(edge.to)}${edge.label ? `: ${edge.label}` : ""}`),
     ],
   };
