@@ -238,10 +238,10 @@ export function SidebarToggle({
     <button
       type="button"
       onClick={onClick}
-      className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+      className="grid size-11 place-items-center rounded-md text-foreground outline-none transition-colors hover:bg-muted focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-brand-yellow"
+      aria-label={collapsed ? "Show contents" : "Hide contents"}
     >
-      {collapsed ? <Menu className="size-4" /> : <X className="size-4" />}
+      {collapsed ? <Menu className="size-5" /> : <X className="size-5" />}
     </button>
   );
 }

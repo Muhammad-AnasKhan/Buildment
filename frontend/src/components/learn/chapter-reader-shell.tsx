@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useCallback, type CSSProperties } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 import { ChapterSidebar, SidebarToggle } from "@/components/learn/chapter-sidebar";
 import { ChapterToc, TocToggle } from "@/components/learn/chapter-toc";
 import { ChapterNav } from "@/components/learn/chapter-nav";
@@ -267,35 +268,26 @@ export function ChapterReaderShell({
 
       <ReaderShellFade>
         {!focusMode && (
-          <header className="shrink-0 border-b border-border bg-background">
-            <div className="flex items-center gap-2 px-3 py-2 sm:px-4">
-              <SidebarToggle
-                collapsed={leftCollapsed}
-                onClick={() => setLeftCollapsed(!leftCollapsed)}
-              />
-              <nav
-                aria-label="Breadcrumb"
-                className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden text-xs text-muted-foreground"
+          <header className="shrink-0 border-b border-border bg-card">
+            <div className="flex min-h-14 items-center gap-1 px-2 py-1 sm:gap-2 sm:px-4">
+              <Link
+                href={`/courses/${courseSlug}`}
+                aria-label={`Back to ${courseTitle}`}
+                className="grid size-11 place-items-center rounded-md text-foreground outline-none transition-colors hover:bg-muted focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-brand-yellow"
               >
-                <Link href="/dashboard" className="hidden shrink-0 transition-colors hover:text-foreground lg:inline">
-                  Dashboard
-                </Link>
-                <span aria-hidden className="hidden shrink-0 text-border lg:inline">/</span>
-                <Link
-                  href={`/courses/${courseSlug}`}
-                  className="truncate transition-colors hover:text-foreground"
-                >
-                  {courseTitle}
-                </Link>
-                <span aria-hidden className="hidden shrink-0 text-border sm:inline">/</span>
-                <span className="hidden truncate text-foreground sm:inline">{chapterTitle}</span>
-              </nav>
+                <ArrowLeft className="size-5" aria-hidden />
+              </Link>
+              <div className="min-w-0 flex-1 px-1">
+                <p className="truncate text-[13px] text-muted-foreground">{lessonLabel}</p>
+                <p className="truncate text-[15px] font-bold leading-tight text-foreground">{chapterTitle}</p>
+              </div>
               <CheckpointHeaderLabel
                 completed={checkpointsCompleted}
                 total={checkpointsTotal}
                 chapterComplete={chapterComplete}
               />
               <StudyClock
+                className="hidden sm:flex"
                 status={study.status}
                 pauseReason={study.pauseReason}
                 busy={study.busy}
@@ -307,7 +299,11 @@ export function ChapterReaderShell({
                 onResume={study.resume}
                 onStop={study.stop}
               />
-              <div className="flex shrink-0 items-center gap-1.5">
+              <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
+                <SidebarToggle
+                  collapsed={leftCollapsed}
+                  onClick={() => setLeftCollapsed(!leftCollapsed)}
+                />
                 <AskHelpDialog
                   courseId={courseId}
                   courseSlug={courseSlug}

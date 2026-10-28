@@ -144,8 +144,8 @@ export function TocToggle({
     <button
       type="button"
       onClick={onClick}
-      className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-      aria-label={collapsed ? "Expand table of contents" : "Collapse table of contents"}
+      className="grid size-11 place-items-center rounded-md text-foreground outline-none transition-colors hover:bg-muted focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-brand-yellow"
+      aria-label={collapsed ? "Show this page's headings" : "Hide this page's headings"}
     >
       {collapsed ? (
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="size-4">
