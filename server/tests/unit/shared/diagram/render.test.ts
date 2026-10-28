@@ -147,6 +147,24 @@ describe("layout", () => {
     expect(JSON.stringify(drawScene(scene))).toContain('"key":"group-0-label"');
   });
 
+  it.each([false, true])("frames sequence blocks and places notes between messages (compact: %s)", (compact) => {
+    const s = spec("sequence", "title: Health\nbox Client\nbox Server\nnote over Client, Server: start\nloop every second\nClient -> Server: ping\nend\nalt healthy\nServer --> Client: pong\nelse down\nServer -> Client: nothing\nend");
+    expect(s.notes).toEqual([{ before: 0, from: "client", to: "server", side: "over", text: "start", line: 4 }]);
+    expect(s.blocks.map((b) => [b.kind, b.start, b.end, b.sections.map((x) => x.at)])).toEqual([["loop", 0, 1, []], ["alt", 1, 3, [2]]]);
+    const scene = layoutDiagram(s, compact);
+    const [loop, alt] = scene.blocks;
+    const ping = scene.edges[0].path.start.y;
+    expect(scene.notes[0].rect.y + scene.notes[0].rect.h).toBeLessThan(ping);
+    expect(loop.rect.y).toBeLessThan(ping);
+    expect(loop.rect.y + loop.rect.h).toBeGreaterThan(ping);
+    expect(alt.dividers).toHaveLength(1);
+    expect(alt.dividers[0].y).toBeGreaterThan(scene.edges[1].path.start.y);
+    expect(alt.dividers[0].y).toBeLessThan(scene.edges[2].path.start.y);
+    const flat = JSON.stringify(drawScene(scene));
+    expect(flat).toContain('"key":"note-0"');
+    expect(flat).toContain('"key":"block-1-divider-0"');
+  });
+
   it("is deterministic", () => {
     expect(layoutDiagram(spec("flow", FLOW), false)).toEqual(layoutDiagram(spec("flow", FLOW), false));
   });

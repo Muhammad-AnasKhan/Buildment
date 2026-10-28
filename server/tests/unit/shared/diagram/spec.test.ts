@@ -167,6 +167,13 @@ describe("parseDiagram: problems fail loudly", () => {
     expect(problems(parseDiagram("flow", "title: X\nbox A\nbox B\nend\nA -> B"))[0]).toMatch(/has no group to close/);
   });
 
+  it("checks sequence notes and blocks", () => {
+    expect(problems(parseDiagram("sequence", "title: X\nbox A\nbox B\nloop forever\nA -> B: ping"))).toEqual(['Line 4: the "loop" block is never closed. Add a line with "end".']);
+    expect(problems(parseDiagram("sequence", "title: X\nbox A\nbox B\nelse\nA -> B: ping"))[0]).toMatch(/belongs inside a block/);
+    expect(problems(parseDiagram("sequence", "title: X\nbox A\nbox B\nnote over A, Nope: hi\nA -> B: ping"))[0]).toMatch(/"Nope" is not declared/);
+    expect(problems(parseDiagram("sequence", "title: X\nbox A\nbox B\nbox C\nnote left of A, B: hi\nA -> B: ping"))[0]).toMatch(/beside one part/);
+  });
+
   it("allows a part with no arrow", () => {
     expect(parseDiagram("flow", "title: X\nbox A\nbox B\nbox C\nA -> B").ok).toBe(true);
   });

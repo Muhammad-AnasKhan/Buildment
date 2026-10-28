@@ -111,6 +111,24 @@ export function drawScene(scene: Scene, state: DrawState = {}, title?: { text: s
     children.push(el("line", { x1: r(line.x), y1: r(line.y1), x2: r(line.x), y2: r(line.y2), stroke: BRAND.muted, strokeWidth: 2, strokeDasharray: "2 6", strokeLinecap: "round" }, undefined, `life-${i}`));
   }
 
+  // Sequence blocks: a frame with its title, and a dashed line where each branch starts.
+  for (const [i, block] of scene.blocks.entries()) {
+    const { x: bx, y: by, w: bw, h: bh } = block.rect;
+    children.push(el("rect", { x: r(bx), y: r(by), width: r(bw), height: r(bh), rx: 6, fill: "none", stroke: BRAND.muted, strokeWidth: 2 }, undefined, `block-${i}`));
+    children.push(text(block.title, BRAND.muted, 700, `block-${i}-title`, BRAND.tint));
+    for (const [j, divider] of block.dividers.entries()) {
+      children.push(el("line", { x1: r(divider.x0), y1: r(divider.y), x2: r(divider.x1), y2: r(divider.y), stroke: BRAND.muted, strokeWidth: 2, strokeDasharray: "6 5" }, undefined, `block-${i}-divider-${j}`));
+      if (divider.label) children.push(text(divider.label, BRAND.muted, 700, `block-${i}-divider-${j}-label`, BRAND.tint));
+    }
+  }
+
+  // Sequence notes: yellow cards with an ink border.
+  for (const [i, note] of scene.notes.entries()) {
+    const { x: nx, y: ny, w: nw, h: nh } = note.rect;
+    children.push(el("rect", { x: r(nx), y: r(ny), width: r(nw), height: r(nh), fill: BRAND.yellow, stroke: BRAND.ink, strokeWidth: 2 }, undefined, `note-${i}`));
+    children.push(text(note.label, BRAND.ink, 600, `note-${i}-label`));
+  }
+
   for (const edge of scene.edges) {
     const on = state.activeEdge === edge.index;
     const faded = state.fadedEdges?.has(edge.index) ?? false;

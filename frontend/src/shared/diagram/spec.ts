@@ -16,6 +16,22 @@ export type NodeKind = (typeof NODE_KINDS)[number];
 export type DiagramNode = { id: string; label: string; kind: NodeKind; line: number; group: number | null };
 /** A labelled box around some parts, such as a private network. Groups may sit inside groups. */
 export type DiagramGroup = { label: string; parent: number | null; line: number };
+/** Sequence only: a note before message `before`, over one or two lanes or beside one. */
+export type DiagramNote = { before: number; from: string; to: string; side: "over" | "left" | "right"; text: string; line: number };
+/**
+ * Sequence only: a framed block around messages `start` to `end` (exclusive), such as a loop
+ * or the branches of an alt. `sections` mark where an else or and branch begins.
+ */
+export const BLOCK_KINDS = ["loop", "alt", "opt", "par", "critical", "break"] as const;
+export type DiagramBlock = {
+  kind: (typeof BLOCK_KINDS)[number];
+  label: string;
+  start: number;
+  end: number;
+  sections: { at: number; label: string }[];
+  depth: number;
+  line: number;
+};
 /**
  * `head` is false for a plain line (`---`), which joins two parts without a direction;
  * `tail` is true for a two-way arrow (`<->`), with a head at each end.
@@ -34,6 +50,8 @@ export type DiagramSpec = {
   packet: string[];
   hops: PacketHop[];
   groups: DiagramGroup[];
+  notes: DiagramNote[];
+  blocks: DiagramBlock[];
 };
 
 export type DiagramParseResult = { ok: true; spec: DiagramSpec } | { ok: false; problems: string[] };
@@ -57,6 +75,9 @@ const BARE_NAME = /^[^:"`]+$/;
 const QUOTED_NAME = /^[^"`]+$/;
 const SETTING = /^(title|direction|packet)\s*:\s*(.*)$/i;
 const GROUP_LINE = /^group\s+(.+)$/i;
+const NOTE_LINE = /^note\s+(over|left of|right of)\s+([^:]+?)\s*:\s*(.+)$/i;
+const BLOCK_LINE = new RegExp(`^(${BLOCK_KINDS.join("|")})\\b\\s*(.*)$`, "i");
+const SECTION_LINE = /^(else|and|option)\b\s*(.*)$/i;
 const NODE_LINE = new RegExp(`^(${NODE_KINDS.join("|")})\\s+(.+)$`, "i");
 /** True when the text has a control character other than a tab. */
 function hasControl(text: string): boolean {
@@ -131,6 +152,11 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
   const open: number[] = [];
   const byId = new Map<string, DiagramNode>();
   const rawEdges: RawEdge[] = [];
+  // Sequence notes and blocks, placed by how many messages come before them.
+  let messages = 0;
+  const rawNotes: { before: number; names: Name[]; side: DiagramNote["side"]; text: string; line: number }[] = [];
+  const blocks: DiagramBlock[] = [];
+  const openBlocks: number[] = [];
 
   const lines = source.replace(/\r\n?/g, "\n").split("\n");
   lines.forEach((rawLine, index) => {
@@ -155,8 +181,34 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
       }
       return;
     }
+    if (kind === "sequence") {
+      const note = NOTE_LINE.exec(text);
+      if (note) {
+        const side = note[1].toLowerCase().startsWith("left") ? "left" : note[1].toLowerCase().startsWith("right") ? "right" : "over";
+        const names = note[2].split(",").map(readName);
+        if (names.length > 2 || (side !== "over" && names.length > 1)) at(line, "a note sits over one or two parts, or beside one part.");
+        else if (note[3].trim().length > DIAGRAM_LIMITS.label * 2) at(line, `shorten the note to ${DIAGRAM_LIMITS.label * 2} characters or fewer.`);
+        else rawNotes.push({ before: messages, names, side, text: note[3].trim(), line });
+        return;
+      }
+      const block = splitArrows(text) ? null : BLOCK_LINE.exec(text);
+      if (block) {
+        blocks.push({ kind: block[1].toLowerCase() as DiagramBlock["kind"], label: block[2].trim(), start: messages, end: messages, sections: [], depth: openBlocks.length, line });
+        openBlocks.push(blocks.length - 1);
+        return;
+      }
+      const section = splitArrows(text) ? null : SECTION_LINE.exec(text);
+      if (section) {
+        if (!openBlocks.length) at(line, `"${section[1]}" belongs inside a block, such as "alt" or "par".`);
+        else blocks[openBlocks[openBlocks.length - 1]].sections.push({ at: messages, label: section[2].trim() });
+        return;
+      }
+    }
     if (/^end$/i.test(text)) {
-      if (!open.length) at(line, "this \"end\" has no group to close. Open one with \"group <name>\".");
+      if (kind === "sequence") {
+        if (!openBlocks.length) at(line, "this \"end\" has no block to close. Open one with \"loop\", \"alt\", \"opt\" or \"par\".");
+        else blocks[openBlocks.pop()!].end = messages;
+      } else if (!open.length) at(line, "this \"end\" has no group to close. Open one with \"group <name>\".");
       else open.pop();
       return;
     }
@@ -237,6 +289,7 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
         return;
       }
       rawEdges.push({ names, shown, links, label, line });
+      messages += names.length - 1;
       return;
     }
 
@@ -244,6 +297,7 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
   });
 
   for (const index of open) at(groups[index].line, `the group "${groups[index].label}" is never closed. Add a line with "end".`);
+  for (const index of openBlocks) at(blocks[index].line, `the "${blocks[index].kind}" block is never closed. Add a line with "end".`);
   groups.forEach((group, index) => {
     const inside = (g: number | null): boolean => g !== null && (g === index || inside(groups[g].parent));
     if (!nodes.some((node) => inside(node.group))) at(group.line, `the group "${group.label}" has no parts in it.`);
@@ -309,6 +363,17 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
     }
   }
 
+  const notes: DiagramNote[] = [];
+  for (const note of rawNotes) {
+    const ids = note.names.map((name) => byId.get(keyOf(name))?.id);
+    const missing = note.names.find((_, i) => !ids[i]);
+    if (missing) {
+      at(note.line, `"${missing.text}" is not declared.${declaredList(nodes)}`);
+      continue;
+    }
+    notes.push({ before: note.before, from: ids[0]!, to: ids[ids.length - 1]!, side: note.side, text: note.text, line: note.line });
+  }
+
   const maxNodes = kind === "flow" ? DIAGRAM_LIMITS.flowNodes : DIAGRAM_LIMITS.sequenceNodes;
   const maxEdges = kind === "flow" ? DIAGRAM_LIMITS.flowEdges : DIAGRAM_LIMITS.sequenceEdges;
   if (nodes.length < 2) problems.push("A diagram needs at least two parts, for example \"actor You\" and \"box DNS\".");
@@ -319,7 +384,7 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
   if (problems.length) return { ok: false, problems };
   return {
     ok: true,
-    spec: { kind, title: title!, direction: direction ?? "right", nodes, edges, packet, hops, groups },
+    spec: { kind, title: title!, direction: direction ?? "right", nodes, edges, packet, hops, groups, notes, blocks },
   };
 }
 

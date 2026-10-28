@@ -39,6 +39,15 @@ export type Scene = {
   lifelines: { x: number; y1: number; y2: number }[];
   /** Group boxes, outermost first, so inner boxes draw on top. */
   groups: { rect: { x: number; y: number; w: number; h: number }; label: SceneLabel }[];
+  /** Sequence notes, drawn as yellow cards. */
+  notes: { rect: { x: number; y: number; w: number; h: number }; label: SceneLabel }[];
+  /** Sequence blocks (loop, alt and the rest): a frame, its title, and lines where branches start. */
+  blocks: {
+    rect: { x: number; y: number; w: number; h: number };
+    title: SceneLabel;
+    dividers: { y: number; x0: number; x1: number; label?: SceneLabel }[];
+    depth: number;
+  }[];
 };
 
 export const NODE_FONT = 14;
@@ -536,7 +545,7 @@ export function layoutFlow(spec: DiagramSpec, compact: boolean): Scene {
 
   const groups = groupBoxes(spec, nodes);
   const corners = groups.flatMap(({ rect }) => [{ x: rect.x, y: rect.y }, { x: rect.x + rect.w, y: rect.y + rect.h }]);
-  return { kind: "flow", compact, viewBox: fitViewBox(nodes, edges, corners), nodes, edges, lifelines: [], groups };
+  return { kind: "flow", compact, viewBox: fitViewBox(nodes, edges, corners), nodes, edges, lifelines: [], groups, notes: [], blocks: [] };
 }
 
 /**
@@ -597,7 +606,7 @@ export function layoutSequence(spec: DiagramSpec, compact: boolean): Scene {
   const headerBottom = Math.max(...measured.map((m) => top + m.box.bottom));
 
   let y = headerBottom + 26;
-  const edges: SceneEdge[] = spec.edges.map((edge, index) => {
+  const message = (edge: DiagramSpec["edges"][number], index: number): SceneEdge => {
     const x1 = xs[lane.get(edge.from)!];
     const x2 = xs[lane.get(edge.to)!];
     const dir = Math.sign(x2 - x1);
@@ -622,11 +631,87 @@ export function layoutSequence(spec: DiagramSpec, compact: boolean): Scene {
     const label: SceneLabel | undefined = lines.length ? { lines, x: (x1 + x2) / 2, y: y + EDGE_FONT, anchor: "middle", size: EDGE_FONT } : undefined;
     y = arrowY + 24;
     return { index, dashed: edge.dashed, head: edge.head, tail: false, path: { start: { x: x1 + dir * 2, y: arrowY }, end: { x: x2 - dir * 3, y: arrowY } }, label };
-  });
+  };
+
+  // The lanes a block covers: those its messages and notes touch, or every lane if none.
+  const blockLanes = (block: DiagramSpec["blocks"][number]) => {
+    const ids = [
+      ...spec.edges.slice(block.start, block.end).flatMap((edge) => [edge.from, edge.to]),
+      ...spec.notes.filter((note) => note.before >= block.start && note.before < block.end).flatMap((note) => [note.from, note.to]),
+    ];
+    const used = ids.length ? ids.map((id) => lane.get(id)!) : spec.nodes.map((_, i) => i);
+    const self = spec.edges.slice(block.start, block.end).some((edge) => edge.from === edge.to);
+    return { lo: xs[Math.min(...used)], hi: xs[Math.max(...used)] + (self ? 60 : 0) };
+  };
+
+  const edges: SceneEdge[] = [];
+  const notes: Scene["notes"] = [];
+  const blocks: Scene["blocks"] = [];
+  const blockTop = new Map<number, number>();
+  const dividers = new Map<number, { y: number; label?: SceneLabel }[]>();
+  for (let i = 0; i <= spec.edges.length; i++) {
+    // Close the blocks that end here, innermost first.
+    const closing = spec.blocks.map((block, b) => ({ block, b })).filter(({ block }) => block.end === i).sort((p, q) => q.block.depth - p.block.depth);
+    for (const { block, b } of closing) {
+      // A block with no messages in it still gets its title line.
+      if (!blockTop.has(b)) {
+        blockTop.set(b, y);
+        y += 30;
+      }
+      y += 8;
+      const { lo, hi } = blockLanes(block);
+      const inset = block.depth * 8;
+      const x0 = lo - 34 + inset;
+      const x1 = hi + 34 - inset;
+      const top = blockTop.get(b)!;
+      const title: SceneLabel = { lines: [block.label ? `${block.kind}: ${block.label}` : block.kind], x: x0 + 10, y: top + 17, anchor: "start", size: GROUP_FONT };
+      blocks.push({ rect: { x: x0, y: top, w: x1 - x0, h: y - top }, title, dividers: (dividers.get(b) ?? []).map((d) => ({ ...d, x0, x1 })), depth: block.depth });
+      y += 10;
+    }
+    if (i === spec.edges.length) {
+      // Notes after the last message still belong below it.
+      for (const note of spec.notes.filter((n) => n.before === i)) placeNote(note);
+      break;
+    }
+    // Branches (else, and) that start here.
+    spec.blocks.forEach((block, b) => {
+      for (const section of block.sections) {
+        if (section.at !== i) continue;
+        y += 6;
+        const { lo } = blockLanes(block);
+        const label: SceneLabel | undefined = section.label ? { lines: [section.label], x: lo - 34 + block.depth * 8 + 10, y: y + 16, anchor: "start", size: GROUP_FONT } : undefined;
+        dividers.set(b, [...(dividers.get(b) ?? []), { y, label }]);
+        y += section.label ? 24 : 10;
+      }
+    });
+    // Open the blocks that start here, outermost first.
+    spec.blocks.forEach((block, b) => {
+      if (block.start !== i || block.end === i) return;
+      blockTop.set(b, y);
+      y += 30;
+    });
+    for (const note of spec.notes.filter((n) => n.before === i)) placeNote(note);
+    edges.push(message(spec.edges[i], i));
+  }
+
+  function placeNote(note: DiagramSpec["notes"][number]) {
+    const a = xs[lane.get(note.from)!];
+    const b = xs[lane.get(note.to)!];
+    const span = Math.abs(b - a);
+    const width = note.side === "over" ? Math.max(span + 60, compact ? 130 : 160) : compact ? 130 : 160;
+    const lines = wrapText(note.text, EDGE_FONT, width - 20, 6);
+    const w = Math.max(linesWidth(lines, EDGE_FONT) + 20, note.side === "over" ? span + 40 : 0);
+    const h = lines.length * lh + 14;
+    const centre = (a + b) / 2;
+    const x = note.side === "over" ? centre - w / 2 : note.side === "right" ? a + 14 : a - 14 - w;
+    notes.push({ rect: { x, y, w, h }, label: { lines, x: x + 10, y: y + 7 + EDGE_FONT * 0.85, anchor: "start", size: EDGE_FONT } });
+    y += h + 12;
+  }
 
   const lifelines = nodes.map((_, i) => ({ x: xs[i], y1: top + measured[i].box.bottom + 4, y2: y }));
-  const viewBox = fitViewBox(nodes, edges, lifelines.map((line) => ({ x: line.x, y: line.y2 })));
-  return { kind: "sequence", compact, viewBox, nodes, edges, lifelines, groups: [] };
+  const corners = [...notes, ...blocks].flatMap(({ rect }) => [{ x: rect.x, y: rect.y }, { x: rect.x + rect.w, y: rect.y + rect.h }]);
+  const viewBox = fitViewBox(nodes, edges, [...lifelines.map((line) => ({ x: line.x, y: line.y2 })), ...corners]);
+  return { kind: "sequence", compact, viewBox, nodes, edges, lifelines, groups: [], notes, blocks };
 }
 
 export function layoutDiagram(spec: DiagramSpec, compact: boolean): Scene {
