@@ -117,10 +117,9 @@ The mentee has to go read something and confirm it.
 - Completion: checked (+ note submitted if required).
 - Reports: read/unread, time-to-check, note content.
 
-## `<OpenQuestion>` — free-text answer, human-reviewed
+## `<OpenQuestion>` — free-text answer (mentor-reviewed or LLM-graded)
 
-The block that carries the most learning value and the most product risk (it needs a human in the
-loop).
+Default path is human review. Quiz `type: short` fences may opt into instant BYOK LLM grading.
 
 ```mdx
 <OpenQuestion id="01J8..." minWords={80} rubric="Mentions vendor payouts, order splitting, and inventory ownership.">
@@ -130,12 +129,15 @@ loop).
 ```
 
 - Markdown-capable textarea, autosaves a draft, explicit submit.
-- Config: `minWords`, `maxWords?`, `rubric` (mentor-only), `sampleAnswer?` (revealed after submit or
-  after review, mentor's choice).
-- Completion: **submitted.** Not blocked on mentor review — the mentee keeps moving; review arrives
-  asynchronously.
-- Goes into the **mentor review queue** — see [`05-review-queue.mdx`](05-review-queue.mdx).
-- Reports: submitted / pending review / reviewed, mentor score and feedback.
+- Config: `minWords`, `maxWords?`, `rubric` (mentor-only), `sampleAnswer?` (server-only),
+  `autoGrade` (`mentor` default | `llm`), `hints[]` (server-only until wrong-attempt threshold),
+  `hintAfterAttempts` (default `3`).
+- Mentor path completion: **submitted.** Not blocked on mentor review — review arrives
+  asynchronously via the **mentor review queue** — see [`05-review-queue.mdx`](05-review-queue.mdx).
+- LLM path (`autoGrade: llm`): grades with the learner's OpenRouter key. Wrong tries 1–2 return
+  why-wrong feedback; from try 3 an authored hint is included. Checkpoint counts only when
+  `isCorrect` is true. Paste/focus/camera integrity still applies in quiz chapters.
+- Reports: submitted / pending review / reviewed, or auto-graded correct rate for LLM shorts.
 
 ## `<CodeExercise>` — write and check code
 

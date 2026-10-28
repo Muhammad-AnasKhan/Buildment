@@ -673,6 +673,10 @@ function transformQuizFences(body: string, pushBlock: (b: PendingBlock) => strin
       explanation?: string;
       explanations?: string[];
       modelAnswer?: string;
+      /** mentor (default) | llm — learner BYOK instant grade for short answers. */
+      autoGrade?: "mentor" | "llm";
+      hints?: string[];
+      hintAfterAttempts?: number;
       allowSpeechInput?: boolean;
       allowUrl?: boolean;
       urlLabel?: string;
@@ -707,6 +711,10 @@ function transformQuizFences(body: string, pushBlock: (b: PendingBlock) => strin
     }
 
     const id = ulid();
+    const autoGrade = parsed.autoGrade === "llm" ? "llm" : "mentor";
+    const hints = Array.isArray(parsed.hints)
+      ? parsed.hints.map((hint) => String(hint).trim()).filter(Boolean)
+      : undefined;
     return pushBlock({
       id,
       type: "OPEN_QUESTION",
@@ -715,6 +723,11 @@ function transformQuizFences(body: string, pushBlock: (b: PendingBlock) => strin
         prompt: parsed.question,
         minWords: parsed.minWords ?? 0,
         sampleAnswer: parsed.modelAnswer,
+        autoGrade,
+        ...(hints && hints.length > 0 ? { hints } : {}),
+        ...(typeof parsed.hintAfterAttempts === "number"
+          ? { hintAfterAttempts: parsed.hintAfterAttempts }
+          : {}),
         allowSpeechInput: parsed.allowSpeechInput ?? false,
         allowUrl: parsed.allowUrl ?? false,
         urlLabel: parsed.urlLabel,

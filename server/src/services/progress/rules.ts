@@ -1,4 +1,5 @@
 import type { BlockType, ProgressStatus, ResponseStatus } from "../../generated/prisma/index.js";
+import { isLlmGradedOpenQuestion } from "../../shared/blocks/open-question/schema.js";
 
 // Completion math for chapter progress and sequential gating.
 // Presentational blocks never receive a Response, so counting them as required
@@ -54,8 +55,9 @@ export function allowRetryFromConfig(config: unknown): boolean {
 }
 
 /**
- * Open questions and required reads count once submitted.
- * Quiz, predict, and code count when the answer is correct, or when retry is off and the attempt is in.
+ * Mentor-reviewed open questions and required reads count once submitted.
+ * Quiz, predict, code, and LLM-graded shorts count when the answer is correct,
+ * or when retry is off and the attempt is in.
  */
 export function checkpointSatisfied(args: {
   type: BlockType;
@@ -64,7 +66,10 @@ export function checkpointSatisfied(args: {
   isCorrect: boolean | null;
 }): boolean {
   if (!args.status || !isCompleteResponseStatus(args.status)) return false;
-  if (!SCORED_CHECKPOINT_TYPES.has(args.type)) return true;
+  const scored =
+    SCORED_CHECKPOINT_TYPES.has(args.type) ||
+    (args.type === "OPEN_QUESTION" && isLlmGradedOpenQuestion(args.config));
+  if (!scored) return true;
   if (args.isCorrect === true) return true;
   return !allowRetryFromConfig(args.config);
 }

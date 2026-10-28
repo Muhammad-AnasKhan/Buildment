@@ -3,7 +3,12 @@ import { blockDefinitions } from "../../shared/blocks/definitions.js";
 import { AiInterviewConfigSchema, type SanitizedAiInterviewConfig } from "../../shared/blocks/ai-interview/schema.js";
 import { CodeConfigSchema, type SanitizedCodeConfig } from "../../shared/blocks/code/schema.js";
 import { MustReadConfigSchema } from "../../shared/blocks/must-read/schema.js";
-import { OpenQuestionConfigSchema, type SanitizedOpenQuestionConfig } from "../../shared/blocks/open-question/schema.js";
+import {
+  isLlmGradedOpenQuestion,
+  OpenQuestionConfigSchema,
+  type OpenQuestionStoredPayload,
+  type SanitizedOpenQuestionConfig,
+} from "../../shared/blocks/open-question/schema.js";
 import { getOpenQuestionGroupPosition } from "../../shared/blocks/open-question/group-position.js";
 import { PredictConfigSchema, type SanitizedPredictConfig } from "../../shared/blocks/predict/schema.js";
 import { QuizConfigSchema, type SanitizedQuizConfig } from "../../shared/blocks/quiz/schema.js";
@@ -12,6 +17,7 @@ import { prisma } from "../../db/prisma.js";
 import type { Block } from "../../generated/prisma/index.js";
 import { findEnrollmentForBlockState } from "../enrollment/api-learn-access.js";
 import { loadAiInterviewInitialState } from "../ai/interview/service.js";
+import { getAiCredentialStatus } from "../ai/credentials.js";
 import { NotFoundError } from "../../utils/errors.js";
 import { sanitizeBlockConfig } from "../../utils/sanitize-block-config.js";
 import type { SessionUser } from "../../types/auth.js";
@@ -100,10 +106,21 @@ async function blockStateFor(block: Block, user: SessionUser | undefined): Promi
         select: { id: true, type: true },
       });
       const submitted = latest && latest.status !== "DRAFT" ? latest : null;
+      const stored = (payload ?? null) as OpenQuestionStoredPayload | null;
+      const llmFeedback = stored?.llmFeedback;
+      const llmMode = isLlmGradedOpenQuestion(config);
+      const aiStatus = llmMode
+        ? user?.id
+          ? await getAiCredentialStatus(user.id)
+          : { configured: false, hasKey: false }
+        : null;
       return {
         type: "OPEN_QUESTION",
         config: sanitizeBlockConfig<typeof config, SanitizedOpenQuestionConfig>(config),
         group: getOpenQuestionGroupPosition(chapterBlocks, blockId),
+        ...(aiStatus
+          ? { ai: { configured: aiStatus.configured, hasKey: aiStatus.hasKey } }
+          : {}),
         initialState: submitted
           ? {
               status: submitted.status,
@@ -112,6 +129,13 @@ async function blockStateFor(block: Block, user: SessionUser | undefined): Promi
               url: typeof payload?.url === "string" ? payload.url : null,
               feedback: submitted.review?.feedback ?? null,
               verdict: submitted.review?.verdict ?? null,
+              ...(llmMode
+                ? {
+                    isCorrect: submitted.isCorrect,
+                    explanation: llmFeedback?.why ?? null,
+                    hint: llmFeedback?.hint ?? null,
+                  }
+                : {}),
             }
           : null,
       };

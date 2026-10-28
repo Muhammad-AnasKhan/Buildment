@@ -9,7 +9,7 @@ status: draft v1
 
 - **Answers server-side only.** Correct answers, rubrics, hidden tests never leave the server.
   Enforced by the sanitizer (`mdx/sanitize.ts`) + a test that fails if a `correct`, `rubric`,
-  `sampleAnswer`, or `hiddenTests` key ever reaches a client payload.
+  `sampleAnswer`, `hints`, or `hiddenTests` key ever reaches a client payload.
 - **Grading server-side only** for quiz/test. Client-reported code-check results are trusted by
   design and labeled as such in reports — see [`03-blocks-registry.mdx`](03-blocks-registry.mdx)
   §`<CodeBlock>`.
@@ -53,11 +53,13 @@ it ships:
 
 ```
 Given any Block.config for any registered block type,
-sanitize(config) must never include keys: correct, correctOptionId, correctOptionIds, rubric, sampleAnswer, hiddenTests, tests, solution, explanation
+sanitize(config) must never include keys: correct, correctOptionId, correctOptionIds, rubric, sampleAnswer, hints, hiddenTests, tests, solution, explanation
 ```
 
 `explanation` is stripped too because it usually names the right option. The learner still sees it,
 but only after answering: the respond route and the saved block state return it with the grade.
+Authored short-answer `hints` stay server-only until enough wrong LLM attempts; then one hint is
+returned with the grade (never the full `sampleAnswer`).
 
 This should be a property-style test over the Zod schemas in the registry (see
 [`03-blocks-registry.mdx`](03-blocks-registry.mdx)), not a hand-maintained list of block types —

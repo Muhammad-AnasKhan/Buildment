@@ -1,15 +1,18 @@
 // GENERATED from server/src/shared — do not edit here. Run `pnpm sync-shared` in server/.
 import type { GradeResult } from "../types";
 import {
+  isLlmGradedOpenQuestion,
   validateOpenQuestionPayload,
   type OpenQuestionConfig,
   type OpenQuestionPayload,
 } from "./schema";
 
-// OpenQuestion is never auto-graded — see docs/03-blocks-registry.mdx
-// "<OpenQuestion>": completion is "submitted", scoring (if any) comes from a
-// human reviewer via the review queue (docs/05-review-queue.mdx, not built
-// yet). This function only enforces length / URL gates.
+/**
+ * Pure length/URL gates for open questions.
+ * Mentor-reviewed answers → PENDING_REVIEW.
+ * LLM-graded shorts are only validated here; the respond service calls OpenRouter
+ * and sets AUTO_GRADED + isCorrect (see services/ai/short-answer/grade.ts).
+ */
 export function gradeOpenQuestion(
   config: OpenQuestionConfig,
   payload: OpenQuestionPayload
@@ -23,10 +26,19 @@ export function gradeOpenQuestion(
     config.allowUrl && hasUrl && payload.text.trim().length === 0 && config.minWords === 0;
   const ok = !invalid && (linkOnlyOk || meetsLength);
 
+  if (!ok) {
+    return { score: null, maxScore: null, isCorrect: null, status: "DRAFT" };
+  }
+
+  // LLM path: structural pass only. respond.ts calls OpenRouter and writes AUTO_GRADED.
+  if (isLlmGradedOpenQuestion(config)) {
+    return { score: null, maxScore: 1, isCorrect: null, status: ok ? "SUBMITTED" : "DRAFT" };
+  }
+
   return {
     score: null,
     maxScore: null,
     isCorrect: null,
-    status: ok ? "PENDING_REVIEW" : "DRAFT",
+    status: "PENDING_REVIEW",
   };
 }

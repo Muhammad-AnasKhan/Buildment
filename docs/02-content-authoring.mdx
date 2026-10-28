@@ -54,9 +54,24 @@ explanations:
 `correct` is a zero-based index. Manifest-backed courses require one nonempty `explanations`
 entry per option, in the same order as `options`. Keep distractors plausible and comparable in
 length. Short-answer quiz fences use `type: short`, `question`, and `modelAnswer`; mentor rubrics
-and answer keys belong in activity configuration, never visible lesson prose. Although the
-reader supports Predict in quiz mode, the course-authoring teaching convention places predictions
-inline in standard lessons before a decision.
+and answer keys belong in activity configuration, never visible lesson prose. Optional
+`autoGrade: llm` enables instant BYOK grading (learner OpenRouter key); pair it with authored
+`hints:` that unlock after wrong tries (default on the 3rd). Leave `autoGrade` unset for mentor
+review. Although the reader supports Predict in quiz mode, the course-authoring teaching
+convention places predictions inline in standard lessons before a decision.
+
+Example LLM short answer (platform support only — opt in per fence when a course is ready):
+
+````markdown
+```quiz
+type: short
+question: In one sentence, why do server/ and client/ live in one Git repository for this course?
+autoGrade: llm
+hints:
+  - Think about keeping the API contract and the UI changes together.
+modelAnswer: One repo keeps the API and UI in sync so lesson changes do not drift across projects.
+```
+````
 
 ## Import a course from ZIP
 

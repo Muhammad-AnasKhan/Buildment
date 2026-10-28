@@ -14,6 +14,8 @@ export type QuizSessionContextValue = {
   reviewMode: boolean;
   dirtyBlockIds: ReadonlySet<string>;
   blockGrades: Record<string, QuizBlockGrade>;
+  /** Advance the proctored attempt after a wrong LLM short-answer try. */
+  reportWrongAttempt?: () => void;
 };
 
 export const QuizSessionContext = createContext<QuizSessionContextValue | null>(null);

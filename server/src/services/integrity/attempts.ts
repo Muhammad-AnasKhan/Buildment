@@ -27,16 +27,27 @@ async function countFlags(attemptId: string): Promise<number> {
 }
 
 /**
- * The attempt a learner is on now: 1 + their highest multiple-choice attempt in the
- * chapter. Only quiz answers count, so submitting an open question or code exercise
- * in the same chapter does not start a new proctored attempt.
+ * The attempt a learner is on now: 1 + the highest graded attempt among MCQ quiz
+ * answers and LLM-graded short answers in the chapter. Mentor-reviewed open
+ * questions and code exercises do not bump the proctored attempt number.
  */
 async function currentAttemptNumber(enrollmentId: string, chapterId: string): Promise<number> {
-  const submitted = await prisma.response.aggregate({
-    _max: { attempt: true },
-    where: { enrollmentId, status: { not: "DRAFT" }, block: { chapterId, type: "QUIZ" } },
-  });
-  return (submitted._max.attempt ?? 0) + 1;
+  const [quizMax, llmShortMax] = await Promise.all([
+    prisma.response.aggregate({
+      _max: { attempt: true },
+      where: { enrollmentId, status: { not: "DRAFT" }, block: { chapterId, type: "QUIZ" } },
+    }),
+    prisma.response.aggregate({
+      _max: { attempt: true },
+      where: {
+        enrollmentId,
+        status: "AUTO_GRADED",
+        isCorrect: { not: null },
+        block: { chapterId, type: "OPEN_QUESTION" },
+      },
+    }),
+  ]);
+  return Math.max(quizMax._max.attempt ?? 0, llmShortMax._max.attempt ?? 0) + 1;
 }
 
 /** Opens (or resumes, after a reload or power cut) the proctored attempt for a quiz chapter. */

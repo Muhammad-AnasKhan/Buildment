@@ -7,5 +7,7 @@
   "canvas/slugs.ts",
   "api/integrity.ts",
   "api/ai.ts",
-  "blocks/ai-interview/schema.ts"
+  "blocks/ai-interview/schema.ts",
+  "blocks/open-question/schema.ts",
+  "lib/safe-submission-url.ts"
 ]
