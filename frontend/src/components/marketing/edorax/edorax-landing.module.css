@@ -1,0 +1,116 @@
+.root a:focus-visible,
+.root button:focus-visible {
+  outline: 3px solid #FFC933;
+  outline-offset: 2px;
+}
+
+.root button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.answer:hover {
+  border-color: #2434E0 !important;
+}
+
+/* Tablets and phones: Dot's moods swipe instead of wrapping into uneven rows. */
+@media (max-width: 900px) {
+  .railTab {
+    display: flex !important;
+    gap: 12px !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin-right: -24px;
+    padding-right: 24px;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+
+  .railTab > * {
+    flex: 0 0 220px;
+    scroll-snap-align: start;
+  }
+}
+
+/* Inline styles carry the desktop design; these reshape it for phones. */
+@media (max-width: 640px) {
+  .h1 {
+    font-size: 32px !important;
+  }
+
+  .h2 {
+    font-size: 26px !important;
+  }
+
+  .pad {
+    padding-top: 56px !important;
+    padding-bottom: 56px !important;
+  }
+
+  /* One row: wordmark, Sign in, Try a question. Section links live in the footer. */
+  .header {
+    flex-wrap: nowrap !important;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+  }
+
+  .header svg {
+    height: 24px;
+    width: auto;
+  }
+
+  .nav {
+    flex-wrap: nowrap !important;
+    gap: 16px !important;
+  }
+
+  .navLink,
+  .hideSm {
+    display: none !important;
+  }
+
+  .navCta {
+    padding: 10px 14px !important;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+
+  .hero {
+    padding-top: 24px !important;
+    padding-bottom: 56px !important;
+    gap: 32px !important;
+  }
+
+  /* Card sets become a swipe row with the next card peeking in, not a tall stack. */
+  .rail {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 12px !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin-right: -24px;
+    padding-right: 24px;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+
+  .rail > * {
+    flex: 0 0 82% !important;
+    min-width: 0;
+    scroll-snap-align: start;
+  }
+
+  /* The ladder sits inside a bordered card, so it scrolls within the card. */
+  .railHalf {
+    margin-right: 0;
+    padding-right: 0;
+  }
+
+  .railHalf > * {
+    flex-basis: 46% !important;
+  }
+
+  .h2 + p {
+    font-size: 16px;
+  }
+}
