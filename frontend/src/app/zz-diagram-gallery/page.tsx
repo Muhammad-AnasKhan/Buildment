@@ -65,19 +65,21 @@ Shop app -> Orders: save the order
 Orders -> Courier: ready to pack`,
   },
   {
-    name: "Branches",
-    note: "The Building Habits diagram this branch converts from Mermaid.",
+    name: "Two paths with branches",
+    note: "The Mermaid diagram in Building Habits 01.01, converted. On a phone the three outcomes share one row.",
     kind: "flow",
-    spec: `title: Two evenings, two habits
-actor Rami
-box Picks up the phone
-box 40 minutes of videos
+    spec: `title: Rami's Tuesday evening as two paths
+direction: down
+box Rami sits down after dinner
+box Hand picks up the phone
+box 40 minutes of videos and messages
+box The laptop is free
 box Should I study now?
 box Later, then tomorrow
-end 30 minutes of study
-Rami -> Picks up the phone: no choice made
-Picks up the phone -> 40 minutes of videos
-Rami -> Should I study now?: a free laptop
+box 30 minutes of study
+Rami sits down after dinner -> Hand picks up the phone: no choice made
+Hand picks up the phone -> 40 minutes of videos and messages
+The laptop is free -> Should I study now?
 Should I study now? -> Later, then tomorrow: tired
 Should I study now? -> 30 minutes of study: some evenings`,
   },
