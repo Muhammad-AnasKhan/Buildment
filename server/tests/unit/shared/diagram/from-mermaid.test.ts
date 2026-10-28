@@ -104,11 +104,43 @@ describe("mermaidToDiagram", () => {
     ]);
   });
 
+  it("converts sequence notes, blocks with branches, and skips activation and colour", () => {
+    const chart = [
+      "sequenceDiagram",
+      "  participant C as Client",
+      "  participant S as Server",
+      "  activate S",
+      "  rect rgb(240, 240, 255)",
+      "  loop every second",
+      "    C->>S: ping",
+      "  end",
+      "  end",
+      "  alt healthy",
+      "    S-->>C: pong",
+      "  else down",
+      "    S--xC: nothing",
+      "  end",
+      "  Note over C,S: then wait",
+    ].join("\n");
+    expect(mermaidToDiagram(chart, "T")?.source.split("\n").slice(1)).toEqual([
+      "box Client",
+      "box Server",
+      "loop every second",
+      "Client -> Server: ping",
+      "end",
+      "alt healthy",
+      "Server --> Client: pong",
+      "else down",
+      "Server -> Client: nothing",
+      "end",
+      "note over Client, Server: then wait",
+    ]);
+  });
+
   it.each([
     ["an unclosed subgraph", "flowchart TD\n  subgraph S\n  A --> B"],
     ["a right-to-left flow", "flowchart RL\n  A --> B"],
-    ["a note in a sequence", "sequenceDiagram\n  A->>B: hi\n  Note over A: thinks"],
-    ["a loop in a sequence", "sequenceDiagram\n  loop every second\n  A->>B: ping\n  end"],
+    ["an unclosed sequence block", "sequenceDiagram\n  loop every second\n  A->>B: ping"],
     ["a state diagram", "stateDiagram-v2\n  [*] --> Open"],
     ["more parts than the limit", `flowchart TD\n  ${Array.from({ length: 31 }, (_, i) => `N${i}`).join(" --> ")}`],
     ["a keep-mermaid comment", "%% keep-mermaid\nflowchart TD\n  A --> B"],

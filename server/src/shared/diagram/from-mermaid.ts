@@ -196,16 +196,23 @@ function flowchart(header: string, lines: string[]): Converted | null {
 
 // Ids may hold single hyphens ("web-app") but never the dashes of an arrow.
 const PARTICIPANT = /^(participant|actor)\s+(\w+(?:-\w+)*)(?:\s+as\s+(.+))?$/;
-const MESSAGE = /^(\w+(?:-\w+)*)\s*(-->>|->>|-->|->)\s*[+-]?(\w+(?:-\w+)*)\s*:\s*(.+)$/;
+// ->> and -> are calls, -->> and --> replies; -x (lost) and -) (async) are drawn as calls.
+const MESSAGE = /^(\w+(?:-\w+)*)\s*(-->>|->>|--x|-x|--\)|-\)|-->|->)\s*[+-]?(\w+(?:-\w+)*)\s*:\s*(.+)$/;
+const NOTE = /^note\s+(over|left of|right of)\s+([\w-]+(?:\s*,\s*[\w-]+)?)\s*:\s*(.+)$/i;
+const BLOCK = /^(loop|alt|opt|par|critical|break)\b\s*(.*)$/;
+const SECTION = /^(else|and|option)\b\s*(.*)$/;
 
 function sequence(lines: string[]): Converted | null {
   const parts = new Map<string, { label: string; kind: "actor" | "box" }>();
-  const messages: string[][] = [];
+  // Statements in order: messages, notes, and block lines, written out once every part is known.
+  const statements: ((label: (id: string) => string) => string)[] = [];
+  const blocks: ("block" | "rect")[] = [];
+  let messages = 0;
   let title: string | undefined;
   const ensure = (id: string) => { if (!parts.has(id)) parts.set(id, { label: id, kind: "box" }); };
 
   for (const line of lines) {
-    if (line === "autonumber") continue;
+    if (line === "autonumber" || /^(activate|deactivate)\s/.test(line)) continue;
     const titled = /^title\s*:?\s+(.+)$/.exec(line);
     if (titled) { title = plain(titled[1]); continue; }
     const participant = PARTICIPANT.exec(line);
@@ -213,14 +220,42 @@ function sequence(lines: string[]): Converted | null {
       parts.set(participant[2], { label: plain(participant[3] ?? participant[2]), kind: participant[1] === "actor" ? "actor" : "box" });
       continue;
     }
+    // A coloured background (rect) has no meaning to keep; its end is skipped too.
+    if (/^rect\b/.test(line)) { blocks.push("rect"); continue; }
+    if (line === "end") {
+      const closed = blocks.pop();
+      if (!closed) return null;
+      if (closed === "block") statements.push(() => "end");
+      continue;
+    }
+    const block = BLOCK.exec(line);
+    if (block) {
+      blocks.push("block");
+      statements.push(() => `${block[1]} ${plain(block[2])}`.trim());
+      continue;
+    }
+    const section = SECTION.exec(line);
+    if (section) {
+      statements.push(() => `${section[1]} ${plain(section[2])}`.trim());
+      continue;
+    }
+    const note = NOTE.exec(line);
+    if (note) {
+      const ids = note[2].split(",").map((id) => id.trim());
+      ids.forEach(ensure);
+      statements.push((label) => `note ${note[1].toLowerCase()} ${ids.map(label).join(", ")}: ${plain(note[3])}`);
+      continue;
+    }
     const message = MESSAGE.exec(line);
     if (!message) return null;
     const [, from, arrow, to, text] = message;
     ensure(from);
     ensure(to);
-    messages.push([from, arrow.startsWith("--") ? "-->" : "->", to, plain(text)]);
+    messages++;
+    const link = arrow.startsWith("--") && !arrow.endsWith("x") && !arrow.endsWith(")") ? "-->" : "->";
+    statements.push((label) => `${label(from)} ${link} ${label(to)}: ${plain(text)}`);
   }
-  if (!messages.length) return null;
+  if (!messages || blocks.length) return null;
 
   const labels = [...parts.values()].map((part) => part.label.toLowerCase());
   if (new Set(labels).size !== labels.length) return null;
@@ -228,9 +263,6 @@ function sequence(lines: string[]): Converted | null {
   return {
     kind: "sequence",
     title,
-    lines: [
-      ...[...parts.values()].map((part) => `${part.kind} ${quoteIfNeeded(part.label)}`),
-      ...messages.map(([from, arrow, to, text]) => `${label(from)} ${arrow} ${label(to)}: ${text}`),
-    ],
+    lines: [...[...parts.values()].map((part) => `${part.kind} ${quoteIfNeeded(part.label)}`), ...statements.map((statement) => statement(label))],
   };
 }
