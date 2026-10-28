@@ -72,8 +72,23 @@ You -> Web server: Send me the page
 Web server --> You: Here is the page`,
   },
   {
+    name: "A decision",
+    note: "decision draws a diamond for a question. Arrows meet its points, and its answers label the arrows that leave it. A Mermaid {\"...\"} node becomes one too.",
+    kind: "flow",
+    spec: `title: Before you build the next feature
+direction: down
+box A new idea
+decision Did you ask who it is for?
+box Build it tonight
+end Decide what to build
+A new idea -> Did you ask who it is for?
+Did you ask who it is for? -> Build it tonight: No
+Did you ask who it is for? -> Decide what to build: Yes
+Build it tonight -> A new idea`,
+  },
+  {
     name: "Every kind of part, top to bottom",
-    note: "actor, box, external (dashed), store (cylinder) and end (ink).",
+    note: "actor, box, external (dashed), store (cylinder) and end (ink). The decision diamond is shown above.",
     kind: "flow",
     spec: `title: What happens when you place an order
 direction: down
