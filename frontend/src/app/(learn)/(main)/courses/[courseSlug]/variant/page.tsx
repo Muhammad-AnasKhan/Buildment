@@ -1,15 +1,10 @@
 import { redirect } from "next/navigation";
-import { Check } from "lucide-react";
 import type { CourseOverview } from "@/shared/api/catalog";
 import { findCourseFamily } from "@/shared/lib/course-tracks";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
-import { chooseCourseVariantAction } from "@/server/actions/course-track";
-import { VariantDetails, VariantDot } from "@/components/learn/course-track-panels";
 import { LearnerBreadcrumb } from "@/components/learn/learner-breadcrumb";
-import { VariantThemeScope } from "@/components/learn/variant-theme";
-import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
-import { cn } from "@/lib/utils";
+import { VariantPicker, type VariantChoice } from "@/components/learn/variant-picker";
 
 export default async function CourseVariantPage({ params }: { params: Promise<{ courseSlug: string }> }) {
   const { courseSlug } = await params;
@@ -19,73 +14,52 @@ export default async function CourseVariantPage({ params }: { params: Promise<{ 
   const { course, track } = overview;
   const family = track?.family ?? findCourseFamily(track?.familySlug);
   if (overview.access !== "active" || !track || !family || track.variantLocked) redirect(`/courses/${course.slug}`);
-  const available = family.variants.filter((variant) => !track.availableVariantSlugs?.length || track.availableVariantSlugs.includes(variant.slug));
-  const choices = family.variants.filter((variant) => available.includes(variant) || track.variantChosen && track.variantSlug === variant.slug);
+  const isAvailable = (slug: string) => !track.availableVariantSlugs?.length || track.availableVariantSlugs.includes(slug);
+  const available = family.variants.filter((variant) => isAvailable(variant.slug));
+  const previous = track.variantChosen ? track.variantSlug : null;
+  const previousUnavailable = previous !== null && !isAvailable(previous);
+  const choices: VariantChoice[] = family.variants
+    .filter((variant) => isAvailable(variant.slug) || variant.slug === previous)
+    .map((variant) => ({
+      slug: variant.slug,
+      productName: variant.productName,
+      label: variant.label,
+      summary: variant.summary,
+      hardestConstraint: variant.hardestConstraint,
+      channels: (variant.channels ?? []).map((channel) => ({ label: channel.label, optional: channel.optional })),
+      accentLight: variant.theme.accentLight,
+      onAccentLight: variant.theme.onAccentLight,
+      accentDark: variant.theme.accentDark,
+      onAccentDark: variant.theme.onAccentDark,
+      unavailable: !isAvailable(variant.slug),
+    }));
+  // One available product is already the pick. Otherwise the learner's earlier choice stays selected.
+  const initialSlug = available.length === 1 ? available[0]!.slug : previous && !previousUnavailable ? previous : null;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6 sm:py-10">
-      <LearnerBreadcrumb courseSlug={course.slug} courseTitle={course.title} chapterTitle="Choose your variant" />
+    <div className="mx-auto max-w-4xl px-4 pt-8 sm:px-6 sm:pt-10">
+      <LearnerBreadcrumb courseSlug={course.slug} courseTitle={course.title} chapterTitle="Choose what you build" />
 
-      <header>
-        <h1 className="text-2xl font-semibold tracking-tight">{available.length === 1 ? "Your available product" : "Choose what you build"}</h1>
-        <p className="mt-2 text-sm leading-6 text-muted-foreground">
+      <header className="mt-6">
+        <h1 className="text-[28px] leading-[1.15] tracking-[-0.035em] sm:text-[36px]">
+          {available.length === 1 ? "Your product" : "Choose what you build"}
+        </h1>
+        <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
           {available.length === 1
-            ? `${available[0]!.productName} is the product with lessons available now.`
-            : "Each available variant teaches the course through its own product."}{" "}
-          Each card shows how people reach the product and the hard problem you will solve. Your pick sets the product
-          name and colour in the chapters and shows on your mentor&apos;s roster. Your choice is fixed when you start a chapter.
+            ? `${available[0]!.productName} is the product with lessons ready now. `
+            : "Pick the product you will build. It shows up in every chapter. "}
+          You can change it until you start the first chapter.
         </p>
-        {track.variantChosen && !available.some((variant) => variant.slug === track.variantSlug) && (
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            Your previous product choice is still recorded, but its own lessons are being prepared. Choose an available product before you start.
+        {previousUnavailable ? (
+          <p className="mt-3 max-w-2xl border border-border bg-secondary px-4 py-3 text-base">
+            Your earlier pick has no lessons yet. Choose a product that does.
           </p>
-        )}
+        ) : null}
       </header>
 
-      <ul className="grid gap-4 sm:grid-cols-2">
-        {choices.map((variant) => {
-          const current = track.variantChosen && track.variantSlug === variant.slug;
-          return (
-            <li key={variant.slug} className="flex">
-              <VariantThemeScope variant={variant}>
-                <form
-                  action={chooseCourseVariantAction}
-                  className={cn(
-                    "flex w-full flex-col gap-4 rounded-lg border border-border bg-card px-4 py-4 sm:px-5",
-                    current && "border-primary ring-1 ring-primary"
-                  )}
-                >
-                  <input type="hidden" name="courseSlug" value={course.slug} />
-                  <input type="hidden" name="variantSlug" value={variant.slug} />
-                  <div className="min-w-0 space-y-3">
-                    <h2 className="text-base font-semibold">
-                      <span className="flex items-center gap-2">
-                        <VariantDot />
-                        {variant.productName}
-                      </span>{" "}
-                      <span className="mt-0.5 block text-sm font-normal text-muted-foreground">
-                        {variant.label}
-                      </span>
-                    </h2>
-                    <VariantDetails variant={variant} />
-                  </div>
-                  <div className="mt-auto">
-                    {current ? (
-                      <p className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-                        <Check className="size-4" aria-hidden /> {available.includes(variant) ? "Your pick" : "Previous choice"}
-                      </p>
-                    ) : (
-                      <PendingSubmitButton pendingLabel="Saving" size="sm" variant="outline" className="w-full sm:w-auto">
-                        Choose {variant.productName}
-                      </PendingSubmitButton>
-                    )}
-                  </div>
-                </form>
-              </VariantThemeScope>
-            </li>
-          );
-        })}
-      </ul>
+      <div className="mt-6 pb-0">
+        <VariantPicker courseSlug={course.slug} choices={choices} initialSlug={initialSlug} />
+      </div>
     </div>
   );
 }
