@@ -69,12 +69,13 @@ A -> B                           an arrow
 A -> B -> C                      a chain of arrows
 A -> B: <label>                  a labelled arrow (single arrows only)
 A --> B: <label>                 a dashed arrow, for a reply or an optional path
+A --- B                          flow only: a plain line, joining two parts with no direction
 
 packet: A -> B -> C              flow only: the yellow packet's path, one arrow per hop
 ```
 
 Rules:
-- Declare every name (anywhere in the spec). Names are matched without case and are up to 60 characters. A name cannot contain `"`, `|` or a backtick. A name with `:` goes in quotes, everywhere it appears: `box "Step 1: plan"`, `"Step 1: plan" -> Review`.
+- Declare every name (anywhere in the spec). Names are matched without case and are up to 110 characters; past 60 the box gets wider and wraps to more lines. A name cannot contain `"`, `|` or a backtick. A name with `:` goes in quotes, everywhere it appears: `box "Step 1: plan"`, `"Step 1: plan" -> Review`.
 - Labels are up to 60 characters. A label may contain `:`; everything after the first `:` outside quotes on an arrow line is the label.
 - A flow has 2 to 12 parts and up to 16 arrows. A sequence has 2 to 5 parts and 1 to 12 arrows. Each packet hop must be an arrow in the diagram, in either direction.
 - In a `sequence`, each arrow line is one step, in order. An arrow from a part to itself is an error.
@@ -97,11 +98,11 @@ packet: You -> DNS -> You -> Server
 
 ## Existing Mermaid diagrams, drawn automatically
 
-Courses do not have to be rewritten to get the new design. `server/src/shared/diagram/from-mermaid.ts` turns a Mermaid `flowchart` (TD, TB or LR) or `sequenceDiagram` into a spec when it maps exactly, and the result must pass the same validation as a hand-written fence. `remark-diagram` runs before `remark-mermaid` and draws every such fence with the Diagram block, titled by the Mermaid title or the closest heading above it. Any later change to the Diagram block reaches all of these diagrams at once.
+Courses do not have to be rewritten to get the new design. `server/src/shared/diagram/from-mermaid.ts` turns a Mermaid `flowchart` (TD, TB or LR) or `sequenceDiagram` into a spec when it maps exactly, and the result must pass the same validation as a hand-written fence. Two places apply it. `remark-diagram` runs before `remark-mermaid` and draws a convertible ```` ```mermaid ```` fence with the Diagram block, titled by the Mermaid title or the closest heading above it. The `MermaidDiagram` component itself converts too, which covers the `<MermaidDiagram title="..." chart={...} legend="..." />` tags most older chapters use; the tag's title and legend are kept. Any later change to the Diagram block reaches all of these diagrams at once.
 
-Kept on Mermaid: state and entity diagrams, subgraphs, `&`, lines without an arrow head, right-to-left or bottom-to-top flows, sequence notes, loops and blocks, a message from a part to itself, two parts with the same text, and anything over the size limits. A fence whose first line is `%% keep-mermaid` always stays on Mermaid.
+Kept on Mermaid: state and entity diagrams, subgraphs, `&`, dotted lines without an arrow head, right-to-left or bottom-to-top flows, sequence notes, loops and blocks, a message from a part to itself, two parts with the same text, and anything over the size limits. A chart whose first line is `%% keep-mermaid` always stays on Mermaid.
 
-On 2026-10-28 this converted 639 of the 771 Mermaid fences in Buildment-core (83%). Styling lines (`style`, `classDef`, `class`, `linkStyle`, `click`) are dropped; the brand replaces them. A flow too wide for a reading column always uses the top-to-bottom layout.
+On 2026-10-28, counting fences and tags together, this converted 1,162 of the 1,418 Mermaid diagrams in Buildment-core (82%), and 990 of the 1,289 in live chapters in production. The first release converted fences only, so the 645 tag diagrams (most of networking and system design) still showed Mermaid; a learner reported Networking 01.01. Styling lines (`style`, `classDef`, `class`, `linkStyle`, `click`) are dropped; the brand replaces them. A flow too wide for a reading column always uses the top-to-bottom layout.
 
 ## What gets built
 
