@@ -35,7 +35,9 @@ export function translateMermaid(chart: string, fallbackTitle?: string, title?: 
     ? flowchart(header, lines.slice(1))
     : header === "sequenceDiagram"
       ? sequence(lines.slice(1))
-      : null;
+      : /^stateDiagram(-v2)?$/.test(header)
+        ? states(lines.slice(1))
+        : null;
   if (!converted) return null;
   const name = cleanTitle(title?.trim() || converted.title || chartTitle || fallbackTitle || "Diagram");
   return { kind: converted.kind, source: [`title: ${name}`, ...converted.lines].join("\n") };
@@ -264,5 +266,117 @@ function sequence(lines: string[]): Converted | null {
     kind: "sequence",
     title,
     lines: [...[...parts.values()].map((part) => `${part.kind} ${quoteIfNeeded(part.label)}`), ...statements.map((statement) => statement(label))],
+  };
+}
+
+// ---------------------------------------------------------------- state diagrams
+
+const TRANSITION = /^(\[\*\]|[\w-]+)(?::::\w+)?\s*-->\s*(\[\*\]|[\w-]+)(?::::\w+)?\s*(?::\s*(.+))?$/;
+const STATE_ALIAS = /^state\s+"([^"]+)"\s+as\s+([\w-]+)\s*(\{)?$/;
+const STATE_OPEN = /^state\s+([\w-]+)\s*\{$/;
+const STATE_SPECIAL = /^state\s+([\w-]+)\s*<<(\w+)>>$/;
+const STATE_NOTE = /^([\w-]+)\s*:\s*(.+)$/;
+
+type StatePart = { id: string; label: string; kind: "state" | "decision" | "start" | "stop"; group: number | null };
+
+/**
+ * A state diagram becomes a flow: states are rounded boxes, [*] a start dot or a finish
+ * ring (one each per composite state), <<choice>> a decision, composite states groups,
+ * and a state's arrow to itself a loop. Notes, fork and join, and concurrent regions
+ * stay on Mermaid.
+ */
+function states(lines: string[]): Converted | null {
+  let direction: "right" | "down" = "down";
+  const parts = new Map<string, StatePart>();
+  const groups: { label: string; parent: number | null; id: string }[] = [];
+  const stack: number[] = [];
+  const transitions: { from: string; to: string; label?: string }[] = [];
+  const scope = () => (stack.length ? stack[stack.length - 1] : null);
+  const part = (id: string): StatePart => {
+    const existing = parts.get(id);
+    if (existing) return existing;
+    const created: StatePart = { id, label: id, kind: "state", group: scope() };
+    parts.set(id, created);
+    return created;
+  };
+  const marker = (end: "start" | "stop") => {
+    const id = `${end}-${scope() ?? "top"}`;
+    if (!parts.has(id)) parts.set(id, { id, label: end === "start" ? "Start" : "Finish", kind: end, group: scope() });
+    return id;
+  };
+
+  for (const line of lines) {
+    if (/^(classDef|class|style)\b/.test(line)) continue;
+    const dir = /^direction\s+(\w+)$/.exec(line);
+    if (dir) {
+      if (dir[1] === "LR") direction = "right";
+      else if (dir[1] !== "TB" && dir[1] !== "TD") return null;
+      continue;
+    }
+    if (line === "}") {
+      if (!stack.length) return null;
+      stack.pop();
+      continue;
+    }
+    if (/^note\b/i.test(line) || line === "--") return null;
+    const alias = STATE_ALIAS.exec(line);
+    const open = STATE_OPEN.exec(line);
+    if (alias || open) {
+      const id = alias ? alias[2] : open![1];
+      if (alias && !alias[3]) {
+        part(id).label = plain(alias[1]);
+        continue;
+      }
+      groups.push({ label: alias ? plain(alias[1]) : id, parent: scope(), id });
+      stack.push(groups.length - 1);
+      continue;
+    }
+    const special = STATE_SPECIAL.exec(line);
+    if (special) {
+      if (special[2] !== "choice") return null;
+      const choice = part(special[1]);
+      choice.kind = "decision";
+      choice.label = special[1];
+      continue;
+    }
+    const move = TRANSITION.exec(line);
+    if (move) {
+      const [, from, to, label] = move;
+      const a = from === "[*]" ? marker("start") : part(from).id;
+      const b = to === "[*]" ? marker("stop") : part(to).id;
+      transitions.push({ from: a, to: b, label: label ? plain(label) : undefined });
+      continue;
+    }
+    const described = STATE_NOTE.exec(line);
+    if (described) {
+      const state = part(described[1]);
+      state.label = `${state.label}: ${plain(described[2])}`;
+      continue;
+    }
+    return null;
+  }
+  if (!transitions.length || stack.length) return null;
+  // An arrow to a composite state points at a whole group; keep Mermaid.
+  if (transitions.some((t) => groups.some((g) => g.id === t.from || g.id === t.to))) return null;
+  for (const group of groups) parts.delete(group.id);
+
+  const count = new Map<string, number>();
+  for (const p of parts.values()) count.set(p.label.toLowerCase(), (count.get(p.label.toLowerCase()) ?? 0) + 1);
+  const ref = (p: StatePart) => p.kind === "start" || p.kind === "stop" || count.get(p.label.toLowerCase())! > 1;
+  const safeId = (id: string) => id.replace(/[^A-Za-z0-9_-]/g, "-");
+  const declare = (p: StatePart) => (ref(p) ? `[${safeId(p.id)}] ` : "") + quoteIfNeeded(p.label);
+  const refer = (id: string) => (ref(parts.get(id)!) ? `[${safeId(id)}]` : quoteIfNeeded(parts.get(id)!.label));
+  const holds = (g: number): boolean => [...parts.values()].some((p) => p.group === g) || groups.some((child, c) => child.parent === g && holds(c));
+  const block = (parent: number | null, indent: string): string[] => [
+    ...[...parts.values()].filter((p) => p.group === parent).map((p) => `${indent}${p.kind} ${declare(p)}`),
+    ...groups.flatMap((group, g) => (group.parent === parent && holds(g) ? [`${indent}group ${group.label}`, ...block(g, `${indent}  `), `${indent}end`] : [])),
+  ];
+  return {
+    kind: "flow",
+    lines: [
+      `direction: ${direction}`,
+      ...block(null, ""),
+      ...transitions.map((t) => `${refer(t.from)} -> ${refer(t.to)}${t.label ? `: ${t.label}` : ""}`),
+    ],
   };
 }

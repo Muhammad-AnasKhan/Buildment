@@ -137,11 +137,55 @@ describe("mermaidToDiagram", () => {
     ]);
   });
 
+  it("turns a state diagram into a flow of states with start and finish dots", () => {
+    const chart = [
+      "stateDiagram-v2",
+      '  state "Half-open" as HalfOpen',
+      "  state Check <<choice>>",
+      "  [*] --> Closed",
+      "  Closed --> Open: 5 failures",
+      "  Open --> HalfOpen: after 10 s",
+      "  HalfOpen --> Check",
+      "  Check --> Closed: works",
+      "  Check --> Open: fails",
+      "  Closed --> Closed: success",
+      "  state Paused {",
+      "    [*] --> Waiting",
+      "    Waiting --> [*]",
+      "  }",
+      "  Open --> [*]",
+    ].join("\n");
+    expect(mermaidToDiagram(chart, "T")?.source.split("\n").slice(1)).toEqual([
+      "direction: down",
+      "state Half-open",
+      "decision Check",
+      "start [start-top] Start",
+      "state Closed",
+      "state Open",
+      "stop [stop-top] Finish",
+      "group Paused",
+      "  start [start-0] Start",
+      "  state Waiting",
+      "  stop [stop-0] Finish",
+      "end",
+      "[start-top] -> Closed",
+      "Closed -> Open: 5 failures",
+      "Open -> Half-open: after 10 s",
+      "Half-open -> Check",
+      "Check -> Closed: works",
+      "Check -> Open: fails",
+      "Closed -> Closed: success",
+      "[start-0] -> Waiting",
+      "Waiting -> [stop-0]",
+      "Open -> [stop-top]",
+    ]);
+  });
+
   it.each([
     ["an unclosed subgraph", "flowchart TD\n  subgraph S\n  A --> B"],
     ["a right-to-left flow", "flowchart RL\n  A --> B"],
     ["an unclosed sequence block", "sequenceDiagram\n  loop every second\n  A->>B: ping"],
-    ["a state diagram", "stateDiagram-v2\n  [*] --> Open"],
+    ["a state diagram with a note", "stateDiagram-v2\n  [*] --> Open\n  note right of Open: waits"],
     ["more parts than the limit", `flowchart TD\n  ${Array.from({ length: 31 }, (_, i) => `N${i}`).join(" --> ")}`],
     ["a keep-mermaid comment", "%% keep-mermaid\nflowchart TD\n  A --> B"],
   ])("keeps Mermaid for %s", (_name, chart) => {
