@@ -44,9 +44,11 @@ export function stepCaptions(spec: DiagramSpec): string[] {
 }
 
 /** `markDashed` names the dashed line for a screen reader; captions under the picture leave it out. */
-function arrowText(name: Map<string, string>, edge: { from: string; to: string; label?: string; dashed: boolean; head: boolean }, markDashed = true): string {
-  const join = edge.head ? "to" : "joined to";
-  const base = `${name.get(edge.from)} ${join} ${name.get(edge.to)}${markDashed && edge.dashed ? " (dashed arrow)" : ""}`;
+function arrowText(name: Map<string, string>, edge: { from: string; to: string; label?: string; dashed: boolean; head: boolean; tail: boolean }, markDashed = true): string {
+  const pair = edge.tail
+    ? `${name.get(edge.from)} and ${name.get(edge.to)}, both ways`
+    : `${name.get(edge.from)} ${edge.head ? "to" : "joined to"} ${name.get(edge.to)}`;
+  const base = `${pair}${markDashed && edge.dashed ? " (dashed arrow)" : ""}`;
   return edge.label ? `${base}: ${edge.label}` : base;
 }
 

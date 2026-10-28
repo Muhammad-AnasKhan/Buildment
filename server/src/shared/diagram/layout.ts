@@ -16,12 +16,15 @@ export type SceneShape =
   /** A decision, drawn as a diamond whose points touch the edges of this box. */
   | { type: "diamond"; x: number; y: number; w: number; h: number };
 export type SceneNode = { id: string; kind: NodeKind; shape: SceneShape; label: SceneLabel; labelInside: boolean };
-export type EdgePath = { start: Point; end: Point; control?: Point };
+/** A line, a quadratic curve (`control`), or a cubic curve (`control` and `control2`, for loops). */
+export type EdgePath = { start: Point; end: Point; control?: Point; control2?: Point };
 export type SceneEdge = {
   index: number;
   dashed: boolean;
   /** False for a plain line, drawn with no arrowhead. */
   head: boolean;
+  /** True for a two-way arrow, with a second head at the start. */
+  tail: boolean;
   path: EdgePath;
   label?: SceneLabel;
   /** Compact sequences number their arrows instead of labelling them. */
@@ -156,6 +159,10 @@ function diamondExit(shape: { x: number; y: number; w: number; h: number }, from
 
 export function pathPoint(path: EdgePath, t: number): Point {
   if (!path.control) return add(path.start, mul(sub(path.end, path.start), t));
+  if (path.control2) {
+    const u = 1 - t;
+    return add(add(mul(path.start, u * u * u), mul(path.control, 3 * u * u * t)), add(mul(path.control2, 3 * u * t * t), mul(path.end, t * t * t)));
+  }
   const a = mul(path.start, (1 - t) * (1 - t));
   const b = mul(path.control, 2 * (1 - t) * t);
   const c = mul(path.end, t * t);
@@ -164,7 +171,7 @@ export function pathPoint(path: EdgePath, t: number): Point {
 
 /** Unit direction of travel at the end of the path, for the arrowhead. */
 export function endDirection(path: EdgePath): Point {
-  return unit(sub(path.end, path.control ?? path.start));
+  return unit(sub(path.end, path.control2 ?? path.control ?? path.start));
 }
 
 function inflate(shape: SceneShape, by: number) {
@@ -252,12 +259,37 @@ function fitViewBox(nodes: SceneNode[], edges: SceneEdge[], extra: { x: number; 
   for (const edge of edges) {
     take(edge.path.start.x, edge.path.start.y);
     take(edge.path.end.x, edge.path.end.y);
-    if (edge.path.control) { const mid = pathPoint(edge.path, 0.5); take(mid.x, mid.y); }
+    if (edge.path.control) for (const t of [0.25, 0.5, 0.75]) { const p = pathPoint(edge.path, t); take(p.x, p.y); }
     if (edge.label) { const b = labelBox(edge.label); take(b.x, b.y, b.w, b.h); }
     if (edge.badge) take(edge.badge.x - 12, edge.badge.y - 12, 24, 24);
   }
   for (const p of extra) take(p.x, p.y);
   return { x: Math.floor(minX - PAD), y: Math.floor(minY - PAD), w: Math.ceil(maxX - minX + 2 * PAD), h: Math.ceil(maxY - minY + 2 * PAD) };
+}
+
+/**
+ * An arrow from a part to itself: a loop off the part's right side in a downward flow,
+ * or off its top in a rightward one, labelled on the outside.
+ */
+function loopRoute(shape: SceneShape, down: boolean, lines: string[]) {
+  const box = inflate(shape, 0);
+  const cx = box.x + box.w / 2;
+  const cy = box.y + box.h / 2;
+  const reach = 34;
+  const path: EdgePath = down
+    ? {
+        start: { x: box.x + box.w + 2, y: cy - Math.min(14, box.h / 4) },
+        end: { x: box.x + box.w + 3, y: cy + Math.min(14, box.h / 4) },
+        control: { x: box.x + box.w + reach * 1.6, y: cy - reach },
+        control2: { x: box.x + box.w + reach * 1.6, y: cy + reach },
+      }
+    : {
+        start: { x: cx - Math.min(18, box.w / 4), y: box.y - 2 },
+        end: { x: cx + Math.min(18, box.w / 4), y: box.y - 3 },
+        control: { x: cx - reach, y: box.y - reach * 1.6 },
+        control2: { x: cx + reach, y: box.y - reach * 1.6 },
+      };
+  return { path, lines, side: down ? { x: 1, y: 0 } : { x: 0, y: -1 }, keepSide: true };
 }
 
 // ---------------------------------------------------------------- flow
@@ -301,6 +333,14 @@ export function layoutFlow(spec: DiagramSpec, compact: boolean): Scene {
   const widest = Math.max(...Array.from({ length: layerCount }, (_, r) => [...rank.values()].filter((v) => v === r).length));
   const crowded = compact && widest >= 3;
   const measured = new Map(spec.nodes.map((node) => [node.id, measure(node, compact, down, crowded)]));
+  // Leave room beside a part for its loop and the loop's label.
+  for (const edge of spec.edges) {
+    if (edge.from !== edge.to) continue;
+    const m = measured.get(edge.from)!;
+    const lines = edge.label ? wrapText(edge.label, EDGE_FONT, compact ? 120 : 132, 3) : [];
+    if (down) m.box = { ...m.box, right: m.box.right + 62 + linesWidth(lines, EDGE_FONT) };
+    else m.box = { ...m.box, top: m.box.top + 58 + lines.length * EDGE_FONT * LINE_HEIGHT };
+  }
   const layers: string[][] = Array.from({ length: layerCount }, () => []);
   spec.nodes.forEach((node) => layers[rank.get(node.id)!].push(node.id));
 
@@ -375,14 +415,22 @@ export function layoutFlow(spec: DiagramSpec, compact: boolean): Scene {
   const place = (id: string) => [rank.get(id)!, order.get(id)!] as const;
   const before = (a: string, b: string) => { const [ra, oa] = place(a); const [rb, ob] = place(b); return ra < rb || (ra === rb && oa < ob); };
 
+  // Arrows between the same two parts (either way) sit side by side, 16 units apart.
+  const pairKey = (edge: { from: string; to: string }) => [edge.from, edge.to].sort().join("\u0000");
+  const siblings = new Map<string, number[]>();
+  spec.edges.forEach((edge, i) => { if (edge.from !== edge.to) siblings.set(pairKey(edge), [...(siblings.get(pairKey(edge)) ?? []), i]); });
+
   const routed = spec.edges.map((edge, index) => {
-    const paired = spec.edges.some((other) => other.from === edge.to && other.to === edge.from);
+    if (edge.from === edge.to) return loopRoute(shapeOf.get(edge.from)!, down, edgeLines[index]);
+    const group = siblings.get(pairKey(edge))!;
+    const paired = group.length > 1;
     const forward = before(edge.from, edge.to);
     const [lo, hi] = forward ? [edge.from, edge.to] : [edge.to, edge.from];
     const axis = unit(sub(centres.get(hi)!, centres.get(lo)!));
     // The side that faces "up" for a left-to-right arrow and "right" for a top-to-bottom one.
     const side = mul(perp(axis), -1);
-    const offset = paired ? mul(side, forward ? 8 : -8) : { x: 0, y: 0 };
+    const slot = group.indexOf(index) - (group.length - 1) / 2;
+    const offset = mul(side, -slot * 16);
     const a = add(centres.get(edge.from)!, offset);
     const b = add(centres.get(edge.to)!, offset);
     const others = nodes.filter((node) => node.id !== edge.from && node.id !== edge.to).map((node) => node.shape);
@@ -396,7 +444,8 @@ export function layoutFlow(spec: DiagramSpec, compact: boolean): Scene {
       return { start: add(start, mul(unit(startDir), 2)), end: add(end, mul(back, 3)), control };
     };
     let path = build();
-    let labelSide = paired && !forward ? mul(side, -1) : side;
+    // Each label of a set of side-by-side arrows goes on its own arrow's outer side.
+    let labelSide = slot > 0 ? mul(side, -1) : side;
     if (hitsAny(path, others)) {
       // A curve reaches half its control offset, so the offset is twice the room needed to
       // pass the widest part in the way; try further out if that still clips something.
@@ -413,7 +462,7 @@ export function layoutFlow(spec: DiagramSpec, compact: boolean): Scene {
     return { path, lines: edgeLines[index], side: labelSide, keepSide: paired };
   });
   const labels = placeLabels(nodes, routed);
-  const edges: SceneEdge[] = spec.edges.map((edge, index) => ({ index, dashed: edge.dashed, head: edge.head, path: routed[index].path, label: labels[index] }));
+  const edges: SceneEdge[] = spec.edges.map((edge, index) => ({ index, dashed: edge.dashed, head: edge.head, tail: edge.tail, path: routed[index].path, label: labels[index] }));
 
   return { kind: "flow", compact, viewBox: fitViewBox(nodes, edges), nodes, edges, lifelines: [] };
 }
@@ -431,6 +480,11 @@ export function layoutSequence(spec: DiagramSpec, compact: boolean): Scene {
   spec.edges.forEach((edge, i) => {
     if (!edgeLines[i].length) return;
     const [l, r] = [lane.get(edge.from)!, lane.get(edge.to)!].sort((a, b) => a - b);
+    // A message to itself loops right of its lane, with the label beside the loop.
+    if (l === r) {
+      if (l < gaps.length) gaps[l] = Math.max(gaps[l], linesWidth(edgeLines[i], EDGE_FONT) + 72);
+      return;
+    }
     const need = linesWidth(edgeLines[i], EDGE_FONT) + 28;
     const have = gaps.slice(l, r).reduce((a, b) => a + b, 0);
     if (have < need) for (let g = l; g < r; g++) gaps[g] += (need - have) / (r - l);
@@ -447,17 +501,27 @@ export function layoutSequence(spec: DiagramSpec, compact: boolean): Scene {
     const x1 = xs[lane.get(edge.from)!];
     const x2 = xs[lane.get(edge.to)!];
     const dir = Math.sign(x2 - x1);
+    if (x1 === x2) {
+      const lines = edgeLines[index];
+      const top = y + 6;
+      const bottom = top + Math.max(22, lines.length * lh);
+      y = bottom + (compact ? 22 : 24);
+      const path: EdgePath = { start: { x: x1 + 2, y: top }, end: { x: x1 + 3, y: bottom }, control: { x: x1 + 46, y: top - 4 }, control2: { x: x1 + 46, y: bottom + 4 } };
+      if (compact) return { index, dashed: edge.dashed, head: edge.head, tail: false, path, badge: { x: x1 + 50, y: (top + bottom) / 2, n: index + 1 } };
+      const label: SceneLabel | undefined = lines.length ? { lines, x: x1 + 50, y: (top + bottom) / 2 - ((lines.length - 1) * lh) / 2 + EDGE_FONT * 0.35, anchor: "start", size: EDGE_FONT } : undefined;
+      return { index, dashed: edge.dashed, head: edge.head, tail: false, path, label };
+    }
     if (compact) {
       const arrowY = y + 26;
       y = arrowY + 18;
       const mid = (x1 + x2) / 2;
-      return { index, dashed: edge.dashed, head: edge.head, path: { start: { x: x1 + dir * 2, y: arrowY }, end: { x: x2 - dir * 3, y: arrowY } }, badge: { x: mid, y: arrowY - 14, n: index + 1 } };
+      return { index, dashed: edge.dashed, head: edge.head, tail: false, path: { start: { x: x1 + dir * 2, y: arrowY }, end: { x: x2 - dir * 3, y: arrowY } }, badge: { x: mid, y: arrowY - 14, n: index + 1 } };
     }
     const lines = edgeLines[index];
     const arrowY = y + lines.length * lh + 8;
     const label: SceneLabel | undefined = lines.length ? { lines, x: (x1 + x2) / 2, y: y + EDGE_FONT, anchor: "middle", size: EDGE_FONT } : undefined;
     y = arrowY + 24;
-    return { index, dashed: edge.dashed, head: edge.head, path: { start: { x: x1 + dir * 2, y: arrowY }, end: { x: x2 - dir * 3, y: arrowY } }, label };
+    return { index, dashed: edge.dashed, head: edge.head, tail: false, path: { start: { x: x1 + dir * 2, y: arrowY }, end: { x: x2 - dir * 3, y: arrowY } }, label };
   });
 
   const lifelines = nodes.map((_, i) => ({ x: xs[i], y1: top + measured[i].box.bottom + 4, y2: y }));

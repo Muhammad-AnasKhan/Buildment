@@ -24,9 +24,9 @@ describe("parseDiagram: valid specs", () => {
     expect(spec.direction).toBe("right");
     expect(spec.nodes.map((node) => [node.label, node.kind])).toEqual([["You", "actor"], ["DNS", "box"], ["Server", "end"]]);
     expect(spec.edges).toEqual([
-      { from: "you", to: "dns", label: "Where is example.com?", dashed: false, head: true, line: 5 },
-      { from: "dns", to: "you", label: "At 93.184.215.14", dashed: true, head: true, line: 6 },
-      { from: "you", to: "server", label: "Send the page", dashed: false, head: true, line: 7 },
+      { from: "you", to: "dns", label: "Where is example.com?", dashed: false, head: true, tail: false, line: 5 },
+      { from: "dns", to: "you", label: "At 93.184.215.14", dashed: true, head: true, tail: false, line: 6 },
+      { from: "you", to: "server", label: "Send the page", dashed: false, head: true, tail: false, line: 7 },
     ]);
     expect(spec.packet).toEqual(["you", "dns", "you", "server"]);
     expect(spec.hops).toEqual([{ edge: 0, reversed: false }, { edge: 1, reversed: false }, { edge: 2, reversed: false }]);
@@ -95,8 +95,8 @@ describe("parseDiagram: problems fail loudly", () => {
   });
 
   it("rejects long labels, names and titles", () => {
-    const longLabel = problems(parseDiagram("flow", `title: X\nbox A\nbox B\nA -> B: ${"word ".repeat(13)}`));
-    expect(longLabel[0]).toMatch(/shorten the label to 60 characters/);
+    const longLabel = problems(parseDiagram("flow", `title: X\nbox A\nbox B\nA -> B: ${"word ".repeat(21)}`));
+    expect(longLabel[0]).toMatch(/shorten the label to 100 characters/);
     expect(problems(parseDiagram("flow", `title: X\nbox ${"a".repeat(111)}\nbox B`))[0]).toMatch(/to 110 characters or fewer/);
     expect(problems(parseDiagram("flow", `title: ${"t".repeat(81)}\nbox A\nbox B\nA -> B`))[0]).toMatch(/shorten the title to 80/);
   });
@@ -113,10 +113,11 @@ describe("parseDiagram: problems fail loudly", () => {
     expect(problems(parseDiagram("flow", 'title: X\nbox say "hi"\nbox B'))[0]).toMatch(/cannot contain a quote mark/);
   });
 
-  it("rejects duplicate parts, titles and flow arrows", () => {
+  it("rejects duplicate parts and titles, and keeps repeated arrows", () => {
     expect(problems(parseDiagram("flow", "title: X\nbox A\nbox a\nbox B\nA -> B"))[0]).toMatch(/already declared on line 2/);
     expect(problems(parseDiagram("flow", "title: X\ntitle: Y\nbox A\nbox B\nA -> B"))[0]).toMatch(/already has a title/);
-    expect(problems(parseDiagram("flow", "title: X\nbox A\nbox B\nA -> B\nA -> B: again"))[0]).toMatch(/already an arrow from "A" to "B"/);
+    const repeated = parseDiagram("flow", "title: X\nbox A\nbox B\nA -> B\nA -> B: again");
+    expect(repeated.ok && repeated.spec.edges.map((edge) => edge.label)).toEqual([undefined, "again"]);
   });
 
   it("reads a plain line in a flow and rejects one in a sequence", () => {
@@ -125,8 +126,9 @@ describe("parseDiagram: problems fail loudly", () => {
     expect(problems(parseDiagram("sequence", "title: X\nbox A\nbox B\nA --- B: hi"))[0]).toMatch(/a message needs a direction/);
   });
 
-  it("rejects an arrow to itself", () => {
-    expect(problems(parseDiagram("flow", "title: X\nbox A\nbox B\nA -> A\nA -> B"))[0]).toMatch(/to itself/);
+  it("keeps an arrow to itself and a dotted line", () => {
+    const result = parseDiagram("flow", "title: X\nbox A\nbox B\nA -> A: retry\nA -.- B");
+    expect(result.ok && result.spec.edges.map((edge) => [edge.from, edge.to, edge.dashed, edge.head])).toEqual([["a", "a", false, true], ["a", "b", true, false]]);
   });
 
   it("rejects a packet hop with no arrow and a dashed packet path", () => {
@@ -143,17 +145,28 @@ describe("parseDiagram: problems fail loudly", () => {
     expect(problems(parseDiagram("flow", "title: X\ndirection: left\nbox A\nbox B\nA -> B"))[0]).toMatch(/"right" or "down", not "left"/);
   });
 
-  it("reports a part with no arrow", () => {
-    expect(problems(parseDiagram("flow", "title: X\nbox A\nbox B\nbox C\nA -> B"))).toEqual(['Line 4: "C" has no arrow. Connect it or remove it.']);
+  it("tells apart parts with the same text by [id], and reads two-way arrows", () => {
+    const result = parseDiagram("flow", "title: X\nbox Start\nbox [N1] Say no\nbox [N2] Say no\nStart -> [N1]\nStart -> [n2]\n[N1] <-> [N2]");
+    expect(result.ok && result.spec.nodes.map((node) => [node.id, node.label])).toEqual([["start", "Start"], ["[n1]", "Say no"], ["[n2]", "Say no"]]);
+    expect(result.ok && result.spec.edges.map((edge) => [edge.from, edge.to, edge.head, edge.tail])).toEqual([
+      ["start", "[n1]", true, false],
+      ["start", "[n2]", true, false],
+      ["[n1]", "[n2]", true, true],
+    ]);
+    expect(problems(parseDiagram("flow", "title: X\nbox Say no\nbox Say no\nbox B"))[0]).toMatch(/give each an id, for example "box \[A2\] Say no"/);
   });
 
-  it("caps the size so a diagram fits a phone", () => {
-    const names = Array.from({ length: 13 }, (_, i) => `N${i}`);
+  it("allows a part with no arrow", () => {
+    expect(parseDiagram("flow", "title: X\nbox A\nbox B\nbox C\nA -> B").ok).toBe(true);
+  });
+
+  it("caps the size", () => {
+    const names = Array.from({ length: 31 }, (_, i) => `N${i}`);
     const flow = `title: Big\n${names.map((n) => `box ${n}`).join("\n")}\n${names.join(" -> ")}`;
-    expect(problems(parseDiagram("flow", flow))).toContain("A flow diagram fits a phone with up to 12 parts; this one has 13. Split it into two diagrams.");
-    const lanes = names.slice(0, 6);
+    expect(problems(parseDiagram("flow", flow))).toContain("A flow diagram fits a phone with up to 30 parts; this one has 31. Split it into two diagrams.");
+    const lanes = names.slice(0, 9);
     const sequence = `title: Wide\n${lanes.map((n) => `box ${n}`).join("\n")}\n${lanes.join(" -> ")}`;
-    expect(problems(parseDiagram("sequence", sequence))[0]).toMatch(/up to 5 parts; this one has 6/);
+    expect(problems(parseDiagram("sequence", sequence))[0]).toMatch(/up to 8 parts; this one has 9/);
   });
 
   it("needs two parts and an arrow", () => {

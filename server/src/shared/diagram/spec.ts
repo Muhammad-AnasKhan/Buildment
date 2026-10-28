@@ -12,8 +12,11 @@ export const NODE_KINDS = ["actor", "box", "decision", "end", "store", "external
 export type NodeKind = (typeof NODE_KINDS)[number];
 
 export type DiagramNode = { id: string; label: string; kind: NodeKind; line: number };
-/** `head` is false for a plain line (`---`), which joins two parts without a direction. */
-export type DiagramEdge = { from: string; to: string; label?: string; dashed: boolean; head: boolean; line: number };
+/**
+ * `head` is false for a plain line (`---`), which joins two parts without a direction;
+ * `tail` is true for a two-way arrow (`<->`), with a head at each end.
+ */
+export type DiagramEdge = { from: string; to: string; label?: string; dashed: boolean; head: boolean; tail: boolean; line: number };
 /** One move of the packet: along `edge`, backwards when the arrow points the other way. */
 export type PacketHop = { edge: number; reversed: boolean };
 
@@ -33,11 +36,11 @@ export type DiagramParseResult = { ok: true; spec: DiagramSpec } | { ok: false; 
 export const DIAGRAM_LIMITS = {
   title: 80,
   name: 110,
-  label: 60,
-  flowNodes: 12,
-  flowEdges: 16,
-  sequenceNodes: 5,
-  sequenceEdges: 12,
+  label: 100,
+  flowNodes: 30,
+  flowEdges: 40,
+  sequenceNodes: 8,
+  sequenceEdges: 30,
 } as const;
 
 export function isDiagramKind(value: unknown): value is DiagramKind {
@@ -45,8 +48,8 @@ export function isDiagramKind(value: unknown): value is DiagramKind {
 }
 
 // A bare name can hold anything but the characters the grammar uses; a quoted name can also hold ":".
-const BARE_NAME = /^[^:"|`]+$/;
-const QUOTED_NAME = /^[^"|`]+$/;
+const BARE_NAME = /^[^:"`]+$/;
+const QUOTED_NAME = /^[^"`]+$/;
 const SETTING = /^(title|direction|packet)\s*:\s*(.*)$/i;
 const NODE_LINE = new RegExp(`^(${NODE_KINDS.join("|")})\\s+(.+)$`, "i");
 /** True when the text has a control character other than a tab. */
@@ -62,14 +65,25 @@ export function nodeId(name: string): string {
   return name.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
-type Link = "arrow" | "dashed" | "line";
-type RawEdge = { names: string[]; links: Link[]; label?: string; line: number };
-type Name = { text: string; quoted: boolean };
+/** `->` arrow, `-->` dashed arrow, `<->` two-way arrow, `---` plain line, `-.-` dashed line with no head. */
+type Link = "arrow" | "dashed" | "both" | "line" | "dotted";
+type RawEdge = { names: string[]; shown: string[]; links: Link[]; label?: string; line: number };
+/** `ref` is an explicit id written as [id], for two parts that share the same text. */
+type Name = { text: string; quoted: boolean; ref?: string };
+
+const REF = /^\[([A-Za-z0-9_-]+)\]\s*(.*)$/;
 
 function readName(raw: string): Name {
-  const text = raw.trim();
+  const trimmed = raw.trim();
+  const ref = REF.exec(trimmed);
+  const text = ref ? ref[2] : trimmed;
   const quoted = text.length >= 2 && text.startsWith("\"") && text.endsWith("\"");
-  return { text: (quoted ? text.slice(1, -1) : text).trim().replace(/\s+/g, " "), quoted };
+  return { text: (quoted ? text.slice(1, -1) : text).trim().replace(/\s+/g, " "), quoted, ref: ref?.[1] };
+}
+
+/** The key a name is looked up by: its [id] when it has one, else its text. */
+function keyOf(name: Name): string {
+  return name.ref ? `[${name.ref.toLowerCase()}]` : nodeId(name.text);
 }
 
 /**
@@ -84,6 +98,8 @@ function splitArrows(text: string): { names: Name[]; links: Link[]; label?: stri
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
     if (char === "\"") quoted = !quoted;
+    else if (!quoted && text.startsWith("<->", i)) { names.push(readName(current)); links.push("both"); current = ""; i += 2; continue; }
+    else if (!quoted && text.startsWith("-.-", i)) { names.push(readName(current)); links.push("dotted"); current = ""; i += 2; continue; }
     else if (!quoted && text.startsWith("---", i)) { names.push(readName(current)); links.push("line"); current = ""; i += 2; continue; }
     else if (!quoted && text.startsWith("-->", i)) { names.push(readName(current)); links.push("dashed"); current = ""; i += 2; continue; }
     else if (!quoted && text.startsWith("->", i)) { names.push(readName(current)); links.push("arrow"); current = ""; i += 1; continue; }
@@ -103,7 +119,7 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
   const at = (line: number, message: string) => problems.push(`Line ${line}: ${message}`);
   let title: string | undefined;
   let direction: "right" | "down" | undefined;
-  let packetLine: { names: string[]; line: number } | undefined;
+  let packetLine: { names: string[]; shown: string[]; line: number } | undefined;
   const nodes: DiagramNode[] = [];
   const byId = new Map<string, DiagramNode>();
   const rawEdges: RawEdge[] = [];
@@ -137,9 +153,9 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
         else if (packetLine) at(line, "the diagram already has a packet line. Keep one packet path.");
         else {
           const path = splitArrows(value);
-          if (!path || path.label !== undefined || path.names.some((name) => !name.text)) at(line, "write the packet path as names joined by arrows, for example \"packet: You -> DNS -> Server\".");
+          if (!path || path.label !== undefined || path.names.some((name) => !name.text && !name.ref)) at(line, "write the packet path as names joined by arrows, for example \"packet: You -> DNS -> Server\".");
           else if (path.links.some((link) => link !== "arrow")) at(line, "write the packet path with \"->\" only. It follows the arrows already drawn.");
-          else packetLine = { names: path.names.map((name) => name.text), line };
+          else packetLine = { names: path.names.map(keyOf), shown: path.names.map((name) => (name.ref ? `[${name.ref}]` : name.text)), line };
         }
       }
       return;
@@ -156,10 +172,11 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
         at(line, nameProblem);
         return;
       }
-      const id = nodeId(label);
+      const id = keyOf(name);
       const existing = byId.get(id);
       if (existing) {
-        at(line, `"${label}" is already declared on line ${existing.line}. Declare each part once.`);
+        const hint = name.ref ? "" : ` To show the same text twice, give each an id, for example "${nodeKind} [A2] ${label}".`;
+        at(line, `"${name.ref ? `[${name.ref}]` : label}" is already declared on line ${existing.line}. Declare each part once.${hint}`);
         return;
       }
       const node = { id, label, kind: nodeKind, line };
@@ -170,8 +187,9 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
 
     if (arrows) {
       const { links, label } = arrows;
-      const names = arrows.names.map((name) => name.text);
-      if (names.some((name) => !name)) {
+      const shown = arrows.names.map((name) => (name.ref ? `[${name.ref}]` : name.text));
+      const names = arrows.names.map(keyOf);
+      if (arrows.names.some((name) => !name.text && !name.ref)) {
         at(line, "an arrow needs a name on both sides, for example \"You -> DNS\".");
         return;
       }
@@ -187,11 +205,11 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
         at(line, `shorten the label to ${DIAGRAM_LIMITS.label} characters or fewer (it has ${label.length}). Put the detail in the text around the diagram.`);
         return;
       }
-      if (kind === "sequence" && links.includes("line")) {
+      if (kind === "sequence" && links.some((link) => link === "line" || link === "dotted" || link === "both")) {
         at(line, "a message needs a direction. Write \"->\" or \"-->\", not \"---\".");
         return;
       }
-      rawEdges.push({ names, links, label, line });
+      rawEdges.push({ names, shown, links, label, line });
       return;
     }
 
@@ -200,12 +218,20 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
 
   if (title === undefined) problems.push("Add a title line, for example \"title: How your phone finds a website\".");
 
+  // A part with an [id] can also be named by its text, as long as no other part has that text.
+  for (const node of nodes) {
+    if (!node.id.startsWith("[")) continue;
+    const key = nodeId(node.label);
+    if (!byId.has(key) && nodes.filter((other) => nodeId(other.label) === key).length === 1) byId.set(key, node);
+  }
+
   const edges: DiagramEdge[] = [];
   for (const raw of rawEdges) {
     const ids: string[] = [];
-    for (const name of raw.names) {
-      const node = byId.get(nodeId(name));
+    for (const [i, key] of raw.names.entries()) {
+      const node = byId.get(key);
       if (!node) {
+        const name = raw.shown[i];
         at(raw.line, `"${name}" is not declared. Declare it first, for example "box ${name}".${declaredList(nodes)}`);
         ids.length = 0;
         break;
@@ -214,26 +240,25 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
     }
     if (ids.length !== raw.names.length) continue;
     for (let i = 0; i < ids.length - 1; i++) {
-      if (ids[i] === ids[i + 1]) {
-        at(raw.line, `an arrow from "${raw.names[i]}" to itself cannot be drawn. Describe it in the text instead.`);
-        continue;
-      }
-      if (kind === "flow") {
-        const twin = edges.find((edge) => edge.from === ids[i] && edge.to === ids[i + 1]);
-        if (twin) {
-          at(raw.line, `there is already an arrow from "${raw.names[i]}" to "${raw.names[i + 1]}" on line ${twin.line}. Keep one.`);
-          continue;
-        }
-      }
-      edges.push({ from: ids[i], to: ids[i + 1], label: raw.label, dashed: raw.links[i] === "dashed", head: raw.links[i] !== "line", line: raw.line });
+      // An arrow to the same part is drawn as a loop; repeated arrows between two parts sit side by side.
+      const link = raw.links[i];
+      edges.push({
+        from: ids[i],
+        to: ids[i + 1],
+        label: raw.label,
+        dashed: link === "dashed" || link === "dotted",
+        head: link === "arrow" || link === "dashed" || link === "both",
+        tail: link === "both",
+        line: raw.line,
+      });
     }
   }
 
   const hops: PacketHop[] = [];
   const packet: string[] = [];
   if (packetLine) {
-    const ids = packetLine.names.map((name) => byId.get(nodeId(name))?.id);
-    const missing = packetLine.names.filter((_, i) => !ids[i]);
+    const ids = packetLine.names.map((key) => byId.get(key)?.id);
+    const missing = packetLine.shown.filter((_, i) => !ids[i]);
     if (missing.length) {
       at(packetLine.line, `"${missing[0]}" is not declared.${declaredList(nodes)}`);
     } else {
@@ -243,20 +268,13 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
         const forward = edges.findIndex((edge) => edge.from === from && edge.to === to);
         const backward = forward === -1 ? edges.findIndex((edge) => edge.from === to && edge.to === from) : -1;
         if (forward === -1 && backward === -1) {
-          at(packetLine.line, `the packet moves from "${packetLine.names[i]}" to "${packetLine.names[i + 1]}", but no arrow joins them. Add the arrow or change the path.`);
+          at(packetLine.line, `the packet moves from "${packetLine.shown[i]}" to "${packetLine.shown[i + 1]}", but no arrow joins them. Add the arrow or change the path.`);
           continue;
         }
         hops.push({ edge: forward === -1 ? backward : forward, reversed: forward === -1 });
       }
       packet.push(...(ids as string[]));
     }
-  }
-
-  const used = new Set(edges.flatMap((edge) => [edge.from, edge.to]));
-  const unused = nodes.filter((node) => !used.has(node.id));
-  // Unused parts are usually a misspelt arrow; only report them when the arrows themselves parsed.
-  if (problems.length === 0) {
-    for (const node of unused) at(node.line, `"${node.label}" has no arrow. Connect it or remove it.`);
   }
 
   const maxNodes = kind === "flow" ? DIAGRAM_LIMITS.flowNodes : DIAGRAM_LIMITS.sequenceNodes;
@@ -277,7 +295,7 @@ function checkName({ text, quoted }: Name): string | null {
   if (!text) return "write a name after the kind, for example \"box DNS\".";
   if (text.length > DIAGRAM_LIMITS.name) return `shorten "${shorten(text)}" to ${DIAGRAM_LIMITS.name} characters or fewer (it has ${text.length}).`;
   if (!quoted && text.includes(":")) return `put a name with ":" in quotes, for example box "Step 1: plan".`;
-  if (!(quoted ? QUOTED_NAME : BARE_NAME).test(text)) return `"${shorten(text)}" cannot contain a quote mark, "|" or a backtick.`;
+  if (!(quoted ? QUOTED_NAME : BARE_NAME).test(text)) return `"${shorten(text)}" cannot contain a quote mark or a backtick.`;
   return null;
 }
 

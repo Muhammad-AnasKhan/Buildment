@@ -113,15 +113,25 @@ export function drawScene(scene: Scene, state: DrawState = {}, title?: { text: s
     const dir = endDirection(p);
     // A plain line runs to the shape; an arrow stops where its head starts.
     const base = edge.head ? { x: p.end.x - dir.x * 9, y: p.end.y - dir.y * 9 } : p.end;
-    const d = p.control
-      ? `M${r(p.start.x)} ${r(p.start.y)} Q${r(p.control.x)} ${r(p.control.y)} ${r(base.x)} ${r(base.y)}`
-      : `M${r(p.start.x)} ${r(p.start.y)} L${r(base.x)} ${r(base.y)}`;
+    // A two-way arrow also starts where its second head ends.
+    const back = endDirection({ start: p.end, end: p.start, control: p.control });
+    const from = edge.tail ? { x: p.start.x - back.x * 9, y: p.start.y - back.y * 9 } : p.start;
+    const d = p.control2 && p.control
+      ? `M${r(from.x)} ${r(from.y)} C${r(p.control.x)} ${r(p.control.y)} ${r(p.control2.x)} ${r(p.control2.y)} ${r(base.x)} ${r(base.y)}`
+      : p.control
+      ? `M${r(from.x)} ${r(from.y)} Q${r(p.control.x)} ${r(p.control.y)} ${r(base.x)} ${r(base.y)}`
+      : `M${r(from.x)} ${r(from.y)} L${r(base.x)} ${r(base.y)}`;
     const wing = { x: -dir.y * 6, y: dir.x * 6 };
     const head = `M${r(p.end.x)} ${r(p.end.y)} L${r(base.x - dir.x * 2 + wing.x)} ${r(base.y - dir.y * 2 + wing.y)} L${r(base.x - dir.x * 2 - wing.x)} ${r(base.y - dir.y * 2 - wing.y)} Z`;
     const parts: SvgNode[] = [
       el("path", { d, fill: "none", stroke: colour, strokeWidth: on ? 4 : 3, ...(edge.dashed ? { strokeDasharray: "7 6" } : {}) }, undefined, `edge-${edge.index}-line`),
     ];
     if (edge.head) parts.push(el("path", { d: head, fill: colour }, undefined, `edge-${edge.index}-head`));
+    if (edge.tail) {
+      const wing2 = { x: -back.y * 6, y: back.x * 6 };
+      const tail = `M${r(p.start.x)} ${r(p.start.y)} L${r(from.x - back.x * 2 + wing2.x)} ${r(from.y - back.y * 2 + wing2.y)} L${r(from.x - back.x * 2 - wing2.x)} ${r(from.y - back.y * 2 - wing2.y)} Z`;
+      parts.push(el("path", { d: tail, fill: colour }, undefined, `edge-${edge.index}-tail`));
+    }
     if (edge.label) parts.push(text(edge.label, on ? BRAND.cobalt : BRAND.ink, on ? 700 : 600, `edge-${edge.index}-label`, true));
     if (edge.badge) {
       parts.push(el("circle", { cx: r(edge.badge.x), cy: r(edge.badge.y), r: 11, fill: on ? BRAND.cobalt : BRAND.white, stroke: on ? BRAND.cobalt : BRAND.ink, strokeWidth: 2 }, undefined, `edge-${edge.index}-badge`));

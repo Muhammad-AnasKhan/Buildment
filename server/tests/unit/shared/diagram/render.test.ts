@@ -112,6 +112,25 @@ describe("layout", () => {
     expect(describeDiagram(s)).toContain("Did she ask who it is for? (a question)");
   });
 
+  it.each([false, true])("draws a loop beside its part and repeated arrows apart (compact: %s)", (compact) => {
+    const s = spec("flow", "title: Retry\nbox Client\nbox API\nClient -> API: first try\nClient -> API: second try\nAPI -> API: retry");
+    const scene = layoutDiagram(s, compact);
+    const [a, b, loop] = scene.edges;
+    expect(Math.hypot(a.path.start.x - b.path.start.x, a.path.start.y - b.path.start.y)).toBeGreaterThan(12);
+    expect(loop.path.control2).toBeDefined();
+    const api = scene.nodes.find((n) => n.id === "api")!.shape;
+    if (api.type === "circle") throw new Error("box expected");
+    const mid = pathPoint(loop.path, 0.5);
+    expect(mid.x > api.x + api.w || mid.y < api.y).toBe(true);
+    expect(JSON.stringify(drawScene(scene))).toMatch(/"d":"M[^"]* C/);
+  });
+
+  it("draws a message to itself as a loop on the lifeline", () => {
+    const scene = layoutDiagram(spec("sequence", "title: Think\nbox A\nbox B\nA -> B: ask\nB -> B: think\nB --> A: answer"), false);
+    expect(scene.edges[1].path.control2).toBeDefined();
+    expect(scene.edges[1].label?.anchor).toBe("start");
+  });
+
   it("is deterministic", () => {
     expect(layoutDiagram(spec("flow", FLOW), false)).toEqual(layoutDiagram(spec("flow", FLOW), false));
   });
