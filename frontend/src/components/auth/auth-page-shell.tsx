@@ -20,12 +20,15 @@ export function AuthPageShell({ children }: { children: ReactNode }) {
           <Wordmark tone="auto" height={30} />
         </Link>
         <div className="max-w-[540px]">
-          <h2 className="text-[40px] leading-[1.1] tracking-[-0.035em]">Pick up where you left off.</h2>
+          <h2 className="text-balance text-[40px] leading-[1.1] tracking-[-0.035em]">Pick up where you left off.</h2>
           <p className="mt-4 text-lg text-muted-foreground">
             Short chapters. No timer. Your place is always saved.
           </p>
         </div>
-        <HeroQuestion />
+        {/* The landing card is always light, so its text stays ink in the dark theme too. */}
+        <div style={{ color: "#0A0F2C" }}>
+          <HeroQuestion />
+        </div>
       </aside>
 
       <main className="flex min-w-0 flex-col px-6 pb-12 pt-6 lg:justify-center lg:border-l lg:border-border lg:bg-card lg:px-12 lg:py-10">
