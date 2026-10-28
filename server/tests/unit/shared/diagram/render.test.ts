@@ -131,6 +131,22 @@ describe("layout", () => {
     expect(scene.edges[1].label?.anchor).toBe("start");
   });
 
+  it.each([false, true])("puts each group's box around its parts and no others (compact: %s)", (compact) => {
+    const s = spec("flow", "title: Map\nbox Phone\nbox DNS\ngroup Private network\n  box Load balancer\n  box App\n  store Database\nend\nPhone -> DNS\nPhone -> Load balancer -> App -> Database");
+    const scene = layoutDiagram(s, compact);
+    expect(scene.groups).toHaveLength(1);
+    const box = scene.groups[0].rect;
+    const centre = (id: string) => {
+      const shape = scene.nodes.find((n) => n.id === id)!.shape;
+      return shape.type === "circle" ? { x: shape.cx, y: shape.cy } : { x: shape.x + shape.w / 2, y: shape.y + shape.h / 2 };
+    };
+    const inside = (p: { x: number; y: number }) => p.x > box.x && p.x < box.x + box.w && p.y > box.y && p.y < box.y + box.h;
+    expect(["load balancer", "app", "database"].every((id) => inside(centre(id)))).toBe(true);
+    expect(["phone", "dns"].some((id) => inside(centre(id)))).toBe(false);
+    expect(describeDiagram(s)).toContain("Groups: Private network (Load balancer, App and Database).");
+    expect(JSON.stringify(drawScene(scene))).toContain('"key":"group-0-label"');
+  });
+
   it("is deterministic", () => {
     expect(layoutDiagram(spec("flow", FLOW), false)).toEqual(layoutDiagram(spec("flow", FLOW), false));
   });

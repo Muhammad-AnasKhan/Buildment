@@ -24,6 +24,10 @@ export function describeDiagram(spec: DiagramSpec): string {
   }
   const arrows = spec.edges.map((edge) => arrowText(name, edge));
   let out = `${spec.title}. A flow diagram with ${spec.nodes.length} parts: ${list(parts)}. Arrows: ${arrows.join("; ")}.`;
+  if (spec.groups.length) {
+    const inGroup = (node: { group: number | null }, g: number): boolean => node.group !== null && (node.group === g || inGroup({ group: spec.groups[node.group].parent }, g));
+    out += ` Groups: ${spec.groups.map((group, g) => `${group.label} (${list(spec.nodes.filter((node) => inGroup(node, g)).map((node) => node.label))})`).join("; ")}.`;
+  }
   if (spec.packet.length) out += ` A packet travels ${spec.packet.map((id) => name.get(id)).join(", then ")}.`;
   return out;
 }

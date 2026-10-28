@@ -12,7 +12,10 @@ export type DiagramKind = (typeof DIAGRAM_KINDS)[number];
 export const NODE_KINDS = ["actor", "box", "decision", "end", "store", "external"] as const;
 export type NodeKind = (typeof NODE_KINDS)[number];
 
-export type DiagramNode = { id: string; label: string; kind: NodeKind; line: number };
+/** `group` is the index of the innermost group the part sits in, or null. */
+export type DiagramNode = { id: string; label: string; kind: NodeKind; line: number; group: number | null };
+/** A labelled box around some parts, such as a private network. Groups may sit inside groups. */
+export type DiagramGroup = { label: string; parent: number | null; line: number };
 /**
  * `head` is false for a plain line (`---`), which joins two parts without a direction;
  * `tail` is true for a two-way arrow (`<->`), with a head at each end.
@@ -30,6 +33,7 @@ export type DiagramSpec = {
   /** Flow only: the node ids the packet visits, in order. Empty without a packet line. */
   packet: string[];
   hops: PacketHop[];
+  groups: DiagramGroup[];
 };
 
 export type DiagramParseResult = { ok: true; spec: DiagramSpec } | { ok: false; problems: string[] };
@@ -52,6 +56,7 @@ export function isDiagramKind(value: unknown): value is DiagramKind {
 const BARE_NAME = /^[^:"`]+$/;
 const QUOTED_NAME = /^[^"`]+$/;
 const SETTING = /^(title|direction|packet)\s*:\s*(.*)$/i;
+const GROUP_LINE = /^group\s+(.+)$/i;
 const NODE_LINE = new RegExp(`^(${NODE_KINDS.join("|")})\\s+(.+)$`, "i");
 /** True when the text has a control character other than a tab. */
 function hasControl(text: string): boolean {
@@ -122,6 +127,8 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
   let direction: "right" | "down" | undefined;
   let packetLine: { names: string[]; shown: string[]; line: number } | undefined;
   const nodes: DiagramNode[] = [];
+  const groups: DiagramGroup[] = [];
+  const open: number[] = [];
   const byId = new Map<string, DiagramNode>();
   const rawEdges: RawEdge[] = [];
 
@@ -132,6 +139,25 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
     if (!text || text.startsWith("#")) return;
     if (hasControl(text)) {
       at(line, "remove the control character from this line.");
+      return;
+    }
+
+    // "group <label>" opens a group; a line with only "end" closes the innermost one.
+    // (A line that starts with "Group" but has an arrow, such as "Group by shop -> Total", is an arrow.)
+    const groupLine = splitArrows(text) ? null : GROUP_LINE.exec(text);
+    if (groupLine) {
+      if (kind !== "flow") at(line, "groups are for flow diagrams only.");
+      else {
+        const label = readName(groupLine[1]).text;
+        if (label.length > DIAGRAM_LIMITS.title) at(line, `shorten the group name to ${DIAGRAM_LIMITS.title} characters or fewer.`);
+        groups.push({ label, parent: open.length ? open[open.length - 1] : null, line });
+        open.push(groups.length - 1);
+      }
+      return;
+    }
+    if (/^end$/i.test(text)) {
+      if (!open.length) at(line, "this \"end\" has no group to close. Open one with \"group <name>\".");
+      else open.pop();
       return;
     }
 
@@ -180,7 +206,7 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
         at(line, `"${name.ref ? `[${name.ref}]` : label}" is already declared on line ${existing.line}. Declare each part once.${hint}`);
         return;
       }
-      const node = { id, label, kind: nodeKind, line };
+      const node = { id, label, kind: nodeKind, line, group: open.length ? open[open.length - 1] : null };
       nodes.push(node);
       byId.set(id, node);
       return;
@@ -217,6 +243,11 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
     at(line, `"${shorten(text)}" is not a diagram line. Write a part ("box DNS"), an arrow ("You -> DNS") or a setting ("title: How a page loads").`);
   });
 
+  for (const index of open) at(groups[index].line, `the group "${groups[index].label}" is never closed. Add a line with "end".`);
+  groups.forEach((group, index) => {
+    const inside = (g: number | null): boolean => g !== null && (g === index || inside(groups[g].parent));
+    if (!nodes.some((node) => inside(node.group))) at(group.line, `the group "${group.label}" has no parts in it.`);
+  });
   if (title === undefined) problems.push("Add a title line, for example \"title: How your phone finds a website\".");
 
   // A part with an [id] can also be named by its text, as long as no other part has that text.
@@ -288,7 +319,7 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
   if (problems.length) return { ok: false, problems };
   return {
     ok: true,
-    spec: { kind, title: title!, direction: direction ?? "right", nodes, edges, packet, hops },
+    spec: { kind, title: title!, direction: direction ?? "right", nodes, edges, packet, hops, groups },
   };
 }
 

@@ -156,6 +156,17 @@ describe("parseDiagram: problems fail loudly", () => {
     expect(problems(parseDiagram("flow", "title: X\nbox Say no\nbox Say no\nbox B"))[0]).toMatch(/give each an id, for example "box \[A2\] Say no"/);
   });
 
+  it("reads nested groups and checks they are closed and not empty", () => {
+    const result = parseDiagram("flow", "title: X\nbox Phone\ngroup Private network\n  box Load balancer\n  group App tier\n    box App\n  end\nend\nPhone -> Load balancer -> App\nGroup by shop -> App");
+    expect(problems(result)).toEqual(['Line 10: "Group by shop" is not declared. Declare it first, for example "box Group by shop". Declared: Phone, Load balancer, App.']);
+    const ok = parseDiagram("flow", "title: X\nbox Phone\ngroup Private network\n  box Load balancer\n  group App tier\n    box App\n  end\nend\nPhone -> Load balancer -> App");
+    expect(ok.ok && ok.spec.groups).toEqual([{ label: "Private network", parent: null, line: 3 }, { label: "App tier", parent: 0, line: 5 }]);
+    expect(ok.ok && ok.spec.nodes.map((node) => node.group)).toEqual([null, 0, 1]);
+    expect(problems(parseDiagram("flow", "title: X\nbox A\ngroup G\nbox B\nA -> B"))).toEqual(['Line 3: the group "G" is never closed. Add a line with "end".']);
+    expect(problems(parseDiagram("flow", "title: X\nbox A\nbox B\ngroup Empty\nend\nA -> B"))).toEqual(['Line 4: the group "Empty" has no parts in it.']);
+    expect(problems(parseDiagram("flow", "title: X\nbox A\nbox B\nend\nA -> B"))[0]).toMatch(/has no group to close/);
+  });
+
   it("allows a part with no arrow", () => {
     expect(parseDiagram("flow", "title: X\nbox A\nbox B\nbox C\nA -> B").ok).toBe(true);
   });

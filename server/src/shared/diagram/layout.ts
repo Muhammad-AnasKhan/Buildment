@@ -37,12 +37,23 @@ export type Scene = {
   nodes: SceneNode[];
   edges: SceneEdge[];
   lifelines: { x: number; y1: number; y2: number }[];
+  /** Group boxes, outermost first, so inner boxes draw on top. */
+  groups: { rect: { x: number; y: number; w: number; h: number }; label: SceneLabel }[];
 };
 
 export const NODE_FONT = 14;
 export const EDGE_FONT = 13;
 export const LINE_HEIGHT = 1.25;
 const PAD = 18;
+/** Space inside a group's box around its parts, the height of its label line, and its label size. */
+const GROUP_PAD = 14;
+const GROUP_LABEL = 22;
+export const GROUP_FONT = 13;
+
+/** Whether a part in group `group` sits inside group `target`, directly or through nested groups. */
+function insideGroup(spec: DiagramSpec, group: number | null, target: number): boolean {
+  return group !== null && (group === target || insideGroup(spec, spec.groups[group].parent, target));
+}
 
 type Box = { left: number; right: number; top: number; bottom: number };
 type Measured = { node: DiagramNode; lines: string[]; inside: boolean; r: number; w: number; h: number; box: Box };
@@ -369,15 +380,24 @@ export function layoutFlow(spec: DiagramSpec, compact: boolean): Scene {
   const crossBefore = (m: Measured) => (down ? m.box.left : m.box.top);
   const crossAfter = (m: Measured) => (down ? m.box.right : m.box.bottom);
 
+  // Groups: the layers each one spans, and how many group edges start or end at each layer.
+  const groupNodes = spec.groups.map((_, g) => spec.nodes.filter((node) => insideGroup(spec, node.group, g)).map((node) => node.id));
+  const groupSpan = groupNodes.map((ids) => [Math.min(...ids.map((id) => rank.get(id)!)), Math.max(...ids.map((id) => rank.get(id)!))]);
+  const opensAt = Array.from({ length: layerCount }, (_, r) => groupSpan.filter(([lo]) => lo === r).length);
+  const closesAt = Array.from({ length: layerCount }, (_, r) => groupSpan.filter(([, hi]) => hi === r).length);
+
   // Main axis: one band per layer, with room between bands for the arrow labels.
   const mainPos: number[] = [];
   let cursor = 0;
   for (let r = 0; r < layerCount; r++) {
     const before = Math.max(...layers[r].map((id) => mainBefore(measured.get(id)!)));
     const after = Math.max(...layers[r].map((id) => mainAfter(measured.get(id)!)));
+    // A group needs its padding (and, in a downward flow, its label) before its first layer.
+    cursor += opensAt[r] * (GROUP_PAD + (down ? GROUP_LABEL : 0));
     cursor += before;
     mainPos.push(cursor);
     cursor += after;
+    cursor += closesAt[r] * GROUP_PAD;
     if (r < layerCount - 1) {
       // Across a rightward flow the labels between two bands sit side by side; down a
       // downward flow they stack, so it leaves room for all of them.
@@ -396,15 +416,65 @@ export function layoutFlow(spec: DiagramSpec, compact: boolean): Scene {
   // Cross axis: parts in one layer side by side, centred on the axis.
   const crossGap = down ? (crowded ? 16 : 24) : edgeLines.some((lines) => lines.length) ? 44 : 30;
   const centres = new Map<string, Point>();
-  layers.forEach((layer, r) => {
-    const total = layer.reduce((sum, id) => sum + crossBefore(measured.get(id)!) + crossAfter(measured.get(id)!), 0) + crossGap * (layer.length - 1);
-    let at = -total / 2;
-    for (const id of layer) {
-      const m = measured.get(id)!;
-      at += crossBefore(m);
-      centres.set(id, down ? { x: at, y: mainPos[r] } : { x: mainPos[r], y: at });
-      at += crossAfter(m) + crossGap;
-    }
+  const crossAt = new Map<string, number>();
+  if (!spec.groups.length) {
+    layers.forEach((layer) => {
+      const total = layer.reduce((sum, id) => sum + crossBefore(measured.get(id)!) + crossAfter(measured.get(id)!), 0) + crossGap * (layer.length - 1);
+      let at = -total / 2;
+      for (const id of layer) {
+        const m = measured.get(id)!;
+        at += crossBefore(m);
+        crossAt.set(id, at);
+        at += crossAfter(m) + crossGap;
+      }
+    });
+  } else {
+    // With groups, each group takes one band across all the layers it spans, so no other part
+    // falls inside its box. Items (lone parts and whole groups) are packed against a skyline:
+    // an item starts after whatever already sits in any of its layers.
+    type Item = { node?: string; group?: number };
+    const children = (parent: number | null): Item[] => [
+      ...spec.groups.flatMap((g, i) => (g.parent === parent ? [{ group: i }] : [])),
+      ...spec.nodes.flatMap((node) => (node.group === parent ? [{ node: node.id }] : [])),
+    ];
+    const span = (item: Item) => (item.node ? [rank.get(item.node)!, rank.get(item.node)!] : groupSpan[item.group!]);
+    const key = (item: Item) => {
+      const ids = item.node ? [item.node] : groupNodes[item.group!];
+      return ids.reduce((sum, id) => sum + order.get(id)! / layers[rank.get(id)!].length, 0) / ids.length;
+    };
+    const lead = down ? 0 : GROUP_LABEL;
+    const widths = new Map<number, number>();
+    const starts = new Map<Item, number>();
+    const pack = (parent: number | null): number => {
+      const sky = new Array<number>(layerCount).fill(0);
+      const items = children(parent).sort((a, b) => key(a) - key(b));
+      for (const item of items) {
+        const [lo, hi] = span(item);
+        const width = item.node
+          ? crossBefore(measured.get(item.node)!) + crossAfter(measured.get(item.node)!)
+          : Math.max(pack(item.group!) + 2 * GROUP_PAD + lead, textWidth(spec.groups[item.group!].label, GROUP_FONT) + 2 * GROUP_PAD);
+        if (item.group !== undefined) widths.set(item.group, width);
+        const start = Math.max(...sky.slice(lo, hi + 1));
+        starts.set(item, start);
+        for (let l = lo; l <= hi; l++) sky[l] = start + width + crossGap;
+      }
+      return Math.max(0, ...sky) - (items.length ? crossGap : 0);
+    };
+    const place = (parent: number | null, origin: number) => {
+      for (const [item, start] of starts) {
+        const owner = item.node ? spec.nodes.find((node) => node.id === item.node)!.group : spec.groups[item.group!].parent;
+        if (owner !== parent) continue;
+        if (item.node) crossAt.set(item.node, origin + start + crossBefore(measured.get(item.node)!));
+        else place(item.group!, origin + start + GROUP_PAD + lead);
+      }
+    };
+    pack(null);
+    place(null, 0);
+  }
+  spec.nodes.forEach((node) => {
+    const at = crossAt.get(node.id)!;
+    const main = mainPos[rank.get(node.id)!];
+    centres.set(node.id, down ? { x: at, y: main } : { x: main, y: at });
   });
 
   const nodes = spec.nodes.map((node) => {
@@ -464,7 +534,37 @@ export function layoutFlow(spec: DiagramSpec, compact: boolean): Scene {
   const labels = placeLabels(nodes, routed);
   const edges: SceneEdge[] = spec.edges.map((edge, index) => ({ index, dashed: edge.dashed, head: edge.head, tail: edge.tail, path: routed[index].path, label: labels[index] }));
 
-  return { kind: "flow", compact, viewBox: fitViewBox(nodes, edges), nodes, edges, lifelines: [] };
+  const groups = groupBoxes(spec, nodes);
+  const corners = groups.flatMap(({ rect }) => [{ x: rect.x, y: rect.y }, { x: rect.x + rect.w, y: rect.y + rect.h }]);
+  return { kind: "flow", compact, viewBox: fitViewBox(nodes, edges, corners), nodes, edges, lifelines: [], groups };
+}
+
+/**
+ * Each group's box: around its parts and inner groups with padding, plus a label line on top
+ * (the layout reserved that room). Built innermost first so an outer box holds the inner ones.
+ */
+function groupBoxes(spec: DiagramSpec, nodes: SceneNode[]): Scene["groups"] {
+  const depth = (g: number): number => (spec.groups[g].parent === null ? 0 : depth(spec.groups[g].parent!) + 1);
+  const rects = new Map<number, { x: number; y: number; w: number; h: number }>();
+  for (const g of spec.groups.map((_, i) => i).sort((a, b) => depth(b) - depth(a))) {
+    const boxes = [
+      ...nodes.filter((_, i) => spec.nodes[i].group === g).flatMap((node) => [inflate(node.shape, 0), ...(node.labelInside ? [] : [labelBox(node.label)])]),
+      ...spec.groups.flatMap((child, c) => (child.parent === g ? [rects.get(c)!] : [])),
+    ];
+    const x0 = Math.min(...boxes.map((b) => b.x)) - GROUP_PAD;
+    const y0 = Math.min(...boxes.map((b) => b.y)) - GROUP_PAD - GROUP_LABEL;
+    const x1 = Math.max(...boxes.map((b) => b.x + b.w)) + GROUP_PAD;
+    const y1 = Math.max(...boxes.map((b) => b.y + b.h)) + GROUP_PAD;
+    const labelW = textWidth(spec.groups[g].label, GROUP_FONT) + 2 * GROUP_PAD;
+    rects.set(g, { x: x0, y: y0, w: Math.max(x1 - x0, labelW), h: y1 - y0 });
+  }
+  return spec.groups
+    .map((_, g) => g)
+    .sort((a, b) => depth(a) - depth(b))
+    .map((g) => {
+      const rect = rects.get(g)!;
+      return { rect, label: { lines: [spec.groups[g].label], x: rect.x + 12, y: rect.y + 17, anchor: "start" as const, size: GROUP_FONT } };
+    });
 }
 
 // ---------------------------------------------------------------- sequence
@@ -526,7 +626,7 @@ export function layoutSequence(spec: DiagramSpec, compact: boolean): Scene {
 
   const lifelines = nodes.map((_, i) => ({ x: xs[i], y1: top + measured[i].box.bottom + 4, y2: y }));
   const viewBox = fitViewBox(nodes, edges, lifelines.map((line) => ({ x: line.x, y: line.y2 })));
-  return { kind: "sequence", compact, viewBox, nodes, edges, lifelines };
+  return { kind: "sequence", compact, viewBox, nodes, edges, lifelines, groups: [] };
 }
 
 export function layoutDiagram(spec: DiagramSpec, compact: boolean): Scene {

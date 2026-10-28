@@ -37,9 +37,10 @@ export type DrawState = {
 
 const el = (tag: string, attrs: SvgNode["attrs"], children?: SvgNode["children"], key?: string): SvgNode => ({ tag, attrs, children, key });
 
-function text(label: SceneLabel, fill: string, weight: number, key: string, halo = false): SvgNode {
+/** `halo` paints a band of `halo` colour behind the letters, so a line under the text stays readable. */
+function text(label: SceneLabel, fill: string, weight: number, key: string, halo: string | false = false): SvgNode {
   const lh = label.size * LINE_HEIGHT;
-  const halos: SvgNode["attrs"] = halo ? { stroke: BRAND.tint, strokeWidth: 5, strokeLinejoin: "round", paintOrder: "stroke" } : {};
+  const halos: SvgNode["attrs"] = halo ? { stroke: halo, strokeWidth: 5, strokeLinejoin: "round", paintOrder: "stroke" } : {};
   return el(
     "text",
     { x: r(label.x), y: r(label.y), textAnchor: label.anchor, fontSize: label.size, fontWeight: weight, fill, ...halos },
@@ -100,6 +101,12 @@ export function drawScene(scene: Scene, state: DrawState = {}, title?: { text: s
     children.push(text({ lines: title.lines, x: x + 18, y: top + 28, anchor: "start", size: 16 }, BRAND.ink, 700, "title"));
   }
 
+  // Group boxes go under everything else, outermost first.
+  for (const [i, group] of scene.groups.entries()) {
+    const { x: gx, y: gy, w: gw, h: gh } = group.rect;
+    children.push(el("rect", { x: r(gx), y: r(gy), width: r(gw), height: r(gh), rx: 10, fill: BRAND.paper, stroke: BRAND.muted, strokeWidth: 2 }, undefined, `group-${i}`));
+  }
+
   for (const [i, line] of scene.lifelines.entries()) {
     children.push(el("line", { x1: r(line.x), y1: r(line.y1), x2: r(line.x), y2: r(line.y2), stroke: BRAND.muted, strokeWidth: 2, strokeDasharray: "2 6", strokeLinecap: "round" }, undefined, `life-${i}`));
   }
@@ -131,7 +138,7 @@ export function drawScene(scene: Scene, state: DrawState = {}, title?: { text: s
       const tail = `M${r(p.start.x)} ${r(p.start.y)} L${r(from.x - back.x * 2 + wing2.x)} ${r(from.y - back.y * 2 + wing2.y)} L${r(from.x - back.x * 2 - wing2.x)} ${r(from.y - back.y * 2 - wing2.y)} Z`;
       parts.push(el("path", { d: tail, fill: colour }, undefined, `edge-${edge.index}-tail`));
     }
-    if (edge.label) parts.push(text(edge.label, on ? BRAND.cobalt : BRAND.ink, on ? 700 : 600, `edge-${edge.index}-label`, true));
+    if (edge.label) parts.push(text(edge.label, on ? BRAND.cobalt : BRAND.ink, on ? 700 : 600, `edge-${edge.index}-label`, BRAND.tint));
     if (edge.badge) {
       parts.push(el("circle", { cx: r(edge.badge.x), cy: r(edge.badge.y), r: 11, fill: on ? BRAND.cobalt : BRAND.white, stroke: on ? BRAND.cobalt : BRAND.ink, strokeWidth: 2 }, undefined, `edge-${edge.index}-badge`));
       parts.push(el("text", { x: r(edge.badge.x), y: r(edge.badge.y + 4.5), textAnchor: "middle", fontSize: 12, fontWeight: 700, fill: on ? BRAND.paper : BRAND.ink }, [String(edge.badge.n)], `edge-${edge.index}-n`));
@@ -146,6 +153,9 @@ export function drawScene(scene: Scene, state: DrawState = {}, title?: { text: s
     parts.push(text(node.label, light ? BRAND.paper : BRAND.ink, 700, `${node.id}-label`));
     children.push(el("g", {}, parts, `node-${node.id}`));
   }
+
+  // Group labels go on top, so an arrow entering a group passes behind its name.
+  for (const [i, group] of scene.groups.entries()) children.push(text(group.label, BRAND.muted, 700, `group-${i}-label`, BRAND.paper));
 
   if (state.packet) {
     const packet: SvgNode[] = [];
