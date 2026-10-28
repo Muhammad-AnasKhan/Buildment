@@ -32,6 +32,13 @@ const recompute = () =>
 async function finishChapterA() {
   expect((await respond(fx.quizBlock.id, { selected: ["a"] })).status).toBe(200);
   expect((await respond(fx.mustReadBlock.id, { complete: true })).status).toBe(200);
+  expect(
+    (
+      await request(app)
+        .post(`/api/v1/chapters/${fx.chapterA.id}/complete`)
+        .set({ Authorization: `Bearer ${fx.learnerToken}` })
+    ).status
+  ).toBe(204);
   const done = await progressFor();
   expect(done.status).toBe("COMPLETED");
   expect(done.completedAt).not.toBeNull();

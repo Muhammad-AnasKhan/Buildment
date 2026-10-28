@@ -82,7 +82,10 @@ export async function recomputeChapterProgress(
   const reflectionBlocked = Boolean(
     chapter?.isMilestone && milestoneReflectionBlocked(chapter.compiled || chapter.source, existing?.learningLog)
   );
-  const markedComplete = blocksTotal === 0 && existing?.status === "COMPLETED";
+  // Checkpoints make the chapter eligible for completion; only the learner's
+  // explicit "Mark chapter complete" action finishes it. Preserve that action
+  // across later response recomputations while all required work remains met.
+  const markedComplete = existing?.status === "COMPLETED";
   const visited = Boolean(existing?.startedAt) || blocksCompleted > 0;
   const status = chapterProgressStatus({
     completableTotal: blocksTotal,

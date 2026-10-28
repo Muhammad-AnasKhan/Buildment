@@ -71,6 +71,6 @@ export function ReaderShellSkeleton({ visible }: { visible?: boolean }) {
 
 export function ReaderShellFade({ children }: { visible?: boolean; children: React.ReactNode }) {
   return (
-    <div className="relative z-0 flex h-[100dvh] flex-col bg-background text-foreground">{children}</div>
+    <div className="relative z-0 flex h-[100dvh] min-w-0 flex-col overflow-hidden bg-background text-foreground">{children}</div>
   );
 }

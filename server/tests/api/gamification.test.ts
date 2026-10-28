@@ -41,6 +41,8 @@ const submitQuiz = (optionId: string, token = fx.learnerToken) =>
     .set(auth(token))
     .send({ answers: fx.quizChapterBlocks.map((block) => ({ blockId: block.id, selected: [optionId] })) });
 const track = (body: object, token = fx.learnerToken) => request(app).post("/api/v1/events").set(auth(token)).send(body);
+const markComplete = (chapterId: string, token = fx.learnerToken) =>
+  request(app).post(`/api/v1/chapters/${chapterId}/complete`).set(auth(token));
 const xpRows = (userId = fx.learner.id) => prisma.xpEntry.findMany({ where: { userId }, orderBy: { createdAt: "asc" } });
 
 async function extraLearner(name: string, options: { organizationId?: string } = {}) {
@@ -68,6 +70,8 @@ describe("XP", () => {
     expect((await respond(fx.quizBlock.id, { selected: ["a"] })).status).toBe(200);
     expect(await xpRows()).toHaveLength(0); // chapter not complete yet
     expect((await respond(fx.mustReadBlock.id, { complete: true })).status).toBe(200);
+    expect(await xpRows()).toHaveLength(0); // checkpoints alone do not finish the chapter
+    expect((await markComplete(fx.chapterA.id)).status).toBe(204);
 
     const rows = await xpRows();
     expect(rows).toEqual([
@@ -89,7 +93,8 @@ describe("XP", () => {
     expect((await submitQuiz("b")).status).toBe(200); // first try, wrong
     expect((await xpRows()).map((row) => row.source)).toEqual(["chapter_completed"]);
 
-    expect((await submitQuiz("a")).status).toBe(200); // second try, all right, finishes the course
+    expect((await submitQuiz("a")).status).toBe(200); // second try, all right, makes the chapter eligible
+    expect((await markComplete(fx.chapterB.id)).status).toBe(204);
     const sources = (await xpRows()).map((row) => [row.source, row.amount]);
     expect(sources).toEqual(
       expect.arrayContaining([

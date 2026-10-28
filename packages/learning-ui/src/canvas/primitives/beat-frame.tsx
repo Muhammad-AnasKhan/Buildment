@@ -25,8 +25,8 @@ type BeatFrameProps = {
 
 export function BeatFrame({ label, children, controls, hint, limits }: BeatFrameProps) {
   return (
-    <figure aria-label={label} className="not-prose my-6">
-      <div className="overflow-hidden rounded-2xl border border-border bg-card p-2 shadow-sm sm:p-3">{children}</div>
+    <figure aria-label={label} className="not-prose isolate my-6 min-w-0 max-w-full overflow-clip">
+      <div className="min-w-0 max-w-full overflow-hidden rounded-2xl border border-border bg-card p-2 shadow-sm sm:p-3">{children}</div>
       {controls || hint ? (
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2 px-1">
           {controls}

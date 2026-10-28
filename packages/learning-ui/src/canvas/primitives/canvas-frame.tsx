@@ -12,7 +12,13 @@ type CanvasFrameProps = {
 /** The panel every canvas sits in, so they all read as one family in the reader. */
 export function CanvasFrame({ eyebrow, title, purpose, children }: CanvasFrameProps) {
   return (
-    <LearnPanelShell eyebrow={eyebrow} title={title} subtitle={purpose} contentClassName="p-4 sm:p-6">
+    <LearnPanelShell
+      eyebrow={eyebrow}
+      title={title}
+      subtitle={purpose}
+      className="isolate min-w-0 max-w-full overflow-clip"
+      contentClassName="min-w-0 max-w-full p-4 sm:p-6"
+    >
       {children}
     </LearnPanelShell>
   );

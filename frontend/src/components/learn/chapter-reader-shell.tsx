@@ -257,7 +257,7 @@ export function ChapterReaderShell({
   return (
     <div
       data-reader-mode={readerMode}
-      className={cn("relative h-[100dvh] bg-background text-foreground", focusMode && "bg-background")}
+      className={cn("relative h-[100dvh] overflow-hidden bg-background text-foreground", focusMode && "bg-background")}
     >
       {showSkeleton && !skipSkeleton ? (
         <div className="pointer-events-none absolute inset-0 z-10" aria-hidden>
@@ -463,9 +463,6 @@ export function ChapterReaderShell({
                     courseTotal={modules.reduce((total, module) => total + module.chapters.length, 0)}
                     recap={recap}
                     streakMilestone={streakMilestone}
-                    suppressAutoCelebration={
-                      readerMode === "QUIZ" && checkpointsCompleted < checkpointsTotal
-                    }
                   />
                 ) : null}
 

@@ -35,7 +35,7 @@ note or submitting a quiz.
 |---|---|---|---|
 | `session_start` | first page of a browser tab | none; computes `daysAway` (and `resume` after 14+ days) | (every tab session) |
 | `enrolled` | next page after the enroll / checkout redirect (cookie hand-off) | active enrollment | course |
-| `chapter_completed` | mark complete, quiz "next chapter"; also derived | `ChapterProgress` is COMPLETED | chapter |
+| `chapter_completed` | mark complete, quiz "next chapter" | `ChapterProgress` is COMPLETED | chapter |
 | `notes_saved` | margin note, learning log (max 1/min/chapter on the web) | enrolled in the chapter's course | (every save) |
 | `quiz_submitted` | quiz chapter submit | latest `Response` rows | quiz attempt |
 | `course_completed` | derived; may also be reported | `Enrollment.status` is COMPLETED | course |
