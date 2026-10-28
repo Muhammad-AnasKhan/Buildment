@@ -20,7 +20,7 @@ describe("mermaidToDiagram", () => {
         "box Hand picks up the phone",
         "store Saved videos",
         "actor Rami",
-        "box Should I study now?",
+        "decision Should I study now?",
         'box "Step 2: later"',
         "Rami sits down -> Hand picks up the phone: no choice made",
         "Hand picks up the phone -> Saved videos",

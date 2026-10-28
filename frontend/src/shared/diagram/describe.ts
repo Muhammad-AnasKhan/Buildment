@@ -12,6 +12,7 @@ const KIND_WORD: Record<NodeKind, string | null> = {
   end: "the end point",
   store: "stored data",
   external: "an outside service",
+  decision: "a question",
 };
 
 export function describeDiagram(spec: DiagramSpec): string {

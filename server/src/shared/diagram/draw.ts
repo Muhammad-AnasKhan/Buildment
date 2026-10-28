@@ -52,6 +52,7 @@ function shape(node: SceneNode): SvgNode[] {
   const s = node.shape;
   if (s.type === "circle") return [el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r, fill: BRAND.cobalt }, undefined, `${node.id}-shape`)];
   const frame = { fill: BRAND.white, stroke: BRAND.ink, strokeWidth: 3 };
+  if (s.type === "diamond") return [el("path", { d: diamondPath(s, 0), ...frame, strokeLinejoin: "round" }, undefined, `${node.id}-shape`)];
   if (node.kind === "end") return [el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), fill: BRAND.ink }, undefined, `${node.id}-shape`)];
   if (node.kind === "external") return [el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), ...frame, strokeDasharray: "8 5" }, undefined, `${node.id}-shape`)];
   if (node.kind === "store") {
@@ -66,10 +67,20 @@ function shape(node: SceneNode): SvgNode[] {
   return [el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), ...frame }, undefined, `${node.id}-shape`)];
 }
 
+/** The diamond inside a box, grown by `out` units at each point (for the ring around it). */
+function diamondPath(s: { x: number; y: number; w: number; h: number }, out: number): string {
+  const cx = s.x + s.w / 2;
+  const cy = s.y + s.h / 2;
+  const a = s.w / 2 + out;
+  const b = s.h / 2 + out;
+  return `M${r(cx)} ${r(cy - b)} L${r(cx + a)} ${r(cy)} L${r(cx)} ${r(cy + b)} L${r(cx - a)} ${r(cy)} Z`;
+}
+
 function ring(node: SceneNode): SvgNode {
   const s = node.shape;
   const attrs = { fill: "none", stroke: BRAND.cobalt, strokeWidth: 3 };
   if (s.type === "circle") return el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r + 6, ...attrs }, undefined, `${node.id}-ring`);
+  if (s.type === "diamond") return el("path", { d: diamondPath(s, 8), ...attrs, strokeLinejoin: "round" }, undefined, `${node.id}-ring`);
   return el("rect", { x: r(s.x - 6), y: r(s.y - 6), width: r(s.w + 12), height: r(s.h + 12), ...attrs }, undefined, `${node.id}-ring`);
 }
 

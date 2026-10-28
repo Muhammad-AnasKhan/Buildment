@@ -81,7 +81,7 @@ const CLOSE: Record<string, string> = { "[(": ")]", "((": "))", "([": "])", "[/"
 const LINK = /^(?:(?:--|==)\s+([^|>]*?)\s+(-->|==>)|-\.\s+([^|>]*?)\s+\.->|(-{2,}>|-{3,}|-\.->|={2,}>)(?:\|([^|]*)\|)?)/;
 const IGNORED = /^(classDef|class|style|linkStyle|click)\b/;
 
-type FlowNode = { id: string; label?: string; kind: "actor" | "box" | "store" };
+type FlowNode = { id: string; label?: string; kind: "actor" | "box" | "decision" | "store" };
 
 function flowchart(header: string, lines: string[]): Converted | null {
   const dir = header.split(/\s+/)[1] ?? "TD";
@@ -95,7 +95,7 @@ function flowchart(header: string, lines: string[]): Converted | null {
     if (!match) return null;
     const [whole, id, open, label, close] = match;
     if (open && CLOSE[open] !== close) return null;
-    const kind = open === "[(" ? "store" : open === "((" ? "actor" : "box";
+    const kind = open === "[(" ? "store" : open === "((" ? "actor" : open === "{" ? "decision" : "box";
     const existing = nodes.get(id);
     const node: FlowNode = existing ?? { id, kind };
     if (open) {

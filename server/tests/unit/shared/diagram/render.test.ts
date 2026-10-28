@@ -90,6 +90,28 @@ describe("layout", () => {
     }
   });
 
+  it.each([false, true])("draws a decision as a diamond that holds its text, with arrows at its points (compact: %s)", (compact) => {
+    const s = spec("flow", "title: Ask\ndirection: down\nbox Feature request\ndecision Did she ask who it is for?\nbox Build it\nbox Ask first\nFeature request -> Did she ask who it is for?\nDid she ask who it is for? -> Build it: No\nDid she ask who it is for? -> Ask first: Yes");
+    const scene = layoutDiagram(s, compact);
+    const node = scene.nodes.find((n) => n.id === "did she ask who it is for?")!;
+    const d = node.shape;
+    if (d.type !== "diamond") throw new Error("diamond expected");
+    const c = { x: d.x + d.w / 2, y: d.y + d.h / 2 };
+    // Every corner of the text block lies inside the diamond.
+    const tw = Math.max(...node.label.lines.map((line) => textWidth(line, node.label.size)));
+    const th = node.label.lines.length * node.label.size * 1.25;
+    expect(tw / d.w + th / d.h).toBeLessThanOrEqual(1);
+    // Arrows touch the diamond at its top or bottom point (allowing the 2 and 3 unit gaps the layout leaves).
+    const into = scene.edges[0].path.end;
+    expect(Math.abs(into.x - c.x)).toBeLessThan(1);
+    expect(Math.abs(into.y - d.y)).toBeLessThan(4);
+    const out = scene.edges[1].path.start;
+    expect(Math.abs(out.x - c.x) < 1 || Math.abs(out.y - c.y) < 1).toBe(true);
+    const flat = JSON.stringify(drawScene(scene));
+    expect(flat).toMatch(/"key":"did she ask who it is for\?-shape"/);
+    expect(describeDiagram(s)).toContain("Did she ask who it is for? (a question)");
+  });
+
   it("is deterministic", () => {
     expect(layoutDiagram(spec("flow", FLOW), false)).toEqual(layoutDiagram(spec("flow", FLOW), false));
   });

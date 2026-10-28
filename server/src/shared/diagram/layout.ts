@@ -12,7 +12,9 @@ export type Point = { x: number; y: number };
 export type SceneLabel = { lines: string[]; x: number; y: number; anchor: "start" | "middle" | "end"; size: number };
 export type SceneShape =
   | { type: "circle"; cx: number; cy: number; r: number }
-  | { type: "rect"; x: number; y: number; w: number; h: number };
+  | { type: "rect"; x: number; y: number; w: number; h: number }
+  /** A decision, drawn as a diamond whose points touch the edges of this box. */
+  | { type: "diamond"; x: number; y: number; w: number; h: number };
 export type SceneNode = { id: string; kind: NodeKind; shape: SceneShape; label: SceneLabel; labelInside: boolean };
 export type EdgePath = { start: Point; end: Point; control?: Point };
 export type SceneEdge = {
@@ -58,6 +60,16 @@ function measure(node: DiagramNode, compact: boolean, labelBeside: boolean, crow
       : { left: Math.max(r, lw / 2), right: Math.max(r, lw / 2), top: r, bottom: r + 6 + lines.length * lh };
     return { node, lines, inside: false, r, w: 2 * r, h: 2 * r, box };
   }
+  if (node.kind === "decision") {
+    // Text fits a diamond when its width share plus its height share of the diamond is under 1,
+    // so the diamond is about 1.5 times the text's width and tall enough for the rest.
+    const lines = wrapText(node.label, NODE_FONT, crowded ? 84 : compact ? 104 : 120, 4);
+    const tw = linesWidth(lines, NODE_FONT);
+    const th = lines.length * lh;
+    const w = Math.max(96, Math.ceil(tw * 1.5 + 28));
+    const h = Math.max(64, Math.ceil(th / (1 - tw / w) + 14));
+    return { node, lines, inside: true, r: 0, w, h, box: { left: w / 2, right: w / 2, top: h / 2, bottom: h / 2 } };
+  }
   // Three or more parts side by side on a phone get narrower boxes with up to three lines.
   // Long step text (common in existing Mermaid) gets a wider box and more lines rather than tiny type.
   const long = node.label.length > 60;
@@ -78,7 +90,7 @@ function placeNode(m: Measured, cx: number, cy: number, labelBeside: boolean): S
       : { lines: m.lines, x: cx, y: cy + m.r + 6 + NODE_FONT * 0.95, anchor: "middle", size: NODE_FONT };
     return { id: m.node.id, kind: m.node.kind, shape, labelInside: false, label };
   }
-  const shape = { type: "rect" as const, x: cx - m.w / 2, y: cy - m.h / 2, w: m.w, h: m.h };
+  const shape = { type: m.node.kind === "decision" ? ("diamond" as const) : ("rect" as const), x: cx - m.w / 2, y: cy - m.h / 2, w: m.w, h: m.h };
   // A store's top cap takes 12 units, so its text sits a little lower.
   const textCy = m.node.kind === "store" ? cy + 4 : cy;
   return { id: m.node.id, kind: m.node.kind, shape, labelInside: true, label: { lines: m.lines, x: cx, y: centred(textCy, m.lines.length), anchor: "middle", size: NODE_FONT } };
@@ -107,12 +119,39 @@ function exitPoint(shape: SceneShape, from: Point, dir: Point): Point {
     const t = -b + Math.sqrt(Math.max(0, b * b - c));
     return add(from, mul(d, t));
   }
+  if (shape.type === "diamond") return diamondExit(shape, from, d);
   const ts: number[] = [];
   if (d.x > 1e-9) ts.push((shape.x + shape.w - from.x) / d.x);
   if (d.x < -1e-9) ts.push((shape.x - from.x) / d.x);
   if (d.y > 1e-9) ts.push((shape.y + shape.h - from.y) / d.y);
   if (d.y < -1e-9) ts.push((shape.y - from.y) / d.y);
   return add(from, mul(d, Math.max(0, Math.min(...ts))));
+}
+
+/**
+ * Where a line leaves a diamond. A line from the centre meets the diamond at the
+ * point it heads for (top, right, bottom or left), as flowcharts draw it. A line
+ * offset from the centre (one of a pair) crosses the diamond's edge instead.
+ */
+function diamondExit(shape: { x: number; y: number; w: number; h: number }, from: Point, d: Point): Point {
+  const c = { x: shape.x + shape.w / 2, y: shape.y + shape.h / 2 };
+  const a = shape.w / 2;
+  const b = shape.h / 2;
+  if (Math.hypot(from.x - c.x, from.y - c.y) < 1) {
+    const points = [{ x: c.x, y: c.y - b }, { x: c.x + a, y: c.y }, { x: c.x, y: c.y + b }, { x: c.x - a, y: c.y }];
+    // Compare directions in units of the diamond's own half widths, so a wide diamond still snaps sensibly.
+    const score = (p: Point) => ((p.x - c.x) / a) * d.x + ((p.y - c.y) / b) * d.y;
+    return points.reduce((best, p) => (score(p) > score(best) ? p : best));
+  }
+  let lo = 0;
+  let hi = shape.w + shape.h;
+  for (let i = 0; i < 32; i++) {
+    const t = (lo + hi) / 2;
+    const p = add(from, mul(d, t));
+    if (Math.abs(p.x - c.x) / a + Math.abs(p.y - c.y) / b < 1) lo = t;
+    else hi = t;
+  }
+  return add(from, mul(d, lo));
 }
 
 export function pathPoint(path: EdgePath, t: number): Point {
