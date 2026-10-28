@@ -42,6 +42,8 @@ export async function OpenQuestionComponent({
       urlLabel,
       urlRequired,
       urlHint,
+      autoGrade: "mentor",
+      hintAfterAttempts: 3,
     };
 
     return (
@@ -64,6 +66,7 @@ export async function OpenQuestionComponent({
           id={id}
           config={state.config}
           initialState={state.initialState}
+          ai={state.ai}
           groupPosition={state.group.position}
           questionIndex={state.group.index}
           questionTotal={state.group.total}

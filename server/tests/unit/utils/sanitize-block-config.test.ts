@@ -42,4 +42,18 @@ describe("sanitizeBlockConfig", () => {
   it("still allows placeholders in explanations, which are filled in per variant", () => {
     expect(secretFieldsWithTokens({ explanation: "%%PRODUCT_NAME%% keeps the old price." })).toEqual([]);
   });
+
+  it("never sends sample answers or authored short-answer hints to the client", () => {
+    const sanitized = sanitizeBlockConfig({
+      prompt: "Why one repo?",
+      autoGrade: "llm",
+      sampleAnswer: "Keep API and UI together.",
+      hints: ["Mention one repository."],
+      hintAfterAttempts: 3,
+    }) as Record<string, unknown>;
+
+    expect(sanitized.autoGrade).toBe("llm");
+    expect(sanitized).not.toHaveProperty("sampleAnswer");
+    expect(sanitized).not.toHaveProperty("hints");
+  });
 });

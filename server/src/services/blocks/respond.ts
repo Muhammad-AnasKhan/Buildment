@@ -2,7 +2,14 @@ import { blockDefinitions } from "../../shared/blocks/definitions.js";
 import type { GradeResult } from "../../shared/blocks/types.js";
 import { QuizPayloadSchema } from "../../shared/blocks/quiz/schema.js";
 import { PredictPayloadSchema } from "../../shared/blocks/predict/schema.js";
-import { OpenQuestionPayloadSchema } from "../../shared/blocks/open-question/schema.js";
+import {
+  isLlmGradedOpenQuestion,
+  OpenQuestionConfigSchema,
+  OpenQuestionPayloadSchema,
+  type OpenQuestionConfig,
+  type OpenQuestionPayload,
+  type OpenQuestionStoredPayload,
+} from "../../shared/blocks/open-question/schema.js";
 import { CodePayloadSchema } from "../../shared/blocks/code/schema.js";
 import { MustReadPayloadSchema } from "../../shared/blocks/must-read/schema.js";
 import { gradeCodeDetails } from "../../shared/blocks/code/grade.js";
@@ -16,6 +23,8 @@ import { adjustEnrollmentPendingReviews, lockEnrollmentVariant, recomputeChapter
 import { notifyMentorPendingReview } from "../notifications/events.js";
 import { dispatchNotification } from "../notifications/service.js";
 import { assertEnrollmentChapter } from "../courses/releases.js";
+import { gradeShortAnswerWithLlm } from "../ai/short-answer/grade.js";
+import { AiError } from "../ai/openrouter.js";
 
 export type BlockResponseResult = {
   score: number | null;
@@ -23,6 +32,8 @@ export type BlockResponseResult = {
   isCorrect: boolean | null;
   status: GradeResult["status"];
   explanation?: string;
+  hint?: string;
+  attempt?: number;
   solution?: string;
   failedTestName?: string;
   errorMessage?: string;
@@ -65,6 +76,49 @@ function gradeBlock(type: string, config: unknown, payload: unknown): Graded {
   }
 }
 
+async function gradeLlmOpenQuestion(input: {
+  config: OpenQuestionConfig;
+  payload: OpenQuestionPayload;
+  userId: string;
+  attempt: number;
+}): Promise<Graded & { storedPayload: OpenQuestionStoredPayload }> {
+  const structural = blockDefinitions.OPEN_QUESTION.grade(input.config, input.payload);
+  if (structural.status === "DRAFT") {
+    return { ...structural, storedPayload: input.payload };
+  }
+
+  try {
+    const llm = await gradeShortAnswerWithLlm({
+      userId: input.userId,
+      config: input.config,
+      answer: input.payload.text,
+      attempt: input.attempt,
+    });
+    const storedPayload: OpenQuestionStoredPayload = {
+      ...input.payload,
+      llmFeedback: { why: llm.why, hint: llm.hint },
+    };
+    return {
+      score: llm.isCorrect ? 1 : 0,
+      maxScore: 1,
+      isCorrect: llm.isCorrect,
+      status: "AUTO_GRADED",
+      explanation: llm.why,
+      hint: llm.hint ?? undefined,
+      attempt: input.attempt,
+      storedPayload,
+    };
+  } catch (error) {
+    if (error instanceof AiError && error.code === "AI_KEY_REQUIRED") {
+      throw new AiError(
+        "AI_KEY_REQUIRED",
+        "Add your OpenRouter key in settings to get instant feedback on this short answer."
+      );
+    }
+    throw error;
+  }
+}
+
 /**
  * Grade a learner's answer to one block, persist the attempt, update progress
  * and stats, and notify the mentor when a human review is needed.
@@ -85,9 +139,26 @@ export async function submitBlockResponse(input: {
     }
   });
 
-  const graded = gradeBlock(block.type, block.config, payload);
-
   const previousAttempts = await prisma.response.count({ where: { blockId, userId: learner.id } });
+  const attempt = previousAttempts + 1;
+
+  let graded: Graded;
+  let storedPayload: object = payload;
+
+  if (block.type === "OPEN_QUESTION" && isLlmGradedOpenQuestion(block.config)) {
+    const config = OpenQuestionConfigSchema.parse(block.config);
+    const parsedPayload = OpenQuestionPayloadSchema.parse(payload);
+    const llmGraded = await gradeLlmOpenQuestion({
+      config,
+      payload: parsedPayload,
+      userId: learner.id,
+      attempt,
+    });
+    storedPayload = llmGraded.storedPayload;
+    graded = llmGraded;
+  } else {
+    graded = gradeBlock(block.type, block.config, payload);
+  }
 
   const response = await prisma.$transaction(async (tx) => {
     await lockEnrollmentVariant(tx, enrollment.id);
@@ -97,9 +168,9 @@ export async function submitBlockResponse(input: {
         blockId,
         userId: learner.id,
         enrollmentId: enrollment.id,
-        attempt: previousAttempts + 1,
+        attempt,
         status: graded.status,
-        payload: payload as object,
+        payload: storedPayload,
         score: graded.score,
         maxScore: graded.maxScore,
         isCorrect: graded.isCorrect,
@@ -122,7 +193,17 @@ export async function submitBlockResponse(input: {
     maxScore: response.maxScore,
     isCorrect: response.isCorrect,
     status: response.status,
-    explanation: graded.explanation && applyTokens(graded.explanation, contentTokenValues(resolveCourseFamily(block.chapter.course.familySlug, block.chapter.course.variantFamily), enrollment.variantSlug)),
+    attempt: response.attempt,
+    explanation:
+      graded.explanation &&
+      applyTokens(
+        graded.explanation,
+        contentTokenValues(
+          resolveCourseFamily(block.chapter.course.familySlug, block.chapter.course.variantFamily),
+          enrollment.variantSlug
+        )
+      ),
+    hint: graded.hint,
     solution: graded.solution,
     failedTestName: graded.failedTestName,
     errorMessage: graded.errorMessage,

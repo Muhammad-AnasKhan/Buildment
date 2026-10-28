@@ -48,6 +48,22 @@ describe("isCompleteResponseStatus", () => {
 describe("checkpointSatisfied", () => {
   it("counts an open question once it is submitted", () => {
     expect(checkpointSatisfied({ type: "OPEN_QUESTION", config: {}, status: "PENDING_REVIEW", isCorrect: null })).toBe(true);
+    expect(
+      checkpointSatisfied({
+        type: "OPEN_QUESTION",
+        config: { autoGrade: "llm" },
+        status: "AUTO_GRADED",
+        isCorrect: false,
+      })
+    ).toBe(false);
+    expect(
+      checkpointSatisfied({
+        type: "OPEN_QUESTION",
+        config: { autoGrade: "llm" },
+        status: "AUTO_GRADED",
+        isCorrect: true,
+      })
+    ).toBe(true);
   });
 
   it("keeps a wrong quiz open while retry is allowed", () => {

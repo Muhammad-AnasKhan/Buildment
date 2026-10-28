@@ -16,6 +16,7 @@ const SECRET_KEYS = [
   "correctOptionIds",
   "rubric",
   "sampleAnswer",
+  "hints",
   "hiddenTests",
   "tests",
   "solution",

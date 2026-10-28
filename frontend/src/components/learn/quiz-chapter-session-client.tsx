@@ -303,8 +303,11 @@ export function QuizChapterSessionClient({
       reviewMode,
       dirtyBlockIds,
       blockGrades,
+      reportWrongAttempt: () => {
+        void integrity.nextAttempt();
+      },
     }),
-    [chapterTitle, total, reviewMode, dirtyBlockIds, blockGrades]
+    [chapterTitle, total, reviewMode, dirtyBlockIds, blockGrades, integrity]
   );
 
   if (total === 0) return null;
@@ -320,7 +323,11 @@ export function QuizChapterSessionClient({
             Question {position + 1} of {visibleIndices.length}{retryMissed && !perfectScore ? " to retry" : ""}
           </p>
           <QuizIntegrityPanel integrity={integrity} />
-          {individualActivityCount > 0 && <p className="mt-2 text-sm text-muted-foreground">Submit each open question, prediction, or code exercise with its own button. Written answers are reviewed separately; the score below covers multiple-choice questions.</p>}
+          {individualActivityCount > 0 && (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Submit each open question, prediction, or code exercise with its own button. Mentor-reviewed writing is separate from the multiple-choice score; instant short answers use your OpenRouter key and count when correct.
+            </p>
+          )}
           {scoreSummary ? (
             <p className="mt-2 text-sm text-foreground">
               Multiple-choice score {scoreSummary.score}/{scoreSummary.maxScore}

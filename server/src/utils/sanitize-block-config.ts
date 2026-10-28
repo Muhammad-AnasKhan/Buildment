@@ -12,6 +12,8 @@ export const SECRET_KEYS: ReadonlySet<string> = new Set([
   "correctOptionIds",
   "rubric",
   "sampleAnswer",
+  /** Authored short-answer hints — revealed only after enough wrong LLM attempts. */
+  "hints",
   "hiddenTests",
   "tests",
   "solution",

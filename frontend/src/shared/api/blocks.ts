@@ -41,6 +41,11 @@ export type OpenQuestionBlockState = {
   type: "OPEN_QUESTION";
   config: SanitizedOpenQuestionConfig;
   group: { position: OpenQuestionGroupPosition; index: number; total: number };
+  /**
+   * BYOK readiness for LLM-graded shorts. Omitted / unused for mentor-reviewed
+   * open questions. `configured` is false when the server cannot store keys.
+   */
+  ai?: { configured: boolean; hasKey: boolean };
   initialState: {
     status: ResponseStatus;
     attempt: number;
@@ -48,6 +53,10 @@ export type OpenQuestionBlockState = {
     url: string | null;
     feedback: string | null;
     verdict: ReviewVerdict | null;
+    /** Present after an LLM grade attempt. */
+    isCorrect?: boolean | null;
+    explanation?: string | null;
+    hint?: string | null;
   } | null;
 };
 

@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { isSafeSubmissionUrl } from "../../lib/safe-submission-url.js";
 
+/** Instant BYOK LLM grading for quiz short answers. Default stays mentor review. */
+export const OPEN_QUESTION_AUTO_GRADE = ["mentor", "llm"] as const;
+export type OpenQuestionAutoGrade = (typeof OPEN_QUESTION_AUTO_GRADE)[number];
+
+/** Wrong attempts before an authored hint is returned with the grade. */
+export const DEFAULT_HINT_AFTER_ATTEMPTS = 3;
+
 export const OpenQuestionConfigSchema = z.object({
   prompt: z.string(),
   minWords: z.number().int().min(0).default(0),
@@ -15,15 +22,33 @@ export const OpenQuestionConfigSchema = z.object({
   urlLabel: z.string().optional(),
   urlRequired: z.boolean().optional().default(false),
   urlHint: z.string().optional(),
+  /** mentor = human review queue (default). llm = learner BYOK instant grade. */
+  autoGrade: z.enum(OPEN_QUESTION_AUTO_GRADE).optional().default("mentor"),
+  /**
+   * Authored hints for LLM grading. Server-only until a wrong attempt reaches
+   * `hintAfterAttempts`; never shipped in the initial block config.
+   */
+  hints: z.array(z.string().min(1).max(2000)).max(5).optional(),
+  /** Wrong attempt number at which the first authored hint is revealed (default 3). */
+  hintAfterAttempts: z.number().int().min(1).max(10).optional().default(DEFAULT_HINT_AFTER_ATTEMPTS),
   rubric: z.string().optional(), // mentor-only, never sent to the client
-  sampleAnswer: z.string().optional(), // mentor-only unless revealed post-submit
+  sampleAnswer: z.string().optional(), // mentor-only / LLM reference — never sent to the client
 });
 
 export type OpenQuestionConfig = z.infer<typeof OpenQuestionConfigSchema>;
 
 // The projection sanitizeBlockConfig() produces for the client — see
 // src/mdx/sanitize.ts and docs/09-security.mdx.
-export type SanitizedOpenQuestionConfig = Omit<OpenQuestionConfig, "rubric" | "sampleAnswer">;
+export type SanitizedOpenQuestionConfig = Omit<
+  OpenQuestionConfig,
+  "rubric" | "sampleAnswer" | "hints"
+>;
+
+/** True when this open question is graded instantly with the learner's OpenRouter key. */
+export function isLlmGradedOpenQuestion(config: unknown): boolean {
+  if (!config || typeof config !== "object") return false;
+  return (config as { autoGrade?: unknown }).autoGrade === "llm";
+}
 
 export const OpenQuestionPayloadSchema = z
   .object({
@@ -89,3 +114,8 @@ export function validateOpenQuestionPayload(
 }
 
 export type OpenQuestionPayload = z.infer<typeof OpenQuestionPayloadSchema>;
+
+/** Learner answer plus optional LLM feedback stored on Response.payload. */
+export type OpenQuestionStoredPayload = OpenQuestionPayload & {
+  llmFeedback?: { why: string; hint: string | null };
+};

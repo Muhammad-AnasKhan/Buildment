@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { CheckCircle2, Clock3, Link2, PenLine, RotateCcw, SendHorizontal } from "lucide-react";
+import { CheckCircle2, Clock3, KeyRound, Lightbulb, Link2, PenLine, RotateCcw, SendHorizontal, XCircle } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { cn } from "../../lib/utils";
@@ -10,6 +10,8 @@ import { AnswerTextareaWithMic } from "../../components/learn/answer-textarea-wi
 import { readerBlockGrouped, readerBlockInner } from "../../components/learn/reader-block-styles";
 import { fireMiniConfetti } from "../../components/learn/mini-confetti";
 import { checkpointAttrs } from "../../components/learn/checkpoint-marker";
+import { AI_SETTINGS_HREF } from "../ai-interview/interview-model";
+import { useQuizSession } from "../../components/learn/quiz-session-context";
 import type { OpenQuestionGroupPosition } from "../../shared/blocks/open-question/group-position";
 import type { SanitizedOpenQuestionConfig } from "../../shared/blocks/open-question/schema";
 import { openQuestionUrlPresentation, validateOpenQuestionPayload } from "../../shared/blocks/open-question/schema";
@@ -21,6 +23,22 @@ export type OpenQuestionInitialState = {
   url?: string | null;
   feedback: string | null;
   verdict: "APPROVED" | "NEEDS_REVISION" | null;
+  isCorrect?: boolean | null;
+  explanation?: string | null;
+  hint?: string | null;
+};
+
+export type OpenQuestionAiStatus = {
+  configured: boolean;
+  hasKey: boolean;
+};
+
+export type OpenQuestionRespondResult = {
+  isCorrect?: boolean | null;
+  status?: string;
+  explanation?: string;
+  hint?: string;
+  attempt?: number;
 };
 
 export function OpenQuestionClient({
@@ -30,9 +48,11 @@ export function OpenQuestionClient({
   questionIndex,
   questionTotal,
   initialState,
+  ai,
   onRespond,
   onComplete,
   onFeedback,
+  onRetryAttempt,
 }: {
   id: string;
   config: SanitizedOpenQuestionConfig;
@@ -40,17 +60,44 @@ export function OpenQuestionClient({
   questionIndex: number;
   questionTotal: number;
   initialState?: OpenQuestionInitialState | null;
-  onRespond?: (payload: { type: "OPEN_QUESTION"; text: string; url?: string }) => Promise<unknown>;
+  ai?: OpenQuestionAiStatus | null;
+  onRespond?: (payload: {
+    type: "OPEN_QUESTION";
+    text: string;
+    url?: string;
+  }) => Promise<OpenQuestionRespondResult | unknown>;
   onComplete?: () => void;
-  onFeedback?: (kind: "error" | "notification") => void;
+  onFeedback?: (kind: "error" | "notification" | "success") => void;
+  /** Fired after a wrong LLM attempt so quiz integrity can advance. */
+  onRetryAttempt?: () => void;
 }) {
+  const quizSession = useQuizSession();
+  const llmMode = config.autoGrade === "llm";
   const needsRevision = initialState?.status === "NEEDS_REVISION";
   const containerRef = useRef<HTMLDivElement>(null);
-  const [text, setText] = useState(
-    needsRevision ? initialState.text : initialState && !needsRevision ? initialState.text : ""
-  );
+  const [text, setText] = useState(() => {
+    if (!initialState) return "";
+    if (needsRevision) return initialState.text;
+    if (llmMode && initialState.isCorrect === true) return initialState.text;
+    if (llmMode) return initialState.text;
+    return initialState.text;
+  });
   const [url, setUrl] = useState(initialState?.url ?? "");
-  const [submitted, setSubmitted] = useState(Boolean(initialState) && !needsRevision);
+  const [hasKey, setHasKey] = useState(ai?.hasKey ?? false);
+  const [llmResult, setLlmResult] = useState<OpenQuestionRespondResult | null>(() => {
+    if (!llmMode || !initialState || initialState.isCorrect == null) return null;
+    return {
+      isCorrect: initialState.isCorrect,
+      explanation: initialState.explanation ?? undefined,
+      hint: initialState.hint ?? undefined,
+      attempt: initialState.attempt,
+      status: initialState.status,
+    };
+  });
+  const [submitted, setSubmitted] = useState(() => {
+    if (llmMode) return initialState?.isCorrect === true;
+    return Boolean(initialState) && !needsRevision;
+  });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccessGlow, setIsSuccessGlow] = useState(false);
@@ -61,6 +108,10 @@ export function OpenQuestionClient({
       return () => window.clearTimeout(timer);
     }
   }, [isSuccessGlow]);
+
+  useEffect(() => {
+    setHasKey(ai?.hasKey ?? false);
+  }, [ai?.hasKey]);
 
   const wordCount = useMemo(() => text.trim().split(/\s+/).filter(Boolean).length, [text]);
   const tooShort =
@@ -77,9 +128,22 @@ export function OpenQuestionClient({
     [config, text, url]
   );
 
+  const keyBlocked = llmMode && ai?.configured !== false && !hasKey;
+  const aiUnavailable = llmMode && ai?.configured === false;
+
   async function submit() {
     if (clientValidation) {
       setError(clientValidation);
+      onFeedback?.("error");
+      return;
+    }
+    if (aiUnavailable) {
+      setError("Instant short-answer grading is not set up on this server.");
+      onFeedback?.("error");
+      return;
+    }
+    if (keyBlocked) {
+      setError("Add your OpenRouter key in settings to get instant feedback.");
       onFeedback?.("error");
       return;
     }
@@ -91,13 +155,34 @@ export function OpenQuestionClient({
         return;
       }
       if (!onRespond) throw new Error("Answer submission is unavailable.");
-      await onRespond({ type: "OPEN_QUESTION", text, url: url.trim() || undefined });
+      const raw = await onRespond({ type: "OPEN_QUESTION", text, url: url.trim() || undefined });
+      const data = (raw ?? {}) as OpenQuestionRespondResult;
+
+      if (llmMode) {
+        setLlmResult(data);
+        if (data.isCorrect === true) {
+          setSubmitted(true);
+          setIsSuccessGlow(true);
+          if (containerRef.current) fireMiniConfetti(containerRef.current);
+          onFeedback?.("success");
+          onComplete?.();
+        } else {
+          onFeedback?.("error");
+          onRetryAttempt?.();
+          quizSession?.reportWrongAttempt?.();
+        }
+        return;
+      }
+
       setSubmitted(true);
       setIsSuccessGlow(true);
       if (containerRef.current) fireMiniConfetti(containerRef.current);
       onFeedback?.("notification");
       onComplete?.();
     } catch (err) {
+      if (err && typeof err === "object" && "code" in err && err.code === "AI_KEY_REQUIRED") {
+        setHasKey(false);
+      }
       setError(err instanceof Error ? err.message : "Something went wrong");
       onFeedback?.("error");
     } finally {
@@ -110,7 +195,12 @@ export function OpenQuestionClient({
     !clientValidation &&
     !tooShort &&
     !submitting &&
+    !aiUnavailable &&
+    !keyBlocked &&
     (text.trim().length > 0 || (urlMeta.showUrl && url.trim().length > 0));
+
+  const showEditor = !submitted;
+  const wrongLlm = llmMode && llmResult?.isCorrect === false;
 
   return (
     <div
@@ -134,13 +224,15 @@ export function OpenQuestionClient({
               "flex size-9 shrink-0 items-center justify-center rounded-lg border text-sm font-semibold tabular-nums",
               submitted
                 ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/25 dark:bg-emerald-500/15 dark:text-emerald-200"
-                : needsRevision
-                  ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/25 dark:bg-amber-500/15 dark:text-amber-100"
-                  : "border-border bg-muted text-foreground"
+                : wrongLlm
+                  ? "border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/25 dark:bg-rose-500/15 dark:text-rose-100"
+                  : needsRevision
+                    ? "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/25 dark:bg-amber-500/15 dark:text-amber-100"
+                    : "border-border bg-muted text-foreground"
             )}
             aria-hidden
           >
-            {submitted ? <CheckCircle2 className="size-4" /> : questionIndex + 1}
+            {submitted ? <CheckCircle2 className="size-4" /> : wrongLlm ? <XCircle className="size-4" /> : questionIndex + 1}
           </div>
 
           <div className="min-w-0 flex-1">
@@ -151,7 +243,7 @@ export function OpenQuestionClient({
               {!submitted ? (
                 <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                   <PenLine className="size-3" aria-hidden />
-                  {urlMeta.showUrl ? "Answer or link" : "Short answer"}
+                  {llmMode ? "Instant short answer" : urlMeta.showUrl ? "Answer or link" : "Short answer"}
                 </span>
               ) : null}
             </div>
@@ -159,6 +251,32 @@ export function OpenQuestionClient({
             <p className="mt-2 text-[15px] font-medium leading-snug text-foreground sm:text-base">
               {config.prompt}
             </p>
+
+            {aiUnavailable ? (
+              <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50/70 px-4 py-3 text-sm text-amber-950 dark:border-amber-400/25 dark:bg-amber-500/10 dark:text-amber-100">
+                Instant short-answer grading is not available on this server yet.
+              </div>
+            ) : null}
+
+            {keyBlocked ? (
+              <div className="mt-4 overflow-hidden rounded-lg border border-border bg-muted/40">
+                <div className="flex items-start gap-3 px-4 py-3">
+                  <KeyRound className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <p className="text-sm font-medium text-foreground">Add your OpenRouter key for instant feedback</p>
+                    <p className="text-sm text-muted-foreground">
+                      This short answer is graded with your own key. Paste it in settings, then come back and submit.
+                    </p>
+                    <a
+                      href={AI_SETTINGS_HREF}
+                      className="inline-flex h-8 items-center justify-center rounded-md border border-border bg-background px-3 text-sm font-medium hover:bg-muted"
+                    >
+                      Open AI key settings
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             {needsRevision && !submitted && initialState?.feedback && (
               <div className="mt-4 overflow-hidden rounded-lg border border-amber-200 bg-amber-50/70 dark:border-amber-400/25 dark:bg-amber-500/10">
@@ -174,16 +292,49 @@ export function OpenQuestionClient({
               </div>
             )}
 
+            {wrongLlm && llmResult ? (
+              <div className="mt-4 overflow-hidden rounded-lg border border-rose-200 bg-rose-50/70 dark:border-rose-400/25 dark:bg-rose-500/10">
+                <div className="flex items-center gap-2 border-b border-rose-200/70 px-4 py-2.5 dark:border-rose-400/20">
+                  <XCircle className="size-4 shrink-0 text-rose-600 dark:text-rose-400" />
+                  <p className="text-sm font-medium text-rose-900 dark:text-rose-100">
+                    Not quite{typeof llmResult.attempt === "number" ? ` (try ${llmResult.attempt})` : ""}
+                  </p>
+                </div>
+                {llmResult.explanation ? (
+                  <p className="whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-foreground">
+                    {llmResult.explanation}
+                  </p>
+                ) : null}
+                {llmResult.hint ? (
+                  <div className="border-t border-rose-200/70 px-4 py-3 dark:border-rose-400/20">
+                    <p className="mb-1 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-200">
+                      <Lightbulb className="size-3.5" aria-hidden />
+                      Hint
+                    </p>
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{llmResult.hint}</p>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
             {submitted ? (
               <div className="mt-4 overflow-hidden rounded-lg border border-emerald-200/80 bg-emerald-50/60 dark:border-emerald-400/25 dark:bg-emerald-500/10">
                 <div className="flex items-center gap-2 border-b border-emerald-200/60 px-4 py-2.5 dark:border-emerald-400/20">
                   <CheckCircle2 className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                  <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100">Answer submitted</p>
+                  <p className="text-sm font-medium text-emerald-900 dark:text-emerald-100">
+                    {llmMode ? "Correct" : "Answer submitted"}
+                  </p>
                   <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-card/80 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-200">
-                    <Clock3 className="size-3" aria-hidden />
-                    {initialState?.verdict === "APPROVED"
-                      ? "Approved by your mentor"
-                      : "Your mentor will reply"}
+                    {llmMode ? (
+                      "Instant feedback"
+                    ) : (
+                      <>
+                        <Clock3 className="size-3" aria-hidden />
+                        {initialState?.verdict === "APPROVED"
+                          ? "Approved by your mentor"
+                          : "Your mentor will reply"}
+                      </>
+                    )}
                   </span>
                 </div>
                 {(text || initialState?.text) && (
@@ -191,6 +342,11 @@ export function OpenQuestionClient({
                     {text || initialState?.text}
                   </p>
                 )}
+                {llmMode && (llmResult?.explanation || initialState?.explanation) ? (
+                  <p className="border-t border-emerald-200/60 px-4 py-3 text-sm leading-relaxed text-foreground dark:border-emerald-400/20">
+                    {llmResult?.explanation || initialState?.explanation}
+                  </p>
+                ) : null}
                 {submittedUrl && (
                   <p className="border-t border-emerald-200/60 px-4 py-3 text-sm">
                     <span className="font-medium text-emerald-800 dark:text-emerald-100">Link: </span>
@@ -204,19 +360,21 @@ export function OpenQuestionClient({
                     </a>
                   </p>
                 )}
-                {initialState?.verdict !== "APPROVED" ? (
+                {!llmMode && initialState?.verdict !== "APPROVED" ? (
                   <p className="border-t border-emerald-200/60 px-4 py-3 text-sm leading-relaxed text-foreground dark:border-emerald-400/20">
                     Submitted. You can continue to the next lesson. Your mentor will still reply.
                   </p>
                 ) : null}
-                {initialState?.verdict === "APPROVED" && initialState.feedback && (
+                {!llmMode && initialState?.verdict === "APPROVED" && initialState.feedback && (
                   <p className="border-t border-emerald-200/60 whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-foreground dark:border-emerald-400/20">
                     <span className="font-medium text-emerald-800 dark:text-emerald-100">Mentor feedback: </span>
                     {initialState.feedback}
                   </p>
                 )}
               </div>
-            ) : (
+            ) : null}
+
+            {showEditor ? (
               <>
                 <div className="mt-4">
                   <AnswerTextareaWithMic
@@ -226,7 +384,9 @@ export function OpenQuestionClient({
                     placeholder={
                       needsRevision
                         ? "Rewrite your answer using your mentor's feedback…"
-                        : "Write your answer in your own words…"
+                        : wrongLlm
+                          ? "Revise your answer using the feedback above…"
+                          : "Write your answer in your own words…"
                     }
                     ariaLabel={`Answer for question ${questionIndex + 1}`}
                     rows={5}
@@ -274,7 +434,11 @@ export function OpenQuestionClient({
                         </div>
                       </div>
                     ) : (
-                      <span>No word minimum — aim for a clear, complete answer.</span>
+                      <span>
+                        {llmMode
+                          ? "Instant feedback uses your OpenRouter key. Paste is blocked during quiz sittings."
+                          : "No word minimum — aim for a clear, complete answer."}
+                      </span>
                     )}
                   </div>
 
@@ -288,10 +452,10 @@ export function OpenQuestionClient({
                       disabled={!canSubmit}
                     >
                       {submitting ? (
-                        "Submitting…"
+                        llmMode ? "Checking…" : "Submitting…"
                       ) : (
                         <>
-                          {needsRevision ? "Resubmit answer" : "Submit answer"}
+                          {needsRevision || wrongLlm ? "Try again" : llmMode ? "Check answer" : "Submit answer"}
                           <SendHorizontal className="size-3.5" aria-hidden />
                         </>
                       )}
@@ -299,7 +463,7 @@ export function OpenQuestionClient({
                   </div>
                 </div>
               </>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
