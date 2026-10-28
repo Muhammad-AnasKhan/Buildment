@@ -152,6 +152,14 @@ describe("text alternative", () => {
     );
   });
 
+  it("draws a plain line with no arrowhead and describes it as joined", () => {
+    const s = spec("flow", "title: Router\nbox Inside\nbox Outside\nInside --- Outside");
+    expect(describeDiagram(s)).toContain("Arrows: Inside joined to Outside.");
+    const flat = JSON.stringify(drawScene(layoutDiagram(s, false)));
+    expect(flat).toContain('"key":"edge-0-line"');
+    expect(flat).not.toContain('"key":"edge-0-head"');
+  });
+
   it("writes one caption per step", () => {
     expect(stepCaptions(spec("flow", FLOW))).toEqual(["The packet starts at You.", "You to DNS: Where is it?", "DNS to You: Here", "You to Server."]);
     expect(stepCaptions(spec("sequence", SEQUENCE))[1]).toBe("DNS resolver to You: 93.184.215.14");

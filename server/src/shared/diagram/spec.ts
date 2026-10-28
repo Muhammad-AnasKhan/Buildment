@@ -12,7 +12,8 @@ export const NODE_KINDS = ["actor", "box", "end", "store", "external"] as const;
 export type NodeKind = (typeof NODE_KINDS)[number];
 
 export type DiagramNode = { id: string; label: string; kind: NodeKind; line: number };
-export type DiagramEdge = { from: string; to: string; label?: string; dashed: boolean; line: number };
+/** `head` is false for a plain line (`---`), which joins two parts without a direction. */
+export type DiagramEdge = { from: string; to: string; label?: string; dashed: boolean; head: boolean; line: number };
 /** One move of the packet: along `edge`, backwards when the arrow points the other way. */
 export type PacketHop = { edge: number; reversed: boolean };
 
@@ -31,7 +32,7 @@ export type DiagramParseResult = { ok: true; spec: DiagramSpec } | { ok: false; 
 
 export const DIAGRAM_LIMITS = {
   title: 80,
-  name: 60,
+  name: 110,
   label: 60,
   flowNodes: 12,
   flowEdges: 16,
@@ -61,7 +62,8 @@ export function nodeId(name: string): string {
   return name.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
-type RawEdge = { names: string[]; dashes: boolean[]; label?: string; line: number };
+type Link = "arrow" | "dashed" | "line";
+type RawEdge = { names: string[]; links: Link[]; label?: string; line: number };
 type Name = { text: string; quoted: boolean };
 
 function readName(raw: string): Name {
@@ -71,28 +73,29 @@ function readName(raw: string): Name {
 }
 
 /**
- * Splits an arrow line outside quotes: the names between "->" and "-->", and
- * the label after the first ":". Null when the line has no arrow.
+ * Splits an arrow line outside quotes: the names between "->", "-->" and "---",
+ * and the label after the first ":". Null when the line has no arrow.
  */
-function splitArrows(text: string): { names: Name[]; dashes: boolean[]; label?: string } | null {
+function splitArrows(text: string): { names: Name[]; links: Link[]; label?: string } | null {
   const names: Name[] = [];
-  const dashes: boolean[] = [];
+  const links: Link[] = [];
   let current = "";
   let quoted = false;
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
     if (char === "\"") quoted = !quoted;
-    else if (!quoted && text.startsWith("-->", i)) { names.push(readName(current)); dashes.push(true); current = ""; i += 2; continue; }
-    else if (!quoted && text.startsWith("->", i)) { names.push(readName(current)); dashes.push(false); current = ""; i += 1; continue; }
-    else if (!quoted && char === ":" && dashes.length) {
+    else if (!quoted && text.startsWith("---", i)) { names.push(readName(current)); links.push("line"); current = ""; i += 2; continue; }
+    else if (!quoted && text.startsWith("-->", i)) { names.push(readName(current)); links.push("dashed"); current = ""; i += 2; continue; }
+    else if (!quoted && text.startsWith("->", i)) { names.push(readName(current)); links.push("arrow"); current = ""; i += 1; continue; }
+    else if (!quoted && char === ":" && links.length) {
       names.push(readName(current));
-      return { names, dashes, label: text.slice(i + 1).trim() };
+      return { names, links, label: text.slice(i + 1).trim() };
     }
     current += char;
   }
-  if (!dashes.length) return null;
+  if (!links.length) return null;
   names.push(readName(current));
-  return { names, dashes };
+  return { names, links };
 }
 
 export function parseDiagram(kind: DiagramKind, source: string): DiagramParseResult {
@@ -135,7 +138,7 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
         else {
           const path = splitArrows(value);
           if (!path || path.label !== undefined || path.names.some((name) => !name.text)) at(line, "write the packet path as names joined by arrows, for example \"packet: You -> DNS -> Server\".");
-          else if (path.dashes.some(Boolean)) at(line, "write the packet path with \"->\" only. It follows the arrows already drawn.");
+          else if (path.links.some((link) => link !== "arrow")) at(line, "write the packet path with \"->\" only. It follows the arrows already drawn.");
           else packetLine = { names: path.names.map((name) => name.text), line };
         }
       }
@@ -166,7 +169,7 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
     }
 
     if (arrows) {
-      const { dashes, label } = arrows;
+      const { links, label } = arrows;
       const names = arrows.names.map((name) => name.text);
       if (names.some((name) => !name)) {
         at(line, "an arrow needs a name on both sides, for example \"You -> DNS\".");
@@ -184,7 +187,11 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
         at(line, `shorten the label to ${DIAGRAM_LIMITS.label} characters or fewer (it has ${label.length}). Put the detail in the text around the diagram.`);
         return;
       }
-      rawEdges.push({ names, dashes, label, line });
+      if (kind === "sequence" && links.includes("line")) {
+        at(line, "a message needs a direction. Write \"->\" or \"-->\", not \"---\".");
+        return;
+      }
+      rawEdges.push({ names, links, label, line });
       return;
     }
 
@@ -218,7 +225,7 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
           continue;
         }
       }
-      edges.push({ from: ids[i], to: ids[i + 1], label: raw.label, dashed: raw.dashes[i], line: raw.line });
+      edges.push({ from: ids[i], to: ids[i + 1], label: raw.label, dashed: raw.links[i] === "dashed", head: raw.links[i] !== "line", line: raw.line });
     }
   }
 

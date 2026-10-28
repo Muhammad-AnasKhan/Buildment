@@ -18,6 +18,8 @@ export type EdgePath = { start: Point; end: Point; control?: Point };
 export type SceneEdge = {
   index: number;
   dashed: boolean;
+  /** False for a plain line, drawn with no arrowhead. */
+  head: boolean;
   path: EdgePath;
   label?: SceneLabel;
   /** Compact sequences number their arrows instead of labelling them. */
@@ -57,7 +59,9 @@ function measure(node: DiagramNode, compact: boolean, labelBeside: boolean, crow
     return { node, lines, inside: false, r, w: 2 * r, h: 2 * r, box };
   }
   // Three or more parts side by side on a phone get narrower boxes with up to three lines.
-  const lines = wrapText(node.label, NODE_FONT, crowded ? 84 : compact ? 112 : 128, 3);
+  // Long step text (common in existing Mermaid) gets a wider box and more lines rather than tiny type.
+  const long = node.label.length > 60;
+  const lines = wrapText(node.label, NODE_FONT, crowded ? 84 : long ? (compact ? 150 : 176) : compact ? 112 : 128, long ? 5 : 3);
   const w = Math.max(76, Math.ceil(linesWidth(lines, NODE_FONT) + 28));
   const h = 28 + lines.length * NODE_FONT * LINE_HEIGHT + (node.kind === "store" ? 12 : 0);
   return { node, lines, inside: true, r: 0, w, h, box: { left: w / 2, right: w / 2, top: h / 2, bottom: h / 2 } };
@@ -370,7 +374,7 @@ export function layoutFlow(spec: DiagramSpec, compact: boolean): Scene {
     return { path, lines: edgeLines[index], side: labelSide, keepSide: paired };
   });
   const labels = placeLabels(nodes, routed);
-  const edges: SceneEdge[] = spec.edges.map((edge, index) => ({ index, dashed: edge.dashed, path: routed[index].path, label: labels[index] }));
+  const edges: SceneEdge[] = spec.edges.map((edge, index) => ({ index, dashed: edge.dashed, head: edge.head, path: routed[index].path, label: labels[index] }));
 
   return { kind: "flow", compact, viewBox: fitViewBox(nodes, edges), nodes, edges, lifelines: [] };
 }
@@ -408,13 +412,13 @@ export function layoutSequence(spec: DiagramSpec, compact: boolean): Scene {
       const arrowY = y + 26;
       y = arrowY + 18;
       const mid = (x1 + x2) / 2;
-      return { index, dashed: edge.dashed, path: { start: { x: x1 + dir * 2, y: arrowY }, end: { x: x2 - dir * 3, y: arrowY } }, badge: { x: mid, y: arrowY - 14, n: index + 1 } };
+      return { index, dashed: edge.dashed, head: edge.head, path: { start: { x: x1 + dir * 2, y: arrowY }, end: { x: x2 - dir * 3, y: arrowY } }, badge: { x: mid, y: arrowY - 14, n: index + 1 } };
     }
     const lines = edgeLines[index];
     const arrowY = y + lines.length * lh + 8;
     const label: SceneLabel | undefined = lines.length ? { lines, x: (x1 + x2) / 2, y: y + EDGE_FONT, anchor: "middle", size: EDGE_FONT } : undefined;
     y = arrowY + 24;
-    return { index, dashed: edge.dashed, path: { start: { x: x1 + dir * 2, y: arrowY }, end: { x: x2 - dir * 3, y: arrowY } }, label };
+    return { index, dashed: edge.dashed, head: edge.head, path: { start: { x: x1 + dir * 2, y: arrowY }, end: { x: x2 - dir * 3, y: arrowY } }, label };
   });
 
   const lifelines = nodes.map((_, i) => ({ x: xs[i], y1: top + measured[i].box.bottom + 4, y2: y }));

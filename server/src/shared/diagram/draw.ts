@@ -99,7 +99,8 @@ export function drawScene(scene: Scene, state: DrawState = {}, title?: { text: s
     const colour = on ? BRAND.cobalt : BRAND.ink;
     const p = edge.path;
     const dir = endDirection(p);
-    const base = { x: p.end.x - dir.x * 9, y: p.end.y - dir.y * 9 };
+    // A plain line runs to the shape; an arrow stops where its head starts.
+    const base = edge.head ? { x: p.end.x - dir.x * 9, y: p.end.y - dir.y * 9 } : p.end;
     const d = p.control
       ? `M${r(p.start.x)} ${r(p.start.y)} Q${r(p.control.x)} ${r(p.control.y)} ${r(base.x)} ${r(base.y)}`
       : `M${r(p.start.x)} ${r(p.start.y)} L${r(base.x)} ${r(base.y)}`;
@@ -107,8 +108,8 @@ export function drawScene(scene: Scene, state: DrawState = {}, title?: { text: s
     const head = `M${r(p.end.x)} ${r(p.end.y)} L${r(base.x - dir.x * 2 + wing.x)} ${r(base.y - dir.y * 2 + wing.y)} L${r(base.x - dir.x * 2 - wing.x)} ${r(base.y - dir.y * 2 - wing.y)} Z`;
     const parts: SvgNode[] = [
       el("path", { d, fill: "none", stroke: colour, strokeWidth: on ? 4 : 3, ...(edge.dashed ? { strokeDasharray: "7 6" } : {}) }, undefined, `edge-${edge.index}-line`),
-      el("path", { d: head, fill: colour }, undefined, `edge-${edge.index}-head`),
     ];
+    if (edge.head) parts.push(el("path", { d: head, fill: colour }, undefined, `edge-${edge.index}-head`));
     if (edge.label) parts.push(text(edge.label, on ? BRAND.cobalt : BRAND.ink, on ? 700 : 600, `edge-${edge.index}-label`, true));
     if (edge.badge) {
       parts.push(el("circle", { cx: r(edge.badge.x), cy: r(edge.badge.y), r: 11, fill: on ? BRAND.cobalt : BRAND.white, stroke: on ? BRAND.cobalt : BRAND.ink, strokeWidth: 2 }, undefined, `edge-${edge.index}-badge`));

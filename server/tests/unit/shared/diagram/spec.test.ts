@@ -24,9 +24,9 @@ describe("parseDiagram: valid specs", () => {
     expect(spec.direction).toBe("right");
     expect(spec.nodes.map((node) => [node.label, node.kind])).toEqual([["You", "actor"], ["DNS", "box"], ["Server", "end"]]);
     expect(spec.edges).toEqual([
-      { from: "you", to: "dns", label: "Where is example.com?", dashed: false, line: 5 },
-      { from: "dns", to: "you", label: "At 93.184.215.14", dashed: true, line: 6 },
-      { from: "you", to: "server", label: "Send the page", dashed: false, line: 7 },
+      { from: "you", to: "dns", label: "Where is example.com?", dashed: false, head: true, line: 5 },
+      { from: "dns", to: "you", label: "At 93.184.215.14", dashed: true, head: true, line: 6 },
+      { from: "you", to: "server", label: "Send the page", dashed: false, head: true, line: 7 },
     ]);
     expect(spec.packet).toEqual(["you", "dns", "you", "server"]);
     expect(spec.hops).toEqual([{ edge: 0, reversed: false }, { edge: 1, reversed: false }, { edge: 2, reversed: false }]);
@@ -97,7 +97,7 @@ describe("parseDiagram: problems fail loudly", () => {
   it("rejects long labels, names and titles", () => {
     const longLabel = problems(parseDiagram("flow", `title: X\nbox A\nbox B\nA -> B: ${"word ".repeat(13)}`));
     expect(longLabel[0]).toMatch(/shorten the label to 60 characters/);
-    expect(problems(parseDiagram("flow", `title: X\nbox ${"a".repeat(61)}\nbox B`))[0]).toMatch(/to 60 characters or fewer/);
+    expect(problems(parseDiagram("flow", `title: X\nbox ${"a".repeat(111)}\nbox B`))[0]).toMatch(/to 110 characters or fewer/);
     expect(problems(parseDiagram("flow", `title: ${"t".repeat(81)}\nbox A\nbox B\nA -> B`))[0]).toMatch(/shorten the title to 80/);
   });
 
@@ -117,6 +117,12 @@ describe("parseDiagram: problems fail loudly", () => {
     expect(problems(parseDiagram("flow", "title: X\nbox A\nbox a\nbox B\nA -> B"))[0]).toMatch(/already declared on line 2/);
     expect(problems(parseDiagram("flow", "title: X\ntitle: Y\nbox A\nbox B\nA -> B"))[0]).toMatch(/already has a title/);
     expect(problems(parseDiagram("flow", "title: X\nbox A\nbox B\nA -> B\nA -> B: again"))[0]).toMatch(/already an arrow from "A" to "B"/);
+  });
+
+  it("reads a plain line in a flow and rejects one in a sequence", () => {
+    const flow = parseDiagram("flow", "title: X\nbox A\nbox B\nbox C\nA --- B -> C");
+    expect(flow.ok && flow.spec.edges.map((edge) => edge.head)).toEqual([false, true]);
+    expect(problems(parseDiagram("sequence", "title: X\nbox A\nbox B\nA --- B: hi"))[0]).toMatch(/a message needs a direction/);
   });
 
   it("rejects an arrow to itself", () => {
