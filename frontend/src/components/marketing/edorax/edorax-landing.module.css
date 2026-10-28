@@ -1,0 +1,30 @@
+.root a:focus-visible,
+.root button:focus-visible {
+  outline: 3px solid #FFC933;
+  outline-offset: 2px;
+}
+
+.root button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.answer:hover {
+  border-color: #2434E0 !important;
+}
+
+/* Inline styles carry the desktop design; these shrink type and spacing on phones. */
+@media (max-width: 640px) {
+  .h1 {
+    font-size: 36px !important;
+  }
+
+  .h2 {
+    font-size: 27px !important;
+  }
+
+  .pad {
+    padding-top: 56px !important;
+    padding-bottom: 56px !important;
+  }
+}

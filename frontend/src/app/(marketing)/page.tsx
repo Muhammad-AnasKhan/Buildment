@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import MarketingHomePage from "@/components/marketing/landing-page";
+import { EdoraxLanding } from "@/components/marketing/edorax/edorax-landing";
 
 export const metadata: Metadata = {
-  title: "Make something you can show | buildment",
-  description: "Build a marketplace or practise a skill for work. Project-based courses from Dev Weekends, with checkpoints and mentor reviews.",
+  title: { absolute: "Edorax: every lesson starts with a question" },
+  description: "Short lessons you can read, play with, listen to and prove. Built for phones, slow connections and second-language learners.",
 };
 
 export default function HomePage() {
-  return <MarketingHomePage />;
+  return <EdoraxLanding />;
 }
