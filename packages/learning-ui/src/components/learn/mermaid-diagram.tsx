@@ -254,7 +254,7 @@ export function MermaidDiagram({ chart, title, legend, scriptSrc }: MermaidDiagr
   }
 
   return (
-    <div className="not-prose my-8 overflow-x-auto rounded-2xl border border-border/90 bg-card p-5 shadow-[0_1px_2px_rgb(0_0_0/0.04)]">
+    <div className="not-prose my-8 overflow-x-auto rounded-2xl border border-border/90 bg-card p-5 ">
       {title ? <p className="mb-4 text-sm font-semibold text-foreground">{title}</p> : null}
       {svg ? (
         <div

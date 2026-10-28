@@ -49,7 +49,7 @@ export function CourseOverviewHero({
   const { lead, rest } = splitTitle(title);
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm">
+    <section className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground ">
       <CourseCover coverUrl={coverUrl} title={title} aspect="banner" className="rounded-none border-b border-border" />
 
       <div className="grid lg:grid-cols-[minmax(0,1fr)_18rem]">

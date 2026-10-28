@@ -213,7 +213,7 @@ export function ChapterSidebar({
           className="fixed inset-0 z-40 bg-neutral-950/30 md:hidden"
           onClick={onToggle}
         />
-        <aside className="fixed inset-y-0 left-0 z-50 flex w-[min(18rem,85vw)] flex-col border-r border-border bg-card text-card-foreground shadow-xl md:hidden">
+        <aside className="fixed inset-y-0 left-0 z-50 flex w-[min(18rem,85vw)] flex-col border-r border-border bg-card text-card-foreground md:hidden">
           <SidebarPanel {...panelProps} />
         </aside>
       </>

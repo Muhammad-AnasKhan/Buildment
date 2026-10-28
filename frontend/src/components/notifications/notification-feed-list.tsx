@@ -27,7 +27,7 @@ export function NotificationFeedList() {
   };
 
   return (
-    <section aria-label="Notification feed" className="rounded-2xl border bg-card shadow-sm">
+    <section aria-label="Notification feed" className="rounded-2xl border bg-card ">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-3 sm:px-5">
         <div className="inline-flex rounded-lg bg-muted p-0.5 text-sm" role="tablist" aria-label="Filter notifications">
           {[
@@ -42,7 +42,7 @@ export function NotificationFeedList() {
               onClick={() => setUnreadOnly(tab.value)}
               className={cn(
                 "rounded-md px-3 py-1 font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
-                unreadOnly === tab.value ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                unreadOnly === tab.value ? "bg-background text-foreground " : "text-muted-foreground hover:text-foreground"
               )}
             >
               {tab.label}

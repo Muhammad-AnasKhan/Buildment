@@ -19,22 +19,17 @@ export default async function ProfileSettingsPage() {
   ]);
   const gameFeaturesOn = Boolean(gamification && (gamification.features.xp || gamification.features.streakFreezes));
 
-  const coverUrl = profile.featuredCourse?.coverUrl ?? null;
-  const coverLabel = profile.featuredCourse?.title ?? profile.name ?? "Your profile";
-
   return (
     <div className="min-h-dvh bg-background">
       <ProfileSettingsHero
         name={profile.name}
         email={profile.email}
         image={profile.image}
-        coverUrl={coverUrl}
-        coverLabel={coverLabel}
         topThree={gamification && showsGameElements(gamification) ? gamification.topThree : null}
       />
 
       <div className="mx-auto max-w-3xl space-y-6 px-4 pb-12 pt-6 sm:px-6 lg:px-8">
-        <div className="-mt-2 rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
+        <div className="-mt-2 rounded-2xl border bg-card p-6 sm:p-8">
           <div className="mb-6 border-b border-border pb-5">
             <h2 className="text-lg font-semibold tracking-tight">Profile settings</h2>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">

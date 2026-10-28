@@ -98,7 +98,7 @@ export function MenteeWorkspaceShell({
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
-      <div className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 px-4 backdrop-blur lg:hidden">
+      <div className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 px-4 lg:hidden">
         <Link href="/dashboard" aria-label="Learner dashboard">
           <Logo size="sm" />
         </Link>
@@ -174,7 +174,7 @@ function SidebarGroup({ label, items }: { label: string; items: LearnerNavItem[]
               className={cn(
                 "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
                 item.active
-                  ? "bg-foreground text-background shadow-sm"
+                  ? "bg-foreground text-background "
                   : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >

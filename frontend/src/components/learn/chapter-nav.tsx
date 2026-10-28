@@ -202,7 +202,7 @@ export function ChapterNav({
 
   return (
     <nav aria-label="Chapter navigation" className="mt-10">
-      <div className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-border bg-card text-card-foreground ">
         <div className="border-b border-border bg-muted/40 px-5 py-5 sm:px-6">
           <ChapterCompletionStrip
             chapterId={chapterId}

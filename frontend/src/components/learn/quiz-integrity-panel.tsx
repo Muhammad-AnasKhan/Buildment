@@ -58,7 +58,7 @@ function IntegrityDialog({ integrity }: { integrity: QuizIntegrity }) {
       className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-0 backdrop:bg-background/70 open:flex open:items-center open:justify-center open:p-4"
     >
       {open ? (
-        <div className="flex max-h-[min(44rem,calc(100dvh-2rem))] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-2xl">
+        <div className="flex max-h-[min(44rem,calc(100dvh-2rem))] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border bg-card text-card-foreground ">
           <div className="flex shrink-0 items-start justify-between gap-4 border-b px-5 py-4 sm:px-6 sm:py-5">
             <div>
               <div className="flex items-center gap-2 text-primary">
@@ -165,7 +165,7 @@ function CameraPreview({ attach, visible }: { attach: (element: HTMLVideoElement
       playsInline
       aria-hidden
       className={cn(
-        "pointer-events-none fixed bottom-20 right-3 z-40 h-[54px] w-[72px] rounded-md border border-border bg-muted object-cover shadow-sm sm:bottom-4",
+        "pointer-events-none fixed bottom-20 right-3 z-40 h-[54px] w-[72px] rounded-md border border-border bg-muted object-cover  sm:bottom-4",
         !visible && "hidden"
       )}
     />

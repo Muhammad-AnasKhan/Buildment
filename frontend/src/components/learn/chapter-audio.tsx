@@ -80,7 +80,7 @@ export function ChapterAudio({ src, minutes, bytes, title, className }: { src: s
   const label = status === "playing" ? "Pause" : status === "loading" ? "Loading" : "Play";
 
   return (
-    <section aria-label="Listen to this chapter" className={cn("rounded-lg border border-border bg-card px-4 py-3 text-card-foreground", pinned && "sticky z-30 shadow-md", className)}
+    <section aria-label="Listen to this chapter" className={cn("rounded-lg border border-border bg-card px-4 py-3 text-card-foreground", pinned && "sticky z-30 ", className)}
       style={pinned ? { top: "calc(var(--reader-pt, 0px) * -1)" } : undefined}
     >
       <audio

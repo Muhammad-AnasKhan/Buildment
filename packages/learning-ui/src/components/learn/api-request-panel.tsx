@@ -136,7 +136,7 @@ export function ApiRequest({
 
   return (
     <article
-      className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm"
+      className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground "
       aria-label={label ?? `${normalizedMethod} ${url}`}
       data-api-request
     >
@@ -156,7 +156,7 @@ export function ApiRequest({
         <div className="flex shrink-0 items-center border-r border-border px-3 sm:px-4">
           <span
             className={cn(
-              "inline-flex min-w-[4.25rem] items-center justify-center rounded-md px-2.5 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wide shadow-sm",
+              "inline-flex min-w-[4.25rem] items-center justify-center rounded-md px-2.5 py-1.5 font-mono text-[11px] font-bold uppercase tracking-wide ",
               styles.badge
             )}
           >
@@ -240,7 +240,7 @@ function TabButton({
       className={cn(
         "rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
         active
-          ? "bg-card text-foreground shadow-sm ring-1 ring-border"
+          ? "bg-card text-foreground  ring-1 ring-border"
           : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
       )}
     >

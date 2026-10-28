@@ -26,7 +26,7 @@ export function GamificationPreferences({ initial }: { initial: GamificationSumm
   }
 
   return (
-    <section aria-labelledby="game-elements-heading" className="rounded-2xl border bg-card p-6 shadow-sm sm:p-8">
+    <section aria-labelledby="game-elements-heading" className="rounded-2xl border bg-card p-6 sm:p-8">
       <div className="mb-5 border-b border-border pb-5">
         <h2 id="game-elements-heading" className="text-lg font-semibold tracking-tight">Game elements</h2>
         <p className="mt-1 text-sm leading-6 text-muted-foreground">

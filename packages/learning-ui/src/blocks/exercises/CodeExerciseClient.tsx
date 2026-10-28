@@ -58,7 +58,7 @@ function CodeEditor({
   }, [syncScroll]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-[var(--code-border)] bg-[var(--code-surface)] shadow-inner">
+    <div className="overflow-hidden rounded-xl border border-[var(--code-border)] bg-[var(--code-surface)] ">
       {/* Editor title bar */}
       <div className="flex items-center justify-between gap-3 border-b border-[var(--code-border)] bg-[var(--code-toolbar)] px-3 py-2.5 sm:px-4">
         <div className="flex min-w-0 items-center gap-3">
@@ -233,7 +233,7 @@ export function CodeExerciseClient({
   return (
     <div
       {...(id.startsWith("preview-") ? {} : checkpointAttrs(id, settled))}
-      className="not-prose my-10 scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-sm"
+      className="not-prose my-10 scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-card text-card-foreground "
       data-code-exercise
     >
       {/* Prompt header — matches quiz / checklist cards */}
@@ -352,7 +352,7 @@ export function CodeExerciseClient({
                 onClick={submit}
                 loading={submitting}
                 disabled={!source.trim() || submitting}
-                className="h-9 gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background shadow-sm hover:bg-foreground/90"
+                className="h-9 gap-2 rounded-full bg-foreground px-5 text-sm font-medium text-background hover:bg-foreground/90"
               >
                 <CirclePlay className="size-4" />
                 {submitting ? "Running checks…" : id.startsWith("preview-") ? "Try editor" : "Check my code"}

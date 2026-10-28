@@ -45,7 +45,7 @@ function ModuleCard({
     <Collapsible open={open} onOpenChange={setOpen}>
       <article
         className={cn(
-          "overflow-hidden rounded-xl border border-border shadow-sm",
+          "overflow-hidden rounded-xl border border-border ",
           moduleComplete
             ? "border-emerald-500/20 bg-emerald-500/[0.12] dark:border-emerald-400/25 dark:bg-emerald-500/15"
             : textControls ? "bg-background" : "bg-muted/20 dark:bg-muted/30"

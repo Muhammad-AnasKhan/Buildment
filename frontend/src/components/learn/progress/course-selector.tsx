@@ -24,13 +24,13 @@ export function ProgressCourseSelector({ courses, selectedSlug }: { courses: Lea
       <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">View progress for</p>
       <DropdownMenu>
         <DropdownMenuTrigger
-          render={<button type="button" className="flex h-12 w-full items-center gap-3 rounded-xl border bg-card px-3 text-left shadow-sm outline-none transition-colors hover:border-foreground/30 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30" aria-label="Choose a course to view progress" />}
+          render={<button type="button" className="flex h-12 w-full items-center gap-3 rounded-xl border bg-card px-3 text-left outline-none transition-colors hover:border-foreground/30 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30" aria-label="Choose a course to view progress" />}
         >
           <BookOpen className="size-4 shrink-0 text-muted-foreground" aria-hidden />
           <span className="min-w-0 flex-1 truncate text-sm font-medium">{selectedCourse?.course.title ?? "All courses"}</span>
           <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="max-h-80 w-[min(24rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-border p-1.5 shadow-xl">
+        <DropdownMenuContent align="end" className="max-h-80 w-[min(24rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-border p-1.5 ">
           <DropdownMenuItem onClick={() => choose(null)} className="min-h-10 gap-2.5 px-3 py-2">
             <span className="min-w-0 flex-1 font-medium">All courses</span>
             {!selectedCourse ? <Check className="size-4 shrink-0 text-primary" aria-hidden /> : null}

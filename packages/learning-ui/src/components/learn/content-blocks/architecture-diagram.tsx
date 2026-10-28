@@ -55,7 +55,7 @@ export function ArchitectureDiagram({ title, children }: ArchitectureDiagramProp
           <div key={index} className="flex flex-col items-center">
             <div
               className={cn(
-                "w-full rounded-xl border px-5 py-4 shadow-sm",
+                "w-full rounded-xl border px-5 py-4 ",
                 ARCH_LAYER_STYLES[node.layer] ?? ARCH_LAYER_STYLES.External
               )}
             >

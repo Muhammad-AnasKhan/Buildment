@@ -229,7 +229,7 @@ export function Checklist({
     <div
       ref={cardRef}
       className={cn(
-        "not-prose my-8 overflow-hidden rounded-2xl border shadow-sm",
+        "not-prose my-8 overflow-hidden rounded-2xl border ",
         CARD_STYLES.border,
         CARD_STYLES.bodyBg
       )}

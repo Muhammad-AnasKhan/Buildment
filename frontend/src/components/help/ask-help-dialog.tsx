@@ -75,7 +75,7 @@ export function AskHelpDialog({
         className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-0 backdrop:bg-background/70 open:flex open:items-center open:justify-center open:p-4"
         aria-labelledby="ask-help-title"
       >
-        <div className="flex max-h-[min(32rem,90dvh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card text-card-foreground shadow-xl">
+        <div className="flex max-h-[min(32rem,90dvh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card text-card-foreground ">
           <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
             <div className="min-w-0">
               <h2 id="ask-help-title" className="text-base font-semibold text-foreground">

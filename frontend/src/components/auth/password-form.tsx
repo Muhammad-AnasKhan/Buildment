@@ -11,7 +11,7 @@ const initial: ProfileUpdateState = { ok: false, errors: [] };
 export function PasswordForm() {
   const [state, action, pending] = useActionState(updatePasswordAction, initial);
   return (
-    <form action={action} className="space-y-4 rounded-xl border bg-card p-6 shadow-sm">
+    <form action={action} className="space-y-4 rounded-xl border bg-card p-6 ">
       <h2 className="text-lg font-semibold">Change password</h2>
       <p className="text-sm text-muted-foreground">Use at least 8 characters. Changing your password signs out your other sessions.</p>
       <div className="space-y-2">

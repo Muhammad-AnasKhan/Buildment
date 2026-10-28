@@ -49,7 +49,7 @@ export default function ChapterReaderError({
 
   return (
     <div className="mx-auto max-w-3xl px-4 pb-12 pt-8">
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 shadow-sm dark:border-amber-900/50 dark:bg-amber-950/30">
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-900/50 dark:bg-amber-950/30">
         <h1 className="text-lg font-semibold text-amber-950 dark:text-amber-100">
           This chapter can&apos;t be displayed right now
         </h1>

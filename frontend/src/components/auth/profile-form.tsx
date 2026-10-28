@@ -24,7 +24,7 @@ export function ProfileForm({
       action={formAction}
       className={
         variant === "card"
-          ? "space-y-4 rounded-xl border bg-card p-6 shadow-sm"
+          ? "space-y-4 rounded-xl border bg-card p-6 "
           : "space-y-4"
       }
     >

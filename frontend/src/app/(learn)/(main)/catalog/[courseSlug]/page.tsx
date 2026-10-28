@@ -27,7 +27,7 @@ export default async function CatalogCoursePage({
         ← Catalog
       </Link>
 
-      <div className="mt-6 overflow-hidden rounded-2xl border bg-card shadow-sm">
+      <div className="mt-6 overflow-hidden rounded-2xl border bg-card ">
         <CourseCover coverUrl={course.coverUrl} title={course.title} aspect="banner" className="rounded-none" />
         <header className="border-b border-border p-6 sm:p-8 lg:p-10">
         <p className="text-sm text-muted-foreground">
@@ -98,7 +98,7 @@ export default async function CatalogCoursePage({
         </section>
       ) : null}
 
-      <div className="sticky bottom-3 z-10 mt-8 flex flex-wrap items-center gap-3 rounded-xl border bg-background/95 p-3 shadow-lg backdrop-blur sm:static sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+      <div className="sticky bottom-3 z-10 mt-8 flex flex-wrap items-center gap-3 rounded-xl border bg-background/95 p-3 sm:static sm:border-0 sm:bg-transparent sm:p-0 ">
         {hasAccess ? (
           <Link href={`/courses/${course.slug}`} className={buttonVariants({ size: "lg" })}>
             Go to course

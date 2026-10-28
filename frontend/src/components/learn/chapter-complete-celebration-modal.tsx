@@ -59,7 +59,7 @@ export function ChapterCompleteCelebrationModal({
       }}
       aria-labelledby="chapter-complete-title"
       aria-describedby="chapter-complete-description"
-      className="fixed inset-0 m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-border bg-card p-5 text-card-foreground shadow-xl backdrop:bg-foreground/30 sm:p-6"
+      className="fixed inset-0 m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-border bg-card p-5 text-card-foreground backdrop:bg-foreground/30 sm:p-6"
     >
       {open ? <>
         <div className="flex items-start justify-between gap-4">

@@ -267,7 +267,7 @@ export function ChapterReaderShell({
 
       <ReaderShellFade>
         {!focusMode && (
-          <header className="shrink-0 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <header className="shrink-0 border-b border-border bg-background">
             <div className="flex items-center gap-2 px-3 py-2 sm:px-4">
               <SidebarToggle
                 collapsed={leftCollapsed}

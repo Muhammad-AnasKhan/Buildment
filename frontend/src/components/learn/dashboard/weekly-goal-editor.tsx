@@ -72,7 +72,7 @@ export function WeeklyGoalEditor({ goal }: { goal: LearnerHabit["weeklyGoal"] })
 
   return (
     <>
-      <Button type="button" size="lg" onClick={openEditor} className="h-10 gap-2 rounded-xl px-4 shadow-sm">
+      <Button type="button" size="lg" onClick={openEditor} className="h-10 gap-2 rounded-xl px-4 ">
         <Target className="size-4" aria-hidden /> {goal ? "Edit weekly goal" : "Set weekly goal"}
       </Button>
       <dialog
@@ -82,7 +82,7 @@ export function WeeklyGoalEditor({ goal }: { goal: LearnerHabit["weeklyGoal"] })
         className="fixed inset-0 z-50 m-0 h-full max-h-none w-full max-w-none border-0 bg-transparent p-0 backdrop:bg-background/70 open:flex open:items-center open:justify-center open:p-4"
         aria-labelledby="weekly-goal-title"
       >
-        <div className="flex max-h-[min(92dvh,39rem)] w-full max-w-[34rem] flex-col overflow-hidden rounded-[1.5rem] border bg-card text-card-foreground shadow-2xl">
+        <div className="flex max-h-[min(92dvh,39rem)] w-full max-w-[34rem] flex-col overflow-hidden rounded-[1.5rem] border bg-card text-card-foreground ">
           <div className="flex shrink-0 items-start justify-between gap-4 px-5 pb-4 pt-5 sm:px-7 sm:pt-6">
             <div className="flex items-start gap-3.5">
               <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground"><Target className="size-5" aria-hidden /></span>

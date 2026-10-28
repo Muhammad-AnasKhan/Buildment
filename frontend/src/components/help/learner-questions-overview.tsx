@@ -128,7 +128,7 @@ export function LearnerQuestionsOverview({
           <div className="flex flex-col gap-3 border-b p-4 lg:flex-row lg:items-center lg:justify-between lg:gap-4">
             <div aria-label="Filter questions by status" className="flex w-full gap-1 overflow-x-auto rounded-xl bg-muted/60 p-1 lg:w-auto">
               {tabs.map((tab) => (
-                <button key={tab.id} type="button" aria-pressed={view === tab.id} onClick={() => setView(tab.id)} className={cn("flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", view === tab.id && "bg-background text-foreground shadow-sm")}>
+                <button key={tab.id} type="button" aria-pressed={view === tab.id} onClick={() => setView(tab.id)} className={cn("flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", view === tab.id && "bg-background text-foreground ")}>
                   {tab.label}<span className="text-xs tabular-nums opacity-65">{tab.count}</span>
                 </button>
               ))}

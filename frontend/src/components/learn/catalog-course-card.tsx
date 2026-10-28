@@ -32,7 +32,7 @@ export function CatalogCourseCard({
   enrolledLabel,
 }: CatalogCourseCardProps) {
   return (
-    <article className="flex flex-col overflow-hidden rounded-2xl border bg-card shadow-sm ring-1 ring-foreground/5 transition-shadow hover:shadow-md">
+    <article className="flex flex-col overflow-hidden rounded-2xl border bg-card ring-1 ring-foreground/5 transition-shadow ">
       <CourseCover coverUrl={coverUrl} title={title} aspect="video" className="rounded-none" />
       <div className="flex flex-1 flex-col p-5">
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

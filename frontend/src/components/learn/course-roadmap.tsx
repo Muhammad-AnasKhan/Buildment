@@ -72,7 +72,7 @@ export function CourseRoadmap({ modules }: { modules: CourseModule[] }) {
           const included = modulesInRange(modules, from, to);
           const lessonCount = included.reduce((count, module) => count + module.chapters.length, 0);
           return (
-            <details key={number} className="group/week overflow-hidden rounded-xl border bg-card shadow-sm">
+            <details key={number} className="group/week overflow-hidden rounded-xl border bg-card ">
               <summary className="flex min-h-[68px] cursor-pointer list-none items-center gap-4 px-4 py-4 hover:bg-muted/30 sm:px-5 [&::-webkit-details-marker]:hidden">
                 <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open/week:rotate-180" aria-hidden />
                 <h3 className="min-w-0 flex-1 text-sm font-semibold tracking-tight sm:text-base">Week {number} - {title}</h3>

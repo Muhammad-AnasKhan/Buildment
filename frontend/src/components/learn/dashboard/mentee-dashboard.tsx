@@ -77,7 +77,7 @@ function DashboardHeader({ model }: { model: MenteeDashboardViewModel }) {
 function ContinueLearning({ course }: { course: DashboardCourse }) {
   const status = statusDetails(course.state);
   return (
-    <section aria-labelledby="continue-heading" className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+    <section aria-labelledby="continue-heading" className="overflow-hidden rounded-2xl border bg-card ">
       <div className="p-5 sm:p-7">
       <div className="flex flex-wrap items-center gap-2">
         <BookOpen className="size-5 text-primary" aria-hidden />
@@ -336,7 +336,7 @@ function CourseListPreview({ courses }: { courses: DashboardCourse[] }) {
 function CourseCard({ course, featured }: { course: DashboardCourse; featured: boolean }) {
   const status = statusDetails(course.state);
   return (
-    <article className={cn("overflow-hidden rounded-2xl border bg-card transition-shadow duration-200 hover:shadow-sm focus-within:ring-2 focus-within:ring-ring motion-reduce:transition-none", featured && "border-primary/40")}>
+    <article className={cn("overflow-hidden rounded-2xl border bg-card transition-shadow duration-200  focus-within:ring-2 focus-within:ring-ring motion-reduce:transition-none", featured && "border-primary/40")}>
       {featured ? <p className="border-b border-border bg-muted px-4 py-3 text-sm font-medium">{course.state === "IN_PROGRESS" ? "Continue where you left off" : "Your next step"}</p> : null}
       <div className="flex min-h-24 items-stretch border-b bg-muted/30">
         <div className="min-w-0 flex-1 p-4">

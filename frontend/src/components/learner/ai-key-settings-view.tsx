@@ -52,7 +52,7 @@ export function AiKeySettingsView(props: AiKeySettingsViewProps) {
   const idle = busy === null;
 
   return (
-    <section id="ai-interviews" aria-labelledby="ai-interviews-title" className="scroll-mt-24 space-y-4 rounded-xl border bg-card p-4 shadow-sm sm:p-6">
+    <section id="ai-interviews" aria-labelledby="ai-interviews-title" className="scroll-mt-24 space-y-4 rounded-xl border bg-card p-4 sm:p-6">
       <div>
         <h2 id="ai-interviews-title" className="text-lg font-semibold">
           AI interviews

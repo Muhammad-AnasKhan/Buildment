@@ -49,7 +49,7 @@ export type AiInterviewViewProps = {
 
 function Shell({ config, children }: { config: SanitizedAiInterviewConfig; children: React.ReactNode }) {
   return (
-    <section aria-label={`AI interview: ${config.title}`} className="not-prose my-6 overflow-hidden rounded-2xl border bg-card text-card-foreground shadow-sm" data-block="ai-interview">
+    <section aria-label={`AI interview: ${config.title}`} className="not-prose my-6 overflow-hidden rounded-2xl border bg-card text-card-foreground " data-block="ai-interview">
       <header className="space-y-2 border-b bg-muted/40 px-4 py-4 sm:px-6">
         <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
           <MessageSquareText className="size-4" aria-hidden /> AI interview

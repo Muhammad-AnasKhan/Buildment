@@ -137,7 +137,7 @@ export function TraceRequestClient({ title, steps }: TraceRequestClientProps) {
                   className={cn(
                     "min-w-0 flex-1 rounded-xl border px-4 py-3 text-left transition-colors",
                     isActive
-                      ? "border-border bg-muted shadow-sm"
+                      ? "border-border bg-muted "
                       : "border-transparent hover:bg-muted/70"
                   )}
                 >

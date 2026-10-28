@@ -20,7 +20,7 @@ export function PendingBlockCard({
   return (
     <div
       className={cn(
-        "not-prose my-6 rounded-xl border border-dashed border-border/80 bg-muted/20 text-card-foreground shadow-sm transition-all",
+        "not-prose my-6 rounded-xl border border-dashed border-border/80 bg-muted/20 text-card-foreground  transition-all",
         className
       )}
       data-pending-block={typeLabel}

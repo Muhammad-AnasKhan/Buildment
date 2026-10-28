@@ -53,7 +53,7 @@ export function LearnPanelShell({
       )}
       <div
         className={cn(
-          "overflow-hidden rounded-2xl border border-border/90 bg-card text-card-foreground shadow-[0_1px_2px_rgb(0_0_0/0.04)]",
+          "overflow-hidden rounded-2xl border border-border/90 bg-card text-card-foreground ",
           contentClassName
         )}
       >

@@ -48,7 +48,7 @@ export function AppToast() {
             <span className={cn("block", item.title && "mt-0.5 text-muted-foreground line-clamp-2")}>{item.message}</span>
           </>
         );
-        const className = cn("pointer-events-auto block rounded-xl border px-4 py-3 text-sm shadow-lg", toneClasses[item.tone]);
+        const className = cn("pointer-events-auto block rounded-xl border px-4 py-3 text-sm ", toneClasses[item.tone]);
         const dismiss = () => setItems((current) => current.filter((entry) => entry.id !== item.id));
         return item.href ? (
           <Link key={item.id} href={item.href} role="status" onClick={dismiss} className={cn(className, "transition-colors hover:bg-muted")}>
