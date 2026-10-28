@@ -61,6 +61,7 @@ direction: right | down          flow only, default right
 
 actor <Name>                     a person (cobalt circle)
 box <Name>                       a step or service (white box, ink border)
+decision <Name>                  a question (white diamond, ink border); its answers label the arrows out
 end <Name>                       where the flow is going (ink box)
 store <Name>                     data that is kept (white cylinder)
 external <Name>                  outside your system (dashed border)
@@ -99,6 +100,8 @@ packet: You -> DNS -> You -> Server
 ## Existing Mermaid diagrams, drawn automatically
 
 Courses do not have to be rewritten to get the new design. `server/src/shared/diagram/from-mermaid.ts` turns a Mermaid `flowchart` (TD, TB or LR) or `sequenceDiagram` into a spec when it maps exactly, and the result must pass the same validation as a hand-written fence. Two places apply it. `remark-diagram` runs before `remark-mermaid` and draws a convertible ```` ```mermaid ```` fence with the Diagram block, titled by the Mermaid title or the closest heading above it. The `MermaidDiagram` component itself converts too, which covers the `<MermaidDiagram title="..." chart={...} legend="..." />` tags most older chapters use; the tag's title and legend are kept. Any later change to the Diagram block reaches all of these diagrams at once.
+
+Mermaid shapes map as `{"..."}` to decision (a diamond), `[("...")]` to store, `(("..."))` to actor, and the rest to box.
 
 Kept on Mermaid: state and entity diagrams, subgraphs, `&`, dotted lines without an arrow head, right-to-left or bottom-to-top flows, sequence notes, loops and blocks, a message from a part to itself, two parts with the same text, and anything over the size limits. A chart whose first line is `%% keep-mermaid` always stays on Mermaid.
 
