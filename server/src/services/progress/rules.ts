@@ -83,8 +83,8 @@ export function chapterProgressStatus(args: {
     return "NOT_STARTED";
   }
   if (args.completableCompleted >= args.completableTotal) {
-    if (args.reflectionBlocked) return "IN_PROGRESS";
-    return "COMPLETED";
+    if (args.markedComplete && !args.reflectionBlocked) return "COMPLETED";
+    return "IN_PROGRESS";
   }
   if (args.completableCompleted > 0 || args.visited) return "IN_PROGRESS";
   return "NOT_STARTED";

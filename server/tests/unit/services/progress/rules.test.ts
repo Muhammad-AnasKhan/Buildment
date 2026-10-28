@@ -65,12 +65,21 @@ describe("checkpointSatisfied", () => {
 });
 
 describe("chapterProgressStatus", () => {
-  it("auto-completes when every completable block has a response", () => {
+  it("keeps a chapter in progress after every checkpoint until it is explicitly marked complete", () => {
     expect(
       chapterProgressStatus({
         completableTotal: 2,
         completableCompleted: 2,
         markedComplete: false,
+        visited: true,
+      })
+    ).toBe("IN_PROGRESS");
+
+    expect(
+      chapterProgressStatus({
+        completableTotal: 2,
+        completableCompleted: 2,
+        markedComplete: true,
         visited: true,
       })
     ).toBe("COMPLETED");

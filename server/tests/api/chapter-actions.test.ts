@@ -35,6 +35,20 @@ describe("chapter completion", () => {
     await request(app).post(`/api/v1/blocks/${fx.quizBlock.id}/respond`).set(auth()).send({ selected: ["a"] });
     await request(app).post(`/api/v1/blocks/${fx.mustReadBlock.id}/respond`).set(auth()).send({ complete: true });
 
+    expect(await progress()).toMatchObject({
+      status: "IN_PROGRESS",
+      blocksCompleted: 2,
+      blocksTotal: 2,
+    });
+    const ready = await request(app)
+      .get(`/api/v1/courses/${fx.course.slug}/chapters/${fx.chapterA.slug}`)
+      .set(auth());
+    expect(ready.body.data.content).toMatchObject({
+      chapterComplete: false,
+      canMarkComplete: true,
+      nextLocked: true,
+    });
+
     const res = await request(app).post(`/api/v1/chapters/${fx.chapterA.id}/complete`).set(auth());
     expect(res.status).toBe(204);
     expect((await progress())?.status).toBe("COMPLETED");

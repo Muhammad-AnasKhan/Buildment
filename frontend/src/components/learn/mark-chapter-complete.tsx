@@ -31,7 +31,6 @@ export function ChapterCompletionStrip(props: {
   courseTotal: number;
   recap?: { checks: string; open: string; next: string };
   streakMilestone?: StreakMilestone | null;
-  suppressAutoCelebration?: boolean;
 }) {
   return <ChapterCompletionMoment key={props.chapterId} {...props} />;
 }
@@ -52,7 +51,6 @@ function ChapterCompletionMoment({
   courseTotal,
   recap,
   streakMilestone = null,
-  suppressAutoCelebration = false,
 }: {
   chapterId: string;
   nextLocked: boolean;
@@ -67,14 +65,12 @@ function ChapterCompletionMoment({
   courseTotal: number;
   recap?: { checks: string; open: string; next: string };
   streakMilestone?: StreakMilestone | null;
-  suppressAutoCelebration?: boolean;
 }) {
   const router = useRouter();
   const [completionSaved, setCompletionSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const [celebrationPhase, setCelebrationPhase] = useState<CelebrationPhase>("idle");
-  const [trackedComplete, setTrackedComplete] = useState(chapterComplete);
   const modalTimerRef = useRef<number | null>(null);
   const celebrationAnchorRef = useRef<HTMLDivElement>(null);
   const { track } = useMascot();
@@ -84,13 +80,8 @@ function ChapterCompletionMoment({
   }
 
   function beginCelebration() {
-    if (celebrationPhase !== "idle" || suppressAutoCelebration) return;
+    if (celebrationPhase !== "idle") return;
     setCelebrationPhase("burst");
-  }
-
-  if (chapterComplete !== trackedComplete) {
-    setTrackedComplete(chapterComplete);
-    if (chapterComplete && !completionSaved) beginCelebration();
   }
 
   useEffect(() => {

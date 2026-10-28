@@ -11,12 +11,14 @@ status: draft v1
 
 1. **Block progress** — a `Response` exists for `(user, block)` and satisfies the block's
    completion rule.
-2. **Chapter progress** — derived from its blocks + scroll/read state.
+2. **Chapter progress** — checkpoint state plus the learner's explicit completion action.
 3. **Course progress** — derived from its chapters.
 
 ## Chapter completion rule
 
-A chapter is complete when **all required completable blocks are complete**. Completable
+A chapter becomes eligible for completion when **all required completable blocks are complete**.
+The learner must then use **"Mark chapter complete"**; this keeps prose or activities after the
+last checkpoint visible before the completion celebration and next-chapter navigation. Completable
 types are `QUIZ`, `TEST`, `MUST_READ`, `OPEN_QUESTION`, `CODE`, and `PREDICT`.
 
 Presentational blocks (`STEPS`, `PROJECT_PREVIEW`, `LEARNING_OBJECTIVES`, `CHAPTER_RECAP`)
@@ -24,8 +26,7 @@ never receive a `Response` and **must not** count toward `blocksTotal`. Counting
 chapters impossible to complete.
 
 Every completable block is required by default; a mentor can mark any block `optional`.
-Chapters with zero completable blocks complete via an explicit **"Mark chapter complete"**
-button.
+Chapters with zero completable blocks use the same explicit completion action.
 
 Content added after a learner finished a chapter does not reopen it. When the stored status is
 `COMPLETED`, a required block whose `Block.createdAt` is later than `ChapterProgress.completedAt`

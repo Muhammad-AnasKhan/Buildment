@@ -132,6 +132,9 @@ describe("enrollment tools", () => {
     // Real answers for chapter A, then corrupt the rollups and let the repair rebuild them.
     await request(app).post(`/api/v1/blocks/${fx.quizBlock.id}/respond`).set(learner()).send({ selected: ["a"] });
     await request(app).post(`/api/v1/blocks/${fx.mustReadBlock.id}/respond`).set(learner()).send({ complete: true });
+    expect(
+      (await request(app).post(`/api/v1/chapters/${fx.chapterA.id}/complete`).set(learner())).status
+    ).toBe(204);
     await prisma.enrollment.update({ where: { id: fx.enrollment.id }, data: { chaptersCompleted: 0, percentComplete: 0, totalScore: 0 } });
 
     const repair = await request(app).post(`/api/v1/teach/enrollments/${fx.enrollment.id}/repair-progress`).set(mentor());

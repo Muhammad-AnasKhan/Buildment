@@ -27,6 +27,8 @@ const submitQuiz = (optionId: string) =>
     .post(`/api/v1/chapters/${fx.chapterB.id}/quiz/submit`)
     .set(learner())
     .send({ answers: fx.quizChapterBlocks.map((block) => ({ blockId: block.id, selected: [optionId] })) });
+const markComplete = (chapterId: string) =>
+  request(app).post(`/api/v1/chapters/${chapterId}/complete`).set(learner());
 
 describe("POST /api/v1/events", () => {
   it("requires a session and rejects unknown or incomplete events", async () => {
@@ -147,6 +149,7 @@ describe("POST /api/v1/events", () => {
     expect(repeated.body.data.events[0]).toMatchObject({ isNew: false, payload: { attempt: 1 } });
 
     expect((await submitQuiz("a")).status).toBe(200);
+    expect((await markComplete(fx.chapterB.id)).status).toBe(204);
     const passed = await track({ type: "quiz_submitted", chapterId: fx.chapterB.id });
     expect(passed.body.data.events.map((event: { type: string; isNew: boolean }) => [event.type, event.isNew])).toEqual([
       ["quiz_submitted", true],

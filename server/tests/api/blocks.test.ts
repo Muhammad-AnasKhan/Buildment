@@ -59,13 +59,13 @@ describe("POST /api/v1/blocks/:blockId/respond", () => {
     expect(progress?.blocksCompleted).toBe(1);
   });
 
-  it("completes the chapter once every required block is satisfied", async () => {
+  it("makes the chapter eligible without completing it when every required block is satisfied", async () => {
     const res = await respond(fx.mustReadBlock.id, fx.learnerToken, { complete: true });
     expect(res.status).toBe(200);
     const progress = await prisma.chapterProgress.findUnique({
       where: { enrollmentId_chapterId: { enrollmentId: fx.enrollment.id, chapterId: fx.chapterA.id } },
     });
-    expect(progress?.status).toBe("COMPLETED");
+    expect(progress).toMatchObject({ status: "IN_PROGRESS", blocksCompleted: 2, blocksTotal: 2 });
   });
 
   it("returns field errors when the payload does not match the block schema", async () => {
