@@ -1,0 +1,128 @@
+import { describe, expect, it } from "vitest";
+import { describeDiagram, stepCaptions } from "../../../../src/shared/diagram/describe.js";
+import { drawScene, packetPoint } from "../../../../src/shared/diagram/draw.js";
+import { layoutDiagram } from "../../../../src/shared/diagram/layout.js";
+import { parseDiagram, type DiagramKind, type DiagramSpec } from "../../../../src/shared/diagram/spec.js";
+import { diagramToSvg } from "../../../../src/shared/diagram/svg.js";
+import { textWidth, wrapText } from "../../../../src/shared/diagram/text.js";
+
+const FLOW = "title: Find a site\nactor You\nbox DNS\nend Server\nYou -> DNS: Where is it?\nDNS --> You: Here\nYou -> Server\npacket: You -> DNS -> You -> Server";
+const SEQUENCE = "title: Look up a name\nactor You\nbox DNS resolver\nend Web server\nYou -> DNS resolver: Which address?\nDNS resolver --> You: 93.184.215.14\nYou -> Web server: Send the page";
+
+function spec(kind: DiagramKind, source: string): DiagramSpec {
+  const result = parseDiagram(kind, source);
+  if (!result.ok) throw new Error(result.problems.join("\n"));
+  return result.spec;
+}
+
+describe("text helpers", () => {
+  it("measures wide letters wider than narrow ones and wraps to a width", () => {
+    expect(textWidth("mmm", 14)).toBeGreaterThan(textWidth("iii", 14));
+    const lines = wrapText("one two three four five", 14, 60);
+    expect(lines.join(" ")).toBe("one two three four five");
+    expect(lines.every((line) => textWidth(line, 14) <= 60 || !line.includes(" "))).toBe(true);
+    expect(wrapText("a b c d e f g h", 14, 10, 2)).toHaveLength(2);
+  });
+});
+
+describe("layout", () => {
+  it("puts a chain left to right, and top to bottom in compact mode", () => {
+    const s = spec("flow", "title: Chain\nactor You\nbox DNS\nend Server\nYou -> DNS -> Server");
+    const wide = layoutDiagram(s, false);
+    const xs = wide.nodes.map((node) => (node.shape.type === "circle" ? node.shape.cx : node.shape.x));
+    expect(xs[0]).toBeLessThan(xs[1]);
+    expect(xs[1]).toBeLessThan(xs[2]);
+    const compact = layoutDiagram(s, true);
+    const ys = compact.nodes.map((node) => (node.shape.type === "circle" ? node.shape.cy : node.shape.y));
+    expect(ys[0]).toBeLessThan(ys[1]);
+    expect(ys[1]).toBeLessThan(ys[2]);
+    expect(compact.viewBox.w).toBeLessThan(wide.viewBox.w);
+  });
+
+  it("keeps a compact chain narrow enough for a 320px phone", () => {
+    const s = spec("flow", "title: Order\nactor Customer\nbox Shop app\nbox Payment\nstore Orders\nend Courier\nCustomer -> Shop app -> Payment -> Orders -> Courier");
+    expect(layoutDiagram(s, true).viewBox.w).toBeLessThanOrEqual(288);
+  });
+
+  it("does not let a reply undo the left-to-right order", () => {
+    const s = spec("flow", FLOW);
+    const scene = layoutDiagram(s, false);
+    const you = scene.nodes.find((node) => node.id === "you")!.shape;
+    const dns = scene.nodes.find((node) => node.id === "dns")!.shape;
+    expect(you.type === "circle" && dns.type === "rect" && you.cx < dns.x).toBe(true);
+  });
+
+  it("numbers compact sequence arrows instead of labelling them", () => {
+    const scene = layoutDiagram(spec("sequence", SEQUENCE), true);
+    expect(scene.edges.map((edge) => edge.badge?.n)).toEqual([1, 2, 3]);
+    expect(scene.edges.every((edge) => !edge.label)).toBe(true);
+    expect(scene.lifelines).toHaveLength(3);
+  });
+
+  it("is deterministic", () => {
+    expect(layoutDiagram(spec("flow", FLOW), false)).toEqual(layoutDiagram(spec("flow", FLOW), false));
+  });
+});
+
+describe("drawing", () => {
+  it("uses the brand colours and no gradients", () => {
+    const svg = diagramToSvg("flow", FLOW);
+    expect(svg.ok).toBe(true);
+    if (!svg.ok) return;
+    for (const colour of ["#E8EBFF", "#2434E0", "#0A0F2C", "#FFFFFF"]) expect(svg.svg).toContain(colour);
+    expect(svg.svg).not.toMatch(/Gradient|filter=|drop-shadow/);
+    expect(svg.svg).toMatch(/^<svg xmlns="http:\/\/www.w3.org\/2000\/svg" viewBox="[-\d.]+ [-\d.]+ \d+ \d+"/);
+    expect(svg.svg).toContain("<title>Find a site</title>");
+    expect(svg.svg).toContain("stroke-width=\"3\"");
+  });
+
+  it("draws the packet, its touch target and the current step", () => {
+    const s = spec("flow", FLOW);
+    const scene = layoutDiagram(s, false);
+    const tree = drawScene(scene, { activeEdge: 1, fadedEdges: new Set([2]), activeNode: "you", packet: packetPoint(scene, s.hops, 2), packetHandle: true });
+    const flat = JSON.stringify(tree);
+    expect(flat).toContain("#FFC933");
+    expect(flat).toContain('"r":22');
+    expect(flat).toContain('"opacity":0.25');
+    expect(flat).toContain('"key":"you-ring"');
+  });
+
+  it("moves the packet along the hops and stays on the path", () => {
+    const s = spec("flow", FLOW);
+    const scene = layoutDiagram(s, false);
+    const start = packetPoint(scene, s.hops, 0)!;
+    expect(start).toEqual(scene.edges[0].path.start);
+    expect(packetPoint(scene, s.hops, 3)).toEqual(scene.edges[2].path.end);
+    expect(packetPoint(scene, s.hops, 99)).toEqual(packetPoint(scene, s.hops, 3));
+    expect(packetPoint(scene, [], 0)).toBeNull();
+  });
+
+  it("escapes text in the exported SVG", () => {
+    const svg = diagramToSvg("flow", "title: Tom & Jerry\nbox A\nbox B\nA -> B: 1 < 2");
+    expect(svg.ok && svg.svg).toContain("Tom &amp; Jerry");
+    expect(svg.ok && svg.svg).toContain("1 &lt; 2");
+  });
+
+  it("returns the problems instead of a picture for a bad spec", () => {
+    expect(diagramToSvg("flow", "title: X\nbox A\nnonsense")).toEqual({ ok: false, problems: expect.arrayContaining([expect.stringMatching(/not a diagram line/)]) });
+  });
+});
+
+describe("text alternative", () => {
+  it("names every part, arrow and the packet path", () => {
+    expect(describeDiagram(spec("flow", FLOW))).toBe(
+      "Find a site. A flow diagram with 3 parts: You (a person), DNS and Server (the end point). Arrows: You to DNS: Where is it?; DNS to You (dashed): Here; You to Server. A packet travels You, then DNS, then You, then Server.",
+    );
+  });
+
+  it("numbers the messages of a sequence", () => {
+    expect(describeDiagram(spec("sequence", SEQUENCE))).toBe(
+      "Look up a name. A sequence of 3 messages between You (a person), DNS resolver and Web server (the end point). 1. You to DNS resolver: Which address?. 2. DNS resolver to You (dashed): 93.184.215.14. 3. You to Web server: Send the page.",
+    );
+  });
+
+  it("writes one caption per step", () => {
+    expect(stepCaptions(spec("flow", FLOW))).toEqual(["The packet starts at You.", "You to DNS: Where is it?", "DNS to You: Here", "You to Server."]);
+    expect(stepCaptions(spec("sequence", SEQUENCE))).toHaveLength(3);
+  });
+});
