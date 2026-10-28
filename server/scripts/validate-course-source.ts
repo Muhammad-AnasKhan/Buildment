@@ -28,7 +28,7 @@ export type ChapterMdxFailure = { file: string; error: string };
 
 export function validateParsedLesson(lesson: ReturnType<typeof parseLesson>): void {
   const processor = unified().use(remarkParse).use(remarkMdx).use(remarkGfm)
-    .use(remarkChecklist).use(remarkLearningLog).use(remarkMermaid).use(remarkDiagram);
+    .use(remarkChecklist).use(remarkLearningLog).use(remarkDiagram).use(remarkMermaid);
   const source = restoreInteractiveBlockTags(lesson.source);
   if (lesson.readerMode === "QUIZ" && !isActivityOnlySource(source)) {
     throw new Error("Quiz flow supports activities only: Quiz, OpenQuestion, Predict, and CodeExercise.");

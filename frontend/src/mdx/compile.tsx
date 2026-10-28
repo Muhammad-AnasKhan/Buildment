@@ -79,7 +79,7 @@ export function ChapterMdx({ source, preview = false }: { source: string; previe
       components={components}
       options={{
         mdxOptions: {
-          remarkPlugins: [remarkGfm, remarkChecklist, remarkLearningLog, remarkMermaid, remarkDiagram],
+          remarkPlugins: [remarkGfm, remarkChecklist, remarkLearningLog, remarkDiagram, remarkMermaid],
           rehypePlugins: rehypePrettyCodePlugins,
         },
       }}

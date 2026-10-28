@@ -30,6 +30,25 @@ describe("collectDiagramProblems", () => {
   });
 });
 
+describe("remarkDiagram with Mermaid fences", () => {
+  const run = (source: string) => {
+    const processor = unified().use(remarkParse).use(remarkMdx).use(remarkDiagram);
+    const tree = processor.runSync(processor.parse(source)) as unknown as { children: { type: string; lang?: string; attributes?: { name: string; value: string }[] }[] };
+    return tree.children;
+  };
+
+  it("draws a convertible Mermaid flowchart as a Diagram titled by the heading above it", () => {
+    const children = run("## How a page loads\n\nText.\n\n```mermaid\nflowchart LR\n  A[You] --> B[DNS]\n```\n");
+    const diagram = children.find((child) => child.type === "mdxJsxFlowElement");
+    expect(diagram?.attributes?.[1].value).toBe("title: How a page loads\ndirection: right\nbox You\nbox DNS\nYou -> DNS");
+  });
+
+  it("leaves Mermaid it cannot convert, and fences marked keep-mermaid, for remark-mermaid", () => {
+    const children = run("```mermaid\nstateDiagram-v2\n  [*] --> Open\n```\n\n```mermaid\n%% keep-mermaid\nflowchart LR\n  A --> B\n```\n");
+    expect(children.map((child) => child.type)).toEqual(["code", "code"]);
+  });
+});
+
 describe("remarkDiagram", () => {
   it("turns a fence into a Diagram element with the spec as written", () => {
     const processor = unified().use(remarkParse).use(remarkMdx).use(remarkDiagram);
