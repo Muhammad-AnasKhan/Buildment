@@ -2,12 +2,14 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type * as ImportCourse from "../../scripts/import-course.js";
+import type * as ValidateCourseSource from "../../scripts/validate-course-source.js";
 
 // The importer reads COURSE_IMPORT_SOURCE once at load, so point it at a scratch
 // course before importing the scripts.
 let temporary = "";
-let importer: typeof import("../../scripts/import-course.js");
-let validator: typeof import("../../scripts/validate-course-source.js");
+let importer: typeof ImportCourse;
+let validator: typeof ValidateCourseSource;
 
 const MODULE = "01-introduction";
 const TICKS = "```";

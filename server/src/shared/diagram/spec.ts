@@ -47,7 +47,13 @@ const NAME = /^[\p{L}\p{N}][\p{L}\p{N} .,'()/&+?-]*$/u;
 const ARROW = /\s*(-->|->)\s*/;
 const SETTING = /^(title|direction|packet)\s*:\s*(.*)$/i;
 const NODE_LINE = new RegExp(`^(${NODE_KINDS.join("|")})\\s+(.+)$`, "i");
-const CONTROL = /[\u0000-\u001f\u007f]/;
+/** True when the text has a control character other than a tab. */
+function hasControl(text: string): boolean {
+  return [...text].some((char) => {
+    const code = char.charCodeAt(0);
+    return (code < 32 && code !== 9) || code === 127;
+  });
+}
 
 /** Names match without case and with spaces collapsed, so "Load  balancer" is "load balancer". */
 export function nodeId(name: string): string {
@@ -71,7 +77,7 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
     const line = index + 1;
     const text = rawLine.trim();
     if (!text || text.startsWith("#")) return;
-    if (CONTROL.test(text.replace(/\t/g, " "))) {
+    if (hasControl(text)) {
       at(line, "remove the control character from this line.");
       return;
     }

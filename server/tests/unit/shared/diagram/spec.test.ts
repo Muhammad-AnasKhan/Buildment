@@ -72,6 +72,11 @@ describe("parseDiagram: problems fail loudly", () => {
     expect(out).toEqual([expect.stringMatching(/^Line 5: "A connects to B" is not a diagram line/)]);
   });
 
+  it("rejects a control character but allows a tab", () => {
+    expect(problems(parseDiagram("flow", "title: X\nbox A\u0007\nbox B\nA -> B"))[0]).toMatch(/^Line 2: remove the control character/);
+    expect(parseDiagram("flow", "title: X\nbox A\nbox B\nA\t->\tB").ok).toBe(true);
+  });
+
   it("rejects an unknown node kind as an unknown line", () => {
     expect(problems(parseDiagram("flow", "title: X\nservice A\nbox B\nA -> B"))[0]).toMatch(/^Line 2: "service A" is not a diagram line/);
   });
