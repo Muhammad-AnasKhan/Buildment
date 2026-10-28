@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { DM_Sans, Unbounded } from "next/font/google";
 import { ChoiceGroup } from "./choice-group";
-import { Dot } from "./dot";
+import { Dot } from "@/components/brand/dot";
 import { HeroQuestion } from "./hero-question";
-import { Wordmark } from "./wordmark";
+import { Wordmark } from "@/components/brand/wordmark";
 import s from "./edorax-landing.module.css";
 
 // The Edorax home page. Static markup with inline brand values so it matches the
