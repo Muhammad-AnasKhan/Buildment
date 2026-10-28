@@ -2,11 +2,11 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { id: "mine", label: "Mine", href: "/my-courses" },
   { id: "all", label: "All courses", href: "/catalog" },
+  { id: "mine", label: "My courses", href: "/my-courses" },
 ] as const;
 
-/** Two links that switch between the learner's own courses and the whole catalog. */
+/** Two links that switch between the whole catalog and the learner's own courses. */
 export function CoursesTabs({ active }: { active: (typeof TABS)[number]["id"] }) {
   return (
     <nav aria-label="Courses" className="flex flex-wrap gap-2">

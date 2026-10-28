@@ -18,7 +18,7 @@ function SignInLink() {
 }
 
 function CatalogLink() {
-  return <Link href="/courses" style={{ display: "inline-block", color: "#F6F7FB", textDecoration: "none", fontWeight: 700, padding: "14px 28px", border: "2px solid #F6F7FB" }}>Browse courses</Link>;
+  return <Link href="/catalog" style={{ display: "inline-block", color: "#F6F7FB", textDecoration: "none", fontWeight: 700, padding: "14px 28px", border: "2px solid #F6F7FB" }}>Browse courses</Link>;
 }
 
 export function EdoraxLanding() {
