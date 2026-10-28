@@ -31,7 +31,7 @@ export type DiagramParseResult = { ok: true; spec: DiagramSpec } | { ok: false; 
 
 export const DIAGRAM_LIMITS = {
   title: 80,
-  name: 24,
+  name: 36,
   label: 40,
   flowNodes: 8,
   flowEdges: 12,

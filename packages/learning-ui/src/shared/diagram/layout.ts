@@ -41,7 +41,7 @@ const PAD = 18;
 type Box = { left: number; right: number; top: number; bottom: number };
 type Measured = { node: DiagramNode; lines: string[]; inside: boolean; r: number; w: number; h: number; box: Box };
 
-function measure(node: DiagramNode, compact: boolean, labelBeside: boolean): Measured {
+function measure(node: DiagramNode, compact: boolean, labelBeside: boolean, crowded = false): Measured {
   const lh = NODE_FONT * LINE_HEIGHT;
   if (node.kind === "actor") {
     const tw = textWidth(node.label, NODE_FONT);
@@ -57,9 +57,10 @@ function measure(node: DiagramNode, compact: boolean, labelBeside: boolean): Mea
       : { left: Math.max(r, lw / 2), right: Math.max(r, lw / 2), top: r, bottom: r + 6 + lines.length * lh };
     return { node, lines, inside: false, r, w: 2 * r, h: 2 * r, box };
   }
-  const lines = wrapText(node.label, NODE_FONT, compact ? 112 : 128, 2);
+  // Three or more parts side by side on a phone get narrower boxes with up to three lines.
+  const lines = wrapText(node.label, NODE_FONT, crowded ? 84 : compact ? 112 : 128, crowded ? 3 : 2);
   const w = Math.max(76, Math.ceil(linesWidth(lines, NODE_FONT) + 28));
-  const h = (lines.length === 1 ? 46 : 64) + (node.kind === "store" ? 12 : 0);
+  const h = 28 + lines.length * NODE_FONT * LINE_HEIGHT + (node.kind === "store" ? 12 : 0);
   return { node, lines, inside: true, r: 0, w, h, box: { left: w / 2, right: w / 2, top: h / 2, bottom: h / 2 } };
 }
 
@@ -253,9 +254,11 @@ function ranks(spec: DiagramSpec): Map<string, number> {
 
 export function layoutFlow(spec: DiagramSpec, compact: boolean): Scene {
   const down = compact || spec.direction === "down";
-  const measured = new Map(spec.nodes.map((node) => [node.id, measure(node, compact, down)]));
   const rank = ranks(spec);
   const layerCount = Math.max(...rank.values()) + 1;
+  const widest = Math.max(...Array.from({ length: layerCount }, (_, r) => [...rank.values()].filter((v) => v === r).length));
+  const crowded = compact && widest >= 3;
+  const measured = new Map(spec.nodes.map((node) => [node.id, measure(node, compact, down, crowded)]));
   const layers: string[][] = Array.from({ length: layerCount }, () => []);
   spec.nodes.forEach((node) => layers[rank.get(node.id)!].push(node.id));
 
@@ -309,7 +312,7 @@ export function layoutFlow(spec: DiagramSpec, compact: boolean): Scene {
   }
 
   // Cross axis: parts in one layer side by side, centred on the axis.
-  const crossGap = down ? 24 : edgeLines.some((lines) => lines.length) ? 44 : 30;
+  const crossGap = down ? (crowded ? 16 : 24) : edgeLines.some((lines) => lines.length) ? 44 : 30;
   const centres = new Map<string, Point>();
   layers.forEach((layer, r) => {
     const total = layer.reduce((sum, id) => sum + crossBefore(measured.get(id)!) + crossAfter(measured.get(id)!), 0) + crossGap * (layer.length - 1);

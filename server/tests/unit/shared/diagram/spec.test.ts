@@ -92,7 +92,7 @@ describe("parseDiagram: problems fail loudly", () => {
   it("rejects long labels, names and titles", () => {
     const longLabel = problems(parseDiagram("flow", `title: X\nbox A\nbox B\nA -> B: ${"word ".repeat(10)}`));
     expect(longLabel[0]).toMatch(/shorten the label to 40 characters/);
-    expect(problems(parseDiagram("flow", `title: X\nbox ${"a".repeat(25)}\nbox B`))[0]).toMatch(/to 24 characters or fewer/);
+    expect(problems(parseDiagram("flow", `title: X\nbox ${"a".repeat(37)}\nbox B`))[0]).toMatch(/to 36 characters or fewer/);
     expect(problems(parseDiagram("flow", `title: ${"t".repeat(81)}\nbox A\nbox B\nA -> B`))[0]).toMatch(/shorten the title to 80/);
   });
 

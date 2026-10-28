@@ -74,8 +74,8 @@ packet: A -> B -> C              flow only: the yellow packet's path, one arrow 
 ```
 
 Rules:
-- Declare every name before using it. Names are matched without case, up to 24 characters, letters, digits, spaces and `. , ' ( ) / & + ? -`.
-- Labels are up to 40 characters, with no `:`.
+- Declare every name (anywhere in the spec). Names are matched without case, up to 36 characters, letters, digits, spaces and `. , ' ( ) / & + ? -`.
+- Labels are up to 40 characters. A label may contain `:`; everything after the first `:` on an arrow line is the label.
 - A flow has 2 to 8 parts. A sequence has 2 to 5 parts and 1 to 12 arrows. Each packet hop must be an arrow in the diagram, in either direction.
 - In a `sequence`, each arrow line is one step, in order. An arrow from a part to itself is an error.
 - A `flow` with a `packet:` line is a step-through: Back and Next, or dragging, move the packet one hop, and the hop's arrow label is the step's caption.
