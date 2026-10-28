@@ -66,7 +66,7 @@ export function VariantPicker({
       <input type="hidden" name="courseSlug" value={courseSlug} />
       <fieldset className="min-w-0">
         <legend className="sr-only">Product to build</legend>
-        <ul className="grid gap-3 sm:grid-cols-2">
+        <ul className="grid items-start gap-3 sm:grid-cols-2">
           {choices.map((choice) => {
             const on = choice.slug === selected;
             return (
@@ -94,9 +94,9 @@ export function VariantPicker({
                     <span className="mt-0.5 block text-sm text-muted-foreground">
                       {choice.unavailable ? `${choice.label}. No lessons yet.` : choice.label}
                     </span>
-                    <span className="mt-2 line-clamp-2 text-base leading-6">{choice.summary}</span>
+                    <span className={cn("mt-2 text-base leading-6", on ? "block" : "line-clamp-2")}>{choice.summary}</span>
                     {choice.channels.length > 0 ? (
-                      <span className="mt-2.5 flex items-center gap-2 text-muted-foreground">
+                      <span className={cn("mt-2.5 items-center gap-2 text-muted-foreground sm:flex", on ? "flex" : "hidden")}>
                         <span className="sr-only">Channels: {choice.channels.map((channel) => channel.label).join(", ")}</span>
                         {choice.channels.map((channel) => {
                           const Icon = channelIcon(channel.label);
