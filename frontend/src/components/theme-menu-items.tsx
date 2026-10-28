@@ -16,7 +16,7 @@ export function ThemeMenuItems() {
   const { theme, setTheme } = useTheme();
   // next-themes only knows the stored choice in the browser, so the first render shows no tick.
   const mounted = useHydrated();
-  const current = mounted ? (theme ?? "system") : null;
+  const current = mounted ? (theme ?? "light") : null;
 
   return (
     <DropdownMenuGroup>
