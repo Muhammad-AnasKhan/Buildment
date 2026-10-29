@@ -36,10 +36,10 @@ function LabFrame({
 }) {
   return (
     <figure className="not-prose my-8">
-      <figcaption className="mb-2">
-        <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{eyebrow}</div>
-        <div className="text-lg font-semibold">{title}</div>
-        <p className="text-sm text-muted-foreground">{purpose}</p>
+      <figcaption className="mb-3">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-sky-400">{eyebrow}</div>
+        <div className="text-xl font-bold text-foreground mt-0.5">{title}</div>
+        <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{purpose}</p>
       </figcaption>
       {children}
       <p className="mt-2 text-xs text-muted-foreground">{limits}</p>

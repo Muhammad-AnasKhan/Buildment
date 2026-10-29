@@ -68,7 +68,7 @@ export function DiagramView({ spec, legend }: { spec: DiagramSpec; legend?: stri
       style={{ background: BRAND.tint, color: BRAND.ink, fontFamily: DIAGRAM_FONT }}
       aria-labelledby={`${id}-title`}
     >
-      <figcaption id={`${id}-title`} className="px-4 pt-4 text-base font-bold leading-snug sm:px-5" style={{ color: BRAND.ink }}>
+      <figcaption id={`${id}-title`} className="px-4 pt-4 text-base font-bold leading-snug sm:px-5 text-[#0A0F2C] dark:text-[#0A0F2C]" style={{ color: BRAND.ink }}>
         {spec.title}
       </figcaption>
       <p id={`${id}-desc`} className="sr-only">{description}</p>
@@ -105,7 +105,7 @@ export function DiagramView({ spec, legend }: { spec: DiagramSpec; legend?: stri
         <div className="pb-2" />
       )}
       {legend ? (
-        <p className="px-4 pb-4 pt-1 text-[15px] leading-relaxed sm:px-5 font-medium" style={{ color: BRAND.muted }}>
+        <p className="px-4 pb-4 pt-1 text-[15px] leading-relaxed sm:px-5 font-semibold text-[#1E295A] dark:text-[#1E295A]" style={{ color: "#1E295A" }}>
           {legend}
         </p>
       ) : null}

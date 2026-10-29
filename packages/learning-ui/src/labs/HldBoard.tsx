@@ -571,7 +571,7 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
               <button
                 type="button"
                 onClick={onToggleFullscreen}
-                className={`${HEAD_BTN} flex items-center gap-1.5 border border-slate-500/80 bg-slate-800/70 hover:bg-slate-700 hover:text-white transition-colors`}
+                className="lab-mono flex items-center gap-1.5 rounded-[4px] border border-sky-400/60 bg-sky-500/20 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-sky-200 hover:bg-sky-500/35 hover:text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300"
                 title={isFullscreen ? "Exit Fullscreen (Esc)" : "Expand to Full Screen"}
                 data-testid="fullscreen-button"
               >
