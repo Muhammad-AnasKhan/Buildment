@@ -1143,6 +1143,9 @@ import { netM10BgpAnnounce } from "./net-m10-bgp-announce/data";
 import { netM10ReplayChallenge7 } from "./net-m10-replay-challenge-7/data";
 import { netM11ReplayChallenge8 } from "./net-m11-replay-challenge-8/data";
 import { netM12ReplayToolbox } from "./net-m12-replay-toolbox/data";
+import { seM1RequestLayers } from "./se-m1-request-layers/data";
+import { seM1TaskShapes } from "./se-m1-task-shapes/data";
+import { seM1StackNames } from "./se-m1-stack-names/data";
 
 // The closed set of canvases a chapter can embed, keyed by the slugs in
 // server/src/shared/canvas/slugs.ts. Each entry is data for one of the four
@@ -2300,6 +2303,9 @@ export const canvasRegistry: Record<CanvasSlug, CanvasSpec> = {
   "net-m9-ipv6-addresses": netM9Ipv6Addresses,
   "net-m9-ipv6-filter": netM9Ipv6Filter,
   "net-m9-ipv6-vs-nat": netM9Ipv6VsNat,
+  "se-m1-request-layers": seM1RequestLayers,
+  "se-m1-task-shapes": seM1TaskShapes,
+  "se-m1-stack-names": seM1StackNames,
 };
 
 /** The spec for a slug from MDX, or null for anything not registered. */
