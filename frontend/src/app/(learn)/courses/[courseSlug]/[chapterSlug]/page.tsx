@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { ChapterReaderView } from "@/shared/api/reader";
 import { requireVerifiedUser } from "@/server/auth/guards";
 import { ApiError } from "@/lib/api-client";
@@ -38,6 +38,8 @@ export default async function ChapterReaderPage({
   }
 
   const { course, chapter, prev, next, modules } = view;
+  // Older links carry the chapter's id after its slug; show the address the course itself uses.
+  if (decodeURIComponent(chapterSlug) !== chapter.slug) redirect(`/courses/${course.slug}/${chapter.slug}`);
   const variant = variantForTrack(view.track);
 
   if (view.locked || !view.content) {
