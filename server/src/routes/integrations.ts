@@ -22,6 +22,7 @@ router.use(requireOrganization);
 router.get("/connection", integrations.connection);
 router.get("/courses", integrations.courses);
 router.get("/allocations", integrations.allocations);
+router.get("/coupons", integrations.coupons);
 router.get("/enrollments", validateQuery(enrollmentLookupQuery), integrations.getEnrollment);
 router.post("/enrollments", validateBody(createEnrollmentBody), integrations.postEnrollment);
 router.post("/enrollments/cancel", validateBody(cancelEnrollmentBody), integrations.postCancelEnrollment);

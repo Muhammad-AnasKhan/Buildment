@@ -126,6 +126,40 @@ export async function setAllocationLeaderboard(req: Request, res: Response) {
   noContent(res);
 }
 
+// POST /api/v1/admin/organizations/:orgId/coupons
+export async function createCouponPool(req: Request, res: Response) {
+  const body = req.body as {
+    label: string;
+    courseId?: string | null;
+    code?: string | null;
+    percentOff?: number;
+    maxRedemptions: number;
+    expiresAt?: string;
+  };
+  const { createCouponPool: createPool } = await import("../services/coupons/pools.js");
+  const { parseExpiresAt } = await import("../services/admin/organizations.js");
+  created(
+    res,
+    await createPool({
+      organizationId: param(req, "orgId"),
+      courseId: body.courseId,
+      label: body.label,
+      code: body.code,
+      percentOff: body.percentOff,
+      maxRedemptions: body.maxRedemptions,
+      expiresAt: parseExpiresAt(body.expiresAt),
+    })
+  );
+}
+
+// PATCH /api/v1/admin/organizations/:orgId/coupons/:poolId
+export async function setCouponPoolActive(req: Request, res: Response) {
+  const { active } = req.body as { active: boolean };
+  const { setCouponPoolActive: setActive } = await import("../services/coupons/pools.js");
+  await setActive(param(req, "orgId"), param(req, "poolId"), active);
+  noContent(res);
+}
+
 // GET /api/v1/admin/course-requests
 export async function listCourseRequests(req: Request, res: Response) {
   ok(res, await courseRequests.listCourseRequests(req.query as ListRequestsQuery));

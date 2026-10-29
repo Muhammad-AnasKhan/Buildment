@@ -7,6 +7,7 @@ import type { CourseOverview } from "@/shared/api/catalog";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { CourseOverviewHero } from "@/components/learn/course-overview-hero";
+import { CourseCouponBanner } from "@/components/learn/course-coupon-banner";
 import { CourseSyllabus } from "@/components/learn/course-syllabus";
 import { CourseProjectShowcase } from "@/components/learn/course-project-showcase";
 import { SpecialisationPanel, VariantBanner } from "@/components/learn/course-track-panels";
@@ -41,7 +42,7 @@ export default async function CourseOverviewPage({
 
   await requireLearnSurface();
   const overview = await loadOverview(courseSlug);
-  const { course, enrollment, syllabus } = overview;
+  const { course, enrollment, syllabus, coupon } = overview;
 
   if (overview.access === "none" || !enrollment) {
     return (
@@ -138,6 +139,8 @@ export default async function CourseOverviewPage({
           chapterCount={chapterCount}
           estimatedHours={course.estimatedHours}
         />
+
+        {coupon ? <CourseCouponBanner coupon={coupon} /> : null}
 
         {track ? <VariantBanner courseSlug={course.slug} track={track} /> : null}
 

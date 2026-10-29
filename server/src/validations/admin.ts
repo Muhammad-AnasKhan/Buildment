@@ -66,6 +66,19 @@ export type BulkApproveBody = z.infer<typeof bulkApproveBody>;
 
 export const instructorAccessBody = z.object({ enabled: z.boolean() });
 
+export const createCouponPoolBody = z.object({
+  label: z.string().trim().min(2).max(120),
+  courseId: id.optional().nullable(),
+  code: z.string().trim().max(64).optional().nullable(),
+  percentOff: z.coerce.number().int().min(1).max(100).default(100),
+  maxRedemptions: z.coerce.number().int().min(1).max(1_000_000),
+  expiresAt: expiresAt,
+});
+export type CreateCouponPoolBody = z.infer<typeof createCouponPoolBody>;
+
+export const couponPoolParams = z.object({ orgId: id, poolId: id });
+export const couponPoolActiveBody = z.object({ active: z.boolean() });
+
 export const suspendUserBody = z.object({
   note: z.string().trim().max(240).optional(),
 });
