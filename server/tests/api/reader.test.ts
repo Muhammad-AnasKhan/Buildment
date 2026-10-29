@@ -62,7 +62,8 @@ describe("block state", () => {
 
     await request(app).post(`/api/v1/blocks/${fx.quizBlock.id}/respond`).set(auth()).send({ selected: ["b"] });
     const after = await request(app).get(`/api/v1/blocks/${fx.quizBlock.id}/state`).set(auth());
-    expect(after.body.data.initialState).toMatchObject({ selected: ["b"], isCorrect: false, explanation: "Basic arithmetic." });
+    expect(after.body.data.initialState).toMatchObject({ selected: ["b"], isCorrect: false });
+    expect(after.body.data.initialState.explanation).toBeUndefined();
 
     const anon = await request(app).get(`/api/v1/blocks/${fx.quizBlock.id}/state`);
     expect(anon.status).toBe(200);

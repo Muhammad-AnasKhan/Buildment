@@ -6,6 +6,7 @@ import { releaseContainsChapter } from "../courses/releases.js";
 import { NotFoundError } from "../../utils/errors.js";
 import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
 import { calculateQuizAssessment } from "../progress/quiz-assessment.js";
+import { visibleExplanation } from "../../shared/lib/quiz-feedback.js";
 
 /** Initial state for a quiz-mode chapter's wizard: last answers, grades and the score once every question is attempted. */
 export async function loadQuizChapterState(chapterId: string, userId: string): Promise<QuizChapterState> {
@@ -41,9 +42,13 @@ export async function loadQuizChapterState(chapterId: string, userId: string): P
     const response = latestByBlock.get(block.id);
     if (!response) continue;
     const parsed = QuizConfigSchema.safeParse(block.config);
-    const explanation = parsed.success ? parsed.data.explanation : undefined;
+    const selected = selectedFor(block.id);
+    // Same rule as single quiz blocks: a wrong answer only reveals the lines about what was picked.
+    const explanation = parsed.success
+      ? visibleExplanation({ explanation: parsed.data.explanation, options: parsed.data.options, selected, isCorrect: response.isCorrect, allowRetry: parsed.data.allowRetry })
+      : undefined;
     initialBlockGrades[block.id] = {
-      selected: selectedFor(block.id),
+      selected,
       isCorrect: response.isCorrect,
       explanation: explanation && tokens ? applyTokens(explanation, tokens) : explanation,
     };
