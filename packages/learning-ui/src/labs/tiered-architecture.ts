@@ -67,6 +67,13 @@ export interface ModelOptions {
    * before it answers. Labs turn this on when the board has no queue to carry the clicks.
    */
   inlineWrites?: boolean;
+  /**
+   * The share of requests that send work to parts of a role, for side jobs that only
+   * some requests need: { queue: 0.1 } means 1 request in 10 leaves a job in the queue.
+   * Applied wherever a part of another role sends to that role, so it holds however the
+   * learner links the board. A role with no share gets the whole stream.
+   */
+  shares?: Partial<Record<Role, number>>;
 }
 
 export interface Targets {
@@ -388,14 +395,17 @@ export function runTieredModel(board: Board, load: number, targets: Targets, opt
       const stores = role === "database" || role === "nosql";
       // A worker batches its writes: one trip to the store carries `batchSize` events.
       const batch = node.kind === "worker" && stores ? Math.max(1, num(node, "batchSize", 1)) : 1;
-      const share = stores ? (out * missRate) / batch : out;
+      // A side job only some requests need (an alert, an index update) carries its share of the stream.
+      const part = role !== roleOf(node.kind) ? (options.shares?.[role] ?? 1) : 1;
+      const share = (stores ? (out * missRate) / batch : out) * part;
       for (const k of ids) {
         const key = `${id}>${k}`;
         const rate = share / ids.length;
         incoming.set(k, (incoming.get(k) ?? 0) + rate);
         edgeFlows[key] = (edgeFlows[key] ?? 0) + rate;
+        if (part < 1) addPart(key, `${Math.round(part * 1000) / 10}% of requests send work here`, rate);
         if (role === "cache") addPart(key, `reads, ${Math.round(num(byId.get(k)!, "hitRate", 0) * 100)}% answered by the cache`, rate);
-        else if (stores && node.kind === "worker" && batch > 1) addPart(key, `click writes, ${batch} per trip`, rate);
+        else if (stores && node.kind === "worker" && batch > 1) addPart(key, `writes, ${batch} per trip`, rate);
         else if (stores && cache) addPart(key, "cache misses", rate);
         else if (stores && roleOf(node.kind) === "cache") addPart(key, "cache misses", rate);
       }
