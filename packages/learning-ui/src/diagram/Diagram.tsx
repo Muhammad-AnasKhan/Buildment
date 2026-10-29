@@ -72,10 +72,10 @@ export function DiagramView({ spec, legend }: { spec: DiagramSpec; legend?: stri
         {spec.title}
       </figcaption>
       <p id={`${id}-desc`} className="sr-only">{description}</p>
-      <div className={classes.wide}>
+      <div className={`overflow-x-auto ${classes.wide}`}>
         <DiagramSvg scene={wide} spec={spec} step={step} drag={drag} setDrag={setDrag} setStep={go} labelledBy={`${id}-title`} describedBy={`${id}-desc`} />
       </div>
-      <div className={classes.compact}>
+      <div className={`overflow-x-auto ${classes.compact}`}>
         <DiagramSvg scene={compact} spec={spec} step={step} drag={drag} setDrag={setDrag} setStep={go} labelledBy={`${id}-title`} describedBy={`${id}-desc`} />
         {showList ? (
           <ol className="space-y-1 px-4 pb-2 text-[15px] leading-snug" aria-hidden>
@@ -206,7 +206,8 @@ function DiagramSvg({ scene, spec, step, drag, setDrag, setStep, labelledBy, des
       "aria-labelledby": labelledBy,
       "aria-describedby": describedBy,
       className: "mx-auto block h-auto w-full",
-      style: { maxWidth: scene.viewBox.w, fontFamily: DIAGRAM_FONT },
+      // Never shrink text below about 72%: a very large diagram scrolls sideways in its panel instead.
+      style: { maxWidth: scene.viewBox.w, minWidth: Math.round(scene.viewBox.w * 0.72), fontFamily: DIAGRAM_FONT },
     },
     packet: packetHandlers,
   });

@@ -13,24 +13,34 @@ const KIND_WORD: Record<NodeKind, string | null> = {
   store: "stored data",
   external: "an outside service",
   decision: "a question",
+  state: "a state",
+  start: null,
+  stop: null,
+  entity: "a table",
 };
 
 export function describeDiagram(spec: DiagramSpec): string {
-  const name = new Map(spec.nodes.map((node) => [node.id, node.label]));
-  const parts = spec.nodes.map((node) => (KIND_WORD[node.kind] ? `${node.label} (${KIND_WORD[node.kind]})` : node.label));
+  const name = names(spec);
+  const parts = spec.nodes.map((node) =>
+    node.fields?.length ? `${node.label} (a table with ${list(node.fields)})` : KIND_WORD[node.kind] ? `${node.label} (${KIND_WORD[node.kind]})` : node.label,
+  );
   if (spec.kind === "sequence") {
     const steps = spec.edges.map((edge, i) => `${i + 1}. ${arrowText(name, edge)}.`);
     return `${spec.title}. A sequence of ${spec.edges.length} ${plural(spec.edges.length, "message")} between ${list(parts)}. ${steps.join(" ")}`;
   }
   const arrows = spec.edges.map((edge) => arrowText(name, edge));
   let out = `${spec.title}. A flow diagram with ${spec.nodes.length} parts: ${list(parts)}. Arrows: ${arrows.join("; ")}.`;
+  if (spec.groups.length) {
+    const inGroup = (node: { group: number | null }, g: number): boolean => node.group !== null && (node.group === g || inGroup({ group: spec.groups[node.group].parent }, g));
+    out += ` Groups: ${spec.groups.map((group, g) => `${group.label} (${list(spec.nodes.filter((node) => inGroup(node, g)).map((node) => node.label))})`).join("; ")}.`;
+  }
   if (spec.packet.length) out += ` A packet travels ${spec.packet.map((id) => name.get(id)).join(", then ")}.`;
   return out;
 }
 
 /** One caption per step. A flow's steps are the packet's stops; a sequence's are its messages. */
 export function stepCaptions(spec: DiagramSpec): string[] {
-  const name = new Map(spec.nodes.map((node) => [node.id, node.label]));
+  const name = names(spec);
   if (spec.kind === "sequence") return spec.edges.map((edge) => arrowText(name, edge, false));
   if (!spec.packet.length) return [];
   return [
@@ -45,9 +55,11 @@ export function stepCaptions(spec: DiagramSpec): string[] {
 }
 
 /** `markDashed` names the dashed line for a screen reader; captions under the picture leave it out. */
-function arrowText(name: Map<string, string>, edge: { from: string; to: string; label?: string; dashed: boolean; head: boolean }, markDashed = true): string {
-  const join = edge.head ? "to" : "joined to";
-  const base = `${name.get(edge.from)} ${join} ${name.get(edge.to)}${markDashed && edge.dashed ? " (dashed arrow)" : ""}`;
+function arrowText(name: Map<string, string>, edge: { from: string; to: string; label?: string; dashed: boolean; head: boolean; tail: boolean }, markDashed = true): string {
+  const pair = edge.tail
+    ? `${name.get(edge.from)} and ${name.get(edge.to)}, both ways`
+    : `${name.get(edge.from)} ${edge.head ? "to" : "joined to"} ${name.get(edge.to)}`;
+  const base = `${pair}${markDashed && edge.dashed ? " (dashed arrow)" : ""}`;
   return edge.label ? `${base}: ${edge.label}` : base;
 }
 
@@ -58,4 +70,9 @@ function list(items: string[]): string {
 
 function plural(n: number, word: string): string {
   return n === 1 ? word : `${word}s`;
+}
+
+/** What to call each arrow end: a part's name, or a group's for an arrow to the whole group. */
+function names(spec: DiagramSpec): Map<string, string> {
+  return new Map([...spec.nodes.map((node) => [node.id, node.label] as const), ...spec.groups.map((group, g) => [`@g${g}`, group.label] as const)]);
 }
