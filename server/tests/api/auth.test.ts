@@ -3,6 +3,7 @@ import request from "supertest";
 import { createApp } from "../../src/app.js";
 import { prisma } from "../../src/db/prisma.js";
 import { createCourseFixture } from "../helpers/fixtures.js";
+import { createEmailVerificationToken } from "../../src/services/auth/email-verification.js";
 
 const app = createApp();
 let fx: Awaited<ReturnType<typeof createCourseFixture>>;
@@ -63,6 +64,23 @@ describe("GET /api/v1/auth/confirm-email", () => {
     expect(missing.headers.location).toBe("/login?error=verify-missing");
     const unknown = await request(app).get("/api/v1/auth/confirm-email").query({ token: "nope" });
     expect(unknown.headers.location).toBe("/login?error=verify-invalid");
+  });
+
+  it("keeps a local redirectTo, such as the course to enroll in, and drops outside ones", async () => {
+    const email = `confirm-${Date.now()}@test.local`;
+    const user = await prisma.user.create({ data: { email, name: "Rae", role: "MENTEE" } });
+    try {
+      const token = await createEmailVerificationToken(email);
+      const kept = await request(app).get("/api/v1/auth/confirm-email").query({ token, redirectTo: "/enroll/networking" });
+      expect(kept.headers.location).toBe(`/login?verified=1&email=${encodeURIComponent(email)}&redirectTo=${encodeURIComponent("/enroll/networking")}`);
+
+      const outside = await createEmailVerificationToken(email);
+      const dropped = await request(app).get("/api/v1/auth/confirm-email").query({ token: outside, redirectTo: "//evil.com" });
+      expect(dropped.headers.location).toBe(`/login?verified=1&email=${encodeURIComponent(email)}`);
+    } finally {
+      await prisma.verificationToken.deleteMany({ where: { identifier: email } });
+      await prisma.user.delete({ where: { id: user.id } });
+    }
   });
 });
 

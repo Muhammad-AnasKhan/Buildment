@@ -8,7 +8,7 @@ import {
   shouldAutoVerifyWithoutEmailDelivery,
 } from "./email-verification.js";
 
-export async function signup(input: { name: string; email: string; password: string }): Promise<SignupResult> {
+export async function signup(input: { name: string; email: string; password: string; redirectTo?: string }): Promise<SignupResult> {
   const existing = await prisma.user.findUnique({ where: { email: input.email }, select: { id: true } });
   if (existing) {
     throw new ConflictError("An account with this email already exists. Sign in instead.", AUTH_ERROR_CODES.EMAIL_TAKEN);
@@ -29,6 +29,6 @@ export async function signup(input: { name: string; email: string; password: str
     return { email: user.email, status: "verified" };
   }
 
-  await sendVerificationEmail({ email: user.email, name: user.name });
+  await sendVerificationEmail({ email: user.email, name: user.name, redirectTo: input.redirectTo });
   return { email: user.email, status: "verification_sent" };
 }
