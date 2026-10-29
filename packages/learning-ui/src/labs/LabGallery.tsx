@@ -178,7 +178,7 @@ function Sheet({ mode }: { mode: NameMode }) {
           </div>
         </Specimen>
 
-        <Specimen title="Verification grid" note="Each check is stamped. Not run yet, pass, and fail with its reason and an Inspect key that replays the scene." wide>
+        <Specimen title="Verification grid" note="Each check is stamped. Not run yet, pass, and fail with a fix tip and an Inspect key that replays the scene." wide>
           <ul className="w-full max-w-[640px] space-y-1.5">
             <CheckSlot check={SAMPLE_CHECKS[0]!} revealed={false} />
             <CheckSlot check={SAMPLE_CHECKS[1]!} revealed />

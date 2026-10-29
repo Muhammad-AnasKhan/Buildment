@@ -17,11 +17,81 @@ export { PHASE_MS };
 
 function Stat({ label, value, ok, hint }: { label: string; value: string; ok: boolean; hint: string }) {
   return (
-    <div className="rounded-[8px] border border-border bg-card px-2.5 py-2 shadow-sm">
+    <div className="rounded-[8px] border border-border border-l-[3px] bg-card px-2.5 py-2" style={{ borderLeftColor: ok ? "var(--lab-ok)" : "var(--lab-down)" }}>
       <div className="lab-mono text-[9px] font-bold uppercase tracking-[0.12em] text-muted-foreground">{label}</div>
       <div className={`lab-mono mt-0.5 text-[16px] font-bold leading-tight tabular-nums ${okText(ok)}`}>{value}</div>
       <div className="mt-0.5 text-[10px] leading-tight text-muted-foreground">{hint}</div>
     </div>
+  );
+}
+
+function ResultCheckRow({
+  check, index, onInspect, text,
+}: {
+  check: CheckResult;
+  index: number;
+  onInspect?: () => void;
+  text: (s: string) => string;
+}) {
+  if (check.pass) {
+    return (
+      <li
+        className="flex items-center gap-3 px-1 py-2"
+        data-check={check.id}
+        data-status="pass"
+      >
+        <span aria-hidden className="flex size-5 shrink-0 items-center justify-center rounded-full bg-[color:var(--lab-ok)]/15 text-[11px] font-bold text-[color:var(--lab-ok-ink)]">✓</span>
+        <span className="min-w-0 flex-1 truncate text-[13px] text-foreground">{text(check.label)}</span>
+        <span className="lab-mono shrink-0 text-[11px] font-semibold text-[color:var(--lab-ok-ink)]">{text(check.measured)}</span>
+        {onInspect ? (
+          <button type="button" onClick={onInspect} className="shrink-0 text-[12px] font-medium text-muted-foreground hover:text-foreground">
+            Replay
+          </button>
+        ) : null}
+      </li>
+    );
+  }
+
+  return (
+    <li
+      className="border-b border-border/70 py-4 first:pt-1 last:border-b-0 last:pb-1"
+      data-check={check.id}
+      data-status="fail"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3">
+          <span aria-hidden className="lab-mono mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-bold text-muted-foreground">
+            {index}
+          </span>
+          <h4 className="text-[14px] font-semibold leading-snug text-foreground">
+            {text(check.label)}
+            <span className="sr-only">: Fail</span>
+          </h4>
+        </div>
+        {onInspect ? (
+          <button type="button" onClick={onInspect} className="shrink-0 text-[12px] font-semibold text-[color:var(--lab-accent)] hover:underline">
+            Show on board
+          </button>
+        ) : null}
+      </div>
+
+      <div className="mt-3 ml-9 grid grid-cols-2 overflow-hidden rounded-[8px] border border-border bg-[color:var(--lab-recessed)]/40">
+        <div className="border-r border-border px-3 py-2.5">
+          <div className="lab-mono text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Need</div>
+          <div className="mt-1 text-[13px] font-medium leading-snug text-foreground">{text(check.target)}</div>
+        </div>
+        <div className="px-3 py-2.5">
+          <div className="lab-mono text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Got</div>
+          <div className={`lab-mono mt-1 text-[13px] font-bold leading-snug ${okText(false)}`}>{text(check.measured)}</div>
+        </div>
+      </div>
+
+      {check.reason ? (
+        <p className="ml-9 mt-3 text-[13px] leading-relaxed text-muted-foreground">
+          {text(check.reason)}
+        </p>
+      ) : null}
+    </li>
   );
 }
 
@@ -57,11 +127,13 @@ export function PhaseStrip({
   );
 }
 
-/** A focused, celebratory result surface that appears after the run finishes. */
+/** A focused result surface that appears after the run finishes. */
 export function ResultsDialog({
-  spec, result, report, onClose, onInspect, onRunAgain,
+  report, onClose, onInspect, onRunAgain,
 }: {
+  /** Kept for call-site compatibility; checks already carry the measured values. */
   spec: HldLabSpec;
+  /** Kept for call-site compatibility; checks already carry the measured values. */
   result: ModelResult;
   report: ChallengeReport;
   onClose: () => void;
@@ -69,106 +141,101 @@ export function ResultsDialog({
   onRunAgain: () => void;
 }) {
   const { text } = useNames();
-  const targets = spec.levels[0]?.targets ?? {};
-  const functional = report.checks.filter((check) => check.kind === "functional");
-  const nonFunctional = report.checks.filter((check) => check.kind === "non-functional");
-  const score = report.total === 0 ? 0 : Math.round((report.passed / report.total) * 100);
+  const failed = report.checks.filter((check) => !check.pass);
+  const passed = report.checks.filter((check) => check.pass);
+  const remaining = report.total - report.passed;
+  const passPct = report.total === 0 ? 0 : (report.passed / report.total) * 100;
+  const inspect = (check: CheckResult) => {
+    onInspect(check.scenario);
+    onClose();
+  };
 
   return (
-    <div className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/75 p-3 backdrop-blur-sm lab-results-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="fixed inset-0 z-[130] flex items-center justify-center bg-slate-950/70 p-3 backdrop-blur-sm lab-results-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="lab-results-title"
-        className="lab-results-dialog relative flex max-h-[92vh] w-full max-w-[1040px] flex-col overflow-hidden rounded-[16px] border border-border bg-[color:var(--lab-module)] shadow-2xl"
+        className="lab-results-dialog relative flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-[18px] border border-border bg-[color:var(--lab-module)] shadow-2xl"
       >
-        <div className={`relative shrink-0 overflow-hidden border-b border-border px-5 py-4 sm:px-7 ${report.allPass ? "bg-[color:var(--lab-ok)]/10" : "bg-[color:var(--lab-down-fill)]/45"}`}>
-          <div className="pointer-events-none absolute inset-0 opacity-30 lab-result-grid" aria-hidden />
-          <button type="button" onClick={onClose} className="absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full border border-border bg-card/80 text-lg text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Close results">×</button>
-          <div className="relative flex items-center gap-4 pr-10">
-            <div
-              className="lab-result-ring flex size-20 shrink-0 items-center justify-center rounded-full p-[6px] shadow-lg"
-              style={{ background: `conic-gradient(${report.allPass ? "var(--lab-ok)" : "var(--lab-down)"} ${score}%, var(--lab-recessed) ${score}% 100%)` }}
-              aria-label={`${score}% of checks passed`}
-            >
-              <div className="flex size-full flex-col items-center justify-center rounded-full bg-[color:var(--lab-module)]">
-                <span className={`lab-mono text-[19px] font-bold ${okText(report.allPass)}`}>{report.passed}/{report.total}</span>
-                <span className="lab-mono text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground">passed</span>
-              </div>
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="lab-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Architecture test run complete</div>
-              <h2 id="lab-results-title" className="lab-display mt-1 text-xl font-semibold text-foreground sm:text-2xl">
-                {report.allPass ? "Your design passed every check" : `${report.total - report.passed} changes before this design passes`}
-              </h2>
-              <p className="mt-1.5 max-w-3xl text-[12px] leading-relaxed text-muted-foreground sm:text-[13px]">
-                {report.allPass
-                  ? "The design meets the functional paths, capacity, resilience, latency and budget requirements in this model."
-                  : "Work through the failed checks from top to bottom. Each one shows the target, your result, and the exact part of the architecture to change."}
-              </p>
-            </div>
-          </div>
-        </div>
+        <header className="relative shrink-0 px-5 pt-5 sm:px-6">
+          <button type="button" onClick={onClose} className="absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full text-lg leading-none text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Close results">×</button>
 
-        <div className="custom-scrollbar min-h-0 flex-1 space-y-6 overflow-y-auto p-4 sm:p-6">
-          <section aria-label="Run metrics">
-            <h3 className="lab-mono mb-2 text-[9.5px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Run metrics</h3>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <Stat label="Can serve" value={`${result.capacityCeiling.toLocaleString()}/s`} ok={result.pass.rps} hint={targets.rps ? `need ${targets.rps.toLocaleString()}` : "no target"} />
-              <Stat label="Slowest 1 in 100" value={`${result.p99Ms} ms`} ok={result.pass.p99} hint={targets.p99Ms ? `under ${targets.p99Ms}` : "no target"} />
-              <Stat label="Availability" value={`${(result.availability * 100).toFixed(2)}%`} ok={result.pass.availability} hint={targets.availability ? `need ${(targets.availability * 100).toFixed(1)}%` : "no target"} />
-              <Stat label="Cost" value={`$${result.costPerHour.toFixed(2)}/h`} ok={result.pass.budget} hint={targets.budgetPerHour ? `budget $${targets.budgetPerHour}` : "no target"} />
-            </div>
-          </section>
-
-          <section aria-label="Detailed results">
-            <div className="mb-2 flex items-end justify-between gap-3">
-              <div>
-                <h3 className="lab-display text-[16px] font-semibold text-foreground">Detailed results</h3>
-                <p className="text-[11px] text-muted-foreground">Failed checks are shown first within each group.</p>
-              </div>
-              <span className="lab-mono hidden text-[9.5px] font-bold uppercase tracking-wider text-muted-foreground sm:inline">Target → measured → why</span>
-            </div>
-            <div className="space-y-5">
-              {[["What it does", functional], ["How well it does it", nonFunctional]].map(([title, checks]) => {
-                const ordered = [...(checks as CheckResult[])].sort((a, b) => Number(a.pass) - Number(b.pass));
-                return ordered.length === 0 ? null : (
-                  <div key={title as string} className="rounded-[10px] border border-border bg-[color:var(--lab-recessed)]/25 p-3">
-                    <h4 className="lab-display mb-2.5 flex items-center justify-between text-[13px] font-semibold text-foreground">
-                      {title as string}
-                      <span className={`lab-mono rounded-full px-2 py-0.5 text-[9.5px] font-bold ${ordered.every((check) => check.pass) ? "bg-[color:var(--lab-ok)]/10 text-[color:var(--lab-ok-ink)]" : "bg-[color:var(--lab-down-fill)] text-[color:var(--lab-down-ink)]"}`}>
-                        {ordered.filter((check) => check.pass).length}/{ordered.length} passed
-                      </span>
-                    </h4>
-                    <ul className="space-y-2">
-                      {ordered.map((check) => (
-                        <CheckSlot
-                          key={check.id}
-                          check={check}
-                          revealed
-                          onShow={() => { onInspect(check.scenario); onClose(); }}
-                          text={text}
-                        />
-                      ))}
-                    </ul>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-        </div>
-
-        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border bg-[color:var(--lab-module)] px-4 py-3 sm:px-6">
-          <p className="m-0 hidden text-[11px] text-muted-foreground sm:block">
-            {report.allPass ? "All targets met in this model." : "Change the design, then run the checks again."}
+          <p className="lab-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Test results</p>
+          <h2 id="lab-results-title" className="lab-display mt-1.5 pr-8 text-[22px] font-semibold leading-tight text-foreground sm:text-[24px]">
+            {report.allPass
+              ? "Your design passes"
+              : `${remaining} ${remaining === 1 ? "check" : "checks"} still need a fix`}
+          </h2>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-muted-foreground">
+            {report.allPass
+              ? "Every target in this model is met."
+              : "Compare what you need with what you got, then change the board."}
           </p>
-          <div className="ml-auto flex gap-2">
-            <button type="button" onClick={() => { onClose(); onRunAgain(); }} className="rounded-[7px] border border-border bg-card px-4 py-2 text-[12px] font-semibold text-foreground hover:bg-muted">Run tests again</button>
-            <button type="button" onClick={onClose} className="rounded-[7px] bg-emerald-700 px-4 py-2 text-[12px] font-semibold text-white shadow-sm hover:bg-emerald-600">
-              {report.allPass ? "Back to board" : "Fix on board"}
-            </button>
+
+          <div className="mt-4" aria-label={`${report.passed} of ${report.total} checks passed`}>
+            <div className="mb-1.5 flex items-center justify-between text-[12px]">
+              <span className="font-medium text-foreground">{report.passed} of {report.total} passed</span>
+              <span className={report.allPass ? "font-medium text-[color:var(--lab-ok-ink)]" : "font-medium text-muted-foreground"}>
+                {report.allPass ? "Ready" : `${remaining} left`}
+              </span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-[color:var(--lab-recessed)]">
+              <div
+                className={`h-full rounded-full transition-[width] ${report.allPass ? "bg-[color:var(--lab-ok)]" : "bg-[color:var(--lab-accent)]"}`}
+                style={{ width: `${passPct}%` }}
+              />
+            </div>
           </div>
+        </header>
+
+        <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-2 pt-5 sm:px-6">
+          {failed.length > 0 ? (
+            <section aria-label="Checks to fix">
+              <ol>
+                {failed.map((check, index) => (
+                  <ResultCheckRow
+                    key={check.id}
+                    check={check}
+                    index={index + 1}
+                    onInspect={check.scenario !== "steady" ? () => inspect(check) : undefined}
+                    text={text}
+                  />
+                ))}
+              </ol>
+            </section>
+          ) : null}
+
+          {passed.length > 0 ? (
+            <section aria-label="Passed checks" className={failed.length > 0 ? "mt-2 border-t border-border/70 pt-3" : undefined}>
+              {failed.length > 0 ? (
+                <p className="mb-1 lab-mono text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                  Already passing · {passed.length}
+                </p>
+              ) : null}
+              <ul>
+                {passed.map((check, index) => (
+                  <ResultCheckRow
+                    key={check.id}
+                    check={check}
+                    index={index + 1}
+                    onInspect={check.scenario !== "steady" ? () => inspect(check) : undefined}
+                    text={text}
+                  />
+                ))}
+              </ul>
+            </section>
+          ) : null}
         </div>
+
+        <footer className="flex shrink-0 gap-2 border-t border-border px-5 py-3.5 sm:px-6">
+          <button type="button" onClick={() => { onClose(); onRunAgain(); }} className="flex-1 rounded-[10px] border border-border bg-card px-4 py-2.5 text-[13px] font-semibold text-foreground hover:bg-muted">
+            Run again
+          </button>
+          <button type="button" onClick={onClose} className="flex-[1.3] rounded-[10px] bg-emerald-600 px-4 py-2.5 text-[13px] font-semibold text-white shadow-sm hover:bg-emerald-500">
+            {report.allPass ? "Back to board" : "Fix on board"}
+          </button>
+        </footer>
       </section>
     </div>
   );
