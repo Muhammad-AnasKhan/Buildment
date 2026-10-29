@@ -97,7 +97,7 @@ async function gradeLlmOpenQuestion(input: {
     });
     const storedPayload: OpenQuestionStoredPayload = {
       ...input.payload,
-      llmFeedback: { why: llm.why, hint: llm.hint, guidance: llm.guidance },
+      llmFeedback: { why: llm.why, hint: llm.hint, guidance: llm.guidance, attempt: input.attempt },
     };
     return {
       score: llm.isCorrect ? 1 : 0,
@@ -155,7 +155,10 @@ export async function submitBlockResponse(input: {
       select: { isCorrect: true },
     });
     if (latest?.isCorrect) throw new BadRequestError("This answer has already passed.", "ANSWER_ALREADY_PASSED");
-    if (previousAttempts >= config.maxAttempts) {
+    const gradedAttempts = await prisma.response.count({
+      where: { blockId, userId: learner.id, status: { not: "DRAFT" } },
+    });
+    if (gradedAttempts >= config.maxAttempts) {
       throw new BadRequestError("You have used all three graded attempts. Review the guidance and ask your mentor if you need another attempt.", "ATTEMPT_LIMIT_REACHED");
     }
     const parsedPayload = OpenQuestionPayloadSchema.parse(payload);
@@ -163,7 +166,7 @@ export async function submitBlockResponse(input: {
       config,
       payload: parsedPayload,
       userId: learner.id,
-      attempt,
+      attempt: gradedAttempts + 1,
     });
     storedPayload = llmGraded.storedPayload;
     graded = llmGraded;
@@ -204,7 +207,7 @@ export async function submitBlockResponse(input: {
     maxScore: response.maxScore,
     isCorrect: response.isCorrect,
     status: response.status,
-    attempt: response.attempt,
+    attempt: graded.attempt ?? response.attempt,
     explanation:
       graded.explanation &&
       applyTokens(

@@ -461,11 +461,18 @@ export function OpenQuestionClient({
                       <span>
                         {llmMode
                           ? exhausted
-                            ? "Three graded attempts used. Use the guided review to rewrite in your own words, then ask your mentor if you need another graded attempt."
+                            ? `${config.maxAttempts} graded attempts used. Use the guided review to rewrite in your own words, then ask your mentor if you need another graded attempt.`
                             : `Instant AI feedback · ${attemptsRemaining} graded attempt${attemptsRemaining === 1 ? "" : "s"} remaining.`
                           : "No word minimum — aim for a clear, complete answer."}
                       </span>
                     )}
+                    {llmMode && config.minWords > 0 ? (
+                      <span>
+                        {exhausted
+                          ? `${config.maxAttempts} graded attempts used. Use the guided review before requesting another graded attempt.`
+                          : `Instant AI feedback · ${attemptsRemaining} graded attempt${attemptsRemaining === 1 ? "" : "s"} remaining.`}
+                      </span>
+                    ) : null}
                   </div>
 
                   <div className="flex items-center gap-3 sm:justify-end">

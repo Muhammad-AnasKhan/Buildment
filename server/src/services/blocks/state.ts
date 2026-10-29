@@ -124,7 +124,7 @@ async function blockStateFor(block: Block, user: SessionUser | undefined): Promi
         initialState: submitted
           ? {
               status: submitted.status,
-              attempt: submitted.attempt,
+              attempt: llmMode ? (llmFeedback?.attempt ?? submitted.attempt) : submitted.attempt,
               text: str(payload?.text),
               url: typeof payload?.url === "string" ? payload.url : null,
               feedback: submitted.review?.feedback ?? null,

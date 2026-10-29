@@ -74,7 +74,7 @@ export const chapterSettingsBody = z.object({
   summary: z.string().trim().max(280).nullable(),
   estimatedMinutes: z.number().int().min(1).max(600).nullable(),
   readerMode: z.enum(["DEFAULT", "QUIZ"]),
-  quizPassingScore: z.number().int().min(1).max(100),
+  quizPassingScore: z.number().int().min(1).max(100).optional().default(70),
   isMilestone: z.boolean(),
 });
 export type ChapterSettingsBody = z.infer<typeof chapterSettingsBody>;

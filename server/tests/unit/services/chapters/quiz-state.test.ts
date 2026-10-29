@@ -15,12 +15,14 @@ describe("quiz flow question types", () => {
     expect(state.initialAnswers).toEqual({ quiz: [] });
     expect(mocks.blocks.mock.calls[0][0].where.type).toEqual({ in: ["QUIZ", "OPEN_QUESTION", "PREDICT", "CODE"] });
   });
-  it("renders open-question-only chapters without a multiple-choice submission", async () => {
+  it("loads open-question-only chapters so an AI-written assessment can be calculated", async () => {
     mocks.blocks.mockResolvedValue([{ id: "open", type: "OPEN_QUESTION", config: {} }]);
     const state = await loadQuizChapterState("chapter", "learner");
     expect(state.steps).toEqual([{ id: "open", type: "OPEN_QUESTION" }]);
     expect(state.blockIds).toEqual([]);
     expect(state.initialScoreSummary).toBeNull();
-    expect(mocks.responses).not.toHaveBeenCalled();
+    expect(mocks.responses).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ blockId: { in: ["open"] }, status: { not: "DRAFT" } }),
+    }));
   });
 });

@@ -122,5 +122,5 @@ export type OpenQuestionPayload = z.infer<typeof OpenQuestionPayloadSchema>;
 
 /** Learner answer plus optional LLM feedback stored on Response.payload. */
 export type OpenQuestionStoredPayload = OpenQuestionPayload & {
-  llmFeedback?: { why: string; hint: string | null; guidance: string | null };
+  llmFeedback?: { why: string; hint: string | null; guidance: string | null; attempt: number };
 };

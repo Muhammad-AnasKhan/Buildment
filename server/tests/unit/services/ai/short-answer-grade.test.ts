@@ -12,6 +12,7 @@ const baseConfig = OpenQuestionConfigSchema.parse({
   autoGrade: "llm",
   hints: ["Think about keeping the contract and UI changes together.", "Mention one repository for API and UI."],
   hintAfterAttempts: 3,
+  maxAttempts: 3,
 });
 
 describe("hintForAttempt", () => {
@@ -51,6 +52,7 @@ describe("gradeShortAnswerWithLlm", () => {
       isCorrect: false,
       why: "You missed the shared-repo idea.",
       hint: null,
+      guidance: null,
     });
     expect(gradeFn).toHaveBeenCalledOnce();
   });
@@ -69,6 +71,7 @@ describe("gradeShortAnswerWithLlm", () => {
     });
     expect(result.isCorrect).toBe(false);
     expect(result.hint).toBe(baseConfig.hints![0]);
+    expect(result.guidance).toBe("Review the relevant lesson, list the key ideas in your own words, then explain how they answer the question.");
     expect(result.why).not.toContain(baseConfig.sampleAnswer);
   });
 
@@ -88,6 +91,27 @@ describe("gradeShortAnswerWithLlm", () => {
       isCorrect: true,
       why: "That matches the expected idea.",
       hint: null,
+      guidance: null,
     });
+  });
+
+  it("returns model guidance only after the final permitted attempt", async () => {
+    const result = await gradeShortAnswerWithLlm({
+      userId: "user-1",
+      config: baseConfig,
+      answer: "Because it is easier.",
+      attempt: baseConfig.maxAttempts,
+      deps: {
+        apiKey: "sk-test",
+        model: "test/model",
+        gradeFn: async () => ({
+          correct: false,
+          why: "Still missing the core idea.",
+          guidance: "Compare how one repository keeps shared contracts aligned with how separate repositories drift.",
+        }),
+      },
+    });
+
+    expect(result.guidance).toContain("shared contracts aligned");
   });
 });
