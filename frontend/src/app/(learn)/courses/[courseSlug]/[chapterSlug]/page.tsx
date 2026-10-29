@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { cache } from "react";
 import { notFound, redirect } from "next/navigation";
 import type { ChapterReaderView } from "@/shared/api/reader";
 import { requireVerifiedUser } from "@/server/auth/guards";
@@ -16,6 +18,24 @@ import { loadChapterNarration } from "@/lib/narration";
 
 export const dynamic = "force-dynamic";
 
+// One API call per request, shared by the tab title and the page.
+const loadReader = cache((courseSlug: string, chapterSlug: string) =>
+  serverApiFetch<ChapterReaderView>(`/api/v1/courses/${encodeURIComponent(courseSlug)}/chapters/${encodeURIComponent(chapterSlug)}`)
+);
+
+export async function generateMetadata({ params }: { params: Promise<{ courseSlug: string; chapterSlug: string }> }): Promise<Metadata> {
+  const { courseSlug, chapterSlug } = await params;
+  try {
+    const { course, chapter } = await loadReader(courseSlug, chapterSlug);
+    // The tab says which course is open, course first since narrow tabs show only the start
+    // ("System Design, Hands On · Set the scene"). Lessons sit behind sign-in, so keep them out of search.
+    const courseName = course.title.split(":")[0]!.trim();
+    return { title: `${courseName} · ${chapter.title}`, robots: { index: false, follow: false } };
+  } catch {
+    return { robots: { index: false, follow: false } };
+  }
+}
+
 export default async function ChapterReaderPage({
   params,
 }: {
@@ -26,9 +46,7 @@ export default async function ChapterReaderPage({
 
   let view: ChapterReaderView;
   try {
-    view = await serverApiFetch<ChapterReaderView>(
-      `/api/v1/courses/${encodeURIComponent(courseSlug)}/chapters/${encodeURIComponent(chapterSlug)}`
-    );
+    view = await loadReader(courseSlug, chapterSlug);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) notFound();
     if (error instanceof ApiError && error.status === 403) {
