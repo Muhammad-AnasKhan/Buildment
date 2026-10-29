@@ -165,6 +165,21 @@ describe("layout", () => {
     expect(flat).toContain('"key":"block-1-divider-0"');
   });
 
+  it.each([false, true])("draws entity cards and ends an arrow at a group's box (compact: %s)", (compact) => {
+    const s = spec("flow", "title: Locks\nbox Client\ngroup [LS] Lock service\n  box Node 1\n  box Node 2\nend\nentity Account | id (bigint, PK) | name (string)\nClient -> [LS]: asks\nNode 1 --- Node 2\n[LS] -> Account");
+    expect(s.edges.map((edge) => [edge.from, edge.to])).toEqual([["client", "@g0"], ["node 1", "node 2"], ["@g0", "account"]]);
+    const scene = layoutDiagram(s, compact);
+    const box = scene.groups[0].rect;
+    const end = scene.edges[0].path.end;
+    const onBorder = Math.min(Math.abs(end.x - box.x), Math.abs(end.x - box.x - box.w), Math.abs(end.y - box.y), Math.abs(end.y - box.y - box.h));
+    expect(onBorder).toBeLessThan(6);
+    const account = scene.nodes.find((n) => n.id === "account")!;
+    expect(account.fields?.lines).toEqual(["id (bigint, PK)", "name (string)"]);
+    expect(JSON.stringify(drawScene(scene))).toContain('"key":"account-header"');
+    expect(describeDiagram(s)).toContain("Account (a table with id (bigint, PK) and name (string))");
+    expect(describeDiagram(s)).toContain("Client to Lock service: asks");
+  });
+
   it("is deterministic", () => {
     expect(layoutDiagram(spec("flow", FLOW), false)).toEqual(layoutDiagram(spec("flow", FLOW), false));
   });
