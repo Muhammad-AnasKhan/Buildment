@@ -282,7 +282,12 @@ export function ChapterReaderShell({
                 <ArrowLeft className="size-5" aria-hidden />
               </Link>
               <div className="min-w-0 flex-1 px-1">
-                <p className="truncate text-[13px] text-muted-foreground">{lessonLabel}</p>
+                {/* The course name keeps "where am I" answered on every lesson, not only the course page. */}
+                <p className="truncate text-[13px] text-muted-foreground">
+                  <span className="tabular-nums">{lessonLabel}</span>
+                  <span aria-hidden> · </span>
+                  {courseTitle}
+                </p>
                 <p className="truncate text-[15px] font-bold leading-tight text-foreground">{chapterTitle}</p>
               </div>
               <CheckpointHeaderLabel
@@ -353,6 +358,7 @@ export function ChapterReaderShell({
 
         <div className="flex min-h-0 flex-1">
           <ChapterSidebar
+            courseTitle={courseTitle}
             courseSlug={courseSlug}
             modules={modules}
             currentChapterSlug={chapterSlug}

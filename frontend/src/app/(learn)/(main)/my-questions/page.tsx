@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, BookOpenText, MessageCircleQuestion } from "lucide-react";
 import type { HelpThreadSummary } from "@/shared/api/help";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { LearnerQuestionsOverview } from "@/components/help/learner-questions-overview";
+
+export const metadata: Metadata = { title: "Your questions" };
 
 export default async function MenteeHelpListPage({ searchParams }: { searchParams: Promise<{ course?: string; chapter?: string; question?: string }> }) {
   const user = await requireLearnSurface();
