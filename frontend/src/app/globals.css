@@ -310,10 +310,10 @@
   .dark .prose.prose-neutral :where(:not(.not-prose, .not-prose *)):is(th, strong, h1, h2, h3, h4) {
     color: #f6f7fb !important;
   }
-  .dark .prose.prose-neutral :where(:not(.not-prose, .not-prose *))figcaption {
+  .dark .prose.prose-neutral :where(:not(.not-prose, .not-prose *)) figcaption {
     color: #aab3de !important;
   }
-  .dark .prose.prose-neutral :where(:not(.not-prose, .not-prose *))blockquote {
+  .dark .prose.prose-neutral :where(:not(.not-prose, .not-prose *)) blockquote {
     color: #d5daf0 !important;
     border-color: #3a4580 !important;
     background-color: #151c47 !important;
