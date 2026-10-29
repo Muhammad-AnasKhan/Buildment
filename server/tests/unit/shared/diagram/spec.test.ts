@@ -174,6 +174,13 @@ describe("parseDiagram: problems fail loudly", () => {
     expect(problems(parseDiagram("sequence", "title: X\nbox A\nbox B\nbox C\nnote left of A, B: hi\nA -> B: ping"))[0]).toMatch(/beside one part/);
   });
 
+  it("reads state, start, stop and entity parts, and grouped parts with no arrows", () => {
+    const result = parseDiagram("flow", "title: X\nstart Begin\nstate Open\nstop Done\nentity Account | id (PK) | email\nBegin -> Open -> Done");
+    expect(result.ok && result.spec.nodes.map((node) => [node.kind, node.fields])).toEqual([["start", undefined], ["state", undefined], ["stop", undefined], ["entity", ["id (PK)", "email"]]]);
+    expect(parseDiagram("flow", "title: X\ngroup Paper\n  box A\n  box B\nend").ok).toBe(true);
+    expect(problems(parseDiagram("flow", "title: X\nbox A\nbox B"))).toContain('Add at least one arrow, for example "You -> DNS".');
+  });
+
   it("allows a part with no arrow", () => {
     expect(parseDiagram("flow", "title: X\nbox A\nbox B\nbox C\nA -> B").ok).toBe(true);
   });

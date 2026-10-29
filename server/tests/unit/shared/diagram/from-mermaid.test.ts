@@ -89,8 +89,42 @@ describe("mermaidToDiagram", () => {
     ]);
   });
 
-  it("keeps Mermaid when an arrow points at a subgraph itself", () => {
-    expect(mermaidToDiagram("flowchart LR\n  A --> G\n  subgraph G[Group]\n    B --> C\n  end", "T")).toBeNull();
+  it("points an arrow at a whole subgraph by its [id], and draws RL and BT mirrored", () => {
+    expect(mermaidToDiagram("flowchart BT\n  A --> G\n  subgraph G[Lock service]\n    B --- C\n  end", "T")?.source.split("\n").slice(1)).toEqual([
+      "direction: down",
+      "box A",
+      "group [G] Lock service",
+      "  box B",
+      "  box C",
+      "end",
+      "A -> [G]",
+      "B --- C",
+    ]);
+  });
+
+  it("turns an entity diagram into entity cards joined by labelled lines", () => {
+    const chart = 'erDiagram\n  ACCOUNT ||--o{ POST : writes\n  ACCOUNT {\n    bigint account_id PK\n    string name "shown on posts"\n  }\n  POST }o..|| TOPIC : "filed under"';
+    expect(mermaidToDiagram(chart, "T")?.source.split("\n").slice(1)).toEqual([
+      "direction: right",
+      'entity ACCOUNT | account_id (bigint, PK) | name (string) shown on posts',
+      "entity POST",
+      "entity TOPIC",
+      "ACCOUNT --- POST: writes (one to zero or more)",
+      "POST -.- TOPIC: filed under (zero or more to one)",
+    ]);
+  });
+
+  it("turns a mind map into a tree", () => {
+    expect(mermaidToDiagram("mindmap\n  root((Mistakes))\n    Drawing first\n      Ask first\n    Too many boxes", "T")?.source.split("\n").slice(1)).toEqual([
+      "direction: right",
+      "end [m0] Mistakes",
+      "box [m1] Drawing first",
+      "box [m2] Ask first",
+      "box [m3] Too many boxes",
+      "[m0] --- [m1]",
+      "[m1] --- [m2]",
+      "[m0] --- [m3]",
+    ]);
   });
 
   it("gives boxes that share their text an [id], and keeps two-way arrows", () => {
@@ -137,11 +171,55 @@ describe("mermaidToDiagram", () => {
     ]);
   });
 
+  it("turns a state diagram into a flow of states with start and finish dots", () => {
+    const chart = [
+      "stateDiagram-v2",
+      '  state "Half-open" as HalfOpen',
+      "  state Check <<choice>>",
+      "  [*] --> Closed",
+      "  Closed --> Open: 5 failures",
+      "  Open --> HalfOpen: after 10 s",
+      "  HalfOpen --> Check",
+      "  Check --> Closed: works",
+      "  Check --> Open: fails",
+      "  Closed --> Closed: success",
+      "  state Paused {",
+      "    [*] --> Waiting",
+      "    Waiting --> [*]",
+      "  }",
+      "  Open --> [*]",
+    ].join("\n");
+    expect(mermaidToDiagram(chart, "T")?.source.split("\n").slice(1)).toEqual([
+      "direction: down",
+      "state Half-open",
+      "decision Check",
+      "start [start-top] Start",
+      "state Closed",
+      "state Open",
+      "stop [stop-top] Finish",
+      "group Paused",
+      "  start [start-0] Start",
+      "  state Waiting",
+      "  stop [stop-0] Finish",
+      "end",
+      "[start-top] -> Closed",
+      "Closed -> Open: 5 failures",
+      "Open -> Half-open: after 10 s",
+      "Half-open -> Check",
+      "Check -> Closed: works",
+      "Check -> Open: fails",
+      "Closed -> Closed: success",
+      "[start-0] -> Waiting",
+      "Waiting -> [stop-0]",
+      "Open -> [stop-top]",
+    ]);
+  });
+
   it.each([
     ["an unclosed subgraph", "flowchart TD\n  subgraph S\n  A --> B"],
-    ["a right-to-left flow", "flowchart RL\n  A --> B"],
+    ["an unknown diagram type", "journey\n  title My day"],
     ["an unclosed sequence block", "sequenceDiagram\n  loop every second\n  A->>B: ping"],
-    ["a state diagram", "stateDiagram-v2\n  [*] --> Open"],
+    ["a state diagram with a note", "stateDiagram-v2\n  [*] --> Open\n  note right of Open: waits"],
     ["more parts than the limit", `flowchart TD\n  ${Array.from({ length: 31 }, (_, i) => `N${i}`).join(" --> ")}`],
     ["a keep-mermaid comment", "%% keep-mermaid\nflowchart TD\n  A --> B"],
   ])("keeps Mermaid for %s", (_name, chart) => {

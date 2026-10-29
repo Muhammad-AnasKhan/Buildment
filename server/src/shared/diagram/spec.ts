@@ -8,13 +8,14 @@
 export const DIAGRAM_KINDS = ["flow", "sequence"] as const;
 export type DiagramKind = (typeof DIAGRAM_KINDS)[number];
 
-export const NODE_KINDS = ["actor", "box", "decision", "end", "store", "external"] as const;
+export const NODE_KINDS = ["actor", "box", "decision", "end", "store", "external", "state", "start", "stop", "entity"] as const;
 export type NodeKind = (typeof NODE_KINDS)[number];
 
 /** `group` is the index of the innermost group the part sits in, or null. */
-export type DiagramNode = { id: string; label: string; kind: NodeKind; line: number; group: number | null };
+export type DiagramNode = { id: string; label: string; kind: NodeKind; line: number; group: number | null; fields?: string[] };
 /** A labelled box around some parts, such as a private network. Groups may sit inside groups. */
-export type DiagramGroup = { label: string; parent: number | null; line: number };
+/** `ref` is the group's [id], when arrows point at the whole group; such arrows use the id "@g<index>". */
+export type DiagramGroup = { label: string; parent: number | null; line: number; ref?: string };
 /** Sequence only: a note before message `before`, over one or two lanes or beside one. */
 export type DiagramNote = { before: number; from: string; to: string; side: "over" | "left" | "right"; text: string; line: number };
 /**
@@ -173,9 +174,10 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
     if (groupLine) {
       if (kind !== "flow") at(line, "groups are for flow diagrams only.");
       else {
-        const label = readName(groupLine[1]).text;
+        const groupName = readName(groupLine[1]);
+        const label = groupName.text;
         if (label.length > DIAGRAM_LIMITS.title) at(line, `shorten the group name to ${DIAGRAM_LIMITS.title} characters or fewer.`);
-        groups.push({ label, parent: open.length ? open[open.length - 1] : null, line });
+        groups.push({ label, parent: open.length ? open[open.length - 1] : null, line, ...(groupName.ref ? { ref: groupName.ref } : {}) });
         open.push(groups.length - 1);
       }
       return;
@@ -243,7 +245,14 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
     const nodeLine = NODE_LINE.exec(text);
     if (nodeLine && !arrows) {
       const nodeKind = nodeLine[1].toLowerCase() as NodeKind;
-      const name = readName(nodeLine[2]);
+      // An entity lists its fields after its name: "entity Account | id (PK) | email".
+      const [head, ...fieldParts] = nodeKind === "entity" ? nodeLine[2].split(/\s+\|\s+/) : [nodeLine[2]];
+      const fields = fieldParts.map((field) => field.trim()).filter(Boolean);
+      if (fields.length > 16 || fields.some((field) => field.length > DIAGRAM_LIMITS.label)) {
+        at(line, `an entity shows up to 16 fields of up to ${DIAGRAM_LIMITS.label} characters each.`);
+        return;
+      }
+      const name = readName(head);
       const label = name.text;
       const nameProblem = checkName(name);
       if (nameProblem) {
@@ -257,7 +266,7 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
         at(line, `"${name.ref ? `[${name.ref}]` : label}" is already declared on line ${existing.line}. Declare each part once.${hint}`);
         return;
       }
-      const node = { id, label, kind: nodeKind, line, group: open.length ? open[open.length - 1] : null };
+      const node: DiagramNode = { id, label, kind: nodeKind, line, group: open.length ? open[open.length - 1] : null, ...(fields.length ? { fields } : {}) };
       nodes.push(node);
       byId.set(id, node);
       return;
@@ -314,7 +323,9 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
   for (const raw of rawEdges) {
     const ids: string[] = [];
     for (const [i, key] of raw.names.entries()) {
-      const node = byId.get(key);
+      // A [ref] may name a whole group, when an arrow points at the group itself.
+      const groupIndex = groups.findIndex((group) => group.ref && `[${group.ref.toLowerCase()}]` === key);
+      const node = byId.get(key) ?? (groupIndex >= 0 && kind === "flow" ? { id: `@g${groupIndex}` } : undefined);
       if (!node) {
         const name = raw.shown[i];
         at(raw.line, `"${name}" is not declared. Declare it first, for example "box ${name}".${declaredList(nodes)}`);
@@ -377,7 +388,8 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
   const maxEdges = kind === "flow" ? DIAGRAM_LIMITS.flowEdges : DIAGRAM_LIMITS.sequenceEdges;
   if (nodes.length < 2) problems.push("A diagram needs at least two parts, for example \"actor You\" and \"box DNS\".");
   if (nodes.length > maxNodes) problems.push(`A ${kind} diagram fits a phone with up to ${maxNodes} parts; this one has ${nodes.length}. Split it into two diagrams.`);
-  if (rawEdges.length === 0 && nodes.length >= 2) problems.push("Add at least one arrow, for example \"You -> DNS\".");
+  // A diagram of grouped parts may have no arrows (two columns of facts, say); any other needs one.
+  if (rawEdges.length === 0 && nodes.length >= 2 && !groups.length) problems.push("Add at least one arrow, for example \"You -> DNS\".");
   if (edges.length > maxEdges) problems.push(`A ${kind} diagram fits a phone with up to ${maxEdges} arrows; this one has ${edges.length}. Split it into two diagrams.`);
 
   if (problems.length) return { ok: false, problems };

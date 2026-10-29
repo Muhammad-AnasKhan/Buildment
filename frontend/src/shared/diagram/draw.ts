@@ -52,8 +52,22 @@ function text(label: SceneLabel, fill: string, weight: number, key: string, halo
 
 function shape(node: SceneNode): SvgNode[] {
   const s = node.shape;
+  if (s.type === "circle" && node.kind === "start") return [el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r, fill: BRAND.ink }, undefined, `${node.id}-shape`)];
+  if (s.type === "circle" && node.kind === "stop") {
+    return [
+      el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r - 1.5, fill: BRAND.white, stroke: BRAND.ink, strokeWidth: 3 }, undefined, `${node.id}-shape`),
+      el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r - 6, fill: BRAND.ink }, undefined, `${node.id}-dot`),
+    ];
+  }
   if (s.type === "circle") return [el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r, fill: BRAND.cobalt }, undefined, `${node.id}-shape`)];
   const frame = { fill: BRAND.white, stroke: BRAND.ink, strokeWidth: 3 };
+  if (node.kind === "entity") {
+    return [
+      el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), ...frame }, undefined, `${node.id}-shape`),
+      el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: 32, fill: BRAND.ink }, undefined, `${node.id}-header`),
+    ];
+  }
+  if (node.kind === "state") return [el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), rx: 16, ...frame }, undefined, `${node.id}-shape`)];
   if (s.type === "diamond") return [el("path", { d: diamondPath(s, 0), ...frame, strokeLinejoin: "round" }, undefined, `${node.id}-shape`)];
   if (node.kind === "end") return [el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), fill: BRAND.ink }, undefined, `${node.id}-shape`)];
   if (node.kind === "external") return [el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), ...frame, strokeDasharray: "8 5" }, undefined, `${node.id}-shape`)];
@@ -168,8 +182,9 @@ export function drawScene(scene: Scene, state: DrawState = {}, title?: { text: s
   for (const node of scene.nodes) {
     const parts = shape(node);
     if (state.activeNode === node.id) parts.unshift(ring(node));
-    const light = node.labelInside && (node.kind === "actor" || node.kind === "end");
+    const light = node.labelInside && (node.kind === "actor" || node.kind === "end" || node.kind === "entity");
     parts.push(text(node.label, light ? BRAND.paper : BRAND.ink, 700, `${node.id}-label`));
+    if (node.fields) parts.push(text(node.fields, BRAND.ink, 500, `${node.id}-fields`));
     children.push(el("g", {}, parts, `node-${node.id}`));
   }
 
