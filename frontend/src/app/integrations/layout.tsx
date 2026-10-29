@@ -4,7 +4,7 @@ import { IntegrationDocsHeader } from "@/components/integrations/integration-doc
 export const metadata: Metadata = {
   title: "Integrations",
   description:
-    "Setup guide for the Buildment Organization API — authentication, course access, enrollments, and local development.",
+    "Setup guide for the Edorax Organization API: authentication, course access, enrollments, and local development.",
 };
 
 export default function IntegrationsLayout({ children }: { children: React.ReactNode }) {
