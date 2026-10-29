@@ -7,6 +7,7 @@ import {
   CheckSquare,
   ChevronRight,
   ClipboardCheck,
+  Eye,
   FileText,
   Flag,
   Layers3,
@@ -342,8 +343,15 @@ function ChapterList({
                 <ArrowDown />
               </MoveButton>
               <Link
+                href={`/courses/${courseSlug}/preview?chapter=${encodeURIComponent(chapter.slug)}`}
+                className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "ml-auto sm:ml-1 text-muted-foreground hover:text-foreground")}
+                title={`Preview ${chapter.title} as learner`}
+              >
+                <Eye className="size-3.5" /> Preview
+              </Link>
+              <Link
                 href={`/courses/${courseSlug}/chapters/${chapter.id}/edit`}
-                className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "ml-auto sm:ml-1")}
+                className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
               >
                 Edit <ChevronRight />
               </Link>

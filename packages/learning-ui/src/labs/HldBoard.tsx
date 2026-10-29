@@ -514,7 +514,7 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
   return (
     <BoardCtx.Provider value={ctx}>
       <style>{BOARD_CSS}</style>
-      <div ref={rootRef} onKeyDown={onRootKeyDown} className={`lab-board not-prose @container overflow-hidden rounded-[8px] border-[1.5px] border-border bg-card text-card-foreground ${isFullscreen ? "flex flex-col flex-1 min-h-0 shadow-2xl" : "my-6 shadow-[0_2px_0_0_var(--lab-edge-shadow)]"}`}>
+      <div ref={rootRef} onKeyDown={onRootKeyDown} className={`lab-board not-prose @container overflow-hidden rounded-[10px] border-[1.5px] border-border bg-card text-card-foreground ${isFullscreen ? "shadow-2xl ring-1 ring-white/10" : "my-6 shadow-[0_2px_0_0_var(--lab-edge-shadow)]"}`}>
         <div className="flex flex-wrap items-center justify-between gap-2 bg-[color:var(--lab-inspector)] px-4 py-2 text-slate-100">
           <div className="flex min-w-0 items-center gap-2">
             {readOnly ? (
@@ -627,15 +627,15 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
           <PhaseStrip report={report} running={runPhase} previewId={previewId} onPick={setPreviewId} onBack={() => setPreviewId(null)} />
         ) : null}
 
-        <div className={`grid grid-cols-1 @2xl:grid-cols-[200px_minmax(0,1fr)] ${isFullscreen ? "flex-1 min-h-0" : ""}`}>
+        <div className="grid grid-cols-1 @2xl:grid-cols-[224px_minmax(0,1fr)] overflow-hidden">
           {/* Palette: a row you scroll on a phone, a column on a wider board. In the solution view, the list of parts. */}
           {readOnly && solution ? (
             <PartList solution={solution} nodes={nodes.map((n) => ({ id: n.id, kind: n.data.kind }))} openId={drawerId} onOpen={openSettings} />
           ) : (
-          <div className="border-b border-border p-3 @2xl:border-b-0 @2xl:border-r" role="group" aria-label="Components">
+          <div className="flex flex-col border-b border-border p-3 @2xl:border-b-0 @2xl:border-r bg-card/40 overflow-hidden" role="group" aria-label="Components">
             <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Components</div>
             <div className="mb-2 text-[10px] text-muted-foreground">Drag onto the board, or tap to add.</div>
-            <div className="flex gap-3 overflow-x-auto pb-1.5 diagram-scroll-container @2xl:block @2xl:overflow-y-auto @2xl:max-h-[70vh] @2xl:pb-0 custom-scrollbar">
+            <div className={`flex gap-3 overflow-x-auto pb-1.5 diagram-scroll-container @2xl:block @2xl:overflow-y-auto @2xl:overflow-x-hidden @2xl:pr-1.5 @2xl:pb-1 custom-scrollbar ${isFullscreen ? "@2xl:max-h-[58vh]" : "@2xl:max-h-[540px]"}`}>
               {palette.map((grp) => (
                 <div key={grp.group} className="flex shrink-0 items-start gap-1.5 @2xl:mb-2.5 @2xl:block">
                   <div className="hidden text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70 @2xl:mb-1 @2xl:block">{grp.group}</div>
@@ -652,9 +652,9 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
                         onClick={() => addNode(k)}
                         className="flex shrink-0 cursor-grab items-center gap-2 rounded-[6px] border-[1.5px] border-border bg-card px-2 py-1.5 text-left shadow-[0_2px_0_0_var(--lab-edge-shadow)] transition-colors hover:bg-muted active:translate-y-px active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--lab-accent)] @2xl:mb-1 @2xl:w-full"
                       >
-                        <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-[4px]" style={{ backgroundColor: tint(colorOf(k), 14), color: colorOf(k) }}><KindGlyph kind={k} size={16} /></span>
+                        <span aria-hidden className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[4px]" style={{ backgroundColor: tint(colorOf(k), 14), color: colorOf(k) }}><KindGlyph kind={k} size={16} /></span>
                         <span className="flex-1 whitespace-nowrap text-[12px] font-medium leading-tight @2xl:whitespace-normal">{names.nameOf(k)}</span>
-                        {price ? <span className="hidden text-[10px] tabular-nums text-muted-foreground @2xl:inline">${price.pricePerHour}</span> : null}
+                        {price ? <span className="hidden shrink-0 text-[10px] tabular-nums text-muted-foreground @2xl:inline">${price.pricePerHour}</span> : null}
                       </button>
                     );
                   })}
@@ -665,9 +665,9 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
           )}
 
           {/* Canvas, with the settings drawer laid over its right edge (or bottom, on a phone). */}
-          <div className="flex min-w-0 flex-col">
+          <div className="flex min-w-0 flex-col overflow-hidden">
             <div
-              className={`relative overflow-hidden bg-[color:var(--lab-canvas)] transition-all ${isFullscreen ? "h-[62vh] min-h-[480px] @2xl:h-[70vh] flex-1" : "h-[520px] @2xl:h-[580px]"}`}
+              className={`relative overflow-hidden bg-[color:var(--lab-canvas)] transition-all ${isFullscreen ? "h-[55vh] min-h-[440px] @2xl:h-[58vh]" : "h-[520px] @2xl:h-[580px]"}`}
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; }}
               onDrop={onDrop}
             >
@@ -822,13 +822,13 @@ export function HldBoard({ spec }: { spec: HldLabSpec }) {
     <div
       className={
         isFullscreen
-          ? "fixed inset-0 z-[100] flex flex-col bg-slate-950/90 backdrop-blur-md p-2 sm:p-4 md:p-6 overflow-y-auto custom-scrollbar animate-in fade-in-0 duration-200"
+          ? "fixed inset-0 z-[100] bg-slate-950/92 backdrop-blur-md p-2 sm:p-4 md:p-5 overflow-y-auto custom-scrollbar animate-in fade-in-0 duration-200"
           : ""
       }
     >
-      <div className={isFullscreen ? "mx-auto w-full max-w-[1600px] flex-1 flex flex-col min-h-0" : ""}>
+      <div className={isFullscreen ? "mx-auto w-full max-w-[1680px] pb-6" : ""}>
         {/* The learner's board stays mounted while the solution is open, so their work is never lost. */}
-        <div hidden={mode === "solution"} className={isFullscreen ? "flex-1 flex flex-col min-h-0" : ""}>
+        <div hidden={mode === "solution"}>
           <ReactFlowProvider key={generation}>
             <Editor
               spec={mineSpec}
@@ -843,7 +843,7 @@ export function HldBoard({ spec }: { spec: HldLabSpec }) {
           </ReactFlowProvider>
         </div>
         {mode === "solution" && spec.solution ? (
-          <div className={isFullscreen ? "flex-1 flex flex-col min-h-0" : ""}>
+          <div>
             <ReactFlowProvider>
               <Editor
                 spec={solutionSpec}
