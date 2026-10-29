@@ -13,7 +13,7 @@ const SETUP_STEPS = [
   {
     icon: KeyRound,
     title: "Get organization credentials",
-    body: "A Buildment platform admin creates your organization and issues an access key + secret. Store the secret securely — it is shown once when rotated.",
+    body: "An Edorax platform admin creates your organization and issues an access key and secret. Store the secret safely: it is shown only once, when it is created or rotated.",
   },
   {
     icon: ListChecks,
@@ -56,11 +56,11 @@ export function IntegrationDocsContent({ baseUrl }: { baseUrl: string }) {
   const enrollCurl = enrollmentExample(origin);
 
   return (
-    <div className="mx-auto max-w-6xl px-5 pb-20 pt-10 sm:px-6 sm:pt-14">
+    <div className="mx-auto w-full max-w-6xl px-5 pb-20 pt-10 sm:px-6 sm:pt-14">
       <div className="max-w-3xl">
         <p className="text-sm font-medium text-primary">Organization API</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-          Connect your platform to Buildment
+          Connect your platform to Edorax
         </h1>
         <p className="mt-4 text-base leading-relaxed text-muted-foreground">
           Enroll learners, sync progress, and manage course access from Pathment, your internal LMS, or any
@@ -117,7 +117,7 @@ export function IntegrationDocsContent({ baseUrl }: { baseUrl: string }) {
               <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">{INTEGRATION_API_CATALOG.basePath}</code>
               . Responses are JSON unless noted.
             </p>
-            <div className="mt-4 overflow-hidden rounded-2xl border">
+            <div className="mt-4 overflow-x-auto rounded-2xl border">
               <table className="w-full min-w-[640px] text-left text-sm">
                 <thead className="border-b bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
                   <tr>
