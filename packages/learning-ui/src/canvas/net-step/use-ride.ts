@@ -1,9 +1,10 @@
 "use client";
 
 import { useLayoutEffect, useState, type RefObject } from "react";
+import { MOTION_PACE } from "../primitives/motion-pace";
 
-/** How long the packet takes to ride one link: slow enough to read the chips as they move (learner feedback, 2026-10-26). */
-export const RIDE_MS = 1400;
+/** How long the packet takes to ride one link: slow enough to read the chips as they move (learner feedback, 2026-10-26 and 2026-10-29). */
+export const RIDE_MS = 1400 / MOTION_PACE;
 
 type Ride = { key: string | null; t: number };
 
