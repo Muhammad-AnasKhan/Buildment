@@ -1,7 +1,9 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import type { CatalogCourseDetail } from "@/shared/api/catalog";
 import { getSessionUser } from "@/server/auth/guards";
 import { cn } from "@/lib/utils";
+import { SITE_SHARE_IMAGE, SITE_URL } from "@/lib/site";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { selfEnrollInCourseAction } from "@/server/actions/enroll";
 import { CourseCover } from "@/components/learn/course-cover";
@@ -11,6 +13,44 @@ import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { CourseProjectShowcase } from "@/components/learn/course-project-showcase";
 import { CourseRoadmap } from "@/components/learn/course-roadmap";
 
+async function loadCourse(courseSlug: string) {
+  return serverApiFetchOrNotFound<CatalogCourseDetail>(`/api/v1/catalog/${encodeURIComponent(courseSlug)}`);
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ courseSlug: string }> }): Promise<Metadata> {
+  const { courseSlug } = await params;
+  const course = await loadCourse(courseSlug);
+  const description = course.description ? course.description.slice(0, 300) : undefined;
+  return {
+    title: course.title,
+    description,
+    alternates: { canonical: `/catalog/${course.slug}` },
+    openGraph: { type: "website", title: course.title, description, url: `/catalog/${course.slug}`, images: [course.coverUrl ?? SITE_SHARE_IMAGE] },
+  };
+}
+
+// Inline JSON must not contain a raw "<" (it could close the script tag); JSON accepts the escaped form.
+const LT_ESCAPE = String.fromCharCode(92) + "u003c";
+
+/** Google's Course markup, so search can show the course with its provider and price. */
+function courseJsonLd(course: CatalogCourseDetail) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: course.title,
+    description: course.description ?? course.title,
+    url: `${SITE_URL}/catalog/${course.slug}`,
+    provider: { "@type": "Organization", name: "Edorax", sameAs: SITE_URL },
+    offers: {
+      "@type": "Offer",
+      category: course.pricingType === "PAID" ? "Paid" : "Free",
+      price: course.pricingType === "PAID" ? course.priceCents / 100 : 0,
+      priceCurrency: course.currency.toUpperCase(),
+    },
+    hasCourseInstance: { "@type": "CourseInstance", courseMode: "Online", courseWorkload: course.estimatedHours ? `PT${course.estimatedHours}H` : undefined },
+  };
+}
+
 export default async function CatalogCoursePage({
   params,
 }: {
@@ -18,7 +58,7 @@ export default async function CatalogCoursePage({
 }) {
   const { courseSlug } = await params;
   const user = await getSessionUser();
-  const course = await serverApiFetchOrNotFound<CatalogCourseDetail>(`/api/v1/catalog/${encodeURIComponent(courseSlug)}`);
+  const course = await loadCourse(courseSlug);
   const hasAccess = course.access === "active";
   const needsPayment = course.access === "payment_required";
   // Visitors sign up first and land straight in the course (see app/enroll); learners enroll in one
@@ -63,6 +103,7 @@ export default async function CatalogCoursePage({
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd(course)).replace(/</g, LT_ESCAPE) }} />
       <Link href="/catalog" className="text-sm text-muted-foreground hover:text-foreground">
         ← Catalog
       </Link>

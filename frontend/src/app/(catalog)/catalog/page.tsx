@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { SITE_SHARE_IMAGE } from "@/lib/site";
 import type { CatalogCourseSummary } from "@/shared/api/catalog";
 import type { CourseCategory } from "@/shared/domain/enums";
 import { getSessionUser } from "@/server/auth/guards";
@@ -41,6 +43,13 @@ function CourseGrid({ courses }: { courses: CatalogCourseSummary[] }) {
     </ul>
   );
 }
+
+export const metadata: Metadata = {
+  title: "Courses",
+  description: "Free courses in tech and soft skills: networking, system design, product sense, communication and more. Every lesson starts with a question.",
+  alternates: { canonical: "/catalog" },
+  openGraph: { title: "Courses on Edorax", url: "/catalog", images: [SITE_SHARE_IMAGE] },
+};
 
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
   const user = await getSessionUser();
