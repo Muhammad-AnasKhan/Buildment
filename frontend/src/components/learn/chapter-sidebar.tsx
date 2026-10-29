@@ -10,6 +10,7 @@ import { SyllabusChapterRow } from "@/components/learn/syllabus-chapter-row";
 
 type ChapterSidebarProps = {
   courseSlug: string;
+  courseTitle: string;
   modules: SyllabusModule[];
   currentChapterSlug: string;
   collapsed: boolean;
@@ -27,6 +28,7 @@ function chapterSlugFromPath(pathname: string, courseSlug: string) {
 
 function SidebarPanel({
   courseSlug,
+  courseTitle,
   modules,
   activeSlug,
   activeLinkRef,
@@ -35,6 +37,7 @@ function SidebarPanel({
   onToggle,
 }: {
   courseSlug: string;
+  courseTitle: string;
   modules: SyllabusModule[];
   activeSlug: string;
   activeLinkRef: React.RefObject<HTMLAnchorElement | null>;
@@ -62,6 +65,13 @@ function SidebarPanel({
           <X className="size-4" />
         </button>
       </div>
+      <Link
+        href={`/courses/${courseSlug}`}
+        className="block border-b border-border bg-card px-4 py-3 text-sm font-bold leading-5 text-foreground hover:text-primary"
+        onClick={onToggle}
+      >
+        {courseTitle}
+      </Link>
 
       <nav className="flex-1 overflow-y-auto py-2" aria-label="Course chapters">
         {modules.map((mod) => {
@@ -141,6 +151,7 @@ function SidebarPanel({
 
 export function ChapterSidebar({
   courseSlug,
+  courseTitle,
   modules,
   currentChapterSlug,
   collapsed,
@@ -196,6 +207,7 @@ export function ChapterSidebar({
 
   const panelProps = {
     courseSlug,
+    courseTitle,
     modules,
     activeSlug,
     activeLinkRef,
