@@ -40,6 +40,7 @@ export function isReadingPath(pathname: string): boolean {
 const AREA_BY_SEGMENT = new Map<string, PageArea>([
   ["catalog", "catalog"],
   ["dashboard", "dashboard"],
+  ["leaderboard", "dashboard"],
   ["my-courses", "my-courses"],
   ["my-questions", "my-questions"],
   ["progress", "progress"],
