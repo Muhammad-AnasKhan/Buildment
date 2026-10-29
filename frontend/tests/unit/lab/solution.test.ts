@@ -14,8 +14,19 @@ const board = (b: { nodes: Board["nodes"]; edges: Board["edges"] }): Board => ({
 const loadOf = (spec: HldLabSpec) => spec.challenge?.peakLoad ?? spec.levels[0]!.load;
 
 describe("reference solutions", () => {
-  it("exist for the shortener, the three tiers lab and the Wasla redirects lab", () => {
-    expect(labsWithSolution.map((s) => s.slug).sort()).toEqual(["hld-m20-wasla-redirects", "hld-m4-three-tiers", "hld-visual-url-shortener"]);
+  it("exist for the three tiers lab, the Wasla redirects lab and every visual challenge", () => {
+    expect(labsWithSolution.map((s) => s.slug).sort()).toEqual([
+      "hld-m20-wasla-redirects",
+      "hld-m4-three-tiers",
+      "hld-visual-chat",
+      "hld-visual-news-feed",
+      "hld-visual-product-search",
+      "hld-visual-ride-matching",
+      "hld-visual-ticket-drop",
+      "hld-visual-url-shortener",
+      "hld-visual-video-platform",
+      "hld-visual-web-crawler",
+    ]);
   });
 
   it.each(labsWithSolution.map((s) => [s.slug, s] as const))("%s: the solution is valid and passes every check", (_slug, spec) => {
