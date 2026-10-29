@@ -58,7 +58,7 @@ export function AskHelpDialog({
             ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90"
             : isOpen
               ? "border-border bg-muted text-foreground hover:bg-muted/80"
-              : "border-input bg-card text-foreground hover:border-primary"
+              : "border-input bg-card text-foreground hover:border-primary",
         )}
       >
         <HandHelping className="size-5 shrink-0" aria-hidden />
@@ -78,10 +78,15 @@ export function AskHelpDialog({
         <div className="flex max-h-[min(32rem,90dvh)] w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-card text-card-foreground ">
           <div className="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
             <div className="min-w-0">
-              <h2 id="ask-help-title" className="text-base font-semibold text-foreground">
+              <h2
+                id="ask-help-title"
+                className="text-base font-semibold text-foreground"
+              >
                 {copy.dialogTitle}
               </h2>
-              <p className="mt-0.5 truncate text-sm text-muted-foreground">{chapterTitle}</p>
+              <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                {chapterTitle}
+              </p>
             </div>
             <button
               type="button"
@@ -100,6 +105,7 @@ export function AskHelpDialog({
             status={thread?.status ?? null}
             messages={thread?.messages ?? []}
             viewerId={viewerId}
+            active={open}
             courseId={courseId}
             chapterId={chapterId}
             footerLink={{

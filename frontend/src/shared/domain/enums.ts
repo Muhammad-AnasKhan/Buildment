@@ -78,3 +78,10 @@ export type ChapterReaderMode = (typeof CHAPTER_READER_MODES)[number];
 /** Shared by organisation course requests and instructor access requests. */
 export const REQUEST_STATUSES = ["PENDING", "APPROVED", "REJECTED"] as const;
 export type RequestStatus = (typeof REQUEST_STATUSES)[number];
+
+/** Types of notifications that can be sent to users. */
+export const NOTIFICATION_TYPES = [
+  "HELP_THREAD_MESSAGE",
+  "HELP_THREAD_RESOLVED",
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];

@@ -9,6 +9,7 @@ import {
   type RealtimeTicket,
 } from "@/shared/api/notifications";
 import { ApiError, apiFetch } from "@/lib/api-client";
+import { playFeedback } from "@/lib/sound-feedback";
 
 // One notification feed per tab, shared by every component that shows it (the bell in each
 // workspace shell, the /notifications page). The feed is fetched when the first holder mounts and
@@ -171,6 +172,9 @@ function handleNew(event: NotificationNewEvent) {
     return;
   }
   toasted.add(notification.id);
+  if (notification.type === "help.question" || notification.type === "help.reply") {
+    playFeedback("notification");
+  }
   if (!visible) {
     deferredToasts.push(notification);
     return;

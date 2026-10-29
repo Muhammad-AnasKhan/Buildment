@@ -25,9 +25,11 @@ export const helpUiCopy = {
 
   mentorNav: "Learner questions",
   mentorTitle: "Learner questions",
-  mentorSubtitle: "Questions from your learners. Reply here—they see it on the lesson.",
+  mentorSubtitle:
+    "Questions from your learners. Reply here—they see it on the lesson.",
   mentorEmpty: "When a learner asks a question from a lesson, it appears here.",
-  mentorComposerHint: "Your learner sees this when they reopen the lesson or open Your questions.",
+  mentorComposerHint:
+    "Your learner sees this when they reopen the lesson or open Your questions.",
   mentorThreadTitle: "Question thread",
 
   resolvedAskAgain: "Ask a question",
@@ -53,4 +55,9 @@ export const helpUiCopy = {
     `${count} open question${count === 1 ? "" : "s"} need a response`,
   mentorEmptyOpen: "No open questions",
   mentorEmptyResolved: "No resolved questions",
+
+  replyAction: "Reply",
+  replyingToPrefix: "Replying to",
+  cancelReply: "Cancel reply",
+  unreadDivider: "New messages",
 } as const;
