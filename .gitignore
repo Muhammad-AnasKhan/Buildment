@@ -10,6 +10,7 @@ node_modules/
 
 # build output
 frontend/.next/
+frontend/.next-startup-cache*/
 frontend/out/
 server/dist/
 shared/dist/

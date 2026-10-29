@@ -2,19 +2,51 @@ import { load as loadYaml } from "js-yaml";
 
 /**
  * Transforms visual and interactive content fences (```video, ```walkthrough, ```diagram,
- * ```roadmap, ```quiz, ```openquestion, ```predict, ```codeexercise) authored in markdown
+ * ```roadmap, ```canvas, ```lab, ```quiz, ```openquestion, ```predict, ```codeexercise) authored in markdown
  * into their corresponding interactive JSX components on the mentee reader side.
  */
 export function transformVisualFences(source: string): string {
   if (!source) return source;
 
   return source.replace(
-    /(?:^|[\r\n])[ \t]*```(video|walkthrough|diagram|roadmap|quiz|openquestion|predict|codeexercise)[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*```/g,
+    /(?:^|[\r\n])[ \t]*```(video|walkthrough|diagram|roadmap|quiz|openquestion|predict|codeexercise|canvas|lab)[ \t]*\r?\n([\s\S]*?)\r?\n[ \t]*```/g,
     (match, fenceType, yamlText) => {
       try {
         const parsed = loadYaml(yamlText);
         if (!parsed || typeof parsed !== "object") return match;
         const data = parsed as Record<string, unknown>;
+
+        if (fenceType === "canvas") {
+          // Portable canvas: a catalog renderer configured with plain data (no JSX, JS or raw SVG).
+          if (typeof data.renderer !== "string") return match;
+          const { renderer, version, presentation, data: nestedData, ...rest } = data;
+          const basePayload =
+            nestedData && typeof nestedData === "object" && !Array.isArray(nestedData)
+              ? { ...rest, ...(nestedData as Record<string, unknown>) }
+              : rest;
+          const versionAttr = typeof version === "number" ? ` version={${version}}` : "";
+          const presAttr =
+            presentation && typeof presentation === "object"
+              ? ` presentation={${JSON.stringify(presentation)}}`
+              : "";
+          return `\n\n<InteractiveCanvas renderer=${JSON.stringify(renderer)}${versionAttr}${presAttr} data={${JSON.stringify(basePayload)}} />\n\n`;
+        }
+
+        if (fenceType === "lab") {
+          // Portable architecture or networking lab board configured with plain data.
+          const { version, presentation, data: nestedData, ...rest } = data;
+          const specPayload =
+            nestedData && typeof nestedData === "object" && !Array.isArray(nestedData)
+              ? { ...rest, ...(nestedData as Record<string, unknown>) }
+              : rest;
+          if (typeof specPayload.family !== "string") return match;
+          const versionAttr = typeof version === "number" ? ` version={${version}}` : "";
+          const presAttr =
+            presentation && typeof presentation === "object"
+              ? ` presentation={${JSON.stringify(presentation)}}`
+              : "";
+          return `\n\n<Lab${versionAttr}${presAttr} spec={${JSON.stringify(specPayload)}} />\n\n`;
+        }
 
         if (fenceType === "video") {
           const src = data.sourceUrl ?? data.src ?? data.url;

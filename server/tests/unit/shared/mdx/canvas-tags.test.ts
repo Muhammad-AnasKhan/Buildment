@@ -28,6 +28,26 @@ describe("collectCanvasProblems", () => {
   it("ignores chapters without canvases", () => {
     expect(collectCanvasProblems("<Callout type=\"tip\">Hi</Callout>")).toEqual([]);
   });
+
+  it("accepts a valid ```canvas fence and rejects an invalid one", () => {
+    const valid = [
+      "```canvas",
+      "renderer: net-step",
+      "version: 1",
+      "title: One broadcast finds a MAC",
+      "purpose: The laptop asks the whole link.",
+      "limits: Two made-up devices on one switch.",
+      "presentation:",
+      "  spacing: loose",
+      "data:",
+      "  devices: []",
+      "```",
+    ].join("\n");
+    expect(collectCanvasProblems(valid)).toEqual([]);
+
+    const badRenderer = ["```canvas", "renderer: unknown-widget", "title: T", "limits: L", "```"].join("\n");
+    expect(collectCanvasProblems(badRenderer)[0]).toMatch(/unknown renderer/);
+  });
 });
 
 describe("isCanvasSlug", () => {

@@ -145,13 +145,22 @@ function blockPlaceholderTag(block: PendingBlock): string {
  * gate: malformed/unsafe links remain source text instead of becoming blocks.
  */
 function transformVisualContentFences(body: string, pushBlock: (b: PendingBlock) => string): string {
+  const normalizedPortable = body.replace(/^```(canvas|lab)[ \t]*\r?\n([\s\S]*?)^```[ \t]*$/gm, (match, kind: "canvas" | "lab", yamlText: string) => {
+    try {
+      const parsed = loadYaml(yamlText);
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return match;
+      return `\`\`\`${kind}\n${JSON.stringify(parsed, null, 2)}\n\`\`\``;
+    } catch {
+      return match;
+    }
+  });
   const fenceTypes = {
     video: { type: "VIDEO", schema: VideoConfigSchema },
     walkthrough: { type: "VISUAL_WALKTHROUGH", schema: VisualWalkthroughConfigSchema },
     diagram: { type: "VISUAL_DIAGRAM", schema: VisualDiagramConfigSchema },
     roadmap: { type: "ROADMAP", schema: RoadmapConfigSchema },
   } as const;
-  return body.replace(/```(video|walkthrough|diagram|roadmap)\n([\s\S]*?)```/g, (match, name: keyof typeof fenceTypes, yamlText: string) => {
+  return normalizedPortable.replace(/```(video|walkthrough|diagram|roadmap)\n([\s\S]*?)```/g, (match, name: keyof typeof fenceTypes, yamlText: string) => {
     let parsed: unknown;
     try {
       parsed = loadYaml(yamlText);
@@ -510,7 +519,7 @@ function escapeMdxProse(body: string): string {
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });
 
-  const escaped = splitOutsideFences(withMarkers, /```[\s\S]*?```/g, (segment) => {
+  const escaped = splitOutsideFences(withMarkers, /^```[\s\S]*?^```[ \t]*$/gm, (segment) => {
     return splitOutsideFences(segment, /`[^`\n]+`/g, (prose) =>
       prose.replace(/\{/g, "&#123;").replace(/\}/g, "&#125;").replace(/</g, "&lt;")
     );
@@ -527,7 +536,7 @@ function normalizePlaceholderUrls(body: string): string {
       .replace(/https:\/\/app\.\.\./g, "https://app.yourdomain.com")
       .replace(/https:\/\/\.\.\./g, "https://your-domain.com");
 
-  return splitOutsideFences(body, /```[\s\S]*?```/g, fix);
+  return splitOutsideFences(body, /^```[\s\S]*?^```[ \t]*$/gm, fix);
 }
 
 type FaqPair = { question: string; answer: string };

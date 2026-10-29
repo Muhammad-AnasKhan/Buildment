@@ -40,9 +40,9 @@ export type RemoveChapterBody = z.infer<typeof removeChapterBody>;
 // The settings form posts strings; the service turns "" into null and dollars into cents.
 export const courseSettingsBody = z.object({
   title: z.string().trim().min(3).max(120),
-  description: z.string().trim().max(500),
+  description: z.string().trim().max(2000),
   coverUrl: z.string().trim().max(2048).refine(value => !value || isSafeAssetUrl(value), "Use a same-origin image path or HTTPS URL."),
-  projectGoal: z.string().trim().max(240),
+  projectGoal: z.string().trim().max(1000),
   // Beginner and Advanced match course.yaml; Easy and Hard stay valid for older courses.
   difficulty: z.enum(["", "Beginner", "Easy", "Medium", "Advanced", "Hard"]),
   estimatedHours: z.union([z.literal(""), z.coerce.number().int().min(1).max(1000)]),
