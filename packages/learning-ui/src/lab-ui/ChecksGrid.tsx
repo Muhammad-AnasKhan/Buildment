@@ -82,9 +82,14 @@ export function CheckSlot({ check, revealed, onShow, text = same }: {
   text?: (s: string) => string;
 }) {
   const status = !revealed ? "Not run yet" : check.pass ? "Pass" : "Fail";
+  const accent = !revealed
+    ? "border-l-border"
+    : check.pass
+      ? "border-l-[color:var(--lab-ok)]"
+      : "border-l-[color:var(--lab-down)]";
   return (
     <li
-      className={`rounded-[8px] border p-2.5 shadow-sm ${!revealed ? "border-border bg-card" : check.pass ? "border-[color:var(--lab-ok)]/45 bg-card" : "border-[color:var(--lab-down)]/60 bg-[color:var(--lab-down-fill)]/35"}`}
+      className={`rounded-[8px] border border-border border-l-[3px] bg-card p-2.5 ${accent}`}
       data-check={check.id}
       data-status={revealed ? (check.pass ? "pass" : "fail") : "pending"}
     >
@@ -93,7 +98,7 @@ export function CheckSlot({ check, revealed, onShow, text = same }: {
           key={revealed ? "on" : "off"}
           aria-hidden
           className={`lab-mono flex h-[21px] w-[42px] shrink-0 items-center justify-center rounded-full border text-[8.5px] font-bold uppercase tracking-wider ${revealed ? "lab-stamp" : ""} ${
-            !revealed ? "border-dashed border-border bg-muted text-muted-foreground" : check.pass ? "border-[color:var(--lab-ok)]/60 bg-[color:var(--lab-ok)]/10 text-[color:var(--lab-ok-ink)]" : "border-[color:var(--lab-down)]/60 bg-[color:var(--lab-down-fill)] text-[color:var(--lab-down-ink)]"
+            !revealed ? "border-dashed border-border bg-muted text-muted-foreground" : check.pass ? "border-[color:var(--lab-ok)]/50 bg-[color:var(--lab-ok)]/10 text-[color:var(--lab-ok-ink)]" : "border-[color:var(--lab-down)]/50 bg-[color:var(--lab-down-fill)]/60 text-[color:var(--lab-down-ink)]"
           }`}
         >
           {!revealed ? "wait" : check.pass ? "pass" : "fail"}
@@ -109,23 +114,23 @@ export function CheckSlot({ check, revealed, onShow, text = same }: {
         ) : null}
       </div>
 
-      <dl className={`mt-2 grid gap-2 border-t border-border/70 pt-2 ${revealed ? "grid-cols-2" : "grid-cols-1"}`}>
+      <dl className={`mt-2 grid gap-x-3 gap-y-1 border-t border-border/60 pt-2 ${revealed ? "grid-cols-2" : "grid-cols-1"}`}>
         <div>
           <dt className="lab-mono text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground">Target</dt>
-          <dd className="mt-0.5 text-[10.5px] leading-snug text-foreground">{text(check.target)}</dd>
+          <dd className="mt-0.5 text-[11px] leading-snug text-foreground">{text(check.target)}</dd>
         </div>
         {revealed ? (
           <div>
-            <dt className="lab-mono text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground">Measured</dt>
-            <dd className={`lab-mono mt-0.5 text-[10.5px] font-bold leading-snug ${okText(check.pass)}`}>{text(check.measured)}</dd>
+            <dt className="lab-mono text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground">Yours</dt>
+            <dd className={`lab-mono mt-0.5 text-[11px] font-bold leading-snug ${okText(check.pass)}`}>{text(check.measured)}</dd>
           </div>
         ) : null}
       </dl>
 
       {revealed && !check.pass && check.reason ? (
-        <div className="mt-2 rounded-[6px] border border-[color:var(--lab-down)]/25 bg-[color:var(--lab-down-fill)]/45 px-2 py-1.5 text-[10.5px] leading-relaxed text-[color:var(--lab-down-ink)]">
-          <span className="font-bold">Why it failed: </span>{text(check.reason)}
-        </div>
+        <p className="mt-2 border-t border-border/60 pt-2 text-[11px] leading-relaxed text-muted-foreground">
+          <span className="font-semibold text-foreground">Fix: </span>{text(check.reason)}
+        </p>
       ) : null}
     </li>
   );

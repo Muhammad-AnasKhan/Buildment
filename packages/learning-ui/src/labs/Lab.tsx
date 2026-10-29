@@ -7,6 +7,7 @@ import { NetBoard } from "./net/NetBoard";
 import { PlanBoard } from "./net/PlanBoard";
 import { PortablePresentationFrame } from "../canvas/InteractiveCanvas";
 import { MAX_PORTABLE_VERSION, presentationSchema } from "../canvas/models/portable";
+import { CourseLabLauncher } from "./CourseLabLauncher";
 
 export function resolveLab(slug: unknown): { spec: LabSpec } | null {
   if (typeof slug !== "string") return null;
@@ -78,11 +79,14 @@ export function Lab({
   slug,
   version,
   presentation,
+  courseMode = false,
 }: {
   spec?: LabSpec | null;
   slug?: unknown;
   version?: unknown;
   presentation?: unknown;
+  /** Course readers use a compact launcher; galleries and previews keep the full inline board. */
+  courseMode?: boolean;
 }) {
   const pres = presentationSchema.safeParse(presentation);
   const presOptions = pres.success ? pres.data : undefined;
@@ -136,6 +140,14 @@ export function Lab({
               ? "Build it"
               : "Explore"
         : "Explore";
+
+  if (courseMode && resolvedSpec.family === "hld") {
+    return (
+      <PortablePresentationFrame presentation={presOptions}>
+        <CourseLabLauncher spec={resolvedSpec} />
+      </PortablePresentationFrame>
+    );
+  }
 
   return (
     <PortablePresentationFrame presentation={presOptions}>
