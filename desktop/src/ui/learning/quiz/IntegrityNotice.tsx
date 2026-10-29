@@ -1,7 +1,13 @@
 import { useEffect, useRef } from 'react';
 import type { QuizIntegrity } from '@buildment/learning-ui/lib/integrity/use-quiz-integrity';
 
-export function IntegrityNotice({ integrity }: { integrity: QuizIntegrity }) {
+export function IntegrityNotice({
+  integrity,
+  onExitQuiz,
+}: {
+  integrity: QuizIntegrity;
+  onExitQuiz?: () => void;
+}) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (integrity.dialog && !dialog.current?.open) dialog.current?.showModal();
@@ -33,18 +39,39 @@ export function IntegrityNotice({ integrity }: { integrity: QuizIntegrity }) {
           {integrity.notice.text}
         </p>
       )}
-      {integrity.fullscreenPrompt && (
-        <div className="flex flex-wrap items-center gap-3 rounded-lg bg-muted p-3 text-sm">
-          <span>Return to full screen when you’re ready.</span>
-          <button className="underline" onClick={integrity.returnToFullscreen}>
-            Full screen
-          </button>
-          <button
-            className="underline"
-            onClick={integrity.dismissFullscreenPrompt}
-          >
-            Not now
-          </button>
+      {integrity.fullscreenPrompt && integrity.dialog !== 'intro' && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="desktop-quiz-fullscreen-exit-title"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 p-4 text-foreground backdrop-blur-md"
+        >
+          <div className="w-[min(92vw,440px)] rounded-2xl border border-border bg-card p-7 text-foreground shadow-xl">
+            <h2 id="desktop-quiz-fullscreen-exit-title" className="text-2xl font-semibold">
+              You left full screen
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              You left full screen. This is noted for your mentor. Return to full screen to continue the quiz, or exit the quiz for now.
+            </p>
+            <div className="mt-6 flex flex-col gap-2.5">
+              <button
+                onClick={integrity.returnToFullscreen}
+                className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground"
+              >
+                Continue quiz
+              </button>
+              <button
+                onClick={() => {
+                  integrity.dismissFullscreenPrompt();
+                  if (onExitQuiz) onExitQuiz();
+                  else window.history.back();
+                }}
+                className="w-full rounded-lg border border-border px-4 py-2.5 text-sm font-medium"
+              >
+                Exit the quiz
+              </button>
+            </div>
+          </div>
         </div>
       )}
       {integrity.camera.status === 'ON' && (

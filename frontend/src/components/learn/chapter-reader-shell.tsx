@@ -227,11 +227,15 @@ export function ChapterReaderShell({
 
   useEffect(() => {
     if (readerMode !== "QUIZ") return;
-    const onQuizPerfect = () => {
+    const onQuizExitFocus = () => {
       void exitFocusMode();
     };
-    window.addEventListener("buildment:quiz-perfect", onQuizPerfect);
-    return () => window.removeEventListener("buildment:quiz-perfect", onQuizPerfect);
+    window.addEventListener("buildment:quiz-perfect", onQuizExitFocus);
+    window.addEventListener("buildment:quiz-exit", onQuizExitFocus);
+    return () => {
+      window.removeEventListener("buildment:quiz-perfect", onQuizExitFocus);
+      window.removeEventListener("buildment:quiz-exit", onQuizExitFocus);
+    };
   }, [readerMode, exitFocusMode]);
 
   // The quiz asks for focus mode again from a click ("Start quiz", "Return to full
