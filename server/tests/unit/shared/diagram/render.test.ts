@@ -147,6 +147,39 @@ describe("layout", () => {
     expect(JSON.stringify(drawScene(scene))).toContain('"key":"group-0-label"');
   });
 
+  it.each([false, true])("frames sequence blocks and places notes between messages (compact: %s)", (compact) => {
+    const s = spec("sequence", "title: Health\nbox Client\nbox Server\nnote over Client, Server: start\nloop every second\nClient -> Server: ping\nend\nalt healthy\nServer --> Client: pong\nelse down\nServer -> Client: nothing\nend");
+    expect(s.notes).toEqual([{ before: 0, from: "client", to: "server", side: "over", text: "start", line: 4 }]);
+    expect(s.blocks.map((b) => [b.kind, b.start, b.end, b.sections.map((x) => x.at)])).toEqual([["loop", 0, 1, []], ["alt", 1, 3, [2]]]);
+    const scene = layoutDiagram(s, compact);
+    const [loop, alt] = scene.blocks;
+    const ping = scene.edges[0].path.start.y;
+    expect(scene.notes[0].rect.y + scene.notes[0].rect.h).toBeLessThan(ping);
+    expect(loop.rect.y).toBeLessThan(ping);
+    expect(loop.rect.y + loop.rect.h).toBeGreaterThan(ping);
+    expect(alt.dividers).toHaveLength(1);
+    expect(alt.dividers[0].y).toBeGreaterThan(scene.edges[1].path.start.y);
+    expect(alt.dividers[0].y).toBeLessThan(scene.edges[2].path.start.y);
+    const flat = JSON.stringify(drawScene(scene));
+    expect(flat).toContain('"key":"note-0"');
+    expect(flat).toContain('"key":"block-1-divider-0"');
+  });
+
+  it.each([false, true])("draws entity cards and ends an arrow at a group's box (compact: %s)", (compact) => {
+    const s = spec("flow", "title: Locks\nbox Client\ngroup [LS] Lock service\n  box Node 1\n  box Node 2\nend\nentity Account | id (bigint, PK) | name (string)\nClient -> [LS]: asks\nNode 1 --- Node 2\n[LS] -> Account");
+    expect(s.edges.map((edge) => [edge.from, edge.to])).toEqual([["client", "@g0"], ["node 1", "node 2"], ["@g0", "account"]]);
+    const scene = layoutDiagram(s, compact);
+    const box = scene.groups[0].rect;
+    const end = scene.edges[0].path.end;
+    const onBorder = Math.min(Math.abs(end.x - box.x), Math.abs(end.x - box.x - box.w), Math.abs(end.y - box.y), Math.abs(end.y - box.y - box.h));
+    expect(onBorder).toBeLessThan(6);
+    const account = scene.nodes.find((n) => n.id === "account")!;
+    expect(account.fields?.lines).toEqual(["id (bigint, PK)", "name (string)"]);
+    expect(JSON.stringify(drawScene(scene))).toContain('"key":"account-header"');
+    expect(describeDiagram(s)).toContain("Account (a table with id (bigint, PK) and name (string))");
+    expect(describeDiagram(s)).toContain("Client to Lock service: asks");
+  });
+
   it("is deterministic", () => {
     expect(layoutDiagram(spec("flow", FLOW), false)).toEqual(layoutDiagram(spec("flow", FLOW), false));
   });

@@ -52,8 +52,22 @@ function text(label: SceneLabel, fill: string, weight: number, key: string, halo
 
 function shape(node: SceneNode): SvgNode[] {
   const s = node.shape;
+  if (s.type === "circle" && node.kind === "start") return [el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r, fill: BRAND.ink }, undefined, `${node.id}-shape`)];
+  if (s.type === "circle" && node.kind === "stop") {
+    return [
+      el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r - 1.5, fill: BRAND.white, stroke: BRAND.ink, strokeWidth: 3 }, undefined, `${node.id}-shape`),
+      el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r - 6, fill: BRAND.ink }, undefined, `${node.id}-dot`),
+    ];
+  }
   if (s.type === "circle") return [el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r, fill: BRAND.cobalt }, undefined, `${node.id}-shape`)];
   const frame = { fill: BRAND.white, stroke: BRAND.ink, strokeWidth: 3 };
+  if (node.kind === "entity") {
+    return [
+      el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), ...frame }, undefined, `${node.id}-shape`),
+      el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: 32, fill: BRAND.ink }, undefined, `${node.id}-header`),
+    ];
+  }
+  if (node.kind === "state") return [el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), rx: 16, ...frame }, undefined, `${node.id}-shape`)];
   if (s.type === "diamond") return [el("path", { d: diamondPath(s, 0), ...frame, strokeLinejoin: "round" }, undefined, `${node.id}-shape`)];
   if (node.kind === "end") return [el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), fill: BRAND.ink }, undefined, `${node.id}-shape`)];
   if (node.kind === "external") return [el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), ...frame, strokeDasharray: "8 5" }, undefined, `${node.id}-shape`)];
@@ -112,6 +126,24 @@ export function drawScene(scene: Scene, state: DrawState = {}, title?: { text: s
     children.push(el("line", { x1: r(line.x), y1: r(line.y1), x2: r(line.x), y2: r(line.y2), stroke: BRAND.muted, strokeWidth: 2, strokeDasharray: "2 6", strokeLinecap: "round" }, undefined, `life-${i}`));
   }
 
+  // Sequence blocks: a frame with its title, and a dashed line where each branch starts.
+  for (const [i, block] of scene.blocks.entries()) {
+    const { x: bx, y: by, w: bw, h: bh } = block.rect;
+    children.push(el("rect", { x: r(bx), y: r(by), width: r(bw), height: r(bh), rx: 6, fill: "none", stroke: BRAND.muted, strokeWidth: 2 }, undefined, `block-${i}`));
+    children.push(text(block.title, BRAND.muted, 700, `block-${i}-title`, BRAND.tint));
+    for (const [j, divider] of block.dividers.entries()) {
+      children.push(el("line", { x1: r(divider.x0), y1: r(divider.y), x2: r(divider.x1), y2: r(divider.y), stroke: BRAND.muted, strokeWidth: 2, strokeDasharray: "6 5" }, undefined, `block-${i}-divider-${j}`));
+      if (divider.label) children.push(text(divider.label, BRAND.muted, 700, `block-${i}-divider-${j}-label`, BRAND.tint));
+    }
+  }
+
+  // Sequence notes: yellow cards with an ink border.
+  for (const [i, note] of scene.notes.entries()) {
+    const { x: nx, y: ny, w: nw, h: nh } = note.rect;
+    children.push(el("rect", { x: r(nx), y: r(ny), width: r(nw), height: r(nh), fill: BRAND.yellow, stroke: BRAND.ink, strokeWidth: 2 }, undefined, `note-${i}`));
+    children.push(text(note.label, BRAND.ink, 600, `note-${i}-label`));
+  }
+
   for (const edge of scene.edges) {
     const on = state.activeEdge === edge.index;
     const faded = state.fadedEdges?.has(edge.index) ?? false;
@@ -150,8 +182,9 @@ export function drawScene(scene: Scene, state: DrawState = {}, title?: { text: s
   for (const node of scene.nodes) {
     const parts = shape(node);
     if (state.activeNode === node.id) parts.unshift(ring(node));
-    const light = node.labelInside && (node.kind === "actor" || node.kind === "end");
+    const light = node.labelInside && (node.kind === "actor" || node.kind === "end" || node.kind === "entity");
     parts.push(text(node.label, light ? BRAND.paper : BRAND.ink, 700, `${node.id}-label`));
+    if (node.fields) parts.push(text(node.fields, BRAND.ink, 500, `${node.id}-fields`));
     children.push(el("g", {}, parts, `node-${node.id}`));
   }
 
