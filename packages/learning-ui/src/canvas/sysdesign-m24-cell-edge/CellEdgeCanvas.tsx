@@ -28,6 +28,7 @@ import {
   type Mode,
   type Point,
 } from "../models/cell-edge";
+import { useSvgTouchDrag } from "../primitives/svg-touch-drag";
 
 const W = 420;
 const H = 428;
@@ -47,6 +48,7 @@ const DOT = {
 
 /** 24.2 beat 3: drag the rider across a box edge and see which boxes must be read to find every driver in range. */
 export function CellEdgeCanvas({ title, limits }: { title: string; purpose: string; limits: string }) {
+  const touchRef = useSvgTouchDrag<SVGGElement>();
   const svg = useRef<SVGSVGElement>(null);
   const titleId = useId();
   const descId = useId();
@@ -166,7 +168,7 @@ export function CellEdgeCanvas({ title, limits }: { title: string; purpose: stri
         <path d={`M${MAP.x} ${MAP.y} h${MAP.w} v${MAP.h} h${-MAP.w} Z`} strokeWidth={1.5} className={cn("fill-none", NEUTRAL.line)} aria-hidden />
 
         {/* The rider is the slider: drag on the map, or use the arrow keys. */}
-        <g
+        <g ref={touchRef}
           role="slider"
           tabIndex={0}
           aria-label="Rider on the map"

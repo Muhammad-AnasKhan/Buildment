@@ -2,6 +2,7 @@
 
 import { createElement, useId, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { describeDiagram, stepCaptions } from "../shared/diagram/describe";
+import { useSvgTouchDrag } from "../canvas/primitives/svg-touch-drag";
 import { BRAND, DIAGRAM_FONT, drawScene, packetPoint, type DrawState, type SvgNode } from "../shared/diagram/draw";
 import { layoutDiagram, pathPoint, type Point, type Scene } from "../shared/diagram/layout";
 import { isDiagramKind, parseDiagram, type DiagramSpec } from "../shared/diagram/spec";
@@ -146,6 +147,7 @@ type SvgProps = {
 
 function DiagramSvg({ scene, spec, step, drag, setDrag, setStep, labelledBy, describedBy }: SvgProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const packetRef = useSvgTouchDrag<SVGGElement>();
   const hasPacket = spec.kind === "flow" && spec.hops.length > 0;
 
   const state: DrawState = {};
@@ -180,6 +182,7 @@ function DiagramSvg({ scene, spec, step, drag, setDrag, setStep, labelledBy, des
 
   const packetHandlers = hasPacket
     ? {
+        ref: packetRef,
         style: { cursor: drag === null ? "grab" : "grabbing", touchAction: "none" },
         onPointerDown: (event: PointerEvent<SVGGElement>) => {
           event.currentTarget.setPointerCapture(event.pointerId);
