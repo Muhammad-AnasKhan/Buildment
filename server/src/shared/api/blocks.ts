@@ -56,6 +56,7 @@ export type OpenQuestionBlockState = {
     isCorrect?: boolean | null;
     explanation?: string | null;
     hint?: string | null;
+    guidance?: string | null;
   } | null;
 };
 
@@ -100,4 +101,13 @@ export type QuizChapterState = {
   initialAnswers: Record<string, string[]>;
   initialBlockGrades: Record<string, { selected: string[]; isCorrect: boolean | null; explanation?: string }>;
   initialScoreSummary: { score: number; maxScore: number; questions: number } | null;
+  assessment: {
+    score: number;
+    maxScore: 100;
+    passingScore: number;
+    passed: boolean;
+    allAttempted: boolean;
+    deterministic: { score: number; weight: number; attempted: number; total: number } | null;
+    ai: { score: number; weight: number; attempted: number; total: number } | null;
+  } | null;
 };

@@ -44,6 +44,8 @@ export async function OpenQuestionComponent({
       urlHint,
       autoGrade: "mentor",
       hintAfterAttempts: 3,
+      maxAttempts: 3,
+      reviewChapterSlugs: [],
     };
 
     return (

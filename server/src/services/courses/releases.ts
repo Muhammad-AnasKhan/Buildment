@@ -7,6 +7,7 @@ import { NotFoundError } from "../../utils/errors.js";
 export type ReleaseChapter = {
   id: string; key: string | null; slug: string; title: string; order: number;
   estimatedMinutes: number | null; readerMode: "DEFAULT" | "QUIZ"; isMilestone: boolean;
+  quizPassingScore: number;
 };
 export type ReleaseModule = { id: string; key: string | null; title: string; order: number; chapters: ReleaseChapter[] };
 export type ReleaseContent = { variants: Record<string, ReleaseModule[]> };
@@ -25,7 +26,7 @@ export async function snapshotLiveCourse(tx: Prisma.TransactionClient, courseId:
     id: module.id, key: module.contentKey, title: module.title, order: module.order,
     chapters: module.chapters.map(chapter => ({ id: chapter.id, key: chapter.contentKey, slug: chapter.slug,
       title: chapter.title, order: chapter.order, estimatedMinutes: chapter.estimatedMinutes,
-      readerMode: chapter.readerMode, isMilestone: chapter.isMilestone })),
+      readerMode: chapter.readerMode, quizPassingScore: chapter.quizPassingScore, isMilestone: chapter.isMilestone })),
   }));
   const variants = resolveCourseFamily(familySlug, course.variantFamily)?.variants.map(variant => variant.slug) ?? ["default"];
   return { variants: Object.fromEntries(variants.map(slug => [slug, contentModules])) };

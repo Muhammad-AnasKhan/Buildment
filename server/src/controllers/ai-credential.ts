@@ -17,8 +17,8 @@ export async function status(req: Request, res: Response) {
 
 // PUT /api/v1/learner/ai-credential
 export async function save(req: Request, res: Response) {
-  const { apiKey, model } = req.body as { apiKey: string; model?: string | null };
-  ok(res, await saveAiCredential(req.user!.id, { apiKey, model }));
+  const { provider, apiKey, model } = req.body as { provider: "OPENROUTER" | "GEMINI"; apiKey: string; model?: string | null };
+  ok(res, await saveAiCredential(req.user!.id, { provider, apiKey, model }));
 }
 
 // PATCH /api/v1/learner/ai-credential

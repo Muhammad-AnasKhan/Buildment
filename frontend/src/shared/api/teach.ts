@@ -177,6 +177,7 @@ export type ChapterEditorView = {
   summary: string | null;
   estimatedMinutes: number | null;
   readerMode: ChapterReaderMode;
+  quizPassingScore: number;
   isMilestone: boolean;
   publishedAt: string | null;
   hasUnpublishedChanges: boolean;
@@ -211,6 +212,7 @@ export type ChapterSettingsInput = {
   summary: string | null;
   estimatedMinutes: number | null;
   readerMode: ChapterReaderMode;
+  quizPassingScore: number;
   isMilestone: boolean;
 };
 

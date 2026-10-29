@@ -53,6 +53,7 @@ export function ChapterEditor({
   chapterSummary,
   estimatedMinutes,
   readerMode,
+  quizPassingScore,
   isMilestone,
   initialPublishedAt,
   initialHasUnpublishedChanges,
@@ -67,6 +68,7 @@ export function ChapterEditor({
   chapterSummary: string | null;
   estimatedMinutes: number | null;
   readerMode: "DEFAULT" | "QUIZ";
+  quizPassingScore: number;
   isMilestone: boolean;
   initialPublishedAt: string | null;
   initialHasUnpublishedChanges: boolean;
@@ -88,6 +90,7 @@ export function ChapterEditor({
     summary: chapterSummary ?? "",
     estimatedMinutes: estimatedMinutes?.toString() ?? "",
     readerMode,
+    quizPassingScore: quizPassingScore.toString(),
     isMilestone,
   });
   const [settingsState, setSettingsState] = useState<SaveState>({ kind: "idle" });
@@ -173,6 +176,7 @@ export function ChapterEditor({
       summary: settings.summary.trim() || null,
       estimatedMinutes: minutes ? Number(minutes) : null,
       readerMode: settings.readerMode,
+      quizPassingScore: Number(settings.quizPassingScore),
       isMilestone: settings.isMilestone,
     }));
     if (result.ok) {
@@ -325,6 +329,30 @@ export function ChapterEditor({
                 <option value="QUIZ">Quiz flow (enables quiz blocks)</option>
               </select>
             </div>
+            {settings.readerMode === "QUIZ" ? (
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="quiz-passing-score">Passing score</Label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    id="quiz-passing-score"
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    max={100}
+                    value={settings.quizPassingScore}
+                    onChange={(event) => {
+                      setSettings((current) => ({ ...current, quizPassingScore: event.target.value }));
+                      setSettingsState({ kind: "dirty" });
+                    }}
+                    className="max-w-32"
+                  />
+                  <span className="text-sm text-muted-foreground">percent</span>
+                </div>
+                <p className="text-xs leading-5 text-muted-foreground">
+                  Automatic checks contribute 80% and AI-graded written answers contribute 20%. A category is normalized when the quiz only uses one type.
+                </p>
+              </div>
+            ) : null}
             <div className="flex items-start gap-3 rounded-lg border bg-muted/30 p-3 md:col-span-2">
               <Checkbox
                 id="is-milestone"

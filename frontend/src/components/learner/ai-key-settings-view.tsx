@@ -14,6 +14,7 @@ export type AiKeySettingsViewProps = {
   status: AiCredentialStatus;
   keyDraft: string;
   modelDraft: string;
+  providerDraft?: "OPENROUTER" | "GEMINI";
   /** True while the learner is pasting a replacement for a saved key. */
   replacing: boolean;
   busy: AiKeyBusy;
@@ -21,6 +22,7 @@ export type AiKeySettingsViewProps = {
   error: string | null;
   onKeyChange: (value: string) => void;
   onModelChange: (value: string) => void;
+  onProviderChange?: (value: "OPENROUTER" | "GEMINI") => void;
   onSave: () => void;
   onTest: () => void;
   onSaveModel: () => void;
@@ -28,18 +30,19 @@ export type AiKeySettingsViewProps = {
   onReplace: (replacing: boolean) => void;
 };
 
-function Notes() {
+function Notes({ provider }: { provider: "OPENROUTER" | "GEMINI" }) {
+  const name = provider === "GEMINI" ? "Google Gemini" : "OpenRouter";
   return (
     <div className="space-y-2 rounded-lg border bg-muted/40 p-3 text-sm leading-6 text-muted-foreground">
       <p>
         <span className="font-medium text-foreground">Cost: </span>
-        interviews run on your own OpenRouter account. A 10 answer interview usually costs a few cents, and free models cost nothing. You can set a spending limit on your key at openrouter.ai.
+        interviews and written-answer checks run on your own {name} account. A longer session may cost a few cents; provider pricing and free tiers apply.
       </p>
       <p className="flex gap-2">
         <ShieldCheck className="mt-1 size-4 shrink-0" aria-hidden />
         <span>
           <span className="font-medium text-foreground">Privacy: </span>
-          your key is encrypted before it is saved and is only used to send your interview to OpenRouter. It is never shown again, only its last four characters. Your answers go to OpenRouter and the model you pick, and your mentor can read your finished interviews. You can delete the key at any time.
+          your key is encrypted before it is saved and is only used for your AI learning activities. It is never shown again, only its last four characters. Your answers go to {name} and the model you pick, and your mentor can read finished submissions. You can delete the key at any time.
         </span>
       </p>
     </div>
@@ -50,6 +53,8 @@ export function AiKeySettingsView(props: AiKeySettingsViewProps) {
   const { status, busy } = props;
   const showKeyInput = !status.hasKey || props.replacing;
   const idle = busy === null;
+  const provider = props.providerDraft ?? status.provider;
+  const providerName = provider === "GEMINI" ? "Gemini" : "OpenRouter";
 
   return (
     <section id="ai-interviews" aria-labelledby="ai-interviews-title" className="scroll-mt-24 space-y-4 rounded-xl border bg-card p-4 sm:p-6">
@@ -58,7 +63,7 @@ export function AiKeySettingsView(props: AiKeySettingsViewProps) {
           AI interviews
         </h2>
         <p className="mt-1 text-sm leading-6 text-muted-foreground">
-          Practise with an AI interviewer inside your courses. You bring your own OpenRouter key.
+          Use guided written-answer feedback and practise interviews with your own provider key.
         </p>
       </div>
 
@@ -68,7 +73,23 @@ export function AiKeySettingsView(props: AiKeySettingsViewProps) {
         </p>
       ) : (
         <>
-          <Notes />
+          <Notes provider={provider} />
+
+          {showKeyInput ? (
+            <div className="space-y-2">
+              <Label htmlFor="ai-provider">AI provider</Label>
+              <select
+                id="ai-provider"
+                value={provider}
+                onChange={(event) => props.onProviderChange?.(event.target.value as "OPENROUTER" | "GEMINI")}
+                disabled={!idle}
+                className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <option value="OPENROUTER">OpenRouter</option>
+                <option value="GEMINI">Google Gemini</option>
+              </select>
+            </div>
+          ) : null}
 
           {status.hasKey ? (
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm" data-testid="key-status">
@@ -81,13 +102,13 @@ export function AiKeySettingsView(props: AiKeySettingsViewProps) {
 
           {showKeyInput ? (
             <div className="space-y-2">
-              <Label htmlFor="openrouter-key">{status.hasKey ? "New OpenRouter key" : "OpenRouter key"}</Label>
+              <Label htmlFor="openrouter-key">{status.hasKey ? `New ${providerName} key` : `${providerName} key`}</Label>
               <Input
                 id="openrouter-key"
                 type="password"
                 value={props.keyDraft}
                 onChange={(event) => props.onKeyChange(event.target.value)}
-                placeholder="sk-or-v1-..."
+                placeholder={provider === "GEMINI" ? "AIza..." : "sk-or-v1-..."}
                 autoComplete="off"
                 spellCheck={false}
                 maxLength={300}
@@ -96,7 +117,7 @@ export function AiKeySettingsView(props: AiKeySettingsViewProps) {
                 className="h-10 font-mono text-base"
               />
               <p className="text-xs text-muted-foreground">
-                Create one at openrouter.ai/keys. We check it with OpenRouter before saving.
+                {provider === "GEMINI" ? "Create one in Google AI Studio." : "Create one at openrouter.ai/keys."} We verify it before saving.
               </p>
             </div>
           ) : null}
@@ -115,7 +136,7 @@ export function AiKeySettingsView(props: AiKeySettingsViewProps) {
               className="h-10 text-base"
             />
             <p className="text-xs text-muted-foreground">
-              Leave empty to use {status.defaultModel}. Any OpenRouter model id works, for example one ending in :free.
+              Leave empty to use {status.defaultModel}. Enter a model id supported by {providerName}.
             </p>
           </div>
 

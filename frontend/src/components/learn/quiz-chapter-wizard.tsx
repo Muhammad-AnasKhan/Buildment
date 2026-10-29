@@ -27,6 +27,7 @@ export async function QuizChapterWizard({ chapterId, chapterTitle, nextHref, nex
       initialAnswers={state.initialAnswers}
       initialScoreSummary={state.initialScoreSummary}
       initialBlockGrades={state.initialBlockGrades}
+      initialAssessment={state.assessment}
       nextHref={nextHref}
       nextLocked={nextLocked}
       canMarkComplete={canMarkComplete}
