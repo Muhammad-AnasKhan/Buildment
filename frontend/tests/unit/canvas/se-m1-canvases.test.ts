@@ -64,6 +64,37 @@ describe("software-engineering-concepts module 1 canvases", () => {
     expect(seM1TaskShapes.steps.at(-1)?.chips).toContain("owner_id");
   });
 
+  it("se-m1-task-shapes: one leak story, and the DTO refuses isAdmin on a side road", () => {
+    const steps = seM1TaskShapes.steps;
+    // The clean walk-through never carries isAdmin forward; only the side road holds it.
+    const holders = steps.filter((s) => s.chips?.some((c) => c.includes("isAdmin")));
+    expect(holders).toHaveLength(1);
+    expect(holders[0].outcome).toBe("400 names isAdmin");
+    expect(holders[0].note).toContain("unknown field: isAdmin");
+    // The leaked example is a task row (owner_id), not a password_hash column.
+    const leak = steps.at(-1)!;
+    expect(leak.chips).toEqual(["owner_id", "status", "created_at"]);
+    expect(strings(leak).some((t) => t.includes("password_hash"))).toBe(false);
+    // The view model step lists the real fields, with dueIn added and no owner.
+    const view = steps.find((s) => s.title.startsWith("Shape 5"))!;
+    expect(view.chips).toContain("id");
+    expect(view.chips?.some((c) => c.startsWith("dueIn"))).toBe(true);
+    expect(view.chips?.some((c) => c.toLowerCase().includes("owner"))).toBe(false);
+  });
+
+  it("se-m1-request-layers: one column rename everywhere, and the controller sends the view model", () => {
+    const all = strings(seM1RequestLayers).join(" ");
+    expect(all).not.toContain("Rename the table");
+    expect(all).not.toContain("the table is renamed");
+    expect(all).toContain("due_at");
+    const last = seM1RequestLayers.steps.at(-1)!;
+    expect(last.note).toContain("column");
+    const send = seM1RequestLayers.steps.find((s) => s.outcome === "view model only")!;
+    expect(send.from).toBe(1); // Controller
+    expect(send.to).toBe(0); // Browser
+    expect(send.note).toContain("mapping function");
+  });
+
   it("se-m1-stack-names: a clean deck of 8 cards using every bucket, with short text", () => {
     expect(checkDeck(STACK_CARDS, STACK_BUCKETS)).toEqual([]);
     expect(STACK_CARDS.length).toBeLessThanOrEqual(8);
@@ -73,7 +104,18 @@ describe("software-engineering-concepts module 1 canvases", () => {
       for (const reason of Object.values(c.why)) expect(wrapWords(reason, 60).length, reason).toBeLessThanOrEqual(2);
     }
     for (const b of STACK_BUCKETS) expect(`Right: ${b.label}`.length).toBeLessThanOrEqual(38);
-    expect(STACK_CARDS.some((c) => c.id === "fowler-dto")).toBe(true);
+    // Fowler's original DTO is filed as a different meaning, not as Errand's DTO.
+    expect(STACK_CARDS.find((c) => c.id === "fowler-pattern")?.answer).toBe("other");
+  });
+
+  it("se-m1-stack-names: no card text holds the label of its own bucket, so the job decides and not the word", () => {
+    for (const c of STACK_CARDS) {
+      const label = STACK_BUCKETS.find((b) => b.id === c.answer)!.label.toLowerCase();
+      expect(c.text.toLowerCase(), c.id).not.toContain(label);
+      expect(c.text.toLowerCase(), c.id).not.toContain("dto");
+    }
+    // The bucket for the stored row is gone: no sourced stack name matches it.
+    expect(STACK_BUCKETS.map((b) => b.id)).toEqual(["dto", "domain", "view", "other"]);
   });
 
   it("se-m1-stack-names: server-renders the picture, the buckets and the limits fold", () => {

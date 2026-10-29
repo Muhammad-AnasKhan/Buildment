@@ -9,7 +9,7 @@ export const seM1RequestLayers: SequenceSpec = {
   title: "One request through the layers",
   purpose: "Follow POST /tasks down through the layers and back, and see what each layer may know and may not know.",
   summary:
-    "The browser sends POST /tasks with a JSON body. The route hands it to the controller, which reads HTTP. The controller calls the service, which holds the rules. The service calls the repository, which holds the SQL and talks to Postgres. The row goes back up, the view builds the response, and the browser gets the task. A last step shows Errand's first version, where one 300-line route handler does all of this.",
+    "The browser sends POST /tasks with a JSON body. The route hands it to the controller, which reads HTTP. The controller calls the service, which holds the rules. The service calls the repository, which holds the SQL and talks to Postgres. The task goes back up, and the browser gets the view model. The controller turns the task into the view model and sends it. A last step shows Errand's first version, where one 300-line route handler does all of this.",
   actors: [
     { name: "Browser", sub: "the client" },
     { name: "Controller", sub: "HTTP only" },
@@ -46,7 +46,7 @@ export const seM1RequestLayers: SequenceSpec = {
       to: 3,
       label: "save(task)",
       title: "The repository owns the SQL",
-      note: "The service asks for a save. It does not say how. The repository knows SQL and the table names. It does not know HTTP.",
+      note: "The service asks for a save. It does not say how. The repository knows SQL and the table and column names. It does not know HTTP.",
       chips: ["save(task)"],
     },
     {
@@ -54,16 +54,16 @@ export const seM1RequestLayers: SequenceSpec = {
       to: 3,
       label: "INSERT INTO",
       title: "Postgres stores the row",
-      note: "The repository runs the SQL and Postgres keeps the row. If the table is renamed, only this layer changes.",
+      note: "The repository runs the SQL and Postgres keeps the row. If a column such as due_at is renamed, only this layer changes.",
       chips: ["INSERT INTO tasks"],
     },
     {
       from: 3,
       to: 2,
-      label: "the saved row",
-      title: "The row goes back up",
-      note: "The repository hands back the saved row. Each layer passes up only what the next layer needs.",
-      chips: ["row"],
+      label: "the saved task",
+      title: "The task goes back up",
+      note: "The repository reads the saved row and hands the task up to the service. Each layer passes up only what the next layer needs.",
+      chips: ["task"],
     },
     {
       from: 2,
@@ -79,8 +79,8 @@ export const seM1RequestLayers: SequenceSpec = {
       label: "task as JSON",
       tone: "good",
       outcome: "view model only",
-      title: "The view builds the response",
-      note: "The view turns the task into JSON for the screen, with only the fields the screen needs. The controller sets the status code and sends it.",
+      title: "The controller sends the response",
+      note: "The controller calls a mapping function from the shapes folder. It builds the view model, which has only the fields the screen needs, and the controller sets the status code and sends it. The view layer is the HTML page, and it shows the same view model.",
       chips: ["view model", "JSON"],
     },
     {
@@ -90,12 +90,12 @@ export const seM1RequestLayers: SequenceSpec = {
       tone: "warn",
       outcome: "rename breaks HTML",
       title: "Errand's first version had no layers",
-      note: "One 300-line route handler read the body, ran the rules, wrote the SQL and built the HTML. Rename the table and the lines that build the HTML break too.",
+      note: "One 300-line route handler read the body, ran the rules, wrote the SQL and built the HTML. Rename a column and the lines that print it into the HTML break too.",
       chips: ["300 lines", "SQL + HTML"],
     },
   ],
   tryThis: [
-    "Before step 4, predict: which layer should know the name of the table?",
+    "Before step 4, predict: which layer should know the name of a column?",
     "At each step, say what this layer may know and what it may not know.",
   ],
   limits:

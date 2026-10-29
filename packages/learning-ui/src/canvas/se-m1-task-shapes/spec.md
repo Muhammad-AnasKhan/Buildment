@@ -3,7 +3,7 @@ artifact: canvas-spec
 course: software-engineering-concepts
 chapter: 1.4-one-task-five-shapes
 slug: se-m1-task-shapes
-version: 1
+version: 2
 owner: interaction-designer
 renderer: sequence (HTML controls, inline SVG lanes)
 ---
@@ -11,25 +11,25 @@ renderer: sequence (HTML controls, inline SVG lanes)
 # Canvas spec: One task, five shapes
 
 ## Teaching claim
-One task takes five shapes on its way through the app (request body, DTO, domain model, database row, view model). Each shape keeps only the fields its reader needs, so a shape reused outside its layer, such as the row sent straight to the browser, is how a field nobody meant to send (`owner_id`, `password_hash`) reaches the screen.
+One task takes five shapes on its way through the app (request body, DTO, domain model, database row, view model). Each shape keeps only the fields its reader needs, and may also rename, retype or add fields. A shape reused outside its layer, such as a stored row sent straight to the browser, is how a field nobody meant to send (`owner_id`, and `passwordHash` in 1.1) reaches the screen.
 
 ## Why a canvas
-The chapter plan names a `[shapes]` stepper where fields light up as kept or dropped (module brief 01, chapter 1.4, beats 2 to 4). The claim is about the same fact changing form at each step, so a step-through with a chip row per shape shows which fields each shape keeps. The last step is the leak from chapter 1.1, placed after the learner has seen the shapes (the chapter's predict comes right before it).
+The chapter plan names a `[shapes]` stepper where fields light up as kept or dropped (module brief 01, chapter 1.4, beats 2 to 4). The claim is about the same fact changing form at each step, so a step-through with a chip row per shape shows which fields each shape keeps, renames or adds. The last step shows the leak after the learner has seen the shapes.
 
 ## Model
-- Inputs: none beyond the step controls.
-- Outputs: the active arrow or loop, the step note, the chips (the fields the shape keeps) and an outcome badge.
+- Inputs: none beyond the step controls. The stepper has no field toggles: the sequence renderer takes step controls only. The learner's own choice in this chapter is the predict (which way of building the profile answer sends a new column) and the two quiz questions.
+- Outputs: the active arrow or loop, the step note, the chips (the real fields the shape keeps, with renamed or added ones marked) and an outcome badge.
 - Lanes (4, the renderer's maximum): Browser, Controller, Service, Repository.
-- Steps (7): 1. Shape 1, the request body (`title`, `due: 2026-11-02`, `isAdmin: true`); 2. Shape 2, the DTO (`title`, `due`; `isAdmin` rejected); 3. Shape 3, the domain model (`title`, `dueAt: Date`; rule: due date not in the past); 4. Shape 4, the database row (`title`, `due_at timestamptz`, `owner_id`, `created_at`); 5. the row goes back up; 6. Shape 5, the view model (`title`, `dueIn: 3 days`; no `owner_id`); 7. the row returned unchanged (warn: `owner_id` leaked, `password_hash` for a user row).
-- The brief's beats are followed. The brief's example in beat 1 shows `due` as the text `2026-11-02`, the table storing a timestamp and the API returning `"dueIn": "3 days"`; the brief's beat 4 is the row object passed to `res.json`. The `password_hash` column name is the snake_case form of the `passwordHash` field in chapter 1.1.
-- The DTO step says "rejected" (chapter 1.6: unknown fields are rejected and named in `errors`); chapter 1.4's check question says a shape "drops" `isAdmin`. Both name the DTO as the answer.
-- Assumptions: Errand is fictional. `dueIn` is worked out from a "now" the code is given (chapter 1.6), so "3 days" is an example, not a fixed date.
+- Steps (9): 1. Shape 1, the request body (`title`, `due`, both text); 2. Shape 2, the DTO (`title` trimmed, `due`); 3. Side road: a body with `isAdmin` is refused with a 400 that names the field; 4. Shape 3, the domain model (`id`, `ownerId` added, `title`, `dueAt` a Date, `done`, `createdAt`); 5. Shape 4, the database row (`id`, `owner_id`, `title`, `due_at`, `status`, `created_at`); 6. the row is read back into the domain model; 7. the service answers the controller with the domain model; 8. Shape 5, the view model (`id`, `title`, `done`, `due`, `dueIn` added; no owner, no creation time); 9. a stored row sent unchanged (warn: `owner_id`, `status`, `created_at` leaked).
+- One story for the leak, used in 1.1, 1.3, 1.4, 1.7, 1.9, 1.10 and here: in 1.1 the object that left was the domain model of a user (camelCase, so `passwordHash`). Chapter 1.4 states this once. The canvas example is a task row sent as it is, which leaks `owner_id`. The line that did it in 1.1 is not shown before chapter 1.7.
+- The DTO refuses an unknown field with a 400 (chapter 1.6: unknown fields are rejected and named in `errors`). The clean walk-through never carries `isAdmin` forward; step 3 is a side road that returns to the clean body.
+- Assumptions: Errand is fictional. `dueIn` is worked out from a "now" the code is given (chapter 1.6), so "3 days" is an example with today set to 30 October 2026, not a fixed date.
 - Limitations: as in `limits`.
 
 ## Rendering
 - Primary: the shared sequence renderer.
 - 4 lanes; arrow labels are 18 characters or fewer (longest: "row, unchanged", 14).
-- Static fallback: the chapter teaches the same five shapes in prose and a table of kept fields.
+- Static fallback: the chapter teaches the same five shapes in prose and in a code fold with all five.
 
 ## Controls
 Shared stepper controls only.
@@ -37,20 +37,20 @@ Shared stepper controls only.
 ## Copy
 - What this shows: Follow one task through the request body, the DTO, the domain model, the database row and the view model, and see which fields each one keeps.
 - Try this:
-  1. Before step 7, predict: the row goes to the browser as it is. What does the browser get?
-  2. At each step, say which fields the shape keeps and which it drops.
-- What changed (from step 6 to step 7): The view model had `title` and `dueIn` only. The raw row adds `owner_id` and every other column, because nothing chose the fields.
-- Limits of the model: Errand is a small fictional app, and these five shapes are the ones this course uses. Other projects use fewer shapes or other names for them. Merging two shapes is a choice with a cost, as the last step shows.
+  1. Before step 9, predict: the row goes to the browser as it is. Which fields does the browser get?
+  2. At each step, say which fields the shape keeps, which it drops and which it renames.
+- What changed (from step 8 to step 9): The view model had `id`, `title`, `done`, `due` and `dueIn` only. The stored row adds `owner_id` and every other column, because nothing chose the fields.
+- Limits of the model: Errand is a small fictional app, and these five shapes are the ones this course uses. Other projects use fewer shapes or other names for them. Merging two shapes is a choice with a cost, which chapter 1.4 explains.
 
 ## Edge cases
-Loops (from equals to) draw work inside one lane (step 2). Tone: step 6 is `good` with the text badge "no owner_id"; step 7 is `warn` with the text badge "owner_id leaked". Tone is never the only signal. Step 7 draws an arrow from Repository to Browser over the other lanes on purpose: it skips the view.
+Loops (from equals to) draw work inside one lane (step 2). Tone: step 8 is `good` with the text badge "no ownerId"; step 9 is `warn` with the text badge "owner_id leaked". Tone is never the only signal. Step 9 draws an arrow from Repository to Browser over the other lanes on purpose: it skips the controller's mapping.
 
 ## Accessibility
 Shared stepper keyboard support; `summary` describes the whole flow; every tone has a text badge.
 
 ## Acceptance criteria
-- [ ] The claim is testable (the chapter's two check questions: which shape has `dueIn`; which shape drops `isAdmin`).
+- [ ] The claim is testable (the chapter's two check questions: where to work out `isOverdue`; which shapes change to add `priority`).
 - [ ] The model is tested (registry label-fit tests).
 - [ ] The design is simple and legible.
 - [ ] Prediction before (chapter predict), transfer check after (chapter quiz).
-- [ ] Reader fallback exists (prose and a table of kept fields in the chapter).
+- [ ] Reader fallback exists (prose and a code fold with all five shapes in the chapter).
