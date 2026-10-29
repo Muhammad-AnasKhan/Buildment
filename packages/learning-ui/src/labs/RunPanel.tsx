@@ -80,37 +80,37 @@ export function ResultsDialog({
         role="dialog"
         aria-modal="true"
         aria-labelledby="lab-results-title"
-        className="lab-results-dialog custom-scrollbar relative max-h-[92vh] w-full max-w-[940px] overflow-y-auto rounded-[16px] border border-border bg-[color:var(--lab-module)] shadow-2xl"
+        className="lab-results-dialog relative flex max-h-[92vh] w-full max-w-[1040px] flex-col overflow-hidden rounded-[16px] border border-border bg-[color:var(--lab-module)] shadow-2xl"
       >
-        <div className={`relative overflow-hidden border-b border-border px-5 py-5 sm:px-7 ${report.allPass ? "bg-[color:var(--lab-ok)]/10" : "bg-[color:var(--lab-down-fill)]/45"}`}>
+        <div className={`relative shrink-0 overflow-hidden border-b border-border px-5 py-4 sm:px-7 ${report.allPass ? "bg-[color:var(--lab-ok)]/10" : "bg-[color:var(--lab-down-fill)]/45"}`}>
           <div className="pointer-events-none absolute inset-0 opacity-30 lab-result-grid" aria-hidden />
           <button type="button" onClick={onClose} className="absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full border border-border bg-card/80 text-lg text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Close results">×</button>
-          <div className="relative flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+          <div className="relative flex items-center gap-4 pr-10">
             <div
-              className="lab-result-ring flex size-24 shrink-0 items-center justify-center rounded-full p-[7px] shadow-lg"
+              className="lab-result-ring flex size-20 shrink-0 items-center justify-center rounded-full p-[6px] shadow-lg"
               style={{ background: `conic-gradient(${report.allPass ? "var(--lab-ok)" : "var(--lab-down)"} ${score}%, var(--lab-recessed) ${score}% 100%)` }}
               aria-label={`${score}% of checks passed`}
             >
               <div className="flex size-full flex-col items-center justify-center rounded-full bg-[color:var(--lab-module)]">
-                <span className={`lab-mono text-[22px] font-bold ${okText(report.allPass)}`}>{report.passed}/{report.total}</span>
+                <span className={`lab-mono text-[19px] font-bold ${okText(report.allPass)}`}>{report.passed}/{report.total}</span>
                 <span className="lab-mono text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground">passed</span>
               </div>
             </div>
             <div className="min-w-0 flex-1">
               <div className="lab-mono text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground">Architecture test run complete</div>
-              <h2 id="lab-results-title" className="lab-display mt-1 text-2xl font-semibold text-foreground sm:text-3xl">
-                {report.allPass ? "Your design passed every check" : `${report.total - report.passed} checks need your attention`}
+              <h2 id="lab-results-title" className="lab-display mt-1 text-xl font-semibold text-foreground sm:text-2xl">
+                {report.allPass ? "Your design passed every check" : `${report.total - report.passed} changes before this design passes`}
               </h2>
-              <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-muted-foreground">
+              <p className="mt-1.5 max-w-3xl text-[12px] leading-relaxed text-muted-foreground sm:text-[13px]">
                 {report.allPass
                   ? "The design meets the functional paths, capacity, resilience, latency and budget requirements in this model."
-                  : "Start with the failed checks below. Each one shows the target, what the model measured, and the specific part of the architecture to change."}
+                  : "Work through the failed checks from top to bottom. Each one shows the target, your result, and the exact part of the architecture to change."}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="space-y-6 p-4 sm:p-6">
+        <div className="custom-scrollbar min-h-0 flex-1 space-y-6 overflow-y-auto p-4 sm:p-6">
           <section aria-label="Run metrics">
             <h3 className="lab-mono mb-2 text-[9.5px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Run metrics</h3>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -127,16 +127,18 @@ export function ResultsDialog({
                 <h3 className="lab-display text-[16px] font-semibold text-foreground">Detailed results</h3>
                 <p className="text-[11px] text-muted-foreground">Failed checks are shown first within each group.</p>
               </div>
-              <span className="lab-mono text-[9.5px] font-bold uppercase tracking-wider text-muted-foreground">Target → measured → why</span>
+              <span className="lab-mono hidden text-[9.5px] font-bold uppercase tracking-wider text-muted-foreground sm:inline">Target → measured → why</span>
             </div>
-            <div className="grid gap-5 lg:grid-cols-2">
+            <div className="space-y-5">
               {[["What it does", functional], ["How well it does it", nonFunctional]].map(([title, checks]) => {
                 const ordered = [...(checks as CheckResult[])].sort((a, b) => Number(a.pass) - Number(b.pass));
                 return ordered.length === 0 ? null : (
-                  <div key={title as string}>
-                    <h4 className="lab-display mb-2 flex items-center justify-between text-[13px] font-semibold text-foreground">
+                  <div key={title as string} className="rounded-[10px] border border-border bg-[color:var(--lab-recessed)]/25 p-3">
+                    <h4 className="lab-display mb-2.5 flex items-center justify-between text-[13px] font-semibold text-foreground">
                       {title as string}
-                      <span className="lab-mono text-[9.5px] font-normal text-muted-foreground">{ordered.filter((check) => check.pass).length}/{ordered.length}</span>
+                      <span className={`lab-mono rounded-full px-2 py-0.5 text-[9.5px] font-bold ${ordered.every((check) => check.pass) ? "bg-[color:var(--lab-ok)]/10 text-[color:var(--lab-ok-ink)]" : "bg-[color:var(--lab-down-fill)] text-[color:var(--lab-down-ink)]"}`}>
+                        {ordered.filter((check) => check.pass).length}/{ordered.length} passed
+                      </span>
                     </h4>
                     <ul className="space-y-2">
                       {ordered.map((check) => (
@@ -154,10 +156,17 @@ export function ResultsDialog({
               })}
             </div>
           </section>
+        </div>
 
-          <div className="sticky bottom-0 -mx-4 -mb-4 flex flex-wrap justify-end gap-2 border-t border-border bg-[color:var(--lab-module)]/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:-mb-6 sm:px-6">
-            <button type="button" onClick={onClose} className="rounded-[7px] border border-border bg-card px-4 py-2 text-[12px] font-semibold text-foreground hover:bg-muted">Back to board</button>
-            <button type="button" onClick={() => { onClose(); onRunAgain(); }} className="rounded-[7px] bg-emerald-700 px-4 py-2 text-[12px] font-semibold text-white shadow-sm hover:bg-emerald-600">Run tests again</button>
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border bg-[color:var(--lab-module)] px-4 py-3 sm:px-6">
+          <p className="m-0 hidden text-[11px] text-muted-foreground sm:block">
+            {report.allPass ? "All targets met in this model." : "Change the design, then run the checks again."}
+          </p>
+          <div className="ml-auto flex gap-2">
+            <button type="button" onClick={() => { onClose(); onRunAgain(); }} className="rounded-[7px] border border-border bg-card px-4 py-2 text-[12px] font-semibold text-foreground hover:bg-muted">Run tests again</button>
+            <button type="button" onClick={onClose} className="rounded-[7px] bg-emerald-700 px-4 py-2 text-[12px] font-semibold text-white shadow-sm hover:bg-emerald-600">
+              {report.allPass ? "Back to board" : "Fix on board"}
+            </button>
           </div>
         </div>
       </section>

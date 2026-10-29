@@ -116,7 +116,7 @@ export default async function ChapterReaderPage({
             chapterComplete={content.chapterComplete}
           />
         ) : (
-          <ChapterMdx source={source} />
+          <ChapterMdx source={source} courseLabMode />
         )}
       </ChapterReaderShell>
     </VariantThemeScope>
