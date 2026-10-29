@@ -38,8 +38,10 @@ export function MenteeWorkspaceShell({
 }) {
   const pathname = usePathname();
 
-  // Course overviews and chapter readers have their own focused navigation.
-  if (pathname.startsWith("/courses/")) return children;
+  // Course overviews and chapter readers have their own focused navigation. The wrapper keeps them
+  // full width: as bare children of the layout's flex column, their mx-auto roots shrink to fit the
+  // widest line, which made phones zoom out.
+  if (pathname.startsWith("/courses/")) return <div className="w-full">{children}</div>;
 
   const items: LearnerNavItem[] = [
     { label: "Home", href: "/dashboard", icon: Home, active: pathname === "/dashboard" },

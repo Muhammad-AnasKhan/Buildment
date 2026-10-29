@@ -98,7 +98,8 @@ export default async function CatalogCoursePage({
         </section>
       ) : null}
 
-      <div className="sticky bottom-3 z-10 mt-8 flex flex-wrap items-center gap-3 rounded-xl border bg-background/95 p-3 sm:static sm:border-0 sm:bg-transparent sm:p-0 ">
+      {/* On phones the learner tab bar (4rem plus the safe area) is fixed to the bottom, so the sticky bar sits above it. */}
+      <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-10 mt-8 flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3 shadow-sm sm:static sm:shadow-none sm:border-0 sm:bg-transparent sm:p-0">
         {hasAccess ? (
           <Link href={`/courses/${course.slug}`} className={buttonVariants({ size: "lg" })}>
             Go to course
