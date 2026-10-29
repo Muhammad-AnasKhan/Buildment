@@ -1,12 +1,12 @@
 import type { DotMood } from "@/components/brand/dot";
 import type { MascotState } from "@/shared/engagement/mascots";
 
-/** Which of Dot's eight moods fits an engagement state. Dot is the only mascot. */
+/** Which of Dot's nine moods fits an engagement state. Dot is the only mascot. */
 export function dotMoodForState(state: MascotState): DotMood {
   switch (state) {
     case "welcome_back":
     case "reunion":
-      return "wave";
+      return "miss";
     case "celebrate":
     case "proud":
     case "perfect":

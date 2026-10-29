@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, X } from "lucide-react";
+import { ArrowRight, Volume2, VolumeX, X } from "lucide-react";
 import type { MascotReaction } from "@/shared/engagement/engine";
+import { useDotVoice } from "@/lib/engagement/dot-voice";
 import { useMascotReactions } from "@/lib/engagement/use-mascot";
 import { requestAskHelp } from "@/lib/engagement/ask-help";
 import { Dot } from "@/components/brand/dot";
@@ -29,6 +30,11 @@ import { dotMoodForState } from "@/components/mascot/dot-mood";
 //
 // A reaction can offer one next step (ask a mentor, open a reply, continue a chapter). It stays a
 // little longer so there is time to take it, and taking it closes the bubble.
+//
+// Dot's voice follows the brand sound rules: off until the learner turns it on (the bubble's
+// speaker button or profile settings), never during a quiz (a quiz's reaction waits until the quiz
+// closes), once per reaction, and the words always show too. The clip plays from here rather than the bubble because the bubble remounts when it
+// moves into a modal, which would restart it; the bubble stays up until the clip ends.
 
 const VISIBLE_MS = 3_500;
 const VISIBLE_WITH_ACTION_MS = 8_000;
@@ -40,6 +46,11 @@ const MODAL_SELECTOR = "dialog[open], [role='dialog'][aria-modal='true']";
 const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
 function modalOpen(): boolean {
   return document.querySelector(MODAL_SELECTOR) !== null;
+}
+
+/** The full-screen quiz session is open (quiz-chapter-session-client.tsx). */
+function quizOpen(): boolean {
+  return document.getElementById("quiz-chapter-session") !== null;
 }
 
 /** The open modal <dialog>, which makes the rest of the page inert, or null. */
@@ -92,11 +103,15 @@ const BUBBLE_BUTTON =
 function ReactionBubble({
   reaction,
   animate,
+  voiceOn,
+  onToggleVoice,
   onPause,
   onDismiss,
 }: {
   reaction: MascotReaction;
   animate: boolean;
+  voiceOn: boolean;
+  onToggleVoice: () => void;
   onPause: (paused: boolean) => void;
   onDismiss: () => void;
 }) {
@@ -125,7 +140,7 @@ function ReactionBubble({
         <Dot mood={dotMoodForState(reaction.state)} size={72} />
       </div>
       <div
-        className="relative mb-2 border border-border bg-card py-2.5 pl-3.5 pr-10 text-base font-medium text-card-foreground"
+        className={`relative mb-2 border border-border bg-card py-2.5 pl-3.5 text-base font-medium text-card-foreground ${reaction.voice ? "pr-18" : "pr-10"}`}
       >
         {/* The full line reserves the bubble's size so it does not grow while typing. */}
         <span aria-hidden className="grid">
@@ -164,6 +179,17 @@ function ReactionBubble({
           </span>
         ) : null}
         <div className="absolute right-1.5 top-1.5 flex">
+          {reaction.voice ? (
+            <button
+              type="button"
+              onClick={onToggleVoice}
+              aria-label={voiceOn ? "Turn off Dot's voice" : "Turn on Dot's voice"}
+              aria-pressed={voiceOn}
+              className={BUBBLE_BUTTON}
+            >
+              {voiceOn ? <Volume2 className="size-3.5" aria-hidden /> : <VolumeX className="size-3.5" aria-hidden />}
+            </button>
+          ) : null}
           <button type="button" onClick={onDismiss} aria-label="Dismiss" className={BUBBLE_BUTTON}>
             <X className="size-3.5" aria-hidden />
           </button>
@@ -179,18 +205,57 @@ export function MascotPlayer() {
   const [modalHost, setModalHost] = useState<HTMLDialogElement | null>(null);
   const layerRef = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
-
+  const [voiceOn, setVoiceOn] = useDotVoice();
+  const [speaking, setSpeaking] = useState(false);
+  const [held, setHeld] = useState<{ reaction: MascotReaction; seq: number } | null>(null);
 
   useMascotReactions((reaction, seq) => {
-    // Dot stays out of a quiz. The result card has its own Dot once the quiz is done.
-    if (document.getElementById("quiz-chapter-session")) return;
+    // Dot stays out of a quiz: its reaction (and voice) waits until the quiz closes. Only the
+    // latest one is kept, so a retake shows how the last attempt went.
+    if (quizOpen()) {
+      setHeld({ reaction, seq });
+      return;
+    }
     setPaused(false);
     setShown({ reaction, seq });
   });
 
-  // Count down only while nothing modal is open and the learner is not hovering the bubble.
   useEffect(() => {
-    if (!shown || paused) return;
+    if (!held) return;
+    const observer = new MutationObserver(() => {
+      if (quizOpen()) return;
+      setPaused(false);
+      setShown(held);
+      setHeld(null);
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [held]);
+
+  // Speak the line once while its bubble is up; closing the bubble or turning the voice off stops it.
+  // A browser that blocks playback (no gesture yet) just leaves the words on screen.
+  const voice = voiceOn ? shown?.reaction.voice : undefined;
+  useEffect(() => {
+    if (!voice) return;
+    const audio = new Audio(voice);
+    const start = () => setSpeaking(true);
+    const done = () => setSpeaking(false);
+    audio.addEventListener("playing", start);
+    audio.addEventListener("ended", done);
+    audio.addEventListener("error", done);
+    audio.play().catch(done);
+    return () => {
+      audio.removeEventListener("playing", start);
+      audio.removeEventListener("ended", done);
+      audio.removeEventListener("error", done);
+      audio.pause();
+      setSpeaking(false);
+    };
+  }, [voice, shown?.seq]);
+
+  // Count down only while nothing modal is open, Dot is not speaking and the learner is not hovering the bubble.
+  useEffect(() => {
+    if (!shown || paused || speaking) return;
     const visibleMs = shown.reaction.action ? VISIBLE_WITH_ACTION_MS : VISIBLE_MS;
     let remaining = visibleMs;
     const timer = window.setInterval(() => {
@@ -202,7 +267,7 @@ export function MascotPlayer() {
       if (remaining <= 0) setShown(null);
     }, TICK_MS);
     return () => window.clearInterval(timer);
-  }, [shown, paused]);
+  }, [shown, paused, speaking]);
 
   // Keep the bubble in the top layer, above any dialog that opens while it is showing, and out of
   // the way of a modal as it opens or closes. Moving into or out of a modal remounts the layer, so
@@ -245,6 +310,8 @@ export function MascotPlayer() {
           key={shown.seq}
           reaction={shown.reaction}
           animate={!reducedMotion}
+          voiceOn={voiceOn}
+          onToggleVoice={() => setVoiceOn(!voiceOn)}
           onPause={setPaused}
           onDismiss={() => {
             setPaused(false);
@@ -260,7 +327,7 @@ export function MascotPlayer() {
       {/* Announced from outside the popover: a hidden popover is display:none and would not be read. */}
       <p aria-live="polite" className="sr-only">
         {reaction
-          ? `${reaction.mascotName} says: ${reaction.message}${reaction.xp ? ` You earned ${reaction.xp} XP.` : ""}`
+          ? `Dot says: ${reaction.message}${reaction.xp ? ` You earned ${reaction.xp} XP.` : ""}`
           : ""}
       </p>
       {shown && modalHost?.open ? createPortal(layer, modalHost) : layer}

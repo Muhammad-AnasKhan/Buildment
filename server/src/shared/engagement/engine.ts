@@ -13,6 +13,7 @@ import {
   type MascotState,
   type PageArea,
 } from "./mascots.js";
+import { dotClipUrl } from "./dot-voice.js";
 import { ENGAGEMENT_RULES, matchingRules, type EngagementRule, type MascotAction } from "./rules.js";
 
 // The engagement engine. track(event) reports the event (the server verifies it and fills in the
@@ -36,7 +37,7 @@ export type MascotReaction = {
   state: MascotState;
   asset: MascotAsset;
   message: string;
-  /** Recorded clip of this exact line ("bimo/chapter-completed-1"), for mascots that have a voice. */
+  /** App-relative URL of Dot's recorded clip of this line ("/brand/dot/voice/lesson-done.mp3"), when the rule has one. */
   voice?: string;
   /** XP the moment earned, shown beside the line; absent when XP is off or hidden. */
   xp?: number;
@@ -144,7 +145,7 @@ export function createEngagementEngine(options: EngagementEngineOptions): Engage
       state,
       asset,
       message: rule.messages[line]!,
-      ...(mascot.voiced ? { voice: `${mascot.id}/${rule.id}-${line}` } : {}),
+      ...(rule.clip ? { voice: dotClipUrl(rule.clip) } : {}),
       ...(rewards?.xp ? { xp: rewards.xp } : {}),
       ...(action ? { action } : {}),
     };

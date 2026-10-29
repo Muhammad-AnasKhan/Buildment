@@ -99,12 +99,6 @@ export type MascotDefinition = {
   name: string;
   /** Live renderer the web player draws this mascot with; omit to show the still images. */
   rig?: MascotRig;
-  /**
-   * Has a recorded clip for every line of every rule it is cast for, served from
-   * /mascots/voice/<id>/<rule-id>-<line-index>.mp3. Regenerate the clips when lines or casting
-   * change (frontend tests/unit/engagement/mascot-assets.test.ts lists any that are missing).
-   */
-  voiced?: true;
   states: Partial<Record<MascotState, MascotAsset>> & { idle: MascotAsset };
 };
 
@@ -176,7 +170,6 @@ export const MASCOTS: Record<string, MascotDefinition> = {
     id: "bimo",
     name: "Bimo",
     rig: "bimo",
-    voiced: true,
     states: {
       idle: bimo("idle", "Bimo smiling", IDLE),
       begin: bimo("begin", "Bimo waving hello among sparkles", {
@@ -219,7 +212,6 @@ export const MASCOTS: Record<string, MascotDefinition> = {
     id: "zip",
     name: "Zip",
     rig: "zip",
-    voiced: true,
     states: {
       idle: zip("idle", "Zip smiling", IDLE),
       celebrate: zip("celebrate", "Zip jumping in a burst of confetti", CELEBRATE),
@@ -236,7 +228,6 @@ export const MASCOTS: Record<string, MascotDefinition> = {
     id: "pip",
     name: "Pip",
     rig: "pip",
-    voiced: true,
     states: {
       idle: pip("idle", "Pip smiling", IDLE),
       retry: pip("retry", "Pip with a reassuring smile", RETRY),
@@ -248,7 +239,6 @@ export const MASCOTS: Record<string, MascotDefinition> = {
     id: "mossy",
     name: "Mossy",
     rig: "mossy",
-    voiced: true,
     states: {
       idle: mossy("idle", "Mossy smiling", IDLE),
       encourage: mossy("encourage", "Mossy giving a slow thumbs up", { ...ENCOURAGE, motion: "slow-nod" }),
@@ -259,7 +249,6 @@ export const MASCOTS: Record<string, MascotDefinition> = {
     id: "dot",
     name: "Dot",
     rig: "dot",
-    voiced: true,
     states: {
       idle: dot("idle", "Dot smiling", IDLE),
       message: dot("message", "Dot flying in with a letter", MESSAGE),
