@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -16,6 +17,8 @@ import { formatStudyAmount } from "@/lib/format-study-duration";
 import { cn } from "@/lib/utils";
 import { ActivityInsights } from "@/components/learn/progress/activity-insights";
 import { ProgressCourseSelector } from "@/components/learn/progress/course-selector";
+
+export const metadata: Metadata = { title: "Progress" };
 
 function percentage(score: number, maxScore: number) {
   return maxScore > 0 ? Math.round((score / maxScore) * 100) : null;

@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { cache } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Lock } from "lucide-react";
@@ -13,6 +15,20 @@ import { LearnerBreadcrumb } from "@/components/learn/learner-breadcrumb";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const loadOverview = cache((courseSlug: string) =>
+  serverApiFetchOrNotFound<CourseOverview>(`/api/v1/courses/${encodeURIComponent(courseSlug)}/overview`)
+);
+
+export async function generateMetadata({ params }: { params: Promise<{ courseSlug: string }> }): Promise<Metadata> {
+  const { courseSlug } = await params;
+  try {
+    const { course } = await loadOverview(courseSlug);
+    return { title: course.title, robots: { index: false, follow: false } };
+  } catch {
+    return { robots: { index: false, follow: false } };
+  }
+}
+
 export default async function CourseOverviewPage({
   params,
   searchParams,
@@ -24,7 +40,7 @@ export default async function CourseOverviewPage({
   const { start } = await searchParams;
 
   await requireLearnSurface();
-  const overview = await serverApiFetchOrNotFound<CourseOverview>(`/api/v1/courses/${encodeURIComponent(courseSlug)}/overview`);
+  const overview = await loadOverview(courseSlug);
   const { course, enrollment, syllabus } = overview;
 
   if (overview.access === "none" || !enrollment) {

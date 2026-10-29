@@ -1,9 +1,12 @@
+import type { Metadata } from "next";
 import type { LeaderboardView } from "@/shared/api/gamification";
 import type { MenteeDashboardViewModel } from "@/shared/api/learner";
 import { MenteeDashboard } from "@/components/learn/dashboard/mentee-dashboard";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { loadLeaderboard } from "@/server/actions/gamification";
+
+export const metadata: Metadata = { title: "Home" };
 
 export default async function MenteeDashboardPage() {
   await requireLearnSurface();
