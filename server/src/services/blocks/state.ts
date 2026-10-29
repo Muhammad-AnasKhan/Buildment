@@ -23,6 +23,7 @@ import { sanitizeBlockConfig } from "../../utils/sanitize-block-config.js";
 import type { SessionUser } from "../../types/auth.js";
 import { releaseContainsChapter } from "../courses/releases.js";
 import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
+import { visibleExplanation } from "../../shared/lib/quiz-feedback.js";
 
 type Payload = Record<string, unknown> | null;
 
@@ -76,7 +77,7 @@ async function blockStateFor(block: Block, user: SessionUser | undefined): Promi
         type: "QUIZ",
         config: sanitizeBlockConfig<typeof config, SanitizedQuizConfig>(config),
         initialState: latest
-          ? { selected: strings(payload?.selected), isCorrect: latest.isCorrect, score: latest.score, maxScore: latest.maxScore, explanation: config.explanation }
+          ? { selected: strings(payload?.selected), isCorrect: latest.isCorrect, score: latest.score, maxScore: latest.maxScore, explanation: visibleExplanation({ explanation: config.explanation, options: config.options, selected: strings(payload?.selected), isCorrect: latest.isCorrect, allowRetry: config.allowRetry }) }
           : null,
       };
     }
@@ -86,7 +87,7 @@ async function blockStateFor(block: Block, user: SessionUser | undefined): Promi
         type: "PREDICT",
         config: sanitizeBlockConfig<typeof config, SanitizedPredictConfig>(config),
         initialState: latest
-          ? { selected: str(payload?.selected), isCorrect: latest.isCorrect, score: latest.score, maxScore: latest.maxScore, explanation: config.explanation }
+          ? { selected: str(payload?.selected), isCorrect: latest.isCorrect, score: latest.score, maxScore: latest.maxScore, explanation: visibleExplanation({ explanation: config.explanation, options: config.options, selected: [str(payload?.selected)], isCorrect: latest.isCorrect, allowRetry: config.allowRetry }) }
           : null,
       };
     }
