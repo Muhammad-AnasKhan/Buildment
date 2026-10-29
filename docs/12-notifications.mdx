@@ -130,12 +130,8 @@ pushes it to the other participant's open chat. The sender receives delivery and
 if a participant is offline, opening the app marks their pending messages delivered. When the stream
 is unavailable, an open chat falls back to polling every four seconds.
 
-Each message also creates the existing `help.question` or `help.reply` notification for its recipient.
-That notification updates the notification feed and bell's unread count, and plays the notification
-sound in the browser. The sound uses `public/sounds/web-notification.wav` and follows the app's
-`buildment:sound` preference; browser autoplay restrictions can prevent playback until the user has
-interacted with the page. The learner's question list refreshes on incoming chat messages so its
-“Mentor replied” and unread states stay current without a manual refresh.
+The learner's question list refreshes on incoming chat messages so its “Mentor replied” and unread
+states stay current without a manual refresh.
 
 ## Study reminders
 

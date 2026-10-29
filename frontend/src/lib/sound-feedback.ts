@@ -22,7 +22,7 @@ export const FEEDBACK_AUDIO: Record<FeedbackKind, string | null> = {
   tick: "/sounds/tick.wav",
   check: "/sounds/check.wav",
   submit: "/sounds/submit.wav",
-  notification: "/sounds/web-notification.wav",
+  notification: "/sounds/notification.wav",
   success: "/sounds/success.wav",
   celebration: "/sounds/celebration.wav",
   completion: "/sounds/completion.wav",
