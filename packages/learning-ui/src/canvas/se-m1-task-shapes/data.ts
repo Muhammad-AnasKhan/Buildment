@@ -5,13 +5,13 @@ import type { SequenceSpec } from "../renderers/sequence/types";
 // through Errand (a fictional app); the chips list the real fields each shape
 // keeps, and mark the ones that are renamed, retyped or added. A side road
 // shows the DTO refusing a body with an extra field, and the last step shows
-// a stored row sent to the browser as it is. See spec.md.
+// a stored row sent to the browser as it is, in a different design from Errand. See spec.md.
 export const seM1TaskShapes: SequenceSpec = {
   kind: "sequence",
   title: "One task, five shapes",
   purpose: "Follow one task through the request body, the DTO, the domain model, the database row and the view model, and see which fields each one keeps.",
   summary:
-    "The browser sends a request body with title and due, both as text. The DTO keeps title and due and trims the title. A side road shows a body with an extra field, isAdmin, refused with a 400 that names the field. The service builds the domain model, with a Date called dueAt and the owner added. The repository maps it to a database row with due_at, owner_id, status and created_at, then reads the row back into the domain model. The controller builds the view model with id, title, done, due and dueIn, and leaves out the owner and the creation time. A last step shows a stored row sent to the browser as it is, which leaks owner_id, status and created_at.",
+    "The browser sends a request body with title and due, both as text. The DTO keeps title and due and trims the title. A side road shows a body with an extra field, isAdmin, refused with a 400 that names the field. The service builds the domain model, with a Date called dueAt and the owner added. The repository maps it to a database row with due_at, owner_id, status and created_at, then reads the row back into the domain model. The controller builds the view model with id, title, done, due and dueIn, and leaves out the owner and the creation time. A last step supposes a different design in which stored rows are sent to the browser as they are, which would leak owner_id, status and created_at.",
   actors: [
     { name: "Browser", sub: "the client" },
     { name: "Controller", sub: "HTTP only" },
@@ -58,7 +58,7 @@ export const seM1TaskShapes: SequenceSpec = {
       to: 3,
       label: "database row",
       title: "Shape 4: the database row",
-      note: "The repository maps the task to a row for storage, with column names. The Date is stored as a timestamp, and done is stored as the word open or done.",
+      note: "The repository maps the task to a row for storage, with column names. The Date is stored as a timestamp, and the status column stores the word open or done.",
       chips: ["id", "owner_id", "title", "due_at", "status (was done)", "created_at"],
     },
     {
@@ -92,9 +92,9 @@ export const seM1TaskShapes: SequenceSpec = {
       to: 0,
       label: "row, unchanged",
       tone: "warn",
-      outcome: "owner_id leaked",
+      outcome: "owner_id would leak",
       title: "Reuse the row and a field leaks",
-      note: "Suppose a list sent the stored rows to the browser as they are. Every column goes with them, including owner_id, status and created_at. In 1.1 a user object went out as it was, and passwordHash went with it. Nobody wrote code to send it.",
+      note: "Suppose a different design, where the repository hands up rows and nothing builds the domain model. A list that sent those rows to the browser as they are would send every column, including owner_id, status and created_at. Nobody wrote code to send them.",
       chips: ["owner_id", "status", "created_at"],
     },
   ],

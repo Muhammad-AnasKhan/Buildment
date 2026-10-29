@@ -75,6 +75,10 @@ describe("software-engineering-concepts module 1 canvases", () => {
     const leak = steps.at(-1)!;
     expect(leak.chips).toEqual(["owner_id", "status", "created_at"]);
     expect(strings(leak).some((t) => t.includes("password_hash"))).toBe(false);
+    // Errand's repository hands up the domain model, so a row going out is a supposed, different design.
+    expect(leak.note).toContain("Suppose a different design");
+    // The row step says what the status column stores, without the word "done" twice in one clause.
+    expect(steps.find((s) => s.title.startsWith("Shape 4"))!.note).toContain("the status column stores the word open or done");
     // The view model step lists the real fields, with dueIn added and no owner.
     const view = steps.find((s) => s.title.startsWith("Shape 5"))!;
     expect(view.chips).toContain("id");
@@ -104,8 +108,9 @@ describe("software-engineering-concepts module 1 canvases", () => {
       for (const reason of Object.values(c.why)) expect(wrapWords(reason, 60).length, reason).toBeLessThanOrEqual(2);
     }
     for (const b of STACK_BUCKETS) expect(`Right: ${b.label}`.length).toBeLessThanOrEqual(38);
-    // Fowler's original DTO is filed as a different meaning, not as Errand's DTO.
+    // Fowler's original DTO and the MVVM model are filed as different meanings, not as Errand's shapes.
     expect(STACK_CARDS.find((c) => c.id === "fowler-pattern")?.answer).toBe("other");
+    expect(STACK_CARDS.find((c) => c.id === "mvvm-model")?.answer).toBe("other");
   });
 
   it("se-m1-stack-names: no card text holds the label of its own bucket, so the job decides and not the word", () => {
@@ -114,8 +119,8 @@ describe("software-engineering-concepts module 1 canvases", () => {
       expect(c.text.toLowerCase(), c.id).not.toContain(label);
       expect(c.text.toLowerCase(), c.id).not.toContain("dto");
     }
-    // The bucket for the stored row is gone: no sourced stack name matches it.
-    expect(STACK_BUCKETS.map((b) => b.id)).toEqual(["dto", "domain", "view", "other"]);
+    // The buckets for the domain model and the stored row are gone: no sourced stack name matches them.
+    expect(STACK_BUCKETS.map((b) => b.id)).toEqual(["dto", "view", "other"]);
   });
 
   it("se-m1-stack-names: server-renders the picture, the buckets and the limits fold", () => {
@@ -123,7 +128,7 @@ describe("software-engineering-concepts module 1 canvases", () => {
     const html = renderToString(createElement(Canvas, { title, purpose, limits })).replaceAll("<!-- -->", "");
     expect(html).toContain("<svg");
     expect(html).toContain("What this picture leaves out");
-    expect(html).toContain("Domain model");
+    expect(html).toContain("View model");
     expect(html.match(/<button/g)?.length).toBe(STACK_BUCKETS.length);
   });
 
