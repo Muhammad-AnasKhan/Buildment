@@ -90,6 +90,23 @@ export function courseSourceHash(pkg: Package): string {
   return digest.digest("hex");
 }
 
+type CourseDetails = { title: string; description: string | null; projectGoal: string | null; difficulty: string | null;
+  estimatedHours: number | null; category: "TECH" | "SOFT_SKILLS"; coverUrl: string | null };
+
+// The repository owns a published course's details, so a publish copies them from course.yaml.
+// ZIP updates leave details alone, which kept an early preview's title on System Design.
+export function courseDetailsUpdate(manifest: Package["manifest"], current: CourseDetails): Partial<CourseDetails> | null {
+  const wanted: Partial<CourseDetails> = {
+    title: manifest.title, description: manifest.description, projectGoal: manifest.projectGoal,
+    difficulty: manifest.difficulty, estimatedHours: manifest.estimatedHours,
+    category: manifest.category === "soft-skills" ? "SOFT_SKILLS" : "TECH",
+    // No cover in the source keeps whatever cover the course has.
+    ...(manifest.coverUrl ? { coverUrl: manifest.coverUrl } : {}),
+  };
+  const changed = Object.fromEntries(Object.entries(wanted).filter(([key, value]) => current[key as keyof CourseDetails] !== value));
+  return Object.keys(changed).length ? changed : null;
+}
+
 export function packageZip(pkg: Package, publication: "create" | "update", instructorEmail: string): Buffer {
   const files = filesForZip(pkg.dir);
   // The database decides create versus update. Keep the reviewed source manifest
@@ -172,7 +189,13 @@ async function publish(packages: Package[], instructorEmail: string) {
       const sourceHash = courseSourceHash(pkg);
       const prior = await prisma.course.findUnique({ where: { slug: targetSlug }, select: {
         id: true, status: true, activeReleaseId: true, repositorySourceHash: true, repositoryReleaseId: true,
+        title: true, description: true, projectGoal: true, difficulty: true, estimatedHours: true, category: true, coverUrl: true,
       } });
+      const details = prior ? courseDetailsUpdate(pkg.manifest, prior) : null;
+      if (prior && details) {
+        await prisma.course.update({ where: { id: prior.id }, data: details });
+        console.log(`${pkg.slug}: course details updated (${Object.keys(details).join(", ")})`);
+      }
       if (prior?.status === "PUBLISHED" && prior.repositorySourceHash === sourceHash &&
           prior.repositoryReleaseId === prior.activeReleaseId) {
         console.log(`${pkg.slug}: repository package is already current`);
