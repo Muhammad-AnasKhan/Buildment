@@ -8,10 +8,30 @@
 export const DIAGRAM_KINDS = ["flow", "sequence"] as const;
 export type DiagramKind = (typeof DIAGRAM_KINDS)[number];
 
-export const NODE_KINDS = ["actor", "box", "decision", "end", "store", "external"] as const;
+export const NODE_KINDS = ["actor", "box", "decision", "end", "store", "external", "state", "start", "stop", "entity"] as const;
 export type NodeKind = (typeof NODE_KINDS)[number];
 
-export type DiagramNode = { id: string; label: string; kind: NodeKind; line: number };
+/** `group` is the index of the innermost group the part sits in, or null. */
+export type DiagramNode = { id: string; label: string; kind: NodeKind; line: number; group: number | null; fields?: string[] };
+/** A labelled box around some parts, such as a private network. Groups may sit inside groups. */
+/** `ref` is the group's [id], when arrows point at the whole group; such arrows use the id "@g<index>". */
+export type DiagramGroup = { label: string; parent: number | null; line: number; ref?: string };
+/** Sequence only: a note before message `before`, over one or two lanes or beside one. */
+export type DiagramNote = { before: number; from: string; to: string; side: "over" | "left" | "right"; text: string; line: number };
+/**
+ * Sequence only: a framed block around messages `start` to `end` (exclusive), such as a loop
+ * or the branches of an alt. `sections` mark where an else or and branch begins.
+ */
+export const BLOCK_KINDS = ["loop", "alt", "opt", "par", "critical", "break"] as const;
+export type DiagramBlock = {
+  kind: (typeof BLOCK_KINDS)[number];
+  label: string;
+  start: number;
+  end: number;
+  sections: { at: number; label: string }[];
+  depth: number;
+  line: number;
+};
 /**
  * `head` is false for a plain line (`---`), which joins two parts without a direction;
  * `tail` is true for a two-way arrow (`<->`), with a head at each end.
@@ -29,6 +49,9 @@ export type DiagramSpec = {
   /** Flow only: the node ids the packet visits, in order. Empty without a packet line. */
   packet: string[];
   hops: PacketHop[];
+  groups: DiagramGroup[];
+  notes: DiagramNote[];
+  blocks: DiagramBlock[];
 };
 
 export type DiagramParseResult = { ok: true; spec: DiagramSpec } | { ok: false; problems: string[] };
@@ -51,6 +74,10 @@ export function isDiagramKind(value: unknown): value is DiagramKind {
 const BARE_NAME = /^[^:"`]+$/;
 const QUOTED_NAME = /^[^"`]+$/;
 const SETTING = /^(title|direction|packet)\s*:\s*(.*)$/i;
+const GROUP_LINE = /^group\s+(.+)$/i;
+const NOTE_LINE = /^note\s+(over|left of|right of)\s+([^:]+?)\s*:\s*(.+)$/i;
+const BLOCK_LINE = new RegExp(`^(${BLOCK_KINDS.join("|")})\\b\\s*(.*)$`, "i");
+const SECTION_LINE = /^(else|and|option)\b\s*(.*)$/i;
 const NODE_LINE = new RegExp(`^(${NODE_KINDS.join("|")})\\s+(.+)$`, "i");
 /** True when the text has a control character other than a tab. */
 function hasControl(text: string): boolean {
@@ -121,8 +148,15 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
   let direction: "right" | "down" | undefined;
   let packetLine: { names: string[]; shown: string[]; line: number } | undefined;
   const nodes: DiagramNode[] = [];
+  const groups: DiagramGroup[] = [];
+  const open: number[] = [];
   const byId = new Map<string, DiagramNode>();
   const rawEdges: RawEdge[] = [];
+  // Sequence notes and blocks, placed by how many messages come before them.
+  let messages = 0;
+  const rawNotes: { before: number; names: Name[]; side: DiagramNote["side"]; text: string; line: number }[] = [];
+  const blocks: DiagramBlock[] = [];
+  const openBlocks: number[] = [];
 
   const lines = source.replace(/\r\n?/g, "\n").split("\n");
   lines.forEach((rawLine, index) => {
@@ -131,6 +165,52 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
     if (!text || text.startsWith("#")) return;
     if (hasControl(text)) {
       at(line, "remove the control character from this line.");
+      return;
+    }
+
+    // "group <label>" opens a group; a line with only "end" closes the innermost one.
+    // (A line that starts with "Group" but has an arrow, such as "Group by shop -> Total", is an arrow.)
+    const groupLine = splitArrows(text) ? null : GROUP_LINE.exec(text);
+    if (groupLine) {
+      if (kind !== "flow") at(line, "groups are for flow diagrams only.");
+      else {
+        const groupName = readName(groupLine[1]);
+        const label = groupName.text;
+        if (label.length > DIAGRAM_LIMITS.title) at(line, `shorten the group name to ${DIAGRAM_LIMITS.title} characters or fewer.`);
+        groups.push({ label, parent: open.length ? open[open.length - 1] : null, line, ...(groupName.ref ? { ref: groupName.ref } : {}) });
+        open.push(groups.length - 1);
+      }
+      return;
+    }
+    if (kind === "sequence") {
+      const note = NOTE_LINE.exec(text);
+      if (note) {
+        const side = note[1].toLowerCase().startsWith("left") ? "left" : note[1].toLowerCase().startsWith("right") ? "right" : "over";
+        const names = note[2].split(",").map(readName);
+        if (names.length > 2 || (side !== "over" && names.length > 1)) at(line, "a note sits over one or two parts, or beside one part.");
+        else if (note[3].trim().length > DIAGRAM_LIMITS.label * 2) at(line, `shorten the note to ${DIAGRAM_LIMITS.label * 2} characters or fewer.`);
+        else rawNotes.push({ before: messages, names, side, text: note[3].trim(), line });
+        return;
+      }
+      const block = splitArrows(text) ? null : BLOCK_LINE.exec(text);
+      if (block) {
+        blocks.push({ kind: block[1].toLowerCase() as DiagramBlock["kind"], label: block[2].trim(), start: messages, end: messages, sections: [], depth: openBlocks.length, line });
+        openBlocks.push(blocks.length - 1);
+        return;
+      }
+      const section = splitArrows(text) ? null : SECTION_LINE.exec(text);
+      if (section) {
+        if (!openBlocks.length) at(line, `"${section[1]}" belongs inside a block, such as "alt" or "par".`);
+        else blocks[openBlocks[openBlocks.length - 1]].sections.push({ at: messages, label: section[2].trim() });
+        return;
+      }
+    }
+    if (/^end$/i.test(text)) {
+      if (kind === "sequence") {
+        if (!openBlocks.length) at(line, "this \"end\" has no block to close. Open one with \"loop\", \"alt\", \"opt\" or \"par\".");
+        else blocks[openBlocks.pop()!].end = messages;
+      } else if (!open.length) at(line, "this \"end\" has no group to close. Open one with \"group <name>\".");
+      else open.pop();
       return;
     }
 
@@ -165,7 +245,14 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
     const nodeLine = NODE_LINE.exec(text);
     if (nodeLine && !arrows) {
       const nodeKind = nodeLine[1].toLowerCase() as NodeKind;
-      const name = readName(nodeLine[2]);
+      // An entity lists its fields after its name: "entity Account | id (PK) | email".
+      const [head, ...fieldParts] = nodeKind === "entity" ? nodeLine[2].split(/\s+\|\s+/) : [nodeLine[2]];
+      const fields = fieldParts.map((field) => field.trim()).filter(Boolean);
+      if (fields.length > 16 || fields.some((field) => field.length > DIAGRAM_LIMITS.label)) {
+        at(line, `an entity shows up to 16 fields of up to ${DIAGRAM_LIMITS.label} characters each.`);
+        return;
+      }
+      const name = readName(head);
       const label = name.text;
       const nameProblem = checkName(name);
       if (nameProblem) {
@@ -179,7 +266,7 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
         at(line, `"${name.ref ? `[${name.ref}]` : label}" is already declared on line ${existing.line}. Declare each part once.${hint}`);
         return;
       }
-      const node = { id, label, kind: nodeKind, line };
+      const node: DiagramNode = { id, label, kind: nodeKind, line, group: open.length ? open[open.length - 1] : null, ...(fields.length ? { fields } : {}) };
       nodes.push(node);
       byId.set(id, node);
       return;
@@ -210,12 +297,19 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
         return;
       }
       rawEdges.push({ names, shown, links, label, line });
+      messages += names.length - 1;
       return;
     }
 
     at(line, `"${shorten(text)}" is not a diagram line. Write a part ("box DNS"), an arrow ("You -> DNS") or a setting ("title: How a page loads").`);
   });
 
+  for (const index of open) at(groups[index].line, `the group "${groups[index].label}" is never closed. Add a line with "end".`);
+  for (const index of openBlocks) at(blocks[index].line, `the "${blocks[index].kind}" block is never closed. Add a line with "end".`);
+  groups.forEach((group, index) => {
+    const inside = (g: number | null): boolean => g !== null && (g === index || inside(groups[g].parent));
+    if (!nodes.some((node) => inside(node.group))) at(group.line, `the group "${group.label}" has no parts in it.`);
+  });
   if (title === undefined) problems.push("Add a title line, for example \"title: How your phone finds a website\".");
 
   // A part with an [id] can also be named by its text, as long as no other part has that text.
@@ -229,7 +323,9 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
   for (const raw of rawEdges) {
     const ids: string[] = [];
     for (const [i, key] of raw.names.entries()) {
-      const node = byId.get(key);
+      // A [ref] may name a whole group, when an arrow points at the group itself.
+      const groupIndex = groups.findIndex((group) => group.ref && `[${group.ref.toLowerCase()}]` === key);
+      const node = byId.get(key) ?? (groupIndex >= 0 && kind === "flow" ? { id: `@g${groupIndex}` } : undefined);
       if (!node) {
         const name = raw.shown[i];
         at(raw.line, `"${name}" is not declared. Declare it first, for example "box ${name}".${declaredList(nodes)}`);
@@ -277,17 +373,29 @@ export function parseDiagram(kind: DiagramKind, source: string): DiagramParseRes
     }
   }
 
+  const notes: DiagramNote[] = [];
+  for (const note of rawNotes) {
+    const ids = note.names.map((name) => byId.get(keyOf(name))?.id);
+    const missing = note.names.find((_, i) => !ids[i]);
+    if (missing) {
+      at(note.line, `"${missing.text}" is not declared.${declaredList(nodes)}`);
+      continue;
+    }
+    notes.push({ before: note.before, from: ids[0]!, to: ids[ids.length - 1]!, side: note.side, text: note.text, line: note.line });
+  }
+
   const maxNodes = kind === "flow" ? DIAGRAM_LIMITS.flowNodes : DIAGRAM_LIMITS.sequenceNodes;
   const maxEdges = kind === "flow" ? DIAGRAM_LIMITS.flowEdges : DIAGRAM_LIMITS.sequenceEdges;
   if (nodes.length < 2) problems.push("A diagram needs at least two parts, for example \"actor You\" and \"box DNS\".");
   if (nodes.length > maxNodes) problems.push(`A ${kind} diagram fits a phone with up to ${maxNodes} parts; this one has ${nodes.length}. Split it into two diagrams.`);
-  if (rawEdges.length === 0 && nodes.length >= 2) problems.push("Add at least one arrow, for example \"You -> DNS\".");
+  // A diagram of grouped parts may have no arrows (two columns of facts, say); any other needs one.
+  if (rawEdges.length === 0 && nodes.length >= 2 && !groups.length) problems.push("Add at least one arrow, for example \"You -> DNS\".");
   if (edges.length > maxEdges) problems.push(`A ${kind} diagram fits a phone with up to ${maxEdges} arrows; this one has ${edges.length}. Split it into two diagrams.`);
 
   if (problems.length) return { ok: false, problems };
   return {
     ok: true,
-    spec: { kind, title: title!, direction: direction ?? "right", nodes, edges, packet, hops },
+    spec: { kind, title: title!, direction: direction ?? "right", nodes, edges, packet, hops, groups, notes, blocks },
   };
 }
 

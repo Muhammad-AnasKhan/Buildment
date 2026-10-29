@@ -37,9 +37,10 @@ export type DrawState = {
 
 const el = (tag: string, attrs: SvgNode["attrs"], children?: SvgNode["children"], key?: string): SvgNode => ({ tag, attrs, children, key });
 
-function text(label: SceneLabel, fill: string, weight: number, key: string, halo = false): SvgNode {
+/** `halo` paints a band of `halo` colour behind the letters, so a line under the text stays readable. */
+function text(label: SceneLabel, fill: string, weight: number, key: string, halo: string | false = false): SvgNode {
   const lh = label.size * LINE_HEIGHT;
-  const halos: SvgNode["attrs"] = halo ? { stroke: BRAND.tint, strokeWidth: 5, strokeLinejoin: "round", paintOrder: "stroke" } : {};
+  const halos: SvgNode["attrs"] = halo ? { stroke: halo, strokeWidth: 5, strokeLinejoin: "round", paintOrder: "stroke" } : {};
   return el(
     "text",
     { x: r(label.x), y: r(label.y), textAnchor: label.anchor, fontSize: label.size, fontWeight: weight, fill, ...halos },
@@ -50,8 +51,22 @@ function text(label: SceneLabel, fill: string, weight: number, key: string, halo
 
 function shape(node: SceneNode): SvgNode[] {
   const s = node.shape;
+  if (s.type === "circle" && node.kind === "start") return [el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r, fill: BRAND.ink }, undefined, `${node.id}-shape`)];
+  if (s.type === "circle" && node.kind === "stop") {
+    return [
+      el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r - 1.5, fill: BRAND.white, stroke: BRAND.ink, strokeWidth: 3 }, undefined, `${node.id}-shape`),
+      el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r - 6, fill: BRAND.ink }, undefined, `${node.id}-dot`),
+    ];
+  }
   if (s.type === "circle") return [el("circle", { cx: r(s.cx), cy: r(s.cy), r: s.r, fill: BRAND.cobalt }, undefined, `${node.id}-shape`)];
   const frame = { fill: BRAND.white, stroke: BRAND.ink, strokeWidth: 3 };
+  if (node.kind === "entity") {
+    return [
+      el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), ...frame }, undefined, `${node.id}-shape`),
+      el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: 32, fill: BRAND.ink }, undefined, `${node.id}-header`),
+    ];
+  }
+  if (node.kind === "state") return [el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), rx: 16, ...frame }, undefined, `${node.id}-shape`)];
   if (s.type === "diamond") return [el("path", { d: diamondPath(s, 0), ...frame, strokeLinejoin: "round" }, undefined, `${node.id}-shape`)];
   if (node.kind === "end") return [el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), fill: BRAND.ink }, undefined, `${node.id}-shape`)];
   if (node.kind === "external") return [el("rect", { x: r(s.x), y: r(s.y), width: r(s.w), height: r(s.h), ...frame, strokeDasharray: "8 5" }, undefined, `${node.id}-shape`)];
@@ -100,8 +115,32 @@ export function drawScene(scene: Scene, state: DrawState = {}, title?: { text: s
     children.push(text({ lines: title.lines, x: x + 18, y: top + 28, anchor: "start", size: 16 }, BRAND.ink, 700, "title"));
   }
 
+  // Group boxes go under everything else, outermost first.
+  for (const [i, group] of scene.groups.entries()) {
+    const { x: gx, y: gy, w: gw, h: gh } = group.rect;
+    children.push(el("rect", { x: r(gx), y: r(gy), width: r(gw), height: r(gh), rx: 10, fill: BRAND.paper, stroke: BRAND.muted, strokeWidth: 2 }, undefined, `group-${i}`));
+  }
+
   for (const [i, line] of scene.lifelines.entries()) {
     children.push(el("line", { x1: r(line.x), y1: r(line.y1), x2: r(line.x), y2: r(line.y2), stroke: BRAND.muted, strokeWidth: 2, strokeDasharray: "2 6", strokeLinecap: "round" }, undefined, `life-${i}`));
+  }
+
+  // Sequence blocks: a frame with its title, and a dashed line where each branch starts.
+  for (const [i, block] of scene.blocks.entries()) {
+    const { x: bx, y: by, w: bw, h: bh } = block.rect;
+    children.push(el("rect", { x: r(bx), y: r(by), width: r(bw), height: r(bh), rx: 6, fill: "none", stroke: BRAND.muted, strokeWidth: 2 }, undefined, `block-${i}`));
+    children.push(text(block.title, BRAND.muted, 700, `block-${i}-title`, BRAND.tint));
+    for (const [j, divider] of block.dividers.entries()) {
+      children.push(el("line", { x1: r(divider.x0), y1: r(divider.y), x2: r(divider.x1), y2: r(divider.y), stroke: BRAND.muted, strokeWidth: 2, strokeDasharray: "6 5" }, undefined, `block-${i}-divider-${j}`));
+      if (divider.label) children.push(text(divider.label, BRAND.muted, 700, `block-${i}-divider-${j}-label`, BRAND.tint));
+    }
+  }
+
+  // Sequence notes: yellow cards with an ink border.
+  for (const [i, note] of scene.notes.entries()) {
+    const { x: nx, y: ny, w: nw, h: nh } = note.rect;
+    children.push(el("rect", { x: r(nx), y: r(ny), width: r(nw), height: r(nh), fill: BRAND.yellow, stroke: BRAND.ink, strokeWidth: 2 }, undefined, `note-${i}`));
+    children.push(text(note.label, BRAND.ink, 600, `note-${i}-label`));
   }
 
   for (const edge of scene.edges) {
@@ -131,7 +170,7 @@ export function drawScene(scene: Scene, state: DrawState = {}, title?: { text: s
       const tail = `M${r(p.start.x)} ${r(p.start.y)} L${r(from.x - back.x * 2 + wing2.x)} ${r(from.y - back.y * 2 + wing2.y)} L${r(from.x - back.x * 2 - wing2.x)} ${r(from.y - back.y * 2 - wing2.y)} Z`;
       parts.push(el("path", { d: tail, fill: colour }, undefined, `edge-${edge.index}-tail`));
     }
-    if (edge.label) parts.push(text(edge.label, on ? BRAND.cobalt : BRAND.ink, on ? 700 : 600, `edge-${edge.index}-label`, true));
+    if (edge.label) parts.push(text(edge.label, on ? BRAND.cobalt : BRAND.ink, on ? 700 : 600, `edge-${edge.index}-label`, BRAND.tint));
     if (edge.badge) {
       parts.push(el("circle", { cx: r(edge.badge.x), cy: r(edge.badge.y), r: 11, fill: on ? BRAND.cobalt : BRAND.white, stroke: on ? BRAND.cobalt : BRAND.ink, strokeWidth: 2 }, undefined, `edge-${edge.index}-badge`));
       parts.push(el("text", { x: r(edge.badge.x), y: r(edge.badge.y + 4.5), textAnchor: "middle", fontSize: 12, fontWeight: 700, fill: on ? BRAND.paper : BRAND.ink }, [String(edge.badge.n)], `edge-${edge.index}-n`));
@@ -142,10 +181,14 @@ export function drawScene(scene: Scene, state: DrawState = {}, title?: { text: s
   for (const node of scene.nodes) {
     const parts = shape(node);
     if (state.activeNode === node.id) parts.unshift(ring(node));
-    const light = node.labelInside && (node.kind === "actor" || node.kind === "end");
+    const light = node.labelInside && (node.kind === "actor" || node.kind === "end" || node.kind === "entity");
     parts.push(text(node.label, light ? BRAND.paper : BRAND.ink, 700, `${node.id}-label`));
+    if (node.fields) parts.push(text(node.fields, BRAND.ink, 500, `${node.id}-fields`));
     children.push(el("g", {}, parts, `node-${node.id}`));
   }
+
+  // Group labels go on top, so an arrow entering a group passes behind its name.
+  for (const [i, group] of scene.groups.entries()) children.push(text(group.label, BRAND.muted, 700, `group-${i}-label`, BRAND.paper));
 
   if (state.packet) {
     const packet: SvgNode[] = [];

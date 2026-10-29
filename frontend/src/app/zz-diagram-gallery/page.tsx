@@ -72,6 +72,49 @@ You -> Web server: Send me the page
 Web server --> You: Here is the page`,
   },
   {
+    name: "Groups",
+    note: "group ... end draws a labelled box around the parts inside it; groups can nest, and an arrow can point at a whole group by its [id]. Mermaid subgraphs become groups.",
+    kind: "flow",
+    spec: `title: The building blocks of a small app
+box Phone
+box DNS
+group Private network: not reachable from the internet
+  box Load balancer
+  box App servers
+  store Database
+  group [W] Background work
+    box Queue
+    box Workers
+  end
+end
+Phone -> DNS: 1. look up the name
+Phone -> Load balancer: 2. requests
+Load balancer -> App servers -> Database
+App servers -> [W]: jobs
+Queue -> Workers`,
+  },
+  {
+    name: "A sequence with a note and blocks",
+    note: "note over, loop and alt with else are framed between the messages and stay visible while you step through.",
+    kind: "sequence",
+    spec: `title: Checking a login token
+actor App
+box API
+box Auth service
+App -> API: GET /me
+note over API, Auth service: the token is checked on every request
+loop until it answers
+  API -> Auth service: is this token valid?
+end
+alt valid
+  Auth service --> API: yes
+  API --> App: your profile
+else expired
+  Auth service --> API: no
+  API --> App: 401, sign in again
+end`,
+  },
+  {
     name: "A decision",
     note: "decision draws a diamond for a question. Arrows meet its points, and its answers label the arrows that leave it. A Mermaid {\"...\"} node becomes one too.",
     kind: "flow",
