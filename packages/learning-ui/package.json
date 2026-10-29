@@ -217,6 +217,7 @@
     "./canvas/huda-review-loop/data": "./src/canvas/huda-review-loop/data.ts",
     "./canvas/indirect-injection-trace/data": "./src/canvas/indirect-injection-trace/data.ts",
     "./canvas/InteractiveCanvas": "./src/canvas/InteractiveCanvas.tsx",
+    "./canvas/models/portable": "./src/canvas/models/portable.ts",
     "./canvas/is-and-is-not-fridge/data": "./src/canvas/is-and-is-not-fridge/data.ts",
     "./canvas/job-application-status/data": "./src/canvas/job-application-status/data.ts",
     "./canvas/judge-position-bias/data": "./src/canvas/judge-position-bias/data.ts",

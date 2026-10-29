@@ -21,4 +21,25 @@ describe("collectLabProblems", () => {
   it("passes a valid self-closing Lab tag", () => {
     expect(collectLabProblems(`<Lab slug="hld-m2-utilisation-knee"/>`)).toEqual([]);
   });
+
+  it("accepts a valid ```lab fence and rejects an invalid one", () => {
+    const valid = [
+      "```lab",
+      "family: hld",
+      "version: 1",
+      "title: Design a short-link service",
+      "purpose: Build a short-link service from parts and press Run.",
+      "limits: A simplified model, not a real cloud, with made-up prices.",
+      "allowedComponents: [client, load-balancer, app-server, database]",
+      "levels:",
+      "  - id: l1",
+      "    load: 3000",
+      "    targets: { rps: 3000 }",
+      "```",
+    ].join("\n");
+    expect(collectLabProblems(valid)).toEqual([]);
+
+    const bad = ["```lab", "family: unknown", "title: T", "purpose: P", "limits: Long enough limits string here", "```"].join("\n");
+    expect(collectLabProblems(bad)[0]).toMatch(/"family" must be one of/);
+  });
 });

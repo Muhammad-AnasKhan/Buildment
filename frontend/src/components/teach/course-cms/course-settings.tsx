@@ -163,7 +163,7 @@ export function CourseSettings({ course }: { course: CourseSettingsView }) {
               <Input id="course-title" name="title" defaultValue={course.title} minLength={3} maxLength={120} required className="h-10" />
             </Field>
             <Field label="Short description" htmlFor="course-description" hint="A quick explanation of what learners will build.">
-              <Textarea id="course-description" name="description" defaultValue={course.description ?? ""} maxLength={500} rows={5} placeholder="What will learners build and understand?" />
+              <Textarea id="course-description" name="description" defaultValue={course.description ?? ""} maxLength={2000} rows={5} placeholder="What will learners build and understand?" />
             </Field>
             <Field label="Cover image" htmlFor="course-cover-file" hint="JPEG, PNG, WebP, GIF, or AVIF · up to 8 MB. Save changes after uploading to publish the new cover.">
               <div className="flex flex-wrap items-center gap-3">
@@ -197,7 +197,7 @@ export function CourseSettings({ course }: { course: CourseSettingsView }) {
         <SectionHeading icon={BookOpenCheck} title="Learning experience" description="Set expectations and choose how learners move through chapters." id="learning-rules-title" />
         <div className="space-y-5 p-5 sm:p-6">
           <Field label="Project goal" htmlFor="course-goal" hint="One clear outcome learners can work toward.">
-            <Input id="course-goal" name="projectGoal" defaultValue={course.projectGoal ?? ""} maxLength={240} placeholder="Ship a real multi-vendor marketplace" className="h-10" />
+            <Input id="course-goal" name="projectGoal" defaultValue={course.projectGoal ?? ""} maxLength={1000} placeholder="Ship a real multi-vendor marketplace" className="h-10" />
           </Field>
           <div className="grid gap-5 sm:grid-cols-2">
             <Field label="Difficulty" htmlFor="course-difficulty">
