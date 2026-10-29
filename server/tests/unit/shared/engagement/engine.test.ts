@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { RecordedEngagementEvent, TrackEventRequest, TrackEventResult } from "../../../../src/shared/api/engagement.js";
 import { createEngagementEngine, memoryStore, type MascotReaction } from "../../../../src/shared/engagement/engine.js";
-import { MASCOTS } from "../../../../src/shared/engagement/mascots.js";
+import { ENGAGEMENT_RULES } from "../../../../src/shared/engagement/rules.js";
 import { messageEventFor } from "../../../../src/shared/engagement/messages.js";
 
 const recorded = (partial: Partial<RecordedEngagementEvent> & Pick<RecordedEngagementEvent, "type">) =>
@@ -38,41 +38,39 @@ describe("engagement engine", () => {
     expect(presented).toEqual([reaction]);
   });
 
-  it("varies its line and never says the same one twice in a row", async () => {
+  it("varies its line when a rule has several, never saying the same one twice in a row", async () => {
+    const chapter = ENGAGEMENT_RULES.find((rule) => rule.id === "chapter-completed")!;
     const engine = createEngagementEngine({
       platform: "web",
       transport: async () => ({ events: [recorded({ type: "chapter_completed" })] }),
       present: () => undefined,
       random: () => 0,
+      rules: [{ ...chapter, clip: undefined, messages: ["One.", "Two.", "Three."] }],
     });
     const lines = [];
     for (let i = 0; i < 4; i += 1) lines.push((await engine.track({ type: "chapter_completed", chapterId: "c" }))?.message);
-    expect(lines[0]).toBe("Chapter complete. Nice work!");
+    expect(lines[0]).toBe("One.");
     for (let i = 1; i < lines.length; i += 1) expect(lines[i]).not.toBe(lines[i - 1]);
   });
 
-  it("names the recorded clip of the exact line it picked", async () => {
+  it("names Dot's recorded clip of the rule's line", async () => {
     const engine = createEngagementEngine({
       platform: "web",
       transport: async () => ({ events: [recorded({ type: "chapter_completed" })] }),
       present: () => undefined,
-      random: () => 0.5,
     });
     const reaction = await engine.track({ type: "chapter_completed", chapterId: "c" });
-    expect(reaction).toMatchObject({ message: "Another chapter done. You're on a roll!", voice: "zip/chapter-completed-1" });
+    expect(reaction).toMatchObject({ message: "Lesson done!", voice: "/brand/dot/voice/lesson-done.mp3" });
   });
 
-  it("leaves the voice out for a mascot without recorded clips", async () => {
-    const { voiced: _voiced, ...silent } = MASCOTS.bimo!;
+  it("leaves the voice out for a rule without a recorded clip", async () => {
     const engine = createEngagementEngine({
       platform: "web",
-      transport: async () => ({ events: [recorded({ type: "chapter_completed" })] }),
+      transport: async () => ({ events: [recorded({ type: "level_up" })] }),
       present: () => undefined,
-      registry: { bimo: silent },
-      roleMap: { guide: "bimo", celebrator: "bimo", helper: "bimo", supporter: "bimo", messenger: "bimo" },
     });
     const reaction = await engine.track({ type: "chapter_completed", chapterId: "c" });
-    expect(reaction?.message).toBeTruthy();
+    expect(reaction).toMatchObject({ ruleId: "level-up", message: "Level up!" });
     expect(reaction).not.toHaveProperty("voice");
   });
 
@@ -163,7 +161,6 @@ describe("engagement engine", () => {
       mascotId: "dot",
       state: "message_good",
       action: { label: "Open", href: "/courses/c/ch" },
-      voice: expect.stringMatching(/^dot\/message-approved-\d$/),
     });
     expect(presented).toEqual([reaction]);
     expect(requests).toEqual([]);
