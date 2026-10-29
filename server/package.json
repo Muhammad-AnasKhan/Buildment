@@ -24,6 +24,7 @@
     "db:studio": "prisma studio",
     "db:seed:showcase": "tsx scripts/seed-demo-showcase.ts",
     "db:seed:integration": "tsx scripts/seed-integration-demo.ts",
+    "db:pull-production": "tsx scripts/pull-production-db.ts",
     "content:import": "tsx scripts/import-course.ts",
     "content:validate": "tsx scripts/validate-chapters.ts",
     "content:validate:source": "tsx scripts/validate-course-source.ts",
