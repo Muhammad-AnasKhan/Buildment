@@ -1,6 +1,6 @@
 import type { CatalogCourseSummary } from "@/shared/api/catalog";
 import type { CourseCategory } from "@/shared/domain/enums";
-import { requireLearnSurface } from "@/server/auth/guards";
+import { getSessionUser } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
 import { COURSE_CATEGORY_INFO, categoryFromParam } from "@/lib/course-categories";
 import { CatalogCourseCard } from "@/components/learn/catalog-course-card";
@@ -43,7 +43,7 @@ function CourseGrid({ courses }: { courses: CatalogCourseSummary[] }) {
 }
 
 export default async function CatalogPage({ searchParams }: { searchParams: Promise<{ category?: string }> }) {
-  await requireLearnSurface();
+  const user = await getSessionUser();
   const { courses } = await serverApiFetch<{ courses: CatalogCourseSummary[] }>("/api/v1/catalog");
   const active = categoryFromParam((await searchParams).category);
 
@@ -59,10 +59,14 @@ export default async function CatalogPage({ searchParams }: { searchParams: Prom
     <div className="mx-auto w-full max-w-7xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
       <header>
         <h1 className="text-[32px] leading-tight tracking-[-0.035em] sm:text-[40px]">Courses</h1>
-        <p className="mt-2 max-w-2xl text-lg text-muted-foreground">Pick one and keep going. Your place is saved.</p>
-        <div className="mt-6">
-          <CoursesTabs active="all" />
-        </div>
+        <p className="mt-2 max-w-2xl text-lg text-muted-foreground">
+          {user ? "Pick one and keep going. Your place is saved." : "Look inside any course. You only need an account to enroll."}
+        </p>
+        {user ? (
+          <div className="mt-6">
+            <CoursesTabs active="all" />
+          </div>
+        ) : null}
         {courses.length > 0 ? <CatalogCategoryTiles counts={counts} total={courses.length} active={active} /> : null}
       </header>
 
