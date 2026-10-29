@@ -15,10 +15,13 @@ import { cn } from "@/lib/utils";
 
 export default async function CourseOverviewPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ courseSlug: string }>;
+  searchParams: Promise<{ start?: string }>;
 }) {
   const { courseSlug } = await params;
+  const { start } = await searchParams;
 
   await requireLearnSurface();
   const overview = await serverApiFetchOrNotFound<CourseOverview>(`/api/v1/courses/${encodeURIComponent(courseSlug)}/overview`);
@@ -87,6 +90,8 @@ export default async function CourseOverviewPage({
   if (track && !track.variantChosen && !track.variantLocked && enrollment.chaptersCompleted === 0) {
     redirect(`/courses/${course.slug}/variant`);
   }
+  // Enroll, sign-up and the variant picker send ?start=1: open the lesson to read next, like a player.
+  if (start === "1" && continueHref) redirect(continueHref);
 
   const continueLabel =
     enrollment.percentComplete === 0

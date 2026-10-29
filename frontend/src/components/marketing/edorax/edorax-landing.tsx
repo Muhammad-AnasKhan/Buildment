@@ -17,6 +17,11 @@ function SignInLink() {
   return <Link href="/login" style={{ color: "#0A0F2C", textDecoration: "none", fontWeight: 700, padding: "12px 0", whiteSpace: "nowrap" }}>Sign in</Link>;
 }
 
+// Courses are public, so the nav links to the catalog on every screen size, phones included.
+function CoursesNavLink() {
+  return <Link href="/catalog" style={{ color: "#0A0F2C", textDecoration: "none", fontWeight: 700, padding: "12px 0", whiteSpace: "nowrap" }}>Courses</Link>;
+}
+
 function CatalogLink() {
   return <Link href="/catalog" style={{ display: "inline-block", color: "#F6F7FB", textDecoration: "none", fontWeight: 700, padding: "14px 28px", border: "2px solid #F6F7FB" }}>Browse courses</Link>;
 }
@@ -34,8 +39,9 @@ export function EdoraxLanding() {
             <a href="#how" className={s.navLink} style={{ color: "#0A0F2C", textDecoration: "none", padding: "12px 0" }}>How it works</a>
             <a href="#dot" className={s.navLink} style={{ color: "#0A0F2C", textDecoration: "none", padding: "12px 0" }}>Meet Dot</a>
             <a href="#topics" className={s.navLink} style={{ color: "#0A0F2C", textDecoration: "none", padding: "12px 0" }}>What you can learn</a>
+            <CoursesNavLink />
             <SignInLink />
-            <a href="#top" className={s.navCta} style={{ background: "#2434E0", color: "#F6F7FB", textDecoration: "none", fontWeight: "700", padding: "12px 22px" }}>Try a question</a>
+            <a href="#top" className={`${s.navCta} ${s.hideSm}`} style={{ background: "#2434E0", color: "#F6F7FB", textDecoration: "none", fontWeight: "700", padding: "12px 22px" }}>Try a question</a>
           </nav>
         </div>
       </header>
@@ -320,6 +326,7 @@ export function EdoraxLanding() {
             <a href="#how" style={{ color: "#C9CFF0", textDecoration: "none", padding: "10px 0" }}>How it works</a>
             <a href="#dot" style={{ color: "#C9CFF0", textDecoration: "none", padding: "10px 0" }}>Meet Dot</a>
             <a href="#topics" style={{ color: "#C9CFF0", textDecoration: "none", padding: "10px 0" }}>What you can learn</a>
+            <Link href="/catalog" style={{ color: "#C9CFF0", textDecoration: "none", padding: "10px 0" }}>Courses</Link>
             <span style={{ padding: "10px 0" }}>edorax.com</span>
           </nav>
         </div>

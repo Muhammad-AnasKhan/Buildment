@@ -1,5 +1,6 @@
 import { renderEmailTemplate } from "../email/render.js";
 import { randomBytes } from "node:crypto";
+import { safeRedirectTo } from "../../shared/lib/safe-redirect.js";
 import { AUTH_ERROR_CODES } from "../../shared/api/auth.js";
 import { prisma } from "../../db/prisma.js";
 import { BadRequestError } from "../../utils/errors.js";
@@ -23,9 +24,15 @@ export async function createEmailVerificationToken(email: string): Promise<strin
 export async function sendVerificationEmail(input: {
   email: string;
   name?: string | null;
+  /** A local path to open after confirming, such as /enroll/<course>; anything else is dropped. */
+  redirectTo?: string;
 }): Promise<{ sent: boolean; verifyUrl: string }> {
   const token = await createEmailVerificationToken(input.email);
-  const verifyUrl = `${appBaseUrl()}/api/v1/auth/confirm-email?token=${encodeURIComponent(token)}`;
+  const url = new URL(`${appBaseUrl()}/api/v1/auth/confirm-email`);
+  url.searchParams.set("token", token);
+  const redirectTo = safeRedirectTo(input.redirectTo);
+  if (redirectTo) url.searchParams.set("redirectTo", redirectTo);
+  const verifyUrl = url.toString();
   const subject = "Verify your Edorax email";
   const html = await renderEmailTemplate("send-verification-email", { greeting: input.name ? ` ${input.name}` : "", url: verifyUrl });
   const text = `Hi ${input.name ?? "there"},\n\nWelcome to Edorax! Confirm your email address to finish setting up your account and start learning:\n${verifyUrl}\n\nThis link expires in 24 hours. If you did not create an Edorax account, you can ignore this email.`;

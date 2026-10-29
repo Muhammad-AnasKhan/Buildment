@@ -31,7 +31,8 @@ export async function chooseCourseVariantAction(formData: FormData): Promise<voi
     throw error;
   }
   revalidatePath(`/courses/${result.courseSlug}`, "layout");
-  redirect(`/courses/${result.courseSlug}`);
+  // A variant is chosen before the first chapter, so go straight into it.
+  redirect(`/courses/${result.courseSlug}?start=1`);
 }
 
 export async function chooseCourseSpecialisationAction(formData: FormData): Promise<void> {

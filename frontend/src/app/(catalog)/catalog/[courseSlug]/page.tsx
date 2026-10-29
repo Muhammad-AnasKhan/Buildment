@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { CatalogCourseDetail } from "@/shared/api/catalog";
-import { requireLearnSurface } from "@/server/auth/guards";
+import { getSessionUser } from "@/server/auth/guards";
+import { cn } from "@/lib/utils";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { selfEnrollInCourseAction } from "@/server/actions/enroll";
 import { CourseCover } from "@/components/learn/course-cover";
@@ -16,10 +17,49 @@ export default async function CatalogCoursePage({
   params: Promise<{ courseSlug: string }>;
 }) {
   const { courseSlug } = await params;
-  await requireLearnSurface();
+  const user = await getSessionUser();
   const course = await serverApiFetchOrNotFound<CatalogCourseDetail>(`/api/v1/catalog/${encodeURIComponent(courseSlug)}`);
   const hasAccess = course.access === "active";
   const needsPayment = course.access === "payment_required";
+  // Visitors sign up first and land straight in the course (see app/enroll); learners enroll in one
+  // click and open the first lesson.
+  const enrollPath = `/enroll/${course.slug}`;
+  const enrollLabel = course.pricingType === "PAID" ? "Enroll & checkout" : "Enroll for free";
+
+  const enrollActions = (
+    <>
+      {hasAccess ? (
+        <Link href={`/courses/${course.slug}?start=1`} className={buttonVariants({ size: "lg" })}>
+          Go to course
+        </Link>
+      ) : needsPayment ? (
+        <Link href={`/courses/${course.slug}/checkout`} className={buttonVariants({ size: "lg" })}>
+          Complete payment
+        </Link>
+      ) : !user ? (
+        <Link href={`/signup?redirectTo=${encodeURIComponent(enrollPath)}`} className={buttonVariants({ size: "lg" })}>
+          {enrollLabel}
+        </Link>
+      ) : (
+        <form action={selfEnrollInCourseAction}>
+          <input type="hidden" name="courseId" value={course.id} />
+          <input type="hidden" name="courseSlug" value={course.slug} />
+          <input type="hidden" name="returnTo" value={`/courses/${course.slug}?start=1`} />
+          <PendingSubmitButton size="lg" pendingLabel="Enrolling…" className="h-10 px-4">
+            {enrollLabel}
+          </PendingSubmitButton>
+        </form>
+      )}
+      {!user ? (
+        <p className="w-full text-sm text-muted-foreground">
+          Have an account?{" "}
+          <Link href={`/login?redirectTo=${encodeURIComponent(enrollPath)}`} className="font-bold text-primary underline underline-offset-4">
+            Sign in to enroll
+          </Link>
+        </p>
+      ) : null}
+    </>
+  );
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-7 sm:px-6 sm:py-10">
@@ -59,6 +99,7 @@ export default async function CatalogCoursePage({
             </dd>
           </div>
         </dl>
+        <div className="mt-6 hidden flex-wrap items-center gap-3 sm:flex">{enrollActions}</div>
       </header>
       </div>
 
@@ -98,34 +139,14 @@ export default async function CatalogCoursePage({
         </section>
       ) : null}
 
-      {/* On phones the learner tab bar (4rem plus the safe area) is fixed to the bottom, so the sticky bar sits above it. */}
-      <div className="sticky bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-10 mt-8 flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3 shadow-sm sm:static sm:shadow-none sm:border-0 sm:bg-transparent sm:p-0">
-        {hasAccess ? (
-          <Link href={`/courses/${course.slug}`} className={buttonVariants({ size: "lg" })}>
-            Go to course
-          </Link>
-        ) : needsPayment ? (
-          <Link
-            href={`/courses/${course.slug}/checkout`}
-            className={buttonVariants({ size: "lg" })}
-          >
-            Complete payment
-          </Link>
-        ) : (
-          <form action={selfEnrollInCourseAction}>
-            <input type="hidden" name="courseId" value={course.id} />
-            <input type="hidden" name="courseSlug" value={course.slug} />
-            <input type="hidden" name="returnTo" value={`/courses/${course.slug}`} />
-            <PendingSubmitButton size="lg" pendingLabel="Enrolling…" className="h-10 px-4">
-              {course.pricingType === "PAID" ? "Enroll & checkout" : "Enroll for free"}
-            </PendingSubmitButton>
-          </form>
+      {/* On phones the enroll bar stays in reach; signed-in learners have the tab bar (4rem plus the safe area) under it. */}
+      <div
+        className={cn(
+          "sticky z-10 mt-8 flex flex-wrap items-center gap-3 rounded-xl border bg-card p-3 shadow-sm sm:hidden",
+          user ? "bottom-[calc(4.75rem+env(safe-area-inset-bottom))]" : "bottom-[calc(0.75rem+env(safe-area-inset-bottom))]"
         )}
-        {!hasAccess && !needsPayment ? (
-          <p className="w-full text-xs text-muted-foreground">
-            You can also join via a mentor invite link if you were assigned privately.
-          </p>
-        ) : null}
+      >
+        {enrollActions}
       </div>
     </div>
   );
