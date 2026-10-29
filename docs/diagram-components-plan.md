@@ -61,24 +61,40 @@ direction: right | down          flow only, default right
 
 actor <Name>                     a person (cobalt circle)
 box <Name>                       a step or service (white box, ink border)
+decision <Name>                  a question (white diamond); its answers label the arrows out
 end <Name>                       where the flow is going (ink box)
 store <Name>                     data that is kept (white cylinder)
 external <Name>                  outside your system (dashed border)
+state <Name>                     a state (rounded box)
+start <Name> / stop <Name>       a start dot and a finish ring; the name is read aloud, not drawn
+entity <Name> | field | field    a table card: ink header, one row per field
+box [B2] <Name>                  an [id], so two parts can show the same text; arrows use [B2]
 
 A -> B                           an arrow
 A -> B -> C                      a chain of arrows
 A -> B: <label>                  a labelled arrow (single arrows only)
 A --> B: <label>                 a dashed arrow, for a reply or an optional path
+A <-> B                          a two-way arrow
+A --- B / A -.- B                flow only: a plain or dashed line with no direction
+A -> A: <label>                  an arrow to itself, drawn as a loop
+
+group <Label> ... end            flow only: a labelled box around the parts declared inside; groups nest
+group [G] <Label>                a group with an [id], so arrows can point at the whole group: A -> [G]
+
+note over A, B: <text>           sequence only; also "note left of A" and "note right of A"
+loop <label> ... end             sequence only; also alt (with else), opt, par (with and), critical, break
 
 packet: A -> B -> C              flow only: the yellow packet's path, one arrow per hop
 ```
 
 Rules:
-- Declare every name (anywhere in the spec). Names are matched without case and are up to 60 characters. A name cannot contain `"`, `|` or a backtick. A name with `:` goes in quotes, everywhere it appears: `box "Step 1: plan"`, `"Step 1: plan" -> Review`.
-- Labels are up to 60 characters. A label may contain `:`; everything after the first `:` outside quotes on an arrow line is the label.
-- A flow has 2 to 12 parts and up to 16 arrows. A sequence has 2 to 5 parts and 1 to 12 arrows. Each packet hop must be an arrow in the diagram, in either direction.
-- In a `sequence`, each arrow line is one step, in order. An arrow from a part to itself is an error.
+- Declare every name (anywhere in the spec). Names are matched without case and are up to 110 characters; past 60 the box gets wider and wraps to more lines. A name cannot contain `"` or a backtick. A name with `:` goes in quotes, everywhere it appears: `box "Step 1: plan"`, `"Step 1: plan" -> Review`.
+- Labels are up to 100 characters. A label may contain `:`; everything after the first `:` outside quotes on an arrow line is the label.
+- A flow has 2 to 30 parts and up to 40 arrows. A sequence has 2 to 8 parts and 1 to 30 messages. Each packet hop must be an arrow in the diagram, in either direction.
+- A flow needs at least one arrow unless it has groups. Parts with no arrow are allowed.
+- In a `sequence`, each arrow line is one step, in order; notes and blocks stay visible at every step.
 - A `flow` with a `packet:` line is a step-through: Back and Next, or dragging, move the packet one hop, and the hop's arrow label is the step's caption.
+- On a phone a diagram never shrinks below about 72%; a larger one scrolls sideways inside its panel.
 
 Example:
 
@@ -97,11 +113,18 @@ packet: You -> DNS -> You -> Server
 
 ## Existing Mermaid diagrams, drawn automatically
 
-Courses do not have to be rewritten to get the new design. `server/src/shared/diagram/from-mermaid.ts` turns a Mermaid `flowchart` (TD, TB or LR) or `sequenceDiagram` into a spec when it maps exactly, and the result must pass the same validation as a hand-written fence. `remark-diagram` runs before `remark-mermaid` and draws every such fence with the Diagram block, titled by the Mermaid title or the closest heading above it. Any later change to the Diagram block reaches all of these diagrams at once.
+Courses do not have to be rewritten to get the new design. `server/src/shared/diagram/from-mermaid.ts` turns Mermaid into a spec when it maps exactly, and the result must pass the same validation as a hand-written fence. Two places apply it. `remark-diagram` runs before `remark-mermaid` and draws a convertible ```` ```mermaid ```` fence with the Diagram block, titled by the Mermaid title or the closest heading above it. The `MermaidDiagram` component itself converts too, which covers the `<MermaidDiagram title="..." chart={...} legend="..." />` tags most older chapters use; the tag's title and legend are kept. Any later change to the Diagram block reaches all of these diagrams at once.
 
-Kept on Mermaid: state and entity diagrams, subgraphs, `&`, lines without an arrow head, right-to-left or bottom-to-top flows, sequence notes, loops and blocks, a message from a part to itself, two parts with the same text, and anything over the size limits. A fence whose first line is `%% keep-mermaid` always stays on Mermaid.
+What maps across:
+- **Flowcharts** (any direction; right-to-left and bottom-to-top are drawn mirrored): `{"..."}` becomes a decision, `[("...")]` a store, `(("..."))` an actor, the rest boxes. Subgraphs become groups, an arrow to a subgraph points at its group, `&` expands, dotted, thick and two-way links keep their look, and boxes that share their text keep their Mermaid ids.
+- **Sequence diagrams**: participants, all arrow kinds, messages to self, notes, and loop, alt, opt, par, critical and break blocks. Colour blocks, activation and autonumber are dropped.
+- **State diagrams**: states, start and finish, choices, composite states as groups, and loops.
+- **Entity diagrams**: entity cards with their fields, joined by lines labelled with how many sit on each side.
+- **Mind maps**: a tree read left to right.
 
-On 2026-10-28 this converted 639 of the 771 Mermaid fences in Buildment-core (83%). Styling lines (`style`, `classDef`, `class`, `linkStyle`, `click`) are dropped; the brand replaces them. A flow too wide for a reading column always uses the top-to-bottom layout.
+Styling lines (`style`, `classDef`, `class`, `linkStyle`, `click`) are dropped; the brand replaces them. A chart whose first line is `%% keep-mermaid` always stays on Mermaid, as do chart types not listed here (Gantt, journey, pie) and state diagrams with notes or concurrent regions.
+
+Coverage on 2026-10-29, fences and tags together: 1,418 of 1,418 Mermaid diagrams in Buildment-core and 1,289 of 1,289 in live chapters in the production copy. The first release converted fences only, so the 645 tag diagrams (most of networking and system design) still showed Mermaid; a learner reported Networking 01.01.
 
 ## What gets built
 
@@ -125,7 +148,6 @@ In Buildment-core, on a branch of its own:
 
 ## Not in this change
 
-- Rewriting the Mermaid fences in course source. Most are drawn automatically (above); the rest keep working as Mermaid.
-- State and entity diagrams. They stay on Mermaid until a third kind is designed.
-- The desktop reader. It has its own lesson parser (`desktop/src/learning/parse-lesson.ts`); it can reuse the same component once that parser handles the fences.
+- Rewriting the Mermaid in course source. Every Mermaid diagram is drawn automatically (above); writing new diagrams as fences is still better, because the fence is checked by `courses:check`.
+- The desktop reader. Its `MermaidDiagram` wraps the shared component, so tag diagrams should convert there too (not checked in the desktop app), but its lesson parser does not yet turn ```flow and ```sequence fences into blocks.
 - Theme work. The app redesign is happening on its own branch; diagrams use fixed brand colours and read the DM Sans variable if it is defined.

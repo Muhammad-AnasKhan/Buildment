@@ -9,7 +9,18 @@ const dmSans = DM_Sans({ variable: "--font-dm-sans", subsets: ["latin"], weight:
 
 const TICKS = "```";
 
-const EXAMPLES: { name: string; note: string; kind: "flow" | "sequence" | "mermaid"; spec: string }[] = [
+// kind "mdx" is chapter text used as written; the others are wrapped in a fence of that kind.
+const EXAMPLES: { name: string; note: string; kind: "flow" | "sequence" | "mermaid" | "mdx"; spec: string }[] = [
+  {
+    name: "An existing MermaidDiagram tag, drawn automatically",
+    note: "Most older chapters write Mermaid as a <MermaidDiagram> tag. The tag's title and legend are kept, and a plain line (---) is drawn without an arrowhead.",
+    kind: "mdx",
+    spec: `<MermaidDiagram title="Your phone on home Wi-Fi" chart={\`flowchart LR
+  P["Phone: 10.0.0.12"] -->|"over Wi-Fi"| R["Router, home side: 10.0.0.1"]
+  R --- O["Router, internet side: 198.51.100.7"]
+  O -->|"to the internet"| S["The server sees 198.51.100.7"]
+\`} legend="The router has one address on each side. The server only ever sees the outside one." />`,
+  },
   {
     name: "An existing Mermaid fence, drawn automatically",
     note: "No edit to the chapter: a Mermaid flowchart that maps exactly is drawn as a Diagram, titled by its Mermaid title or the heading above it. Anything else stays on Mermaid.",
@@ -61,8 +72,66 @@ You -> Web server: Send me the page
 Web server --> You: Here is the page`,
   },
   {
+    name: "Groups",
+    note: "group ... end draws a labelled box around the parts inside it; groups can nest, and an arrow can point at a whole group by its [id]. Mermaid subgraphs become groups.",
+    kind: "flow",
+    spec: `title: The building blocks of a small app
+box Phone
+box DNS
+group Private network: not reachable from the internet
+  box Load balancer
+  box App servers
+  store Database
+  group [W] Background work
+    box Queue
+    box Workers
+  end
+end
+Phone -> DNS: 1. look up the name
+Phone -> Load balancer: 2. requests
+Load balancer -> App servers -> Database
+App servers -> [W]: jobs
+Queue -> Workers`,
+  },
+  {
+    name: "A sequence with a note and blocks",
+    note: "note over, loop and alt with else are framed between the messages and stay visible while you step through.",
+    kind: "sequence",
+    spec: `title: Checking a login token
+actor App
+box API
+box Auth service
+App -> API: GET /me
+note over API, Auth service: the token is checked on every request
+loop until it answers
+  API -> Auth service: is this token valid?
+end
+alt valid
+  Auth service --> API: yes
+  API --> App: your profile
+else expired
+  Auth service --> API: no
+  API --> App: 401, sign in again
+end`,
+  },
+  {
+    name: "A decision",
+    note: "decision draws a diamond for a question. Arrows meet its points, and its answers label the arrows that leave it. A Mermaid {\"...\"} node becomes one too.",
+    kind: "flow",
+    spec: `title: Before you build the next feature
+direction: down
+box A new idea
+decision Did you ask who it is for?
+box Build it tonight
+end Decide what to build
+A new idea -> Did you ask who it is for?
+Did you ask who it is for? -> Build it tonight: No
+Did you ask who it is for? -> Decide what to build: Yes
+Build it tonight -> A new idea`,
+  },
+  {
     name: "Every kind of part, top to bottom",
-    note: "actor, box, external (dashed), store (cylinder) and end (ink).",
+    note: "actor, box, external (dashed), store (cylinder) and end (ink). The decision diamond is shown above.",
     kind: "flow",
     spec: `title: What happens when you place an order
 direction: down
@@ -124,15 +193,19 @@ export default function DiagramGalleryPage() {
               <p className="mb-3 text-sm text-muted-foreground">{example.note}</p>
               {/* No ligatures, so "->" shows as typed, not as an arrow glyph. */}
               <pre className="overflow-x-auto rounded-md border border-border bg-muted p-3 text-[13px] leading-relaxed [font-variant-ligatures:none]">
-                {`${TICKS}${example.kind}\n${example.spec}\n${TICKS}`}
+                {source(example)}
               </pre>
             </div>
             <div className="min-w-0 [&_figure]:my-0 [&>div>div]:my-0">
-              <ChapterMdx source={`${TICKS}${example.kind}\n${example.spec}\n${TICKS}\n`} />
+              <ChapterMdx source={`${source(example)}\n`} />
             </div>
           </section>
         ))}
       </div>
     </main>
   );
+}
+
+function source(example: (typeof EXAMPLES)[number]): string {
+  return example.kind === "mdx" ? example.spec : `${TICKS}${example.kind}\n${example.spec}\n${TICKS}`;
 }
