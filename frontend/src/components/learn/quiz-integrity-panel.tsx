@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Camera, CameraOff, Eye, Maximize, ShieldCheck, X } from "lucide-react";
 import { Dot } from "@/components/brand/dot";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import type { QuizIntegrity } from "@/lib/integrity/use-quiz-integrity";
 import { INTEGRITY_LIMITS } from "@/shared/api/integrity";
 import { cn } from "@/lib/utils";
@@ -256,15 +256,14 @@ function FullscreenExitOverlay({
               Exit the quiz
             </Button>
           ) : (
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="w-full"
+            // A link styled as the button: our Button has no asChild, which broke the build.
+            <Link
+              href={exitHref}
+              className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}
               onClick={integrity.dismissFullscreenPrompt}
             >
-              <Link href={exitHref}>Exit the quiz</Link>
-            </Button>
+              Exit the quiz
+            </Link>
           )}
         </div>
       </div>
