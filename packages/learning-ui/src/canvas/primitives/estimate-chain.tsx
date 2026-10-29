@@ -5,6 +5,7 @@ import { cn } from "../../lib/utils";
 import { Slider } from "../../components/ui/slider";
 import { DotGrid, VerdictBanner } from "./svg-parts";
 import { NEUTRAL, TONES, type Tone } from "./tones";
+import { useSvgTouchDrag } from "./svg-touch-drag";
 
 // The working of an estimate drawn as a chain of cards: each card holds one
 // number with its unit, each link says what was done to get there ("× 20
@@ -143,9 +144,10 @@ function useInputHandlers(input: ChainInput | undefined, onSelect: (id: string) 
 
 function InputTarget({ input, onSelect, onChange, children }: { input?: ChainInput; onSelect: (id: string) => void; onChange: (id: string, value: number) => void; children: ReactNode }) {
   const handlers = useInputHandlers(input, onSelect, onChange);
+  const touchRef = useSvgTouchDrag<SVGGElement>();
   if (!input) return <g>{children}</g>;
   return (
-    <g {...handlers} className="group cursor-ew-resize touch-none outline-none">
+    <g ref={touchRef} {...handlers} className="group cursor-ew-resize touch-none outline-none">
       {children}
     </g>
   );

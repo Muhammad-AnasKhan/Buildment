@@ -41,6 +41,7 @@ import {
   ringPoint,
   spreadVerdict,
 } from "./model";
+import { useSvgTouchDrag } from "../primitives/svg-touch-drag";
 
 const W = 420;
 const H = 462;
@@ -90,6 +91,7 @@ const rowY = (index: number, count: number) => CY + (index - (count - 1) / 2) * 
 
 /** 9.3: drag the key round the ring and the points dial, then add or remove a node and watch the keys move. */
 export function RingPlayCanvas({ title, limits }: { title: string; purpose: string; limits: string }) {
+  const touchRef = useSvgTouchDrag<SVGGElement>();
   const box = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
   const titleId = useId();
@@ -283,7 +285,7 @@ export function RingPlayCanvas({ title, limits }: { title: string; purpose: stri
           })}
 
           {/* The key you drag: a handle on the ring, with a big grab area round the whole ring. */}
-          <g
+          <g ref={touchRef}
             role="slider"
             tabIndex={0}
             aria-label="Key on the ring"
