@@ -10,6 +10,7 @@ import {
   Check,
   ChevronDown,
   Clock3,
+  Eye,
   FilePenLine,
   Flag,
   LoaderCircle,
@@ -17,7 +18,8 @@ import {
 } from "lucide-react";
 import { safelyRunChapterAction } from "./editor/chapter-action-result";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -223,6 +225,13 @@ export function ChapterEditor({
         <div className="flex flex-wrap items-center justify-end gap-2">
           <SaveStatus state={saveState} />
           {saveState.kind === "error" && <Button variant="outline" onClick={() => flushDraft()}>Retry save</Button>}
+          <Link
+            href={`/courses/${courseSlug}/preview?chapter=${encodeURIComponent(chapterId)}`}
+            className={cn(buttonVariants({ variant: "outline" }), "rounded-full gap-1.5")}
+          >
+            <Eye className="size-4" aria-hidden />
+            Preview
+          </Link>
           <Button
             onClick={() => void handlePublish()}
             loading={publishing}
