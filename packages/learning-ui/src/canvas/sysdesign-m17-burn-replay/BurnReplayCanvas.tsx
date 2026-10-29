@@ -31,6 +31,7 @@ import {
   type AlertId,
   type IncidentId,
 } from "./model";
+import { MOTION_PACE } from "../primitives/motion-pace";
 
 const W = 420;
 const H = 556;
@@ -42,7 +43,7 @@ const BURN_MAX = 28;
 const ROW_TOP = { naive: 240, fast: 310, slow: 368 } as const;
 const BUDGET_Y = 434;
 const SCRUB_Y = 510;
-const REPLAY_MS = 7000;
+const REPLAY_MS = 7000 / MOTION_PACE;
 const VIOLET_STROKE = "stroke-violet-600 dark:stroke-violet-400";
 const VIOLET_FILL = "fill-violet-600 dark:fill-violet-400";
 

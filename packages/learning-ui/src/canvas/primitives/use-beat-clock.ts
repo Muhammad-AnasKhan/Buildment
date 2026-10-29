@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { MOTION_PACE } from "./motion-pace";
 
 /** Reduced motion shows a settled frame without scheduling animation. */
 export const FINAL_FRAME = 1e6;
@@ -13,7 +14,7 @@ export function createBeatTimer() {
     sample(now: number) {
       if (last !== null) elapsed += Math.max(0, now - last);
       last = now;
-      return elapsed / 1000;
+      return (elapsed / 1000) * MOTION_PACE;
     },
     pause() { last = null; },
     restart() { elapsed = 0; last = null; },

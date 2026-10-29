@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { MOTION_PACE } from "../primitives/motion-pace";
 
 // A model clock for a picture that runs on its own: `rate` model seconds pass
 // per real second while the picture is on screen, the tab is visible and the
@@ -27,7 +28,7 @@ export function useModelClock(target: RefObject<Element | null>, rate: number) {
     const loop = (now: number) => {
       if (!playing() || query.matches) return;
       if (last !== null) {
-        time.current += ((now - last) / 1000) * rate;
+        time.current += ((now - last) / 1000) * rate * MOTION_PACE;
         setT(time.current);
       }
       last = now;
