@@ -1,10 +1,7 @@
 import type { MDXComponents } from "next-mdx-remote-client/rsc";
 import { MDXRemote } from "next-mdx-remote-client/rsc";
 import remarkGfm from "remark-gfm";
-import { remarkChecklist } from "@/shared/mdx/remark-checklist";
-import { remarkLearningLog } from "@/shared/mdx/remark-learning-log";
-import { remarkMermaid } from "@/shared/mdx/remark-mermaid";
-import { remarkDiagram } from "@/shared/mdx/remark-diagram";
+import { readerRemarkPlugins } from "@/shared/mdx/reader-plugins";
 import { mdxComponents } from "./components";
 import { collectUnknownComponents } from "@/shared/mdx/extract";
 import { restoreInteractiveBlockTags } from "@/shared/mdx/restore-block-tags";
@@ -64,7 +61,7 @@ export function ChapterMdx({ source, preview: _preview = false }: { source: stri
       components={components}
       options={{
         mdxOptions: {
-          remarkPlugins: [remarkGfm, remarkChecklist, remarkLearningLog, remarkDiagram, remarkMermaid],
+          remarkPlugins: [remarkGfm, ...readerRemarkPlugins],
           rehypePlugins: rehypePrettyCodePlugins,
         },
       }}

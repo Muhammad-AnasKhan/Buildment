@@ -2,8 +2,7 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkMdx from 'remark-mdx';
 import remarkGfm from 'remark-gfm';
-import { remarkChecklist } from '../../../server/src/shared/mdx/remark-checklist';
-import { remarkLearningLog } from '../../../server/src/shared/mdx/remark-learning-log';
+import { readerRemarkPlugins } from '../../../server/src/shared/mdx/reader-plugins';
 import { restoreInteractiveBlockTags } from '../../../server/src/shared/mdx/restore-block-tags';
 import { chapterBodyForReader } from '../../../server/src/shared/lib/mdx-frontmatter';
 import type { LessonNode } from '../domain/learning';
@@ -15,8 +14,9 @@ export function parseLesson(source: string): LessonNode {
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkMdx)
-    .use(remarkChecklist)
-    .use(remarkLearningLog);
+    // The same plugins as the web reader, so ```flow, ```sequence and ```mermaid
+    // fences become the shared Diagram and MermaidDiagram blocks here too.
+    .use(readerRemarkPlugins);
   const body = restoreInteractiveBlockTags(chapterBodyForReader(source));
   const tree = parser.runSync(parser.parse(body));
   function clean(node: any): LessonNode {
