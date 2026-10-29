@@ -2,11 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { MASCOTS, PAGE_AREAS, resolveMascot } from "@/shared/engagement/mascots";
+import { DOT_CLIPS, dotClipUrl, type DotClip } from "@/shared/engagement/dot-voice";
+import { MASCOTS } from "@/shared/engagement/mascots";
 import { ENGAGEMENT_RULES } from "@/shared/engagement/rules";
 
-// Mascot images and voice clips are served from public/, so a pose whose file is missing would show
-// a broken image, and a line whose clip is missing would play nothing.
+// Mascot images and Dot's voice clips are served from public/, so a pose whose file is missing would
+// show a broken image, and a line whose clip is missing would play nothing.
 const PUBLIC_DIR = fileURLToPath(new URL("../../../public", import.meta.url));
 
 describe("mascot assets", () => {
@@ -18,18 +19,26 @@ describe("mascot assets", () => {
     }
   });
 
-  it("has a voice clip for every line a voiced mascot can be cast to say", () => {
-    const missing = new Set<string>();
+  it("has a file in public/ for every one of Dot's clips", () => {
+    const missing = (Object.keys(DOT_CLIPS) as DotClip[]).filter(
+      (clip) => !fs.existsSync(path.join(PUBLIC_DIR, dotClipUrl(clip)))
+    );
+    expect(missing, "record these clips (frontend/public/brand/dot/manifest.json)").toEqual([]);
+  });
+
+  it("matches the brand manifest's clips, word for word", () => {
+    const manifest = JSON.parse(fs.readFileSync(path.join(PUBLIC_DIR, "brand/dot/manifest.json"), "utf8")) as {
+      clips: { key: string; text: string; file: string }[];
+    };
+    const fromManifest = Object.fromEntries(manifest.clips.map((clip) => [clip.key, clip.text]));
+    expect(fromManifest).toEqual(DOT_CLIPS);
+    for (const clip of manifest.clips) expect(clip.file).toBe(dotClipUrl(clip.key as DotClip));
+  });
+
+  it("plays only clips that exist, from rules that say the clip's words", () => {
     for (const rule of ENGAGEMENT_RULES) {
-      for (const area of [null, ...PAGE_AREAS]) {
-        const { mascot } = resolveMascot({ role: rule.role, state: rule.state, mascot: rule.mascot, area });
-        if (!mascot.voiced) continue;
-        rule.messages.forEach((_, index) => {
-          const clip = `mascots/voice/${mascot.id}/${rule.id}-${index}.mp3`;
-          if (!fs.existsSync(path.join(PUBLIC_DIR, clip))) missing.add(clip);
-        });
-      }
+      if (!rule.clip) continue;
+      expect(DOT_CLIPS[rule.clip], rule.id).toBe(rule.messages[0]);
     }
-    expect([...missing], "regenerate these clips (docs/13-engagement.mdx, Voice)").toEqual([]);
   });
 });
