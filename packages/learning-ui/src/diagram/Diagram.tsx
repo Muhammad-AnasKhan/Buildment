@@ -64,18 +64,18 @@ export function DiagramView({ spec, legend }: { spec: DiagramSpec; legend?: stri
   const showList = spec.kind === "sequence";
   return (
     <figure
-      className="not-prose my-8 @container"
+      className="not-prose my-8 @container rounded-2xl overflow-hidden shadow-sm border border-[#2434E0]/15"
       style={{ background: BRAND.tint, color: BRAND.ink, fontFamily: DIAGRAM_FONT }}
       aria-labelledby={`${id}-title`}
     >
-      <figcaption id={`${id}-title`} className="px-4 pt-4 text-base font-bold leading-snug sm:px-5">
+      <figcaption id={`${id}-title`} className="px-4 pt-4 text-base font-bold leading-snug sm:px-5" style={{ color: BRAND.ink }}>
         {spec.title}
       </figcaption>
       <p id={`${id}-desc`} className="sr-only">{description}</p>
-      <div className={`overflow-x-auto ${classes.wide}`}>
+      <div className={`overflow-x-auto diagram-scroll-container py-1 px-1 sm:px-2 ${classes.wide}`}>
         <DiagramSvg scene={wide} spec={spec} step={step} drag={drag} setDrag={setDrag} setStep={go} labelledBy={`${id}-title`} describedBy={`${id}-desc`} />
       </div>
-      <div className={`overflow-x-auto ${classes.compact}`}>
+      <div className={`overflow-x-auto diagram-scroll-container py-1 px-1 sm:px-2 ${classes.compact}`}>
         <DiagramSvg scene={compact} spec={spec} step={step} drag={drag} setDrag={setDrag} setStep={go} labelledBy={`${id}-title`} describedBy={`${id}-desc`} />
         {showList ? (
           <ol className="space-y-1 px-4 pb-2 text-[15px] leading-snug" aria-hidden>
@@ -90,7 +90,7 @@ export function DiagramView({ spec, legend }: { spec: DiagramSpec; legend?: stri
       </div>
       {stepped ? (
         <div className="flex flex-col gap-3 px-4 pb-4 pt-1 sm:px-5" role="group" aria-label="Diagram steps" onKeyDown={onKeyDown}>
-          <p className="min-h-[3rem] text-[15px] leading-snug" aria-live="polite">
+          <p className="min-h-[3rem] text-[15px] leading-snug" aria-live="polite" style={{ color: BRAND.ink }}>
             <span className="mr-2 font-bold tabular-nums" style={{ color: BRAND.cobalt }}>
               {step + 1} of {captions.length}
             </span>
@@ -105,7 +105,7 @@ export function DiagramView({ spec, legend }: { spec: DiagramSpec; legend?: stri
         <div className="pb-2" />
       )}
       {legend ? (
-        <p className="px-4 pb-4 text-[15px] leading-snug sm:px-5" style={{ color: BRAND.muted }}>
+        <p className="px-4 pb-4 pt-1 text-[15px] leading-relaxed sm:px-5 font-medium" style={{ color: BRAND.muted }}>
           {legend}
         </p>
       ) : null}
@@ -206,8 +206,8 @@ function DiagramSvg({ scene, spec, step, drag, setDrag, setStep, labelledBy, des
       "aria-labelledby": labelledBy,
       "aria-describedby": describedBy,
       className: "mx-auto block h-auto w-full",
-      // Never shrink text below about 72%: a very large diagram scrolls sideways in its panel instead.
-      style: { maxWidth: scene.viewBox.w, minWidth: Math.round(scene.viewBox.w * 0.72), fontFamily: DIAGRAM_FONT },
+      // Keep diagrams readable while allowing them to fit standard reading columns cleanly.
+      style: { maxWidth: scene.viewBox.w, minWidth: Math.min(scene.viewBox.w, Math.round(scene.viewBox.w * 0.6)), fontFamily: DIAGRAM_FONT },
     },
     packet: packetHandlers,
   });
