@@ -1,5 +1,14 @@
 import { test, expect } from '@playwright/test';
-import { courses, courseDetail } from '../fixtures';
+import { courses, courseDetail, courseOverview } from '../fixtures';
+
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript((overview) => {
+    window.buildment = {
+      webOrigin: async () => 'https://edorax.com',
+      learning: { overview: async () => ({ ok: true, data: overview }) },
+    } as any;
+  }, courseOverview);
+});
 
 test('preview shows public curriculum before login and after logout', async ({
   page,
@@ -52,10 +61,7 @@ test('preview shows public curriculum before login and after logout', async ({
   await page.screenshot({ path: 'test-results/course-preview.png' });
   await page.getByRole('button', { name: 'Sign in with browser' }).click();
   await expect(page.getByText('Your first process')).toBeVisible();
-  await page
-    .locator('summary')
-    .filter({ hasText: 'Resource controls' })
-    .click();
+  await page.getByRole('button', { name: /Resource controls:/ }).click();
   await expect(page.getByText('Working with cgroups')).toBeVisible();
   await page.screenshot({ path: 'test-results/course-curriculum.png' });
   await page.locator('summary').filter({ hasText: 'Profile' }).click();
@@ -193,7 +199,7 @@ for (const paid of [false, true]) {
           window.buildment = {
             ...window.buildment,
             startLearning: async () => ({ ok: true, data: { href: null } }),
-            listCourses: async () => ({ ok: true, courses }),
+            listCourses: async () => ({ ok: true, courses: courses.map((course) => ({ ...course, enrollmentLifecycle: signedIn && enrolled && course.id === courses[0].id ? paid ? 'PAYMENT_REQUIRED' : 'ACTIVE' : null })) }),
             courseDetail: async () => ({
               ok: true,
               data: {
@@ -239,9 +245,7 @@ for (const paid of [false, true]) {
         .getByRole('button', { name: 'Enroll in course', exact: true })
         .click();
       await expect(
-        page.getByText(
-          paid ? /Enrollment started/ : 'You’re enrolled in this course',
-        ),
+        page.getByText(paid ? /Enrollment started/ : 'Your progress'),
       ).toBeVisible();
       await expect(
         page.getByRole('button', { name: 'Enroll in course' }),
@@ -249,13 +253,15 @@ for (const paid of [false, true]) {
 
       if (paid) {
         await expect(
-          page.getByRole('button', { name: 'Start learning', exact: true }),
+          page.getByRole('link', { name: 'Continue learning', exact: true }),
         ).toHaveCount(0);
       } else {
         await expect(
-          page.getByRole('button', { name: 'Start learning', exact: true }),
+          page.getByRole('link', { name: 'Continue learning', exact: true }),
         ).toBeEnabled();
       }
+      await page.getByRole('button', { name: 'Back to courses', exact: true }).click();
+      await expect(page.getByText(paid ? 'Payment due' : 'Enrolled', { exact: true })).toBeVisible();
     },
   );
 }

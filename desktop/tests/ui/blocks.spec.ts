@@ -31,6 +31,7 @@ test('native content renders shared blocks, diagrams and working canvas controls
   await page.addInitScript(
     ({ courses, courseDetail, document }) => {
       window.buildment = {
+        webOrigin: async () => 'https://edorax.com',
         listCourses: async () => ({ ok: true, courses }),
         courseDetail: async () => ({
           ok: true,
@@ -43,6 +44,25 @@ test('native content renders shared blocks, diagrams and working canvas controls
           data: { href: '/courses/' + courses[0].slug + '/intro' },
         }),
         learning: {
+          overview: async () => ({
+            ok: true,
+            data: {
+              course: { ...courses[0], status: 'PUBLISHED' },
+              access: 'active',
+              track: null,
+              enrollment: {
+                percentComplete: 0,
+                chaptersCompleted: 0,
+                pendingReviews: 0,
+              },
+              syllabus: {
+                modules: [],
+                chapterCount: 1,
+                continueHref: '/courses/' + courses[0].slug + '/intro',
+                defaultOpenModuleId: null,
+              },
+            },
+          }),
           lesson: async () => ({
             ok: true,
             data: {
@@ -88,9 +108,7 @@ test('native content renders shared blocks, diagrams and working canvas controls
   await page
     .getByRole('button', { name: 'Preview ' + courses[0].title, exact: true })
     .click();
-  await page
-    .getByRole('button', { name: 'Start learning', exact: true })
-    .click();
+  await page.getByRole('link', { name: 'Start learning', exact: true }).click();
   await expect(page.getByText('Idempotency', { exact: true })).toBeVisible();
   await expect(
     page.getByText('Retries must not create duplicate orders.'),

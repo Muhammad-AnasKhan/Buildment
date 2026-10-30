@@ -80,3 +80,39 @@ export const courseDetail: CourseDetail = {
     },
   ],
 };
+
+export const courseOverview: import('../../server/src/shared/api/catalog').CourseOverview =
+  {
+    course: { ...courses[0], status: 'PUBLISHED' },
+    access: 'active',
+    enrollment: {
+      percentComplete: 33,
+      chaptersCompleted: 1,
+      pendingReviews: 2,
+    },
+    track: null,
+    syllabus: {
+      chapterCount: 3,
+      continueHref: '/courses/systems/chapter-two',
+      defaultOpenModuleId: 'module-one',
+      modules: courseDetail.modules.map((module, index) => ({
+        ...module,
+        completedCount: index === 0 ? 1 : 0,
+        chapters: module.chapters.map((chapter, chapterIndex) => ({
+          id: chapter.id,
+          slug: chapter.id,
+          title: chapter.title,
+          status:
+            index === 0 && chapterIndex === 0
+              ? 'COMPLETED'
+              : index === 0
+                ? 'IN_PROGRESS'
+                : 'NOT_STARTED',
+          blockCount: 4,
+          blocksCompleted: index === 0 && chapterIndex === 0 ? 4 : 1,
+          locked: index === 1,
+          unlocksAfter: index === 1 ? 'Understanding memory' : null,
+        })),
+      })),
+    },
+  };

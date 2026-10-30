@@ -441,3 +441,83 @@ test('native parser hands Mermaid it cannot convert to the shared MermaidDiagram
   assert.equal(node?.name, 'MermaidDiagram');
   assert.equal(node?.attributes?.chart, chart);
 });
+
+test('learner overview preserves progress and syllabus instead of catalog data', async () => {
+  const { createLearningClient } = await import('../src/api/learning');
+  const { courseOverview } = await import('./fixtures');
+  const client = createLearningClient(async (path) => {
+    assert.equal(path, '/api/v1/courses/systems/overview');
+    return { ok: true, data: courseOverview };
+  });
+  assert.deepEqual(await client.overview('systems'), {
+    ok: true,
+    data: courseOverview,
+  });
+  const malformed = createLearningClient(async () => ({
+    ok: true,
+    data: { course: {}, access: 'active', syllabus: null },
+  }));
+  assert.equal((await malformed.overview('systems')).ok, false);
+});
+
+test('desktop track updates use fixed endpoints and reject invalid action kinds', async () => {
+  const { createLearningClient } = await import('../src/api/learning');
+  const calls: unknown[] = [];
+  const client = createLearningClient(async (path, method, body) => {
+    calls.push([path, method, body]);
+    return { ok: true, data: { courseSlug: 'systems', track: {} } };
+  });
+  await client.updateTrack('systems', 'variant', 'books');
+  await client.updateTrack('systems', 'specialisation', 'inventory-at-scale');
+  const invalid = await client.updateTrack(
+    'systems',
+    '../admin' as 'variant',
+    'books',
+  );
+  assert.equal(invalid.ok, false);
+  assert.deepEqual(calls, [
+    ['/api/v1/courses/systems/track/variant', 'PUT', { variantSlug: 'books' }],
+    [
+      '/api/v1/courses/systems/track/specialisation',
+      'PUT',
+      { specialisationSlug: 'inventory-at-scale' },
+    ],
+  ]);
+});
+
+test('home catalog includes the private session after login and removes it after logout', async () => {
+  const seen: Array<string | null> = [];
+  const client = createPreviewClient(
+    'https://api.example.com',
+    async (url, init) => {
+      if (String(url).endsWith('/exchange'))
+        return Response.json({
+          success: true,
+          data: { session: { token: 'private-session' } },
+        });
+      if (String(url).endsWith('/logout'))
+        return Response.json({ success: true, data: {} });
+      const auth = new Headers(init?.headers).get('Authorization');
+      seen.push(auth);
+      return Response.json({
+        success: true,
+        data: {
+          courses: [
+            { ...courses[0], enrollmentLifecycle: auth ? 'ACTIVE' : null },
+          ],
+        },
+      });
+    },
+  );
+  await client.listCourses();
+  await client.exchange('c'.repeat(43), 'v'.repeat(43));
+  const enrolled = await client.listCourses();
+  assert.equal(
+    enrolled.ok && enrolled.courses[0].enrollmentLifecycle,
+    'ACTIVE',
+  );
+  await client.signOut();
+  const signedOut = await client.listCourses();
+  assert.equal(signedOut.ok && signedOut.courses[0].enrollmentLifecycle, null);
+  assert.deepEqual(seen, [null, 'Bearer private-session', null]);
+});

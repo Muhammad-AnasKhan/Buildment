@@ -172,3 +172,61 @@ test('Buildment dark palette renders and storage failures do not block startup',
     page.getByRole('button', { name: 'Expand sidebar' }),
   ).toBeVisible();
 });
+
+test('home enrollment badges and actions refresh on sign-in and sign-out', async ({
+  page,
+}) => {
+  await page.addInitScript((courses) => {
+    let signedIn = false;
+    window.buildment = {
+      ...window.buildment,
+      listCourses: async () => ({
+        ok: true,
+        courses: courses.map((course, index) => ({
+          ...course,
+          enrollmentLifecycle: signedIn
+            ? index === 0
+              ? 'ACTIVE'
+              : 'PAYMENT_REQUIRED'
+            : null,
+        })),
+      }),
+      signIn: async () => {
+        signedIn = true;
+        return { ok: true, data: { signedIn: true } };
+      },
+      signOut: async () => {
+        signedIn = false;
+        return { ok: true, data: { signedIn: false } };
+      },
+    };
+  }, courses);
+  await page.goto('/');
+  await expect(page.getByText('Enrolled', { exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(page.getByText('Enrolled', { exact: true })).toBeVisible();
+  await expect(page.getByText('Payment due', { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Open ' + courses[0].title, exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', {
+      name: 'View enrollment for ' + courses[1].title,
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page.screenshot({
+    path: 'test-results/catalog-enrollment.png',
+    fullPage: true,
+  });
+  await page.locator('summary').filter({ hasText: 'Profile' }).click();
+  await page.getByRole('button', { name: 'Sign out', exact: true }).click();
+  await expect(page.getByText('Enrolled', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Payment due', { exact: true })).toHaveCount(0);
+  await expect(
+    page.getByRole('button', {
+      name: 'Preview ' + courses[0].title,
+      exact: true,
+    }),
+  ).toBeVisible();
+});

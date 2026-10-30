@@ -15,32 +15,34 @@ test('native reader submits quizzes, saves completion, enforces locks and signs 
       let passed = false;
       let complete = false;
       let signedIn = false;
-      const modules = () => [
-        {
-          id: 'module',
-          order: 1,
-          title: 'Debugging basics',
-          completedCount: complete ? 1 : 0,
-          chapters: [
-            {
-              id: 'chapter',
-              slug: 'lesson-one',
-              title: 'Native quiz lesson',
-              status: complete ? 'COMPLETED' : 'IN_PROGRESS',
-              blockCount: 1,
-            },
-            {
-              id: 'next',
-              slug: 'lesson-two',
-              title: 'Next debugging lesson',
-              status: 'NOT_STARTED',
-              blockCount: 0,
-              locked: !complete,
-            },
-          ],
-        },
-      ];
+      const modules =
+        (): import('../../../server/src/shared/api/syllabus').SyllabusModule[] => [
+          {
+            id: 'module',
+            order: 1,
+            title: 'Debugging basics',
+            completedCount: complete ? 1 : 0,
+            chapters: [
+              {
+                id: 'chapter',
+                slug: 'lesson-one',
+                title: 'Native quiz lesson',
+                status: complete ? 'COMPLETED' : 'IN_PROGRESS',
+                blockCount: 1,
+              },
+              {
+                id: 'next',
+                slug: 'lesson-two',
+                title: 'Next debugging lesson',
+                status: 'NOT_STARTED',
+                blockCount: 0,
+                locked: !complete,
+              },
+            ],
+          },
+        ];
       window.buildment = {
+        webOrigin: async () => 'https://edorax.com',
         integrityRequest: async (path, _method, body) => {
           if (path.endsWith('/integrity'))
             return {
@@ -92,6 +94,9 @@ test('native reader submits quizzes, saves completion, enforces locks and signs 
           data: { href: '/courses/systems/lesson-one' },
         }),
         learning: {
+          updateTrack: async () => {
+            throw new Error('Unexpected track mutation');
+          },
           lesson: async (_course, chapter) => ({
             ok: true,
             data: {
@@ -214,7 +219,22 @@ test('native reader submits quizzes, saves completion, enforces locks and signs 
           },
           overview: async () => ({
             ok: true,
-            data: { syllabus: { modules: modules() } },
+            data: {
+              course: { ...courses[0], status: 'PUBLISHED' },
+              access: 'active',
+              track: null,
+              enrollment: {
+                percentComplete: 0,
+                chaptersCompleted: 0,
+                pendingReviews: 0,
+              },
+              syllabus: {
+                modules: modules(),
+                chapterCount: 2,
+                continueHref: '/courses/systems/lesson-one',
+                defaultOpenModuleId: 'module',
+              },
+            },
           }),
           answer: async () => {
             throw new Error('Quiz chapters must use batch submission');
@@ -231,9 +251,7 @@ test('native reader submits quizzes, saves completion, enforces locks and signs 
   await page
     .getByRole('button', { name: 'Preview ' + courses[0].title, exact: true })
     .click();
-  await page
-    .getByRole('button', { name: 'Start learning', exact: true })
-    .click();
+  await page.getByRole('link', { name: 'Start learning', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Native quiz lesson', exact: true }),
   ).toBeVisible();
