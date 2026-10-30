@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
@@ -11,8 +10,17 @@ import {
 } from "@/server/actions/help";
 import { HelpNoteTimeline } from "./help-note-timeline";
 import { HelpNoteComposer } from "./help-note-composer";
-import { helpOutlineButton, helpPanel } from "./help-styles";
-import { cn } from "@/lib/utils";
+import { MentorQuickReplies } from "./mentor-quick-replies";
+import { MentorThreadAside } from "./mentor-thread-aside";
+import {
+  ChatAvatar,
+  ChatCanvas,
+  ChatEmptyState,
+  ChatFooter,
+  ChatHeader,
+  ChatSystemNote,
+  type ChatTone,
+} from "./help-chat-ui";
 import { toast } from "@/components/ui/app-toast";
 import { useRealtimeEvent } from "@/lib/realtime";
 import { useHelpChat, type ChatMessage } from "@/lib/use-help-chat";
@@ -33,7 +41,6 @@ type MenteeProps = BaseProps & {
   courseId: string;
   chapterId: string;
   layout: "page" | "modal";
-  footerLink?: { href: string; label: string; onNavigate?: () => void };
 };
 
 type MentorProps = BaseProps & {
@@ -41,9 +48,24 @@ type MentorProps = BaseProps & {
   layout: "page";
   status: "OPEN" | "RESOLVED";
   threadId: string;
+  /** Who the mentor is talking to — shown in the chat header. */
+  header: { menteeName: string; subtitle: string };
+  /** Details for the side panel with quick stats. */
+  aside: {
+    menteeId: string;
+    menteeEmail: string;
+    courseTitle: string;
+    lessonTitle: string | null;
+  };
 };
 
 export type HelpThreadDetailProps = MenteeProps | MentorProps;
+
+function initials(name: string) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0]![0]! + parts[1]![0]!).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+}
 
 export function HelpThreadDetail(props: HelpThreadDetailProps) {
   const router = useRouter();
@@ -56,6 +78,12 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
   const isOpen = props.status === "OPEN";
   const isResolved = props.status === "RESOLVED";
   const hasThread = props.threadId != null && props.status != null;
+  const composerId =
+    props.variant === "mentor"
+      ? "mentor-reply"
+      : props.layout === "modal"
+        ? "help-modal-note"
+        : "help-page-note";
 
   // Live messages, receipts and optimistic sends layered on the server-rendered ones.
   const chat = useHelpChat({
@@ -72,6 +100,32 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
 
   function cancelReply() {
     setReplyingTo(null);
+  }
+
+  /** One-tap starters in the empty state fill the typing bar and put the cursor in it. */
+  function pickStarter(text: string) {
+    setBody(text);
+    requestAnimationFrame(() => {
+      const field = document.getElementById(composerId);
+      if (field instanceof HTMLTextAreaElement) {
+        field.focus({ preventScroll: true });
+        field.setSelectionRange(text.length, text.length);
+      }
+    });
+  }
+
+  /** A quick reply drops its text into the typing bar (appended to anything already typed). */
+  function pickQuickReply(text: string) {
+    setBody((current) =>
+      current.trim() ? `${current.trimEnd()} ${text}` : text,
+    );
+    requestAnimationFrame(() => {
+      const field = document.getElementById(composerId);
+      if (field instanceof HTMLTextAreaElement) {
+        field.focus({ preventScroll: true });
+        field.setSelectionRange(field.value.length, field.value.length);
+      }
+    });
   }
 
   /** Sends (or re-sends) a message that is already on screen with a clock. */
@@ -142,36 +196,29 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
     });
   }
 
+  const hasMessages = chat.messages.length > 0;
+
   const timelineBlock = (
     <>
-      {!chat.messages.length && props.variant === "mentee" && (
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          Tell your mentor what you&apos;re trying to do, what happened instead,
-          and any error messages. They&apos;ll reply here — you&apos;ll see
-          their answer appear as soon as they send it.
-        </p>
+      {!hasMessages && props.variant === "mentee" && (
+        <ChatEmptyState onPick={pickStarter} />
       )}
-      {chat.messages.length > 0 && (
+      {hasMessages && (
         <HelpNoteTimeline
           messages={chat.messages}
           viewerId={props.viewerId}
           onReply={isOpen ? setReplyingTo : undefined}
           onRetry={(message) => void deliver(message)}
           initialScroll={
-            props.layout === "modal" ? "unread-or-bottom" : "unread"
+            props.layout === "modal" || props.variant === "mentor"
+              ? "unread-or-bottom"
+              : "unread"
           }
           active={active}
         />
       )}
       {isResolved && props.variant === "mentee" && props.layout === "modal" && (
-        <p
-          className={cn(
-            "text-xs text-muted-foreground",
-            chat.messages.length > 0 ? "mt-4" : undefined,
-          )}
-        >
-          {copy.resolvedFollowUpBelow}
-        </p>
+        <ChatSystemNote>{copy.resolvedFollowUpBelow}</ChatSystemNote>
       )}
     </>
   );
@@ -179,10 +226,13 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
   const menteeComposer =
     props.variant === "mentee" ? (
       <HelpNoteComposer
-        id={props.layout === "modal" ? "help-modal-note" : "help-page-note"}
+        id={composerId}
         label={hasThread && isOpen ? copy.composerFollowUp : copy.composerNew}
-        hint={hasThread && isOpen ? copy.mentorSeesInbox : undefined}
-        placeholder={copy.composerPlaceholder}
+        placeholder={
+          hasThread && isOpen
+            ? "Type a message"
+            : "Describe what you're stuck on…"
+        }
         body={body}
         onBodyChange={setBody}
         onSubmit={send}
@@ -193,115 +243,118 @@ export function HelpThreadDetail(props: HelpThreadDetailProps) {
         }
         replyingTo={hasThread && isOpen ? replyingTo : null}
         onCancelReply={cancelReply}
-        secondaryAction={
-          props.footerLink ? (
-            props.layout === "modal" ? (
-              <Link
-                href={props.footerLink.href}
-                className="mr-auto text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-                onClick={props.footerLink.onNavigate}
-              >
-                {props.footerLink.label}
-              </Link>
-            ) : null
-          ) : undefined
-        }
+        autoFocus={props.layout === "modal" && active}
       />
     ) : null;
 
-  const mentorComposer =
-    props.variant === "mentor" ? (
-      isOpen ? (
-        <HelpNoteComposer
-          id="mentor-reply"
-          label="Write a reply"
-          hint={copy.mentorComposerHint}
-          placeholder="Point them to the step, concept, or file to check…"
-          body={body}
-          onBodyChange={setBody}
-          onSubmit={send}
-          pending={resolving}
-          error={error}
-          submitLabel="Send reply"
-          replyingTo={replyingTo}
-          onCancelReply={cancelReply}
-          secondaryAction={
-            <button
-              type="button"
-              className={helpOutlineButton}
-              disabled={resolving}
-              onClick={markResolved}
-            >
-              {resolving ? (
-                <Loader2 className="size-4 animate-spin" aria-hidden />
-              ) : (
-                <CheckCircle2 className="size-4 text-ok" aria-hidden />
-              )}
-              Mark resolved
-            </button>
-          }
-        />
-      ) : (
-        <p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-          {copy.resolvedMentorSide}
-        </p>
-      )
-    ) : null;
-
+  // Popup on a lesson: just the conversation and the typing bar; the dialog supplies the header.
   if (props.layout === "modal" && props.variant === "mentee") {
     return (
       <>
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+        <ChatCanvas center={!hasMessages} aria-live="polite">
           {timelineBlock}
-        </div>
-        <div className="space-y-3 border-t border-border bg-muted/30 px-5 py-4">
-          {menteeComposer}
-          {props.footerLink && (
-            <div className="flex justify-start sm:hidden">
-              <Link
-                href={props.footerLink.href}
-                className="text-xs font-medium text-muted-foreground underline-offset-2 hover:underline"
-                onClick={props.footerLink.onNavigate}
-              >
-                {props.footerLink.label}
-              </Link>
-            </div>
-          )}
-        </div>
+        </ChatCanvas>
+        <ChatFooter>{menteeComposer}</ChatFooter>
       </>
     );
   }
 
   if (props.variant === "mentee") {
     return (
-      <div className="space-y-4">
-        <section className={cn(helpPanel, "rounded-2xl p-4 sm:p-6")}>
+      <section className="flex h-[min(42rem,80dvh)] flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-sm">
+        <ChatCanvas center={!hasMessages} aria-live="polite">
           {timelineBlock}
-        </section>
+        </ChatCanvas>
         {isOpen || !hasThread ? (
-          <section className={cn(helpPanel, "rounded-2xl p-4 sm:p-6")}>
-            {menteeComposer}
-          </section>
+          <ChatFooter>{menteeComposer}</ChatFooter>
         ) : (
-          <p className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
-            Resolved — use{" "}
-            <strong className="font-medium">{copy.resolvedAskAgain}</strong> on
-            the chapter to {copy.resolvedStartNew}.
-          </p>
+          <ChatFooter>
+            <p className="mx-auto w-fit rounded-2xl bg-muted px-4 py-2 text-center text-sm text-muted-foreground">
+              Resolved — use{" "}
+              <strong className="font-medium">{copy.resolvedAskAgain}</strong>{" "}
+              on the chapter to {copy.resolvedStartNew}.
+            </p>
+          </ChatFooter>
         )}
-      </div>
+      </section>
     );
   }
 
+  // Mentor: a full chat window with the learner's name on top and "Mark resolved" in the header.
+  const lastMessage = chat.messages[chat.messages.length - 1];
+  const status: { label: string; tone: ChatTone } = isResolved
+    ? { label: "Resolved", tone: "ok" }
+    : lastMessage && lastMessage.authorId !== props.viewerId
+      ? { label: "Needs your reply", tone: "waiting" }
+      : { label: "You replied", tone: "info" };
+
   return (
-    <div className="min-w-0 space-y-6">
-      <section>
-        <h2 className="text-sm font-semibold text-foreground">
-          {copy.mentorThreadTitle}
-        </h2>
-        <div className={cn(helpPanel, "mt-4")}>{timelineBlock}</div>
+    <div className="grid min-w-0 items-stretch gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <section className="flex h-[min(46rem,calc(100dvh-4rem))] min-h-[28rem] min-w-0 flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-md">
+        <ChatHeader
+          avatar={
+            <ChatAvatar
+              label={initials(props.header.menteeName)}
+              variant="soft"
+            />
+          }
+          title={props.header.menteeName}
+          subtitle={props.header.subtitle}
+          status={status}
+          actions={
+            isOpen ? (
+              <button
+                type="button"
+                disabled={resolving}
+                onClick={markResolved}
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border bg-card px-3.5 text-sm font-medium text-foreground outline-none transition-colors hover:border-ok/40 hover:bg-ok-soft hover:text-ok focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-60"
+              >
+                {resolving ? (
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                ) : (
+                  <CheckCircle2 className="size-4" aria-hidden />
+                )}
+                <span className="hidden sm:inline">Mark resolved</span>
+                <span className="sr-only sm:hidden">Mark resolved</span>
+              </button>
+            ) : undefined
+          }
+        />
+        <ChatCanvas aria-live="polite">{timelineBlock}</ChatCanvas>
+        <ChatFooter>
+          {isOpen ? (
+            <HelpNoteComposer
+              id={composerId}
+              label="Write a reply"
+              placeholder="Type a reply"
+              body={body}
+              onBodyChange={setBody}
+              onSubmit={send}
+              pending={false}
+              error={error}
+              submitLabel="Send reply"
+              replyingTo={replyingTo}
+              onCancelReply={cancelReply}
+              leading={<MentorQuickReplies onPick={pickQuickReply} />}
+            />
+          ) : (
+            <p className="mx-auto w-fit max-w-full rounded-2xl bg-muted px-4 py-2 text-center text-sm text-muted-foreground">
+              {copy.resolvedMentorSide}
+            </p>
+          )}
+        </ChatFooter>
       </section>
-      <section className={helpPanel}>{mentorComposer}</section>
+      <MentorThreadAside
+        menteeName={props.header.menteeName}
+        menteeEmail={props.aside.menteeEmail}
+        menteeId={props.aside.menteeId}
+        viewerId={props.viewerId}
+        className="h-[min(46rem,calc(100dvh-4rem))] min-h-0 overflow-y-visible lg:self-start lg:[@media(min-height:780px)]:sticky lg:[@media(min-height:780px)]:top-8"
+        courseTitle={props.aside.courseTitle}
+        lessonTitle={props.aside.lessonTitle}
+        status={props.status}
+        messages={chat.messages}
+      />
     </div>
   );
 }

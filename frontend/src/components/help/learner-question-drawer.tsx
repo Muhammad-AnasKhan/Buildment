@@ -4,12 +4,10 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
-  ArrowRight,
-  ArrowUpRight,
-  CheckCheck,
-  Clock3,
-  MessageCircle,
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  GraduationCap,
   X,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api-client";
@@ -20,6 +18,14 @@ import { useHelpChat, type ChatMessage } from "@/lib/use-help-chat";
 import type { HelpMessageView, HelpThreadDetail } from "@/shared/api/help";
 import { HelpNoteTimeline } from "./help-note-timeline";
 import { HelpNoteComposer } from "./help-note-composer";
+import {
+  ChatAvatar,
+  ChatCanvas,
+  ChatFooter,
+  ChatHeader,
+  chatIconButton,
+  type ChatTone,
+} from "./help-chat-ui";
 
 const NO_MESSAGES: HelpMessageView[] = [];
 
@@ -157,13 +163,12 @@ export function LearnerQuestionDrawer({
       : `/courses/${activeDetail.course.slug}`
     : null;
   const lastMessage = chat.messages.at(-1);
-  const status =
+  const status: { label: string; tone: ChatTone } =
     activeDetail?.status === "RESOLVED"
-      ? { label: "Resolved", icon: CheckCheck }
+      ? { label: "Resolved", tone: "ok" }
       : lastMessage && lastMessage.authorId !== viewerId
-        ? { label: "Mentor replied", icon: MessageCircle }
-        : { label: "Waiting for mentor", icon: Clock3 };
-  const StatusIcon = status.icon;
+        ? { label: "Mentor replied", tone: "info" }
+        : { label: "Waiting for your mentor", tone: "waiting" };
   const isOpenThread = activeDetail?.status === "OPEN";
 
   return (
@@ -174,130 +179,123 @@ export function LearnerQuestionDrawer({
         if (event.target === event.currentTarget) onClose();
       }}
       aria-labelledby="learner-question-title"
-      className="fixed inset-0 z-50 m-0 h-[100dvh] max-h-none w-full max-w-none border-0 bg-transparent p-0 text-foreground backdrop:bg-black/60 open:flex open:overflow-hidden"
+      className="fixed inset-0 z-50 m-0 h-[100dvh] max-h-none w-full max-w-none border-0 bg-transparent p-0 text-foreground backdrop:bg-foreground/40 backdrop:backdrop-blur-[2px] open:flex open:overflow-hidden"
     >
-      <div
-        className="ml-auto flex h-full min-h-0 w-full max-w-[44rem] flex-col
-overflow-hidden border-l bg-background shadow-2xl"
-      >
-        <header className="shrink-0 border-b px-4 py-4 sm:px-6">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              {currentIndex >= 0
-                ? `Question ${currentIndex + 1} of ${threadIds.length}`
-                : "Question"}
-            </p>
-            <button
-              type="button"
-              onClick={onClose}
-              className="inline-flex size-9 items-center justify-center rounded-lg border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Close conversation"
-            >
-              <X className="size-4" aria-hidden />
-            </button>
-          </div>
-          <h2
-            id="learner-question-title"
-            className="mt-2 text-xl font-semibold leading-tight tracking-tight sm:text-2xl"
-          >
-            {activeDetail?.chapter?.title ??
-              activeDetail?.course.title ??
-              "Loading conversation…"}
-          </h2>
-          <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
-            {activeDetail?.course.title ?? "Your conversation with a mentor"}
-          </p>
-          {activeDetail && (
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 font-medium">
-                <StatusIcon className="size-3.5" aria-hidden />
-                {status.label}
-              </span>
+      <div className="ml-auto flex h-full min-h-0 w-full max-w-[42rem] flex-col overflow-hidden border-l border-border bg-card shadow-2xl duration-300 animate-in slide-in-from-right">
+        <ChatHeader
+          titleId="learner-question-title"
+          avatar={
+            <ChatAvatar
+              label={<GraduationCap className="size-5" aria-hidden />}
+            />
+          }
+          title={
+            activeDetail?.chapter?.title ??
+            activeDetail?.course.title ??
+            "Loading conversation…"
+          }
+          subtitle={
+            activeDetail?.course.title ?? "Your conversation with a mentor"
+          }
+          status={activeDetail ? status : undefined}
+          actions={
+            <>
+              {threadIds.length > 1 && currentIndex >= 0 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => select(threadIds[currentIndex - 1])}
+                    disabled={currentIndex <= 0}
+                    className={chatIconButton}
+                    aria-label="Previous question"
+                    title="Previous question"
+                  >
+                    <ChevronLeft className="size-[18px]" aria-hidden />
+                  </button>
+                  <span
+                    className="min-w-9 text-center text-xs font-medium tabular-nums text-muted-foreground"
+                    aria-live="polite"
+                  >
+                    {currentIndex + 1}/{threadIds.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => select(threadIds[currentIndex + 1])}
+                    disabled={currentIndex >= threadIds.length - 1}
+                    className={chatIconButton}
+                    aria-label="Next question"
+                    title="Next question"
+                  >
+                    <ChevronRight className="size-[18px]" aria-hidden />
+                  </button>
+                </>
+              )}
               {lessonHref && (
                 <Link
                   href={lessonHref}
-                  className="inline-flex items-center gap-1 font-medium underline-offset-4 hover:underline"
+                  className={chatIconButton}
+                  aria-label={
+                    activeDetail?.chapter ? "Open lesson" : "Open course"
+                  }
+                  title={activeDetail?.chapter ? "Open lesson" : "Open course"}
                 >
-                  {activeDetail.chapter ? "Open lesson" : "Open course"}
-                  <ArrowUpRight className="size-3.5" aria-hidden />
+                  <BookOpen className="size-[18px]" aria-hidden />
                 </Link>
               )}
-            </div>
-          )}
-        </header>
+              <button
+                type="button"
+                onClick={onClose}
+                className={chatIconButton}
+                aria-label="Close conversation"
+              >
+                <X className="size-[18px]" aria-hidden />
+              </button>
+            </>
+          }
+        />
 
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b bg-muted/20 px-4 py-2 sm:px-6">
-          <button
-            type="button"
-            onClick={() => select(threadIds[currentIndex - 1])}
-            disabled={currentIndex <= 0}
-            className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <ArrowLeft className="size-4" aria-hidden />
-            Previous
-          </button>
-          <button
-            type="button"
-            onClick={() => select(threadIds[currentIndex + 1])}
-            disabled={currentIndex < 0 || currentIndex >= threadIds.length - 1}
-            className="inline-flex h-9 items-center gap-2 rounded-lg px-3 text-sm font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Next
-            <ArrowRight className="size-4" aria-hidden />
-          </button>
-        </div>
-
-        <div
-          className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain px-4 py-5 sm:px-6"
-          aria-live="polite"
-        >
-          {loadError ? (
-            <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-5">
+        {loadError ? (
+          <div className="flex min-h-0 flex-1 items-center justify-center bg-background p-6">
+            <div className="max-w-sm rounded-2xl border border-destructive/30 bg-destructive/5 p-5 text-center">
               <p className="text-sm text-destructive" role="alert">
                 {loadError}
               </p>
               <button
                 type="button"
                 onClick={() => setReload((value) => value + 1)}
-                className="mt-3 text-sm font-medium underline underline-offset-4"
+                className="mt-3 rounded-full border border-border bg-card px-4 py-1.5 text-sm font-medium transition-colors hover:border-primary hover:text-primary"
               >
                 Try again
               </button>
             </div>
-          ) : activeDetail ? (
-            <>
-              <h3 className="mb-4 text-sm font-semibold">
-                Conversation · {chat.messages.length}{" "}
-                {chat.messages.length === 1 ? "message" : "messages"}
-              </h3>
-              <HelpNoteTimeline
-                key={activeDetail.id}
-                messages={chat.messages}
-                viewerId={viewerId}
-                onReply={isOpenThread ? setReplyingTo : undefined}
-                onRetry={(message) => void deliver(message)}
-                initialScroll="unread-or-bottom"
-              />
-            </>
-          ) : (
-            <div
-              className="space-y-4"
-              role="status"
-              aria-label="Loading conversation"
-            >
-              <div className="h-24 animate-pulse rounded-xl bg-muted" />
-              <div className="h-24 animate-pulse rounded-xl bg-muted" />
+          </div>
+        ) : activeDetail ? (
+          <ChatCanvas aria-live="polite">
+            <HelpNoteTimeline
+              key={activeDetail.id}
+              messages={chat.messages}
+              viewerId={viewerId}
+              onReply={isOpenThread ? setReplyingTo : undefined}
+              onRetry={(message) => void deliver(message)}
+              initialScroll="unread-or-bottom"
+            />
+          </ChatCanvas>
+        ) : (
+          <ChatCanvas role="status" aria-label="Loading conversation">
+            <div className="space-y-3">
+              <div className="h-14 w-2/3 animate-pulse rounded-2xl bg-card" />
+              <div className="ml-auto h-14 w-1/2 animate-pulse rounded-2xl bg-primary/20" />
+              <div className="h-20 w-3/4 animate-pulse rounded-2xl bg-card" />
             </div>
-          )}
-        </div>
+          </ChatCanvas>
+        )}
 
         {activeDetail?.status === "OPEN" ? (
-          <div className="shrink-0 border-t bg-card px-4 py-4 sm:px-6">
+          <ChatFooter>
             <HelpNoteComposer
               id="learner-question-follow-up"
               label="Add a follow-up"
-              hint="Your mentor will see your message in this conversation."
-              placeholder="What else would help your mentor understand the problem?"
+              placeholder="Type a message"
               body={body}
               onBodyChange={setBody}
               onSubmit={sendFollowUp}
@@ -307,11 +305,21 @@ overflow-hidden border-l bg-background shadow-2xl"
               replyingTo={replyingTo}
               onCancelReply={() => setReplyingTo(null)}
             />
-          </div>
+          </ChatFooter>
         ) : activeDetail?.status === "RESOLVED" ? (
-          <div className="shrink-0 border-t bg-card px-4 py-4 text-sm text-muted-foreground sm:px-6">
-            This question is resolved. Open the lesson to ask a new question.
-          </div>
+          <ChatFooter>
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-2xl bg-muted px-4 py-2.5 text-sm text-muted-foreground">
+              <span>This question is resolved.</span>
+              {lessonHref && (
+                <Link
+                  href={lessonHref}
+                  className="font-semibold text-primary underline-offset-4 hover:underline"
+                >
+                  Ask a new question from the lesson
+                </Link>
+              )}
+            </div>
+          </ChatFooter>
         ) : null}
       </div>
     </dialog>
