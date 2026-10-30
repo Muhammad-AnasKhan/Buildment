@@ -5,7 +5,8 @@ import { markChapterComplete } from "../services/progress/chapter-completion.js"
 import { saveChecklistItem, saveLearningLogAnswers } from "../services/progress/learning-log.js";
 import { saveHeadingNote } from "../services/chapters/heading-notes.js";
 import { loadQuizChapterState } from "../services/chapters/quiz-state.js";
-import type { QuizSubmitBody } from "../validations/chapters.js";
+import { askAboutChapter, chapterQuestionStatus } from "../services/ai/chapter-qa/service.js";
+import type { AskChapterBody, QuizSubmitBody } from "../validations/chapters.js";
 
 // POST /api/v1/chapters/:chapterId/quiz/submit
 export async function submitQuiz(req: Request, res: Response) {
@@ -44,4 +45,15 @@ export async function putHeadingNote(req: Request, res: Response) {
 // GET /api/v1/chapters/:chapterId/quiz
 export async function quizState(req: Request, res: Response) {
   ok(res, await loadQuizChapterState(req.params.chapterId as string, req.user!.id));
+}
+
+// GET /api/v1/chapters/:chapterId/ask
+export async function askStatus(req: Request, res: Response) {
+  ok(res, await chapterQuestionStatus(req.params.chapterId as string, req.user));
+}
+
+// POST /api/v1/chapters/:chapterId/ask
+export async function ask(req: Request, res: Response) {
+  const { question } = req.body as AskChapterBody;
+  ok(res, await askAboutChapter({ chapterId: req.params.chapterId as string, user: req.user, question }));
 }

@@ -40,6 +40,7 @@
     "diagrams:export": "tsx scripts/export-diagrams.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
     "@aws-sdk/client-s3": "^3.1154.0",
     "@mdx-js/mdx": "^3.1.1",
     "@prisma/adapter-pg": "^7.9.1",

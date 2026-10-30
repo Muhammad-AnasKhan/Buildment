@@ -18,3 +18,6 @@ export const learningLogBody = z.object({ answers: z.record(z.string(), z.string
 
 export const headingNoteParams = z.object({ chapterId: id, headingId: z.string().min(1).max(160) });
 export const headingNoteBody = z.object({ body: z.string().max(2000) });
+
+export const askChapterBody = z.object({ question: z.string().trim().min(3).max(500) });
+export type AskChapterBody = z.infer<typeof askChapterBody>;
