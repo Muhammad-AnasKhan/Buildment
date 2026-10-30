@@ -2,9 +2,12 @@ import { contextBridge, ipcRenderer } from 'electron';
 import type { DesktopAPI } from './domain/catalog';
 
 const api: DesktopAPI = {
+  webOrigin: () => ipcRenderer.invoke('app:web-origin'),
   integrityRequest: (path, method, body) =>
     ipcRenderer.invoke('learning:integrity', path, method, body),
   learning: {
+    updateTrack: (course, kind, slug) =>
+      ipcRenderer.invoke('learning:update-track', course, kind, slug),
     quiz: (id) => ipcRenderer.invoke('learning:quiz', id),
     submitQuiz: (id, answers) =>
       ipcRenderer.invoke('learning:submit-quiz', id, answers),

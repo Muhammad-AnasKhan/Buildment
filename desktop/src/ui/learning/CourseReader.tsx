@@ -7,14 +7,19 @@ import { QuizSession } from './quiz/QuizSession';
 import { AccountMenu } from '../auth/AccountMenu';
 import type { Session } from '../auth/useSession';
 import { ArrowLeft, BookOpen } from 'lucide-react';
+import { LessonLoading } from './LessonLoading';
 
 export function CourseReader({
   courseSlug,
+  courseTitle,
+  initialChapter,
   onBack,
   onSignedOut,
   session,
 }: {
   courseSlug: string;
+  courseTitle: string;
+  initialChapter?: string;
   onBack: () => void;
   onSignedOut: () => void;
   session: Session;
@@ -110,11 +115,12 @@ export function CourseReader({
     }
   }
   useEffect(() => {
-    void start();
+    if (initialChapter) void load(initialChapter);
+    else void start();
     return () => {
       generation.current++;
     };
-  }, [courseSlug]);
+  }, [courseSlug, initialChapter]);
   useEffect(() => {
     if (!loading) heading.current?.focus();
   }, [lesson?.chapter.id, loading]);
@@ -146,16 +152,17 @@ export function CourseReader({
             aria-label="Back to course preview"
             title="Back to course preview"
             onClick={onBack}
-            className="rounded-lg border border-border p-2.5 hover:bg-muted"
+            className="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={16} />
+            <span>Course</span>
           </button>
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Learning workspace
+          <div className="min-w-0 border-l border-border pl-5">
+            <p className="mb-0.5 text-[11px] font-medium text-muted-foreground">
+              Edorax <span className="px-1.5 opacity-50">/</span> Learning
             </p>
             <p className="truncate text-sm font-medium">
-              {lesson?.course.title || 'Your course'}
+              {lesson?.course.title || courseTitle}
             </p>
           </div>
         </div>
@@ -179,18 +186,18 @@ export function CourseReader({
           </button>
         </div>
       )}
-      {loading && <p role="status">Loading lesson…</p>}
+      {loading && <LessonLoading />}
       {lesson && !loading && (
-        <div className="grid grid-cols-[220px_minmax(0,1fr)] items-start xl:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="grid grid-cols-[260px_minmax(0,1fr)] items-start xl:grid-cols-[300px_minmax(0,1fr)]">
           <nav
             aria-label="Course lessons"
-            className="sticky top-[72px] h-[calc(100vh-72px)] space-y-6 overflow-y-auto border-r border-border bg-card p-5"
+            className="sticky top-[72px] h-[calc(100vh-72px)] space-y-4 overflow-y-auto border-r border-border bg-sidebar p-5"
           >
             <h2 className="flex items-center gap-2 text-sm font-semibold">
               <BookOpen size={17} />
               Course curriculum
             </h2>
-            {lesson.modules.map((module) => (
+            {lesson.modules.map((module, moduleIndex) => (
               <details
                 key={module.id}
                 open={module.chapters.some(
@@ -198,10 +205,13 @@ export function CourseReader({
                 )}
                 className="group border-t border-border pt-4"
               >
-                <summary className="mb-3 cursor-pointer text-sm font-semibold leading-6 marker:text-muted-foreground">
+                <summary className="mb-3 cursor-pointer text-[13px] font-medium leading-5 marker:text-muted-foreground">
+                  <span className="mr-2 text-[10px] tabular-nums text-muted-foreground">
+                    {String(moduleIndex + 1).padStart(2, '0')}
+                  </span>
                   {module.title}
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">
-                    {module.chapters.length}
+                  <span className="mt-1 block pl-4 text-[11px] font-normal text-muted-foreground">
+                    {module.chapters.length} lessons
                   </span>
                 </summary>
                 <ul className="space-y-1">

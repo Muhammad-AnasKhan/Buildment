@@ -13,6 +13,7 @@ export type CatalogResult =
   | { ok: false; message: string };
 export type EnrollmentResult = { lifecycle: 'ACTIVE' | 'PAYMENT_REQUIRED' };
 export interface DesktopAPI {
+  webOrigin(): Promise<string>;
   integrityRequest(
     path: string,
     method: string,

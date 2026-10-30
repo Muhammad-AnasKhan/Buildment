@@ -1,3 +1,7 @@
+import type {
+  CourseOverview,
+  UpdateCourseTrackResult,
+} from '../../../server/src/shared/api/catalog';
 import type { Result } from '../domain/catalog';
 import type { Lesson, BlockState, AnswerResult } from '../domain/learning';
 import type { AiInterviewSessionResult } from '../../../server/src/shared/api/ai';
@@ -52,9 +56,58 @@ export function createLearningClient(request: Request) {
         };
       }
     },
-    async overview(course: string) {
+    async overview(course: string): Promise<Result<CourseOverview>> {
       if (!valid(course)) return invalid;
-      return request('/api/v1/courses/' + segment(course) + '/overview');
+      const result = await request(
+        '/api/v1/courses/' + segment(course) + '/overview',
+      );
+      if (!result.ok) return result;
+      if (
+        !isRecord(result.data) ||
+        !isRecord(result.data.course) ||
+        !['active', 'none', 'payment_required'].includes(
+          String(result.data.access),
+        ) ||
+        (result.data.access === 'active' &&
+          (!isRecord(result.data.enrollment) ||
+            !isRecord(result.data.syllabus) ||
+            !Array.isArray(result.data.syllabus.modules)))
+      )
+        return {
+          ok: false,
+          code: 'INVALID_RESPONSE',
+          message: 'Could not read the course overview.',
+        };
+      return { ok: true, data: result.data as CourseOverview };
+    },
+    async updateTrack(
+      course: string,
+      kind: 'variant' | 'specialisation',
+      slug: string,
+    ): Promise<Result<UpdateCourseTrackResult>> {
+      if (
+        !valid(course) ||
+        !valid(slug) ||
+        !['variant', 'specialisation'].includes(kind)
+      )
+        return invalid;
+      const result = await request(
+        '/api/v1/courses/' + segment(course) + '/track/' + kind,
+        'PUT',
+        { [kind + 'Slug']: slug },
+      );
+      if (!result.ok) return result;
+      if (
+        !isRecord(result.data) ||
+        typeof result.data.courseSlug !== 'string' ||
+        !isRecord(result.data.track)
+      )
+        return {
+          ok: false,
+          code: 'INVALID_RESPONSE',
+          message: 'Could not confirm your course choice.',
+        };
+      return { ok: true, data: result.data as UpdateCourseTrackResult };
     },
     async block(id: string): Promise<Result<BlockState>> {
       if (!valid(id)) return invalid;
@@ -77,7 +130,12 @@ export function createLearningClient(request: Request) {
       action: 'start' | 'answer' | 'finish' | 'abandon',
       payload: unknown,
     ): Promise<Result<AiInterviewSessionResult>> {
-      if (!valid(id) || !['start', 'answer', 'finish', 'abandon'].includes(action) || !isRecord(payload)) return invalid;
+      if (
+        !valid(id) ||
+        !['start', 'answer', 'finish', 'abandon'].includes(action) ||
+        !isRecord(payload)
+      )
+        return invalid;
       const result = await request(
         `/api/v1/blocks/${segment(id)}/ai-interview/${action}`,
         'POST',
@@ -85,7 +143,11 @@ export function createLearningClient(request: Request) {
       );
       if (!result.ok) return result;
       if (!isRecord(result.data) || !isRecord(result.data.session))
-        return { ok: false, code: 'INVALID_RESPONSE', message: 'Could not load the interview response.' };
+        return {
+          ok: false,
+          code: 'INVALID_RESPONSE',
+          message: 'Could not load the interview response.',
+        };
       return { ok: true, data: result.data as AiInterviewSessionResult };
     },
     async answer(

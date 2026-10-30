@@ -1,3 +1,4 @@
+import { EnrolledCourse, CourseLoading } from './EnrolledCourse';
 import { useEffect, useRef, useState } from 'react';
 import { BookOpen, RefreshCw, Target, UserRound } from 'lucide-react';
 import type { Course, CourseDetail } from '../../domain/catalog';
@@ -16,6 +17,7 @@ export function CoursePreview({
   onSignIn,
   onSession,
   onStart,
+  onBack,
 }: {
   course: Course;
   signedIn: boolean;
@@ -23,7 +25,8 @@ export function CoursePreview({
   authRevision: number;
   onSignIn: () => void;
   onSession: (value: boolean) => void;
-  onStart: () => void;
+  onStart: (chapter?: string) => void;
+  onBack: () => void;
 }) {
   const [detail, setDetail] = useState<CourseDetail | null>(null);
   const [state, setState] = useState<
@@ -105,6 +108,30 @@ export function CoursePreview({
     };
   }, [course.slug, authRevision]);
 
+  // Access is not known yet: never render the public preview as a placeholder.
+  if (state === 'loading') {
+    return (
+      <div className="course-overview-surface">
+        <CourseLoading />
+      </div>
+    );
+  }
+
+  if (
+    signedIn &&
+    state === 'ready' &&
+    detail?.signedIn &&
+    detail.access === 'active'
+  ) {
+    return (
+      <EnrolledCourse
+        slug={course.slug}
+        onStart={onStart}
+        onBack={onBack}
+        onSession={onSession}
+      />
+    );
+  }
   const current = detail || course;
   const cover =
     current.coverUrl &&
@@ -191,22 +218,6 @@ export function CoursePreview({
                 </p>
               </div>
             </div>
-            {state === 'loading' && (
-              <div
-                role="status"
-                className="space-y-3 rounded-2xl border border-border p-6"
-              >
-                <span className="text-sm text-muted-foreground">
-                  Loading curriculum…
-                </span>
-                {[0, 1, 2].map((n) => (
-                  <div
-                    key={n}
-                    className="h-12 animate-pulse rounded-lg bg-muted"
-                  />
-                ))}
-              </div>
-            )}
             {(state === 'error' || state === 'unverified') && (
               <div
                 role="alert"
@@ -262,24 +273,6 @@ export function CoursePreview({
             <p role="alert" className="mt-3 text-sm text-muted-foreground">
               {enrollError}
             </p>
-          )}
-          {signedIn && detail?.access === 'active' && (
-            <div>
-              <button
-                disabled={busy}
-                onClick={onStart}
-                className={button + ' mt-6 w-full'}
-              >
-                Start learning
-              </button>
-              <p className="mt-2 text-xs text-muted-foreground">
-                Read lessons and take quizzes here in your workspace.
-              </p>
-
-              <p className="mt-6 rounded-lg bg-ok-soft px-3 py-2 text-xs font-medium text-ok">
-                You’re enrolled in this course
-              </p>
-            </div>
           )}
         </CourseSummary>
       </div>

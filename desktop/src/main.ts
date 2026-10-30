@@ -8,7 +8,7 @@ import {
 } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
-import { backendBase, fetchCatalog } from './api';
+import { backendBase } from './api';
 import { createPreviewClient } from './api';
 import { createBrowserAuth } from './auth/browser-auth';
 
@@ -116,6 +116,11 @@ else {
       requireRenderer(event);
       return previewClient.nextLesson(slug);
     });
+    ipcMain.handle('app:web-origin', (event) => {
+      requireRenderer(event);
+      return new URL(process.env.BUILDMENT_WEB_URL || 'http://localhost:3000')
+        .origin;
+    });
     ipcMain.handle('learning:integrity', (event, path, method, body) => {
       requireRenderer(event);
       return previewClient.integrityRequest(path, method, body);
@@ -123,6 +128,10 @@ else {
     ipcMain.handle('learning:lesson', (event, course, chapter) => {
       requireRenderer(event);
       return previewClient.learning.lesson(course, chapter);
+    });
+    ipcMain.handle('learning:update-track', (event, course, kind, slug) => {
+      requireRenderer(event);
+      return previewClient.learning.updateTrack(course, kind, slug);
     });
     ipcMain.handle('learning:overview', (event, course) => {
       requireRenderer(event);
@@ -205,7 +214,7 @@ else {
               : 'Invalid backend configuration.',
         };
       }
-      return fetchCatalog(apiBase);
+      return previewClient.listCourses();
     });
     createWindow();
     app.on('activate', () => {

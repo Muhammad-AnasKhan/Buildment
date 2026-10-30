@@ -39,7 +39,7 @@ export function WorkspaceHeader({
             <>
               <span>/</span>
               <span className="whitespace-nowrap">
-                {reading ? 'Learning' : 'Course preview'}
+                {reading ? 'Learning' : 'Course'}
               </span>
             </>
           )}

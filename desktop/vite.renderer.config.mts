@@ -40,6 +40,7 @@ export default defineConfig({
       'zod',
       'use-sync-external-store/shim',
       'use-sync-external-store/shim/with-selector',
+      'use-sync-external-store/shim/with-selector.js',
     ],
   },
   // Give Forge and Chromium the same loopback address on Windows.

@@ -9,6 +9,7 @@ import { useSession } from './auth/useSession';
 
 export function App() {
   const [selected, setSelected] = useState<Course | null>(null);
+  const [chapter, setChapter] = useState<string | undefined>();
   const [reading, setReading] = useState(false);
   const session = useSession();
   const { signedIn, setSignedIn, authBusy, authRevision, changeSession } =
@@ -52,24 +53,31 @@ export function App() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');
 
+  const catalogGeneration = useRef(0);
   async function load() {
-    setLoading(true);
+    const request = ++catalogGeneration.current;
+    setLoading(courses.length === 0);
     setError('');
     try {
       const result = await window.buildment.listCourses();
+      if (request !== catalogGeneration.current) return;
       if (result.ok) setCourses(result.courses);
       else setError(result.message);
     } catch {
+      if (request !== catalogGeneration.current) return;
       setError(
         'The desktop connection is unavailable. Restart the app and try again.',
       );
     } finally {
-      setLoading(false);
+      if (request === catalogGeneration.current) setLoading(false);
     }
   }
   useEffect(() => {
-    void load();
-  }, []);
+    if (!selected) void load();
+    return () => {
+      catalogGeneration.current++;
+    };
+  }, [authRevision, signedIn, selected?.id]);
   const visible = filterCourses(courses, query, category);
   const categories = [...new Set(courses.map((course) => course.category))];
 
@@ -107,6 +115,8 @@ export function App() {
           <CourseReader
             key={selected.slug + ':' + authRevision}
             courseSlug={selected.slug}
+            courseTitle={selected.title}
+            initialChapter={chapter}
             session={session}
             onBack={() => setReading(false)}
             onSignedOut={() => {
@@ -123,7 +133,11 @@ export function App() {
             authRevision={authRevision}
             onSignIn={() => void changeSession(true)}
             onSession={setSignedIn}
-            onStart={() => setReading(true)}
+            onBack={backToCourses}
+            onStart={(chapter) => {
+              setChapter(chapter);
+              setReading(true);
+            }}
           />
         ) : (
           <CourseCatalog

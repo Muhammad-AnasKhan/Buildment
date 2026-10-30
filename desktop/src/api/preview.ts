@@ -1,7 +1,12 @@
 import { createLearningClient } from './learning';
-import { backendBase } from './catalog';
+import { backendBase, isCourse } from './catalog';
 import { isRecord as record, isCourseDetail as isDetail } from './validation';
-import type { CourseDetail, EnrollmentResult, Result } from '../domain/catalog';
+import type {
+  CatalogResult,
+  CourseDetail,
+  EnrollmentResult,
+  Result,
+} from '../domain/catalog';
 
 // This module runs only in Electron's main process. Tokens never cross IPC.
 export function createPreviewClient(
@@ -109,6 +114,22 @@ export function createPreviewClient(
         };
       return call(path, method, body);
     }),
+    async listCourses(): Promise<CatalogResult> {
+      let result = await call('/api/v1/catalog');
+      if (!result.ok && result.code === 'AUTH_REQUIRED')
+        result = await call('/api/v1/catalog');
+      if (!result.ok) return { ok: false, message: result.message };
+      if (
+        !record(result.data) ||
+        !Array.isArray(result.data.courses) ||
+        !result.data.courses.every(isCourse)
+      )
+        return {
+          ok: false,
+          message: 'The backend returned an unexpected course response.',
+        };
+      return { ok: true, courses: result.data.courses };
+    },
     async courseDetail(slug: string): Promise<Result<CourseDetail>> {
       if (typeof slug !== 'string' || !slug || slug.length > 200)
         return { ok: false, code: 'INVALID_INPUT', message: 'Invalid course.' };

@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+@import '@buildment/learning-ui/course-theme.css';
+@custom-variant dark (&:where(.dark, .dark *));
 @source '../../node_modules/@buildment/learning-ui/src';
 @source '../';
 
@@ -36,6 +38,12 @@
   }
 }
 @theme inline {
+  --color-card-foreground: var(--foreground);
+  --color-secondary: var(--secondary, var(--muted));
+  --color-secondary-foreground: var(--foreground);
+  --color-accent: var(--accent, var(--muted));
+  --color-brand-yellow: var(--brand-yellow, #ffc933);
+  --font-heading: system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -50,6 +58,25 @@
   --color-ok-soft: var(--ok-soft);
   --font-sans: 'Segoe UI', system-ui, sans-serif;
   --font-display: 'Segoe UI', system-ui, sans-serif;
+}
+/* The desktop window owns the viewport. Only its content panes may scroll. */
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+#root {
+  position: fixed;
+  inset: 0;
+}
+#root main {
+  overscroll-behavior-y: none;
+}
+#root .course-overview-surface {
+  min-height: calc(100% - 72px);
 }
 body {
   margin: 0;
