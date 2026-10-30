@@ -7,7 +7,10 @@ export const authEmailSchema = z.string().trim()
   .transform((value) => value.toLowerCase());
 
 export const signupSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(120, "Name is too long"),
+  name: z.string().trim()
+    .min(1, "Name is required")
+    .max(120, "Name is too long")
+    .refine((value) => /\p{L}/u.test(value), "Enter your real name"),
   email: authEmailSchema,
   password: z.string().min(8, "Password must be at least 8 characters").max(128, "Password is too long"),
 });
