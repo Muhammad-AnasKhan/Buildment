@@ -1,0 +1,325 @@
+{
+  "version": 1,
+  "chapters": {
+    "1-1-set-the-scene": {
+      "file": "01.01-set-the-scene.mp3",
+      "minutes": 7.8,
+      "bytes": 1871534,
+      "words": 1408,
+      "voice": "af_heart",
+      "hash": "e7721afe15e1f37e"
+    },
+    "1-2-chains-of-cause-and-effect": {
+      "file": "01.02-chains-of-cause-and-effect.mp3",
+      "minutes": 9.1,
+      "bytes": 2186153,
+      "words": 1603,
+      "voice": "af_heart",
+      "hash": "86142bb72ed0762d"
+    },
+    "1-3-the-single-cause-trap": {
+      "file": "01.03-the-single-cause-trap.mp3",
+      "minutes": 9.9,
+      "bytes": 2367233,
+      "words": 1711,
+      "voice": "af_heart",
+      "hash": "620a0d9b9854f69c"
+    },
+    "1-4-after-is-not-because": {
+      "file": "01.04-after-is-not-because.mp3",
+      "minutes": 9.0,
+      "bytes": 2168703,
+      "words": 1602,
+      "voice": "af_heart",
+      "hash": "3766dfa7bd200932"
+    },
+    "1-5-checklist": {
+      "file": "01.05-checklist.mp3",
+      "minutes": 6.6,
+      "bytes": 1574887,
+      "words": 1191,
+      "voice": "af_heart",
+      "hash": "0bf467aa89d566af"
+    },
+    "2-1-set-the-scene": {
+      "file": "02.01-set-the-scene.mp3",
+      "minutes": 7.6,
+      "bytes": 1825976,
+      "words": 1366,
+      "voice": "af_heart",
+      "hash": "7b5d669274d03377"
+    },
+    "2-2-hidden-third-factors": {
+      "file": "02.02-hidden-third-factors.mp3",
+      "minutes": 9.3,
+      "bytes": 2237039,
+      "words": 1603,
+      "voice": "af_heart",
+      "hash": "b2ef9e9021ab035a"
+    },
+    "2-3-reverse-cause-and-chance": {
+      "file": "02.03-reverse-cause-and-chance.mp3",
+      "minutes": 8.3,
+      "bytes": 1983860,
+      "words": 1513,
+      "voice": "af_heart",
+      "hash": "2feb9a5c43ca16d4"
+    },
+    "2-4-survivors-and-selection": {
+      "file": "02.04-survivors-and-selection.mp3",
+      "minutes": 8.5,
+      "bytes": 2034120,
+      "words": 1459,
+      "voice": "af_heart",
+      "hash": "b83802da0d86e28c"
+    },
+    "2-6-checklist": {
+      "file": "02.06-checklist.mp3",
+      "minutes": 6.5,
+      "bytes": 1568200,
+      "words": 1131,
+      "voice": "af_heart",
+      "hash": "418c966c3ed3bb5e"
+    },
+    "3-1-set-the-scene": {
+      "file": "03.01-set-the-scene.mp3",
+      "minutes": 7.6,
+      "bytes": 1832037,
+      "words": 1376,
+      "voice": "af_heart",
+      "hash": "2acd1c8ef067813d"
+    },
+    "3-2-change-one-thing": {
+      "file": "03.02-change-one-thing.mp3",
+      "minutes": 10.7,
+      "bytes": 2568272,
+      "words": 1873,
+      "voice": "af_heart",
+      "hash": "ca6d0f44c43d226e"
+    },
+    "3-3-compare-with-a-control": {
+      "file": "03.03-compare-with-a-control.mp3",
+      "minutes": 10.5,
+      "bytes": 2525117,
+      "words": 1816,
+      "voice": "af_heart",
+      "hash": "78c838a85ec146a9"
+    },
+    "3-4-small-experiments": {
+      "file": "03.04-small-experiments.mp3",
+      "minutes": 9.8,
+      "bytes": 2352082,
+      "words": 1761,
+      "voice": "af_heart",
+      "hash": "4f6bf0125e108fe8"
+    },
+    "3-6-checklist": {
+      "file": "03.06-checklist.mp3",
+      "minutes": 6.5,
+      "bytes": 1549183,
+      "words": 1183,
+      "voice": "af_heart",
+      "hash": "d81bb03641136cf0"
+    },
+    "4-1-set-the-scene": {
+      "file": "04.01-set-the-scene.mp3",
+      "minutes": 7.8,
+      "bytes": 1867877,
+      "words": 1384,
+      "voice": "af_heart",
+      "hash": "1adfcbc486eb16c2"
+    },
+    "4-2-symptoms-and-root-causes": {
+      "file": "04.02-symptoms-and-root-causes.mp3",
+      "minutes": 9.3,
+      "bytes": 2237666,
+      "words": 1579,
+      "voice": "af_heart",
+      "hash": "4c487a7e5c8de09c"
+    },
+    "4-3-five-whys": {
+      "file": "04.03-five-whys.mp3",
+      "minutes": 10.0,
+      "bytes": 2404118,
+      "words": 1762,
+      "voice": "af_heart",
+      "hash": "44f179db06abcf72"
+    },
+    "4-4-fishbone-diagrams": {
+      "file": "04.04-fishbone-diagrams.mp3",
+      "minutes": 9.5,
+      "bytes": 2276954,
+      "words": 1645,
+      "voice": "af_heart",
+      "hash": "debe8b7a16cca7a3"
+    },
+    "4-5-causes-not-culprits": {
+      "file": "04.05-causes-not-culprits.mp3",
+      "minutes": 10.2,
+      "bytes": 2437137,
+      "words": 1711,
+      "voice": "af_heart",
+      "hash": "13f74a2e2d09f7c6"
+    },
+    "4-7-checklist": {
+      "file": "04.07-checklist.mp3",
+      "minutes": 6.6,
+      "bytes": 1580007,
+      "words": 1162,
+      "voice": "af_heart",
+      "hash": "d44ce72703c21ce9"
+    },
+    "5-1-set-the-scene": {
+      "file": "05.01-set-the-scene.mp3",
+      "minutes": 8.3,
+      "bytes": 1985846,
+      "words": 1467,
+      "voice": "af_heart",
+      "hash": "6ad434b0a8e9fefd"
+    },
+    "5-2-describe-the-problem-exactly": {
+      "file": "05.02-describe-the-problem-exactly.mp3",
+      "minutes": 10.0,
+      "bytes": 2401402,
+      "words": 1756,
+      "voice": "af_heart",
+      "hash": "7776e1d0bcc9c2db"
+    },
+    "5-3-guess-test-repeat": {
+      "file": "05.03-guess-test-repeat.mp3",
+      "minutes": 9.4,
+      "bytes": 2255952,
+      "words": 1682,
+      "voice": "af_heart",
+      "hash": "7fd1a3384f1588b1"
+    },
+    "5-4-split-the-problem-in-half": {
+      "file": "05.04-split-the-problem-in-half.mp3",
+      "minutes": 8.7,
+      "bytes": 2090022,
+      "words": 1549,
+      "voice": "af_heart",
+      "hash": "18a1bbc1d57c0879"
+    },
+    "5-6-checklist": {
+      "file": "05.06-checklist.mp3",
+      "minutes": 6.7,
+      "bytes": 1608637,
+      "words": 1214,
+      "voice": "af_heart",
+      "hash": "e5dff5c8c730b8c5"
+    },
+    "6-1-set-the-scene": {
+      "file": "06.01-set-the-scene.mp3",
+      "minutes": 8.1,
+      "bytes": 1953036,
+      "words": 1456,
+      "voice": "af_heart",
+      "hash": "d834c5a9852fd3f1"
+    },
+    "6-2-reinforcing-loops": {
+      "file": "06.02-reinforcing-loops.mp3",
+      "minutes": 9.8,
+      "bytes": 2341320,
+      "words": 1695,
+      "voice": "af_heart",
+      "hash": "4069beeb4654baa8"
+    },
+    "6-3-balancing-loops-and-delays": {
+      "file": "06.03-balancing-loops-and-delays.mp3",
+      "minutes": 10.0,
+      "bytes": 2389908,
+      "words": 1785,
+      "voice": "af_heart",
+      "hash": "9a3563220ab85d8c"
+    },
+    "6-4-bottlenecks": {
+      "file": "06.04-bottlenecks.mp3",
+      "minutes": 9.1,
+      "bytes": 2186466,
+      "words": 1590,
+      "voice": "af_heart",
+      "hash": "a0cf04bb93c7819b"
+    },
+    "6-6-checklist": {
+      "file": "06.06-checklist.mp3",
+      "minutes": 6.0,
+      "bytes": 1448977,
+      "words": 1133,
+      "voice": "af_heart",
+      "hash": "ae6866429ceb87a1"
+    },
+    "7-1-set-the-scene": {
+      "file": "07.01-set-the-scene.mp3",
+      "minutes": 7.8,
+      "bytes": 1880729,
+      "words": 1371,
+      "voice": "af_heart",
+      "hash": "8fb99da2b9da7d6b"
+    },
+    "7-2-and-then-what": {
+      "file": "07.02-and-then-what.mp3",
+      "minutes": 9.3,
+      "bytes": 2222515,
+      "words": 1623,
+      "voice": "af_heart",
+      "hash": "5b987e3b4489652b"
+    },
+    "7-3-incentives-and-targets": {
+      "file": "07.03-incentives-and-targets.mp3",
+      "minutes": 9.1,
+      "bytes": 2184063,
+      "words": 1535,
+      "voice": "af_heart",
+      "hash": "2e0052f282152dde"
+    },
+    "7-4-side-effects": {
+      "file": "07.04-side-effects.mp3",
+      "minutes": 9.1,
+      "bytes": 2178838,
+      "words": 1534,
+      "voice": "af_heart",
+      "hash": "ecbb4fe4d94bc564"
+    },
+    "7-6-checklist": {
+      "file": "07.06-checklist.mp3",
+      "minutes": 6.5,
+      "bytes": 1557751,
+      "words": 1154,
+      "voice": "af_heart",
+      "hash": "c49cabb57c0e4dd8"
+    },
+    "8-1-set-the-scene": {
+      "file": "08.01-set-the-scene.mp3",
+      "minutes": 8.2,
+      "bytes": 1979263,
+      "words": 1430,
+      "voice": "af_heart",
+      "hash": "8cbdec94528bae21"
+    },
+    "8-2-blameless-reviews": {
+      "file": "08.02-blameless-reviews.mp3",
+      "minutes": 9.7,
+      "bytes": 2325646,
+      "words": 1630,
+      "voice": "af_heart",
+      "hash": "52563381e569c794"
+    },
+    "8-4-capstone-investigate-a-problem": {
+      "file": "08.04-capstone-investigate-a-problem.mp3",
+      "minutes": 15.3,
+      "bytes": 3681402,
+      "words": 2645,
+      "voice": "af_heart",
+      "hash": "f3356f5f89c4a2c4"
+    },
+    "8-5-checklist": {
+      "file": "08.05-checklist.mp3",
+      "minutes": 8.2,
+      "bytes": 1971008,
+      "words": 1466,
+      "voice": "af_heart",
+      "hash": "43b3ad64764fc0c2"
+    }
+  }
+}
