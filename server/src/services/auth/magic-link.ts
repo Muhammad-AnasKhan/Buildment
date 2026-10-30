@@ -1,5 +1,6 @@
 import { renderEmailTemplate } from "../email/render.js";
 import { randomBytes } from "node:crypto";
+import { isDisposable } from "@isdisposable/js";
 import { safeRedirectTo } from "../../shared/lib/safe-redirect.js";
 import { prisma } from "../../db/prisma.js";
 import { logger } from "../../utils/logger.js";
@@ -17,6 +18,11 @@ const MAGIC_LINK_TTL_MS = 15 * 60 * 1000;
 const IDENTIFIER_PREFIX = "magic-link:";
 
 export async function requestMagicLink(input: { email: string; redirectTo?: string }) {
+  if (isDisposable(input.email)) {
+    await prisma.verificationToken.deleteMany({ where: { identifier: `${IDENTIFIER_PREFIX}${input.email}` } });
+    return { sent: false };
+  }
+
   const account = await prisma.user.findUnique({ where: { email: input.email }, select: { email: true } });
   if (!account) {
     await prisma.verificationToken.deleteMany({ where: { identifier: `${IDENTIFIER_PREFIX}${input.email}` } });
@@ -59,6 +65,7 @@ export async function consumeMagicLink(token: string, redirectTo?: string): Prom
   if (row.expires <= new Date()) return { ok: false, reason: "expired" };
 
   const email = row.identifier.slice(IDENTIFIER_PREFIX.length);
+  if (isDisposable(email)) return { ok: false, reason: "invalid" };
   const existing = await prisma.user.findUnique({ where: { email } });
   if (!existing) return { ok: false, reason: "invalid" };
   const record = await prisma.user.update({

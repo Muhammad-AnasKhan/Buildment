@@ -155,6 +155,21 @@ describe("magic links", () => {
     expect(row).not.toBeNull();
   });
 
+  it("does not issue a magic link to an existing account with a disposable email", async () => {
+    const disposableEmail = `magic-disposable-${Date.now()}@mailinator.com`;
+    const user = await prisma.user.create({
+      data: { email: disposableEmail, name: "Disposable Learner", role: "MENTEE", profile: { create: { timezone: "UTC", skills: [] } } },
+    });
+
+    try {
+      const res = await request(app).post("/api/v1/auth/magic-link").send({ email: disposableEmail });
+      expect(res.status).toBe(200);
+      expect(await prisma.verificationToken.findFirst({ where: { identifier: `magic-link:${disposableEmail}` } })).toBeNull();
+    } finally {
+      await prisma.user.delete({ where: { id: user.id } });
+    }
+  });
+
   it("signs in the existing account and consumes the token", async () => {
     const row = await prisma.verificationToken.findFirstOrThrow({ where: { identifier: `magic-link:${email}` } });
     const res = await request(app).get("/api/v1/auth/magic-link/verify").query({ token: row.token, redirectTo: "/catalog" });
