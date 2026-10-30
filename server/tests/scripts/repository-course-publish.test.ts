@@ -106,11 +106,25 @@ describe("repository course publishing selection", () => {
     course(root, "ready", "repositoryPublish: true\ncategory: soft-skills\n");
     const manifest = selectedPackages(root)[0]!.manifest;
     const stale = { title: "Old preview title", description: "A focused preview", projectGoal: "Learn a skill",
-      difficulty: "Advanced", estimatedHours: 5, category: "TECH" as const, coverUrl: "https://example.com/cover.png" };
+      difficulty: "Advanced", estimatedHours: 5, category: "TECH" as const, coverUrl: "https://example.com/cover.png", assistant: null };
     expect(courseDetailsUpdate(manifest, stale)).toEqual({
       title: "Example", description: "Example course", difficulty: "Beginner", estimatedHours: 2, category: "SOFT_SKILLS",
     });
     const current = { ...stale, title: "Example", description: "Example course", difficulty: "Beginner", estimatedHours: 2, category: "SOFT_SKILLS" as const };
     expect(courseDetailsUpdate(manifest, current)).toBeNull();
+  });
+
+  it("copies tutor settings by value and clears them when the source drops the block", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "buildment-course-assistant-"));
+    temporary.push(root);
+    fs.writeFileSync(path.join(root, "publishing.yaml"), "instructorEmail: devweekends@gmail.com\n");
+    course(root, "ready", "repositoryPublish: true\n");
+    const manifest = selectedPackages(root)[0]!.manifest;
+    const base = { title: "Example", description: "Example course", projectGoal: "Learn a skill", difficulty: "Beginner",
+      estimatedHours: 2, category: "TECH" as const, coverUrl: null };
+    const withBlock = { ...manifest, assistant: { effort: "medium" as const, guidance: "Be precise." } };
+    expect(courseDetailsUpdate(withBlock, { ...base, assistant: null })).toEqual({ assistant: { effort: "medium", guidance: "Be precise." } });
+    expect(courseDetailsUpdate(withBlock, { ...base, assistant: { effort: "medium", guidance: "Be precise." } })).toBeNull();
+    expect(courseDetailsUpdate(manifest, { ...base, assistant: { effort: "low" } })).toEqual({ assistant: null });
   });
 });
