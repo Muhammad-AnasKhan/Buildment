@@ -224,16 +224,18 @@ export function AskChapterPanel({ chapterId, headings = [] }: { chapterId: strin
           {asked ? (
             <div className="space-y-2">
               <p className="text-[13px] text-muted-foreground">You asked: {asked}</p>
-              <div className="rounded-lg bg-secondary px-4 py-3" aria-busy={asking}>
-                {answer ? (
-                  <SafeMarkdown source={answer} />
-                ) : asking ? (
-                  <p className="flex items-center gap-2 text-[15px] text-muted-foreground">
-                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden />
-                    Reading the chapter...
-                  </p>
-                ) : null}
-              </div>
+              {answer || asking ? (
+                <div className="rounded-lg bg-secondary px-4 py-3" aria-busy={asking}>
+                  {answer ? (
+                    <SafeMarkdown source={answer} />
+                  ) : (
+                    <p className="flex items-center gap-2 text-[15px] text-muted-foreground">
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden />
+                      Reading the chapter...
+                    </p>
+                  )}
+                </div>
+              ) : null}
               {finished ? (
                 <div className="flex flex-wrap gap-2">
                   <Button type="button" variant="ghost" size="sm" onClick={copyAnswer}>
