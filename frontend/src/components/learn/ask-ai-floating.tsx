@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Sparkles, X } from "lucide-react";
-import { AskChapterBody } from "@/components/learn/ask-chapter-panel";
+import { AskChapterBody, AskMentorLink } from "@/components/learn/ask-chapter-panel";
 import { useAskChapter } from "@/components/learn/ask-chapter-context";
 import { FOCUSABLE_SELECTOR, closesWindow, trapTarget } from "@/lib/ask-ai-window";
 import { cn } from "@/lib/utils";
@@ -144,6 +144,9 @@ export function AskAiFloating({ focusMode = false }: { focusMode?: boolean }) {
               </div>
               <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5">
                 <AskChapterBody />
+              </div>
+              <div className="shrink-0 border-t border-border bg-card px-4 py-1 sm:px-5">
+                <AskMentorLink />
               </div>
             </div>
           </>

@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
  * questions. The inline card and the floating window both render this, so they behave the same.
  */
 export function AskChapterBody({ className }: { className?: string }) {
-  const { ask: chapter, askMentor } = useAskChapter();
+  const { ask: chapter } = useAskChapter();
   const ids = useId();
   const box = useRef<HTMLTextAreaElement>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -59,7 +59,7 @@ export function AskChapterBody({ className }: { className?: string }) {
               type="button"
               onClick={() => setFollowUp(null)}
               aria-label="Stop following up"
-              className="grid size-8 shrink-0 place-items-center rounded hover:bg-accent"
+              className="-my-2 -mr-2 grid size-11 shrink-0 place-items-center rounded-md hover:bg-accent"
             >
               <X className="size-4" aria-hidden />
             </button>
@@ -174,18 +174,26 @@ export function AskChapterBody({ className }: { className?: string }) {
         </div>
       ) : null}
 
-      <div className="space-y-2 border-t border-border pt-3">
-        <p className="text-[13px] text-muted-foreground">Answers come from AI and can be wrong. Check the chapter.</p>
-        <button
-          type="button"
-          onClick={askMentor}
-          className="inline-flex min-h-11 items-center gap-2 rounded-md px-1 text-sm font-semibold text-muted-foreground underline underline-offset-4 outline-none transition-colors hover:text-foreground focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
-        >
-          <HandHelping className="size-4 shrink-0" aria-hidden />
-          Still stuck? Ask a mentor
-        </button>
-      </div>
+      <p className="border-t border-border pt-3 text-[13px] text-muted-foreground">Answers come from AI and can be wrong. Check the chapter.</p>
     </div>
+  );
+}
+
+/** The quiet way out of the AI panel: hands the learner to the mentor dialog. Pinned below the content in the floating window. */
+export function AskMentorLink({ className }: { className?: string }) {
+  const { askMentor } = useAskChapter();
+  return (
+    <button
+      type="button"
+      onClick={askMentor}
+      className={cn(
+        "inline-flex min-h-11 items-center gap-2 rounded-md px-1 text-sm font-semibold text-muted-foreground underline underline-offset-4 outline-none transition-colors hover:text-foreground focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow",
+        className
+      )}
+    >
+      <HandHelping className="size-4 shrink-0" aria-hidden />
+      Still stuck? Ask a mentor
+    </button>
   );
 }
 
@@ -224,6 +232,7 @@ export function AskChapterPanel() {
       {open ? (
         <div id={bodyId} className="mt-4">
           <AskChapterBody />
+          <AskMentorLink className="mt-1" />
         </div>
       ) : null}
     </section>
