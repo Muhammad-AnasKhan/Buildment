@@ -454,7 +454,7 @@ export function ChapterReaderShell({
                   </ChecklistProvider>
                 </LearningLogProvider>
 
-                {readerMode !== "QUIZ" ? <AskChapterPanel chapterId={chapterId} /> : null}
+                {readerMode !== "QUIZ" ? <AskChapterPanel chapterId={chapterId} headings={headings} /> : null}
 
                 {!(focusMode && readerMode === "QUIZ") ? (
                   <ChapterNav

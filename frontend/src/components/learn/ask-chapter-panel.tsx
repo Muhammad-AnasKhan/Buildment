@@ -1,93 +1,286 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Check, ChevronDown, Copy, CornerDownRight, Loader2, Sparkles, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { SafeMarkdown } from "@/components/learn/safe-markdown";
 import { apiFetch } from "@/lib/api-client";
-import { QUESTION_MAX, isAskable, remainingLabel, type ChapterQuestionAnswer, type ChapterQuestionStatus } from "@/lib/chapter-question";
+import {
+  QUESTION_MAX,
+  friendlyFailure,
+  isAskable,
+  pushHistory,
+  remainingLabel,
+  showCounter,
+  starterQuestions,
+  type ChapterQuestionStatus,
+  type QaTurn,
+} from "@/lib/chapter-question";
+import { streamChapterAnswer, type StreamResult } from "@/lib/chapter-question-stream";
+import { markdownToPlainText } from "@/lib/safe-markdown";
+import { cn } from "@/lib/utils";
+
+/** Last questions and answers per chapter, kept for as long as the page is open (never saved anywhere). */
+const sessionHistory = new Map<string, QaTurn[]>();
 
 /**
- * A small box under the chapter for quick questions. It stays hidden until the API says
- * questions are available for this learner and chapter, so a switched-off feature leaves no trace.
+ * A compact card under the chapter for quick questions. It stays hidden until the API says questions
+ * are available for this learner and chapter, starts collapsed, and opens in place below the reading text.
  */
-export function AskChapterPanel({ chapterId }: { chapterId: string }) {
+export function AskChapterPanel({ chapterId, headings = [] }: { chapterId: string; headings?: { text: string }[] }) {
   const [status, setStatus] = useState<ChapterQuestionStatus | null>(null);
+  const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState<string | null>(null);
+  const [asked, setAsked] = useState<string | null>(null);
+  const [answer, setAnswer] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [asking, setAsking] = useState(false);
+  const [followUp, setFollowUp] = useState<QaTurn | null>(null);
+  const [history, setHistory] = useState<QaTurn[]>(() => sessionHistory.get(chapterId) ?? []);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const box = useRef<HTMLTextAreaElement>(null);
+  const copyTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     let active = true;
     apiFetch<ChapterQuestionStatus>(`/api/v1/chapters/${chapterId}/ask`)
       .then((next) => {
-        if (active) setStatus(next);
+        if (active) setStatus({ ...next, starters: next.starters ?? [] });
       })
       .catch(() => {
         // Any failure means no box: this panel is an extra, never a blocker for reading.
       });
     return () => {
       active = false;
+      clearTimeout(copyTimer.current);
     };
   }, [chapterId]);
+
+  const starters = useMemo(() => starterQuestions(status?.starters ?? [], headings), [status?.starters, headings]);
 
   if (!status?.available) return null;
 
   const outOfQuestions = status.remaining <= 0;
+  const locked = asking || outOfQuestions;
+  const finished = asked !== null && !asking && !error && answer.length > 0;
+  // The newest saved turn is already on screen as the current answer, so the list holds the ones before it.
+  const earlier = finished ? history.slice(1) : history;
 
-  async function ask(event: React.FormEvent) {
-    event.preventDefault();
-    if (asking || outOfQuestions || !isAskable(question)) return;
+  async function ask(text: string) {
+    const trimmed = text.trim();
+    if (asking || outOfQuestions || !isAskable(trimmed)) return;
+    const context = followUp;
     setAsking(true);
     setError(null);
+    setAsked(trimmed);
+    setAnswer("");
+    setFollowUp(null);
+    setQuestion("");
+    let result: StreamResult;
     try {
-      const result = await apiFetch<ChapterQuestionAnswer>(`/api/v1/chapters/${chapterId}/ask`, {
-        method: "POST",
-        json: { question: question.trim() },
+      result = await streamChapterAnswer({
+        chapterId,
+        question: trimmed,
+        previous: context ?? undefined,
+        fallback: { remaining: status!.remaining, dailyLimit: status!.dailyLimit },
+        onText: setAnswer,
       });
-      setAnswer(result.answer);
       setStatus((current) => (current ? { ...current, remaining: result.remaining, dailyLimit: result.dailyLimit } : current));
     } catch (caught) {
-      setAnswer(null);
-      setError(caught instanceof Error ? caught.message : "We could not answer that just now.");
-    } finally {
+      // A question that failed is not charged: the API releases it, so the count goes back up.
+      setAnswer("");
+      setError(friendlyFailure(caught));
+      setQuestion(trimmed);
       setAsking(false);
+      return;
     }
+    if (result.answer.trim()) {
+      const next = pushHistory(sessionHistory.get(chapterId) ?? [], { question: trimmed, answer: result.answer.trim() });
+      sessionHistory.set(chapterId, next);
+      setHistory(next);
+    }
+    setAsking(false);
   }
 
+  async function copyAnswer() {
+    try {
+      await navigator.clipboard.writeText(markdownToPlainText(answer));
+      setCopied(true);
+    } catch {
+      setError("Copy did not work here. Select the answer and copy it by hand.");
+      return;
+    }
+    clearTimeout(copyTimer.current);
+    copyTimer.current = setTimeout(() => setCopied(false), 2000);
+  }
+
+  function startFollowUp() {
+    if (!asked) return;
+    setFollowUp({ question: asked, answer });
+    box.current?.focus();
+  }
+
+  const counterNear = question.length >= QUESTION_MAX - 20;
+  const live = asking ? "Working on your answer." : (error ?? (finished ? `Answer: ${markdownToPlainText(answer)}` : ""));
+
   return (
-    <section aria-labelledby="ask-chapter-heading" className="mt-10 rounded-xl border border-border bg-card p-4 sm:p-5">
-      <h2 id="ask-chapter-heading" className="flex items-center gap-2 text-base font-semibold text-foreground">
-        <Sparkles className="size-4" aria-hidden />
-        Ask about this chapter
-      </h2>
-      <form onSubmit={ask} className="mt-3 space-y-3">
-        <label htmlFor="ask-chapter-question" className="sr-only">
-          Your question about this chapter
-        </label>
-        <Textarea
-          id="ask-chapter-question"
-          value={question}
-          onChange={(event) => setQuestion(event.target.value)}
-          maxLength={QUESTION_MAX}
-          rows={2}
-          placeholder="For example: what is a confounder?"
-          disabled={asking || outOfQuestions}
-          className="min-h-20"
-        />
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          <p className="text-[13px] text-muted-foreground">{remainingLabel(status.remaining, status.dailyLimit)}</p>
-          <Button type="submit" disabled={asking || outOfQuestions || !isAskable(question)} className="w-full sm:w-auto">
-            {asking ? "Asking..." : "Ask"}
-          </Button>
+    <section aria-label="Ask about this chapter" className="mt-10 rounded-lg border border-border bg-card p-4 text-card-foreground sm:p-5">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        aria-expanded={open}
+        aria-controls="ask-chapter-body"
+        className="flex w-full items-center gap-4 rounded-md text-left outline-none focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-brand-yellow"
+      >
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
+          <Sparkles className="size-5" aria-hidden />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-base font-bold text-foreground">Ask about this chapter</span>
+          <span className="mt-0.5 block text-sm text-muted-foreground">
+            {outOfQuestions ? "You have used today's questions. They come back tomorrow." : "Quick questions, short answers."}
+          </span>
+        </span>
+        <ChevronDown className={cn("size-5 shrink-0 text-muted-foreground transition-transform motion-reduce:transition-none", open && "rotate-180")} aria-hidden />
+      </button>
+
+      {open ? (
+        <div id="ask-chapter-body" className="mt-4 space-y-4">
+          {!asking && !answer && starters.length > 0 ? (
+            <div role="group" aria-label="Starter questions" className="flex flex-wrap gap-2">
+              {starters.map((starter) => (
+                <button
+                  key={starter}
+                  type="button"
+                  disabled={locked}
+                  onClick={() => void ask(starter)}
+                  className="min-h-11 rounded-full border border-border bg-secondary px-4 py-2 text-left text-sm text-secondary-foreground outline-none transition-colors hover:bg-accent focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow disabled:pointer-events-none disabled:opacity-50"
+                >
+                  {starter}
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void ask(question);
+            }}
+            className="space-y-3"
+          >
+            {followUp ? (
+              <p className="flex items-start justify-between gap-2 rounded-md bg-secondary px-3 py-2 text-[13px] text-muted-foreground">
+                <span className="min-w-0 break-words">Following up on: {followUp.question}</span>
+                <button type="button" onClick={() => setFollowUp(null)} aria-label="Stop following up" className="shrink-0 rounded p-1 hover:bg-accent">
+                  <X className="size-4" aria-hidden />
+                </button>
+              </p>
+            ) : null}
+            <label htmlFor="ask-chapter-question" className="sr-only">
+              Your question about this chapter
+            </label>
+            <Textarea
+              id="ask-chapter-question"
+              ref={box}
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              onKeyDown={(event) => {
+                // Enter sends; Shift+Enter adds a line. Enter while composing (for example with an IME) stays a plain key press.
+                if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+                  event.preventDefault();
+                  void ask(question);
+                }
+              }}
+              maxLength={QUESTION_MAX}
+              rows={2}
+              placeholder={followUp ? "Ask your follow-up" : "Type your question. Enter sends, Shift+Enter adds a line."}
+              disabled={locked}
+              className="min-h-20"
+            />
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+              <p className="text-[13px] text-muted-foreground">
+                {remainingLabel(status.remaining, status.dailyLimit)}
+                {showCounter(question.length) ? (
+                  <span className={cn("ml-3 tabular-nums", counterNear && "font-semibold text-destructive")}>
+                    {question.length}/{QUESTION_MAX}
+                  </span>
+                ) : null}
+              </p>
+              <Button type="submit" disabled={locked || !isAskable(question)} aria-busy={asking} className="w-full sm:w-auto">
+                {asking ? <Loader2 className="animate-spin motion-reduce:animate-none" aria-hidden /> : null}
+                {asking ? "Answering..." : "Ask"}
+              </Button>
+            </div>
+          </form>
+
+          {/* Spoken once, when the answer is complete, so a screen reader is not interrupted by every streamed word. */}
+          <div aria-live="polite" role="status" className="sr-only">
+            {live}
+          </div>
+
+          {asked ? (
+            <div className="space-y-2">
+              <p className="text-[13px] text-muted-foreground">You asked: {asked}</p>
+              <div className="rounded-lg bg-secondary px-4 py-3" aria-busy={asking}>
+                {answer ? (
+                  <SafeMarkdown source={answer} />
+                ) : asking ? (
+                  <p className="flex items-center gap-2 text-[15px] text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden />
+                    Reading the chapter...
+                  </p>
+                ) : null}
+              </div>
+              {finished ? (
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" variant="ghost" size="sm" onClick={copyAnswer}>
+                    {copied ? <Check aria-hidden /> : <Copy aria-hidden />}
+                    {copied ? "Copied" : "Copy"}
+                  </Button>
+                  <Button type="button" variant="ghost" size="sm" onClick={startFollowUp}>
+                    <CornerDownRight aria-hidden />
+                    Ask a follow-up
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          {error ? <p className="text-sm text-destructive">{error}</p> : null}
+
+          {earlier.length > 0 ? (
+            <div className="border-t border-border pt-3">
+              <button
+                type="button"
+                onClick={() => setHistoryOpen((value) => !value)}
+                aria-expanded={historyOpen}
+                aria-controls="ask-chapter-history"
+                className="flex min-h-11 w-full items-center justify-between gap-2 rounded-md text-left text-sm font-semibold text-foreground outline-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow"
+              >
+                Earlier questions ({earlier.length})
+                <ChevronDown className={cn("size-4 transition-transform motion-reduce:transition-none", historyOpen && "rotate-180")} aria-hidden />
+              </button>
+              {historyOpen ? (
+                <ul id="ask-chapter-history" className="mt-2 space-y-4">
+                  {earlier.map((turn) => (
+                    <li key={turn.question + turn.answer.slice(0, 40)} className="space-y-2">
+                      <p className="text-sm font-semibold text-foreground">{turn.question}</p>
+                      <div className="rounded-lg bg-secondary px-4 py-3">
+                        <SafeMarkdown source={turn.answer} />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ) : null}
+
+          <p className="text-[13px] text-muted-foreground">Answers come from AI and can be wrong. Check the chapter.</p>
         </div>
-      </form>
-      <div aria-live="polite" className="mt-3">
-        {answer ? <p className="whitespace-pre-wrap rounded-lg bg-secondary px-4 py-3 text-[15px] leading-relaxed text-foreground">{answer}</p> : null}
-        {error ? <p className="text-sm text-destructive">{error}</p> : null}
-      </div>
-      <p className="mt-3 text-[13px] text-muted-foreground">Answers come from AI and can be wrong. Check the chapter.</p>
+      ) : null}
     </section>
   );
 }
