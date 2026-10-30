@@ -222,6 +222,7 @@ test('native reader submits quizzes, saves completion, enforces locks and signs 
             data: {
               course: { ...courses[0], status: 'PUBLISHED' },
               access: 'active',
+              coupon: null,
               track: null,
               enrollment: {
                 percentComplete: 0,

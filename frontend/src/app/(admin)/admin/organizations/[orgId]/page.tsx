@@ -16,7 +16,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AdminActionForm } from "@/components/admin/admin-action-form";
 import { OrganizationCourseDrawer } from "@/components/admin/organization-course-drawer";
-import { rotateOrganizationCredentialFormAction, setAllocationLeaderboardAction } from "@/server/actions/admin/organizations";
+import {
+  createOrganizationCouponPoolAction,
+  rotateOrganizationCredentialFormAction,
+  setAllocationLeaderboardAction,
+  setOrganizationCouponPoolActiveAction,
+} from "@/server/actions/admin/organizations";
 import {
   AdminBackLink,
   AdminPageHeader,
@@ -40,7 +45,7 @@ export default async function AdminOrganizationDetailPage({
   const { orgId } = await params;
   const query = await searchParams;
 
-  const { organization: org, credentials, allocations, pendingRequests, publishedCourses } =
+  const { organization: org, credentials, allocations, couponPools, pendingRequests, publishedCourses } =
     await serverApiFetchOrNotFound<AdminOrganizationDetail>(`/api/v1/admin/organizations/${encodeURIComponent(orgId)}`);
 
   const allocationByCourseId = new Map(allocations.map((row) => [row.course.id, row]));
@@ -263,6 +268,106 @@ export default async function AdminOrganizationDetailPage({
           <p className="text-xs font-medium text-muted-foreground">{publishedCourses.length.toLocaleString()} published courses available</p>
         </div>
       </AdminPanel>
+
+      <AdminSection
+        title="Coupon pools"
+        description="Limited seats this organization can grant. Course-specific pools first; general pools cover any allocated course. Assigning or Pathment enroll consumes a seat and shows the learner a free/discount banner."
+        className="mt-12"
+      >
+        <AdminPanel className="mb-6">
+          <AdminActionForm
+            action={createOrganizationCouponPoolAction}
+            submitLabel="Create coupon pool"
+            pendingLabel="Creating…"
+            className="space-y-4"
+          >
+            <input type="hidden" name="organizationId" value={org.id} />
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <label className="text-sm">
+                <span className="mb-1 block font-medium">Label</span>
+                <input name="label" required maxLength={120} placeholder="DevWeekends Pathment" className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm" />
+              </label>
+              <label className="text-sm">
+                <span className="mb-1 block font-medium">Course scope</span>
+                <select name="courseId" className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm">
+                  <option value="">General (any allocated course)</option>
+                  {allocations.map((row) => (
+                    <option key={row.course.id} value={row.course.id}>
+                      {row.course.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm">
+                <span className="mb-1 block font-medium">Max seats</span>
+                <input name="maxRedemptions" type="number" min={1} required defaultValue={100} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm" />
+              </label>
+              <label className="text-sm">
+                <span className="mb-1 block font-medium">Percent off</span>
+                <input name="percentOff" type="number" min={1} max={100} defaultValue={100} className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm" />
+              </label>
+              <label className="text-sm">
+                <span className="mb-1 block font-medium">Code (optional)</span>
+                <input name="code" maxLength={64} placeholder="DW-LIFETIME" className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm" />
+              </label>
+              <label className="text-sm">
+                <span className="mb-1 block font-medium">Expires (optional)</span>
+                <input name="expiresAt" type="date" className="h-10 w-full rounded-lg border border-input bg-background px-3 text-sm" />
+              </label>
+            </div>
+          </AdminActionForm>
+        </AdminPanel>
+
+        <AdminTable minWidth="820px">
+          <AdminTableHead>
+            <tr>
+              <AdminTableHeaderCell>Pool</AdminTableHeaderCell>
+              <AdminTableHeaderCell>Scope</AdminTableHeaderCell>
+              <AdminTableHeaderCell align="right">Used / max</AdminTableHeaderCell>
+              <AdminTableHeaderCell>Status</AdminTableHeaderCell>
+              <AdminTableHeaderCell>Actions</AdminTableHeaderCell>
+            </tr>
+          </AdminTableHead>
+          <AdminTableBody>
+            {couponPools.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-10 text-center text-sm text-muted-foreground">
+                  No coupon pools yet.
+                </td>
+              </tr>
+            ) : (
+              couponPools.map((pool) => (
+                <AdminTableRow key={pool.id}>
+                  <AdminTableCell>
+                    <span className="font-medium">{pool.label}</span>
+                    <span className="mt-0.5 block text-xs text-muted-foreground">{pool.displayLabel}</span>
+                    {pool.code ? <span className="mt-0.5 block font-mono text-xs text-muted-foreground">{pool.code}</span> : null}
+                  </AdminTableCell>
+                  <AdminTableCell>
+                    {pool.course ? pool.course.title : <Badge variant="outline">General</Badge>}
+                  </AdminTableCell>
+                  <AdminTableCell align="right" className="tabular-nums">
+                    {pool.redemptionCount} / {pool.maxRedemptions}
+                  </AdminTableCell>
+                  <AdminTableCell>
+                    {pool.active ? <Badge variant="secondary">Active</Badge> : <Badge variant="outline">Off</Badge>}
+                  </AdminTableCell>
+                  <AdminTableCell>
+                    <form action={setOrganizationCouponPoolActiveAction}>
+                      <input type="hidden" name="organizationId" value={org.id} />
+                      <input type="hidden" name="poolId" value={pool.id} />
+                      <input type="hidden" name="active" value={pool.active ? "false" : "true"} />
+                      <Button type="submit" size="sm" variant="ghost">
+                        {pool.active ? "Turn off" : "Turn on"}
+                      </Button>
+                    </form>
+                  </AdminTableCell>
+                </AdminTableRow>
+              ))
+            )}
+          </AdminTableBody>
+        </AdminTable>
+      </AdminSection>
     </div>
   );
 }

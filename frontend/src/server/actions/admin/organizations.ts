@@ -94,3 +94,39 @@ export async function setAllocationLeaderboardAction(formData: FormData): Promis
   );
   revalidatePath(`/admin/organizations/${organizationId}`);
 }
+
+/** Create a limited coupon pool for one allocated course, or a general pool for any allocated course. */
+export async function createOrganizationCouponPoolAction(
+  _prev: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  const organizationId = String(formData.get("organizationId") ?? "");
+  if (!organizationId) return { ok: false, message: "Missing organization." };
+  return runAdminAction(async () => {
+    const courseId = String(formData.get("courseId") ?? "").trim();
+    await adminCall(`/api/v1/admin/organizations/${encodeURIComponent(organizationId)}/coupons`, {
+      method: "POST",
+      json: {
+        label: String(formData.get("label") ?? ""),
+        courseId: courseId || null,
+        code: String(formData.get("code") ?? "").trim() || null,
+        percentOff: Number(formData.get("percentOff") ?? 100),
+        maxRedemptions: Number(formData.get("maxRedemptions") ?? 0),
+        expiresAt: String(formData.get("expiresAt") ?? "").trim(),
+      },
+    });
+    revalidatePath(`/admin/organizations/${organizationId}`);
+    return "Coupon pool created.";
+  });
+}
+
+export async function setOrganizationCouponPoolActiveAction(formData: FormData): Promise<void> {
+  const organizationId = String(formData.get("organizationId") ?? "");
+  const poolId = String(formData.get("poolId") ?? "");
+  if (!organizationId || !poolId) throw new Error("Missing organization or coupon pool.");
+  await adminCall(
+    `/api/v1/admin/organizations/${encodeURIComponent(organizationId)}/coupons/${encodeURIComponent(poolId)}`,
+    { method: "PATCH", json: { active: formData.get("active") === "true" } }
+  );
+  revalidatePath(`/admin/organizations/${organizationId}`);
+}

@@ -37,6 +37,14 @@ export type CatalogCourseDetail = CatalogCourseSummary & {
   access: "active" | "payment_required" | "none";
 };
 
+/** Org coupon applied to this enrollment; shown on the course overview. */
+export type CourseCouponEntitlement = {
+  displayLabel: string;
+  percentOff: number;
+  status: "ISSUED" | "REDEEMED";
+  organizationName: string;
+};
+
 export type CourseOverview = {
   course: {
     id: string;
@@ -52,6 +60,8 @@ export type CourseOverview = {
   };
   access: "active" | "payment_required" | "none";
   enrollment: { percentComplete: number; chaptersCompleted: number; pendingReviews: number } | null;
+  /** Present when an org coupon unlocked or discounted this enrollment. */
+  coupon: CourseCouponEntitlement | null;
   /** Variant and specialisation for a course in a family; null otherwise or without access. */
   track: CourseTrack | null;
   /** Present only when access is active. */

@@ -1,4 +1,5 @@
 import type { CourseOverview } from '../../shared/api/catalog';
+import { CourseCouponBanner } from './course-coupon-banner';
 import { CourseOverviewHero } from './course-overview-hero';
 import { CourseSyllabus } from './course-syllabus';
 import { CourseProjectShowcase } from './course-project-showcase';
@@ -19,6 +20,7 @@ export function CourseOverviewContent({ overview, onChooseSpecialisation }: {
     <div className="mx-auto max-w-6xl space-y-8 px-5 py-8 sm:px-6 sm:py-10">
       <LearnerBreadcrumb courseSlug={course.slug} courseTitle={course.title} />
       <CourseOverviewHero {...course} {...enrollment} chaptersTotal={chapterCount} continueHref={continueHref} continueLabel={continueLabel} moduleCount={modules.length} chapterCount={chapterCount} />
+      {overview.coupon ? <CourseCouponBanner coupon={overview.coupon} /> : null}
       {track ? <VariantBanner courseSlug={course.slug} track={track} /> : null}
       {track?.specialisationOpen ? <SpecialisationPanel courseSlug={course.slug} track={track} onChoose={onChooseSpecialisation} /> : null}
       <CourseProjectShowcase courseSlug={course.slug} />

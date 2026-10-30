@@ -9,6 +9,8 @@ import type { SessionUser } from "../../types/auth.js";
 import { notifyMenteeCourseEnrollment, notifyMentorNewEnrollment } from "../notifications/events.js";
 import { dispatchNotification } from "../notifications/service.js";
 import { assignmentForNewEnrollment } from "../courses/variant-assignment.js";
+import { couponUnlocksContent, issueCouponForEnrollment } from "../coupons/issue.js";
+import { resolveCouponOrganizationForCourse } from "../coupons/resolve-org.js";
 import { inviteAcceptUrl, sendEmail } from "../email/send.js";
 import { requireCourseById, type OwnedCourse } from "./access.js";
 
@@ -61,6 +63,7 @@ export async function assignByEmails(user: SessionUser, courseId: string, emails
   }
   requirePublished(course, "assigning it to mentees");
 
+  const couponOrg = await resolveCouponOrganizationForCourse(course.id);
   const enrolledEmails: string[] = [];
   const invitedEmails: string[] = [];
   let emailFailed = false;
@@ -73,12 +76,38 @@ export async function assignByEmails(user: SessionUser, courseId: string, emails
         const old = await tx.enrollment.findUnique({ where: { courseId_userId: { courseId: course.id, userId: existingUser.id } }, select: { id: true } });
         if (old) return old;
         const assignment = await assignmentForNewEnrollment(tx, course.id);
-        return tx.enrollment.upsert({
+        const created = await tx.enrollment.upsert({
           where: { courseId_userId: { courseId: course.id, userId: existingUser.id } },
           update: {},
-          create: { ...assignment, courseId: course.id, userId: existingUser.id, status: "ASSIGNED", assignedById: user.id, source: "DIRECT", lifecycle: "ACTIVE" },
+          create: {
+            ...assignment,
+            courseId: course.id,
+            userId: existingUser.id,
+            status: "ASSIGNED",
+            assignedById: user.id,
+            source: "DIRECT",
+            lifecycle: "ACTIVE",
+            organizationId: couponOrg?.organizationId ?? null,
+          },
           select: { id: true },
         });
+        if (couponOrg) {
+          const coupon = await issueCouponForEnrollment(tx, {
+            organizationId: couponOrg.organizationId,
+            courseId: course.id,
+            enrollmentId: created.id,
+            userId: existingUser.id,
+            learnerEmail: email,
+            assignedById: user.id,
+          });
+          if (coupon && couponUnlocksContent(coupon.percentOff)) {
+            await tx.enrollment.update({
+              where: { id: created.id },
+              data: { lifecycle: "ACTIVE", status: "IN_PROGRESS", startedAt: new Date() },
+            });
+          }
+        }
+        return created;
       });
       await dispatchNotification(() => notifyMenteeCourseEnrollment(enrollment.id));
       await dispatchNotification(() => notifyMentorNewEnrollment(enrollment.id));

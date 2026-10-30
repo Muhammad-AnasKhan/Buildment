@@ -25,6 +25,7 @@ import { dispatchNotification } from "../notifications/service.js";
 import { assertEnrollmentChapter } from "../courses/releases.js";
 import { gradeShortAnswerWithLlm } from "../ai/short-answer/grade.js";
 import { AiError } from "../ai/openrouter.js";
+import { visibleExplanation } from "../../shared/lib/quiz-feedback.js";
 
 export type BlockResponseResult = {
   score: number | null;
@@ -47,11 +48,15 @@ function gradeBlock(type: string, config: unknown, payload: unknown): Graded {
   switch (type) {
     case "QUIZ": {
       const cfg = blockDefinitions.QUIZ.schema.parse(config);
-      return { ...blockDefinitions.QUIZ.grade(cfg, QuizPayloadSchema.parse(payload)), explanation: cfg.explanation };
+      const answer = QuizPayloadSchema.parse(payload);
+      const graded = blockDefinitions.QUIZ.grade(cfg, answer);
+      return { ...graded, explanation: visibleExplanation({ explanation: cfg.explanation, options: cfg.options, selected: answer.selected, isCorrect: graded.isCorrect, allowRetry: cfg.allowRetry }) };
     }
     case "PREDICT": {
       const cfg = blockDefinitions.PREDICT.schema.parse(config);
-      return { ...blockDefinitions.PREDICT.grade(cfg, PredictPayloadSchema.parse(payload)), explanation: cfg.explanation };
+      const answer = PredictPayloadSchema.parse(payload);
+      const graded = blockDefinitions.PREDICT.grade(cfg, answer);
+      return { ...graded, explanation: visibleExplanation({ explanation: cfg.explanation, options: cfg.options, selected: [answer.selected], isCorrect: graded.isCorrect, allowRetry: cfg.allowRetry }) };
     }
     case "CODE": {
       const cfg = blockDefinitions.CODE.schema.parse(config);

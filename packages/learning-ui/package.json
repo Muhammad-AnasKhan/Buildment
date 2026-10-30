@@ -1084,7 +1084,8 @@
     "./components/learn/course-overview-content": "./src/components/learn/course-overview-content.tsx",
     "./components/learn/course-navigation": "./src/components/learn/course-navigation.tsx",
     "./components/learn/variant-picker": "./src/components/learn/variant-picker.tsx",
-    "./components/learn/enrollment-badge": "./src/components/learn/enrollment-badge.tsx"
+    "./components/learn/enrollment-badge": "./src/components/learn/enrollment-badge.tsx",
+    "./components/learn/course-coupon-banner": "./src/components/learn/course-coupon-banner.tsx"
   },
   "files": [
     "src",

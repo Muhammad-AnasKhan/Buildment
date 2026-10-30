@@ -90,6 +90,7 @@ export const courseOverview: import('../../server/src/shared/api/catalog').Cours
       chaptersCompleted: 1,
       pendingReviews: 2,
     },
+    coupon: null,
     track: null,
     syllabus: {
       chapterCount: 3,

@@ -16,6 +16,9 @@ import {
   bulkSuspendBody,
   courseIdParams,
   courseStatusBody,
+  couponPoolActiveBody,
+  couponPoolParams,
+  createCouponPoolBody,
   createOrganizationBody,
   grantAdminBody,
   grantInstructorBody,
@@ -58,6 +61,16 @@ router.patch(
   "/organizations/:orgId/allocations/:courseId/leaderboard",
   validate({ params: allocationParams, body: instructorAccessBody }),
   admin.setAllocationLeaderboard
+);
+router.post(
+  "/organizations/:orgId/coupons",
+  validate({ params: orgIdParams, body: createCouponPoolBody }),
+  admin.createCouponPool
+);
+router.patch(
+  "/organizations/:orgId/coupons/:poolId",
+  validate({ params: couponPoolParams, body: couponPoolActiveBody }),
+  admin.setCouponPoolActive
 );
 
 router.get("/course-requests", validateQuery(listRequestsQuery), admin.listCourseRequests);

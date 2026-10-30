@@ -270,3 +270,18 @@ test('enrolled course scroll stays inside the viewport with no blank document ta
   expect(geometry.sidebarBottom).toBe(geometry.viewport);
   expect(geometry.overscroll).toBe('none');
 });
+
+
+test('enrolled overview preserves the organization coupon banner', async ({ page }) => {
+  await setup(page, {
+    ...courseOverview,
+    coupon: {
+      displayLabel: 'Organization scholarship',
+      percentOff: 100,
+      status: 'REDEEMED',
+      organizationName: 'Learning team',
+    },
+  });
+  await expect(page.getByText('Organization scholarship')).toBeVisible();
+  await expect(page.getByText('Access through Learning team — no payment needed for this enrollment.')).toBeVisible();
+});
