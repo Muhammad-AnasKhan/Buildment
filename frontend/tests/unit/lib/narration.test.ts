@@ -33,8 +33,27 @@ describe("pickNarration", () => {
 
 describe("narrationBase", () => {
   it("serves from the web app by default", () => {
-    expect(narrationBase(undefined)).toBe("/narration");
-    expect(narrationBase("   ")).toBe("/narration");
+    expect(narrationBase(undefined, undefined)).toBe("/narration");
+    expect(narrationBase("   ", undefined)).toBe("/narration");
+  });
+
+  it("serves local files in development and on Vercel previews", () => {
+    expect(narrationBase(undefined, "development")).toBe("/narration");
+    expect(narrationBase(undefined, "preview")).toBe("/narration");
+  });
+
+  it("serves from the R2 bucket on Vercel production when nothing is configured", () => {
+    expect(narrationBase(undefined, "production")).toBe("https://audio.edorax.com");
+    expect(narrationBase("  ", "production")).toBe("https://audio.edorax.com");
+  });
+
+  it("lets an explicit address win everywhere, including production", () => {
+    expect(narrationBase("https://audio.example.com/", "production")).toBe("https://audio.example.com");
+    expect(narrationBase("https://audio.example.com/", "preview")).toBe("https://audio.example.com");
+  });
+
+  it("keeps an unsafe explicit address on the local files, even in production", () => {
+    expect(narrationBase("//evil.example.com/x", "production")).toBe("/narration");
   });
 
   it("uses a configured https address without a trailing slash", () => {
