@@ -27,7 +27,7 @@ export function WorkspaceAccountMenu({
   compact = false,
 }: {
   current: "learn" | "teach" | "admin";
-  user: { name?: string | null; email?: string | null; role?: string };
+  user: { id?: string; name?: string | null; email?: string | null; role?: string };
   instructorAccess?: InstructorAccessView;
   signOutAction: () => Promise<void>;
   compact?: boolean;
@@ -35,6 +35,10 @@ export function WorkspaceAccountMenu({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const runAction = (action: () => void | Promise<void>) => startTransition(async () => { await action(); });
+  const signOut = () => {
+    if (user.id) window.sessionStorage.removeItem(`account-setup-prompted:${user.id}`);
+    return signOutAction();
+  };
   const role = instructorAccess?.role ?? user.role;
   const isAdmin = role === "ADMIN";
   const canTeach = isAdmin || role === "MENTOR";
@@ -111,7 +115,7 @@ export function WorkspaceAccountMenu({
         <DropdownMenuSeparator />
         <ThemeMenuItems />
         <DropdownMenuSeparator />
-        <DropdownMenuItem disabled={pending} className="min-h-9 gap-2 px-2" variant="destructive" onClick={() => runAction(signOutAction)}>
+        <DropdownMenuItem disabled={pending} className="min-h-9 gap-2 px-2" variant="destructive" onClick={() => runAction(signOut)}>
           <LogOut className="size-4" /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>

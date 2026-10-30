@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { email } from "./common.js";
-import { authEmailSchema, loginSchema, signupSchema } from "../shared/lib/auth-validation.js";
+import { authEmailSchema, loginSchema, realNameSchema, signupSchema } from "../shared/lib/auth-validation.js";
 
 const redirectTo = z.string().max(2048).optional();
 
@@ -12,6 +12,23 @@ export const changePasswordBody = z.object({
   message: "Passwords do not match", path: ["confirmPassword"],
 });
 export type ChangePasswordBody = z.infer<typeof changePasswordBody>;
+
+export const accountSetupBody = z.object({
+  name: realNameSchema.optional(),
+  newPassword: z.string().min(8, "Password must be at least 8 characters").max(128).optional(),
+  confirmPassword: z.string().max(128).optional(),
+}).superRefine((input, context) => {
+  if (input.newPassword && input.newPassword !== input.confirmPassword) {
+    context.addIssue({ code: "custom", path: ["confirmPassword"], message: "Passwords do not match" });
+  }
+  if (input.confirmPassword && !input.newPassword) {
+    context.addIssue({ code: "custom", path: ["newPassword"], message: "Enter a new password" });
+  }
+  if (!input.name && !input.newPassword) {
+    context.addIssue({ code: "custom", message: "Add your name or a password" });
+  }
+});
+export type AccountSetupBody = z.infer<typeof accountSetupBody>;
 
 export const signupBody = signupSchema;
 export type SignupBody = z.infer<typeof signupBody>;

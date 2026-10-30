@@ -6,11 +6,13 @@ export const authEmailSchema = z.string().trim()
   .email("Enter a valid email")
   .transform((value) => value.toLowerCase());
 
+export const realNameSchema = z.string().trim()
+  .min(1, "Name is required")
+  .max(120, "Name is too long")
+  .refine((value) => /\p{L}/u.test(value), "Enter your real name");
+
 export const signupSchema = z.object({
-  name: z.string().trim()
-    .min(1, "Name is required")
-    .max(120, "Name is too long")
-    .refine((value) => /\p{L}/u.test(value), "Enter your real name"),
+  name: realNameSchema,
   email: authEmailSchema,
   password: z.string().min(8, "Password must be at least 8 characters").max(128, "Password is too long"),
 });

@@ -19,6 +19,7 @@ export function toSessionUser(user: {
   image: string | null;
   role: SessionUser["role"];
   emailVerified: Date | null;
+  passwordHash: string | null;
 }): SessionUser {
   return {
     id: user.id,
@@ -27,12 +28,13 @@ export function toSessionUser(user: {
     image: user.image,
     role: user.role,
     emailVerified: user.emailVerified,
+    hasPassword: user.passwordHash !== null,
   };
 }
 
 /** JSON shape sent to clients. */
 export function serializeSessionUser(user: SessionUser): SessionUserWire {
-  return { ...user, emailVerified: user.emailVerified?.toISOString() ?? null };
+  return { ...user, emailVerified: user.emailVerified?.toISOString() ?? null, hasPassword: user.hasPassword ?? false };
 }
 
 /** A session token resolved to its user, with the account's suspension state. */
