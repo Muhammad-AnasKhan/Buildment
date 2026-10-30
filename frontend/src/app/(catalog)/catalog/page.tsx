@@ -1,3 +1,4 @@
+import { enrollmentLabel } from "@buildment/learning-ui/components/learn/enrollment-badge";
 import type { Metadata } from "next";
 import { SITE_SHARE_IMAGE } from "@/lib/site";
 import type { CatalogCourseSummary } from "@/shared/api/catalog";
@@ -14,13 +15,7 @@ function CourseGrid({ courses }: { courses: CatalogCourseSummary[] }) {
   return (
     <ul className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {courses.map((course) => {
-        const lifecycle = course.enrollmentLifecycle;
-        const enrolledLabel =
-          lifecycle === "PAYMENT_REQUIRED"
-            ? "Payment due"
-            : lifecycle
-              ? "Enrolled"
-              : null;
+        const enrolledLabel = enrollmentLabel(course.enrollmentLifecycle);
 
         return (
           <li key={course.id}>

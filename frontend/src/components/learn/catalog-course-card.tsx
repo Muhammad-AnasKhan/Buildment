@@ -1,3 +1,4 @@
+import { EnrollmentBadge } from "@buildment/learning-ui/components/learn/enrollment-badge";
 import Link from "next/link";
 import { CourseCover } from "@/components/learn/course-cover";
 import { formatPriceCents } from "@/lib/format-price";
@@ -53,7 +54,7 @@ export function CatalogCourseCard({
             {pricingType === "PAID" ? formatPriceCents(priceCents ?? 0, currency ?? "USD") : "Free"}
           </p>
           {enrolledLabel ? (
-            <span className="rounded-sm bg-secondary px-2 py-1 text-sm font-bold text-primary">{enrolledLabel}</span>
+            <EnrollmentBadge label={enrolledLabel} />
           ) : null}
         </div>
       </div>

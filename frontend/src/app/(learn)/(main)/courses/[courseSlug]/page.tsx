@@ -6,12 +6,9 @@ import { ArrowLeft, Lock } from "lucide-react";
 import type { CourseOverview } from "@/shared/api/catalog";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
-import { CourseOverviewHero } from "@/components/learn/course-overview-hero";
-import { CourseSyllabus } from "@/components/learn/course-syllabus";
-import { CourseProjectShowcase } from "@/components/learn/course-project-showcase";
-import { SpecialisationPanel, VariantBanner } from "@/components/learn/course-track-panels";
-import { VariantThemeScope, variantForTrack } from "@/components/learn/variant-theme";
-import { LearnerBreadcrumb } from "@/components/learn/learner-breadcrumb";
+import { CourseOverviewContent } from "@buildment/learning-ui/components/learn/course-overview-content";
+import { WebCourseNavigation } from "@/components/learn/course-navigation";
+import { chooseCourseSpecialisationAction } from "@/server/actions/course-track";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -98,7 +95,7 @@ export default async function CourseOverviewPage({
     );
   }
 
-  const { modules, chapterCount, continueHref, defaultOpenModuleId } = syllabus;
+  const { continueHref } = syllabus;
   const { track } = overview;
 
   // A course in a family starts with the variant choice, whichever way the learner enrolled.
@@ -109,53 +106,9 @@ export default async function CourseOverviewPage({
   // Enroll, sign-up and the variant picker send ?start=1: open the lesson to read next, like a player.
   if (start === "1" && continueHref) redirect(continueHref);
 
-  const continueLabel =
-    enrollment.percentComplete === 0
-      ? "Start learning"
-      : enrollment.percentComplete >= 100
-        ? "Review course"
-        : "Continue learning";
-
   return (
-    <VariantThemeScope variant={variantForTrack(track)}>
-      <div className="mx-auto max-w-6xl space-y-8 px-5 py-8 sm:px-6 sm:py-10">
-        <LearnerBreadcrumb courseSlug={course.slug} courseTitle={course.title} />
-
-        <CourseOverviewHero
-          difficulty={course.difficulty}
-          title={course.title}
-          description={course.description}
-          projectGoal={course.projectGoal}
-          coverUrl={course.coverUrl}
-          instructorName={course.instructorName}
-          percentComplete={enrollment.percentComplete}
-          chaptersCompleted={enrollment.chaptersCompleted}
-          chaptersTotal={chapterCount}
-          pendingReviews={enrollment.pendingReviews}
-          continueHref={continueHref}
-          continueLabel={continueLabel}
-          moduleCount={modules.length}
-          chapterCount={chapterCount}
-          estimatedHours={course.estimatedHours}
-        />
-
-        {track ? <VariantBanner courseSlug={course.slug} track={track} /> : null}
-
-        {track?.specialisationOpen ? <SpecialisationPanel courseSlug={course.slug} track={track} /> : null}
-
-        <CourseProjectShowcase courseSlug={course.slug} />
-
-        <CourseSyllabus
-          courseSlug={course.slug}
-          modules={modules}
-          defaultOpenModuleId={defaultOpenModuleId}
-          percentComplete={enrollment.percentComplete}
-          chaptersCompleted={enrollment.chaptersCompleted}
-          chaptersTotal={chapterCount}
-        />
-
-        {track && !track.specialisationOpen ? <SpecialisationPanel courseSlug={course.slug} track={track} /> : null}
-      </div>
-    </VariantThemeScope>
+    <WebCourseNavigation>
+      <CourseOverviewContent overview={overview} onChooseSpecialisation={chooseCourseSpecialisationAction} />
+    </WebCourseNavigation>
   );
 }

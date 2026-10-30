@@ -1,0 +1,89 @@
+.course-overview-surface {
+  /* Edorax identity: Cobalt on Paper, Ink for text, Marker yellow as a rare accent. */
+  --brand-cobalt: #2434e0;
+  --brand-yellow: #ffc933;
+  --background: #f6f7fb;
+  --foreground: #0a0f2c;
+  --card: #ffffff;
+  --card-foreground: #0a0f2c;
+  --popover: #ffffff;
+  --popover-foreground: #0a0f2c;
+  --primary: #2434e0;
+  --primary-foreground: #ffffff;
+  --secondary: #e8ebff;
+  --secondary-foreground: #0a0f2c;
+  --muted: #e8ebff;
+  --muted-foreground: #46507a;
+  --accent: #e8ebff;
+  --accent-foreground: #0a0f2c;
+  --destructive: oklch(0.52 0.21 27);
+  --border: #dce0f2;
+  --input: #dce0f2;
+  --ring: #2434e0;
+  --chart-1: #2434e0;
+  --chart-2: #7a8bff;
+  --chart-3: #0a0f2c;
+  --chart-4: #ffc933;
+  --chart-5: #46507a;
+  --radius: 0.25rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0a0f2c;
+  --sidebar-primary: #2434e0;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #e8ebff;
+  --sidebar-accent-foreground: #2434e0;
+  --sidebar-border: #dce0f2;
+  --sidebar-ring: #2434e0;
+  --code-surface: #f1f3fb;
+  --code-toolbar: #e8ebff;
+  --code-border: #dce0f2;
+  --code-lang-fg: #46507a;
+  --code-fg: #0a0f2c;
+  --ok: #0b6b45;
+  --ok-soft: #ddf3e8;
+}
+
+.dark .course-overview-surface {
+  /* Ink ground, Paper text, light cobalt for actions. Flat: no glow, no gradient. */
+  --brand-cobalt: #7a8bff;
+  --background: #0a0f2c;
+  --foreground: #f6f7fb;
+  --card: #111836;
+  --card-foreground: #f6f7fb;
+  --popover: #151c44;
+  --popover-foreground: #f6f7fb;
+  --primary: #7a8bff;
+  --primary-foreground: #0a0f2c;
+  --secondary: #1a2150;
+  --secondary-foreground: #f6f7fb;
+  --muted: #172046;
+  --muted-foreground: #aab3de;
+  --accent: #1e2758;
+  --accent-foreground: #f6f7fb;
+  --destructive: oklch(0.7 0.17 25);
+  --border: rgb(246 247 251 / 14%);
+  --input: rgb(246 247 251 / 20%);
+  --ring: #7a8bff;
+  --chart-1: #7a8bff;
+  --chart-2: #ffc933;
+  --chart-3: #f6f7fb;
+  --chart-4: #aab3de;
+  --chart-5: #5a6bff;
+  --sidebar: #070b20;
+  --sidebar-foreground: #f6f7fb;
+  --sidebar-primary: #7a8bff;
+  --sidebar-primary-foreground: #0a0f2c;
+  --sidebar-accent: #172046;
+  --sidebar-accent-foreground: #f6f7fb;
+  --sidebar-border: rgb(246 247 251 / 12%);
+  --sidebar-ring: #7a8bff;
+  --code-surface: #070b20;
+  --code-toolbar: #111836;
+  --code-border: #26305f;
+  --code-lang-fg: #aab3de;
+  --code-fg: #e8ebff;
+  --ok: #3ddc97;
+  --ok-soft: #0e3326;
+}
+
+.course-overview-surface { background: var(--background); color: var(--foreground); min-height: 100%; }

@@ -1068,13 +1068,30 @@
     "./labs/net-lab-home-router/data": "./src/labs/net-lab-home-router/data.ts",
     "./labs/net-lab-no-internet/data": "./src/labs/net-lab-no-internet/data.ts",
     "./labs/net-lab-plan-school/data": "./src/labs/net-lab-plan-school/data.ts",
-    "./labs/*": "./src/labs/*"
+    "./labs/*": "./src/labs/*",
+    "./brand-dot": "./src/components/brand/dot.tsx",
+    "./marketplace-weeks": "./src/lib/marketplace-weeks.ts",
+    "./course-theme.css": "./course-theme.css",
+    "./components/learn/course-cover": "./src/components/learn/course-cover.tsx",
+    "./components/learn/variant-theme": "./src/components/learn/variant-theme.tsx",
+    "./components/learn/course-project-showcase": "./src/components/learn/course-project-showcase.tsx",
+    "./components/learn/syllabus-chapter-row": "./src/components/learn/syllabus-chapter-row.tsx",
+    "./components/learn/learner-breadcrumb": "./src/components/learn/learner-breadcrumb.tsx",
+    "./components/learn/course-track-panels": "./src/components/learn/course-track-panels.tsx",
+    "./components/learn/course-variant-content": "./src/components/learn/course-variant-content.tsx",
+    "./components/learn/course-overview-hero": "./src/components/learn/course-overview-hero.tsx",
+    "./components/learn/course-syllabus": "./src/components/learn/course-syllabus.tsx",
+    "./components/learn/course-overview-content": "./src/components/learn/course-overview-content.tsx",
+    "./components/learn/course-navigation": "./src/components/learn/course-navigation.tsx",
+    "./components/learn/variant-picker": "./src/components/learn/variant-picker.tsx",
+    "./components/learn/enrollment-badge": "./src/components/learn/enrollment-badge.tsx"
   },
   "files": [
     "src",
     "assets",
     "styles.css",
-    "tsconfig.json"
+    "tsconfig.json",
+    "course-theme.css"
   ],
   "peerDependencies": {
     "react": "^19.2.0",
