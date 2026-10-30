@@ -34,7 +34,12 @@ export function toSessionUser(user: {
 
 /** JSON shape sent to clients. */
 export function serializeSessionUser(user: SessionUser): SessionUserWire {
-  return { ...user, emailVerified: user.emailVerified?.toISOString() ?? null, hasPassword: user.hasPassword ?? false };
+  return {
+    ...user,
+    emailVerified: user.emailVerified?.toISOString() ?? null,
+    hasPassword: user.hasPassword ?? false,
+    loginSessionId: user.loginSessionId ?? "",
+  };
 }
 
 /** A session token resolved to its user, with the account's suspension state. */
@@ -54,7 +59,10 @@ export async function findSessionState(sessionToken: string): Promise<SessionSta
     await prisma.session.delete({ where: { sessionToken } }).catch(() => undefined);
     return null;
   }
-  return { user: toSessionUser(session.user), suspended: session.user.suspendedAt !== null };
+  return {
+    user: { ...toSessionUser(session.user), loginSessionId: session.id },
+    suspended: session.user.suspendedAt !== null,
+  };
 }
 
 /** Blocks minting a new session for a suspended account. */
@@ -66,8 +74,8 @@ export function assertNotSuspended(user: { suspendedAt: Date | null }): void {
 
 export async function createSession(userId: string, sessionToken = randomBytes(32).toString("hex")) {
   const expires = new Date(Date.now() + SESSION_MAX_AGE_MS);
-  await prisma.session.create({ data: { sessionToken, userId, expires } });
-  return { sessionToken, expires };
+  const session = await prisma.session.create({ data: { sessionToken, userId, expires } });
+  return { sessionToken, expires, loginSessionId: session.id };
 }
 
 export async function deleteSession(sessionToken: string) {

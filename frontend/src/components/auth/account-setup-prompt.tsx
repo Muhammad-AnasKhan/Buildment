@@ -11,7 +11,14 @@ import { completeAccountSetupAction, type ProfileUpdateState } from "@/server/ac
 
 const initial: ProfileUpdateState = { ok: false, errors: [] };
 
-export function AccountSetupPrompt({ user }: { user: { id: string; name: string | null; hasPassword: boolean } }) {
+type AccountSetupUser = {
+  id: string;
+  name: string | null;
+  hasPassword: boolean;
+  loginSessionId: string;
+};
+
+export function AccountSetupPrompt({ user }: { user: AccountSetupUser }) {
   const needsName = !user.name?.trim();
   const needsPassword = !user.hasPassword;
   const [open, setOpen] = useState(false);
@@ -20,7 +27,14 @@ export function AccountSetupPrompt({ user }: { user: { id: string; name: string 
 
   useEffect(() => {
     if (!needsName && !needsPassword) return;
-    const key = `account-setup-prompted:${user.id}`;
+    // Older API deployments may not return the login ID yet. In that case, show
+    // the setup prompt rather than suppressing it under a shared empty key.
+    if (!user.loginSessionId) {
+      setOpen(true);
+      return;
+    }
+
+    const key = `account-setup-prompted:v2:${user.loginSessionId}`;
     try {
       if (window.sessionStorage.getItem(key)) return;
       window.sessionStorage.setItem(key, "1");
@@ -28,7 +42,7 @@ export function AccountSetupPrompt({ user }: { user: { id: string; name: string 
     } catch {
       setOpen(true);
     }
-  }, [needsName, needsPassword, user.id]);
+  }, [needsName, needsPassword, user.loginSessionId]);
 
   useEffect(() => {
     if (state.ok) {
@@ -82,7 +96,6 @@ export function AccountSetupPrompt({ user }: { user: { id: string; name: string 
             ) : null}
 
             <div className="flex items-center justify-end gap-2 pt-1">
-              <Dialog.Close render={<Button type="button" variant="outline" disabled={pending} />}>Later</Dialog.Close>
               <Button type="submit" disabled={pending}>
                 {pending ? "Saving…" : "Save details"}
               </Button>

@@ -9,6 +9,7 @@ export type SessionUser = {
   role: Role;
   emailVerified: Date | null;
   hasPassword?: boolean;
+  loginSessionId?: string;
 };
 
 /** Organisation authenticated through integration credentials on /integrations/v1. */
