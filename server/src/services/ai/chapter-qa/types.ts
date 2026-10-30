@@ -6,6 +6,8 @@ export type ChapterQuestionStatus = {
   /** Questions this learner has left today (UTC). */
   remaining: number;
   dailyLimit: number;
+  /** The course's own starter questions (course.yaml assistant.starters); empty when it sets none. */
+  starters: string[];
 };
 
 export type ChapterQuestionAnswer = {

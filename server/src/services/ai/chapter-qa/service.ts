@@ -10,7 +10,8 @@ import { logger } from "../../../utils/logger.js";
 import { bypassProgressGatingForEmail } from "../../auth/seed-access.js";
 import { requireBlockSubmissionAccess } from "../../enrollment/api-learn-access.js";
 import { ChapterLockedError, assertChapterUnlocked } from "../../progress/gate.js";
-import { ANSWER_MAX_TOKENS, buildSystemPrompt, buildUserMessage } from "./prompt.js";
+import { readCourseAssistant } from "./assistant.js";
+import { buildMessages, buildSystemPrompt, modelSettings, type PreviousTurn } from "./prompt.js";
 import { recordTokens, releaseQuestion, remainingToday, reserveQuestion } from "./usage.js";
 
 // Ask about this chapter: one short question, one short answer, grounded in the chapter's
@@ -44,7 +45,7 @@ async function loadAskableChapter(chapterId: string, user: SessionUser | undefin
       publishedAt: true,
       source: true,
       compiled: true,
-      course: { select: { title: true, familySlug: true, variantFamily: true } },
+      course: { select: { title: true, familySlug: true, variantFamily: true, assistant: true } },
     },
   });
   if (!chapter || chapter.archivedAt || !chapter.publishedAt) throw new NotFoundError("Chapter not found");
@@ -69,34 +70,63 @@ async function loadAskableChapter(chapterId: string, user: SessionUser | undefin
 }
 
 export async function chapterQuestionStatus(chapterId: string, user: SessionUser | undefined): Promise<ChapterQuestionStatus> {
-  if (!learnerQaAvailable) return { available: false, remaining: 0, dailyLimit: env.LEARNER_QA_DAILY_LIMIT };
-  const { learner } = await loadAskableChapter(chapterId, user);
-  return { available: true, ...(await remainingToday(learner.id)) };
+  if (!learnerQaAvailable) return { available: false, remaining: 0, dailyLimit: env.LEARNER_QA_DAILY_LIMIT, starters: [] };
+  const { chapter, learner } = await loadAskableChapter(chapterId, user);
+  const { starters } = readCourseAssistant(chapter.course.assistant);
+  return { available: true, ...(await remainingToday(learner.id)), starters: starters ?? [] };
 }
 
-export async function askAboutChapter(
-  input: { chapterId: string; user: SessionUser | undefined; question: string },
-  deps: ChapterQaDeps = {}
-): Promise<ChapterQuestionAnswer> {
+type Prepared = {
+  chapterId: string;
+  learnerId: string;
+  reservation: string;
+  params: Anthropic.MessageCreateParamsNonStreaming;
+  remaining: { remaining: number; dailyLimit: number };
+};
+
+export type AskInput = { chapterId: string; user: SessionUser | undefined; question: string; previous?: PreviousTurn };
+
+/** Access, limits and the model request, shared by the single and streaming paths. A question is reserved here. */
+async function prepareQuestion(input: AskInput): Promise<Prepared> {
   if (!learnerQaAvailable) throw new AppError(NOT_AVAILABLE, 503, "QA_UNAVAILABLE");
   const { chapter, enrollment, learner } = await loadAskableChapter(input.chapterId, input.user);
 
   const family = resolveCourseFamily(chapter.course.familySlug, chapter.course.variantFamily);
   const source = applyTokens(chapter.compiled ?? chapter.source, contentTokenValues(family, enrollment.variantSlug));
+  const assistant = readCourseAssistant(chapter.course.assistant);
 
   const reservation = await reserveQuestion({ userId: learner.id, courseId: chapter.courseId, chapterId: chapter.id });
   try {
-    const client = deps.client ?? anthropicClient();
-    const message = await client.messages.create({
-      model: env.LEARNER_QA_MODEL,
-      max_tokens: ANSWER_MAX_TOKENS,
-      // Low effort with thinking off keeps the whole token budget for the answer itself.
-      thinking: { type: "disabled" },
-      output_config: { effort: "low" },
-      system: buildSystemPrompt({ courseTitle: chapter.course.title, chapterTitle: chapter.title, source }),
-      messages: [{ role: "user", content: buildUserMessage(input.question) }],
-    });
-    await recordTokens(reservation, { inputTokens: message.usage.input_tokens, outputTokens: message.usage.output_tokens });
+    return {
+      chapterId: chapter.id,
+      learnerId: learner.id,
+      reservation,
+      params: {
+        model: env.LEARNER_QA_MODEL,
+        ...modelSettings(assistant.effort),
+        system: buildSystemPrompt({ courseTitle: chapter.course.title, chapterTitle: chapter.title, source, guidance: assistant.guidance }),
+        messages: buildMessages(input.question, input.previous),
+      },
+      remaining: await remainingToday(learner.id),
+    };
+  } catch (error) {
+    await releaseQuestion(reservation).catch(() => undefined);
+    throw error;
+  }
+}
+
+/** Log the status only (the error text can echo request details) and hide the rest from the learner. */
+function failure(error: unknown, chapterId: string): AppError {
+  if (error instanceof AppError) return error;
+  logger.error({ status: error instanceof Anthropic.APIError ? error.status : undefined, chapterId }, "chapter question failed");
+  return new AppError(TRY_LATER, 502, "QA_FAILED");
+}
+
+export async function askAboutChapter(input: AskInput, deps: ChapterQaDeps = {}): Promise<ChapterQuestionAnswer> {
+  const prepared = await prepareQuestion(input);
+  try {
+    const message = await (deps.client ?? anthropicClient()).messages.create(prepared.params);
+    await recordTokens(prepared.reservation, { inputTokens: message.usage.input_tokens, outputTokens: message.usage.output_tokens });
 
     const text = message.content
       .flatMap((block) => (block.type === "text" ? [block.text] : []))
@@ -104,15 +134,46 @@ export async function askAboutChapter(
       .trim();
     const answer = message.stop_reason === "refusal" ? DECLINED : text;
     if (!answer) throw new AppError(TRY_LATER, 502, "QA_FAILED");
-    return { answer, ...(await remainingToday(learner.id)) };
+    return { answer, ...(await remainingToday(prepared.learnerId)) };
   } catch (error) {
-    await releaseQuestion(reservation).catch(() => undefined);
-    if (error instanceof AppError) throw error;
-    // Status only: the error text can echo request details.
-    logger.error(
-      { status: error instanceof Anthropic.APIError ? error.status : undefined, chapterId: chapter.id },
-      "chapter question failed"
-    );
-    throw new AppError(TRY_LATER, 502, "QA_FAILED");
+    await releaseQuestion(prepared.reservation).catch(() => undefined);
+    throw failure(error, prepared.chapterId);
   }
+}
+
+/** Separates a streamed answer from the message of a failure that happens after the first byte. */
+export const STREAM_ERROR_MARK = "\u0000";
+
+export type StreamedQuestion = {
+  /** The learner's questions left today, counting this one. */
+  remaining: { remaining: number; dailyLimit: number };
+  /** Writes the answer as it is generated. Never throws: a late failure is written as STREAM_ERROR_MARK plus a message. */
+  run: (write: (chunk: string) => void) => Promise<void>;
+};
+
+/**
+ * Same checks and limits as askAboutChapter, with the answer arriving in pieces. A failure before
+ * the first byte throws like the single path, so the caller can still answer with a normal error.
+ */
+export async function streamAnswerAboutChapter(input: AskInput, deps: ChapterQaDeps = {}): Promise<StreamedQuestion> {
+  const prepared = await prepareQuestion(input);
+  const run = async (write: (chunk: string) => void) => {
+    let wrote = false;
+    try {
+      const stream = (deps.client ?? anthropicClient()).messages.stream(prepared.params);
+      stream.on("text", (delta) => {
+        if (!wrote && !delta.trim()) return;
+        wrote = true;
+        write(delta);
+      });
+      const message = await stream.finalMessage();
+      await recordTokens(prepared.reservation, { inputTokens: message.usage.input_tokens, outputTokens: message.usage.output_tokens });
+      if (message.stop_reason === "refusal" && !wrote) write(DECLINED);
+      else if (!wrote) throw new AppError(TRY_LATER, 502, "QA_FAILED");
+    } catch (error) {
+      await releaseQuestion(prepared.reservation).catch(() => undefined);
+      write(STREAM_ERROR_MARK + failure(error, prepared.chapterId).message);
+    }
+  };
+  return { remaining: prepared.remaining, run };
 }
