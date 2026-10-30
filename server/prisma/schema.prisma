@@ -361,6 +361,7 @@ model Course {
   sequential     Boolean      @default(true)
   familySlug     String? // course family in src/shared/lib/course-tracks.ts; null = no variants
   variantFamily  Json? // creator-defined variant catalog; null uses a built-in family
+  assistant      Json? // tutor settings from course.yaml (effort, guidance, starters); null means defaults
   availableVariantSlugs String[] @default([]) // empty means every family variant is available
   variantAssignment VariantAssignment @default(SELF_SELECT)
   activeReleaseId String? // latest approved content release; set atomically with publication
