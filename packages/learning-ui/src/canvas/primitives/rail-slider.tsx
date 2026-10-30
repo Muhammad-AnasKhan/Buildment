@@ -4,6 +4,7 @@ import { useRef, type KeyboardEvent, type PointerEvent, type ReactNode, type Ref
 import { cn } from "../../lib/utils";
 import { ladderStep } from "./picture-slider";
 import { TONES } from "./tones";
+import { useSvgTouchDrag } from "./svg-touch-drag";
 
 // A slider that lives only on its rail, inside the picture's own SVG. Unlike
 // PictureSlider (the whole picture is the drag surface) this one leaves the
@@ -37,6 +38,7 @@ const BELOW = 40;
 const SIDE = 24;
 
 export function RailSlider({ svgRef, x0, x1, y, label, valueText, value, ladder, fromFraction, onChange, onGrab, children }: RailSliderProps) {
+  const touchRef = useSvgTouchDrag<SVGGElement>();
   const dragging = useRef(false);
   const follow = (e: PointerEvent) => {
     const el = svgRef.current;
@@ -56,7 +58,7 @@ export function RailSlider({ svgRef, x0, x1, y, label, valueText, value, ladder,
   };
   const zone = { x: x0 - SIDE, y: y - ABOVE, width: x1 - x0 + 2 * SIDE, height: ABOVE + BELOW };
   return (
-    <g
+    <g ref={touchRef}
       role="slider"
       tabIndex={0}
       aria-label={label}

@@ -27,6 +27,7 @@ import type { HelpThreadView } from "@/shared/api/help";
 import type { StreakMilestone } from "@/shared/lib/streak";
 import { HeadingNotesProvider } from "@/components/learn/heading-note";
 import { ChapterAudio } from "@/components/learn/chapter-audio";
+import { AskChapterPanel } from "@/components/learn/ask-chapter-panel";
 import type { ChapterNarration } from "@/lib/narration";
 import { PredictRevealProvider } from "@buildment/learning-ui/components/learn/predict-reveal";
 
@@ -227,11 +228,15 @@ export function ChapterReaderShell({
 
   useEffect(() => {
     if (readerMode !== "QUIZ") return;
-    const onQuizPerfect = () => {
+    const onQuizExitFocus = () => {
       void exitFocusMode();
     };
-    window.addEventListener("buildment:quiz-perfect", onQuizPerfect);
-    return () => window.removeEventListener("buildment:quiz-perfect", onQuizPerfect);
+    window.addEventListener("buildment:quiz-perfect", onQuizExitFocus);
+    window.addEventListener("buildment:quiz-exit", onQuizExitFocus);
+    return () => {
+      window.removeEventListener("buildment:quiz-perfect", onQuizExitFocus);
+      window.removeEventListener("buildment:quiz-exit", onQuizExitFocus);
+    };
   }, [readerMode, exitFocusMode]);
 
   // The quiz asks for focus mode again from a click ("Start quiz", "Return to full
@@ -278,7 +283,12 @@ export function ChapterReaderShell({
                 <ArrowLeft className="size-5" aria-hidden />
               </Link>
               <div className="min-w-0 flex-1 px-1">
-                <p className="truncate text-[13px] text-muted-foreground">{lessonLabel}</p>
+                {/* The course name keeps "where am I" answered on every lesson, not only the course page. */}
+                <p className="truncate text-[13px] text-muted-foreground">
+                  <span className="tabular-nums">{lessonLabel}</span>
+                  <span aria-hidden> · </span>
+                  {courseTitle}
+                </p>
                 <p className="truncate text-[15px] font-bold leading-tight text-foreground">{chapterTitle}</p>
               </div>
               <CheckpointHeaderLabel
@@ -349,6 +359,7 @@ export function ChapterReaderShell({
 
         <div className="flex min-h-0 flex-1">
           <ChapterSidebar
+            courseTitle={courseTitle}
             courseSlug={courseSlug}
             modules={modules}
             currentChapterSlug={chapterSlug}
@@ -442,6 +453,8 @@ export function ChapterReaderShell({
                     </article>
                   </ChecklistProvider>
                 </LearningLogProvider>
+
+                {readerMode !== "QUIZ" ? <AskChapterPanel chapterId={chapterId} headings={headings} /> : null}
 
                 {!(focusMode && readerMode === "QUIZ") ? (
                   <ChapterNav

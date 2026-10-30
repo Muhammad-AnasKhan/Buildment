@@ -30,7 +30,8 @@ export const accountSetupBody = z.object({
 });
 export type AccountSetupBody = z.infer<typeof accountSetupBody>;
 
-export const signupBody = signupSchema;
+// redirectTo carries a course page through the confirmation email (enroll after sign-up).
+export const signupBody = signupSchema.extend({ redirectTo });
 export type SignupBody = z.infer<typeof signupBody>;
 
 export const loginBody = loginSchema;
@@ -42,6 +43,6 @@ export const magicLinkBody = z.object({ email: authEmailSchema, redirectTo });
 
 export const magicLinkVerifyQuery = z.object({ token: z.string().trim().min(1), redirectTo });
 
-export const confirmEmailQuery = z.object({ token: z.string().trim().optional() });
+export const confirmEmailQuery = z.object({ token: z.string().trim().optional(), redirectTo });
 
 export const devLoginQuery = z.object({ email: email.optional(), redirectTo });

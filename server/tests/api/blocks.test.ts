@@ -44,10 +44,12 @@ describe("POST /api/v1/blocks/:blockId/respond", () => {
   it("grades a quiz answer, stores the attempt and updates chapter progress", async () => {
     const wrong = await respond(fx.quizBlock.id, fx.learnerToken, { selected: ["b"] });
     expect(wrong.status).toBe(200);
-    expect(wrong.body.data).toMatchObject({ isCorrect: false, score: 0, maxScore: 1, explanation: "Basic arithmetic." });
+    expect(wrong.body.data).toMatchObject({ isCorrect: false, score: 0, maxScore: 1 });
+    // A wrong answer must not reveal the explanation of the right one.
+    expect(wrong.body.data.explanation).toBeUndefined();
 
     const right = await respond(fx.quizBlock.id, fx.learnerToken, { selected: ["a"] });
-    expect(right.body.data).toMatchObject({ isCorrect: true, score: 1, status: "AUTO_GRADED" });
+    expect(right.body.data).toMatchObject({ isCorrect: true, score: 1, status: "AUTO_GRADED", explanation: "Basic arithmetic." });
 
     const attempts = await prisma.response.findMany({ where: { blockId: fx.quizBlock.id, userId: fx.learner.id }, orderBy: { attempt: "asc" } });
     expect(attempts.map((a) => a.attempt)).toEqual([1, 2]);

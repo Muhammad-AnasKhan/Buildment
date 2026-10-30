@@ -75,6 +75,7 @@ Course creators can upload cover images in course settings and insert images fro
 | `pnpm db:migrate` / `db:ready` / `db:seed` / `db:studio` | Prisma |
 | `pnpm content:import` / `content:validate` / `content:validate:source` / `content:audit` | content pipeline with a private checkout through `BUILDMENT_CONTENT_ROOT` |
 | `pnpm db:seed:showcase` / `db:seed:integration` / `stats:backfill` | demo data and maintenance |
+| `pnpm db:pull-production` | replace the local database with a copy of production (reads Heroku only; needs the Heroku CLI and Docker) |
 | `pnpm sync-shared` / `sync-shared:check` | copy `src/shared` into the web app / verify the copy is current |
 
 ## Docker

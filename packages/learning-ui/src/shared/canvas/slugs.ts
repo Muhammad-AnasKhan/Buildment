@@ -1142,6 +1142,9 @@ export const CANVAS_SLUGS = [
   "net-m9-ipv6-addresses",
   "net-m9-ipv6-filter",
   "net-m9-ipv6-vs-nat",
+  "se-m1-request-layers",
+  "se-m1-task-shapes",
+  "se-m1-stack-names",
 ] as const;
 
 export type CanvasSlug = (typeof CANVAS_SLUGS)[number];

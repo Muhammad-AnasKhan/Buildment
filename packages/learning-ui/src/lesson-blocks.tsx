@@ -30,8 +30,15 @@ import { Video } from "./components/learn/video-embed";
 import { Checklist } from "./components/learn/checklist";
 import { LearningLog } from "./components/learn/learning-log";
 
-function LabBlock(props: { slug?: unknown }) {
-  return <Lab spec={typeof props.slug === "string" ? getLabSpec(props.slug) : null} />;
+function LabBlock(props: { slug?: unknown; spec?: unknown; version?: unknown; presentation?: unknown }) {
+  return (
+    <Lab
+      slug={props.slug}
+      spec={(props.spec as never) ?? (typeof props.slug === "string" ? getLabSpec(props.slug) : null)}
+      version={props.version}
+      presentation={props.presentation}
+    />
+  );
 }
 
 /** Components whose complete presentation and behavior are shared by web and desktop. */

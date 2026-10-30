@@ -25,6 +25,7 @@ import { dispatchNotification } from "../notifications/service.js";
 import { assertEnrollmentChapter } from "../courses/releases.js";
 import { gradeShortAnswerWithLlm } from "../ai/short-answer/grade.js";
 import { AiError } from "../ai/openrouter.js";
+import { visibleExplanation } from "../../shared/lib/quiz-feedback.js";
 
 export type BlockResponseResult = {
   score: number | null;
@@ -33,6 +34,7 @@ export type BlockResponseResult = {
   status: GradeResult["status"];
   explanation?: string;
   hint?: string;
+  guidance?: string;
   attempt?: number;
   solution?: string;
   failedTestName?: string;
@@ -46,11 +48,15 @@ function gradeBlock(type: string, config: unknown, payload: unknown): Graded {
   switch (type) {
     case "QUIZ": {
       const cfg = blockDefinitions.QUIZ.schema.parse(config);
-      return { ...blockDefinitions.QUIZ.grade(cfg, QuizPayloadSchema.parse(payload)), explanation: cfg.explanation };
+      const answer = QuizPayloadSchema.parse(payload);
+      const graded = blockDefinitions.QUIZ.grade(cfg, answer);
+      return { ...graded, explanation: visibleExplanation({ explanation: cfg.explanation, options: cfg.options, selected: answer.selected, isCorrect: graded.isCorrect, allowRetry: cfg.allowRetry }) };
     }
     case "PREDICT": {
       const cfg = blockDefinitions.PREDICT.schema.parse(config);
-      return { ...blockDefinitions.PREDICT.grade(cfg, PredictPayloadSchema.parse(payload)), explanation: cfg.explanation };
+      const answer = PredictPayloadSchema.parse(payload);
+      const graded = blockDefinitions.PREDICT.grade(cfg, answer);
+      return { ...graded, explanation: visibleExplanation({ explanation: cfg.explanation, options: cfg.options, selected: [answer.selected], isCorrect: graded.isCorrect, allowRetry: cfg.allowRetry }) };
     }
     case "CODE": {
       const cfg = blockDefinitions.CODE.schema.parse(config);
@@ -96,7 +102,7 @@ async function gradeLlmOpenQuestion(input: {
     });
     const storedPayload: OpenQuestionStoredPayload = {
       ...input.payload,
-      llmFeedback: { why: llm.why, hint: llm.hint },
+      llmFeedback: { why: llm.why, hint: llm.hint, guidance: llm.guidance, attempt: input.attempt },
     };
     return {
       score: llm.isCorrect ? 1 : 0,
@@ -105,6 +111,7 @@ async function gradeLlmOpenQuestion(input: {
       status: "AUTO_GRADED",
       explanation: llm.why,
       hint: llm.hint ?? undefined,
+      guidance: llm.guidance ?? undefined,
       attempt: input.attempt,
       storedPayload,
     };
@@ -147,12 +154,24 @@ export async function submitBlockResponse(input: {
 
   if (block.type === "OPEN_QUESTION" && isLlmGradedOpenQuestion(block.config)) {
     const config = OpenQuestionConfigSchema.parse(block.config);
+    const latest = await prisma.response.findFirst({
+      where: { blockId, userId: learner.id, status: { not: "DRAFT" } },
+      orderBy: { attempt: "desc" },
+      select: { isCorrect: true },
+    });
+    if (latest?.isCorrect) throw new BadRequestError("This answer has already passed.", "ANSWER_ALREADY_PASSED");
+    const gradedAttempts = await prisma.response.count({
+      where: { blockId, userId: learner.id, status: { not: "DRAFT" } },
+    });
+    if (gradedAttempts >= config.maxAttempts) {
+      throw new BadRequestError("You have used all three graded attempts. Review the guidance and ask your mentor if you need another attempt.", "ATTEMPT_LIMIT_REACHED");
+    }
     const parsedPayload = OpenQuestionPayloadSchema.parse(payload);
     const llmGraded = await gradeLlmOpenQuestion({
       config,
       payload: parsedPayload,
       userId: learner.id,
-      attempt,
+      attempt: gradedAttempts + 1,
     });
     storedPayload = llmGraded.storedPayload;
     graded = llmGraded;
@@ -193,7 +212,7 @@ export async function submitBlockResponse(input: {
     maxScore: response.maxScore,
     isCorrect: response.isCorrect,
     status: response.status,
-    attempt: response.attempt,
+    attempt: graded.attempt ?? response.attempt,
     explanation:
       graded.explanation &&
       applyTokens(
@@ -204,6 +223,7 @@ export async function submitBlockResponse(input: {
         )
       ),
     hint: graded.hint,
+    guidance: graded.guidance,
     solution: graded.solution,
     failedTestName: graded.failedTestName,
     errorMessage: graded.errorMessage,

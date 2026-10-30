@@ -48,15 +48,15 @@ export function NotificationPreferencesForm({
   };
 
   return (
-    <div className="mt-5 overflow-x-auto">
-      <table className="w-full min-w-88 text-sm">
+    <div className="mt-5">
+      <table className="w-full text-sm">
         <thead>
           <tr className="border-b text-left text-xs uppercase tracking-wide text-muted-foreground">
-            <th scope="col" className="pb-2 pr-4 font-medium">
+            <th scope="col" className="pb-2 pr-3 font-medium">
               Notification
             </th>
             {CHANNELS.map((channel) => (
-              <th key={channel.key} scope="col" className="w-20 pb-2 text-center font-medium">
+              <th key={channel.key} scope="col" className="w-16 pb-2 text-center font-medium sm:w-20">
                 {channel.label}
               </th>
             ))}
@@ -67,7 +67,7 @@ export function NotificationPreferencesForm({
             const info = NOTIFICATION_CATEGORY_INFO[category];
             return (
               <tr key={category}>
-                <th scope="row" className="py-3 pr-4 text-left font-normal">
+                <th scope="row" className="py-3 pr-3 text-left font-normal">
                   <span className="block font-medium">{info.label}</span>
                   <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">{info.description}</span>
                 </th>

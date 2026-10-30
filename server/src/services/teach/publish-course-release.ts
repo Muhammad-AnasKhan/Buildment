@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { ulid } from "ulid";
-import type { Prisma } from "../../generated/prisma/index.js";
+import { Prisma } from "../../generated/prisma/index.js";
 import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
 import { ensureBaselineRelease, type ReleaseChapter, type ReleaseContent, type ReleaseModule } from "../courses/releases.js";
 import { BadRequestError } from "../../utils/errors.js";
@@ -17,7 +17,7 @@ function plainSource(source: string, ids: string[]) {
 
 async function equivalent(tx: Prisma.TransactionClient, chapter: ReleaseChapter | undefined, lesson: Lesson): Promise<boolean> {
   if (!chapter || chapter.title !== lesson.title || chapter.estimatedMinutes !== lesson.estimatedMinutes ||
-      chapter.readerMode !== lesson.readerMode || chapter.isMilestone !== lesson.isMilestone) return false;
+      chapter.readerMode !== lesson.readerMode || chapter.quizPassingScore !== (lesson.quizPassingScore ?? 70) || chapter.isMilestone !== lesson.isMilestone) return false;
   const old = await tx.chapter.findUnique({ where: { id: chapter.id }, include: { blocks: { where: { archivedAt: null }, orderBy: { order: "asc" } } } });
   if (!old || old.summary !== lesson.summary || old.blocks.length !== lesson.blocks.length) return false;
   if (plainSource(old.source, old.blocks.map(block => block.id)) !== plainSource(lesson.source, lesson.blocks.map(block => block.id))) return false;
@@ -36,11 +36,11 @@ export async function createReleaseChapter(tx: Prisma.TransactionClient, courseI
   // DB slugs and content keys are unique across releases. The release keeps the stable public slug/key.
   await tx.chapter.create({ data: { id, courseId, moduleId, slug: `${logicalSlug}--${id.toLowerCase()}`,
     title: lesson.title, summary: lesson.summary, source, compiled: source, publishedAt: new Date(),
-    order: lesson.lessonNum, estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode,
+    order: lesson.lessonNum, estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode, quizPassingScore: lesson.quizPassingScore ?? 70,
     isMilestone: lesson.isMilestone } });
   if (blocks.length) await tx.block.createMany({ data: blocks });
   return { id, key: lesson.key ?? null, slug: logicalSlug, title: lesson.title, order: lesson.lessonNum,
-    estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode, isMilestone: lesson.isMilestone };
+    estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode, quizPassingScore: lesson.quizPassingScore ?? 70, isMilestone: lesson.isMilestone };
 }
 
 function locate(modules: ReleaseModule[], key: string | null, id: string | null) {
@@ -174,15 +174,17 @@ export async function publishCourseRelease(tx: Prisma.TransactionClient, courseI
     modules.sort((a, b) => a.order - b.order);
     for (const module of modules) module.chapters.sort((a, b) => a.order - b.order);
   }
+  // Tutor settings are not release content: they follow the manifest even when no chapter changed.
+  const assistant = plan.manifest.assistant ? (plan.manifest.assistant as Prisma.InputJsonValue) : Prisma.DbNull;
   if (canonical(next) === canonical(previous)) {
-    if (plan.manifest.availableVariantSlugs) await tx.course.update({ where: { id: courseId },
-      data: { availableVariantSlugs: plan.manifest.availableVariantSlugs } });
+    await tx.course.update({ where: { id: courseId }, data: { assistant,
+      ...(plan.manifest.availableVariantSlugs ? { availableVariantSlugs: plan.manifest.availableVariantSlugs } : {}) } });
     return baseline;
   }
   const sourceHash = createHash("sha256").update(canonical({ base: baseline.id, plan })).digest("hex");
   const release = await tx.courseRelease.create({ data: { id: ulid(), courseId, number: baseline.number + 1,
     content: next as unknown as Prisma.InputJsonValue, sourceHash } });
-  await tx.course.update({ where: { id: courseId }, data: { activeReleaseId: release.id,
+  await tx.course.update({ where: { id: courseId }, data: { activeReleaseId: release.id, assistant,
     ...(plan.manifest.availableVariantSlugs ? { availableVariantSlugs: plan.manifest.availableVariantSlugs } : {}) } });
   return release;
 }
@@ -229,7 +231,7 @@ export async function publishDashboardNewChapterRelease(tx: Prisma.TransactionCl
     }
     if (module.chapters.some(item => item.id === chapterId)) continue;
     module.chapters.push({ id: chapter.id, key: chapter.contentKey, slug: chapter.slug, title: chapter.title,
-      order: chapter.order, estimatedMinutes: chapter.estimatedMinutes, readerMode: chapter.readerMode,
+      order: chapter.order, estimatedMinutes: chapter.estimatedMinutes, readerMode: chapter.readerMode, quizPassingScore: chapter.quizPassingScore,
       isMilestone: chapter.isMilestone });
     module.chapters.sort((a, b) => a.order - b.order);
     modules.sort((a, b) => a.order - b.order);

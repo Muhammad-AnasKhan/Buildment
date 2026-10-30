@@ -10,6 +10,7 @@ import {
   pathmentEnrollmentPatch,
   shouldAttachPathmentOrg,
 } from "./attach-org-enrollment.js";
+import { couponUnlocksContent, issueCouponForEnrollment } from "../../coupons/issue.js";
 
 export type PathmentEnrollmentInput = {
   organizationId: string;
@@ -128,7 +129,7 @@ export async function createPathmentEnrollment(
         : {},
     });
 
-    const lifecycle = lifecycleForPathmentEnrollment(course.pricingType, Boolean(linkedUser));
+    let lifecycle = lifecycleForPathmentEnrollment(course.pricingType, Boolean(linkedUser));
     const assignment = await assignmentForNewEnrollment(tx, course.id);
 
     const enrollment = await tx.enrollment.create({
@@ -146,6 +147,25 @@ export async function createPathmentEnrollment(
       },
       include: { course: true, learnerProfile: true },
     });
+
+    const coupon = await issueCouponForEnrollment(tx, {
+      organizationId: input.organizationId,
+      courseId: course.id,
+      enrollmentId: enrollment.id,
+      userId: linkedUser?.id ?? null,
+      learnerEmail: email,
+      assignedById: input.mentorId?.trim() || null,
+    });
+
+    if (coupon && couponUnlocksContent(coupon.percentOff) && lifecycle === "PAYMENT_REQUIRED") {
+      lifecycle = "ACTIVE";
+      const unlocked = await tx.enrollment.update({
+        where: { id: enrollment.id },
+        data: { lifecycle: "ACTIVE", status: "IN_PROGRESS", startedAt: new Date() },
+        include: { course: true, learnerProfile: true },
+      });
+      return { enrollment: unlocked, created: true as const };
+    }
 
     if (course.pricingType === "PAID" && linkedUser && lifecycle === "PAYMENT_REQUIRED") {
       await tx.payment.create({

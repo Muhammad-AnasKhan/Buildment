@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpenText, CircleHelp, Home, TrendingUp, type LucideIcon } from "lucide-react";
+import { BookOpenText, CircleHelp, Home, Trophy, TrendingUp, type LucideIcon } from "lucide-react";
 import { WorkspaceAccountMenu } from "@/components/workspace/workspace-account-menu";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
@@ -38,8 +38,10 @@ export function MenteeWorkspaceShell({
 }) {
   const pathname = usePathname();
 
-  // Course overviews and chapter readers have their own focused navigation.
-  if (pathname.startsWith("/courses/")) return children;
+  // Course overviews and chapter readers have their own focused navigation. The wrapper keeps them
+  // full width: as bare children of the layout's flex column, their mx-auto roots shrink to fit the
+  // widest line, which made phones zoom out.
+  if (pathname.startsWith("/courses/")) return <div className="w-full">{children}</div>;
 
   const items: LearnerNavItem[] = [
     { label: "Home", href: "/dashboard", icon: Home, active: pathname === "/dashboard" },
@@ -52,6 +54,7 @@ export function MenteeWorkspaceShell({
       count: assignedCourses,
     },
     { label: "Progress", href: "/progress", icon: TrendingUp, active: pathname === "/progress" },
+    { label: "Leaderboard", href: "/leaderboard", icon: Trophy, active: pathname === "/leaderboard" },
     {
       label: helpUiCopy.learnerNav,
       href: "/my-questions",

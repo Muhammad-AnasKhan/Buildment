@@ -24,6 +24,7 @@
     "db:studio": "prisma studio",
     "db:seed:showcase": "tsx scripts/seed-demo-showcase.ts",
     "db:seed:integration": "tsx scripts/seed-integration-demo.ts",
+    "db:pull-production": "tsx scripts/pull-production-db.ts",
     "content:import": "tsx scripts/import-course.ts",
     "content:validate": "tsx scripts/validate-chapters.ts",
     "content:validate:source": "tsx scripts/validate-course-source.ts",
@@ -39,6 +40,7 @@
     "diagrams:export": "tsx scripts/export-diagrams.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
     "@aws-sdk/client-s3": "^3.1154.0",
     "@isdisposable/js": "^1.0.7",
     "@mdx-js/mdx": "^3.1.1",

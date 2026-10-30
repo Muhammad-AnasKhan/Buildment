@@ -15,6 +15,7 @@ import { load as loadYaml, dump as dumpYaml } from "js-yaml";
 import { z } from "zod";
 import { CourseManifestSchema, coursesRootForServer } from "./course-source.js";
 import { findCourseFamily } from "../src/shared/lib/course-tracks.js";
+import type { Prisma } from "../src/generated/prisma/index.js";
 import type { SessionUser } from "../src/types/auth.js";
 
 const SERVER_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -90,6 +91,26 @@ export function courseSourceHash(pkg: Package): string {
   return digest.digest("hex");
 }
 
+type CourseDetails = { title: string; description: string | null; projectGoal: string | null; difficulty: string | null;
+  estimatedHours: number | null; category: "TECH" | "SOFT_SKILLS"; coverUrl: string | null; assistant: unknown };
+
+// The repository owns a published course's details, so a publish copies them from course.yaml.
+// ZIP updates leave details alone, which kept an early preview's title on System Design.
+export function courseDetailsUpdate(manifest: Package["manifest"], current: CourseDetails): Partial<CourseDetails> | null {
+  const wanted: Partial<CourseDetails> = {
+    title: manifest.title, description: manifest.description, projectGoal: manifest.projectGoal,
+    difficulty: manifest.difficulty, estimatedHours: manifest.estimatedHours,
+    category: manifest.category === "soft-skills" ? "SOFT_SKILLS" : "TECH",
+    // No cover in the source keeps whatever cover the course has.
+    ...(manifest.coverUrl ? { coverUrl: manifest.coverUrl } : {}),
+    // Tutor settings are a JSON column, so they compare by value; no block clears whatever is stored.
+    assistant: manifest.assistant ?? null,
+  };
+  const changed = Object.fromEntries(Object.entries(wanted).filter(([key, value]) =>
+    JSON.stringify(current[key as keyof CourseDetails] ?? null) !== JSON.stringify(value)));
+  return Object.keys(changed).length ? changed : null;
+}
+
 export function packageZip(pkg: Package, publication: "create" | "update", instructorEmail: string): Buffer {
   const files = filesForZip(pkg.dir);
   // The database decides create versus update. Keep the reviewed source manifest
@@ -138,6 +159,7 @@ function validate(pkg: Package, instructorEmail: string) {
 async function publish(packages: Package[], instructorEmail: string) {
   if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL must be configured in the backend release environment");
   const { prisma } = await import("../src/db/prisma.js");
+  const { Prisma } = await import("../src/generated/prisma/index.js");
   const { importCourseZip } = await import("../src/services/teach/course-import.js");
   const { previewCourseZipUpdate, approveCourseZipUpdate } = await import("../src/services/teach/course-update.js");
   const { publishCourse } = await import("../src/services/teach/courses.js");
@@ -172,7 +194,14 @@ async function publish(packages: Package[], instructorEmail: string) {
       const sourceHash = courseSourceHash(pkg);
       const prior = await prisma.course.findUnique({ where: { slug: targetSlug }, select: {
         id: true, status: true, activeReleaseId: true, repositorySourceHash: true, repositoryReleaseId: true,
+        title: true, description: true, projectGoal: true, difficulty: true, estimatedHours: true, category: true, coverUrl: true, assistant: true,
       } });
+      const details = prior ? courseDetailsUpdate(pkg.manifest, prior) : null;
+      if (prior && details) {
+        await prisma.course.update({ where: { id: prior.id }, data: { ...details,
+          ...("assistant" in details ? { assistant: details.assistant ?? Prisma.DbNull } : {}) } as Prisma.CourseUpdateInput });
+        console.log(`${pkg.slug}: course details updated (${Object.keys(details).join(", ")})`);
+      }
       if (prior?.status === "PUBLISHED" && prior.repositorySourceHash === sourceHash &&
           prior.repositoryReleaseId === prior.activeReleaseId) {
         console.log(`${pkg.slug}: repository package is already current`);

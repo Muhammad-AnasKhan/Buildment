@@ -11,11 +11,12 @@ const model = z
   .transform((value) => (value === "" ? null : value));
 
 export const aiCredentialSaveBody = z.object({
+  provider: z.enum(["OPENROUTER", "GEMINI"]).default("OPENROUTER"),
   apiKey: z
-    .string({ error: "Paste your OpenRouter key." })
+    .string({ error: "Paste your AI provider key." })
     .trim()
-    .min(20, "That looks too short for an OpenRouter key.")
-    .max(300, "That looks too long for an OpenRouter key.")
+    .min(20, "That key looks too short.")
+    .max(300, "That key looks too long.")
     .refine((value) => /^\S+$/.test(value), "The key cannot contain spaces."),
   model: model.nullable().optional(),
 });

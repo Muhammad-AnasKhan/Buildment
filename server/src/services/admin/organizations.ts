@@ -115,6 +115,9 @@ export async function getOrganization(orgId: string): Promise<AdminOrganizationD
 
   const truncated = publishedCourses.length > PUBLISHED_COURSES_CAP;
 
+  const { listCouponPools } = await import("../coupons/pools.js");
+  const couponPools = await listCouponPools(org.id);
+
   return {
     organization: { id: org.id, slug: org.slug, name: org.name, enrollmentCount: org._count.enrollments },
     credentials: org.apiCredentials.map((cred) => ({
@@ -133,6 +136,7 @@ export async function getOrganization(orgId: string): Promise<AdminOrganizationD
       leaderboardEnabled: row.leaderboardEnabled,
       expiresAt: row.expiresAt?.toISOString() ?? null,
     })),
+    couponPools,
     pendingRequests: org.courseRequests.map((r) => ({ id: r.id, courseId: r.courseId, courseTitle: r.course.title, courseSlug: r.course.slug })),
     publishedCourses: publishedCourses.slice(0, PUBLISHED_COURSES_CAP),
     publishedCoursesTruncated: truncated,
@@ -179,6 +183,11 @@ export function parseExpiresAt(raw: string | undefined): Date | null {
 export async function upsertAllocations(actor: AdminActor, orgId: string, input: AllocationsBody): Promise<void> {
   const organization = await requireOrganization(orgId);
   const courseIds = [...new Set(input.courses.map((row) => row.courseId))];
+  const removeCourseIds = [...new Set(input.removeCourseIds)];
+  const overlap = courseIds.filter((courseId) => removeCourseIds.includes(courseId));
+  if (overlap.length > 0) {
+    throw new UnprocessableError("A course cannot be assigned and removed in the same update.", "INVALID_ALLOCATION_UPDATE");
+  }
   const published = await prisma.course.count({ where: { id: { in: courseIds }, status: "PUBLISHED" } });
   if (published !== courseIds.length) {
     throw new UnprocessableError("One or more selected courses are missing or not published.", ADMIN_ERROR_CODES.COURSE_NOT_PUBLISHED);
@@ -190,13 +199,27 @@ export async function upsertAllocations(actor: AdminActor, orgId: string, input:
       await upsertAllocation(tx, { organizationId: orgId, courseId: row.courseId, maxEnrollments: row.maxEnrollments, isAllowed: input.isAllowed, expiresAt: row.expiresAt });
       await approvePendingRequestsFor(tx, orgId, row.courseId, actor.id);
     }
+    if (removeCourseIds.length > 0) {
+      const activeAllocations = await tx.organizationCourse.findMany({
+        where: { organizationId: orgId, courseId: { in: removeCourseIds }, currentEnrollments: { gt: 0 } },
+        select: { course: { select: { title: true } }, currentEnrollments: true },
+      });
+      if (activeAllocations.length > 0) {
+        throw new UnprocessableError(
+          "Courses with active enrollments cannot be removed.",
+          "ACTIVE_ENROLLMENTS",
+          activeAllocations.map((row) => `${row.course.title} has ${row.currentEnrollments} active enrollment${row.currentEnrollments === 1 ? "" : "s"}.`)
+        );
+      }
+      await tx.organizationCourse.deleteMany({ where: { organizationId: orgId, courseId: { in: removeCourseIds } } });
+    }
     await recordAdminAction(tx, {
       actor,
       action: ADMIN_AUDIT_ACTIONS.ORGANIZATION_ALLOCATE,
       targetType: "Organization",
       targetId: orgId,
       summary: `${input.isAllowed ? "Allocated" : "Updated"} ${rows.length} course${rows.length === 1 ? "" : "s"} for ${organization.name}`,
-      metadata: { courseIds, isAllowed: input.isAllowed },
+      metadata: { courseIds, removedCourseIds: removeCourseIds, isAllowed: input.isAllowed },
     });
   });
 }

@@ -5,10 +5,12 @@ import { prisma } from "../../db/prisma.js";
 import { releaseContainsChapter } from "../courses/releases.js";
 import { NotFoundError } from "../../utils/errors.js";
 import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
+import { calculateQuizAssessment } from "../progress/quiz-assessment.js";
+import { visibleExplanation } from "../../shared/lib/quiz-feedback.js";
 
 /** Initial state for a quiz-mode chapter's wizard: last answers, grades and the score once every question is attempted. */
 export async function loadQuizChapterState(chapterId: string, userId: string): Promise<QuizChapterState> {
-  const chapter = await prisma.chapter.findUnique({ where: { id: chapterId }, select: { courseId: true, course: { select: { familySlug: true, variantFamily: true } } } });
+  const chapter = await prisma.chapter.findUnique({ where: { id: chapterId }, select: { courseId: true, quizPassingScore: true, course: { select: { familySlug: true, variantFamily: true } } } });
   if (!chapter) throw new NotFoundError("Chapter not found");
   const enrollment = await prisma.enrollment.findUnique({ where: { courseId_userId: { courseId: chapter.courseId, userId } }, select: { releaseId: true, variantSlug: true } });
   if (enrollment && !(await releaseContainsChapter(chapter.courseId, enrollment, chapter.course.familySlug, chapterId))) throw new NotFoundError("Chapter not found");
@@ -20,10 +22,8 @@ export async function loadQuizChapterState(chapterId: string, userId: string): P
   const steps: QuizChapterState["steps"] = blocks.map(block => ({ id: block.id, type: block.type as QuizChapterState["steps"][number]["type"] }));
   const quizBlocks = blocks.filter(block => block.type === "QUIZ");
   const blockIds = quizBlocks.map((block) => block.id);
-  if (blockIds.length === 0) return { steps, blockIds, initialAnswers: {}, initialBlockGrades: {}, initialScoreSummary: null };
-
   const responses = await prisma.response.findMany({
-    where: { blockId: { in: blockIds }, userId, status: { not: "DRAFT" } },
+    where: { blockId: { in: blocks.map((block) => block.id) }, userId, status: { not: "DRAFT" } },
     orderBy: { attempt: "desc" },
   });
   const latestByBlock = new Map<string, (typeof responses)[number]>();
@@ -42,9 +42,13 @@ export async function loadQuizChapterState(chapterId: string, userId: string): P
     const response = latestByBlock.get(block.id);
     if (!response) continue;
     const parsed = QuizConfigSchema.safeParse(block.config);
-    const explanation = parsed.success ? parsed.data.explanation : undefined;
+    const selected = selectedFor(block.id);
+    // Same rule as single quiz blocks: a wrong answer only reveals the lines about what was picked.
+    const explanation = parsed.success
+      ? visibleExplanation({ explanation: parsed.data.explanation, options: parsed.data.options, selected, isCorrect: response.isCorrect, allowRetry: parsed.data.allowRetry })
+      : undefined;
     initialBlockGrades[block.id] = {
-      selected: selectedFor(block.id),
+      selected,
       isCorrect: response.isCorrect,
       explanation: explanation && tokens ? applyTokens(explanation, tokens) : explanation,
     };
@@ -56,13 +60,23 @@ export async function loadQuizChapterState(chapterId: string, userId: string): P
     blockIds,
     initialAnswers: Object.fromEntries(blockIds.map((blockId) => [blockId, selectedFor(blockId)])),
     initialBlockGrades,
-    initialScoreSummary: allAttempted
+    initialScoreSummary: blockIds.length > 0 && allAttempted
       ? {
           score: blockIds.reduce((total, id) => total + (latestByBlock.get(id)?.score ?? 0), 0),
           maxScore: blockIds.reduce((total, id) => total + (latestByBlock.get(id)?.maxScore ?? 0), 0),
           questions: blockIds.length,
         }
       : null,
+    assessment: calculateQuizAssessment({
+      blocks,
+      responses: [...latestByBlock.values()].map((response) => ({
+        blockId: response.blockId,
+        status: response.status,
+        score: response.score,
+        maxScore: response.maxScore,
+      })),
+      passingScore: chapter.quizPassingScore,
+    }),
   };
 }
 

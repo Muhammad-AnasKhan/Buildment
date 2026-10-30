@@ -82,45 +82,55 @@ export function CheckSlot({ check, revealed, onShow, text = same }: {
   text?: (s: string) => string;
 }) {
   const status = !revealed ? "Not run yet" : check.pass ? "Pass" : "Fail";
+  const accent = !revealed
+    ? "border-l-border"
+    : check.pass
+      ? "border-l-[color:var(--lab-ok)]"
+      : "border-l-[color:var(--lab-down)]";
   return (
     <li
-      className={`flex gap-2 rounded-[5px] border px-2 py-1.5 ${!revealed ? "border-border bg-card" : check.pass ? "border-[color:var(--lab-ok)]/50 bg-card" : "border-[color:var(--lab-down)]/60 bg-[color:var(--lab-down-fill)]/40"}`}
+      className={`rounded-[8px] border border-border border-l-[3px] bg-card p-2.5 ${accent}`}
       data-check={check.id}
       data-status={revealed ? (check.pass ? "pass" : "fail") : "pending"}
     >
-      <span
-        key={revealed ? "on" : "off"}
-        aria-hidden
-        className={`lab-mono mt-0.5 flex h-[22px] w-[42px] shrink-0 items-center justify-center rounded-[3px] border-2 text-[9px] font-bold uppercase tracking-wider ${revealed ? "lab-stamp" : ""} ${
-          !revealed ? "border-dashed border-border text-muted-foreground" : check.pass ? "border-[color:var(--lab-ok-ink)] text-[color:var(--lab-ok-ink)]" : "border-[color:var(--lab-down-ink)] text-[color:var(--lab-down-ink)]"
-        }`}
-      >
-        {!revealed ? "wait" : check.pass ? "pass" : "fail"}
-      </span>
-      <div className="min-w-0 flex-1">
-        <div className="text-[13px] font-medium leading-snug">
+      <div className="flex items-start gap-2">
+        <span
+          key={revealed ? "on" : "off"}
+          aria-hidden
+          className={`lab-mono flex h-[21px] w-[42px] shrink-0 items-center justify-center rounded-full border text-[8.5px] font-bold uppercase tracking-wider ${revealed ? "lab-stamp" : ""} ${
+            !revealed ? "border-dashed border-border bg-muted text-muted-foreground" : check.pass ? "border-[color:var(--lab-ok)]/50 bg-[color:var(--lab-ok)]/10 text-[color:var(--lab-ok-ink)]" : "border-[color:var(--lab-down)]/50 bg-[color:var(--lab-down-fill)]/60 text-[color:var(--lab-down-ink)]"
+          }`}
+        >
+          {!revealed ? "wait" : check.pass ? "pass" : "fail"}
+        </span>
+        <div className="min-w-0 flex-1 text-[12.5px] font-semibold leading-snug text-foreground">
           {text(check.label)}
           <span className="sr-only">: {status}</span>
         </div>
-        <div className="text-[11px] leading-snug text-muted-foreground">
-          {revealed ? (
-            <>
-              Measured <span className={`lab-mono font-bold ${okText(check.pass)}`}>{text(check.measured)}</span>
-              <span aria-hidden> / </span>
-              <span>needs {text(check.target)}</span>
-            </>
-          ) : (
-            <>Needs {text(check.target)}</>
-          )}
-        </div>
-        {revealed && !check.pass && check.reason ? (
-          <div className="mt-0.5 text-[11.5px] leading-snug text-[color:var(--lab-down-ink)]">{text(check.reason)}</div>
+        {revealed && onShow ? (
+          <button type="button" onClick={onShow} className="lab-mono h-fit shrink-0 rounded-[4px] border border-border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--lab-accent)]">
+            {check.pass ? "Replay" : "Inspect"}
+          </button>
         ) : null}
       </div>
-      {revealed && onShow ? (
-        <button type="button" onClick={onShow} className="lab-mono h-fit shrink-0 rounded-[4px] border border-border px-1.5 py-0.5 text-[9.5px] font-bold uppercase tracking-wide text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--lab-accent)]">
-          {check.pass ? "Replay" : "Inspect"}
-        </button>
+
+      <dl className={`mt-2 grid gap-x-3 gap-y-1 border-t border-border/60 pt-2 ${revealed ? "grid-cols-2" : "grid-cols-1"}`}>
+        <div>
+          <dt className="lab-mono text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground">Target</dt>
+          <dd className="mt-0.5 text-[11px] leading-snug text-foreground">{text(check.target)}</dd>
+        </div>
+        {revealed ? (
+          <div>
+            <dt className="lab-mono text-[8.5px] font-bold uppercase tracking-wider text-muted-foreground">Yours</dt>
+            <dd className={`lab-mono mt-0.5 text-[11px] font-bold leading-snug ${okText(check.pass)}`}>{text(check.measured)}</dd>
+          </div>
+        ) : null}
+      </dl>
+
+      {revealed && !check.pass && check.reason ? (
+        <p className="mt-2 border-t border-border/60 pt-2 text-[11px] leading-relaxed text-muted-foreground">
+          <span className="font-semibold text-foreground">Fix: </span>{text(check.reason)}
+        </p>
       ) : null}
     </li>
   );

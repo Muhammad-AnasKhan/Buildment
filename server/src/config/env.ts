@@ -75,6 +75,22 @@ const schema = z.object({
     "AI_KEY_ENCRYPTION_KEY must be 32 bytes encoded as base64 (for example: openssl rand -base64 32)"
   ),
 
+  /**
+   * "Ask about this chapter" for learners, answered by Anthropic with the platform key.
+   * Off unless LEARNER_QA_ENABLED is "true" and ANTHROPIC_API_KEY is set. The limits are
+   * counted in the database, so they hold across restarts and replicas.
+   */
+  ANTHROPIC_API_KEY: optionalString,
+  LEARNER_QA_ENABLED: z
+    .string()
+    .optional()
+    .transform((value) => value === "true"),
+  LEARNER_QA_MODEL: z.string().trim().min(1).default("claude-haiku-5-5"),
+  /** Questions one learner may ask per UTC day. */
+  LEARNER_QA_DAILY_LIMIT: z.coerce.number().int().min(1).max(500).default(20),
+  /** Questions the whole platform may answer per UTC day, the cap on the Anthropic bill. */
+  LEARNER_QA_GLOBAL_DAILY_LIMIT: z.coerce.number().int().min(1).max(100_000).default(500),
+
   /** Private Cloudflare R2 bucket used for instructor-uploaded course images. */
   R2_ENDPOINT: optionalString,
   R2_BUCKET: optionalString,
@@ -138,3 +154,5 @@ export const realtimeOrigins = [...new Set([env.APP_URL, ...env.CORS_ORIGINS])];
 export const isProduction = env.NODE_ENV === "production";
 export const rateLimitsEnabled = !(env.DISABLE_RATE_LIMITS && !isProduction);
 export const isTest = env.NODE_ENV === "test";
+/** Chapter questions need both the switch and a key; either missing hides the feature. */
+export const learnerQaAvailable = env.LEARNER_QA_ENABLED && Boolean(env.ANTHROPIC_API_KEY);

@@ -221,7 +221,7 @@ const ENTRIES: Record<ComponentKind, Entry> = {
   "app-server": { label: "App server", family: "hld", role: "compute", vendor: "Compute", icon: "compute",
     properties: [size("generic", "compute-small"), count("count", "Machines (instances)", "machines", 2, 1, 50), ...scaling(0, 2, 10, 0.6), azs(1)] },
   worker: { label: "Worker", family: "hld", role: "worker", vendor: "Consumer", icon: "worker",
-    properties: [size("generic", "compute-small"), count("count", "Workers", "workers", 2, 1, 100), count("batchSize", "Clicks saved per trip (batch size)", "events", 1, 1, 1000, "Behaviour", "How many clicks go to the database in one trip. Saving many at once turns thousands of writes a second into a few."), ...scaling(0, 1, 20, 0.7)] },
+    properties: [size("generic", "compute-small"), count("count", "Workers", "workers", 2, 1, 100), count("batchSize", "Items saved per trip (batch size)", "events", 1, 1, 1000, "Behaviour", "How many items (clicks, posts, events) go to the store in one trip. Saving many at once turns thousands of writes a second into a few."), ...scaling(0, 1, 20, 0.7)] },
   cache: { label: "Cache", family: "hld", role: "cache", vendor: "Redis", icon: "cache",
     properties: [size("generic", "memory-small"), count("count", "Machines (nodes)", "nodes", 1, 1, 20), ratio("hitRate", "Answered by the cache (hit rate)", 0.85, "Behaviour", "A hit means the database is never asked. A miss goes on to the database."), azs(1)] },
   database: { label: "Database", family: "hld", role: "database", vendor: "PostgreSQL", icon: "database",

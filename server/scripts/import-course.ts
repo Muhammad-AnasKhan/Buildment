@@ -28,7 +28,7 @@ import { fileURLToPath } from "node:url";
 import { load as loadYaml } from "js-yaml";
 import { ulid } from "ulid";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, type Prisma } from "../src/generated/prisma/index.js";
+import { Prisma, PrismaClient } from "../src/generated/prisma/index.js";
 import { SEED_COURSE, SEED_USERS } from "../src/shared/lib/seed-data.js";
 import { VideoConfigSchema } from "../src/shared/blocks/video/schema.js";
 import { QuizConfigSchema, normalizeQuizConfig } from "../src/shared/blocks/quiz/schema.js";
@@ -145,13 +145,22 @@ function blockPlaceholderTag(block: PendingBlock): string {
  * gate: malformed/unsafe links remain source text instead of becoming blocks.
  */
 function transformVisualContentFences(body: string, pushBlock: (b: PendingBlock) => string): string {
+  const normalizedPortable = body.replace(/^```(canvas|lab)[ \t]*\r?\n([\s\S]*?)^```[ \t]*$/gm, (match, kind: "canvas" | "lab", yamlText: string) => {
+    try {
+      const parsed = loadYaml(yamlText);
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return match;
+      return `\`\`\`${kind}\n${JSON.stringify(parsed, null, 2)}\n\`\`\``;
+    } catch {
+      return match;
+    }
+  });
   const fenceTypes = {
     video: { type: "VIDEO", schema: VideoConfigSchema },
     walkthrough: { type: "VISUAL_WALKTHROUGH", schema: VisualWalkthroughConfigSchema },
     diagram: { type: "VISUAL_DIAGRAM", schema: VisualDiagramConfigSchema },
     roadmap: { type: "ROADMAP", schema: RoadmapConfigSchema },
   } as const;
-  return body.replace(/```(video|walkthrough|diagram|roadmap)\n([\s\S]*?)```/g, (match, name: keyof typeof fenceTypes, yamlText: string) => {
+  return normalizedPortable.replace(/```(video|walkthrough|diagram|roadmap)\n([\s\S]*?)```/g, (match, name: keyof typeof fenceTypes, yamlText: string) => {
     let parsed: unknown;
     try {
       parsed = loadYaml(yamlText);
@@ -346,6 +355,7 @@ type ParsedLesson = {
   summary: string | null;
   estimatedMinutes: number | null;
   readerMode: "DEFAULT" | "QUIZ";
+  quizPassingScore: number;
   source: string;
   blocks: PendingBlock[];
   isMilestone: boolean;
@@ -509,7 +519,7 @@ function escapeMdxProse(body: string): string {
     return `\x00BLOCK${blockTags.length - 1}\x00`;
   });
 
-  const escaped = splitOutsideFences(withMarkers, /```[\s\S]*?```/g, (segment) => {
+  const escaped = splitOutsideFences(withMarkers, /^```[\s\S]*?^```[ \t]*$/gm, (segment) => {
     return splitOutsideFences(segment, /`[^`\n]+`/g, (prose) =>
       prose.replace(/\{/g, "&#123;").replace(/\}/g, "&#125;").replace(/</g, "&lt;")
     );
@@ -526,7 +536,7 @@ function normalizePlaceholderUrls(body: string): string {
       .replace(/https:\/\/app\.\.\./g, "https://app.yourdomain.com")
       .replace(/https:\/\/\.\.\./g, "https://your-domain.com");
 
-  return splitOutsideFences(body, /```[\s\S]*?```/g, fix);
+  return splitOutsideFences(body, /^```[\s\S]*?^```[ \t]*$/gm, fix);
 }
 
 type FaqPair = { question: string; answer: string };
@@ -677,6 +687,9 @@ function transformQuizFences(body: string, pushBlock: (b: PendingBlock) => strin
       autoGrade?: "mentor" | "llm";
       hints?: string[];
       hintAfterAttempts?: number;
+      maxAttempts?: number;
+      reviewChapters?: string[];
+      rubric?: string;
       allowSpeechInput?: boolean;
       allowUrl?: boolean;
       urlLabel?: string;
@@ -723,11 +736,14 @@ function transformQuizFences(body: string, pushBlock: (b: PendingBlock) => strin
         prompt: parsed.question,
         minWords: parsed.minWords ?? 0,
         sampleAnswer: parsed.modelAnswer,
+        rubric: parsed.rubric,
         autoGrade,
         ...(hints && hints.length > 0 ? { hints } : {}),
         ...(typeof parsed.hintAfterAttempts === "number"
           ? { hintAfterAttempts: parsed.hintAfterAttempts }
           : {}),
+        ...(typeof parsed.maxAttempts === "number" ? { maxAttempts: parsed.maxAttempts } : {}),
+        ...(Array.isArray(parsed.reviewChapters) ? { reviewChapterSlugs: parsed.reviewChapters } : {}),
         allowSpeechInput: parsed.allowSpeechInput ?? false,
         allowUrl: parsed.allowUrl ?? false,
         urlLabel: parsed.urlLabel,
@@ -753,6 +769,12 @@ function transformOpenQuestionFences(body: string, pushBlock: (b: PendingBlock) 
       urlRequired?: boolean;
       urlHint?: string;
       modelAnswer?: string;
+      rubric?: string;
+      autoGrade?: "mentor" | "llm";
+      hints?: string[];
+      hintAfterAttempts?: number;
+      maxAttempts?: number;
+      reviewChapters?: string[];
     };
     try {
       parsed = loadYaml(yamlText) as typeof parsed;
@@ -769,6 +791,12 @@ function transformOpenQuestionFences(body: string, pushBlock: (b: PendingBlock) 
         prompt: parsed.prompt,
         minWords: parsed.minWords ?? 0,
         sampleAnswer: parsed.modelAnswer,
+        rubric: parsed.rubric,
+        autoGrade: parsed.autoGrade ?? "mentor",
+        hints: parsed.hints,
+        hintAfterAttempts: parsed.hintAfterAttempts,
+        maxAttempts: parsed.maxAttempts,
+        reviewChapterSlugs: parsed.reviewChapters,
         allowSpeechInput: parsed.allowSpeechInput ?? false,
         speechPrimary: parsed.speechPrimary ?? false,
         submissionMode: parsed.submissionMode ?? "text",
@@ -827,6 +855,8 @@ export function parseLesson(moduleNum: number, moduleDir: string, fileName: stri
         : null;
   const readerMode =
     stepType === "quiz" || /-quiz\.md$/.test(fileName) ? ("QUIZ" as const) : ("DEFAULT" as const);
+  const passingRaw = Number(frontmatter.passingScore ?? 70);
+  const quizPassingScore = Number.isInteger(passingRaw) && passingRaw >= 1 && passingRaw <= 100 ? passingRaw : 70;
 
   return {
     moduleNum,
@@ -836,6 +866,7 @@ export function parseLesson(moduleNum: number, moduleDir: string, fileName: stri
     summary: (frontmatter.summary as string | undefined)?.trim() || null,
     estimatedMinutes: Number.isFinite(estimatedMinutes) ? estimatedMinutes : null,
     readerMode,
+    quizPassingScore,
     source: source.trim() + "\n",
     blocks,
     isMilestone,
@@ -866,6 +897,7 @@ async function upsertCourse(manifest: CourseManifest | null) {
     coverUrl: meta.coverUrl ?? null,
     familySlug: meta.family ?? null,
     variantFamily: manifest?.variantFamily as unknown as Prisma.InputJsonValue | undefined,
+    assistant: (manifest?.assistant ?? Prisma.DbNull) as Prisma.InputJsonValue,
   };
 
   return prisma.course.upsert({
@@ -940,6 +972,7 @@ async function main() {
           order: lessonNum,
           estimatedMinutes: lesson.estimatedMinutes,
           readerMode: lesson.readerMode,
+          quizPassingScore: lesson.quizPassingScore,
           source: lesson.source,
           compiled: lesson.source,
           isMilestone: lesson.isMilestone,
@@ -955,6 +988,7 @@ async function main() {
           order: lessonNum,
           estimatedMinutes: lesson.estimatedMinutes,
           readerMode: lesson.readerMode,
+          quizPassingScore: lesson.quizPassingScore,
           source: lesson.source,
           compiled: lesson.source,
           isMilestone: lesson.isMilestone,

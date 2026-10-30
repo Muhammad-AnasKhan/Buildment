@@ -78,7 +78,15 @@ export type CheckDef =
   /** A measured check: one number from one scenario against a limit. */
   | (CheckBase & { type: "metric"; scenario: string; metric: CheckMetric; op: "<=" | ">="; value: number })
   /** Work queued while its consumer is down must be fully counted once it is back. */
-  | (CheckBase & { type: "drain"; outageSeconds: number; maxDrainSeconds: number });
+  | (CheckBase & {
+      type: "drain";
+      outageSeconds: number;
+      maxDrainSeconds: number;
+      /** What waits in the queue, plural: "clicks" (the default), "posts", "messages". */
+      items?: string;
+      /** What happens to each item once a worker takes it: "counted" (the default), "delivered", "saved". */
+      done?: string;
+    });
 
 export interface ChallengeDef {
   /** Requests a second at the busiest moment; every scenario runs at this load. */
@@ -88,6 +96,12 @@ export interface ChallengeDef {
    * answers, so counting works but costs a database write per request.
    */
   inlineClicks?: boolean;
+  /**
+   * The share of requests that send work to parts of a role, for side jobs only some
+   * requests need: { queue: 0.1 } means 1 request in 10 leaves a job in the queue.
+   * Each share is above 0 and at most 1; a role with no share gets the whole stream.
+   */
+  shares?: Partial<Record<Role, number>>;
   scenarios: ChallengeScenario[];
   checks: CheckDef[];
 }
@@ -236,6 +250,9 @@ export function validateChallenge(challenge: ChallengeDef): string[] {
     if (c.type === "path" && c.chain.length < 2) problems.push(`check "${c.id}" needs a chain of at least two roles`);
   }
   if (!(challenge.peakLoad > 0)) problems.push("challenge peakLoad must be positive");
+  for (const [role, share] of Object.entries(challenge.shares ?? {})) {
+    if (!(typeof share === "number" && share > 0 && share <= 1)) problems.push(`share for ${role} must be above 0 and at most 1`);
+  }
   if (!challenge.checks.some((c) => c.kind === "functional")) problems.push("a challenge needs at least one functional check");
   if (!challenge.checks.some((c) => c.kind === "non-functional")) problems.push("a challenge needs at least one non-functional check");
   return problems;

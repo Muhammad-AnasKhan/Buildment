@@ -9,7 +9,7 @@ import {
   shouldAutoVerifyWithoutEmailDelivery,
 } from "./email-verification.js";
 
-export async function signup(input: { name: string; email: string; password: string }): Promise<SignupResult> {
+export async function signup(input: { name: string; email: string; password: string; redirectTo?: string }): Promise<SignupResult> {
   if (isDisposable(input.email)) {
     throw new UnprocessableError("Please use a non-disposable email address.", "DISPOSABLE_EMAIL");
   }
@@ -34,6 +34,6 @@ export async function signup(input: { name: string; email: string; password: str
     return { email: user.email, status: "verified" };
   }
 
-  await sendVerificationEmail({ email: user.email, name: user.name });
+  await sendVerificationEmail({ email: user.email, name: user.name, redirectTo: input.redirectTo });
   return { email: user.email, status: "verification_sent" };
 }

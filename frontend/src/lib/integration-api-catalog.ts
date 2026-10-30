@@ -12,7 +12,7 @@ export type IntegrationEndpoint = {
 };
 
 export const INTEGRATION_API_CATALOG = {
-  name: "Buildment Organization API",
+  name: "Edorax Organization API",
   version: "v1",
   basePath: "/integrations/v1",
   auth: {
@@ -22,12 +22,17 @@ export const INTEGRATION_API_CATALOG = {
     { method: "GET", path: "/integrations/v1/connection", description: "Verify API credentials" },
     { method: "GET", path: "/integrations/v1/courses", description: "List allocated published courses" },
     { method: "GET", path: "/integrations/v1/allocations", description: "List course allocations for your org" },
+    { method: "GET", path: "/integrations/v1/coupons", description: "List coupon pools and remaining seats" },
     {
       method: "GET",
       path: "/integrations/v1/enrollments",
       description: "Lookup enrollment by course_id + learner_email or external_assignment_id",
     },
-    { method: "POST", path: "/integrations/v1/enrollments", description: "Create org-scoped enrollment (Pathment-style)" },
+    {
+      method: "POST",
+      path: "/integrations/v1/enrollments",
+      description: "Create org-scoped enrollment (Pathment-style; consumes a coupon seat when available)",
+    },
     {
       method: "POST",
       path: "/integrations/v1/enrollments/cancel",

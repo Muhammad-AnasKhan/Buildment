@@ -18,6 +18,7 @@ import { milestoneReflectionBlocked } from "../progress/reflection.js";
 import { isCompletableBlock, previousChapterId } from "../progress/rules.js";
 import { releaseForEnrollment, releaseModulesWithBlocks, variantForRelease } from "../courses/releases.js";
 import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
+import { findChapterIndex } from "./chapter-slug.js";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -76,7 +77,7 @@ export async function loadChapterReader(courseSlug: string, chapterSlug: string,
       blockCount: ch.blocks.filter((block) => isCompletableBlock(block)).length,
     }))
   );
-  const index = flatChapters.findIndex((c) => c.slug === chapterSlug);
+  const index = findChapterIndex(flatChapters, chapterSlug);
   if (index === -1) throw new NotFoundError("Chapter not found");
 
   const chapter = flatChapters[index]!;

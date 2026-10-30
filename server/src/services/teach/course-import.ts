@@ -12,6 +12,7 @@ import { prisma } from "../../db/prisma.js";
 import { BadRequestError, ConflictError, TooManyRequestsError, UnprocessableError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
 import type { CourseFamily } from "../../shared/lib/course-tracks.js";
+import type { CourseAssistant } from "../ai/chapter-qa/assistant.js";
 import { publishCourseRelease } from "./publish-course-release.js";
 import type { UpdateMapping } from "./course-update-matching.js";
 
@@ -64,12 +65,14 @@ export type ImportPlan = {
     title: string; description: string; projectGoal: string; difficulty: string;
     estimatedHours: number; coverUrl?: string; family?: string; category?: "tech" | "soft-skills";
     variantFamily?: CourseFamily;
+    assistant?: CourseAssistant;
     availableVariantSlugs?: string[];
     publication?: "create" | "update"; creatorEmail?: string;
   };
   modules: { key?: string; order?: number; title: string; lessons: {
     key?: string; lessonNum: number; slugPart: string; title: string; summary: string | null;
     source: string; estimatedMinutes: number | null; readerMode: "DEFAULT" | "QUIZ";
+    quizPassingScore?: number;
     isMilestone: boolean;
     blocks: { id: string; type: Prisma.BlockCreateManyInput["type"]; config: Prisma.InputJsonValue; required: boolean }[];
   }[] }[];
@@ -140,6 +143,7 @@ async function runCourseImport(user: SessionUser, buffer: Buffer, source: Course
   const category = plan.manifest.category === "soft-skills" ? "SOFT_SKILLS" as const : "TECH" as const;
   const metadata = { title, description, projectGoal, difficulty, estimatedHours, coverUrl, category,
     familySlug: family ?? null, variantFamily: variantFamily as unknown as Prisma.InputJsonValue | undefined,
+    assistant: plan.manifest.assistant as Prisma.InputJsonValue | undefined,
     availableVariantSlugs: plan.manifest.availableVariantSlugs ?? [] };
   try {
     const course = await prisma.$transaction(async tx => {
@@ -162,6 +166,7 @@ async function runCourseImport(user: SessionUser, buffer: Buffer, source: Course
             slug: `${index + 1}-${lesson.lessonNum}-${lesson.slugPart}`,
             title: lesson.title, summary: lesson.summary, source: lesson.source, compiled: lesson.source,
             order: lesson.lessonNum, estimatedMinutes: lesson.estimatedMinutes, readerMode: lesson.readerMode,
+            quizPassingScore: lesson.quizPassingScore ?? 70,
             isMilestone: lesson.isMilestone,
           });
           blocks.push(...lesson.blocks.map((block, i) => ({

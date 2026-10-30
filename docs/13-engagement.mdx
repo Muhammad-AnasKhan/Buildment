@@ -91,27 +91,28 @@ write it, because that column bounds heartbeat credit and moving it would underc
   names a course, so the same cast works in every course.
 - **Rules** (`ENGAGEMENT_RULES`), highest priority wins when one action causes several events:
 
-| Moment | Role → state | Example line | Notes |
+| Moment | Role → state | Line (clip) | Notes |
 |---|---|---|---|
-| course completed | celebrator → graduation | "Congratulations on completing the course!" | priority 100 |
-| level up | celebrator → level_up | "Level up! Your effort is adding up." | |
-| quiz passed after misses | celebrator → proud | "You got it! That one was tricky." | |
-| quiz passed, 100% | celebrator → perfect | "Perfect score!" | |
-| one chapter left / halfway | celebrator → almost / halfway | "Just one chapter to go!" | once per course |
-| first chapter done | guide → first_step | "First chapter done! Here's where it begins." | once per course |
-| weekly goal met | celebrator → goal | "Weekly goal met! Nice consistency." | |
-| chapter completed | celebrator → celebrate | "Chapter complete. Nice work!" | once |
-| enrolled | guide → begin | "You're in! Let's start learning." | once |
+| course completed | celebrator → graduation | "You did it!" (`you-did-it`) | priority 100 |
+| level up | celebrator → level_up | "Level up!" | |
+| quiz passed after misses | celebrator → proud | "You got it!" (`got-it`) | |
+| quiz passed, 100% | celebrator → perfect | "You passed!" (`you-passed`) | |
+| one chapter left / halfway | celebrator → almost / halfway | "Lesson done!" (`lesson-done`) | once per course |
+| first chapter done | guide → first_step | "Lesson done!" (`lesson-done`) | once per course |
+| weekly goal met | celebrator → goal | "Weekly goal met!" | |
+| chapter completed | celebrator → celebrate | "Lesson done!" (`lesson-done`) | once |
+| enrolled | guide → begin | "You're in! Let's start!" | once |
 | message from a mentor | messenger → message, message_good, message_feedback, message_done | "Your mentor replied!" | button: Open |
-| quiz missed, attempt 1 / 2+ | helper → retry / help | "Let's try another way." | |
-| long while on a chapter | helper → stuck | "Need a hand? You can ask a mentor." | button: Ask a mentor |
-| back after 14+ days | guide → reunion | "Welcome back! Your next chapter is ready." | ambient; button: Continue |
-| back after 3+ days | guide → welcome_back | "Yay, you're back!" | ambient |
-| long study session | supporter → rest | "Great focus! A short break helps it stick." | |
-| notes saved | supporter → encourage | "Your own words stick best." | 10-minute cooldown |
+| quiz missed, attempt 1 / 2+ | helper → retry / help | "Hmm, not quite!" (`not-quite`) / "Let's look again!" (`look-again`) | |
+| long while on a chapter | helper → stuck | "Need a hint?" (`need-a-hint`) | button: Ask a mentor |
+| back after 14+ days | guide → reunion | "You're back! I missed you!" (`missed-you`) | ambient; button: Continue |
+| back after 3+ days | guide → welcome_back | "You're back! I missed you!" (`missed-you`) | ambient |
+| very first session | guide → begin | "Hey, welcome to Edorax! I'm Dot, your learning buddy!" (`welcome`) | ambient |
+| long study session | supporter → rest | "Great focus! Time for a break?" | |
+| notes saved | supporter → encourage | "Nice note!" | 10-minute cooldown |
 
-Each rule has three lines in the same spirit; the engine picks one at random and never repeats
-the previous one, so the mascots do not sound scripted. Copy never counts failures or days away.
+Each rule has one short line in Dot's voice, the same every time, so a recorded clip can say it
+(the engine still varies lines for a rule given several). Copy never counts failures or days away.
 **Ambient** reactions (ones the learner did not just cause) are skipped on chapter reader pages, so
 nothing interrupts reading. A rule may add one **action** (`{ label, href }` or the `ask-help`
 intent), shown as a button in the bubble; help is offered, never imposed.
@@ -178,13 +179,14 @@ Both are generated outside the repo and only the results are committed.
 - **Stills** (`frontend/public/mascots/<id>/<state>.svg`) are the rig's settled pose rendered to SVG
   (React `renderToStaticMarkup` of `MascotRig` with `animate: false`, plus an `xmlns`). Re-render them
   whenever a look or an expression changes.
-- **Voices** (`frontend/public/mascots/voice/<id>/<rule-id>-<line-index>.mp3`) exist for every line
-  a voiced mascot is cast to say. They are made with Kokoro (open model, Apache-2.0, commercial use
-  allowed) using the voice settings in the cast table, pitch-shifted by resampling, trimmed,
-  normalised and encoded as 48 kbps mono MP3 (about 10 KB a line). The engine names the clip of the
-  line it picked. When a line or the casting changes, regenerate the affected clips;
-  `frontend/tests/unit/engagement/mascot-assets.test.ts` lists any clip or still that is missing, and
-  a missing clip just stays silent.
+- **Voice** is Dot's: twelve short clips (Kai on ElevenLabs) in `frontend/public/brand/dot/voice/`,
+  listed with their words in `frontend/public/brand/dot/manifest.json` and in
+  `shared/engagement/dot-voice.ts`. A rule that has a clip names it (`clip`) and says exactly its
+  words; the engine puts the clip's URL on the reaction, and rules without one stay silent. The
+  mascot player plays it once per reaction, only when the learner has turned on Dot's voice (off by
+  default, saved per device; profile settings or the bubble's speaker button) and never during a
+  quiz: a reaction that arrives while the quiz session is open waits and shows once it closes. `frontend/tests/unit/engagement/mascot-assets.test.ts` checks the files, the manifest and
+  the wording all agree. Changing a voiced line means recording its clip again.
 
 ## Mobile
 

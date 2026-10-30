@@ -2,8 +2,7 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkMdx from 'remark-mdx';
 import remarkGfm from 'remark-gfm';
-import { remarkChecklist } from '../../../server/src/shared/mdx/remark-checklist';
-import { remarkLearningLog } from '../../../server/src/shared/mdx/remark-learning-log';
+import { readerRemarkPlugins } from '../../../server/src/shared/mdx/reader-plugins';
 import { restoreInteractiveBlockTags } from '../../../server/src/shared/mdx/restore-block-tags';
 import { chapterBodyForReader } from '../../../server/src/shared/lib/mdx-frontmatter';
 import type { LessonNode } from '../domain/learning';
@@ -15,11 +14,49 @@ export function parseLesson(source: string): LessonNode {
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkMdx)
-    .use(remarkChecklist)
-    .use(remarkLearningLog);
+    // The same plugins as the web reader, so ```flow, ```sequence and ```mermaid
+    // fences become the shared Diagram and MermaidDiagram blocks here too.
+    .use(readerRemarkPlugins);
   const body = restoreInteractiveBlockTags(chapterBodyForReader(source));
   const tree = parser.runSync(parser.parse(body));
   function clean(node: any): LessonNode {
+    if (node.type === 'code' && (node.lang === 'canvas' || node.lang === 'lab') && typeof node.value === 'string') {
+      try {
+        const parsed = JSON.parse(node.value);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          const { renderer, version, presentation, data: nestedData, ...rest } = parsed as Record<string, unknown>;
+          const payload =
+            nestedData && typeof nestedData === 'object' && !Array.isArray(nestedData)
+              ? { ...rest, ...(nestedData as Record<string, unknown>) }
+              : rest;
+          if (node.lang === 'canvas' && typeof renderer === 'string') {
+            return {
+              type: 'mdxJsxFlowElement',
+              name: 'InteractiveCanvas',
+              attributes: {
+                renderer,
+                ...(typeof version === 'number' ? { version } : {}),
+                ...(presentation && typeof presentation === 'object' ? { presentation } : {}),
+                data: payload,
+              },
+            };
+          }
+          if (node.lang === 'lab' && typeof payload.family === 'string') {
+            return {
+              type: 'mdxJsxFlowElement',
+              name: 'Lab',
+              attributes: {
+                ...(typeof version === 'number' ? { version } : {}),
+                ...(presentation && typeof presentation === 'object' ? { presentation } : {}),
+                spec: payload,
+              },
+            };
+          }
+        }
+      } catch {
+        /* Falls back to code block if not valid JSON. */
+      }
+    }
     const result: LessonNode = { type: node.type };
     for (const key of ['value', 'name', 'depth', 'url', 'ordered'] as const) {
       if (node[key] !== undefined) (result as any)[key] = node[key];

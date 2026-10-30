@@ -18,12 +18,13 @@ const ENDPOINTS = [
   { method: "GET", path: "/integrations/v1/connection", description: "Verify API credentials" },
   { method: "GET", path: "/integrations/v1/courses", description: "List allocated published courses" },
   { method: "GET", path: "/integrations/v1/allocations", description: "List course allocations for your org" },
+  { method: "GET", path: "/integrations/v1/coupons", description: "List coupon pools and remaining seats" },
   {
     method: "GET",
     path: "/integrations/v1/enrollments",
     description: "Lookup enrollment by course_id + learner_email or external_assignment_id",
   },
-  { method: "POST", path: "/integrations/v1/enrollments", description: "Create Pathment-style enrollment" },
+  { method: "POST", path: "/integrations/v1/enrollments", description: "Create Pathment-style enrollment (consumes a coupon seat when available)" },
   {
     method: "POST",
     path: "/integrations/v1/enrollments/cancel",
@@ -54,6 +55,11 @@ export async function courses(req: Request, res: Response) {
 
 export async function allocations(req: Request, res: Response) {
   res.json({ allocations: await listAllocations(req.organization!) });
+}
+
+export async function coupons(req: Request, res: Response) {
+  const { listCouponPools } = await import("../services/coupons/pools.js");
+  res.json({ coupons: await listCouponPools(req.organization!.id) });
 }
 
 export async function getEnrollment(req: Request, res: Response) {

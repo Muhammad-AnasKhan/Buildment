@@ -14,6 +14,7 @@ import { load as loadYaml } from "js-yaml";
 import { z } from "zod";
 import { findCourseFamily } from "../src/shared/lib/course-tracks.js";
 import { isSafeProductName } from "../src/shared/lib/content-tokens.js";
+import { ASSISTANT_GUIDANCE_MAX, ASSISTANT_STARTERS_MAX, ASSISTANT_STARTER_MAX, assistantEfforts } from "../src/services/ai/chapter-qa/assistant.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_COURSE_SLUG = "multi-vendor-marketplace";
@@ -111,6 +112,17 @@ export const CourseManifestSchema = z.object({
     /** Words the voice gets wrong, mapped to a spelling it says correctly. */
     pronunciations: z.record(z.string().min(1), z.string().min(1)).default({}),
   }).optional(),
+  /**
+   * Settings for the "Ask about this chapter" tutor in every chapter of this course. The platform
+   * rules always come first; guidance is added after them and can only narrow what the tutor does.
+   */
+  assistant: z.object({
+    /** How much the model thinks before it answers: low is fastest and cheapest. */
+    effort: z.enum(assistantEfforts).default("low"),
+    guidance: z.string().trim().min(1).max(ASSISTANT_GUIDANCE_MAX).optional(),
+    /** Short questions offered as one-tap chips in every chapter. */
+    starters: z.array(z.string().trim().min(3).max(ASSISTANT_STARTER_MAX)).max(ASSISTANT_STARTERS_MAX).optional(),
+  }).strict().optional(),
   /**
    * Branded diagrams written as ```flow and ```sequence fences (docs/diagram-components-plan.md).
    * `pnpm diagrams:export --course <slug>` writes a static SVG of each one when exportSvg is on,

@@ -79,6 +79,9 @@ function fullscreenSupported(): boolean {
 /** The reader shell owns focus mode; asking it keeps the layout and full screen in step. */
 export function requestQuizFullscreen() {
   window.dispatchEvent(new Event("buildment:quiz-focus"));
+  if (fullscreenSupported() && !document.fullscreenElement) {
+    void document.documentElement.requestFullscreen().catch(() => undefined);
+  }
 }
 
 export type IntegrityTransport = {
@@ -445,6 +448,7 @@ export function useQuizIntegrity({
       }
     }
     setDialog(null);
+    setFullscreenPrompt(false);
     if (fullscreenSupported() && !document.fullscreenElement) requestQuizFullscreen();
     if (!session?.camera.enabled) return;
     if (withCamera) void startCamera();
@@ -507,12 +511,14 @@ export function useQuizIntegrity({
     const onFullscreenChange = () => {
       if (document.fullscreenElement) {
         wasFullscreen.current = true;
+        fullscreenDismissals.current = 0;
         setFullscreenPrompt(false);
         return;
       }
       if (!wasFullscreen.current || finishedRef.current) return;
       wasFullscreen.current = false;
       record("FULLSCREEN_EXIT", undefined, { quiet: true });
+      setDialog((current) => (current === "info" ? null : current));
       if (fullscreenPromptAllowed({ supported: fullscreenSupported(), dismissals: fullscreenDismissals.current })) setFullscreenPrompt(true);
     };
 

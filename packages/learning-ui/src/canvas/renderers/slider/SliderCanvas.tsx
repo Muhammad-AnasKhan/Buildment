@@ -1,11 +1,12 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { CanvasFrame, CanvasNotes } from "../../primitives/canvas-frame";
 import { ACCENT_CONTROL, FOCUS_RING, TONES } from "../../primitives/tones";
 import { getCanvasSpec } from "../../registry";
+import { buildSliderSpec, type PortableSliderData } from "../../models/portable";
 import { barPercent, defaultValues, isDefault, withValue } from "./model";
 import type { SliderInput, SliderSpec, SliderValues } from "./types";
 
@@ -17,6 +18,14 @@ import type { SliderInput, SliderSpec, SliderValues } from "./types";
 export function SliderCanvas({ slug }: { slug: string }) {
   const spec = getCanvasSpec(slug);
   if (!spec || spec.kind !== "slider") return null;
+  return <SliderModel spec={spec} />;
+}
+
+/**
+ * Declarative slider driven by plain data from a ```canvas fence (no functions across the RSC boundary).
+ */
+export function PortableSliderCanvas({ data }: { data: PortableSliderData }) {
+  const spec = useMemo(() => buildSliderSpec(data), [data]);
   return <SliderModel spec={spec} />;
 }
 

@@ -9,6 +9,8 @@ import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
 import { ChapterLockedError, assertChapterUnlocked } from "../progress/gate.js";
 import { lockEnrollmentVariant, recomputeChapterProgress, recordBlockStats } from "../progress/compute.js";
 import { assertEnrollmentChapter } from "../courses/releases.js";
+import type { QuizChapterState } from "../../shared/api/blocks.js";
+import { loadQuizChapterState } from "./quiz-state.js";
 
 type Grade = { blockId: string; score: number | null; maxScore: number | null; isCorrect: boolean | null };
 
@@ -17,6 +19,7 @@ export type QuizSubmitResult = {
   maxScore: number;
   questions: number;
   grades: Array<Grade & { selected: string[] }>;
+  assessment: QuizChapterState["assessment"];
 };
 
 /**
@@ -117,10 +120,12 @@ export async function submitChapterQuiz(input: {
     return results;
   });
 
+  const assessment = (await loadQuizChapterState(chapterId, learner.id)).assessment;
   return {
     score: grades.reduce((sum, item) => sum + (item.score ?? 0), 0),
     maxScore: grades.reduce((sum, item) => sum + (item.maxScore ?? 0), 0),
     questions: grades.length,
     grades: grades.map((item) => ({ ...item, selected: answersByBlock.get(item.blockId) ?? [] })),
+    assessment,
   };
 }

@@ -76,12 +76,23 @@ export const BOARD_CSS = `
 @keyframes lab-shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
 @keyframes lab-stamp { from { transform: scale(1.18); opacity: 0.4; } to { transform: scale(1); opacity: 1; } }
 @keyframes lab-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes lab-scan { 0% { background-position: 0 -180px; opacity: 0.18; } 50% { opacity: 0.42; } 100% { background-position: 0 calc(100% + 180px); opacity: 0.18; } }
+@keyframes lab-orbit { to { transform: rotate(360deg); } }
+@keyframes lab-results-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lab-dialog-in { from { opacity: 0; transform: translateY(18px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes lab-result-ring { 0% { transform: scale(0.8) rotate(-18deg); opacity: 0; } 70% { transform: scale(1.06) rotate(2deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
 .lab-edge-live { animation: lab-edge-flow 0.9s linear infinite; }
 .lab-shake { animation: lab-shake 0.18s ease-in-out 2; }
 .lab-stamp { animation: lab-stamp 0.14s ease-out; }
 .lab-fill { transform-origin: left; animation: lab-fill var(--lab-phase-ms, 2600ms) linear forwards; }
+.lab-scan { background-image: linear-gradient(180deg, transparent 0, transparent 42%, color-mix(in srgb, var(--lab-accent) 14%, transparent) 49%, color-mix(in srgb, var(--lab-accent) 34%, transparent) 50%, color-mix(in srgb, var(--lab-accent) 14%, transparent) 51%, transparent 58%, transparent 100%); background-size: 100% 180px; background-repeat: no-repeat; animation: lab-scan 1.7s linear infinite; }
+.lab-run-orbit::before { content: ""; position: absolute; inset: 3px; border-radius: 999px; border-top: 2px solid #7dd3fc; border-right: 2px solid transparent; animation: lab-orbit 0.9s linear infinite; }
+.lab-results-backdrop { animation: lab-results-in 0.2s ease-out both; }
+.lab-results-dialog { animation: lab-dialog-in 0.32s cubic-bezier(.2,.85,.25,1) both; }
+.lab-result-ring { animation: lab-result-ring 0.5s cubic-bezier(.2,.85,.25,1) 0.08s both; }
+.lab-result-grid { background-image: linear-gradient(var(--lab-grid) 1px, transparent 1px), linear-gradient(90deg, var(--lab-grid) 1px, transparent 1px); background-size: 24px 24px; mask-image: linear-gradient(to right, black, transparent 85%); }
 @media (prefers-reduced-motion: reduce) {
-  .lab-edge-live, .lab-shake, .lab-stamp, .lab-fill { animation: none; }
+  .lab-edge-live, .lab-shake, .lab-stamp, .lab-fill, .lab-scan, .lab-run-orbit::before, .lab-results-backdrop, .lab-results-dialog, .lab-result-ring { animation: none; }
   .lab-fill { transform: scaleX(1); }
   .lab-packet { display: none; }
 }

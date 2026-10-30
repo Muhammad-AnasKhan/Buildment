@@ -95,10 +95,26 @@ export type AdminAllocationRow = {
   expiresAt: string | null;
 };
 
+export type AdminCouponPoolRow = {
+  id: string;
+  label: string;
+  code: string | null;
+  percentOff: number;
+  maxRedemptions: number;
+  redemptionCount: number;
+  remaining: number;
+  active: boolean;
+  expiresAt: string | null;
+  scope: "course" | "general";
+  displayLabel: string;
+  course: { id: string; slug: string; title: string } | null;
+};
+
 export type AdminOrganizationDetail = {
   organization: { id: string; slug: string; name: string; enrollmentCount: number };
   credentials: AdminCredentialRow[];
   allocations: AdminAllocationRow[];
+  couponPools: AdminCouponPoolRow[];
   pendingRequests: Array<{ id: string; courseId: string; courseTitle: string; courseSlug: string }>;
   /** Every published course, so the admin can allocate new ones. Capped for very large catalogs. */
   publishedCourses: Array<{ id: string; slug: string; title: string }>;

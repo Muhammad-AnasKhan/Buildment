@@ -7,6 +7,7 @@ export type OpenQuestionAutoGrade = (typeof OPEN_QUESTION_AUTO_GRADE)[number];
 
 /** Wrong attempts before an authored hint is returned with the grade. */
 export const DEFAULT_HINT_AFTER_ATTEMPTS = 3;
+export const DEFAULT_OPEN_QUESTION_MAX_ATTEMPTS = 3;
 
 export const OpenQuestionConfigSchema = z.object({
   prompt: z.string(),
@@ -31,6 +32,10 @@ export const OpenQuestionConfigSchema = z.object({
   hints: z.array(z.string().min(1).max(2000)).max(5).optional(),
   /** Wrong attempt number at which the first authored hint is revealed (default 3). */
   hintAfterAttempts: z.number().int().min(1).max(10).optional().default(DEFAULT_HINT_AFTER_ATTEMPTS),
+  /** Graded submissions allowed before guided remediation replaces retry. */
+  maxAttempts: z.number().int().min(1).max(10).optional().default(DEFAULT_OPEN_QUESTION_MAX_ATTEMPTS),
+  /** Chapter slugs offered after a failed attempt so the learner can review source material. */
+  reviewChapterSlugs: z.array(z.string().trim().min(1).max(160)).max(5).optional().default([]),
   rubric: z.string().optional(), // mentor-only, never sent to the client
   sampleAnswer: z.string().optional(), // mentor-only / LLM reference — never sent to the client
 });
@@ -117,5 +122,5 @@ export type OpenQuestionPayload = z.infer<typeof OpenQuestionPayloadSchema>;
 
 /** Learner answer plus optional LLM feedback stored on Response.payload. */
 export type OpenQuestionStoredPayload = OpenQuestionPayload & {
-  llmFeedback?: { why: string; hint: string | null };
+  llmFeedback?: { why: string; hint: string | null; guidance: string | null; attempt: number };
 };

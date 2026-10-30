@@ -1,6 +1,6 @@
 // Dot, the Edorax mascot. Generated from the brand canvas; keep the shapes as they are.
 
-export type DotMood = "happy" | "wave" | "think" | "determined" | "cheer" | "wink" | "oops" | "sleep";
+export type DotMood = "happy" | "wave" | "think" | "determined" | "cheer" | "wink" | "oops" | "sleep" | "miss";
 
 export function Dot({ mood, size }: { mood: DotMood; size: number }) {
   return (
@@ -132,6 +132,21 @@ function DotParts({ mood }: { mood: DotMood }) {
           <circle cx="50" cy="68" r="3" fill="#0A0F2C" />
           <text x="74" y="30" fontWeight="700" fontSize="15" fill="#2434E0" style={{ fontFamily: "var(--font-unbounded), sans-serif" }}>z</text>
           <text x="85" y="18" fontWeight="700" fontSize="10" fill="#2434E0" style={{ fontFamily: "var(--font-unbounded), sans-serif" }}>z</text>
+        </>
+      );
+    case "miss":
+      return (
+        <>
+          <path d="M17 58 L4 47 M83 58 L96 47" stroke="#FFC933" strokeWidth="7" strokeLinecap="round" fill="none" />
+          <circle cx="38" cy="92" r="6" fill="#2434E0" />
+          <circle cx="62" cy="92" r="6" fill="#2434E0" />
+          <circle cx="50" cy="56" r="34" fill="#FFC933" />
+          <path d="M34 52 Q40 43 46 52" stroke="#0A0F2C" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+          <path d="M54 52 Q60 43 66 52" stroke="#0A0F2C" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+          <path d="M33 55 Q35.5 61 33 64 Q30.5 61 33 55 Z" fill="#2434E0" />
+          <path d="M67 55 Q69.5 61 67 64 Q64.5 61 67 55 Z" fill="#2434E0" />
+          <path d="M41 64 Q50 80 59 64 Z" fill="#0A0F2C" />
+          <path d="M86 31 L79 24 A4 4 0 0 1 86 18 A4 4 0 0 1 93 24 Z" fill="#2434E0" />
         </>
       );
   }

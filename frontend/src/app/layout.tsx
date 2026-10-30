@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { DM_Sans, IBM_Plex_Sans, JetBrains_Mono, Space_Grotesk, Unbounded } from "next/font/google";
 import { PostHogProvider } from "@/components/posthog-provider";
 import { AppToast } from "@/components/ui/app-toast";
 import { ThemeProvider } from "@/components/theme-provider";
 import { THEME_INIT_SCRIPT } from "@/lib/theme-init-script";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_SHARE_IMAGE, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 // Edorax type: DM Sans for everything you read, Unbounded 700 for headings.
@@ -42,13 +43,28 @@ const ibmPlexSans = IBM_Plex_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Edorax",
+    default: SITE_NAME,
     template: "%s · Edorax",
   },
-  description:
-    "Project-based courses with interactive checkpoints, real mentor feedback, and progress you can trust.",
-  icons: { icon: "/logo.svg" },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  // Share previews (WhatsApp, LinkedIn, X); pages override the title, description and image.
+  openGraph: { type: "website", siteName: SITE_NAME, title: SITE_NAME, description: SITE_DESCRIPTION, images: [{ url: SITE_SHARE_IMAGE, width: 1200, height: 630, alt: "Edorax" }] },
+  twitter: { card: "summary_large_image", images: [SITE_SHARE_IMAGE] },
+  // Set NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION to the code Search Console gives for the HTML tag method.
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } : undefined,
+  icons: { icon: "/logo.svg", apple: "/icons/apple-touch-icon.png" },
+  // iOS reads these when a learner adds Edorax to the home screen (see app/manifest.ts).
+  appleWebApp: { capable: true, title: "Edorax", statusBarStyle: "default" },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F6F7FB" },
+    { media: "(prefers-color-scheme: dark)", color: "#0A0F2C" },
+  ],
 };
 
 export default function RootLayout({

@@ -156,8 +156,24 @@ export type CourseSettingsView = Pick<CourseBuilderCourse,
 };
 
 export type CourseDraftPreview = {
-  course: Pick<CourseBuilderCourse, "id" | "slug" | "title" | "description" | "projectGoal" | "coverUrl" | "status">;
-  modules: Array<{ id: string; title: string; chapters: Array<Pick<CourseBuilderChapter, "id" | "title" | "slug" | "readerMode" | "publishedAt"> & { source: string; hasDraft: boolean }> }>;
+  course: Pick<CourseBuilderCourse, "id" | "slug" | "title" | "description" | "projectGoal" | "coverUrl" | "status"> & {
+    difficulty?: string | null;
+    estimatedHours?: number | null;
+    category?: CourseCategory;
+  };
+  modules: Array<{
+    id: string;
+    title: string;
+    chapters: Array<
+      Pick<CourseBuilderChapter, "id" | "title" | "slug" | "readerMode" | "publishedAt"> & {
+        source: string;
+        hasDraft: boolean;
+        estimatedMinutes?: number | null;
+        isMilestone?: boolean;
+        summary?: string | null;
+      }
+    >;
+  }>;
 };
 
 export type CourseTeamView = {
@@ -176,6 +192,7 @@ export type ChapterEditorView = {
   summary: string | null;
   estimatedMinutes: number | null;
   readerMode: ChapterReaderMode;
+  quizPassingScore: number;
   isMilestone: boolean;
   publishedAt: string | null;
   hasUnpublishedChanges: boolean;
@@ -210,6 +227,7 @@ export type ChapterSettingsInput = {
   summary: string | null;
   estimatedMinutes: number | null;
   readerMode: ChapterReaderMode;
+  quizPassingScore: number;
   isMilestone: boolean;
 };
 

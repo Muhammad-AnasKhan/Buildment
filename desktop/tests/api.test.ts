@@ -409,3 +409,35 @@ test('native parser reads literal object props but never calls code', async () =
   assert.equal(tree.children?.[0].attributes?.enabled, true);
   assert.equal(JSON.stringify(tree).includes('process.exit'), false);
 });
+
+test('native parser draws flow, sequence and convertible Mermaid fences with the shared Diagram', async () => {
+  const { parseLesson } = await import('../src/learning/parse-lesson');
+  const flow =
+    '```flow\ntitle: Your request finds the server\nactor You\nend Server\nYou -> Server\n```';
+  const mermaid =
+    '## One computer, two numbers\n\n```mermaid\nflowchart LR\n  A["Phone"] --> B["Router"]\n```';
+  const tree = parseLesson(`${flow}\n\n${mermaid}\n`);
+  const diagrams = (tree.children || []).filter(
+    (node) => node.name === 'Diagram',
+  );
+  assert.equal(diagrams.length, 2);
+  assert.equal(diagrams[0].attributes?.kind, 'flow');
+  assert.ok(String(diagrams[0].attributes?.spec).includes('You -> Server'));
+  assert.ok(
+    String(diagrams[1].attributes?.spec).includes(
+      'title: One computer, two numbers',
+    ),
+  );
+  assert.equal(JSON.stringify(tree).includes('"code"'), false);
+});
+
+test('native parser hands Mermaid it cannot convert to the shared MermaidDiagram', async () => {
+  const { parseLesson } = await import('../src/learning/parse-lesson');
+  const chart =
+    'gantt\n  title Plan\n  section Build\n  Write :a1, 2026-01-01, 3d';
+  const tree = parseLesson('```mermaid\n' + chart + '\n```\n');
+  const node = tree.children?.[0];
+  assert.equal(node?.type, 'mdxJsxFlowElement');
+  assert.equal(node?.name, 'MermaidDiagram');
+  assert.equal(node?.attributes?.chart, chart);
+});

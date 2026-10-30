@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+import { cache } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft, Lock } from "lucide-react";
@@ -5,6 +7,7 @@ import type { CourseOverview } from "@/shared/api/catalog";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetchOrNotFound } from "@/lib/api-server";
 import { CourseOverviewHero } from "@/components/learn/course-overview-hero";
+import { CourseCouponBanner } from "@/components/learn/course-coupon-banner";
 import { CourseSyllabus } from "@/components/learn/course-syllabus";
 import { CourseProjectShowcase } from "@/components/learn/course-project-showcase";
 import { SpecialisationPanel, VariantBanner } from "@/components/learn/course-track-panels";
@@ -13,16 +16,33 @@ import { LearnerBreadcrumb } from "@/components/learn/learner-breadcrumb";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const loadOverview = cache((courseSlug: string) =>
+  serverApiFetchOrNotFound<CourseOverview>(`/api/v1/courses/${encodeURIComponent(courseSlug)}/overview`)
+);
+
+export async function generateMetadata({ params }: { params: Promise<{ courseSlug: string }> }): Promise<Metadata> {
+  const { courseSlug } = await params;
+  try {
+    const { course } = await loadOverview(courseSlug);
+    return { title: course.title, robots: { index: false, follow: false } };
+  } catch {
+    return { robots: { index: false, follow: false } };
+  }
+}
+
 export default async function CourseOverviewPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ courseSlug: string }>;
+  searchParams: Promise<{ start?: string }>;
 }) {
   const { courseSlug } = await params;
+  const { start } = await searchParams;
 
   await requireLearnSurface();
-  const overview = await serverApiFetchOrNotFound<CourseOverview>(`/api/v1/courses/${encodeURIComponent(courseSlug)}/overview`);
-  const { course, enrollment, syllabus } = overview;
+  const overview = await loadOverview(courseSlug);
+  const { course, enrollment, syllabus, coupon } = overview;
 
   if (overview.access === "none" || !enrollment) {
     return (
@@ -87,6 +107,8 @@ export default async function CourseOverviewPage({
   if (track && !track.variantChosen && !track.variantLocked && enrollment.chaptersCompleted === 0) {
     redirect(`/courses/${course.slug}/variant`);
   }
+  // Enroll, sign-up and the variant picker send ?start=1: open the lesson to read next, like a player.
+  if (start === "1" && continueHref) redirect(continueHref);
 
   const continueLabel =
     enrollment.percentComplete === 0
@@ -117,6 +139,8 @@ export default async function CourseOverviewPage({
           chapterCount={chapterCount}
           estimatedHours={course.estimatedHours}
         />
+
+        {coupon ? <CourseCouponBanner coupon={coupon} /> : null}
 
         {track ? <VariantBanner courseSlug={course.slug} track={track} /> : null}
 

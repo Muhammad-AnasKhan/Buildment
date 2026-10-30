@@ -124,6 +124,13 @@ enum PaymentStatus {
   REFUNDED
 }
 
+/// Org coupon seat that has been reserved for a learner (mentor assign / Pathment enroll).
+enum CouponUsageStatus {
+  ISSUED
+  REDEEMED
+  CANCELLED
+}
+
 enum ProgressStatus {
   NOT_STARTED
   IN_PROGRESS
@@ -175,6 +182,7 @@ enum StudySessionStatus {
 
 enum AiProvider {
   OPENROUTER
+  GEMINI
 }
 
 enum AiInterviewStatus {
@@ -240,6 +248,7 @@ model User {
   instructorAccessReviews       InstructorAccessRequest[] @relation("InstructorAccessReviewer")
   aiCredential                  AiCredential?
   aiInterviewSessions           AiInterviewSession[]
+  learnerQuestions              LearnerQuestion[]
   appActivity                   UserAppActivity?
   appActivityDays               AppActivityDay[]
   notifications                 Notification[]
@@ -251,6 +260,7 @@ model User {
   streakFreezeDays              StreakFreezeDay[]
   leaderboardMemberships        LeaderboardMember[]
   leaderboardPlacements         LeaderboardPlacement[]
+  couponUsages                  CouponUsage[]
 }
 
 /// A learner's own AI provider key for AI interviews. Only the AES-256-GCM
@@ -351,6 +361,7 @@ model Course {
   sequential     Boolean      @default(true)
   familySlug     String? // course family in src/shared/lib/course-tracks.ts; null = no variants
   variantFamily  Json? // creator-defined variant catalog; null uses a built-in family
+  assistant      Json? // tutor settings from course.yaml (effort, guidance, starters); null means defaults
   availableVariantSlugs String[] @default([]) // empty means every family variant is available
   variantAssignment VariantAssignment @default(SELF_SELECT)
   activeReleaseId String? // latest approved content release; set atomically with publication
@@ -370,6 +381,8 @@ model Course {
   enrollments    Enrollment[]
   organizationCourses OrganizationCourse[]
   organizationCourseRequests OrganizationCourseRequest[]
+  couponPools    OrganizationCouponPool[]
+  couponUsages   CouponUsage[]
   invites        Invite[]
   helpThreads    HelpThread[]
   publishedAt    DateTime?
@@ -444,6 +457,8 @@ model Chapter {
   order             Int
   estimatedMinutes  Int?
   readerMode        ChapterReaderMode @default(DEFAULT)
+  /// Minimum weighted assessment percentage required in quiz mode.
+  quizPassingScore  Int               @default(70)
   source            String            @db.Text // raw MDX (draft)
   compiled          String?           @db.Text // compiled MDX at publish
   publishedAt       DateTime?
@@ -472,6 +487,7 @@ model CourseChapterDraft {
   summary String?
   estimatedMinutes Int?
   readerMode ChapterReaderMode
+  quizPassingScore Int @default(70)
   isMilestone Boolean
   source String @db.Text
   updatedAt DateTime @updatedAt
@@ -577,6 +593,7 @@ model Enrollment {
   integrityAttempts IntegrityAttempt[]
   payment           Payment?
   xpEntries         XpEntry[]
+  couponUsage       CouponUsage?
 
   @@unique([courseId, userId])
   @@unique([courseId, learnerProfileId])
@@ -596,6 +613,61 @@ model Organization {
   courseAllocations OrganizationCourse[]
   courseRequests  OrganizationCourseRequest[]
   enrollments     Enrollment[]
+  couponPools     OrganizationCouponPool[]
+  couponUsages    CouponUsage[]
+}
+
+/// Limited coupon seats an organization can grant for one course, or for any allocated course
+/// when courseId is null. Checkout can later show the discount; 100% off unlocks content now.
+model OrganizationCouponPool {
+  id              String       @id @default(cuid())
+  organizationId  String
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  /// Null = general pool usable on any course allocated to the organization.
+  courseId        String?
+  course          Course?      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  label           String
+  /// Optional human code for later learner redeem / checkout flows.
+  code            String?
+  percentOff      Int          @default(100)
+  maxRedemptions  Int
+  redemptionCount Int          @default(0)
+  active          Boolean      @default(true)
+  expiresAt       DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  usages          CouponUsage[]
+
+  @@index([organizationId, courseId, active])
+  @@index([organizationId, code])
+}
+
+/// One reserved seat from a pool, created when a mentor/Pathment assigns the course.
+/// Marked redeemed when the learner first opens the course (banner + audit).
+model CouponUsage {
+  id             String            @id @default(cuid())
+  poolId         String
+  pool           OrganizationCouponPool @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  courseId       String
+  course         Course            @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrollmentId   String?           @unique
+  enrollment     Enrollment?       @relation(fields: [enrollmentId], references: [id], onDelete: SetNull)
+  userId         String?
+  user           User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  learnerEmail   String?
+  status         CouponUsageStatus @default(ISSUED)
+  percentOff     Int
+  displayLabel   String
+  assignedById   String?
+  issuedAt       DateTime          @default(now())
+  redeemedAt     DateTime?
+  cancelledAt    DateTime?
+
+  @@index([organizationId, courseId, status])
+  @@index([learnerEmail, courseId])
+  @@index([userId, courseId])
 }
 
 model OrganizationApiCredential {
@@ -1154,4 +1226,22 @@ model AdminAuditLog {
   @@index([createdAt])
   @@index([targetType, targetId])
   @@index([actorId])
+}
+
+/// One "Ask about this chapter" question. Rows only count usage: neither the question
+/// nor the answer is stored, and there is no key here. The daily and per-minute limits
+/// read these rows, so they survive restarts. Course and chapter ids are plain strings
+/// so the usage history outlives an archived or deleted chapter.
+model LearnerQuestion {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId     String
+  chapterId    String
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
 }

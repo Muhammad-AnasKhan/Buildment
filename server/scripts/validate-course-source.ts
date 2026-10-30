@@ -10,6 +10,7 @@ import { unified } from "unified";
 import remarkGfm from "remark-gfm";
 import { collectCanvasProblems } from "../src/shared/mdx/canvas-tags.js";
 import { collectDiagramProblems } from "../src/shared/mdx/diagram-fences.js";
+import { collectLabProblems } from "../src/shared/mdx/lab-tags.js";
 import { isActivityOnlySource } from "../src/shared/mdx/extract-block-config.js";
 import { collectUnknownComponents } from "../src/shared/mdx/extract.js";
 import { mdxComponentAllowlist } from "../src/shared/mdx/component-allowlist.js";
@@ -37,6 +38,8 @@ export function validateParsedLesson(lesson: ReturnType<typeof parseLesson>): vo
   if (unknown.length) throw new Error(`Unknown components: ${unknown.join(", ")}`);
   const canvasProblems = collectCanvasProblems(source);
   if (canvasProblems.length) throw new Error(canvasProblems.join(" "));
+  const labProblems = collectLabProblems(source);
+  if (labProblems.length) throw new Error(labProblems.join(" "));
   const diagramProblems = collectDiagramProblems(source);
   if (diagramProblems.length) throw new Error(diagramProblems.join(" "));
   const tokenProblems = [

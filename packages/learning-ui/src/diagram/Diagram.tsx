@@ -2,6 +2,7 @@
 
 import { createElement, useId, useMemo, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { describeDiagram, stepCaptions } from "../shared/diagram/describe";
+import { useSvgTouchDrag } from "../canvas/primitives/svg-touch-drag";
 import { BRAND, DIAGRAM_FONT, drawScene, packetPoint, type DrawState, type SvgNode } from "../shared/diagram/draw";
 import { layoutDiagram, pathPoint, type Point, type Scene } from "../shared/diagram/layout";
 import { isDiagramKind, parseDiagram, type DiagramSpec } from "../shared/diagram/spec";
@@ -13,11 +14,11 @@ import { isDiagramKind, parseDiagram, type DiagramSpec } from "../shared/diagram
  * before any script arrives. Steps: Back and Next, the arrow keys on the
  * controls, or dragging the yellow packet.
  */
-export function Diagram({ kind, spec }: { kind?: unknown; spec?: unknown }) {
+export function Diagram({ kind, spec, legend }: { kind?: unknown; spec?: unknown; legend?: string }) {
   const parsed = useMemo(() => (isDiagramKind(kind) && typeof spec === "string" ? parseDiagram(kind, spec) : null), [kind, spec]);
   if (!parsed) return <DiagramProblems problems={["This diagram has no spec. Write it inside a ```flow or ```sequence fence."]} />;
   if (!parsed.ok) return <DiagramProblems problems={parsed.problems} />;
-  return <DiagramView spec={parsed.spec} />;
+  return <DiagramView spec={parsed.spec} legend={legend} />;
 }
 
 // The phone layout takes over once the wide one would shrink below about 85%.
@@ -40,7 +41,8 @@ function switchClasses(wideWidth: number): { wide: string; compact: string } {
   return { wide: match[1], compact: match[2] };
 }
 
-export function DiagramView({ spec }: { spec: DiagramSpec }) {
+/** `legend` is the short note a MermaidDiagram tag carries, shown under the picture. */
+export function DiagramView({ spec, legend }: { spec: DiagramSpec; legend?: string }) {
   const id = useId();
   const wide = useMemo(() => layoutDiagram(spec, false), [spec]);
   const compact = useMemo(() => layoutDiagram(spec, true), [spec]);
@@ -63,18 +65,18 @@ export function DiagramView({ spec }: { spec: DiagramSpec }) {
   const showList = spec.kind === "sequence";
   return (
     <figure
-      className="not-prose my-8 @container"
+      className="not-prose my-8 @container rounded-2xl overflow-hidden shadow-sm border border-[#2434E0]/15"
       style={{ background: BRAND.tint, color: BRAND.ink, fontFamily: DIAGRAM_FONT }}
       aria-labelledby={`${id}-title`}
     >
-      <figcaption id={`${id}-title`} className="px-4 pt-4 text-base font-bold leading-snug sm:px-5">
+      <figcaption id={`${id}-title`} className="px-4 pt-4 text-base font-bold leading-snug sm:px-5 text-[#0A0F2C] dark:text-[#0A0F2C]" style={{ color: BRAND.ink }}>
         {spec.title}
       </figcaption>
       <p id={`${id}-desc`} className="sr-only">{description}</p>
-      <div className={classes.wide}>
+      <div className={`overflow-x-auto diagram-scroll-container py-1 px-1 sm:px-2 ${classes.wide}`}>
         <DiagramSvg scene={wide} spec={spec} step={step} drag={drag} setDrag={setDrag} setStep={go} labelledBy={`${id}-title`} describedBy={`${id}-desc`} />
       </div>
-      <div className={classes.compact}>
+      <div className={`overflow-x-auto diagram-scroll-container py-1 px-1 sm:px-2 ${classes.compact}`}>
         <DiagramSvg scene={compact} spec={spec} step={step} drag={drag} setDrag={setDrag} setStep={go} labelledBy={`${id}-title`} describedBy={`${id}-desc`} />
         {showList ? (
           <ol className="space-y-1 px-4 pb-2 text-[15px] leading-snug" aria-hidden>
@@ -89,7 +91,7 @@ export function DiagramView({ spec }: { spec: DiagramSpec }) {
       </div>
       {stepped ? (
         <div className="flex flex-col gap-3 px-4 pb-4 pt-1 sm:px-5" role="group" aria-label="Diagram steps" onKeyDown={onKeyDown}>
-          <p className="min-h-[3rem] text-[15px] leading-snug" aria-live="polite">
+          <p className="min-h-[3rem] text-[15px] leading-snug" aria-live="polite" style={{ color: BRAND.ink }}>
             <span className="mr-2 font-bold tabular-nums" style={{ color: BRAND.cobalt }}>
               {step + 1} of {captions.length}
             </span>
@@ -103,6 +105,11 @@ export function DiagramView({ spec }: { spec: DiagramSpec }) {
       ) : (
         <div className="pb-2" />
       )}
+      {legend ? (
+        <p className="px-4 pb-4 pt-1 text-[15px] leading-relaxed sm:px-5 font-semibold text-[#1E295A] dark:text-[#1E295A]" style={{ color: "#1E295A" }}>
+          {legend}
+        </p>
+      ) : null}
     </figure>
   );
 }
@@ -140,6 +147,7 @@ type SvgProps = {
 
 function DiagramSvg({ scene, spec, step, drag, setDrag, setStep, labelledBy, describedBy }: SvgProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const packetRef = useSvgTouchDrag<SVGGElement>();
   const hasPacket = spec.kind === "flow" && spec.hops.length > 0;
 
   const state: DrawState = {};
@@ -174,6 +182,7 @@ function DiagramSvg({ scene, spec, step, drag, setDrag, setStep, labelledBy, des
 
   const packetHandlers = hasPacket
     ? {
+        ref: packetRef,
         style: { cursor: drag === null ? "grab" : "grabbing", touchAction: "none" },
         onPointerDown: (event: PointerEvent<SVGGElement>) => {
           event.currentTarget.setPointerCapture(event.pointerId);
@@ -200,7 +209,8 @@ function DiagramSvg({ scene, spec, step, drag, setDrag, setStep, labelledBy, des
       "aria-labelledby": labelledBy,
       "aria-describedby": describedBy,
       className: "mx-auto block h-auto w-full",
-      style: { maxWidth: scene.viewBox.w, fontFamily: DIAGRAM_FONT },
+      // Keep diagrams readable while allowing them to fit standard reading columns cleanly.
+      style: { maxWidth: scene.viewBox.w, minWidth: Math.min(scene.viewBox.w, Math.round(scene.viewBox.w * 0.6)), fontFamily: DIAGRAM_FONT },
     },
     packet: packetHandlers,
   });
