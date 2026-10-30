@@ -5,20 +5,28 @@ import { isSafeAssetUrl } from "@/shared/lib/asset-url";
 
 // Listen-along audio for a chapter. `agent-ip/scripts/narrate/narrate.py` writes the audio and a
 // `manifest.json` per course; any course with a manifest entry for a chapter gets a Listen player,
-// with no database change. By default the files are served from the web app's public folder
-// (`public/narration/<course>/`). Set NARRATION_BASE_URL to an https address to serve the same
-// layout from object storage instead, which keeps large audio out of the app image.
+// with no database change. Vercel production serves the files from the Cloudflare R2 bucket at
+// audio.edorax.com, which keeps large audio off the app's bandwidth. Everywhere else (local
+// development, previews) they come from the web app's public folder (`public/narration/<course>/`).
+// Set NARRATION_BASE_URL to an https address to serve the same layout from somewhere else; an
+// explicit value always wins.
 
 export type ChapterNarration = { src: string; minutes: number; bytes: number };
 
 const LOCAL_BASE = "/narration";
+const PRODUCTION_BASE = "https://audio.edorax.com";
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const CHAPTER_SLUG = /^[a-z0-9]+(?:[.-][a-z0-9]+)*$/;
 const AUDIO_FILE = /^[\w.-]+\.mp3$/;
 
-export function narrationBase(configured: string | undefined = process.env.NARRATION_BASE_URL): string {
+export function narrationBase(
+  configured: string | undefined = process.env.NARRATION_BASE_URL,
+  vercelEnv: string | undefined = process.env.VERCEL_ENV,
+): string {
   const base = configured?.trim().replace(/\/+$/, "");
-  return base && isSafeAssetUrl(base) ? base : LOCAL_BASE;
+  // An unsafe explicit value falls back to the local files, never to the production bucket.
+  if (base) return isSafeAssetUrl(base) ? base : LOCAL_BASE;
+  return vercelEnv === "production" ? PRODUCTION_BASE : LOCAL_BASE;
 }
 
 /** The chapter's entry from a parsed manifest, or null when it has no valid audio. */
