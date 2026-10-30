@@ -105,7 +105,7 @@ for (const scheme of ['light', 'dark'] as const) {
     try {
       await page.goto('/', { waitUntil: 'commit' });
       await expect(
-        page.getByRole('img', { name: 'Buildment logo' }),
+        page.getByRole('img', { name: 'Edorax logo' }),
       ).toBeVisible();
       await expect(
         page.getByText('Opening your learning workspace…'),
@@ -138,7 +138,7 @@ test('module failure shows recovery instead of a blank window', async ({
   ).toBeVisible();
 });
 
-test('Buildment dark palette renders and storage failures do not block startup', async ({
+test('Edorax dark palette renders and storage failures do not block startup', async ({
   page,
 }) => {
   await page.emulateMedia({ colorScheme: 'dark' });

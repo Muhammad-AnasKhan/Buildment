@@ -66,3 +66,7 @@ BUILDMENT_WEB_URL=https://edorax.com npm --prefix desktop start
 ```
 
 The reader sidebar and heading outline are shared with web. Desktop bundles DM Sans, Unbounded, and JetBrains Mono locally, so typography does not require a font-network request. HTTPS links in lesson prose open in the system browser; same-course chapter links stay in the desktop reader.
+
+## Edorax branding
+
+The desktop name is Edorax. Sidebar/startup branding and packaged/Dock icons use `frontend/public/logo.svg`, the web app's current mark. After a web logo change, run `node desktop/scripts/sync-brand.mjs` on macOS with frontend dependencies installed to regenerate the SVG copy and PNG/ICNS/ICO assets. Restart Electron to refresh the native app name and Dock icon.

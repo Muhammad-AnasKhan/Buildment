@@ -52,7 +52,7 @@ export function CourseCard({
               <Code2 size={38} strokeWidth={1.3} />
             </div>
             <span className="absolute right-5 bottom-4 font-mono text-[10px] tracking-[0.2em] text-primary/60">
-              BUILDMENT / {String(index + 1).padStart(2, '0')}
+              EDORAX / {String(index + 1).padStart(2, '0')}
             </span>
           </>
         )}
@@ -99,7 +99,7 @@ export function CourseCard({
         <div className="mt-auto pt-5">
           <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
             <span className="truncate text-xs text-muted-foreground">
-              {course.instructorName || 'Buildment'}
+              {course.instructorName || 'Edorax'}
             </span>
             <span className="text-sm font-semibold text-primary">
               {coursePrice(course)}

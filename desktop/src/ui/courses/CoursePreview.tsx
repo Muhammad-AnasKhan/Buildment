@@ -163,7 +163,7 @@ export function CoursePreview({
                     className="relative text-primary/60"
                   />
                   <span className="absolute bottom-5 right-6 text-[10px] tracking-[0.22em] text-muted-foreground">
-                    BUILDMENT / COURSE PREVIEW
+                    EDORAX / COURSE PREVIEW
                   </span>
                 </>
               )}
@@ -186,7 +186,7 @@ export function CoursePreview({
               </p>
               <div className="mt-6 flex items-center gap-2 text-sm">
                 <UserRound size={16} className="text-muted-foreground" />
-                <span>{current.instructorName || 'Buildment'}</span>
+                <span>{current.instructorName || 'Edorax'}</span>
               </div>
             </div>
           </section>
@@ -230,7 +230,7 @@ export function CoursePreview({
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   {state === 'unverified'
-                    ? 'Open the verification email from Buildment, then try again. You can still browse this course preview.'
+                    ? 'Open the verification email from Edorax, then try again. You can still browse this course preview.'
                     : message}
                 </p>
                 <button
@@ -265,7 +265,7 @@ export function CoursePreview({
               role="status"
               className="mt-6 rounded-lg bg-muted px-3 py-3 text-sm"
             >
-              Enrollment started. Complete payment on the Buildment website to
+              Enrollment started. Complete payment on the Edorax website to
               access this course.
             </p>
           )}

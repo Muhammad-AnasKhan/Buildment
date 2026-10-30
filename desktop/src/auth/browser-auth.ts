@@ -85,7 +85,7 @@ export function createBrowserAuth(
               "default-src 'none'; style-src 'unsafe-inline'",
           });
           response.end(
-            `<!doctype html><html><head><title>Buildment desktop</title></head><body style="font:16px system-ui;max-width:480px;margin:15vh auto;padding:24px"><h1>${result.ok ? 'You’re connected' : 'Sign-in could not finish'}</h1><p>${result.ok ? 'Return to Buildment desktop. You can close this tab.' : 'Return to the desktop app and start sign-in again.'}</p></body></html>`,
+            `<!doctype html><html><head><title>Edorax desktop</title></head><body style="font:16px system-ui;max-width:480px;margin:15vh auto;padding:24px"><h1>${result.ok ? 'You’re connected' : 'Sign-in could not finish'}</h1><p>${result.ok ? 'Return to Edorax desktop. You can close this tab.' : 'Return to the desktop app and start sign-in again.'}</p></body></html>`,
           );
           finish(result);
         });

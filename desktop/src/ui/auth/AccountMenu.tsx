@@ -11,7 +11,7 @@ export function AccountMenu({ session }: { session: Session }) {
           </summary>
           <div className="absolute right-0 top-12 w-52 rounded-xl border border-border bg-card p-3 shadow-lg">
             <p className="px-2 py-2 text-xs text-muted-foreground">
-              Connected to Buildment
+              Connected to Edorax
             </p>
             <button
               disabled={authBusy}

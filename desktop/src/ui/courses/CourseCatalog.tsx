@@ -209,7 +209,7 @@ export function CourseCatalog({
       </section>
       <footer className="mt-10 flex items-center justify-between border-t border-border pt-5 text-[10px] text-muted-foreground/70">
         <span>Made for the way you learn.</span>
-        <span>Buildment · Learning workspace</span>
+        <span>Edorax · Learning workspace</span>
       </footer>
     </div>
   );

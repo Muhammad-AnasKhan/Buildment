@@ -12,6 +12,11 @@ import { backendBase } from './api';
 import { createPreviewClient } from './api';
 import { createBrowserAuth } from './auth/browser-auth';
 
+app.setName('Edorax');
+const appIcon = app.isPackaged
+  ? path.join(process.resourcesPath, 'edorax.png')
+  : path.join(app.getAppPath(), 'assets/edorax.png');
+
 let mainWindow: BrowserWindow | null = null;
 const apiBase = process.env.BUILDMENT_API_URL || 'http://localhost:4000';
 const previewClient = createPreviewClient(apiBase);
@@ -37,8 +42,10 @@ function requireRenderer(event: IpcMainInvokeEvent) {
 }
 
 function createWindow() {
+  if (process.platform === 'darwin') app.dock?.setIcon(appIcon);
   mainWindow = new BrowserWindow({
-    title: 'Buildment',
+    title: 'Edorax',
+    icon: appIcon,
     width: 1240,
     height: 840,
     minWidth: 760,
@@ -89,10 +96,10 @@ function createWindow() {
     mainWindow = null;
   });
   const showLoadError = (error: unknown) => {
-    console.error('Could not load the Buildment renderer:', error);
+    console.error('Could not load the Edorax renderer:', error);
     if (window.isDestroyed()) return;
     const html =
-      '<!doctype html><html><head><meta charset="utf-8"><title>Buildment</title></head><body style="background:#ffffff;color:#171717;padding:48px;font:16px Segoe UI,sans-serif"><h1>Buildment could not open</h1><p>The local interface could not be loaded.</p><p>Close this window, stop the development command with Ctrl+C, and run <strong>pnpm start</strong> again from the desktop folder.</p></body></html>';
+      '<!doctype html><html><head><meta charset="utf-8"><title>Edorax</title></head><body style="background:#ffffff;color:#171717;padding:48px;font:16px Segoe UI,sans-serif"><h1>Edorax could not open</h1><p>The local interface could not be loaded.</p><p>Close this window, stop the development command with Ctrl+C, and run <strong>pnpm start</strong> again from the desktop folder.</p></body></html>';
     void window.loadURL(
       `data:text/html;charset=utf-8,${encodeURIComponent(html)}`,
     );

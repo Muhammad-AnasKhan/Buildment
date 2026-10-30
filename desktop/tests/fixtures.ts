@@ -15,7 +15,7 @@ export const courses: Course[] = [
     priceCents: 0,
     currency: 'USD',
     projectGoal: 'Build a process explorer',
-    instructorName: 'Buildment Team',
+    instructorName: 'Edorax Team',
     moduleCount: 6,
     chapterCount: 24,
     enrollmentLifecycle: null,
