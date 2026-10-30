@@ -1,0 +1,637 @@
+{
+  "version": 1,
+  "chapters": {
+    "1-1-set-the-scene": {
+      "file": "01.01-set-the-scene.mp3",
+      "minutes": 4.4,
+      "bytes": 1061738,
+      "words": 751,
+      "voice": "af_heart",
+      "hash": "0e6cd0b5a163d993"
+    },
+    "1-2-three-rounds": {
+      "file": "01.02-three-rounds.mp3",
+      "minutes": 9.1,
+      "bytes": 2182391,
+      "words": 1531,
+      "voice": "af_heart",
+      "hash": "71f48c951b6cb426"
+    },
+    "1-3-project-story-with-numbers": {
+      "file": "01.03-project-story-with-numbers.mp3",
+      "minutes": 9.9,
+      "bytes": 2380713,
+      "words": 1630,
+      "voice": "af_heart",
+      "hash": "381e0243a869309d"
+    },
+    "1-4-set-up-your-workspace": {
+      "file": "01.04-set-up-your-workspace.mp3",
+      "minutes": 9.5,
+      "bytes": 2289597,
+      "words": 1457,
+      "voice": "af_heart",
+      "hash": "4a5156864458ad8c"
+    },
+    "1-5-checklist": {
+      "file": "01.05-checklist.mp3",
+      "minutes": 4.8,
+      "bytes": 1157033,
+      "words": 838,
+      "voice": "af_heart",
+      "hash": "2e43bd986f305c9f"
+    },
+    "10-1-set-the-scene": {
+      "file": "10.01-set-the-scene.mp3",
+      "minutes": 3.9,
+      "bytes": 928409,
+      "words": 631,
+      "voice": "af_heart",
+      "hash": "595d294d7abaa018"
+    },
+    "10-2-experiment-tracking-with-mlflow": {
+      "file": "10.02-experiment-tracking-with-mlflow.mp3",
+      "minutes": 10.0,
+      "bytes": 2398162,
+      "words": 1504,
+      "voice": "af_heart",
+      "hash": "a73f0dacf5531f73"
+    },
+    "10-3-tracing-and-observability": {
+      "file": "10.03-tracing-and-observability.mp3",
+      "minutes": 11.2,
+      "bytes": 2680389,
+      "words": 1761,
+      "voice": "af_heart",
+      "hash": "2aa2523d97df6231"
+    },
+    "10-4-serverless-or-kubernetes": {
+      "file": "10.04-serverless-or-kubernetes.mp3",
+      "minutes": 11.9,
+      "bytes": 2848513,
+      "words": 1888,
+      "voice": "af_heart",
+      "hash": "e0c030c0c23940f8"
+    },
+    "10-5-monitoring-and-incidents": {
+      "file": "10.05-monitoring-and-incidents.mp3",
+      "minutes": 9.7,
+      "bytes": 2331602,
+      "words": 1579,
+      "voice": "af_heart",
+      "hash": "866de67b79f0cd4b"
+    },
+    "10-7-checklist": {
+      "file": "10.07-checklist.mp3",
+      "minutes": 5.0,
+      "bytes": 1201963,
+      "words": 820,
+      "voice": "af_heart",
+      "hash": "beb895f30040b32c"
+    },
+    "11-1-set-the-scene": {
+      "file": "11.01-set-the-scene.mp3",
+      "minutes": 8.9,
+      "bytes": 2130668,
+      "words": 1348,
+      "voice": "af_heart",
+      "hash": "3064cf708e3a7ff4"
+    },
+    "11-11-checklist": {
+      "file": "11.11-checklist.mp3",
+      "minutes": 7.3,
+      "bytes": 1762133,
+      "words": 1230,
+      "voice": "af_heart",
+      "hash": "63538674827867c4"
+    },
+    "11-2-prefill-and-decode": {
+      "file": "11.02-prefill-and-decode.mp3",
+      "minutes": 12.8,
+      "bytes": 3061046,
+      "words": 1840,
+      "voice": "af_heart",
+      "hash": "5e9428de3365a61d"
+    },
+    "11-3-kv-cache": {
+      "file": "11.03-kv-cache.mp3",
+      "minutes": 12.3,
+      "bytes": 2961885,
+      "words": 1778,
+      "voice": "af_heart",
+      "hash": "1ea034cec37c2dd8"
+    },
+    "11-4-gpu-memory-budget": {
+      "file": "11.04-gpu-memory-budget.mp3",
+      "minutes": 14.4,
+      "bytes": 3468347,
+      "words": 1945,
+      "voice": "af_heart",
+      "hash": "1eee3b38e0f0dee4"
+    },
+    "11-5-batching-and-paging": {
+      "file": "11.05-batching-and-paging.mp3",
+      "minutes": 13.1,
+      "bytes": 3147668,
+      "words": 1741,
+      "voice": "af_heart",
+      "hash": "d7887a8d3a24a91e"
+    },
+    "11-6-smaller-and-faster": {
+      "file": "11.06-smaller-and-faster.mp3",
+      "minutes": 13.4,
+      "bytes": 3208481,
+      "words": 1904,
+      "voice": "af_heart",
+      "hash": "18c5e6a7949b12a9"
+    },
+    "11-7-beyond-one-gpu": {
+      "file": "11.07-beyond-one-gpu.mp3",
+      "minutes": 13.0,
+      "bytes": 3121963,
+      "words": 1880,
+      "voice": "af_heart",
+      "hash": "a206b1cad2e75682"
+    },
+    "11-8-admission-control": {
+      "file": "11.08-admission-control.mp3",
+      "minutes": 13.3,
+      "bytes": 3203152,
+      "words": 1903,
+      "voice": "af_heart",
+      "hash": "4865ee11ebe68e02"
+    },
+    "11-9-will-it-fit": {
+      "file": "11.09-will-it-fit.mp3",
+      "minutes": 15.1,
+      "bytes": 3616722,
+      "words": 2096,
+      "voice": "af_heart",
+      "hash": "b6f59881c31afcd4"
+    },
+    "12-1-set-the-scene": {
+      "file": "12.01-set-the-scene.mp3",
+      "minutes": 4.7,
+      "bytes": 1131015,
+      "words": 794,
+      "voice": "af_heart",
+      "hash": "3d5d22e77b46ba0e"
+    },
+    "12-2-round-one-project-deep-dive": {
+      "file": "12.02-round-one-project-deep-dive.mp3",
+      "minutes": 13.9,
+      "bytes": 3345258,
+      "words": 2174,
+      "voice": "af_heart",
+      "hash": "530a3a011679f063"
+    },
+    "12-3-round-two-hands-on-coding": {
+      "file": "12.03-round-two-hands-on-coding.mp3",
+      "minutes": 11.6,
+      "bytes": 2788536,
+      "words": 1848,
+      "voice": "af_heart",
+      "hash": "de02bee01118b425"
+    },
+    "12-4-round-two-ai-system-design": {
+      "file": "12.04-round-two-ai-system-design.mp3",
+      "minutes": 18.0,
+      "bytes": 4329447,
+      "words": 2709,
+      "voice": "af_heart",
+      "hash": "34cbb45bc5f41b0e"
+    },
+    "12-5-round-three-managerial": {
+      "file": "12.05-round-three-managerial.mp3",
+      "minutes": 13.5,
+      "bytes": 3252262,
+      "words": 2243,
+      "voice": "af_heart",
+      "hash": "1a08bfc810b0282b"
+    },
+    "12-7-checklist": {
+      "file": "12.07-checklist.mp3",
+      "minutes": 5.0,
+      "bytes": 1209695,
+      "words": 826,
+      "voice": "af_heart",
+      "hash": "635e107c47fd36ae"
+    },
+    "13-1-set-the-scene": {
+      "file": "13.01-set-the-scene.mp3",
+      "minutes": 14.7,
+      "bytes": 3538459,
+      "words": 2225,
+      "voice": "af_heart",
+      "hash": "618126e32f1e688a"
+    },
+    "13-2-build-the-service": {
+      "file": "13.02-build-the-service.mp3",
+      "minutes": 20.0,
+      "bytes": 4797457,
+      "words": 2967,
+      "voice": "af_heart",
+      "hash": "18dcca43d9d8daa7"
+    },
+    "13-3-evaluate-and-report": {
+      "file": "13.03-evaluate-and-report.mp3",
+      "minutes": 10.4,
+      "bytes": 2505473,
+      "words": 1540,
+      "voice": "af_heart",
+      "hash": "5ccff8f39a2bc319"
+    },
+    "13-4-record-your-defence": {
+      "file": "13.04-record-your-defence.mp3",
+      "minutes": 8.1,
+      "bytes": 1954394,
+      "words": 1335,
+      "voice": "af_heart",
+      "hash": "68f626e47bd937e5"
+    },
+    "13-5-checklist": {
+      "file": "13.05-checklist.mp3",
+      "minutes": 5.4,
+      "bytes": 1298616,
+      "words": 909,
+      "voice": "af_heart",
+      "hash": "b1b5810a5061432f"
+    },
+    "2-1-set-the-scene": {
+      "file": "02.01-set-the-scene.mp3",
+      "minutes": 3.6,
+      "bytes": 876268,
+      "words": 596,
+      "voice": "af_heart",
+      "hash": "260f3047a1917ccd"
+    },
+    "2-2-tokens-context-and-cost": {
+      "file": "02.02-tokens-context-and-cost.mp3",
+      "minutes": 12.3,
+      "bytes": 2945166,
+      "words": 1856,
+      "voice": "af_heart",
+      "hash": "2b76241d993131ac"
+    },
+    "2-3-embeddings-and-similarity": {
+      "file": "02.03-embeddings-and-similarity.mp3",
+      "minutes": 10.7,
+      "bytes": 2566809,
+      "words": 1643,
+      "voice": "af_heart",
+      "hash": "63c9055f65187cfc"
+    },
+    "2-4-prompts-and-structured-outputs": {
+      "file": "02.04-prompts-and-structured-outputs.mp3",
+      "minutes": 12.1,
+      "bytes": 2908595,
+      "words": 1868,
+      "voice": "af_heart",
+      "hash": "196cd2ddc41e70b7"
+    },
+    "2-6-checklist": {
+      "file": "02.06-checklist.mp3",
+      "minutes": 5.1,
+      "bytes": 1219099,
+      "words": 847,
+      "voice": "af_heart",
+      "hash": "6f522e8df3662bc9"
+    },
+    "3-1-set-the-scene": {
+      "file": "03.01-set-the-scene.mp3",
+      "minutes": 4.0,
+      "bytes": 952964,
+      "words": 654,
+      "voice": "af_heart",
+      "hash": "b97325c360f76b0d"
+    },
+    "3-2-the-rag-pipeline": {
+      "file": "03.02-the-rag-pipeline.mp3",
+      "minutes": 11.9,
+      "bytes": 2851753,
+      "words": 1904,
+      "voice": "af_heart",
+      "hash": "e8c65022fc1538ac"
+    },
+    "3-3-chunking": {
+      "file": "03.03-chunking.mp3",
+      "minutes": 11.4,
+      "bytes": 2726469,
+      "words": 1762,
+      "voice": "af_heart",
+      "hash": "1fe828d6a104bc1c"
+    },
+    "3-4-vector-stores-and-indexes": {
+      "file": "03.04-vector-stores-and-indexes.mp3",
+      "minutes": 10.0,
+      "bytes": 2390430,
+      "words": 1507,
+      "voice": "af_heart",
+      "hash": "afd2c6abdd0d0579"
+    },
+    "3-5-build-a-minimal-rag-pipeline": {
+      "file": "03.05-build-a-minimal-rag-pipeline.mp3",
+      "minutes": 13.4,
+      "bytes": 3207540,
+      "words": 1975,
+      "voice": "af_heart",
+      "hash": "6ac5ec5ee82442b6"
+    },
+    "3-7-checklist": {
+      "file": "03.07-checklist.mp3",
+      "minutes": 4.7,
+      "bytes": 1139478,
+      "words": 789,
+      "voice": "af_heart",
+      "hash": "64ecb7c3ccbbdf7e"
+    },
+    "4-1-set-the-scene": {
+      "file": "04.01-set-the-scene.mp3",
+      "minutes": 3.8,
+      "bytes": 920572,
+      "words": 619,
+      "voice": "af_heart",
+      "hash": "f3e01a1b0fbaf4bd"
+    },
+    "4-2-hybrid-search-and-reranking": {
+      "file": "04.02-hybrid-search-and-reranking.mp3",
+      "minutes": 12.0,
+      "bytes": 2888115,
+      "words": 1683,
+      "voice": "af_heart",
+      "hash": "65ac6e7d4f5baa9e"
+    },
+    "4-3-query-rewriting-and-multi-hop": {
+      "file": "04.03-query-rewriting-and-multi-hop.mp3",
+      "minutes": 10.3,
+      "bytes": 2482486,
+      "words": 1582,
+      "voice": "af_heart",
+      "hash": "753f10df77de1398"
+    },
+    "4-4-tables-pdfs-and-graph-rag": {
+      "file": "04.04-tables-pdfs-and-graph-rag.mp3",
+      "minutes": 10.3,
+      "bytes": 2475903,
+      "words": 1596,
+      "voice": "af_heart",
+      "hash": "bf1fe7c8c029c144"
+    },
+    "4-5-adaptive-retrieval-and-fine-tuning": {
+      "file": "04.05-adaptive-retrieval-and-fine-tuning.mp3",
+      "minutes": 12.6,
+      "bytes": 3030744,
+      "words": 1794,
+      "voice": "af_heart",
+      "hash": "a4ccc08a8591b098"
+    },
+    "4-7-checklist": {
+      "file": "04.07-checklist.mp3",
+      "minutes": 5.0,
+      "bytes": 1206038,
+      "words": 798,
+      "voice": "af_heart",
+      "hash": "c23c00dc51f9ffa3"
+    },
+    "5-1-set-the-scene": {
+      "file": "05.01-set-the-scene.mp3",
+      "minutes": 4.7,
+      "bytes": 1131224,
+      "words": 768,
+      "voice": "af_heart",
+      "hash": "efbab14cdda1a4d5"
+    },
+    "5-2-retrieval-metrics": {
+      "file": "05.02-retrieval-metrics.mp3",
+      "minutes": 11.2,
+      "bytes": 2699093,
+      "words": 1735,
+      "voice": "af_heart",
+      "hash": "dc210550f93bce0a"
+    },
+    "5-3-faithfulness-and-grounding": {
+      "file": "05.03-faithfulness-and-grounding.mp3",
+      "minutes": 9.3,
+      "bytes": 2241950,
+      "words": 1509,
+      "voice": "af_heart",
+      "hash": "55aa405e003e7eba"
+    },
+    "5-4-llm-as-judge": {
+      "file": "05.04-llm-as-judge.mp3",
+      "minutes": 10.9,
+      "bytes": 2624487,
+      "words": 1788,
+      "voice": "af_heart",
+      "hash": "05600e8fcb73c2fc"
+    },
+    "5-5-build-a-regression-eval": {
+      "file": "05.05-build-a-regression-eval.mp3",
+      "minutes": 13.5,
+      "bytes": 3249963,
+      "words": 2048,
+      "voice": "af_heart",
+      "hash": "703da06c8fc07b53"
+    },
+    "5-7-checklist": {
+      "file": "05.07-checklist.mp3",
+      "minutes": 4.9,
+      "bytes": 1186603,
+      "words": 802,
+      "voice": "af_heart",
+      "hash": "d799b726f6c1f590"
+    },
+    "6-1-set-the-scene": {
+      "file": "06.01-set-the-scene.mp3",
+      "minutes": 4.9,
+      "bytes": 1172602,
+      "words": 760,
+      "voice": "af_heart",
+      "hash": "7b1ce8cf932dab61"
+    },
+    "6-2-tool-calling-and-structured-outputs": {
+      "file": "06.02-tool-calling-and-structured-outputs.mp3",
+      "minutes": 9.1,
+      "bytes": 2173300,
+      "words": 1417,
+      "voice": "af_heart",
+      "hash": "cd7216a2b1009d50"
+    },
+    "6-3-the-react-loop": {
+      "file": "06.03-the-react-loop.mp3",
+      "minutes": 9.1,
+      "bytes": 2184376,
+      "words": 1539,
+      "voice": "af_heart",
+      "hash": "51a144b7ff3e4bbc"
+    },
+    "6-4-workflows-or-agents": {
+      "file": "06.04-workflows-or-agents.mp3",
+      "minutes": 10.6,
+      "bytes": 2546747,
+      "words": 1740,
+      "voice": "af_heart",
+      "hash": "1a9eeeb6f61f03f0"
+    },
+    "6-6-checklist": {
+      "file": "06.06-checklist.mp3",
+      "minutes": 4.9,
+      "bytes": 1183468,
+      "words": 841,
+      "voice": "af_heart",
+      "hash": "cda61f56bb19741a"
+    },
+    "7-1-set-the-scene": {
+      "file": "07.01-set-the-scene.mp3",
+      "minutes": 4.3,
+      "bytes": 1023704,
+      "words": 714,
+      "voice": "af_heart",
+      "hash": "ba613e55c86d8509"
+    },
+    "7-2-state-nodes-edges-and-reducers": {
+      "file": "07.02-state-nodes-edges-and-reducers.mp3",
+      "minutes": 10.1,
+      "bytes": 2412582,
+      "words": 1591,
+      "voice": "af_heart",
+      "hash": "51c7b8ba3efc6bc2"
+    },
+    "7-3-memory-and-checkpoints": {
+      "file": "07.03-memory-and-checkpoints.mp3",
+      "minutes": 9.3,
+      "bytes": 2237039,
+      "words": 1385,
+      "voice": "af_heart",
+      "hash": "52bdbd54d681b056"
+    },
+    "7-4-human-in-the-loop": {
+      "file": "07.04-human-in-the-loop.mp3",
+      "minutes": 9.9,
+      "bytes": 2368069,
+      "words": 1502,
+      "voice": "af_heart",
+      "hash": "29a066eef8afea45"
+    },
+    "7-5-multi-agent-orchestration": {
+      "file": "07.05-multi-agent-orchestration.mp3",
+      "minutes": 8.6,
+      "bytes": 2073513,
+      "words": 1351,
+      "voice": "af_heart",
+      "hash": "64aab8e3738b5311"
+    },
+    "7-6-build-an-agent-with-approval": {
+      "file": "07.06-build-an-agent-with-approval.mp3",
+      "minutes": 11.8,
+      "bytes": 2829078,
+      "words": 1697,
+      "voice": "af_heart",
+      "hash": "8de71366c8447435"
+    },
+    "7-8-checklist": {
+      "file": "07.08-checklist.mp3",
+      "minutes": 4.8,
+      "bytes": 1145434,
+      "words": 799,
+      "voice": "af_heart",
+      "hash": "c1c77c5bfde0f4f2"
+    },
+    "8-1-set-the-scene": {
+      "file": "08.01-set-the-scene.mp3",
+      "minutes": 4.2,
+      "bytes": 1015135,
+      "words": 673,
+      "voice": "af_heart",
+      "hash": "4d6903368d2f7274"
+    },
+    "8-2-mcp": {
+      "file": "08.02-mcp.mp3",
+      "minutes": 10.3,
+      "bytes": 2480291,
+      "words": 1571,
+      "voice": "af_heart",
+      "hash": "6f8833e5b785bc70"
+    },
+    "8-3-prompt-injection": {
+      "file": "08.03-prompt-injection.mp3",
+      "minutes": 9.3,
+      "bytes": 2234636,
+      "words": 1475,
+      "voice": "af_heart",
+      "hash": "07601380d651ea89"
+    },
+    "8-4-guardrails-in-layers": {
+      "file": "08.04-guardrails-in-layers.mp3",
+      "minutes": 8.5,
+      "bytes": 2038717,
+      "words": 1312,
+      "voice": "af_heart",
+      "hash": "c7c79d6d9210fe2c"
+    },
+    "8-6-checklist": {
+      "file": "08.06-checklist.mp3",
+      "minutes": 4.9,
+      "bytes": 1182006,
+      "words": 832,
+      "voice": "af_heart",
+      "hash": "54bbe0c6f317ce1d"
+    },
+    "9-1-set-the-scene": {
+      "file": "09.01-set-the-scene.mp3",
+      "minutes": 4.5,
+      "bytes": 1086502,
+      "words": 731,
+      "voice": "af_heart",
+      "hash": "e8ef2a36c82ba0ae"
+    },
+    "9-2-async-python": {
+      "file": "09.02-async-python.mp3",
+      "minutes": 11.4,
+      "bytes": 2745173,
+      "words": 1843,
+      "voice": "af_heart",
+      "hash": "1c0a7581fba8e196"
+    },
+    "9-3-fastapi-and-pydantic": {
+      "file": "09.03-fastapi-and-pydantic.mp3",
+      "minutes": 10.5,
+      "bytes": 2530237,
+      "words": 1585,
+      "voice": "af_heart",
+      "hash": "1556640bba068043"
+    },
+    "9-4-retries-timeouts-and-rate-limits": {
+      "file": "09.04-retries-timeouts-and-rate-limits.mp3",
+      "minutes": 12.8,
+      "bytes": 3065330,
+      "words": 2010,
+      "voice": "af_heart",
+      "hash": "2a626dd7c925c0a6"
+    },
+    "9-5-streaming-caching-and-budgets": {
+      "file": "09.05-streaming-caching-and-budgets.mp3",
+      "minutes": 10.7,
+      "bytes": 2578930,
+      "words": 1613,
+      "voice": "af_heart",
+      "hash": "3afec518306a2410"
+    },
+    "9-6-build-the-async-service": {
+      "file": "09.06-build-the-async-service.mp3",
+      "minutes": 14.9,
+      "bytes": 3580987,
+      "words": 2062,
+      "voice": "af_heart",
+      "hash": "e79e9596d8bd1c8e"
+    },
+    "9-8-checklist": {
+      "file": "09.08-checklist.mp3",
+      "minutes": 5.4,
+      "bytes": 1303841,
+      "words": 891,
+      "voice": "af_heart",
+      "hash": "3bb236197eda16b1"
+    }
+  }
+}
