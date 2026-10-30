@@ -1,3 +1,4 @@
+import { CourseLink } from '@buildment/learning-ui/components/learn/course-navigation';
 import { cloneElement, createElement, isValidElement } from 'react';
 import type { Lesson, LessonNode } from '../../domain/learning';
 import { Exercise } from './Exercise';
@@ -49,6 +50,7 @@ export function LessonContent(props: Props): React.ReactNode {
     return createElement(
       'h' + Math.min(6, Math.max(2, node.depth || 2)),
       {
+        id: typeof attributes.id === 'string' ? attributes.id : undefined,
         className:
           (node.depth === 2
             ? 'mt-12 mb-5 border-b border-border pb-4 text-2xl'
@@ -95,15 +97,46 @@ export function LessonContent(props: Props): React.ReactNode {
   if (node.type === 'tableRow') return <tr>{children}</tr>;
   if (node.type === 'tableCell')
     return <td className="border border-border p-3">{children}</td>;
-  if (node.type === 'link')
-    return (
-      <span>
-        {children}{' '}
-        <span className="select-all break-all text-xs text-muted-foreground">
-          ({node.url})
-        </span>
-      </span>
-    );
+  if (node.type === 'link') {
+    const href = node.url || '';
+    const className = 'font-medium underline underline-offset-4';
+    if (/^https:\/\//i.test(href))
+      return (
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={className}
+        >
+          {children}
+        </a>
+      );
+    if (
+      href.startsWith(`/courses/${lesson.course.slug}/`) ||
+      href === `/courses/${lesson.course.slug}`
+    )
+      return (
+        <CourseLink href={href} className={className}>
+          {children}
+        </CourseLink>
+      );
+    if (href.startsWith('#'))
+      return (
+        <a
+          href={href}
+          className={className}
+          onClick={(event) => {
+            event.preventDefault();
+            document
+              .getElementById(href.slice(1))
+              ?.scrollIntoView({ block: 'start' });
+          }}
+        >
+          {children}
+        </a>
+      );
+    return <span>{children}</span>;
+  }
   if (node.type === 'image' && node.url?.startsWith('https://'))
     return (
       <img
@@ -152,13 +185,19 @@ export function LessonContent(props: Props): React.ReactNode {
         questions = [];
       }
     }
-    if (node.name === 'LearningLog' && (Array.isArray(questions) || typeof questions === 'string'))
+    if (
+      node.name === 'LearningLog' &&
+      (Array.isArray(questions) || typeof questions === 'string')
+    )
       return (
         <LearningLog
           questions={questions}
           initialAnswers={lesson.content?.learningLogAnswers || {}}
           onSave={async (answers) => {
-            const result = await window.buildment.learning.saveLog(lesson.chapter.id, answers);
+            const result = await window.buildment.learning.saveLog(
+              lesson.chapter.id,
+              answers,
+            );
             if (result.ok) onSaved();
             return { ok: result.ok };
           }}
@@ -170,7 +209,11 @@ export function LessonContent(props: Props): React.ReactNode {
           items={attributes.items}
           initialChecks={lesson.content?.checklistState || {}}
           onToggle={async (itemId, checked) => {
-            const result = await window.buildment.learning.checklist(lesson.chapter.id, itemId, checked);
+            const result = await window.buildment.learning.checklist(
+              lesson.chapter.id,
+              itemId,
+              checked,
+            );
             if (!result.ok) throw new Error(result.message);
             onSaved();
           }}
