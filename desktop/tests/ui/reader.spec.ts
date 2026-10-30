@@ -261,7 +261,7 @@ test('native reader submits quizzes, saves completion, enforces locks and signs 
   ).toBeVisible();
   await expect(page.locator('iframe, webview')).toHaveCount(0);
   await expect(
-    page.getByRole('navigation', { name: 'Course lessons' }),
+    page.getByRole('navigation', { name: 'Course chapters' }),
   ).toBeVisible();
   await expect(
     page.getByRole('complementary', { name: 'Main navigation' }),
@@ -282,13 +282,17 @@ test('native reader submits quizzes, saves completion, enforces locks and signs 
   await expect(
     page.getByRole('button', { name: 'Next lesson', exact: true }),
   ).toBeDisabled();
-  await page.getByLabel('Everything at once', { exact: true }).check();
+  await page
+    .getByRole('radio', { name: 'Everything at once', exact: true })
+    .click();
   await page.getByRole('button', { name: 'Submit quiz', exact: true }).click();
   await expect(page.getByText('Quiz score: 0 / 1')).toBeVisible();
   await expect(
     page.getByRole('button', { name: 'Mark lesson complete' }),
   ).toBeDisabled();
-  await page.getByLabel('One thing at a time', { exact: true }).check();
+  await page
+    .getByRole('radio', { name: 'One thing at a time', exact: true })
+    .click();
   await page.getByRole('button', { name: 'Submit again', exact: true }).click();
   await expect(page.getByText('Quiz score: 1 / 1')).toBeVisible();
   await page.getByRole('button', { name: 'Mark lesson complete' }).click();

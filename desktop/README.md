@@ -64,3 +64,5 @@ For the hosted service on macOS:
 BUILDMENT_API_URL=https://buildment-eca06ffd3e8f.herokuapp.com \
 BUILDMENT_WEB_URL=https://edorax.com npm --prefix desktop start
 ```
+
+The reader sidebar and heading outline are shared with web. Desktop bundles DM Sans, Unbounded, and JetBrains Mono locally, so typography does not require a font-network request. HTTPS links in lesson prose open in the system browser; same-course chapter links stay in the desktop reader.
