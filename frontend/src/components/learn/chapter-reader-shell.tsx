@@ -27,6 +27,7 @@ import type { HelpThreadView } from "@/shared/api/help";
 import type { StreakMilestone } from "@/shared/lib/streak";
 import { HeadingNotesProvider } from "@/components/learn/heading-note";
 import { ChapterAudio } from "@/components/learn/chapter-audio";
+import { AskChapterPanel } from "@/components/learn/ask-chapter-panel";
 import type { ChapterNarration } from "@/lib/narration";
 import { PredictRevealProvider } from "@buildment/learning-ui/components/learn/predict-reveal";
 
@@ -452,6 +453,8 @@ export function ChapterReaderShell({
                     </article>
                   </ChecklistProvider>
                 </LearningLogProvider>
+
+                {readerMode !== "QUIZ" ? <AskChapterPanel chapterId={chapterId} /> : null}
 
                 {!(focusMode && readerMode === "QUIZ") ? (
                   <ChapterNav
