@@ -13,9 +13,10 @@ import { createPreviewClient } from './api';
 import { createBrowserAuth } from './auth/browser-auth';
 
 app.setName('Edorax');
+const iconFile = process.platform === 'darwin' ? 'edorax-dock.png' : 'edorax.png';
 const appIcon = app.isPackaged
-  ? path.join(process.resourcesPath, 'edorax.png')
-  : path.join(app.getAppPath(), 'assets/edorax.png');
+  ? path.join(process.resourcesPath, iconFile)
+  : path.join(app.getAppPath(), 'assets', iconFile);
 
 let mainWindow: BrowserWindow | null = null;
 const apiBase = process.env.BUILDMENT_API_URL || 'http://localhost:4000';

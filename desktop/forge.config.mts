@@ -12,7 +12,7 @@ const config: ForgeConfig = {
     asar: true,
     name: 'Edorax',
     icon: './assets/edorax',
-    extraResource: ['./assets/edorax.png'],
+    extraResource: ['./assets/edorax.png', './assets/edorax-dock.png'],
   },
   rebuildConfig: {},
   makers: [
