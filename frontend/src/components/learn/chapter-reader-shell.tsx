@@ -28,6 +28,8 @@ import type { StreakMilestone } from "@/shared/lib/streak";
 import { HeadingNotesProvider } from "@/components/learn/heading-note";
 import { ChapterAudio } from "@/components/learn/chapter-audio";
 import { AskChapterPanel } from "@/components/learn/ask-chapter-panel";
+import { AskChapterProvider } from "@/components/learn/ask-chapter-context";
+import { AskAiFloating, AskAiHeaderButton } from "@/components/learn/ask-ai-floating";
 import type { ChapterNarration } from "@/lib/narration";
 import { PredictRevealProvider } from "@buildment/learning-ui/components/learn/predict-reveal";
 
@@ -138,6 +140,8 @@ export function ChapterReaderShell({
 
   const [showSkeleton, setShowSkeleton] = useState(!skipSkeleton);
   const [focusMode, setFocusMode] = useState(false);
+  const [mentorOpen, setMentorOpen] = useState(false);
+  const openMentor = useCallback(() => setMentorOpen(true), []);
   const study = useStudySession(chapterId);
   const layoutBeforeFocus = useRef({ left: true, right: true });
 
@@ -261,6 +265,7 @@ export function ChapterReaderShell({
   }, [chapterSlug, showSkeleton]);
 
   return (
+    <AskChapterProvider chapterId={chapterId} headings={headings} enabled={readerMode !== "QUIZ"} onAskMentor={openMentor}>
     <div
       data-reader-mode={readerMode}
       className={cn("relative h-[100dvh] overflow-hidden bg-background text-foreground", focusMode && "bg-background")}
@@ -314,7 +319,10 @@ export function ChapterReaderShell({
                   collapsed={leftCollapsed}
                   onClick={() => setLeftCollapsed(!leftCollapsed)}
                 />
+                <AskAiHeaderButton />
                 <AskHelpDialog
+                  open={mentorOpen}
+                  onOpenChange={setMentorOpen}
                   courseId={courseId}
                   courseSlug={courseSlug}
                   chapterId={chapterId}
@@ -454,7 +462,7 @@ export function ChapterReaderShell({
                   </ChecklistProvider>
                 </LearningLogProvider>
 
-                {readerMode !== "QUIZ" ? <AskChapterPanel chapterId={chapterId} headings={headings} /> : null}
+                {readerMode !== "QUIZ" ? <AskChapterPanel /> : null}
 
                 {!(focusMode && readerMode === "QUIZ") ? (
                   <ChapterNav
@@ -508,7 +516,9 @@ export function ChapterReaderShell({
         </div>
 
         {focusMode && <ReaderFocusDock onExitFocus={() => void exitFocusMode()} />}
+        <AskAiFloating focusMode={focusMode} />
       </ReaderShellFade>
     </div>
+    </AskChapterProvider>
   );
 }
