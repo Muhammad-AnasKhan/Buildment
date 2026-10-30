@@ -134,6 +134,9 @@ describe("chapter question prompt", () => {
     const prompt = buildSystemPrompt({ courseTitle: "Orders", chapterTitle: "Prices", source: "Text." });
     expect(prompt).toContain("Never invent facts about the learner");
     expect(prompt).toContain("[the decision you made]");
+    expect(prompt).toContain("[square-bracket placeholders]");
+    expect(prompt).toContain("names, features, tools, numbers, results");
+    expect(prompt).toContain("clearly labelled as the chapter's own example");
   });
 
   it("keeps the learner's text inside the question tags", () => {
