@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, Route, XCircle } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { QuizOptions } from "../../components/learn/quiz-options";
@@ -67,6 +67,7 @@ export function PredictClient({
   );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   async function submitSelection(optionId: string) {
     if (submitting) return;
@@ -142,7 +143,28 @@ export function PredictClient({
   const showCorrectOptions = result?.isCorrect === true;
   const ctx = config.context;
 
+  // 1-N selects a prediction, mirroring the Quiz keyboard. Scoped to this block's focus so keys on a
+  // page with several interactive blocks never hit more than one.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable=''], [contenteditable='true'], dialog[open]")) return;
+      const active = document.activeElement;
+      if (!rootRef.current || !active || !rootRef.current.contains(active)) return;
+      if (!/^[1-9]$/.test(event.key)) return;
+      const index = Number(event.key) - 1;
+      if (index < 0 || index >= config.options.length) return;
+      if (optionsLocked || submitting) return;
+      event.preventDefault();
+      onPick(config.options[index].id);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [config.options, optionsLocked, submitting, onPick]);
+
   return (
+    <div ref={rootRef}>
     <LearnPanelShell eyebrow="Predict" title={config.prompt} className="my-8 scroll-mt-24" checkpointId={id} checkpointDone={settled}>
       <div className="border-b border-border bg-muted/50 px-5 py-4 sm:px-6">
         <div className="flex items-start gap-3">
@@ -226,5 +248,6 @@ export function PredictClient({
         {error ? <p className="mt-2 text-sm text-destructive">{error}</p> : null}
       </div>
     </LearnPanelShell>
+    </div>
   );
 }
