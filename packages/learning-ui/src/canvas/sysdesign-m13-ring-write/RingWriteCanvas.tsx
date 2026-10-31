@@ -29,6 +29,7 @@ import {
   writeVerdict,
   type Machine,
 } from "./model";
+import { useSvgTouchDrag } from "../primitives/svg-touch-drag";
 
 const W = 420;
 const H = 448;
@@ -77,6 +78,7 @@ function flightPoint(from: number, to: number, u: number): { x: number; y: numbe
 
 /** 13.2: drag the key round the ring, tap Write, and see which machines hold the copies. */
 export function RingWriteCanvas({ title, limits }: { title: string; purpose: string; limits: string }) {
+  const touchRef = useSvgTouchDrag<SVGGElement>();
   const box = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
   const titleId = useId();
@@ -212,7 +214,7 @@ export function RingWriteCanvas({ title, limits }: { title: string; purpose: str
           {walker ? <circle cx={walker.x} cy={walker.y} r={5} strokeWidth={2} className={cn(TONES.accent.solidFill, "stroke-card")} /> : null}
 
           {/* The key you drag: a handle outside the ring, with a big grab area round the whole ring. */}
-          <g
+          <g ref={touchRef}
             role="slider"
             tabIndex={0}
             aria-label="Key on the ring"

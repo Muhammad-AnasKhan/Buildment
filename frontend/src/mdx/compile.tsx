@@ -1,16 +1,26 @@
 import type { MDXComponents } from "next-mdx-remote-client/rsc";
 import { MDXRemote } from "next-mdx-remote-client/rsc";
 import remarkGfm from "remark-gfm";
-import { remarkChecklist } from "@/shared/mdx/remark-checklist";
-import { remarkLearningLog } from "@/shared/mdx/remark-learning-log";
-import { remarkMermaid } from "@/shared/mdx/remark-mermaid";
-import { remarkDiagram } from "@/shared/mdx/remark-diagram";
+import { readerRemarkPlugins } from "@/shared/mdx/reader-plugins";
 import { mdxComponents } from "./components";
 import { collectUnknownComponents } from "@/shared/mdx/extract";
 import { restoreInteractiveBlockTags } from "@/shared/mdx/restore-block-tags";
 import { transformVisualFences } from "./transform-visual-fences";
 import { rehypePrettyCodePlugins } from "./rehype-pretty-code-config";
 import { chapterBodyForReader } from "@/shared/lib/mdx-frontmatter";
+import { Lab } from "@buildment/learning-ui/labs/Lab";
+
+function CourseLabBlock(props: { slug?: unknown; spec?: unknown; version?: unknown; presentation?: unknown }) {
+  return (
+    <Lab
+      slug={props.slug}
+      spec={(props.spec as never) ?? null}
+      version={props.version}
+      presentation={props.presentation}
+      courseMode
+    />
+  );
+}
 
 function UnsupportedBlock({
   name,
@@ -49,37 +59,32 @@ function withUnknownComponentFallback(components: MDXComponents, source: string)
   return { ...components, ...extras };
 }
 
-function DraftActivityPreview({ children }: { children?: React.ReactNode }) {
-  return <div className="my-5 rounded-xl border border-dashed bg-muted/40 p-4 text-sm text-muted-foreground"><p className="font-medium">Interactive activity</p><p className="mt-1">This activity is shown as a placeholder in course preview. Learner submissions and progress are disabled.</p>{children ? <div className="mt-2">{children}</div> : null}</div>;
-}
-
 // Server-side MDX rendering for the reader route — see
 // docs/02-content-authoring.mdx "Rendering pipeline". Raw HTML stays disabled
 // by omission (no rehype-raw plugin registered): MDX text like `<script>` is
 // rendered as text, not executed. Uppercase tags missing from mdxComponents
 // (docs/09-security.mdx allowlist) render as a callout instead of failing the chapter.
-export function ChapterMdx({ source, preview = false }: { source: string; preview?: boolean }) {
+export function ChapterMdx({
+  source,
+  preview: _preview = false,
+  courseLabMode = false,
+}: {
+  source: string;
+  preview?: boolean;
+  /** Learner course pages launch large labs into a focused workspace. */
+  courseLabMode?: boolean;
+}) {
   const transformed = transformVisualFences(chapterBodyForReader(source));
   const mdxSource = restoreInteractiveBlockTags(transformed);
-  const components = preview
-    ? withUnknownComponentFallback({
-        ...mdxComponents,
-        Quiz: DraftActivityPreview,
-        Predict: DraftActivityPreview,
-        AiInterview: DraftActivityPreview,
-        OpenQuestion: DraftActivityPreview,
-        CodeExercise: DraftActivityPreview,
-        Checklist: DraftActivityPreview,
-        LearningLog: DraftActivityPreview,
-      }, mdxSource)
-    : withUnknownComponentFallback(mdxComponents, mdxSource);
+  const baseComponents = courseLabMode ? { ...mdxComponents, Lab: CourseLabBlock } : mdxComponents;
+  const components = withUnknownComponentFallback(baseComponents, mdxSource);
   return (
     <MDXRemote
       source={mdxSource}
       components={components}
       options={{
         mdxOptions: {
-          remarkPlugins: [remarkGfm, remarkChecklist, remarkLearningLog, remarkDiagram, remarkMermaid],
+          remarkPlugins: [remarkGfm, ...readerRemarkPlugins],
           rehypePlugins: rehypePrettyCodePlugins,
         },
       }}

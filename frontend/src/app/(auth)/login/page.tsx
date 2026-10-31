@@ -51,7 +51,7 @@ export default async function LoginPage({
             <>
               No account?{" "}
               <Link
-                href="/signup"
+                href={redirectTo ? `/signup?redirectTo=${encodeURIComponent(redirectTo)}` : "/signup"}
                 className="font-bold text-primary underline underline-offset-4"
               >
                 Sign up

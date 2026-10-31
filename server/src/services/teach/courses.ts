@@ -159,20 +159,22 @@ export async function loadCourseDraftPreview(user: SessionUser, courseSlug: stri
     where: { id: owned.id },
     select: {
       id: true, slug: true, title: true, description: true, projectGoal: true, coverUrl: true, status: true,
+      difficulty: true, estimatedHours: true, category: true,
       activeReleaseId: true, familySlug: true, variantFamily: true,
       modules: {
         where: { archivedAt: null },
         orderBy: { order: "asc" },
         select: { id: true, title: true, chapters: { where: { archivedAt: null }, orderBy: { order: "asc" }, select: {
           id: true, title: true, slug: true, readerMode: true, publishedAt: true, source: true,
-          releaseDraft: { select: { title: true, readerMode: true, source: true } },
+          estimatedMinutes: true, isMilestone: true, summary: true,
+          releaseDraft: { select: { title: true, readerMode: true, source: true, estimatedMinutes: true, isMilestone: true, summary: true } },
         } } },
       },
     },
   });
   const { modules, activeReleaseId, familySlug, variantFamily, ...settings } = course;
   type Row = (typeof modules)[number]["chapters"][number];
-  const toPreview = (row: Row, snapshot?: { title: string; slug: string; readerMode: Row["readerMode"] }) => ({
+  const toPreview = (row: Row, snapshot?: { title: string; slug: string; readerMode: Row["readerMode"]; estimatedMinutes?: number | null; isMilestone?: boolean; summary?: string | null }) => ({
     id: row.id,
     title: row.releaseDraft?.title ?? snapshot?.title ?? row.title,
     slug: snapshot?.slug ?? row.slug,
@@ -180,6 +182,9 @@ export async function loadCourseDraftPreview(user: SessionUser, courseSlug: stri
     publishedAt: row.publishedAt?.toISOString() ?? null,
     source: row.releaseDraft?.source ?? row.source,
     hasDraft: Boolean(row.releaseDraft) || !row.publishedAt,
+    estimatedMinutes: row.releaseDraft?.estimatedMinutes ?? snapshot?.estimatedMinutes ?? row.estimatedMinutes ?? null,
+    isMilestone: row.releaseDraft?.isMilestone ?? snapshot?.isMilestone ?? row.isMilestone ?? false,
+    summary: row.releaseDraft?.summary ?? snapshot?.summary ?? row.summary ?? null,
   });
   let previewModules: CourseDraftPreview["modules"] = modules.map(module => ({
     id: module.id, title: module.title, chapters: module.chapters.map(chapter => toPreview(chapter)),

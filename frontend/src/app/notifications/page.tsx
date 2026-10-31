@@ -43,7 +43,7 @@ export default async function NotificationsPage() {
           </Link>
           <h1 className="mt-3 text-2xl font-semibold tracking-tight">Notifications</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Everything that needed your attention, newest first. New ones also appear live while Buildment is open.
+            Everything that needed your attention, newest first. New ones also appear live while Edorax is open.
           </p>
         </div>
 

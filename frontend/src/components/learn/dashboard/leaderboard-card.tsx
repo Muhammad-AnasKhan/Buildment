@@ -1,8 +1,17 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Trophy } from "lucide-react";
+import { ChevronDown, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { InfoTip } from "@/components/ui/info-tip";
 import { cn } from "@/lib/utils";
 import { loadLeaderboard, setGamificationPreferences } from "@/server/actions/gamification";
@@ -118,6 +127,7 @@ export function LeaderboardCard({
     });
   }
 
+  const courseTitle = courses.find((course) => course.courseId === courseId)?.title ?? view.courseTitle;
   const switchCourse = (next: string) => {
     setCourseId(next);
     run(() => loadLeaderboard(next));
@@ -145,21 +155,32 @@ export function LeaderboardCard({
       </div>
 
       {courses.length > 1 ? (
-        <label className="mt-3 block">
-          <span className="sr-only">Course</span>
-          <select
-            value={courseId}
-            onChange={(event) => switchCourse(event.target.value)}
+        // Our own menu instead of a native select: phones otherwise show a system sheet of
+        // long titles with radio buttons, outside the Edorax look.
+        <DropdownMenu>
+          <DropdownMenuTrigger
             disabled={pending}
-            className="h-9 w-full rounded-lg border border-input bg-background px-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
+            aria-label={`Course: ${courseTitle}`}
+            className="mt-3 flex min-h-11 w-full items-center gap-2 rounded-lg border border-input bg-background px-3 text-left text-sm font-medium outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
           >
-            {courses.map((course) => (
-              <option key={course.courseId} value={course.courseId}>
-                {course.title}
-              </option>
-            ))}
-          </select>
-        </label>
+            <span className="min-w-0 flex-1 truncate">
+              {courseTitle}
+            </span>
+            <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="max-h-80 p-1.5">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Course</DropdownMenuLabel>
+              <DropdownMenuRadioGroup value={courseId} onValueChange={(next) => switchCourse(String(next))}>
+                {courses.map((course) => (
+                  <DropdownMenuRadioItem key={course.courseId} value={course.courseId} className="min-h-11 py-2 pl-2 leading-5">
+                    {course.title}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       ) : (
         <p className="mt-1 truncate text-xs text-muted-foreground">{view.courseTitle}</p>
       )}

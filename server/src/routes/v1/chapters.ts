@@ -6,6 +6,7 @@ import { requireVerified } from "../../middlewares/require-verified.js";
 import { userRateLimit } from "../../middlewares/rate-limit.js";
 import { validate, validateParams } from "../../middlewares/validate.js";
 import {
+  askChapterBody,
   chapterParams,
   checklistItemBody,
   checklistItemParams,
@@ -38,5 +39,16 @@ router.post("/:chapterId/complete", ...learner, validateParams(chapterParams), c
 router.put("/:chapterId/checklist/:itemId", ...learner, validate({ params: checklistItemParams, body: checklistItemBody }), chapters.putChecklistItem);
 router.put("/:chapterId/learning-log", ...learner, validate({ params: chapterParams, body: learningLogBody }), chapters.putLearningLog);
 router.put("/:chapterId/notes/:headingId", ...learner, validate({ params: headingNoteParams, body: headingNoteBody }), chapters.putHeadingNote);
+
+// Ask about this chapter. Access is checked in the service (same rules as blocks); the daily and
+// platform limits are counted in the database, and this limiter only blunts a burst before it gets there.
+router.get("/:chapterId/ask", ...learner, validateParams(chapterParams), chapters.askStatus);
+router.post(
+  "/:chapterId/ask",
+  ...learner,
+  validate({ params: chapterParams, body: askChapterBody }),
+  userRateLimit({ scope: "chapter-ask", max: 10, message: "You are asking quickly. Wait a minute and try again." }),
+  chapters.ask
+);
 
 export default router;

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { RecordedEngagementEvent } from "../../../../src/shared/api/engagement.js";
+import { DOT_CLIPS } from "../../../../src/shared/engagement/dot-voice.js";
 import { ENGAGEMENT_RULES, matchingRules } from "../../../../src/shared/engagement/rules.js";
 
 let n = 0;
@@ -56,15 +57,15 @@ describe("engagement rules", () => {
     expect(top(event({ type: "notes_saved" }))).toMatchObject({ state: "encourage", role: "supporter", cooldownMs: 600_000 });
   });
 
-  it("offers notes after a first miss and another way after repeated misses", () => {
-    expect(top(quiz(false, 1, 50))).toMatchObject({ state: "retry", messages: expect.arrayContaining(["Almost! Want to check your notes?"]) });
-    expect(top(quiz(false, 2, 50))).toMatchObject({ state: "help", messages: expect.arrayContaining(["Let's try another way."]) });
+  it("says \"not quite\" after a first miss and offers to look again after repeated misses", () => {
+    expect(top(quiz(false, 1, 50))).toMatchObject({ state: "retry", messages: ["Hmm, not quite!"], clip: "not-quite" });
+    expect(top(quiz(false, 2, 50))).toMatchObject({ state: "help", messages: ["Let's look again!"], clip: "look-again" });
     expect(top(quiz(false, 5, 0))).toMatchObject({ state: "help" });
   });
 
   it("praises a pass after misses above a perfect score", () => {
-    expect(top(quiz(true, 3, 100))).toMatchObject({ messages: expect.arrayContaining(["You got it! That one was tricky."]) });
-    expect(top(quiz(true, 1, 100))).toMatchObject({ messages: expect.arrayContaining(["Perfect score!"]) });
+    expect(top(quiz(true, 3, 100))).toMatchObject({ messages: ["You got it!"], clip: "got-it" });
+    expect(top(quiz(true, 1, 100))).toMatchObject({ messages: ["You passed!"], clip: "you-passed" });
   });
 
   it("says nothing extra for a first-try pass below 100 (the chapter celebration covers it)", () => {
@@ -78,10 +79,15 @@ describe("engagement rules", () => {
 
   it("welcomes back only after three or more days away, as an ambient reaction", () => {
     const back = (daysAway: number | null) => top(event({ type: "session_start", payload: { daysAway } }));
-    expect(back(3)).toMatchObject({ state: "welcome_back", messages: expect.arrayContaining(["Yay, you're back!"]), ambient: true });
+    expect(back(3)).toMatchObject({ state: "welcome_back", messages: ["You're back! I missed you!"], clip: "missed-you", ambient: true });
     expect(back(13)).toMatchObject({ state: "welcome_back" });
     expect(back(2)).toBeNull();
-    expect(back(null)).toBeNull();
+  });
+
+  it("welcomes a learner's very first session with Dot's introduction", () => {
+    const first = top(event({ type: "session_start", payload: { daysAway: null } }));
+    expect(first).toMatchObject({ id: "first-visit", clip: "welcome", ambient: true });
+    expect(top(event({ type: "enrolled" }))).not.toHaveProperty("clip");
   });
 
   it("offers the chapter to pick up again after a long time away", () => {
@@ -103,14 +109,22 @@ describe("engagement rules", () => {
   it("never guilts the learner, in any of its lines", () => {
     for (const rule of ENGAGEMENT_RULES) {
       for (const line of rule.messages) {
-        expect(line).not.toMatch(/\b(fail|failed|wrong|missed|days?|lazy|again\?)\b/i);
+        // "I missed you" is Dot being glad; "you missed …" would count what the learner did not do.
+        expect(line).not.toMatch(/\b(fail|failed|wrong|missed(?! you)|days?|lazy|again\?)\b/i);
       }
     }
   });
 
-  it("gives every rule a few different lines", () => {
+  it("gives every rule one short line in Dot's voice", () => {
     for (const rule of ENGAGEMENT_RULES) {
-      expect(new Set(rule.messages).size, rule.id).toBeGreaterThanOrEqual(3);
+      expect(rule.messages, rule.id).toHaveLength(1);
+      if (!rule.clip) expect(rule.messages[0].split(/\s+/).length, rule.id).toBeLessThanOrEqual(6);
+    }
+  });
+
+  it("says exactly the words of the clip a rule plays", () => {
+    for (const rule of ENGAGEMENT_RULES) {
+      if (rule.clip) expect(rule.messages[0], rule.id).toBe(DOT_CLIPS[rule.clip]);
     }
   });
 });

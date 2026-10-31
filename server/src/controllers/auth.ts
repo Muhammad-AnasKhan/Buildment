@@ -10,6 +10,7 @@ import { loginWithPassword, logout as endSession, resolveVerificationState } fro
 import { signup as createAccount } from "../services/auth/signup.js";
 import { consumeMagicLink, requestMagicLink as sendMagicLink } from "../services/auth/magic-link.js";
 import { serializeSessionUser } from "../services/auth/session.js";
+import { safeRedirectTo } from "../shared/lib/safe-redirect.js";
 import type { LoginBody, SignupBody } from "../validations/auth.js";
 
 function authSession(result: Awaited<ReturnType<typeof loginWithPassword>>): AuthSession {
@@ -78,7 +79,8 @@ export async function verifyMagicLink(req: Request, res: Response) {
   res.redirect(result.redirectTo);
 }
 
-// GET /api/v1/auth/confirm-email?token= — email link target; always lands on the login page.
+// GET /api/v1/auth/confirm-email?token=&redirectTo= — email link target; always lands on the login page,
+// which then continues to redirectTo (for example the course the learner chose before signing up).
 export async function confirmEmail(req: Request, res: Response) {
   const token = (req.query.token as string | undefined)?.trim();
   if (!token) return res.redirect("/login?error=verify-missing");
@@ -88,7 +90,8 @@ export async function confirmEmail(req: Request, res: Response) {
     const param = result.reason === "expired" ? "verify-expired" : "verify-invalid";
     return res.redirect(`/login?error=${param}`);
   }
-  res.redirect(`/login?verified=1&email=${encodeURIComponent(result.email)}`);
+  const next = safeRedirectTo(req.query.redirectTo as string | undefined);
+  res.redirect(`/login?verified=1&email=${encodeURIComponent(result.email)}${next ? `&redirectTo=${encodeURIComponent(next)}` : ""}`);
 }
 
 // GET /api/v1/auth/dev-login?email=&redirectTo= — seeded accounts only, never in production.

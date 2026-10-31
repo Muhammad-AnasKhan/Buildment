@@ -60,7 +60,8 @@ export interface ChallengeReport {
 }
 
 const labelOf = (kind: ComponentKind) => COMPONENT_CATALOG[kind].label;
-const lower = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
+// Lowercases the first letter of a label for use mid-sentence, but leaves acronyms such as CDN alone.
+const lower = (text: string) => (/^[A-Z]{2}/.test(text) ? text : text.charAt(0).toLowerCase() + text.slice(1));
 const pct = (n: number) => `${(Math.floor(n * 10000) / 100).toFixed(2)}%`;
 const roleLabel = (role: Role) => Object.values(COMPONENT_CATALOG).find((c) => c.role === role)?.label ?? role;
 const perSec = (n: number) => `${Math.round(n).toLocaleString("en-US")}/s`;
@@ -137,7 +138,7 @@ function pathCheck(def: Extract<CheckDef, { type: "path" }>, board: Board): Chec
   if (missing !== undefined && def.inlineIfNo && !board.nodes.some((n) => roleOf(n.kind) === def.inlineIfNo)) {
     return {
       id: def.id, kind: def.kind, label: def.label, pass: true, scenario: "steady", target: def.target,
-      measured: `saved during the redirect (inline), no ${lower(roleLabel(def.inlineIfNo))}`,
+      measured: `saved during the request (inline), no ${lower(roleLabel(def.inlineIfNo))}`,
     };
   }
   const pass = missing === undefined;
@@ -205,34 +206,38 @@ function metricCheck(def: Extract<CheckDef, { type: "metric" }>, phases: Map<str
   };
 }
 
-function drainCheck(def: Extract<CheckDef, { type: "drain" }>, steady: PhaseReport, scenarioId: string, inlineClicks: boolean): CheckResult {
+function drainCheck(def: Extract<CheckDef, { type: "drain" }>, steady: PhaseReport, scenarioId: string, inlineClicks: boolean, share = 1): CheckResult {
   const { board, result, load } = steady;
   const queue = board.nodes.find((n) => roleOf(n.kind) === "queue" && result.tiers.find((t) => t.id === n.id)?.reachable);
-  const target = `no clicks lost, all counted within ${def.maxDrainSeconds} s of the worker coming back`;
+  const items = def.items ?? "clicks";
+  const done = def.done ?? "counted";
+  const Items = items.charAt(0).toUpperCase() + items.slice(1);
+  const target = `no ${items} lost, all ${done} within ${def.maxDrainSeconds} s of the worker coming back`;
   const base = { id: def.id, kind: def.kind, label: def.label, scenario: scenarioId, target };
   if (!queue && inlineClicks && !board.nodes.some((n) => roleOf(n.kind) === "queue")) {
-    return { ...base, pass: true, measured: "no worker to lose: clicks are saved during the redirect (inline)" };
+    return { ...base, pass: true, measured: `no worker to lose: ${items} are saved during the request (inline)` };
   }
   if (!queue) {
-    const lost = Math.round(load * def.outageSeconds);
-    return { ...base, pass: false, measured: `${lost.toLocaleString("en-US")} clicks lost in ${def.outageSeconds} s`, reason: "Clicks have nowhere to wait while the worker is down. Put a queue between the app server and the worker." };
+    // With no queue there is no link to read the rate from, so take the queue's share of the stream.
+    const lost = Math.round(load * share * def.outageSeconds);
+    return { ...base, pass: false, measured: `${lost.toLocaleString("en-US")} ${items} lost in ${def.outageSeconds} s`, reason: `${Items} have nowhere to wait while the worker is down. Put a queue between the app server and the worker.` };
   }
   const workers = board.edges.filter((e) => e.from === queue.id).map((e) => result.tiers.find((t) => t.id === e.to)).filter((t): t is TierLoad => !!t && roleOf(t.kind) === "worker");
   if (workers.length === 0) {
-    return { ...base, pass: false, measured: "clicks pile up and are never counted", reason: "The queue has no worker. Link the queue to a worker, and the worker to the database." };
+    return { ...base, pass: false, measured: `${items} pile up and are never ${done}`, reason: "The queue has no worker. Link the queue to a worker, and the worker to where it saves its work." };
   }
   const arriving = board.edges.filter((e) => e.to === queue.id).reduce((sum, e) => sum + (result.edgeFlows[`${e.from}>${e.to}`] ?? 0), 0);
   const capacity = workers.reduce((sum, w) => sum + w.capacity, 0);
   const spare = capacity - arriving;
   const backlog = Math.round(arriving * def.outageSeconds);
   if (spare <= 0) {
-    return { ...base, pass: false, measured: `${backlog.toLocaleString("en-US")} clicks waiting, never all counted`, reason: `Workers count ${perSec(capacity)} but clicks arrive at ${perSec(arriving)}: they can never catch up. Add workers or a bigger size.` };
+    return { ...base, pass: false, measured: `${backlog.toLocaleString("en-US")} ${items} waiting, never all ${done}`, reason: `Workers handle ${perSec(capacity)} but ${items} arrive at ${perSec(arriving)}: they can never catch up. Add workers or a bigger size.` };
   }
   const drain = Math.ceil(backlog / spare);
   const pass = drain <= def.maxDrainSeconds;
   return {
-    ...base, pass, measured: `${backlog.toLocaleString("en-US")} clicks waiting, all counted after ${drain} s`,
-    reason: pass ? undefined : `Workers have only ${perSec(spare)} to spare, so ${backlog.toLocaleString("en-US")} waiting clicks take ${drain} s. Add workers or a bigger size.`,
+    ...base, pass, measured: `${backlog.toLocaleString("en-US")} ${items} waiting, all ${done} after ${drain} s`,
+    reason: pass ? undefined : `Workers have only ${perSec(spare)} to spare, so ${backlog.toLocaleString("en-US")} waiting ${items} take ${drain} s. Add workers or a bigger size.`,
   };
 }
 
@@ -258,6 +263,7 @@ export function challengeFor(spec: HldLabSpec): ChallengeDef {
 export function runModel(spec: HldLabSpec, board: Board, load: number, targets: Targets = {}): ModelResult {
   const options: ModelOptions = {
     inlineWrites: Boolean(spec.challenge?.inlineClicks) && !board.nodes.some((n) => roleOf(n.kind) === "queue"),
+    shares: spec.challenge?.shares,
   };
   return runTieredModel(board, load, targets, options);
 }
@@ -276,7 +282,7 @@ export function runChallenge(spec: HldLabSpec, board: Board, load: number): Chal
   const steady = phases[0]!;
   const checks: CheckResult[] = challenge.checks.map((def) => {
     if (def.type === "path") return pathCheck(def, board);
-    if (def.type === "drain") return drainCheck(def, steady, challenge.scenarios.find((s) => s.faults.some((f) => f.type === "down" && f.role === "worker"))?.id ?? "steady", Boolean(challenge.inlineClicks));
+    if (def.type === "drain") return drainCheck(def, steady, challenge.scenarios.find((s) => s.faults.some((f) => f.type === "down" && f.role === "worker"))?.id ?? "steady", Boolean(challenge.inlineClicks), challenge.shares?.queue ?? 1);
     return metricCheck(def, byId);
   });
   const passed = checks.filter((c) => c.pass).length;

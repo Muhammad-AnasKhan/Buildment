@@ -3,6 +3,7 @@
 import { useRef, type KeyboardEvent, type PointerEvent, type ReactNode, type RefObject } from "react";
 import { cn } from "../../lib/utils";
 import { TONES } from "./tones";
+import { useSvgTouchDrag } from "./svg-touch-drag";
 
 // A slider on a rail drawn inside the picture's SVG, like RailSlider, but with
 // a hit zone you size yourself and a key handler you supply. That lets a
@@ -55,6 +56,7 @@ export function TightRailSlider({
   side = 16,
   children,
 }: TightRailSliderProps) {
+  const touchRef = useSvgTouchDrag<SVGGElement>();
   const dragging = useRef(false);
   const follow = (e: PointerEvent) => {
     const el = svgRef.current;
@@ -75,7 +77,7 @@ export function TightRailSlider({
   };
   const zone = { x: x0 - side, y: y - above, width: x1 - x0 + 2 * side, height: above + below };
   return (
-    <g
+    <g ref={touchRef}
       role="slider"
       tabIndex={0}
       aria-label={label}

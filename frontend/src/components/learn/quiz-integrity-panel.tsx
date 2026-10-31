@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Camera, CameraOff, Eye, Maximize, ShieldCheck, X } from "lucide-react";
 import { Dot } from "@/components/brand/dot";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import type { QuizIntegrity } from "@/lib/integrity/use-quiz-integrity";
 import { INTEGRITY_LIMITS } from "@/shared/api/integrity";
 import { cn } from "@/lib/utils";
@@ -192,7 +192,94 @@ function CameraPreview({ attach, visible }: { attach: (element: HTMLVideoElement
   );
 }
 
-export function QuizIntegrityPanel({ integrity, questionCount = 0 }: { integrity: QuizIntegrity; questionCount?: number }) {
+function FullscreenExitOverlay({
+  integrity,
+  onExitQuiz,
+}: {
+  integrity: QuizIntegrity;
+  onExitQuiz?: () => void;
+}) {
+  const params = useParams<{ courseSlug?: string }>();
+  const open = integrity.active && integrity.fullscreenPrompt && integrity.dialog !== "intro";
+  if (!open) return null;
+
+  const exitHref = params.courseSlug ? `/courses/${params.courseSlug}` : "/my-courses";
+
+  return (
+    <div
+      role="alertdialog"
+      aria-modal="true"
+      aria-labelledby="quiz-fullscreen-exit-title"
+      aria-describedby="quiz-fullscreen-exit-desc"
+      className="fixed inset-0 z-[80] flex items-center justify-center bg-background/90 p-4 text-foreground backdrop-blur-md"
+    >
+      <div className="flex w-full max-w-md flex-col overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-xl">
+        <div className="px-5 py-6 sm:px-8 sm:py-8">
+          <p className="flex items-center gap-2 text-sm font-bold text-primary">
+            <Maximize className="size-4" aria-hidden />
+            Full screen exited
+          </p>
+          <h2
+            id="quiz-fullscreen-exit-title"
+            className="mt-2 text-[28px] leading-[1.15] tracking-[-0.035em] text-card-foreground"
+          >
+            You left full screen
+          </h2>
+          <p
+            id="quiz-fullscreen-exit-desc"
+            className="mt-3 text-base leading-6 text-muted-foreground"
+          >
+            You left full screen. This is noted for your mentor. Return to full screen to continue the quiz, or exit the quiz for now.
+          </p>
+        </div>
+        <div className="flex flex-col gap-2 border-t border-border px-5 py-4 sm:px-8">
+          <Button
+            type="button"
+            size="lg"
+            className="w-full gap-2"
+            onClick={integrity.returnToFullscreen}
+          >
+            <Maximize className="size-4" aria-hidden />
+            Continue quiz
+          </Button>
+          {onExitQuiz ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={() => {
+                integrity.dismissFullscreenPrompt();
+                onExitQuiz();
+              }}
+            >
+              Exit the quiz
+            </Button>
+          ) : (
+            // A link styled as the button: our Button has no asChild, which broke the build.
+            <Link
+              href={exitHref}
+              className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}
+              onClick={integrity.dismissFullscreenPrompt}
+            >
+              Exit the quiz
+            </Link>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function QuizIntegrityPanel({
+  integrity,
+  questionCount = 0,
+  onExitQuiz,
+}: {
+  integrity: QuizIntegrity;
+  questionCount?: number;
+  onExitQuiz?: () => void;
+}) {
   const { camera, notice } = integrity;
   const cameraOn = camera.status === "ON";
 
@@ -224,19 +311,6 @@ export function QuizIntegrityPanel({ integrity, questionCount = 0 }: { integrity
             {notice?.text ?? ""}
           </p>
 
-          {integrity.fullscreenPrompt ? (
-            <div role="status" className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2 text-sm">
-              <span className="mr-auto">You left full screen. This is noted for your mentor.</span>
-              <Button type="button" size="sm" onClick={integrity.returnToFullscreen} className="gap-1.5">
-                <Maximize className="size-3.5" aria-hidden />
-                Return to full screen
-              </Button>
-              <Button type="button" size="sm" variant="ghost" onClick={integrity.dismissFullscreenPrompt}>
-                Not now
-              </Button>
-            </div>
-          ) : null}
-
           {camera.enabled && camera.status === "UNAVAILABLE" ? (
             <div role="status" className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/50 px-3 py-2 text-sm">
               <CameraOff className="size-4 text-muted-foreground" aria-hidden />
@@ -250,6 +324,7 @@ export function QuizIntegrityPanel({ integrity, questionCount = 0 }: { integrity
           ) : null}
         </div>
       ) : null}
+      <FullscreenExitOverlay integrity={integrity} onExitQuiz={onExitQuiz} />
       <IntegrityDialog integrity={integrity} questionCount={questionCount} />
     </>
   );

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { LearnerProfile } from "@/shared/api/learner";
 import type { AiCredentialStatus } from "@/shared/api/ai";
 import type { GamificationSummary } from "@/shared/api/gamification";
@@ -9,6 +10,8 @@ import { AiKeySettings } from "@/components/learner/ai-key-settings";
 import { ProfileSettingsHero } from "@/components/auth/profile-settings-hero";
 import { GamificationPreferences } from "@/components/auth/gamification-preferences";
 import { showsGameElements } from "@/lib/gamification";
+
+export const metadata: Metadata = { title: "Profile" };
 
 export default async function ProfileSettingsPage() {
   await requireVerifiedUser();

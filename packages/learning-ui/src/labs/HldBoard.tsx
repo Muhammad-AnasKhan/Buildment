@@ -15,6 +15,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import type { DragEvent, KeyboardEvent } from "react";
+import { createPortal } from "react-dom";
 import {
   Background,
   BackgroundVariant,
@@ -46,7 +47,7 @@ import type { Board, HldLabSpec } from "./types";
 import { initialControls, type BoardControls, type NodeConfig } from "./hld-board-model";
 import type { EdgePart, ModelResult, TierLoad } from "./tiered-architecture";
 import { runChallenge, runModel } from "./challenge";
-import { RunPanel, PhaseStrip, PHASE_MS, type RunState } from "./RunPanel";
+import { ResultsDialog, RunPanel, PHASE_MS, type RunState } from "./RunPanel";
 import { SettingsDrawer, anchorStyle, cacheSentence } from "./SettingsDrawer";
 import { CompareView, ConfirmBar, PartExplainer, PartList } from "./SolutionPanel";
 import { compareDesigns, type CompareResult } from "./solution";
@@ -226,9 +227,11 @@ interface EditorProps {
   onCompare?: () => void;
   compare?: CompareResult | null;
   onHideCompare?: () => void;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
-function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpenSolution = false, onOpenSolution, onBack, onCopy, onCompare, compare, onHideCompare }: EditorProps) {
+function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpenSolution = false, onOpenSolution, onBack, onCopy, onCompare, compare, onHideCompare, isFullscreen = false, onToggleFullscreen }: EditorProps) {
   const readOnly = solutionMode;
   const [confirm, setConfirm] = useState<"solution" | "copy" | null>(null);
   const start: Board = spec.startingBoard ?? { nodes: [], edges: [] };
@@ -250,6 +253,11 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
   const [controls, setControls] = useState<BoardControls>(() => initialControls(start, spec.levels[0]?.load ?? 1000));
   const [selected, setSelected] = useState<string | null>(null);
   const [drawerId, setDrawerId] = useState<string | null>(null);
+  const [paletteCollapsed, setPaletteCollapsed] = useState(false);
+  const [testsCollapsed, setTestsCollapsed] = useState(false);
+  const [componentsOpen, setComponentsOpen] = useState(false);
+  const [challengeOpen, setChallengeOpen] = useState(isFullscreen && !solutionMode);
+  const [resultsOpen, setResultsOpen] = useState(false);
   const load = spec.challenge ? spec.challenge.peakLoad : controls.load;
 
   // The model only cares about structure and config, not node positions, so key it on those.
@@ -276,13 +284,35 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
   useEffect(() => clearTimers, []);
 
   const runState: RunState = runPhase !== null ? "running" : ranKey === null ? "idle" : ranKey === designKey ? "done" : "stale";
+  const previousRunState = useRef<RunState>("idle");
+
+  useEffect(() => {
+    if (runState === "done" && previousRunState.current !== "done") setResultsOpen(true);
+    previousRunState.current = runState;
+  }, [runState]);
 
   useEffect(() => { onSnapshot?.(board, load); }, [board, load, onSnapshot]);
+
+  const previousFullscreen = useRef(isFullscreen);
+  useEffect(() => {
+    if (isFullscreen && !previousFullscreen.current && !readOnly) {
+      setChallengeOpen(true);
+      setComponentsOpen(false);
+    }
+    if (!isFullscreen) {
+      setChallengeOpen(false);
+      setComponentsOpen(false);
+    }
+    previousFullscreen.current = isFullscreen;
+  }, [isFullscreen, readOnly]);
 
   function startRun() {
     onRun?.();
     clearTimers();
+    setResultsOpen(false);
     setDrawerId(null);
+    setChallengeOpen(false);
+    setComponentsOpen(false);
     setPreviewId(null);
     const key = designKey;
     if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
@@ -478,12 +508,29 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
   useEffect(() => {
     // On a phone a wide design would shrink to unreadable text, so keep it readable and let the learner pan.
     const narrow = (rootRef.current?.clientWidth ?? 1000) < 520;
-    const t = setTimeout(() => fitView({ padding: 0.12, maxZoom: 1, minZoom: narrow ? 0.55 : 0.35 }), 50);
+    const t = setTimeout(() => fitView({ padding: isFullscreen ? 0.16 : 0.12, maxZoom: 1, minZoom: narrow ? 0.55 : 0.35 }), isFullscreen ? 120 : 50);
     return () => clearTimeout(t);
-  }, [fitView]);
+  }, [fitView, isFullscreen]);
 
   const onRootKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (e.key === "Escape" && drawerId) { e.stopPropagation(); closeDrawer(); }
+    if (e.key === "Escape") {
+      if (resultsOpen) {
+        e.stopPropagation();
+        setResultsOpen(false);
+      } else if (drawerId) {
+        e.stopPropagation();
+        closeDrawer();
+      } else if (componentsOpen) {
+        e.stopPropagation();
+        setComponentsOpen(false);
+      } else if (challengeOpen) {
+        e.stopPropagation();
+        setChallengeOpen(false);
+      } else if (isFullscreen && onToggleFullscreen) {
+        e.stopPropagation();
+        onToggleFullscreen();
+      }
+    }
   };
 
   const hasCache = nodes.some((n) => roleOf(n.data.kind) === "cache");
@@ -499,11 +546,18 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
       )
     : undefined;
   const checkLabels = useMemo(() => Object.fromEntries(report.checks.map((c) => [c.id, c.label])), [report]);
+  const gridColumns = paletteCollapsed
+    ? testsCollapsed
+      ? "@2xl:grid-cols-[48px_minmax(0,1fr)] @6xl:grid-cols-[48px_minmax(420px,1fr)_48px]"
+      : "@2xl:grid-cols-[48px_minmax(0,1fr)] @6xl:grid-cols-[48px_minmax(420px,1fr)_370px]"
+    : testsCollapsed
+      ? "@2xl:grid-cols-[224px_minmax(0,1fr)] @6xl:grid-cols-[224px_minmax(420px,1fr)_48px]"
+      : "@2xl:grid-cols-[224px_minmax(0,1fr)] @6xl:grid-cols-[224px_minmax(420px,1fr)_370px]";
 
   return (
     <BoardCtx.Provider value={ctx}>
       <style>{BOARD_CSS}</style>
-      <div ref={rootRef} onKeyDown={onRootKeyDown} className="lab-board not-prose @container my-6 overflow-hidden rounded-[8px] border-[1.5px] border-border bg-card text-card-foreground shadow-[0_2px_0_0_var(--lab-edge-shadow)]">
+      <div ref={rootRef} onKeyDown={onRootKeyDown} className={`lab-board not-prose @container relative overflow-hidden rounded-[10px] border-[1.5px] border-border bg-card text-card-foreground ${isFullscreen ? "shadow-2xl ring-1 ring-white/10" : "my-6 shadow-[0_2px_0_0_var(--lab-edge-shadow)]"}`}>
         <div className="flex flex-wrap items-center justify-between gap-2 bg-[color:var(--lab-inspector)] px-4 py-2 text-slate-100">
           <div className="flex min-w-0 items-center gap-2">
             {readOnly ? (
@@ -514,7 +568,29 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
             <span className="lab-display truncate text-[14px] font-semibold">{spec.title}</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <div role="group" aria-label="Names" className="lab-mono flex items-center gap-1.5 text-[9.5px] font-bold uppercase tracking-wider text-slate-300">
+            {isFullscreen && !readOnly ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => { setComponentsOpen((open) => !open); setChallengeOpen(false); }}
+                  aria-expanded={componentsOpen}
+                  className={`lab-mono flex items-center gap-2 rounded-[6px] border px-3 py-2 text-[10.5px] font-bold uppercase tracking-wide transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300 ${componentsOpen ? "border-sky-300 bg-sky-300 text-slate-950" : "border-slate-600 text-slate-100 hover:border-slate-400 hover:bg-white/10"}`}
+                >
+                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><rect x="4" y="4" width="6" height="6" rx="1" /><rect x="14" y="4" width="6" height="6" rx="1" /><rect x="4" y="14" width="6" height="6" rx="1" /><path d="M14 17h6M17 14v6" /></svg>
+                  Components
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setChallengeOpen((open) => !open); setComponentsOpen(false); }}
+                  aria-expanded={challengeOpen}
+                  className={`lab-mono flex items-center gap-2 rounded-[6px] border px-3 py-2 text-[10.5px] font-bold uppercase tracking-wide transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300 ${challengeOpen ? "border-sky-300 bg-sky-300 text-slate-950" : "border-slate-600 text-slate-100 hover:border-slate-400 hover:bg-white/10"}`}
+                >
+                  <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M9 4h6M9 8h6M7 3h10a2 2 0 0 1 2 2v14l-3-2-4 2-4-2-3 2V5a2 2 0 0 1 2-2Z" /></svg>
+                  Challenge
+                </button>
+              </>
+            ) : null}
+            {!isFullscreen ? <div role="group" aria-label="Names" className="lab-mono flex items-center gap-1.5 text-[9.5px] font-bold uppercase tracking-wider text-slate-300">
               <span>Names</span>
               <span className="flex overflow-hidden rounded-[4px] border border-slate-500">
                 {(["generic", "aws"] as const).map((m) => (
@@ -524,11 +600,11 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
                   </button>
                 ))}
               </span>
-            </div>
+            </div> : null}
             {ran ? (
-              <span key={report.passed} className={`lab-stamp lab-mono rounded-[4px] border-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${report.allPass ? "border-emerald-300 text-emerald-300" : "border-red-300 text-red-300"}`} data-testid="score-chip">
+              <button type="button" onClick={() => setResultsOpen(true)} key={report.passed} className={`lab-stamp lab-mono rounded-[4px] border-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors hover:bg-white/10 ${report.allPass ? "border-emerald-300 text-emerald-300" : "border-red-300 text-red-300"}`} data-testid="score-chip" title="Open detailed results">
                 {report.allPass ? `${report.total}/${report.total} passed` : `${report.passed}/${report.total} checks`}
-              </span>
+              </button>
             ) : null}
             {readOnly ? (
               <>
@@ -538,8 +614,8 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
               </>
             ) : (
               <>
-                <button type="button" onClick={onReset} disabled={running} className={HEAD_BTN}>Reset</button>
-                {solution && onOpenSolution ? (
+                <button type="button" onClick={onReset} disabled={running} className={HEAD_BTN} title="Reset the board">Reset</button>
+                {solution && onOpenSolution && (!isFullscreen || canOpenSolution) ? (
                   <button
                     type="button"
                     onClick={() => setConfirm("solution")}
@@ -556,14 +632,40 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
             {running ? (
               <button type="button" onClick={skipRun} className={`${HEAD_BTN} border border-slate-500`}>Skip to results</button>
             ) : null}
+            {onToggleFullscreen ? (
+              <button
+                type="button"
+                onClick={onToggleFullscreen}
+                className="lab-mono flex items-center gap-1.5 rounded-[4px] border border-sky-400/60 bg-sky-500/20 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-sky-200 hover:bg-sky-500/35 hover:text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300"
+                title={isFullscreen ? "Exit Fullscreen (Esc)" : "Expand to Full Screen"}
+                data-testid="fullscreen-button"
+              >
+                {isFullscreen ? (
+                  <>
+                    <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+                    </svg>
+                    <span>Exit full screen</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                    </svg>
+                    <span>Full screen</span>
+                  </>
+                )}
+              </button>
+            ) : null}
             <button
               type="button"
               onClick={startRun}
               disabled={running}
               data-testid="run-button"
-              className="lab-mono flex items-center gap-1.5 rounded-[5px] border-b-2 border-emerald-950 bg-emerald-700 px-3 py-1.5 text-[11.5px] font-bold uppercase tracking-wider text-white hover:bg-emerald-600 active:translate-y-[2px] active:border-b-0 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300"
+              className="lab-mono flex items-center gap-2 rounded-[6px] border-b-2 border-emerald-950 bg-emerald-600 px-4 py-2 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-emerald-500 active:translate-y-[2px] active:border-b-0 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-sky-300"
             >
-              <span aria-hidden>{"▶"}</span> {running ? "Running..." : runState === "idle" ? "Run" : "Run again"}
+              <svg className="size-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden><path d="m8 5 11 7-11 7V5Z" /></svg>
+              {running ? "Testing..." : runState === "idle" ? "Run tests" : "Run again"}
             </button>
           </div>
         </div>
@@ -587,19 +689,127 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
           />
         ) : null}
 
-        {runState !== "idle" ? (
-          <PhaseStrip report={report} running={runPhase} previewId={previewId} onPick={setPreviewId} onBack={() => setPreviewId(null)} />
+        {isFullscreen && componentsOpen && !readOnly ? (
+          <aside className="custom-scrollbar absolute left-3 top-[58px] z-40 max-h-[calc(100%-72px)] w-[min(330px,calc(100%-24px))] overflow-y-auto rounded-[12px] border border-slate-600 bg-[color:var(--lab-module)] shadow-2xl" role="dialog" aria-label="Components">
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-border bg-[color:var(--lab-module)] px-4 py-3">
+              <div>
+                <div className="lab-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[color:var(--lab-accent)]">Components</div>
+                <p className="mt-1 text-[12px] text-muted-foreground">Add a part to the canvas. You can drag it or click once.</p>
+              </div>
+              <button type="button" onClick={() => setComponentsOpen(false)} className="grid size-8 shrink-0 place-items-center rounded-[6px] border border-border text-lg text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Close components">×</button>
+            </div>
+            <div className="space-y-4 p-3">
+              {palette.map((group) => (
+                <section key={group.group}>
+                  <h3 className="lab-mono mb-1.5 px-1 text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">{group.group}</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {group.kinds.map((kind) => (
+                      <button
+                        key={kind}
+                        type="button"
+                        draggable={!locked}
+                        disabled={locked}
+                        onDragStart={(event) => { event.dataTransfer.setData(DRAG_TYPE, kind); event.dataTransfer.effectAllowed = "move"; }}
+                        onClick={() => { addNode(kind); setComponentsOpen(false); }}
+                        className="flex min-h-14 items-center gap-2 rounded-[8px] border border-border bg-card px-2.5 py-2 text-left shadow-sm transition-colors hover:border-[color:var(--lab-accent)] hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-[5px]" style={{ backgroundColor: tint(colorOf(kind), 14), color: colorOf(kind) }}><KindGlyph kind={kind} size={17} /></span>
+                        <span className="text-[11px] font-semibold leading-tight text-foreground">{names.nameOf(kind)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </aside>
         ) : null}
 
-        <div className="grid grid-cols-1 @2xl:grid-cols-[190px_minmax(0,1fr)]">
+        {isFullscreen && challengeOpen && !readOnly ? (
+          <aside className="custom-scrollbar absolute right-3 top-[58px] z-40 max-h-[calc(100%-72px)] w-[min(400px,calc(100%-24px))] overflow-y-auto rounded-[12px] border border-slate-600 bg-[color:var(--lab-module)] shadow-2xl" role="dialog" aria-label="Challenge brief">
+            <div className="sticky top-0 z-10 flex items-start justify-between gap-3 border-b border-border bg-[color:var(--lab-module)] px-5 py-4">
+              <div>
+                <div className="lab-mono text-[9px] font-bold uppercase tracking-[0.16em] text-[color:var(--lab-accent)]">Challenge brief</div>
+                <h2 className="lab-display mt-1 text-[17px] font-semibold leading-snug text-foreground">Build a design that passes every check</h2>
+              </div>
+              <button type="button" onClick={() => setChallengeOpen(false)} className="grid size-8 shrink-0 place-items-center rounded-[6px] border border-border text-lg text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Close challenge">×</button>
+            </div>
+            <div className="space-y-5 p-5">
+              <section>
+                <h3 className="lab-mono text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">The problem</h3>
+                <p className="mt-2 text-[13px] leading-6 text-foreground">{names.text(spec.scenario)}</p>
+              </section>
+
+              <section>
+                <h3 className="lab-mono text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Your design must</h3>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {typeof targets.rps === "number" ? <div className="rounded-[8px] border border-border bg-muted/45 p-3"><div className="text-[10px] text-muted-foreground">Handle traffic</div><div className="lab-mono mt-1 text-[13px] font-bold text-foreground">{targets.rps.toLocaleString()} req/s</div></div> : null}
+                  {typeof targets.p99Ms === "number" ? <div className="rounded-[8px] border border-border bg-muted/45 p-3"><div className="text-[10px] text-muted-foreground">Stay fast</div><div className="lab-mono mt-1 text-[13px] font-bold text-foreground">p99 under {targets.p99Ms} ms</div></div> : null}
+                  {typeof targets.availability === "number" ? <div className="rounded-[8px] border border-border bg-muted/45 p-3"><div className="text-[10px] text-muted-foreground">Stay available</div><div className="lab-mono mt-1 text-[13px] font-bold text-foreground">{(targets.availability * 100).toFixed(1)}% uptime</div></div> : null}
+                  {typeof targets.budgetPerHour === "number" ? <div className="rounded-[8px] border border-border bg-muted/45 p-3"><div className="text-[10px] text-muted-foreground">Stay in budget</div><div className="lab-mono mt-1 text-[13px] font-bold text-foreground">Under ${targets.budgetPerHour.toFixed(2)}/hr</div></div> : null}
+                </div>
+              </section>
+
+              <section>
+                <h3 className="lab-mono text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground">How to work</h3>
+                <ol className="mt-2 space-y-2">
+                  {["Open Components and add anything your design needs.", "Select a component to change its size, count, or zones. Drag between the dots to connect parts.", "Press Run tests. Fix the failed checks, then run again."].map((step, index) => (
+                    <li key={step} className="flex gap-3 rounded-[8px] border border-border bg-card p-3 text-[12px] leading-5 text-foreground">
+                      <span className="lab-mono grid size-5 shrink-0 place-items-center rounded-full bg-[color:var(--lab-accent)] text-[9px] font-bold text-[color:var(--lab-on-accent)]">{index + 1}</span>
+                      {step}
+                    </li>
+                  ))}
+                </ol>
+              </section>
+
+              {spec.hints.length > 0 ? (
+                <details className="rounded-[8px] border border-border bg-card px-3 py-2.5">
+                  <summary className="cursor-pointer text-[12px] font-semibold text-foreground">Need a hint?</summary>
+                  <ul className="mt-2 space-y-2 pl-4 text-[11px] leading-5 text-muted-foreground">
+                    {spec.hints.map((hint) => <li key={hint} className="list-disc">{names.text(hint)}</li>)}
+                  </ul>
+                </details>
+              ) : null}
+
+              <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
+                <div role="group" aria-label="Component names" className="lab-mono flex items-center gap-1 text-[9px] font-bold uppercase text-muted-foreground">
+                  {(["generic", "aws"] as const).map((mode) => <button key={mode} type="button" aria-pressed={names.mode === mode} onClick={() => names.setMode(mode)} className={`rounded-[4px] border px-2 py-1 ${names.mode === mode ? "border-[color:var(--lab-accent)] bg-[color:var(--lab-accent)]/10 text-[color:var(--lab-accent)]" : "border-border hover:bg-muted"}`}>{mode === "aws" ? "AWS" : "Generic"}</button>)}
+                </div>
+                <button type="button" onClick={() => setChallengeOpen(false)} className="rounded-[6px] bg-[color:var(--lab-accent)] px-4 py-2 text-[11px] font-bold text-[color:var(--lab-on-accent)] hover:brightness-110">Start designing</button>
+              </div>
+            </div>
+          </aside>
+        ) : null}
+
+        <div
+          className={`grid grid-cols-1 overflow-hidden ${isFullscreen ? "" : gridColumns} ${
+            isFullscreen ? "h-[calc(100vh-112px)]" : "@6xl:h-[680px]"
+          }`}
+        >
           {/* Palette: a row you scroll on a phone, a column on a wider board. In the solution view, the list of parts. */}
-          {readOnly && solution ? (
-            <PartList solution={solution} nodes={nodes.map((n) => ({ id: n.id, kind: n.data.kind }))} openId={drawerId} onOpen={openSettings} />
+          {!isFullscreen ? (paletteCollapsed ? (
+            <div className="flex min-h-[52px] items-center justify-center border-b border-border bg-card/50 @2xl:min-h-0 @2xl:border-b-0 @2xl:border-r @6xl:h-full" role="group" aria-label="Collapsed components sidebar">
+              <button type="button" onClick={() => setPaletteCollapsed(false)} className="flex h-full w-full items-center justify-center gap-2 px-2 py-2 text-muted-foreground hover:bg-muted hover:text-foreground @2xl:flex-col" title="Expand components" aria-label="Expand components">
+                <svg className="size-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="m9 18 6-6-6-6" /><rect x="4" y="4" width="4" height="4" /><rect x="4" y="10" width="4" height="4" /><rect x="4" y="16" width="4" height="4" /></svg>
+                <span className="lab-mono text-[9px] font-bold uppercase tracking-[0.16em] @2xl:[writing-mode:vertical-rl]">Components</span>
+              </button>
+            </div>
+          ) : readOnly && solution ? (
+            <div className="relative min-w-0 @6xl:h-full">
+              <button type="button" onClick={() => setPaletteCollapsed(true)} className="absolute right-2 top-2 z-10 flex size-7 items-center justify-center rounded-[5px] border border-border bg-card text-muted-foreground shadow-sm hover:bg-muted hover:text-foreground" title="Collapse parts sidebar" aria-label="Collapse parts sidebar">
+                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="m15 18-6-6 6-6" /></svg>
+              </button>
+              <PartList solution={solution} nodes={nodes.map((n) => ({ id: n.id, kind: n.data.kind }))} openId={drawerId} onOpen={openSettings} />
+            </div>
           ) : (
-          <div className="border-b border-border p-3 @2xl:border-b-0 @2xl:border-r" role="group" aria-label="Components">
-            <div className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Components</div>
+          <div className="flex flex-col overflow-hidden border-b border-border bg-card/40 p-3 @2xl:border-b-0 @2xl:border-r @6xl:h-full" role="group" aria-label="Components">
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Components</div>
+              <button type="button" onClick={() => setPaletteCollapsed(true)} className="flex size-7 items-center justify-center rounded-[5px] border border-border text-muted-foreground hover:bg-muted hover:text-foreground" title="Collapse components" aria-label="Collapse components">
+                <svg className="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="m15 18-6-6 6-6" /></svg>
+              </button>
+            </div>
             <div className="mb-2 text-[10px] text-muted-foreground">Drag onto the board, or tap to add.</div>
-            <div className="flex gap-3 overflow-x-auto pb-1 @2xl:block @2xl:overflow-visible @2xl:pb-0">
+            <div className={`diagram-scroll-container custom-scrollbar flex gap-3 overflow-x-auto pb-1.5 @2xl:block @2xl:overflow-x-hidden @2xl:overflow-y-auto @2xl:pb-1 @2xl:pr-1.5 @6xl:min-h-0 @6xl:flex-1 @6xl:max-h-none ${isFullscreen ? "@2xl:max-h-[58vh]" : "@2xl:max-h-[540px]"}`}>
               {palette.map((grp) => (
                 <div key={grp.group} className="flex shrink-0 items-start gap-1.5 @2xl:mb-2.5 @2xl:block">
                   <div className="hidden text-[10px] font-medium uppercase tracking-wide text-muted-foreground/70 @2xl:mb-1 @2xl:block">{grp.group}</div>
@@ -616,9 +826,9 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
                         onClick={() => addNode(k)}
                         className="flex shrink-0 cursor-grab items-center gap-2 rounded-[6px] border-[1.5px] border-border bg-card px-2 py-1.5 text-left shadow-[0_2px_0_0_var(--lab-edge-shadow)] transition-colors hover:bg-muted active:translate-y-px active:cursor-grabbing disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[color:var(--lab-accent)] @2xl:mb-1 @2xl:w-full"
                       >
-                        <span aria-hidden className="flex h-6 w-6 items-center justify-center rounded-[4px]" style={{ backgroundColor: tint(colorOf(k), 14), color: colorOf(k) }}><KindGlyph kind={k} size={16} /></span>
+                        <span aria-hidden className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[4px]" style={{ backgroundColor: tint(colorOf(k), 14), color: colorOf(k) }}><KindGlyph kind={k} size={16} /></span>
                         <span className="flex-1 whitespace-nowrap text-[12px] font-medium leading-tight @2xl:whitespace-normal">{names.nameOf(k)}</span>
-                        {price ? <span className="hidden text-[10px] tabular-nums text-muted-foreground @2xl:inline">${price.pricePerHour}</span> : null}
+                        {price ? <span className="hidden shrink-0 text-[10px] tabular-nums text-muted-foreground @2xl:inline">${price.pricePerHour}</span> : null}
                       </button>
                     );
                   })}
@@ -626,12 +836,12 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
               ))}
             </div>
           </div>
-          )}
+          )) : null}
 
           {/* Canvas, with the settings drawer laid over its right edge (or bottom, on a phone). */}
-          <div className="flex min-w-0 flex-col">
+          <div className={`flex min-w-0 flex-col overflow-hidden ${isFullscreen ? "h-full" : "@6xl:h-full"}`}>
             <div
-              className="relative h-[520px] overflow-hidden bg-[color:var(--lab-canvas)] @2xl:h-[580px]"
+              className={`relative overflow-hidden bg-[color:var(--lab-canvas)] transition-all @6xl:h-auto @6xl:min-h-0 @6xl:flex-1 ${isFullscreen ? "h-full min-h-0" : "h-[520px] @2xl:h-[580px]"}`}
               onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "move"; }}
               onDrop={onDrop}
             >
@@ -671,6 +881,27 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
                 <Background variant={BackgroundVariant.Cross} gap={18} size={6} color="var(--lab-grid)" className="!bg-transparent" />
                 <Controls showInteractive={false} position="bottom-left" />
               </ReactFlow>
+              {running && view ? (
+                <div className="pointer-events-none absolute inset-0 z-20" aria-live="polite" data-testid="run-animation">
+                  <div className="lab-scan absolute inset-0" aria-hidden />
+                  <div className="absolute left-1/2 top-4 w-[min(420px,calc(100%-32px))] -translate-x-1/2 overflow-hidden rounded-[12px] border border-sky-300/35 bg-slate-950/90 text-white shadow-2xl backdrop-blur-md">
+                    <div className="flex items-center gap-3 px-4 py-3">
+                      <div className="lab-run-orbit relative flex size-9 shrink-0 items-center justify-center rounded-full border border-sky-300/30 bg-sky-400/10" aria-hidden>
+                        <span className="size-2 rounded-full bg-sky-300 shadow-[0_0_12px_3px_rgba(125,211,252,0.6)]" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="lab-mono text-[9px] font-bold uppercase tracking-[0.18em] text-sky-300">Testing your architecture</div>
+                        <div className="mt-0.5 truncate text-[13px] font-semibold">{names.text(view.title)}</div>
+                        <div className="mt-0.5 truncate text-[10.5px] text-slate-300">{names.text(view.story)}</div>
+                      </div>
+                      <div className="lab-mono shrink-0 text-[10px] font-bold text-slate-300">{(runPhase ?? 0) + 1}/{report.phases.length}</div>
+                    </div>
+                    <div className="h-1 bg-white/10">
+                      <span key={`run-progress-${runPhase}`} className="lab-fill block h-full bg-gradient-to-r from-sky-400 via-cyan-300 to-emerald-300" style={{ ["--lab-phase-ms" as string]: `${PHASE_MS}ms` }} />
+                    </div>
+                  </div>
+                </div>
+              ) : null}
               {drawerNode && readOnly ? (
                 <PartExplainer
                   anchor={anchor}
@@ -696,7 +927,7 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
                 />
               ) : null}
             </div>
-            <div className="flex flex-wrap gap-x-4 gap-y-0.5 border-t border-border px-3 py-1.5 text-[11px] text-muted-foreground">
+            {!isFullscreen ? <div className="flex flex-wrap gap-x-4 gap-y-0.5 border-t border-border px-3 py-1.5 text-[11px] text-muted-foreground">
               {notice ? <span className="font-medium text-red-600 dark:text-red-400">{notice}</span> : null}
               {readOnly ? (
                 <span><span className="font-medium text-foreground">Read only</span> hover or tap a part, then its icon, to see why it is there</span>
@@ -712,8 +943,8 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
                   <span className="font-medium text-foreground">Cache</span> the server asks it first. If the answer is there (a cache hit), the database is never asked. Only misses go on. Linking the cache to the database too is optional: the cache then loads from it on a miss.
                 </span>
               ) : null}
-            </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border px-3 py-1.5 text-[11px] text-muted-foreground">
+            </div> : null}
+            {!isFullscreen ? <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border px-3 py-1.5 text-[11px] text-muted-foreground">
               <span>Link color = the component it leaves:</span>
               {familiesOnBoard.map((f) => (
                 <span key={f} className="inline-flex items-center gap-1">
@@ -725,72 +956,160 @@ function Editor({ spec, onReset, solutionMode = false, onRun, onSnapshot, canOpe
                 <span aria-hidden className="inline-block h-[3px] w-4" style={{ backgroundColor: RED }} />
                 down, unlinked or overloaded
               </span>
-            </div>
+            </div> : null}
           </div>
+
+          {!isFullscreen ? <RunPanel
+            spec={spec}
+            result={result}
+            report={report}
+            state={runState}
+            running={runPhase}
+            ran={ran}
+            load={load}
+            previewId={previewId}
+            collapsed={testsCollapsed}
+            onLoad={(n) => setControls((c) => ({ ...c, load: n }))}
+            onShow={setPreviewId}
+            onBack={() => setPreviewId(null)}
+            onToggle={() => setTestsCollapsed((value) => !value)}
+            onOpenResults={() => setResultsOpen(true)}
+          /> : null}
         </div>
 
         {readOnly && compare ? <CompareView compare={compare} onClose={() => onHideCompare?.()} /> : null}
 
-        <RunPanel
-          spec={spec}
-          result={result}
-          report={report}
-          state={runState}
-          running={runPhase}
-          ran={ran}
-          load={load}
-          onLoad={(n) => setControls((c) => ({ ...c, load: n }))}
-          onShow={setPreviewId}
-        />
+        {resultsOpen && ran ? (
+          <ResultsDialog
+            spec={spec}
+            result={result}
+            report={report}
+            onClose={() => setResultsOpen(false)}
+            onInspect={(scenario) => setPreviewId(scenario)}
+            onRunAgain={startRun}
+          />
+        ) : null}
+
       </div>
     </BoardCtx.Provider>
   );
 }
 
-export function HldBoard({ spec }: { spec: HldLabSpec }) {
+export function HldBoard({
+  spec,
+  initialFullscreen = false,
+  fullscreenActive,
+  hideWhenInline = false,
+  onExitFullscreen,
+}: {
+  spec: HldLabSpec;
+  initialFullscreen?: boolean;
+  /** Optional controlled full-screen state used by the compact course launcher. */
+  fullscreenActive?: boolean;
+  /** Keep a launched course board mounted without putting the large board back in the article. */
+  hideWhenInline?: boolean;
+  /** Course launchers close the workspace when the learner exits full screen. */
+  onExitFullscreen?: () => void;
+}) {
   const [generation, setGeneration] = useState(0);
   const [mode, setMode] = useState<"mine" | "solution">("mine");
   // The learner's own board, if they copied the solution onto it.
   const [seed, setSeed] = useState<Board | null>(null);
   const [everRan, setEverRan] = useState(false);
   const [compare, setCompare] = useState<CompareResult | null>(null);
+  const [uncontrolledFullscreen, setUncontrolledFullscreen] = useState(initialFullscreen);
+  const isFullscreen = fullscreenActive ?? uncontrolledFullscreen;
   const mine = useRef<{ board: Board; load: number } | null>(null);
   const onSnapshot = useCallback((board: Board, load: number) => { mine.current = { board, load }; }, []);
 
   const mineSpec = useMemo(() => (seed ? { ...spec, startingBoard: seed } : spec), [spec, seed]);
   const solutionSpec = useMemo(() => (spec.solution ? { ...spec, startingBoard: spec.solution.board } : spec), [spec]);
 
+  const exitFullscreen = useCallback(() => {
+    if (fullscreenActive === undefined) setUncontrolledFullscreen(false);
+    onExitFullscreen?.();
+  }, [fullscreenActive, onExitFullscreen]);
+
+  // Lock body scroll and listen for Escape key in full-screen modal mode
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key === "Escape") {
+        exitFullscreen();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isFullscreen, exitFullscreen]);
+
+  const toggleFullscreen = useCallback(() => {
+    if (isFullscreen) exitFullscreen();
+    else setUncontrolledFullscreen(true);
+  }, [isFullscreen, exitFullscreen]);
+
+  const boardContent = (
+    <div
+      role={isFullscreen ? "dialog" : undefined}
+      aria-modal={isFullscreen ? true : undefined}
+      aria-label={isFullscreen ? `${spec.title} lab workspace` : undefined}
+      className={
+        isFullscreen
+          ? "fixed inset-0 z-[100] bg-slate-950/92 backdrop-blur-md p-2 sm:p-4 md:p-5 overflow-y-auto custom-scrollbar animate-in fade-in-0 duration-200"
+          : hideWhenInline
+            ? "hidden"
+            : ""
+      }
+    >
+      <div className={isFullscreen ? "mx-auto w-full max-w-[1680px] pb-6" : ""}>
+        {/* The learner's board stays mounted while the solution is open, so their work is never lost. */}
+        <div hidden={mode === "solution"}>
+          <ReactFlowProvider key={generation}>
+            <Editor
+              spec={mineSpec}
+              onReset={() => { setSeed(null); setGeneration((g) => g + 1); }}
+              onRun={() => setEverRan(true)}
+              onSnapshot={onSnapshot}
+              canOpenSolution={everRan}
+              onOpenSolution={() => { setCompare(null); setMode("solution"); }}
+              isFullscreen={isFullscreen}
+              onToggleFullscreen={toggleFullscreen}
+            />
+          </ReactFlowProvider>
+        </div>
+        {mode === "solution" && spec.solution ? (
+          <div>
+            <ReactFlowProvider>
+              <Editor
+                spec={solutionSpec}
+                solutionMode
+                onReset={() => undefined}
+                onBack={() => setMode("mine")}
+                onCopy={() => { setSeed(spec.solution!.board); setGeneration((g) => g + 1); setMode("mine"); }}
+                onCompare={() => {
+                  if (mine.current) setCompare(compareDesigns(spec, mine.current.board, runChallenge(spec, mine.current.board, mine.current.load)));
+                }}
+                compare={compare}
+                onHideCompare={() => setCompare(null)}
+                isFullscreen={isFullscreen}
+                onToggleFullscreen={toggleFullscreen}
+              />
+            </ReactFlowProvider>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+
   return (
     <NamesProvider>
-      {/* The learner's board stays mounted while the solution is open, so their work is never lost. */}
-      <div hidden={mode === "solution"}>
-        <ReactFlowProvider key={generation}>
-          <Editor
-            spec={mineSpec}
-            onReset={() => { setSeed(null); setGeneration((g) => g + 1); }}
-            onRun={() => setEverRan(true)}
-            onSnapshot={onSnapshot}
-            canOpenSolution={everRan}
-            onOpenSolution={() => { setCompare(null); setMode("solution"); }}
-          />
-        </ReactFlowProvider>
-      </div>
-      {mode === "solution" && spec.solution ? (
-        <ReactFlowProvider>
-          <Editor
-            spec={solutionSpec}
-            solutionMode
-            onReset={() => undefined}
-            onBack={() => setMode("mine")}
-            onCopy={() => { setSeed(spec.solution!.board); setGeneration((g) => g + 1); setMode("mine"); }}
-            onCompare={() => {
-              if (mine.current) setCompare(compareDesigns(spec, mine.current.board, runChallenge(spec, mine.current.board, mine.current.load)));
-            }}
-            compare={compare}
-            onHideCompare={() => setCompare(null)}
-          />
-        </ReactFlowProvider>
-      ) : null}
+      {isFullscreen && typeof document !== "undefined"
+        ? createPortal(boardContent, document.body)
+        : boardContent}
     </NamesProvider>
   );
 }

@@ -268,7 +268,7 @@ function MermaidChart({ chart, title, legend, scriptSrc }: MermaidDiagramProps) 
   }
 
   return (
-    <div className="not-prose my-8 overflow-x-auto rounded-2xl border border-border/90 bg-card p-5 ">
+    <div className="not-prose my-8 overflow-x-auto diagram-scroll-container rounded-2xl border border-border/90 bg-card p-5">
       {title ? <p className="mb-4 text-sm font-semibold text-foreground">{title}</p> : null}
       {svg ? (
         <div

@@ -48,14 +48,15 @@ export function CatalogCourseCard({
         ) : (
           <div className="flex-1" />
         )}
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <p className="text-base font-bold tabular-nums">
-            {pricingType === "PAID" ? formatPriceCents(priceCents ?? 0, currency ?? "USD") : "Free"}
-          </p>
-          {enrolledLabel ? (
-            <span className="rounded-sm bg-secondary px-2 py-1 text-sm font-bold text-primary">{enrolledLabel}</span>
-          ) : null}
-        </div>
+        <span className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg bg-primary px-4 text-center text-sm font-semibold text-primary-foreground transition-colors group-hover:bg-primary/90">
+          {enrolledLabel === "Enrolled"
+            ? "Continue learning"
+            : enrolledLabel === "Payment due"
+              ? "Complete payment"
+              : pricingType === "PAID"
+                ? `Enroll · ${formatPriceCents(priceCents ?? 0, currency ?? "USD")}`
+                : "Enroll"}
+        </span>
       </div>
     </Link>
   );

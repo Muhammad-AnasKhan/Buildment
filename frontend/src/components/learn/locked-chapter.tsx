@@ -122,6 +122,7 @@ export function LockedChapterView({
         <div className="flex min-h-0 flex-1">
           <ChapterSidebar
             courseSlug={courseSlug}
+            courseTitle={courseTitle}
             modules={modules}
             currentChapterSlug={currentChapterSlug}
             collapsed={collapsed}

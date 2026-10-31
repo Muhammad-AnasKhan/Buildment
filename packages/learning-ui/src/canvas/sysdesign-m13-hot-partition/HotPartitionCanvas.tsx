@@ -9,6 +9,7 @@ import { NEUTRAL, TONES } from "../primitives/tones";
 import { useBeatClock } from "../primitives/use-beat-clock";
 import { spread, stepByKey, withCommas } from "../models/picture-controls";
 import { BACKGROUND_EACH, CEILING, DEFAULT_DEMAND, DEMAND_MAX, DEMAND_PAGE, DEMAND_STEP, PROVISIONED, SHARE, describeDemand, outcome, rejectedShare, snapDemand, verdict } from "./model";
+import { useSvgTouchDrag } from "../primitives/svg-touch-drag";
 
 const W = 420;
 const H = 458;
@@ -28,6 +29,7 @@ const fall = (phase: number, from: number, to: number) => from + (to - from) * p
 
 /** 13.4: drag the hot key's writes per second and see what the partition accepts and rejects. */
 export function HotPartitionCanvas({ title, limits }: { title: string; purpose: string; limits: string }) {
+  const touchRef = useSvgTouchDrag<SVGGElement>();
   const box = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
   const titleId = useId();
@@ -165,7 +167,7 @@ export function HotPartitionCanvas({ title, limits }: { title: string; purpose: 
           ))}
 
           {/* The handle: the whole hot card is the slider. */}
-          <g
+          <g ref={touchRef}
             role="slider"
             tabIndex={0}
             aria-label="Hot key writes per second"

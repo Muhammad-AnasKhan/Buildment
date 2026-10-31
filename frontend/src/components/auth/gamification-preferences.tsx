@@ -2,14 +2,17 @@
 
 import { useState, useTransition } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useDotVoice } from "@/lib/engagement/dot-voice";
 import { setGamificationPreferences } from "@/server/actions/gamification";
 import type { GamificationSummary } from "@/shared/api/gamification";
 
 // "Game elements" in profile settings: hide XP, levels, streak freezes and leaderboards, and join
-// or leave the weekly leaderboards. Learning progress and the weekly goal stay either way.
+// or leave the weekly leaderboards. Learning progress and the weekly goal stay either way. Dot's
+// voice is a per-device choice, so it is saved in the browser rather than on the account.
 
 export function GamificationPreferences({ initial }: { initial: GamificationSummary }) {
   const [summary, setSummary] = useState(initial);
+  const [dotVoice, setDotVoice] = useDotVoice();
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const showGame = !summary.hidden;
@@ -64,6 +67,15 @@ export function GamificationPreferences({ initial }: { initial: GamificationSumm
             </span>
           </label>
         ) : null}
+        <label className="flex cursor-pointer items-start gap-3">
+          <Checkbox checked={dotVoice} onCheckedChange={(checked) => setDotVoice(checked === true)} className="mt-0.5" />
+          <span>
+            <span className="block text-sm font-medium">Dot&apos;s voice</span>
+            <span className="mt-0.5 block text-sm text-muted-foreground">
+              Dot says its short messages out loud on this device. Never during a quiz.
+            </span>
+          </span>
+        </label>
         {error ? (
           <p className="text-sm text-destructive" role="alert">
             {error}

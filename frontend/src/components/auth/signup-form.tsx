@@ -13,7 +13,7 @@ import { useAuthFormErrors } from "@/components/auth/use-auth-form-errors";
 
 const initial: SignupState = { fieldErrors: {}, formError: null };
 
-export function SignupForm() {
+export function SignupForm({ redirectTo }: { redirectTo?: string | null } = {}) {
   const [state, formAction, pending] = useActionState(signupAction, initial);
   const { errorFor, formError, clearField, setLocalErrors } =
     useAuthFormErrors(state);
@@ -46,6 +46,7 @@ export function SignupForm() {
       noValidate
       className="space-y-4"
     >
+      {redirectTo ? <input type="hidden" name="redirectTo" value={redirectTo} /> : null}
       <div className="space-y-1.5">
         <Label htmlFor="name" className="text-[15px]">
           Name

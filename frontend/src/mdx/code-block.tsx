@@ -1,5 +1,8 @@
-import type { ComponentProps } from "react";
+"use client";
+
+import { useRef, type ComponentProps } from "react";
 import { cn } from "@/lib/utils";
+import { CopyCodeButton } from "@/mdx/copy-code-button";
 
 type CodeProps = ComponentProps<"code"> & {
   "data-theme"?: string;
@@ -66,6 +69,9 @@ export function MdxCodeFigure({ className, children, ...props }: FigureProps) {
 }
 
 export function MdxCodePre({ className, children, ...props }: PreProps) {
+  const preRef = useRef<HTMLPreElement>(null);
+  // The text to copy, from the rendered element: what the user sees is what the button copies.
+  const getCodeText = () => preRef.current?.textContent ?? "";
   const language = props["data-language"];
   if (language) {
     return (
@@ -74,8 +80,10 @@ export function MdxCodePre({ className, children, ...props }: PreProps) {
           <span className="code-block-lang font-mono text-[11px] font-semibold uppercase tracking-wider">
             {formatLanguage(language)}
           </span>
+          <CopyCodeButton getText={getCodeText} />
         </div>
         <pre
+          ref={preRef}
           className={cn(
             "code-block-pre m-0 overflow-x-auto px-4 py-4 font-mono text-[0.8125rem] leading-[1.7]",
             className
@@ -99,11 +107,17 @@ export function MdxCodePre({ className, children, ...props }: PreProps) {
       )}
     >
       {dataMeta ? (
-        <div className="flex items-center border-b border-border bg-muted/80 px-4 py-2">
+        <div className="flex items-center justify-between border-b border-border bg-muted/80 px-4 py-2">
           <span className="text-xs font-medium text-muted-foreground">{dataMeta}</span>
+          <CopyCodeButton getText={getCodeText} />
         </div>
-      ) : null}
+      ) : (
+        <div className="flex justify-end border-b border-border bg-muted/80 px-4 py-2">
+          <CopyCodeButton getText={getCodeText} />
+        </div>
+      )}
       <pre
+        ref={preRef}
         className={cn("m-0 overflow-x-auto p-4 font-mono text-[0.8125rem] leading-relaxed", className)}
         {...props}
       >

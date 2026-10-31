@@ -5,7 +5,7 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { unzipSync } from "fflate";
 import { load as loadYaml } from "js-yaml";
-import { courseSourceHash, ownershipSlugGroups, packageZip, publishingSettings, selectedPackages } from "../../scripts/repository-course-publish.js";
+import { courseDetailsUpdate, courseSourceHash, ownershipSlugGroups, packageZip, publishingSettings, selectedPackages } from "../../scripts/repository-course-publish.js";
 import { coursesRootForServer } from "../../scripts/course-source.js";
 
 const temporary: string[] = [];
@@ -97,5 +97,34 @@ describe("repository course publishing selection", () => {
     temporary.push(root);
     course(root, "multi-vendor-marketplace", "repositoryPublish: true\nfamily: multi-vendor-marketplace\navailableVariantSlugs:\n  - grocery\n");
     expect(() => selectedPackages(root)).toThrow(/all marketplace variants must be available/);
+  });
+
+  it("copies changed course details from course.yaml and leaves matching ones alone", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "buildment-course-details-"));
+    temporary.push(root);
+    fs.writeFileSync(path.join(root, "publishing.yaml"), "instructorEmail: devweekends@gmail.com\n");
+    course(root, "ready", "repositoryPublish: true\ncategory: soft-skills\n");
+    const manifest = selectedPackages(root)[0]!.manifest;
+    const stale = { title: "Old preview title", description: "A focused preview", projectGoal: "Learn a skill",
+      difficulty: "Advanced", estimatedHours: 5, category: "TECH" as const, coverUrl: "https://example.com/cover.png", assistant: null };
+    expect(courseDetailsUpdate(manifest, stale)).toEqual({
+      title: "Example", description: "Example course", difficulty: "Beginner", estimatedHours: 2, category: "SOFT_SKILLS",
+    });
+    const current = { ...stale, title: "Example", description: "Example course", difficulty: "Beginner", estimatedHours: 2, category: "SOFT_SKILLS" as const };
+    expect(courseDetailsUpdate(manifest, current)).toBeNull();
+  });
+
+  it("copies tutor settings by value and clears them when the source drops the block", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "buildment-course-assistant-"));
+    temporary.push(root);
+    fs.writeFileSync(path.join(root, "publishing.yaml"), "instructorEmail: devweekends@gmail.com\n");
+    course(root, "ready", "repositoryPublish: true\n");
+    const manifest = selectedPackages(root)[0]!.manifest;
+    const base = { title: "Example", description: "Example course", projectGoal: "Learn a skill", difficulty: "Beginner",
+      estimatedHours: 2, category: "TECH" as const, coverUrl: null };
+    const withBlock = { ...manifest, assistant: { effort: "medium" as const, guidance: "Be precise." } };
+    expect(courseDetailsUpdate(withBlock, { ...base, assistant: null })).toEqual({ assistant: { effort: "medium", guidance: "Be precise." } });
+    expect(courseDetailsUpdate(withBlock, { ...base, assistant: { effort: "medium", guidance: "Be precise." } })).toBeNull();
+    expect(courseDetailsUpdate(manifest, { ...base, assistant: { effort: "low" } })).toEqual({ assistant: null });
   });
 });

@@ -115,6 +115,9 @@ export async function getOrganization(orgId: string): Promise<AdminOrganizationD
 
   const truncated = publishedCourses.length > PUBLISHED_COURSES_CAP;
 
+  const { listCouponPools } = await import("../coupons/pools.js");
+  const couponPools = await listCouponPools(org.id);
+
   return {
     organization: { id: org.id, slug: org.slug, name: org.name, enrollmentCount: org._count.enrollments },
     credentials: org.apiCredentials.map((cred) => ({
@@ -133,6 +136,7 @@ export async function getOrganization(orgId: string): Promise<AdminOrganizationD
       leaderboardEnabled: row.leaderboardEnabled,
       expiresAt: row.expiresAt?.toISOString() ?? null,
     })),
+    couponPools,
     pendingRequests: org.courseRequests.map((r) => ({ id: r.id, courseId: r.courseId, courseTitle: r.course.title, courseSlug: r.course.slug })),
     publishedCourses: publishedCourses.slice(0, PUBLISHED_COURSES_CAP),
     publishedCoursesTruncated: truncated,

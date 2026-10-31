@@ -8,6 +8,7 @@ import { awardChapterCompletionXp } from "../gamification/xp.js";
 import { lockEnrollmentVariant, recomputeEnrollmentRollup } from "./compute.js";
 import { ChapterLockedError, assertChapterUnlocked } from "./gate.js";
 import { milestoneReflectionBlocked } from "./reflection.js";
+import { calculateQuizAssessment } from "./quiz-assessment.js";
 import { checkpointSatisfied, isCompletableBlock } from "./rules.js";
 import { assertEnrollmentChapter } from "../courses/releases.js";
 
@@ -15,7 +16,7 @@ import { assertEnrollmentChapter } from "../courses/releases.js";
 export async function unlockedChapterForLearner(chapterId: string, user: SessionUser) {
   const chapter = await prisma.chapter.findUnique({
     where: { id: chapterId, archivedAt: null },
-    select: { id: true, courseId: true, slug: true, isMilestone: true, source: true, compiled: true, readerMode: true, course: { select: { slug: true } } },
+    select: { id: true, courseId: true, slug: true, isMilestone: true, source: true, compiled: true, readerMode: true, quizPassingScore: true, course: { select: { slug: true } } },
   });
   if (!chapter) throw new NotFoundError("Chapter not found.");
 
@@ -52,23 +53,71 @@ export async function markChapterComplete(chapterId: string, user: SessionUser):
   const learnerUserId = enrollment.userId;
   if (!learnerUserId) throw new ForbiddenError("Link your account before completing chapters.", "pending_account");
 
+  const latestByBlock = new Map<string, { status: string; isCorrect: boolean | null; score: number | null; maxScore: number | null } | null>();
   for (const block of completable) {
     const latest = await prisma.response.findFirst({
       where: { blockId: block.id, userId: learnerUserId },
       orderBy: { attempt: "desc" },
-      select: { status: true, isCorrect: true },
+      select: { status: true, isCorrect: true, score: true, maxScore: true },
     });
-    const satisfied = checkpointSatisfied({
-      type: block.type,
-      config: block.config,
-      status: latest?.status ?? null,
-      isCorrect: latest?.isCorrect ?? null,
+    latestByBlock.set(block.id, latest);
+  }
+
+  if (chapter.readerMode === "QUIZ") {
+    const assessment = calculateQuizAssessment({
+      blocks: completable,
+      responses: completable.flatMap((block) => {
+        const response = latestByBlock.get(block.id);
+        return response ? [{ blockId: block.id, status: response.status, score: response.score, maxScore: response.maxScore }] : [];
+      }),
+      passingScore: chapter.quizPassingScore,
     });
-    if (!satisfied) {
+    const scoredIds = new Set(
+      completable
+        .filter(
+          (block) =>
+            ["QUIZ", "PREDICT", "CODE"].includes(block.type) ||
+            (block.type === "OPEN_QUESTION" && (block.config as { autoGrade?: unknown } | null)?.autoGrade === "llm")
+        )
+        .map((block) => block.id)
+    );
+    if (assessment && !assessment.passed) {
       throw new ConflictError(
         "Finish the checkpoints in this chapter first. A scored check counts when the answer is correct, unless retry is turned off.",
         CHAPTER_ERROR_CODES.CHECKPOINTS_INCOMPLETE
       );
+    }
+    for (const block of completable) {
+      if (scoredIds.has(block.id)) continue;
+      const latest = latestByBlock.get(block.id);
+      const satisfied = checkpointSatisfied({
+        type: block.type,
+        config: block.config,
+        status: latest?.status ?? null,
+        isCorrect: latest?.isCorrect ?? null,
+      });
+      if (!satisfied) {
+        throw new ConflictError(
+          "Finish the checkpoints in this chapter first. A scored check counts when the answer is correct, unless retry is turned off.",
+          CHAPTER_ERROR_CODES.CHECKPOINTS_INCOMPLETE
+        );
+      }
+    }
+  } else {
+    for (const block of completable) {
+      const latest = latestByBlock.get(block.id);
+      const satisfied = checkpointSatisfied({
+        type: block.type,
+        config: block.config,
+        status: latest?.status ?? null,
+        isCorrect: latest?.isCorrect ?? null,
+      });
+      if (!satisfied) {
+        throw new ConflictError(
+          "Finish the checkpoints in this chapter first. A scored check counts when the answer is correct, unless retry is turned off.",
+          CHAPTER_ERROR_CODES.CHECKPOINTS_INCOMPLETE
+        );
+      }
     }
   }
 

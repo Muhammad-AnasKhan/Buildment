@@ -28,7 +28,7 @@ import { fileURLToPath } from "node:url";
 import { load as loadYaml } from "js-yaml";
 import { ulid } from "ulid";
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, type Prisma } from "../src/generated/prisma/index.js";
+import { Prisma, PrismaClient } from "../src/generated/prisma/index.js";
 import { SEED_COURSE, SEED_USERS } from "../src/shared/lib/seed-data.js";
 import { VideoConfigSchema } from "../src/shared/blocks/video/schema.js";
 import { QuizConfigSchema, normalizeQuizConfig } from "../src/shared/blocks/quiz/schema.js";
@@ -897,6 +897,7 @@ async function upsertCourse(manifest: CourseManifest | null) {
     coverUrl: meta.coverUrl ?? null,
     familySlug: meta.family ?? null,
     variantFamily: manifest?.variantFamily as unknown as Prisma.InputJsonValue | undefined,
+    assistant: (manifest?.assistant ?? Prisma.DbNull) as Prisma.InputJsonValue,
   };
 
   return prisma.course.upsert({

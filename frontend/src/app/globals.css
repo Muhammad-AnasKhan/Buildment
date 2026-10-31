@@ -260,64 +260,67 @@
     letter-spacing: -0.02em;
   }
 
-  /*
-   * Chapter reader typography. `prose-neutral` sets its own light palette,
-   * so token variables alone are not enough in dark mode. Keep the long-form
-   * reading layer explicit and high contrast instead of relying on opacity.
-   */
-  .prose,
-  .prose.prose-neutral {
-    --tw-prose-body: var(--foreground);
-    --tw-prose-headings: var(--foreground);
-    --tw-prose-lead: var(--muted-foreground);
-    --tw-prose-links: var(--primary);
-    --tw-prose-bold: var(--foreground);
-    --tw-prose-counters: var(--muted-foreground);
-    --tw-prose-bullets: var(--muted-foreground);
-    --tw-prose-hr: var(--border);
-    --tw-prose-quotes: var(--foreground);
-    --tw-prose-quote-borders: var(--border);
-    --tw-prose-captions: var(--muted-foreground);
-    --tw-prose-code: var(--foreground);
-    --tw-prose-pre-code: var(--code-fg);
-    --tw-prose-pre-bg: var(--code-surface);
-    --tw-prose-th-borders: var(--border);
-    --tw-prose-td-borders: var(--border);
-  }
-  .dark .prose,
-  .dark .prose.prose-neutral {
-    @apply prose-invert;
-    --tw-prose-body: #d5daf0;
-    --tw-prose-headings: #f6f7fb;
-    --tw-prose-lead: #c9cfea;
-    --tw-prose-links: #7a8bff;
-    --tw-prose-bold: #f6f7fb;
-    --tw-prose-counters: #aab3de;
-    --tw-prose-bullets: #7a86b8;
-    --tw-prose-hr: #26305f;
-    --tw-prose-quotes: #e8ebff;
-    --tw-prose-quote-borders: #3a4580;
-    --tw-prose-captions: #aab3de;
-    --tw-prose-code: #f6f7fb;
-    --tw-prose-pre-code: #e8ebff;
-    --tw-prose-pre-bg: #070b20;
-    --tw-prose-th-borders: #2f3a70;
-    --tw-prose-td-borders: #1e2758;
-  }
-  .dark .prose.prose-neutral :is(p, li, td) {
-    color: #d5daf0 !important;
-  }
-  .dark .prose.prose-neutral :is(th, strong, h1, h2, h3, h4) {
-    color: #f6f7fb !important;
-  }
-  .dark .prose.prose-neutral figcaption {
-    color: #aab3de !important;
-  }
-  .dark .prose.prose-neutral blockquote {
-    color: #d5daf0 !important;
-    border-color: #3a4580 !important;
-    background-color: #151c47 !important;
-  }
+}
+
+/* Sleek custom scrollbars for diagrams, code blocks, and horizontal panels */
+.diagram-scroll-container,
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(36, 52, 224, 0.4) transparent;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.diagram-scroll-container::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+  width: 6px;
+}
+
+.diagram-scroll-container::-webkit-scrollbar-button,
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.diagram-scroll-container::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent !important;
+  border-radius: 9999px;
+  margin: 0 4px;
+}
+
+.diagram-scroll-container::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(36, 52, 224, 0.35) !important;
+  border-radius: 9999px;
+  transition: background-color 0.15s ease-in-out;
+}
+
+.diagram-scroll-container::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(36, 52, 224, 0.65) !important;
+}
+
+.dark .diagram-scroll-container,
+.dark .custom-scrollbar {
+  scrollbar-color: rgba(122, 139, 255, 0.45) transparent;
+}
+
+.dark .diagram-scroll-container::-webkit-scrollbar-track,
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+.dark .diagram-scroll-container::-webkit-scrollbar-thumb,
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(122, 139, 255, 0.45) !important;
+}
+
+.dark .diagram-scroll-container::-webkit-scrollbar-thumb:hover,
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(122, 139, 255, 0.75) !important;
 }
 
 @keyframes reader-shimmer {
@@ -926,5 +929,72 @@
   }
   .bm-grow {
     width: 100%;
+  }
+}
+
+/*
+ * The reading palette lives in the utilities layer: the typography plugin's prose-neutral is a
+ * utility, so values set in the base layer lost to its grey (#404040) and lesson text was not ink.
+ */
+@layer utilities {
+  /*
+   * Chapter reader typography. `prose-neutral` sets its own light palette,
+   * so token variables alone are not enough in dark mode. Keep the long-form
+   * reading layer explicit and high contrast instead of relying on opacity.
+   */
+  .prose,
+  .prose.prose-neutral {
+    --tw-prose-body: var(--foreground);
+    --tw-prose-headings: var(--foreground);
+    --tw-prose-lead: var(--muted-foreground);
+    --tw-prose-links: var(--primary);
+    --tw-prose-bold: var(--foreground);
+    --tw-prose-counters: var(--muted-foreground);
+    --tw-prose-bullets: var(--muted-foreground);
+    --tw-prose-hr: var(--border);
+    --tw-prose-quotes: var(--foreground);
+    --tw-prose-quote-borders: var(--border);
+    --tw-prose-captions: var(--muted-foreground);
+    --tw-prose-code: var(--foreground);
+    --tw-prose-pre-code: var(--code-fg);
+    --tw-prose-pre-bg: var(--code-surface);
+    --tw-prose-th-borders: var(--border);
+    --tw-prose-td-borders: var(--border);
+  }
+  .dark .prose,
+  .dark .prose.prose-neutral {
+    @apply prose-invert;
+    --tw-prose-body: #d5daf0;
+    --tw-prose-headings: #f6f7fb;
+    --tw-prose-lead: #c9cfea;
+    --tw-prose-links: #7a8bff;
+    --tw-prose-bold: #f6f7fb;
+    --tw-prose-counters: #aab3de;
+    --tw-prose-bullets: #7a86b8;
+    --tw-prose-hr: #26305f;
+    --tw-prose-quotes: #e8ebff;
+    --tw-prose-quote-borders: #3a4580;
+    --tw-prose-captions: #aab3de;
+    --tw-prose-code: #f6f7fb;
+    --tw-prose-pre-code: #e8ebff;
+    --tw-prose-pre-bg: #070b20;
+    --tw-prose-th-borders: #2f3a70;
+    --tw-prose-td-borders: #1e2758;
+  }
+  .dark .prose.prose-neutral p:not(.not-prose, .not-prose *),
+  .dark .prose.prose-neutral li:not(.not-prose, .not-prose *),
+  .dark .prose.prose-neutral td:not(.not-prose, .not-prose *) {
+    color: #d5daf0;
+  }
+  .dark .prose.prose-neutral :is(th, strong, h1, h2, h3, h4):not(.not-prose, .not-prose *) {
+    color: #f6f7fb;
+  }
+  .dark .prose.prose-neutral figcaption:not(.not-prose, .not-prose *) {
+    color: #aab3de;
+  }
+  .dark .prose.prose-neutral blockquote:not(.not-prose, .not-prose *) {
+    color: #d5daf0;
+    border-color: #3a4580;
+    background-color: #151c47;
   }
 }

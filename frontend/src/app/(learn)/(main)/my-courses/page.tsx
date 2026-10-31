@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Dot } from "@/components/brand/dot";
 import { CoursesTabs } from "@/components/learn/courses-tabs";
@@ -6,6 +7,8 @@ import { MenteeCourseList } from "@/components/learn/dashboard/mentee-dashboard"
 import type { MenteeDashboardViewModel } from "@/shared/api/learner";
 import { requireLearnSurface } from "@/server/auth/guards";
 import { serverApiFetch } from "@/lib/api-server";
+
+export const metadata: Metadata = { title: "My courses" };
 
 export default async function MenteeCoursesPage() {
   await requireLearnSurface();

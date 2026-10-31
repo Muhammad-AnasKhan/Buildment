@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpenText, CircleHelp, Home, TrendingUp, type LucideIcon } from "lucide-react";
+import { BookOpenText, CircleHelp, Home, Trophy, TrendingUp, type LucideIcon } from "lucide-react";
 import { WorkspaceAccountMenu } from "@/components/workspace/workspace-account-menu";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ import type { InstructorAccessView } from "@/shared/lib/instructor-access";
 
 type LearnerNavItem = {
   label: string;
+  mobileLabel?: string;
   href: string;
   icon: LucideIcon;
   active: boolean;
@@ -54,8 +55,10 @@ export function MenteeWorkspaceShell({
       count: assignedCourses,
     },
     { label: "Progress", href: "/progress", icon: TrendingUp, active: pathname === "/progress" },
+    { label: "Leaderboard", mobileLabel: "Ranks", href: "/leaderboard", icon: Trophy, active: pathname === "/leaderboard" },
     {
       label: helpUiCopy.learnerNav,
+      mobileLabel: "Questions",
       href: "/my-questions",
       icon: CircleHelp,
       active: pathname.startsWith("/my-questions"),
@@ -125,12 +128,12 @@ export function MenteeWorkspaceShell({
               href={item.href}
               aria-current={item.active ? "page" : undefined}
               className={cn(
-                "relative flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-[13px] outline-none focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-brand-yellow",
+                "relative flex h-16 min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 text-[11px] leading-3 outline-none focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-brand-yellow",
                 item.active ? "font-bold text-primary" : "font-medium text-muted-foreground"
               )}
             >
               <Icon className="size-[22px]" aria-hidden />
-              {item.label}
+              <span className="max-w-full truncate">{item.mobileLabel ?? item.label}</span>
               {item.count ? (
                 <span className="absolute right-[calc(50%-24px)] top-2 grid size-2.5 rounded-full bg-brand-yellow" aria-label={`${item.count} open`} />
               ) : null}
