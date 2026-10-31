@@ -11,7 +11,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { HelpThreadSummary } from "@/shared/api/help";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useRealtimeEvent } from "@/lib/realtime";
 import { LearnerQuestionDrawer } from "./learner-question-drawer";
 
 type View = "all" | "new" | "waiting" | "resolved";
@@ -40,6 +42,7 @@ export function LearnerQuestionsOverview({
   initialChapter?: string;
   initialQuestionId?: string;
 }) {
+  const router = useRouter();
   const [view, setView] = useState<View>("all");
   const [readIds, setReadIds] = useState<string[]>([]);
   const [search, setSearch] = useState("");
@@ -48,6 +51,11 @@ export function LearnerQuestionsOverview({
   const [selectedId, setSelectedId] = useState<string | null>(() => threads.some((thread) => thread.id === initialQuestionId) ? initialQuestionId! : null);
   const [drawerIds, setDrawerIds] = useState<string[]>(() => threads.map((thread) => thread.id));
   const rows = useMemo(() => threads.map((thread) => readIds.includes(thread.id) ? { ...thread, unread: false } : thread), [threads, readIds]);
+  useRealtimeEvent("help-message", (event) => {
+    if (threads.some((thread) => thread.id === event.threadId)) {
+      router.refresh();
+    }
+  });
   const markRead = useCallback((id: string) => {
     setReadIds((current) => current.includes(id) ? current : [...current, id]);
   }, []);

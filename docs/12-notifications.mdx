@@ -122,6 +122,17 @@ and preferences stay plain REST, so a two-way socket is not needed.
 - `NEXT_PUBLIC_REALTIME_URL` set → the stream opens straight on the API host. Unset → it goes through
   the existing `/api/v1` rewrite in `next.config.ts`. Both use the ticket.
 
+### Help chat
+
+Help-thread messages also use a separate authenticated stream at
+`GET /api/v1/events/stream`. When a learner or mentor sends a message, the server saves it and
+pushes it to the other participant's open chat. The sender receives delivery and seen receipts;
+if a participant is offline, opening the app marks their pending messages delivered. When the stream
+is unavailable, an open chat falls back to polling every four seconds.
+
+The learner's question list refreshes on incoming chat messages so its “Mentor replied” and unread
+states stay current without a manual refresh.
+
 ## Study reminders
 
 `services/notifications/reminders.ts`, run every hour at :05 by the scheduler (or

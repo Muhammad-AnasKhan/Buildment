@@ -57,8 +57,20 @@ describe("/api/v1/help", () => {
     const stranger = await request(app).get(`/api/v1/help/threads/${threadId}`).set({ Authorization: `Bearer ${fx.unverifiedToken}` });
     expect(stranger.status).toBe(403);
 
-    const reply = await request(app).post(`/api/v1/help/threads/${threadId}/messages`).set(mentor()).send({ body: "It means the vendor pays the fee, not the buyer." });
+    const initial = await request(app).get(`/api/v1/help/threads/${threadId}`).set(mentor());
+    const targetMessageId = initial.body.data.messages[0].id;
+    const reply = await request(app)
+      .post(`/api/v1/help/threads/${threadId}/messages`)
+      .set(mentor())
+      .send({
+        body: "It means the vendor pays the fee, not the buyer.",
+        replyToId: targetMessageId,
+      });
     expect(reply.status).toBe(201);
+    expect(reply.body.data.message.replyTo).toMatchObject({
+      id: targetMessageId,
+      authorName: "Test Learner",
+    });
 
     const list = await request(app).get("/api/v1/help/threads").set(learner());
     expect(list.body.data.threads[0].unread).toBe(true);
@@ -66,6 +78,16 @@ describe("/api/v1/help", () => {
     const detail = await request(app).get(`/api/v1/help/threads/${threadId}`).set(learner());
     expect(detail.body.data.messages.map((m: { authorRole: string }) => m.authorRole)).toEqual(["MENTEE", "MENTEE", "MENTOR"]);
     expect(detail.body.data.course.slug).toBe(fx.course.slug);
+
+    const seen = await request(app)
+      .post(`/api/v1/help/threads/${threadId}/seen`)
+      .set(learner());
+    expect(seen.status).toBe(200);
+    const updated = await request(app).get(`/api/v1/help/threads/${threadId}`).set(mentor());
+    const mentorMessage = updated.body.data.messages.find(
+      (message: { authorRole: string }) => message.authorRole === "MENTOR",
+    );
+    expect(mentorMessage.seenAt).toEqual(expect.any(String));
 
     const after = await request(app).get("/api/v1/help/threads").set(learner());
     expect(after.body.data.threads[0].unread).toBe(false);
