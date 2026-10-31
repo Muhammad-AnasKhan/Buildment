@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { STREAK_MILESTONES } from "../shared/lib/streak.js";
+import { realNameSchema } from "../shared/lib/auth-validation.js";
 
 export const weeklyGoalBody = z.object({
   kind: z.enum(["SESSIONS", "CHAPTERS"]),
@@ -17,7 +18,7 @@ export const streakMilestoneParams = z.object({
 });
 
 export const profileBody = z.object({
-  name: z.string().trim().min(1, "Name is required").max(120),
+  name: realNameSchema,
   timezone: z.string().trim().min(1, "Timezone is required").max(64),
   skills: z.array(z.string().trim().min(1).max(60)).max(30),
 });

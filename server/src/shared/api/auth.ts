@@ -12,6 +12,8 @@ export type SessionUser = {
   image: string | null;
   role: Role;
   emailVerified: string | null;
+  hasPassword: boolean;
+  loginSessionId: string;
 };
 
 export type AuthSession = {

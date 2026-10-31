@@ -4,6 +4,7 @@ import { signOutAction } from "@/server/auth/actions";
 import { serverApiFetch } from "@/lib/api-server";
 import { AdminWorkspaceShell } from "@/components/admin/admin-workspace-shell";
 import { NotificationCenter } from "@/components/notifications/notification-center";
+import { AccountSetupPrompt } from "@/components/auth/account-setup-prompt";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requireRole("ADMIN");
@@ -17,6 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       signOutAction={signOutAction}
     >
       <NotificationCenter />
+      <AccountSetupPrompt user={user} />
       {children}
     </AdminWorkspaceShell>
   );

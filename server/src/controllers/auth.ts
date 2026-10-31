@@ -7,11 +7,12 @@ import { clearSessionCookie, setSessionCookie } from "../utils/session-cookie.js
 import { confirmEmailVerificationToken, resendVerification } from "../services/auth/email-verification.js";
 import { createDevLoginSession } from "../services/auth/dev-login.js";
 import { loginWithPassword, logout as endSession, resolveVerificationState } from "../services/auth/login.js";
+import { completeAccountSetup as saveAccountSetup } from "../services/auth/account-setup.js";
 import { signup as createAccount } from "../services/auth/signup.js";
 import { consumeMagicLink, requestMagicLink as sendMagicLink } from "../services/auth/magic-link.js";
 import { serializeSessionUser } from "../services/auth/session.js";
 import { safeRedirectTo } from "../shared/lib/safe-redirect.js";
-import type { LoginBody, SignupBody } from "../validations/auth.js";
+import type { AccountSetupBody, LoginBody, SignupBody } from "../validations/auth.js";
 
 function authSession(result: Awaited<ReturnType<typeof loginWithPassword>>): AuthSession {
   return {
@@ -23,6 +24,12 @@ function authSession(result: Awaited<ReturnType<typeof loginWithPassword>>): Aut
 // PATCH /api/v1/auth/password
 export async function updatePassword(req: Request, res: Response) {
   await changePassword(req.user!.id, req.sessionToken!, req.body as ChangePasswordBody);
+  noContent(res);
+}
+
+// PATCH /api/v1/auth/account-setup
+export async function completeAccountSetup(req: Request, res: Response) {
+  await saveAccountSetup(req.user!.id, req.sessionToken!, req.body as AccountSetupBody);
   noContent(res);
 }
 

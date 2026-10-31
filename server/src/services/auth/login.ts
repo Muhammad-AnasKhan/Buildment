@@ -52,7 +52,7 @@ export async function loginWithPassword(input: { email: string; password: string
 export async function startSession(user: SessionUser) {
   await linkLearnerProfileToUser(prisma, user.id, user.email);
   const session = await createSession(user.id);
-  return { user, session };
+  return { user: { ...user, loginSessionId: session.loginSessionId }, session };
 }
 
 export async function logout(sessionToken: string) {

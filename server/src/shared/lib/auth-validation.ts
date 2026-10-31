@@ -5,8 +5,15 @@ export const authEmailSchema = z.string().trim()
   .email("Enter a valid email")
   .transform((value) => value.toLowerCase());
 
+export const realNameSchema = z.string().trim()
+  .min(1, "Name is required")
+  .max(120, "Name is too long")
+  // Let the required-field rule own an empty value. Otherwise an empty name
+  // produces both "required" and "real name" errors for the same field.
+  .refine((value) => value.length === 0 || /\p{L}/u.test(value), "Enter your real name");
+
 export const signupSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(120, "Name is too long"),
+  name: realNameSchema,
   email: authEmailSchema,
   password: z.string().min(8, "Password must be at least 8 characters").max(128, "Password is too long"),
 });
