@@ -31,8 +31,8 @@ export function AuthPageShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <main className="flex min-w-0 flex-col px-6 pb-12 pt-6 lg:justify-center lg:border-l lg:border-border lg:bg-card lg:px-12 lg:py-10">
-        <div className="mx-auto flex w-full max-w-[420px] items-center justify-between lg:mb-8 lg:justify-end">
+      <main className="relative flex min-w-0 flex-col px-6 pb-12 pt-6 lg:justify-center lg:border-l lg:border-border lg:bg-card lg:px-12 lg:py-10">
+        <div className="flex w-full items-center justify-between lg:absolute lg:right-12 lg:top-10 lg:w-auto">
           <Link href="/" aria-label="Edorax home" className="text-foreground lg:hidden">
             <Wordmark tone="auto" height={28} />
           </Link>
