@@ -42,3 +42,13 @@ export const gamificationPreferencesBody = z
   });
 
 export const leaderboardQuery = z.object({ courseId: z.string().trim().min(1).max(64) });
+
+// The hub page sends all three params explicitly; the controller defaults the scope to global
+// (the league board) and only needs courseId when scope=course.
+export const leaderboardHubQuery = z.object({
+  category: z.enum(["weekly_xp", "all_time_xp", "speed", "streak"]).optional().default("weekly_xp"),
+  scope: z.enum(["course", "global"]).optional(),
+  courseId: z.string().trim().min(1).max(64).optional(),
+});
+
+export type LeaderboardHubQuery = z.infer<typeof leaderboardHubQuery>;

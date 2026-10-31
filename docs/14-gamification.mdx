@@ -130,6 +130,35 @@ the ledger rows under that moment's keys. The mascot shows it as a "+20 XP" chip
   allocation on the organization page or with
   `PATCH /api/v1/admin/organizations/:orgId/allocations/:courseId/leaderboard { enabled }`.
 
+## Leaderboard hub and leagues
+
+The `/leaderboard` page serves several boards from one read,
+`GET /api/v1/learner/leaderboards?category=&scope=&courseId=`:
+
+| Board | Category | Scope | Score |
+|---|---|---|---|
+| Weekly course XP | `weekly_xp` | `course` | this week's XP in one course (the board above, unchanged) |
+| Weekly league | `weekly_xp` | `global` | this week's XP across every course, ranked inside the learner's league tier |
+| All-time XP | `all_time_xp` | `global` | cached `User.xpTotal` |
+| Speed | `speed` | `global` | chapters completed this week; ties go to the lower average study time per chapter |
+| Streak | `streak` | `global` | current active-day streak, counted in each learner's own timezone |
+
+- **Leagues.** The global weekly board is a league. Every opted-in learner sits in a tier
+  (`User.leagueTier`, Bronze → Diamond; new learners start at Bronze). At the Monday 00:00 UTC
+  reset (`POST /api/v1/jobs/leaderboard-reset`, cron-secret protected), the closed week's global XP
+  ranks each tier: the top 10% promote, the bottom 20% demote, everyone else holds. Diamond has
+  nothing to promote to, Bronze nothing to demote from, and leagues under 10 learners have no
+  demotion zone. The reset is idempotent (advisory lock, one `LeaguePlacement` row per learner per
+  week) and excludes learners who already opted out or hid game elements.
+- **Recognition boards.** All-time, speed and streak carry no promotion stakes — they exist so
+  different strengths shine. Podium, neighbourhood and personal-best bars work as on the course
+  board.
+- **What a learner sees.** Per board: a league card (tier, rank, promotion and demotion zones, last
+  week's outcome), an animated top-three podium, the learners nearest their rank, and last week's
+  winners. Reaching a podium or getting promoted fires confetti and the celebration sound.
+- The per-course board keeps its own endpoint, contract and settlement logic; the hub delegates to
+  it for `weekly_xp` + `course`, so the dashboard card and the old contract are untouched.
+
 ## Hide game elements
 
 `User.gamificationHidden` (profile settings, "Game elements"). When set:
@@ -147,6 +176,8 @@ earned meanwhile. Module stages are progress, not a game, and stay.
 | `GET /api/v1/learner/gamification` | `GamificationSummary`: features, hidden, opt-in, XP total and this week, level progress, freezes, top-three finishes |
 | `PATCH /api/v1/learner/gamification` | `{ hidden?, leaderboardOptIn? }`; returns the new summary |
 | `GET /api/v1/learner/leaderboard?courseId=` | `LeaderboardView`: `disabled`, `opt_in_required`, `unavailable` (`organization_disabled` / `not_active`) or `ready` (with `lastWeek` winners) |
+| `GET /api/v1/learner/leaderboards?category=&scope=&courseId=` | `LeaderboardHubView`: the hub boards — `weekly_xp` (course or global league), `all_time_xp`, `speed`, `streak` — with league info on the global weekly board |
+| `POST /api/v1/jobs/leaderboard-reset` | Cron job: settles the closed week's leagues (promotion, demotion, `LeaguePlacement` rows). Idempotent. |
 | `GET /api/v1/learner/dashboard` | now also carries `gamification`, and `xp`, `stage`, `courseId` per course |
 
 Types live in `server/src/shared/api/gamification.ts`, copied to the web app by `pnpm sync-shared`.
@@ -160,3 +191,6 @@ Types live in `server/src/shared/api/gamification.ts`, copied to the web app by 
   transaction, duplicates, caps, ineligible learners, flags off, weekly goal, concurrent freeze
   spending, local-day heartbeats, hiding, opt-in and opt-out, one board however many join, organization switch, last week's winners
   settled once (also concurrently) and kept when a winner opts out, top-three finishes on the summary.
+- `server/tests/api/leaderboard-hub.test.ts`: the hub boards (weekly league, all-time, speed with
+  tie-breaks, streak), course-scope delegation, validation, privacy, flags off, and the league reset
+  (promotion, demotion, hold, Diamond/Bronze edges, opt-out exclusion, idempotency).
