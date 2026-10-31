@@ -15,6 +15,8 @@ export type SessionUser = {
   emailVerified: string | null;
   hasPassword: boolean;
   loginSessionId: string;
+  /** Admin-granted: skip sequential chapter locks while remaining a normal learner. */
+  testerEnabled: boolean;
 };
 
 export type AuthSession = {

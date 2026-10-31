@@ -22,6 +22,25 @@ export async function setUserZipImportAccessAction(
   });
 }
 
+/** Grant or revoke tester access: learner stays a mentee, sequential locks are skipped. */
+export async function setUserTesterAccessAction(
+  _prev: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  const userId = String(formData.get("userId") ?? "");
+  const enabled = formData.get("enabled") === "true";
+  if (!userId) return { ok: false, message: "Missing user." };
+  return runAdminAction(async () => {
+    await adminCall<void>(`/api/v1/admin/users/${encodeURIComponent(userId)}/tester`, {
+      method: "PATCH",
+      json: { enabled },
+    });
+    revalidatePath("/admin/users");
+    revalidatePath(`/admin/users/${userId}`);
+    return enabled ? "Tester access enabled." : "Tester access disabled.";
+  });
+}
+
 export async function setUserInstructorAccessAction(
   _prev: AdminActionState,
   formData: FormData

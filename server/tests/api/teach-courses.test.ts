@@ -112,6 +112,7 @@ describe("course lifecycle", () => {
       difficulty: "Medium",
       estimatedHours: "12",
       sequential: false,
+      autoGradeOpenQuestions: false,
       currency: "usd",
     };
     const paid = await request(app).patch(`/api/v1/teach/courses/${createdCourseId}/settings`).set(mentor()).send({ ...base, pricingType: "PAID", priceDollars: "" });
@@ -129,7 +130,7 @@ describe("course lifecycle", () => {
   it("sets the catalog category, accepts course.yaml difficulties and keeps the category when it is omitted", async () => {
     const base = {
       title: "Renamed course", description: "", coverUrl: "", projectGoal: "", estimatedHours: "",
-      sequential: false, pricingType: "FREE", priceDollars: "", currency: "USD",
+      sequential: false, autoGradeOpenQuestions: false, pricingType: "FREE", priceDollars: "", currency: "USD",
     };
     const soft = await request(app).patch(`/api/v1/teach/courses/${createdCourseId}/settings`).set(mentor())
       .send({ ...base, difficulty: "Beginner", category: "SOFT_SKILLS" });

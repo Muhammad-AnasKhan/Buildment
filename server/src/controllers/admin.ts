@@ -277,6 +277,11 @@ export async function setZipImportAccess(req: Request, res: Response) {
   noContent(res);
 }
 
+export async function setTesterAccess(req: Request, res: Response) {
+  await users.setTesterAccess(req.user!, param(req, "userId"), req.body.enabled);
+  noContent(res);
+}
+
 // POST /api/v1/admin/instructors
 export async function grantInstructor(req: Request, res: Response) {
   await users.grantInstructorByEmail(req.user!, req.body as GrantInstructorBody);

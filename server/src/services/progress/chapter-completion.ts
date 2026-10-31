@@ -2,7 +2,7 @@ import { CHAPTER_ERROR_CODES } from "../../shared/api/chapters.js";
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, ForbiddenError, NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
-import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
+import { shouldBypassProgressGating } from "../auth/seed-access.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
 import { awardChapterCompletionXp } from "../gamification/xp.js";
 import { lockEnrollmentVariant, recomputeEnrollmentRollup } from "./compute.js";
@@ -26,7 +26,7 @@ export async function unlockedChapterForLearner(chapterId: string, user: Session
       courseId: chapter.courseId,
       enrollmentId: enrollment.id,
       chapterId: chapter.id,
-      bypassLocking: bypassProgressGatingForEmail(user.email),
+      bypassLocking: shouldBypassProgressGating(user),
     });
   } catch (error) {
     if (error instanceof ChapterLockedError) {
