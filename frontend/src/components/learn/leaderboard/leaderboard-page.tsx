@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition, type CSSProperties } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
-import { ChevronDown, Sparkles, Trophy } from "lucide-react";
+import { ChevronDown, Trophy } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,15 +18,10 @@ import { cn } from "@/lib/utils";
 import { loadLeaderboardHub, setGamificationPreferences } from "@/server/actions/gamification";
 import type { LeaderboardHubEntry, LeaderboardHubView } from "@/shared/api/gamification";
 import { LeaderboardTabs, type HubSelection } from "./leaderboard-tabs";
-import { LeaderboardPodium } from "./leaderboard-podium";
 import { LeaderboardLeagueCard } from "./leaderboard-league-card";
 import { LeaderboardList } from "./leaderboard-list";
 import { useLeaderboardConfetti } from "./use-leaderboard-confetti";
 import { formatNumber, formatScore, resetLabel } from "./leaderboard-format";
-
-// The leaderboard hub: category tabs (weekly XP, all-time XP, speed, streak), a Global/Course
-// switch on the weekly board, leagues with promotion and demotion zones, an animated podium, and
-// the learner's own neighbourhood. Privacy and opt-in rules come from the server unchanged.
 
 type CourseOption = { courseId: string; title: string };
 
@@ -34,7 +29,7 @@ function boardContext(view: LeaderboardHubView, courseTitle: string | null): str
   if (view.scope === "course") return courseTitle ?? "Course";
   switch (view.category) {
     case "weekly_xp":
-      return "Global weekly XP";
+      return "Global Weekly XP";
     case "all_time_xp":
       return "All-time XP";
     case "speed":
@@ -44,9 +39,20 @@ function boardContext(view: LeaderboardHubView, courseTitle: string | null): str
   }
 }
 
-function BestScore({ score, best, metricLabel, label }: { score: number; best: number; metricLabel: string; label: string }) {
+function BestScore({
+  score,
+  best,
+  metricLabel,
+  label,
+}: {
+  score: number;
+  best: number;
+  metricLabel: string;
+  label: string;
+}) {
   const beaten = score > best;
   const percent = Math.min(100, Math.round((score / best) * 100));
+
   return (
     <div>
       <div className="flex items-center justify-between gap-2 text-sm">
@@ -65,7 +71,10 @@ function BestScore({ score, best, metricLabel, label }: { score: number; best: n
         aria-valuemin={0}
         aria-valuemax={best}
       >
-        <div className="h-full rounded-full bg-primary transition-[width] duration-500 motion-reduce:transition-none" style={{ width: `${percent}%` }} />
+        <div
+          className="h-full rounded-full bg-primary transition-[width] duration-300"
+          style={{ width: `${percent}%` }}
+        />
       </div>
     </div>
   );
@@ -79,20 +88,25 @@ const MEDAL_TONES: Record<number, string> = {
 
 function LastWeekWinners({ winners, metricLabel }: { winners: LeaderboardHubEntry[]; metricLabel: string }) {
   return (
-    <section aria-labelledby="last-week-heading" className="leaderboard-rise rounded-2xl border bg-card p-5 sm:p-6" style={{ "--d": "0.35s" } as CSSProperties}>
-      <h2 id="last-week-heading" className="text-lg font-semibold tracking-[-0.02em]">Last week&apos;s winners</h2>
+    <section aria-labelledby="last-week-heading" className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+      <h2 id="last-week-heading" className="text-lg font-semibold tracking-[-0.02em]">
+        Last week&apos;s winners
+      </h2>
       <p className="mt-1 text-sm text-muted-foreground">Top three from the board that just closed.</p>
       <ol className="mt-5 grid gap-3 sm:grid-cols-3">
         {winners.map((winner) => (
           <li
             key={winner.rank}
             className={cn(
-              "flex flex-col items-center rounded-xl border px-3 py-5 text-center",
+              "flex flex-col items-center rounded-xl border border-border px-3 py-5 text-center",
               winner.isYou ? "border-brand-yellow bg-brand-yellow/15" : "bg-muted/30"
             )}
           >
             <span
-              className={cn("grid size-9 place-items-center rounded-full text-sm font-bold tabular-nums", MEDAL_TONES[winner.rank] ?? "bg-muted text-muted-foreground")}
+              className={cn(
+                "grid size-9 place-items-center rounded-full text-sm font-bold tabular-nums",
+                MEDAL_TONES[winner.rank] ?? "bg-muted text-muted-foreground"
+              )}
               aria-hidden
             >
               {winner.rank}
@@ -101,7 +115,9 @@ function LastWeekWinners({ winners, metricLabel }: { winners: LeaderboardHubEntr
               <span className="sr-only">Place {winner.rank}: </span>
               {winner.isYou ? "You" : winner.name}
             </span>
-            <span className="mt-1 text-sm tabular-nums text-muted-foreground">{formatScore(winner.score, metricLabel)}</span>
+            <span className="mt-1 text-sm tabular-nums text-muted-foreground">
+              {formatScore(winner.score, metricLabel)}
+            </span>
           </li>
         ))}
       </ol>
@@ -138,17 +154,20 @@ export function LeaderboardPage({
   }
 
   const select = (next: HubSelection) => {
-    // Switching to a course board with no course chosen yet starts on the learner's first course.
-    const withCourse = next.scope === "course" && !next.courseId ? { ...next, courseId: courses[0]?.courseId ?? null } : next;
+    const withCourse =
+      next.scope === "course" && !next.courseId ? { ...next, courseId: courses[0]?.courseId ?? null } : next;
     setSelection(withCourse);
     run(() => loadLeaderboardHub(withCourse));
   };
+
   const switchCourse = (next: string) => select({ ...selection, courseId: next });
+
   const join = () =>
     run(async () => {
       await setGamificationPreferences({ leaderboardOptIn: true });
       return loadLeaderboardHub(selection);
     });
+
   const leave = () =>
     run(async () => {
       await setGamificationPreferences({ leaderboardOptIn: false });
@@ -158,11 +177,11 @@ export function LeaderboardPage({
   if (!featuresEnabled) {
     return (
       <div className="mx-auto w-full max-w-3xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
-        <header className="border-b pb-7">
+        <header className="border-b border-border pb-7">
           <p className="text-sm font-medium text-muted-foreground">Competition</p>
           <h1 className="mt-1 text-[32px] leading-tight tracking-[-0.035em] sm:text-[40px]">Leaderboard</h1>
         </header>
-        <div className="mt-10 rounded-2xl border bg-card px-6 py-12 text-center">
+        <div className="mt-10 rounded-2xl border border-border bg-card px-6 py-12 text-center">
           <Trophy className="mx-auto size-10 text-muted-foreground" aria-hidden />
           <h2 className="mt-4 text-xl tracking-[-0.02em]">Leaderboards are off</h2>
           <p className="mx-auto mt-2 max-w-md text-base text-muted-foreground">
@@ -179,11 +198,11 @@ export function LeaderboardPage({
   if (courses.length === 0) {
     return (
       <div className="mx-auto w-full max-w-3xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
-        <header className="border-b pb-7">
+        <header className="border-b border-border pb-7">
           <p className="text-sm font-medium text-muted-foreground">Competition</p>
           <h1 className="mt-1 text-[32px] leading-tight tracking-[-0.035em] sm:text-[40px]">Leaderboard</h1>
         </header>
-        <div className="mt-10 rounded-2xl border bg-card px-6 py-12 text-center">
+        <div className="mt-10 rounded-2xl border border-border bg-card px-6 py-12 text-center">
           <Trophy className="mx-auto size-10 text-muted-foreground" aria-hidden />
           <h2 className="mt-4 text-xl tracking-[-0.02em]">Join a course first</h2>
           <p className="mx-auto mt-2 max-w-md text-base text-muted-foreground">
@@ -200,19 +219,17 @@ export function LeaderboardPage({
   const courseTitle =
     courses.find((course) => course.courseId === selection.courseId)?.title ??
     (view && view.status === "ready" ? view.courseTitle : null);
+
   const context = view && view.status === "ready" ? boardContext(view, courseTitle) : null;
-  const bestLabel =
-    selection.category === "streak" ? "Beat your longest streak" : "Beat your best week";
+  const bestLabel = selection.category === "streak" ? "Beat your longest streak" : "Beat your best week";
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-7 sm:px-6 sm:py-10 lg:px-8">
-      <header className="border-b pb-7">
+      {/* Consistent Header with Edorax standards */}
+      <header className="border-b border-border pb-7">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              Competition
-              <Sparkles className="leaderboard-sparkle size-4 text-brand-yellow" aria-hidden />
-            </p>
+            <p className="text-sm font-medium text-muted-foreground">Competition</p>
             <h1 className="mt-1 text-[32px] leading-tight tracking-[-0.035em] sm:text-[40px]">Leaderboard</h1>
             <p className="mt-2 max-w-xl text-base text-muted-foreground">
               Weekly leagues with promotion and demotion, plus all-time, speed and streak boards. Boards reset every Monday.
@@ -243,9 +260,16 @@ export function LeaderboardPage({
               <DropdownMenuContent className="max-h-80 p-1.5">
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>Course</DropdownMenuLabel>
-                  <DropdownMenuRadioGroup value={selection.courseId ?? ""} onValueChange={(next) => switchCourse(String(next))}>
+                  <DropdownMenuRadioGroup
+                    value={selection.courseId ?? ""}
+                    onValueChange={(next) => switchCourse(String(next))}
+                  >
                     {courses.map((course) => (
-                      <DropdownMenuRadioItem key={course.courseId} value={course.courseId} className="min-h-11 py-2 pl-2 leading-5">
+                      <DropdownMenuRadioItem
+                        key={course.courseId}
+                        value={course.courseId}
+                        className="min-h-11 py-2 pl-2 leading-5"
+                      >
                         {course.title}
                       </DropdownMenuRadioItem>
                     ))}
@@ -259,9 +283,15 @@ export function LeaderboardPage({
         ) : null}
       </header>
 
-      <div aria-busy={pending} className={cn("mt-8 space-y-5 transition-opacity duration-150 motion-reduce:transition-none", pending && "opacity-60")}>
+      <div
+        aria-busy={pending}
+        className={cn(
+          "mt-8 space-y-6 transition-opacity duration-150 motion-reduce:transition-none",
+          pending && "opacity-60"
+        )}
+      >
         {!view ? (
-          <div className="rounded-2xl border bg-card px-6 py-12 text-center">
+          <div className="rounded-2xl border border-border bg-card px-6 py-12 text-center">
             <Trophy className="mx-auto size-10 text-muted-foreground" aria-hidden />
             <h2 className="mt-4 text-xl tracking-[-0.02em]">Board did not load</h2>
             <p className="mx-auto mt-2 max-w-md text-base text-muted-foreground">Something went wrong fetching this board.</p>
@@ -270,13 +300,15 @@ export function LeaderboardPage({
             </Button>
           </div>
         ) : view.status === "disabled" ? (
-          <div className="rounded-2xl border bg-card px-6 py-12 text-center">
+          <div className="rounded-2xl border border-border bg-card px-6 py-12 text-center">
             <Trophy className="mx-auto size-10 text-muted-foreground" aria-hidden />
             <h2 className="mt-4 text-xl tracking-[-0.02em]">No board here</h2>
-            <p className="mx-auto mt-2 max-w-md text-base text-muted-foreground">Try another category or course, or check back after you start learning.</p>
+            <p className="mx-auto mt-2 max-w-md text-base text-muted-foreground">
+              Try another category or course, or check back after you start learning.
+            </p>
           </div>
         ) : view.status === "opt_in_required" ? (
-          <div className="rounded-2xl border bg-card px-6 py-10 text-center sm:px-10">
+          <div className="rounded-2xl border border-border bg-card px-6 py-10 text-center sm:px-10">
             <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
               <Trophy className="size-7" aria-hidden />
             </span>
@@ -289,7 +321,7 @@ export function LeaderboardPage({
             </Button>
           </div>
         ) : view.status === "unavailable" ? (
-          <div className="rounded-2xl border bg-card px-6 py-12 text-center">
+          <div className="rounded-2xl border border-border bg-card px-6 py-12 text-center">
             <Trophy className="mx-auto size-10 text-muted-foreground" aria-hidden />
             <h2 className="mt-4 text-xl tracking-[-0.02em]">Board unavailable</h2>
             <p className="mx-auto mt-2 max-w-md text-base text-muted-foreground">
@@ -300,6 +332,7 @@ export function LeaderboardPage({
           </div>
         ) : (
           <>
+            {/* League Hero Card for Global Weekly XP, or Standard Standing Widget for other categories */}
             {view.league ? (
               <LeaderboardLeagueCard
                 league={view.league}
@@ -309,11 +342,13 @@ export function LeaderboardPage({
                 resetsAt={view.resetsAt}
               />
             ) : (
-              <section aria-labelledby="your-standing-heading" className="leaderboard-rise overflow-hidden rounded-2xl border bg-card" style={{ "--d": "0s" } as CSSProperties}>
-                <div className="border-b bg-muted/40 px-5 py-4 sm:px-6">
+              <section aria-labelledby="your-standing-heading" className="overflow-hidden rounded-2xl border border-border bg-card">
+                <div className="border-b border-border bg-muted/40 px-5 py-4 sm:px-6">
                   <p className="text-sm font-medium text-muted-foreground">Your place{context ? ` in ${context}` : ""}</p>
                   <h2 id="your-standing-heading" className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="text-4xl font-bold tabular-nums tracking-[-0.04em] text-foreground sm:text-5xl">#{view.you.rank}</span>
+                    <span className="text-4xl font-bold tabular-nums tracking-[-0.04em] text-foreground sm:text-5xl">
+                      #{view.you.rank}
+                    </span>
                     <span className="text-base text-muted-foreground">of {formatNumber(view.groupSize)} learners</span>
                   </h2>
                 </div>
@@ -321,16 +356,23 @@ export function LeaderboardPage({
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                       <p className="text-sm text-muted-foreground">{view.metricLabel === "XP" ? "XP" : view.metricLabel}</p>
-                      <p className="mt-0.5 text-2xl font-bold tabular-nums tracking-[-0.02em]">{formatScore(view.you.score, view.metricLabel)}</p>
+                      <p className="mt-0.5 text-2xl font-bold tabular-nums tracking-[-0.02em]">
+                        {formatScore(view.you.score, view.metricLabel)}
+                      </p>
                     </div>
                     {view.resetsAt ? (
-                      <p className="text-sm text-muted-foreground" suppressHydrationWarning>
+                      <p className="text-sm tabular-nums text-muted-foreground" suppressHydrationWarning>
                         {resetLabel(view.resetsAt)}
                       </p>
                     ) : null}
                   </div>
                   {view.you.bestScore !== null && view.you.bestScore > 0 ? (
-                    <BestScore score={view.you.score} best={view.you.bestScore} metricLabel={view.metricLabel} label={bestLabel} />
+                    <BestScore
+                      score={view.you.score}
+                      best={view.you.bestScore}
+                      metricLabel={view.metricLabel}
+                      label={bestLabel}
+                    />
                   ) : (
                     <p className="text-sm text-muted-foreground">Your first week on this board. Every chapter counts.</p>
                   )}
@@ -338,15 +380,16 @@ export function LeaderboardPage({
               </section>
             )}
 
-            <section ref={confettiRef} aria-label="Top three">
-              <LeaderboardPodium entries={view.entries} metricLabel={view.metricLabel} />
+            {/* Standings List containing all entries (Podium + Neighborhood) */}
+            <section ref={confettiRef}>
+              <LeaderboardList entries={view.entries} metricLabel={view.metricLabel} league={view.league} />
             </section>
 
-            <LeaderboardList entries={view.entries} metricLabel={view.metricLabel} league={view.league} />
-
+            {/* Previous Week's Winners */}
             {view.lastWeek ? <LastWeekWinners winners={view.lastWeek.winners} metricLabel={view.metricLabel} /> : null}
 
-            <div className="flex justify-end">
+            {/* Leave leaderboards */}
+            <div className="flex justify-end pt-1">
               <button
                 type="button"
                 onClick={leave}
