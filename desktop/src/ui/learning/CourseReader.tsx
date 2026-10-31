@@ -1,3 +1,4 @@
+import { DesktopToolbar } from '../layout/DesktopToolbar';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Lesson } from '../../domain/learning';
 import type { QuizChapterState } from '../../../../server/src/shared/api/blocks';
@@ -190,8 +191,8 @@ export function CourseReader({
   return (
     <CourseNavigationProvider onNavigate={navigate}>
       <VariantThemeScope variant={variantForTrack(lesson?.track ?? null)}>
-        <div className="course-overview-surface flex h-screen flex-col overflow-hidden bg-background">
-          <header className="z-30 flex h-[72px] shrink-0 items-center justify-between gap-4 border-b border-border bg-background/95 px-5 backdrop-blur lg:px-8">
+        <div className="course-overview-surface flex h-full flex-col overflow-hidden bg-background">
+          <DesktopToolbar>
             <div className="flex min-w-0 items-center gap-2">
               <SidebarToggle
                 collapsed={sidebarClosed}
@@ -206,12 +207,12 @@ export function CourseReader({
                 <ArrowLeft size={16} />
                 <span>Course</span>
               </button>
-              <div className="min-w-0 border-l border-border pl-5">
-                <p className="mb-0.5 text-[11px] font-medium text-muted-foreground">
-                  Edorax <span className="px-1.5 opacity-50">/</span> Learning
-                </p>
-                <p className="truncate text-sm font-medium">
+              <div className="min-w-0 border-l border-border pl-3">
+                <p className="truncate text-[11px] font-medium text-muted-foreground">
                   {lesson?.course.title || courseTitle}
+                </p>
+                <p className="truncate text-[13px] font-semibold">
+                  {lesson?.chapter.title || 'Loading lesson…'}
                 </p>
               </div>
             </div>
@@ -224,7 +225,7 @@ export function CourseReader({
               )}
               <AccountMenu session={session} />
             </div>
-          </header>
+          </DesktopToolbar>
           {session.authError && (
             <p role="alert" className="m-5 rounded border border-border p-4">
               {session.authError}

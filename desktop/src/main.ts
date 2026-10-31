@@ -13,7 +13,8 @@ import { createPreviewClient } from './api';
 import { createBrowserAuth } from './auth/browser-auth';
 
 app.setName('Edorax');
-const iconFile = process.platform === 'darwin' ? 'edorax-dock.png' : 'edorax.png';
+const iconFile =
+  process.platform === 'darwin' ? 'edorax-dock.png' : 'edorax.png';
 const appIcon = app.isPackaged
   ? path.join(process.resourcesPath, iconFile)
   : path.join(app.getAppPath(), 'assets', iconFile);
@@ -46,6 +47,12 @@ function createWindow() {
   if (process.platform === 'darwin') app.dock?.setIcon(appIcon);
   mainWindow = new BrowserWindow({
     title: 'Edorax',
+    ...(process.platform === 'darwin'
+      ? {
+          titleBarStyle: 'hiddenInset' as const,
+          trafficLightPosition: { x: 16, y: 20 },
+        }
+      : {}),
     icon: appIcon,
     width: 1240,
     height: 840,

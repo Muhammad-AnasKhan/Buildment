@@ -5,6 +5,7 @@ test('catalog search, categories, and sidebar work', async ({ page }) => {
   await page.addInitScript((data) => {
     window.buildment = {
       ...window.buildment,
+      platform: 'darwin',
       listCourses: async () => ({ ok: true, courses: data }),
     };
   }, courses);
@@ -12,6 +13,13 @@ test('catalog search, categories, and sidebar work', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: courses[0].title }),
   ).toBeVisible();
+  const toolbar = page.getByRole('banner', { name: 'Window toolbar' });
+  await expect(toolbar).toHaveCSS('padding-left', '92px');
+  await expect(toolbar).toHaveCSS('-webkit-app-region', 'drag');
+  await expect(
+    toolbar.getByRole('button', { name: 'Sign in', exact: true }),
+  ).toHaveCSS('-webkit-app-region', 'no-drag');
+  await expect(toolbar).not.toContainText('Workspace /');
   await expect(page.locator('article')).toHaveCount(2);
   await page.getByRole('button', { name: 'Soft Skills', exact: true }).click();
   await expect(page.locator('article')).toHaveCount(1);

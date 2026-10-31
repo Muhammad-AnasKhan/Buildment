@@ -93,70 +93,72 @@ export function App() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground">
+    <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
       {!(reading && signedIn) && (
-        <Sidebar
-          collapsed={collapsed}
-          toggleSidebar={toggleSidebar}
+        <WorkspaceHeader
+          selected={Boolean(selected)}
+          courseTitle={selected?.title}
           backToCourses={backToCourses}
+          session={session}
         />
       )}
-
-      <main ref={main} className="min-w-0 flex-1 overflow-y-auto">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         {!(reading && signedIn) && (
-          <WorkspaceHeader
-            selected={Boolean(selected)}
-            reading={reading && signedIn}
+          <Sidebar
+            collapsed={collapsed}
+            toggleSidebar={toggleSidebar}
             backToCourses={backToCourses}
-            session={session}
           />
         )}
-        {selected && reading && signedIn ? (
-          <CourseReader
-            key={selected.slug + ':' + authRevision}
-            courseSlug={selected.slug}
-            courseTitle={selected.title}
-            initialChapter={chapter}
-            session={session}
-            onBack={() => setReading(false)}
-            onSignedOut={() => {
-              setSignedIn(false);
-              setReading(false);
-            }}
-          />
-        ) : selected ? (
-          <CoursePreview
-            key={selected.slug}
-            course={selected}
-            signedIn={signedIn}
-            busy={authBusy}
-            authRevision={authRevision}
-            onSignIn={() => void changeSession(true)}
-            onSession={setSignedIn}
-            onBack={backToCourses}
-            onStart={(chapter) => {
-              setChapter(chapter);
-              setReading(true);
-            }}
-          />
-        ) : (
-          <CourseCatalog
-            {...{
-              courses,
-              visible,
-              categories,
-              loading,
-              error,
-              query,
-              category,
-              setQuery,
-              setCategory,
-              load,
-              openCourse,
-            }}
-          />
-        )}
-      </main>
+
+        <main ref={main} className="min-w-0 flex-1 overflow-y-auto">
+          {selected && reading && signedIn ? (
+            <CourseReader
+              key={selected.slug + ':' + authRevision}
+              courseSlug={selected.slug}
+              courseTitle={selected.title}
+              initialChapter={chapter}
+              session={session}
+              onBack={() => setReading(false)}
+              onSignedOut={() => {
+                setSignedIn(false);
+                setReading(false);
+              }}
+            />
+          ) : selected ? (
+            <CoursePreview
+              key={selected.slug}
+              course={selected}
+              signedIn={signedIn}
+              busy={authBusy}
+              authRevision={authRevision}
+              onSignIn={() => void changeSession(true)}
+              onSession={setSignedIn}
+              onBack={backToCourses}
+              onStart={(chapter) => {
+                setChapter(chapter);
+                setReading(true);
+              }}
+            />
+          ) : (
+            <CourseCatalog
+              {...{
+                courses,
+                visible,
+                categories,
+                loading,
+                error,
+                query,
+                category,
+                setQuery,
+                setCategory,
+                load,
+                openCourse,
+              }}
+            />
+          )}
+        </main>
+      </div>
     </div>
   );
 }
