@@ -9,6 +9,14 @@ export const weeklyGoalBody = z.object({
   target: z.number().int().min(1).max(120),
   note: z.string().trim().max(240).optional(),
   dailyReminder: z.boolean().optional(),
+}).superRefine((val, ctx) => {
+  if (val.kind !== "MINUTES" && val.target > 50) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["target"],
+      message: "Weekly targets must be at most 50",
+    });
+  }
 });
 
 export const streakMilestoneParams = z.object({
