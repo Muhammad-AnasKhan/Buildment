@@ -8,6 +8,7 @@ import * as desktop from "../../controllers/desktop-auth.js";
 import { z } from "zod";
 import {
   changePasswordBody,
+  accountSetupBody,
   confirmEmailQuery,
   devLoginQuery,
   loginBody,
@@ -38,6 +39,7 @@ router.post(
 router.post("/logout", optionalAuth, auth.logout);
 router.get("/me", authenticate, auth.me);
 router.patch("/password", authenticate, userRateLimit({ scope: "change-password", max: 10, windowMs: 15 * 60_000 }), validateBody(changePasswordBody), auth.updatePassword);
+router.patch("/account-setup", authenticate, userRateLimit({ scope: "account-setup", max: 5, windowMs: 15 * 60_000 }), validateBody(accountSetupBody), auth.completeAccountSetup);
 
 router.post("/resend-verification", optionalAuth, userRateLimit({ scope: "resend", max: 5 }), validateBody(resendVerificationBody), auth.resend);
 

@@ -248,6 +248,7 @@ model User {
   instructorAccessReviews       InstructorAccessRequest[] @relation("InstructorAccessReviewer")
   aiCredential                  AiCredential?
   aiInterviewSessions           AiInterviewSession[]
+  learnerQuestions              LearnerQuestion[]
   appActivity                   UserAppActivity?
   appActivityDays               AppActivityDay[]
   notifications                 Notification[]
@@ -360,6 +361,7 @@ model Course {
   sequential     Boolean      @default(true)
   familySlug     String? // course family in src/shared/lib/course-tracks.ts; null = no variants
   variantFamily  Json? // creator-defined variant catalog; null uses a built-in family
+  assistant      Json? // tutor settings from course.yaml (effort, guidance, starters); null means defaults
   availableVariantSlugs String[] @default([]) // empty means every family variant is available
   variantAssignment VariantAssignment @default(SELF_SELECT)
   activeReleaseId String? // latest approved content release; set atomically with publication
@@ -1071,9 +1073,19 @@ model HelpMessage {
   authorId  String
   author    User       @relation("HelpMessagesAuthored", fields: [authorId], references: [id], onDelete: Cascade)
   body      String     @db.Text
+  // Reply points at the specific earlier message it answers; null for a plain
+  // follow-up or the first message in a thread.
+  replyToId String?
+  replyTo   HelpMessage?  @relation("HelpMessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   HelpMessage[] @relation("HelpMessageReplies")
+  // Chat receipts for the author's ticks: delivered = the other side was online / came
+  // online (grey double tick), seen = they opened the conversation (blue double tick).
+  deliveredAt DateTime?
+  seenAt      DateTime?
   createdAt DateTime   @default(now())
 
   @@index([threadId, createdAt])
+  @@index([replyToId])
 }
 
 // Private margin notes on a chapter heading. Mentors do not read these.
@@ -1224,4 +1236,22 @@ model AdminAuditLog {
   @@index([createdAt])
   @@index([targetType, targetId])
   @@index([actorId])
+}
+
+/// One "Ask about this chapter" question. Rows only count usage: neither the question
+/// nor the answer is stored, and there is no key here. The daily and per-minute limits
+/// read these rows, so they survive restarts. Course and chapter ids are plain strings
+/// so the usage history outlives an archived or deleted chapter.
+model LearnerQuestion {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId     String
+  chapterId    String
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId, createdAt])
 }

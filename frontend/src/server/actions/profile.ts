@@ -59,3 +59,23 @@ export async function updatePasswordAction(_prev: ProfileUpdateState, formData: 
     throw error;
   }
 }
+
+export async function completeAccountSetupAction(_prev: ProfileUpdateState, formData: FormData): Promise<ProfileUpdateState> {
+  try {
+    await serverApiFetch("/api/v1/auth/account-setup", {
+      method: "PATCH",
+      json: {
+        name: String(formData.get("name") ?? "").trim() || undefined,
+        newPassword: String(formData.get("newPassword") ?? "") || undefined,
+        confirmPassword: String(formData.get("confirmPassword") ?? "") || undefined,
+      },
+    });
+    revalidatePath("/", "layout");
+    return { ok: true };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { ok: false, errors: error.errors.length ? error.errors.map((issue) => issue.message) : [error.message] };
+    }
+    throw error;
+  }
+}

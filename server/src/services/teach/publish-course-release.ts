@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { ulid } from "ulid";
-import type { Prisma } from "../../generated/prisma/index.js";
+import { Prisma } from "../../generated/prisma/index.js";
 import { resolveCourseFamily } from "../../shared/lib/course-tracks.js";
 import { ensureBaselineRelease, type ReleaseChapter, type ReleaseContent, type ReleaseModule } from "../courses/releases.js";
 import { BadRequestError } from "../../utils/errors.js";
@@ -174,15 +174,17 @@ export async function publishCourseRelease(tx: Prisma.TransactionClient, courseI
     modules.sort((a, b) => a.order - b.order);
     for (const module of modules) module.chapters.sort((a, b) => a.order - b.order);
   }
+  // Tutor settings are not release content: they follow the manifest even when no chapter changed.
+  const assistant = plan.manifest.assistant ? (plan.manifest.assistant as Prisma.InputJsonValue) : Prisma.DbNull;
   if (canonical(next) === canonical(previous)) {
-    if (plan.manifest.availableVariantSlugs) await tx.course.update({ where: { id: courseId },
-      data: { availableVariantSlugs: plan.manifest.availableVariantSlugs } });
+    await tx.course.update({ where: { id: courseId }, data: { assistant,
+      ...(plan.manifest.availableVariantSlugs ? { availableVariantSlugs: plan.manifest.availableVariantSlugs } : {}) } });
     return baseline;
   }
   const sourceHash = createHash("sha256").update(canonical({ base: baseline.id, plan })).digest("hex");
   const release = await tx.courseRelease.create({ data: { id: ulid(), courseId, number: baseline.number + 1,
     content: next as unknown as Prisma.InputJsonValue, sourceHash } });
-  await tx.course.update({ where: { id: courseId }, data: { activeReleaseId: release.id,
+  await tx.course.update({ where: { id: courseId }, data: { activeReleaseId: release.id, assistant,
     ...(plan.manifest.availableVariantSlugs ? { availableVariantSlugs: plan.manifest.availableVariantSlugs } : {}) } });
   return release;
 }

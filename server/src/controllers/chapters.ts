@@ -5,7 +5,8 @@ import { markChapterComplete } from "../services/progress/chapter-completion.js"
 import { saveChecklistItem, saveLearningLogAnswers } from "../services/progress/learning-log.js";
 import { saveHeadingNote } from "../services/chapters/heading-notes.js";
 import { loadQuizChapterState } from "../services/chapters/quiz-state.js";
-import type { QuizSubmitBody } from "../validations/chapters.js";
+import { askAboutChapter, chapterQuestionStatus, streamAnswerAboutChapter } from "../services/ai/chapter-qa/service.js";
+import type { AskChapterBody, QuizSubmitBody } from "../validations/chapters.js";
 
 // POST /api/v1/chapters/:chapterId/quiz/submit
 export async function submitQuiz(req: Request, res: Response) {
@@ -44,4 +45,31 @@ export async function putHeadingNote(req: Request, res: Response) {
 // GET /api/v1/chapters/:chapterId/quiz
 export async function quizState(req: Request, res: Response) {
   ok(res, await loadQuizChapterState(req.params.chapterId as string, req.user!.id));
+}
+
+// GET /api/v1/chapters/:chapterId/ask
+export async function askStatus(req: Request, res: Response) {
+  ok(res, await chapterQuestionStatus(req.params.chapterId as string, req.user));
+}
+
+// POST /api/v1/chapters/:chapterId/ask
+export async function ask(req: Request, res: Response) {
+  const { question, previous, stream } = req.body as AskChapterBody;
+  const input = { chapterId: req.params.chapterId as string, user: req.user, question, previous };
+  if (!stream) {
+    ok(res, await askAboutChapter(input));
+    return;
+  }
+  // A failure before the first byte still travels as the normal JSON envelope; after it, the text itself carries the failure.
+  const streamed = await streamAnswerAboutChapter(input);
+  res.status(200);
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  // no-transform keeps compression middleware (Next.js, proxies) from buffering the stream.
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("X-Accel-Buffering", "no");
+  res.setHeader("X-Questions-Remaining", String(streamed.remaining.remaining));
+  res.setHeader("X-Questions-Daily-Limit", String(streamed.remaining.dailyLimit));
+  res.flushHeaders();
+  await streamed.run((chunk) => res.write(chunk));
+  res.end();
 }

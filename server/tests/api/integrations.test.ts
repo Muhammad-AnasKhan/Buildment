@@ -20,7 +20,7 @@ describe("/integrations/v1 (public organisation API)", () => {
   it("describes itself without credentials", async () => {
     const res = await request(app).get("/integrations/v1");
     expect(res.body.name).toBe("Buildment Organization API");
-    expect(res.body.endpoints).toHaveLength(9);
+    expect(res.body.endpoints).toHaveLength(10);
   });
 
   it("keeps the { error } shape for authentication failures", async () => {

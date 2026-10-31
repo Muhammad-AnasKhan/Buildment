@@ -1,5 +1,6 @@
 import { renderEmailTemplate } from "../email/render.js";
 import { randomBytes } from "node:crypto";
+import { isDisposable } from "@isdisposable/js";
 import { safeRedirectTo } from "../../shared/lib/safe-redirect.js";
 import { prisma } from "../../db/prisma.js";
 import { logger } from "../../utils/logger.js";
@@ -10,15 +11,26 @@ import { toSessionUser } from "./session.js";
 
 // One-time sign-in links, replacing the Auth.js email provider. Tokens live in
 // the VerificationToken table under a distinct identifier prefix so they can
-// never be confused with email-confirmation tokens. Like Auth.js, an unknown
-// address gets an account on first use — the link proves ownership of the inbox.
+// never be confused with email-confirmation tokens. They are only issued for
+// existing accounts; signup remains a separate flow.
 
 const MAGIC_LINK_TTL_MS = 15 * 60 * 1000;
 const IDENTIFIER_PREFIX = "magic-link:";
 
 export async function requestMagicLink(input: { email: string; redirectTo?: string }) {
+  if (isDisposable(input.email)) {
+    await prisma.verificationToken.deleteMany({ where: { identifier: `${IDENTIFIER_PREFIX}${input.email}` } });
+    return { sent: false };
+  }
+
+  const account = await prisma.user.findUnique({ where: { email: input.email }, select: { email: true } });
+  if (!account) {
+    await prisma.verificationToken.deleteMany({ where: { identifier: `${IDENTIFIER_PREFIX}${input.email}` } });
+    return { sent: false };
+  }
+
   const token = randomBytes(32).toString("hex");
-  const identifier = `${IDENTIFIER_PREFIX}${input.email}`;
+  const identifier = `${IDENTIFIER_PREFIX}${account.email}`;
   await prisma.verificationToken.deleteMany({ where: { identifier } });
   await prisma.verificationToken.create({
     data: { identifier, token, expires: new Date(Date.now() + MAGIC_LINK_TTL_MS) },
@@ -53,10 +65,12 @@ export async function consumeMagicLink(token: string, redirectTo?: string): Prom
   if (row.expires <= new Date()) return { ok: false, reason: "expired" };
 
   const email = row.identifier.slice(IDENTIFIER_PREFIX.length);
-  const record = await prisma.user.upsert({
+  if (isDisposable(email)) return { ok: false, reason: "invalid" };
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (!existing) return { ok: false, reason: "invalid" };
+  const record = await prisma.user.update({
     where: { email },
-    update: { emailVerified: new Date() },
-    create: { email, role: "MENTEE", emailVerified: new Date(), profile: { create: { timezone: "UTC", skills: [] } } },
+    data: { emailVerified: new Date() },
   });
   // Suspended accounts are refused with a reason (not a thrown error), so the
   // browser landing on this GET is redirected to the login page with clear copy.
