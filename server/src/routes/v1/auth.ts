@@ -1,5 +1,6 @@
 import { Router } from "express";
 import * as auth from "../../controllers/auth.js";
+import * as accountSecurity from "../../controllers/account-security.js";
 import { authenticate, optionalAuth } from "../../middlewares/authenticate.js";
 import { userRateLimit } from "../../middlewares/rate-limit.js";
 import { validateBody, validateQuery } from "../../middlewares/validate.js";
@@ -8,6 +9,7 @@ import * as desktop from "../../controllers/desktop-auth.js";
 import { z } from "zod";
 import {
   changePasswordBody,
+  mfaCodeBody,
   accountSetupBody,
   confirmEmailQuery,
   devLoginQuery,
@@ -40,6 +42,13 @@ router.post("/logout", optionalAuth, auth.logout);
 router.get("/me", authenticate, auth.me);
 router.patch("/password", authenticate, userRateLimit({ scope: "change-password", max: 10, windowMs: 15 * 60_000 }), validateBody(changePasswordBody), auth.updatePassword);
 router.patch("/account-setup", authenticate, userRateLimit({ scope: "account-setup", max: 5, windowMs: 15 * 60_000 }), validateBody(accountSetupBody), auth.completeAccountSetup);
+
+const mfaLimiter = userRateLimit({ scope: "account-mfa", max: 10, windowMs: 15 * 60_000 });
+router.get("/mfa", authenticate, requireVerified, accountSecurity.getMfaStatus);
+router.post("/mfa/enroll", authenticate, requireVerified, mfaLimiter, accountSecurity.beginMfaEnrollment);
+router.post("/mfa/activate", authenticate, requireVerified, mfaLimiter, validateBody(mfaCodeBody), accountSecurity.activateMfa);
+router.post("/mfa/recovery-codes", authenticate, requireVerified, mfaLimiter, validateBody(mfaCodeBody), accountSecurity.regenerateMfaRecoveryCodes);
+router.post("/mfa/disable", authenticate, requireVerified, mfaLimiter, validateBody(mfaCodeBody), accountSecurity.disableMfa);
 
 router.post("/resend-verification", optionalAuth, userRateLimit({ scope: "resend", max: 5 }), validateBody(resendVerificationBody), auth.resend);
 

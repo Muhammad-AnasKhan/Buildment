@@ -341,6 +341,13 @@ export async function setInstructorAccess(actor: AdminActor, userId: string, ena
       metadata: { enabled },
     });
   });
+
+  // Send role details when the learner is promoted. Revocations and repeated
+  // grants stay quiet so this action does not generate duplicate invitations.
+  if (enabled && existing.role === "MENTEE") {
+    const grantedAt = new Date();
+    await dispatchNotification(() => notifyUserGrantedInstructorByAdmin({ userId, grantedAt }));
+  }
 }
 
 export async function setZipImportAccess(actor: AdminActor, userId: string, enabled: boolean): Promise<void> {

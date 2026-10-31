@@ -93,6 +93,24 @@ export async function grantAdminByEmailAction(
   });
 }
 
+/** Invite a person to Edorax with the selected platform role. */
+export async function inviteUserByEmailAction(
+  _prev: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  const email = String(formData.get("email") ?? "").trim();
+  const role = String(formData.get("role") ?? "MENTOR");
+  const name = String(formData.get("name") ?? "").trim() || undefined;
+  if (role !== "MENTOR" && role !== "ADMIN") return { ok: false, message: "Choose a valid role." };
+  return runAdminAction(async () => {
+    const endpoint = role === "ADMIN" ? "/api/v1/admin/admins" : "/api/v1/admin/instructors";
+    await adminCall<void>(endpoint, { method: "POST", json: { email, ...(name ? { name } : {}) } });
+    revalidatePath("/admin/users");
+    revalidatePath("/", "layout");
+    return `Invitation email sent to ${email} with ${role === "ADMIN" ? "platform admin" : "instructor"} access.`;
+  });
+}
+
 /** Remove the platform-admin role; the API rejects self-action and the last admin. */
 export async function revokeAdminAction(
   _prev: AdminActionState,

@@ -4,15 +4,12 @@ import { serverApiFetch } from "@/lib/api-server";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { AdminActionForm } from "@/components/admin/admin-action-form";
+import { AdminRoleInviteDialog } from "@/components/admin/admin-role-invite-dialog";
 import { AdminBulkBar } from "@/components/admin/admin-bulk-bar";
 import { bulkReinstateUsersAction, bulkSuspendUsersAction } from "@/server/actions/admin/bulk";
 import { requireRole } from "@/server/auth/guards";
 import {
-  grantAdminByEmailAction,
-  grantInstructorByEmailAction,
   revokeAdminAction,
   setUserInstructorAccessAction,
   setUserTesterAccessAction,
@@ -75,14 +72,17 @@ export default async function AdminUsersPage({
       <AdminPageHeader
         eyebrow="Accounts"
         title="Users"
-        description="Inspect accounts and grant or revoke instructor capability."
+        description="Manage account roles, access, and invitations."
         actions={
-          <a
-            href={`/api/v1/admin/users/export${exportQuery ? `?${exportQuery}` : ""}`}
-            className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-          >
-            Export CSV
-          </a>
+          <>
+            <a
+              href={`/api/v1/admin/users/export${exportQuery ? `?${exportQuery}` : ""}`}
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
+            >
+              Export CSV
+            </a>
+            <AdminRoleInviteDialog />
+          </>
         }
       />
 
@@ -166,8 +166,7 @@ export default async function AdminUsersPage({
         </AdminPanel>
       ) : null}
 
-      <div className="mt-8 grid gap-8 xl:grid-cols-[minmax(0,1fr)_20rem]">
-        <div>
+      <div className="mt-8">
         <div className="mb-3 flex flex-wrap items-center gap-2">
           <AdminBulkBar
             action={bulkSuspendUsersAction}
@@ -286,8 +285,8 @@ export default async function AdminUsersPage({
                   ) : (
                     <AdminActionForm
                       action={setUserInstructorAccessAction}
-                      submitLabel={user.role === "MENTOR" ? "Revoke" : "Grant"}
-                      pendingLabel={user.role === "MENTOR" ? "Revoking…" : "Granting…"}
+                      submitLabel={user.role === "MENTOR" ? "Revoke" : "Invite"}
+                      pendingLabel={user.role === "MENTOR" ? "Revoking…" : "Sending…"}
                       variant={user.role === "MENTOR" ? "outline" : "default"}
                       size="sm"
                       confirm={
@@ -354,60 +353,6 @@ export default async function AdminUsersPage({
         )}
         <AdminPagination page={page} hrefFor={(next) => hrefFor({ page: next })} />
         </div>
-
-        <div className="space-y-6">
-          <AdminPanel>
-            <h2 className="text-sm font-semibold">Grant instructor by email</h2>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Creates a verified account if the email is new. Existing users gain instructor access.
-            </p>
-            <AdminActionForm
-              action={grantInstructorByEmailAction}
-              submitLabel="Grant instructor access"
-              pendingLabel="Granting…"
-              className="mt-5 space-y-4"
-            >
-              <div className="space-y-1.5">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" required placeholder="instructor@example.com" />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="name">Display name (optional)</Label>
-                <Input id="name" name="name" placeholder="Alex Instructor" />
-              </div>
-            </AdminActionForm>
-          </AdminPanel>
-
-          <AdminPanel>
-            <h2 className="text-sm font-semibold">Add platform admin</h2>
-            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-              Admins manage organizations, course requests, courses and user access. Creates a
-              verified account if the email is new.
-            </p>
-            <AdminActionForm
-              action={grantAdminByEmailAction}
-              submitLabel="Add platform admin"
-              pendingLabel="Adding…"
-              variant="outline"
-              className="mt-5 space-y-4"
-              confirm={{
-                question: "Add this person as a platform admin?",
-                description: "Admins can manage organizations, course requests, and user access across the platform.",
-                confirmLabel: "Add admin",
-              }}
-            >
-              <div className="space-y-1.5">
-                <Label htmlFor="admin-email">Email</Label>
-                <Input id="admin-email" name="email" type="email" required placeholder="admin@example.com" />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="admin-name">Display name (optional)</Label>
-                <Input id="admin-name" name="name" placeholder="Alex Admin" />
-              </div>
-            </AdminActionForm>
-          </AdminPanel>
-        </div>
-      </div>
     </div>
   );
 }
