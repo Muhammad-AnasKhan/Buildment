@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import type { NotificationPreferences } from "@/shared/api/notifications";
 import { requireVerifiedUser, surfaceHomeRoute } from "@/server/auth/guards";
 import { getActiveSurface } from "@/server/auth/surface";
-import { serverApiFetch } from "@/lib/api-server";
 import { Logo } from "@/components/brand/logo";
 import { NotificationCenter } from "@/components/notifications/notification-center";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { NotificationFeedList } from "@/components/notifications/notification-feed-list";
-import { NotificationPreferencesForm } from "@/components/notifications/notification-preferences-form";
 
 export const metadata: Metadata = { title: "Notifications" };
 
@@ -17,8 +14,13 @@ export const metadata: Metadata = { title: "Notifications" };
 // lives outside the surface route groups and only needs a signed-in, verified account.
 export default async function NotificationsPage() {
   const user = await requireVerifiedUser();
-  const preferences = await serverApiFetch<NotificationPreferences>("/api/v1/notifications/preferences");
-  const homeHref = user.role === "ADMIN" ? "/admin" : surfaceHomeRoute(await getActiveSurface(user.role));
+  const activeSurface = await getActiveSurface(user.role);
+  const homeHref = user.role === "ADMIN" ? "/admin" : surfaceHomeRoute(activeSurface);
+  const profileHref = user.role === "ADMIN"
+    ? "/admin/settings/profile"
+    : activeSurface === "teach"
+      ? "/workspace/settings/profile"
+      : "/settings/profile";
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -48,16 +50,9 @@ export default async function NotificationsPage() {
         </div>
 
         <NotificationFeedList />
-
-        <section aria-labelledby="notification-settings" className="rounded-2xl border bg-card p-5 shadow-sm sm:p-6">
-          <h2 id="notification-settings" className="text-lg font-semibold tracking-tight">
-            Notification settings
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Choose where each kind of notification reaches you. Study reminders come at most once a day across all your courses.
-          </p>
-          <NotificationPreferencesForm initial={preferences} showAdmin={user.role === "ADMIN"} />
-        </section>
+        <p className="text-sm text-muted-foreground">
+          Notification preferences are now in <Link href={profileHref} className="font-medium text-primary underline-offset-4 hover:underline">Profile settings</Link>.
+        </p>
       </main>
     </div>
   );

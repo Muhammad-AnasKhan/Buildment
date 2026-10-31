@@ -13,6 +13,9 @@ export const changePasswordBody = z.object({
 });
 export type ChangePasswordBody = z.infer<typeof changePasswordBody>;
 
+export const mfaCodeBody = z.object({ code: z.string().trim().min(6, "Enter the 6-digit code").max(10) });
+export type MfaCodeBody = z.infer<typeof mfaCodeBody>;
+
 // redirectTo carries a course page through the confirmation email (enroll after sign-up).
 export const signupBody = signupSchema.extend({ redirectTo });
 export type SignupBody = z.infer<typeof signupBody>;

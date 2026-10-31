@@ -11,7 +11,7 @@ import { ADMIN_AUDIT_ACTIONS, recordAdminAction, type AdminActor } from "./audit
 // secret can never lock the account out. Admins can also reset another admin's MFA
 // (e.g. a lost device), which is the recovery path while no backup codes exist.
 
-const ISSUER = "Buildment";
+const ISSUER = "Edorax";
 
 export type TotpEnrollment = { secret: string; otpauthUri: string; qrDataUrl: string };
 
