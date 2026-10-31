@@ -70,3 +70,5 @@ The reader sidebar and heading outline are shared with web. Desktop bundles DM S
 ## Edorax branding
 
 The desktop name is Edorax. Sidebar/startup branding and packaged/Dock icons use `frontend/public/logo.svg`, the web app's current mark. After a web logo change, run `node desktop/scripts/sync-brand.mjs` on macOS with frontend dependencies installed to regenerate the SVG copy and PNG/ICNS/ICO assets. Restart Electron to refresh the native app name and Dock icon.
+
+Quiz results and confirmed chapter completion use the shared web feedback player and bundled audio assets. The existing `buildment:sound=off` preference and reduced-motion setting suppress playback; unavailable audio must not block saving answers or progress.

@@ -1,3 +1,4 @@
+import { playFeedback } from '../../lib/sound-feedback';
 import { DesktopToolbar } from '../layout/DesktopToolbar';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Lesson } from '../../domain/learning';
@@ -178,7 +179,10 @@ export function CourseReader({
         lesson.chapter.id,
       );
       if (!result.ok) fail(result);
-      else await load(lesson.chapter.slug, true);
+      else {
+        playFeedback('completion');
+        await load(lesson.chapter.slug, true);
+      }
     } catch {
       setError('Could not save lesson completion. Try again.');
     } finally {
