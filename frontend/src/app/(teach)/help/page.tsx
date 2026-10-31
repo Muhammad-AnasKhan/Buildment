@@ -21,20 +21,31 @@ export default async function MentorHelpInboxPage({
 }) {
   await requireTeachSurface();
   const { courseId: courseFilter, status: rawStatus } = await searchParams;
-  const statusFilter = rawStatus === "resolved" || rawStatus === "all" ? rawStatus : undefined;
+  const statusFilter =
+    rawStatus === "resolved" || rawStatus === "all" ? rawStatus : undefined;
 
   const query = new URLSearchParams();
   if (courseFilter) query.set("courseId", courseFilter);
   if (statusFilter) query.set("status", statusFilter);
   const suffix = query.size ? `?${query}` : "";
-  const { courses, openCount: openHelpCount, threads } = await serverApiFetch<MentorHelpInboxView>(`/api/v1/teach/help/threads${suffix}`);
+  const {
+    courses,
+    openCount: openHelpCount,
+    threads,
+  } = await serverApiFetch<MentorHelpInboxView>(
+    `/api/v1/teach/help/threads${suffix}`,
+  );
 
   return (
     <div className="mx-auto max-w-4xl">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{copy.mentorTitle}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{copy.mentorSubtitle}</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+            {copy.mentorTitle}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {copy.mentorSubtitle}
+          </p>
           {openHelpCount > 0 && (statusFilter ?? "open") !== "resolved" && (
             <p className="mt-2 text-sm font-medium text-foreground">
               {copy.mentorOpenCount(openHelpCount)}
@@ -42,7 +53,11 @@ export default async function MentorHelpInboxPage({
           )}
         </div>
 
-        <form className="flex flex-wrap items-center gap-2" action="/help" method="GET">
+        <form
+          className="flex flex-wrap items-center gap-2"
+          action="/help"
+          method="GET"
+        >
           <AutoSubmitSelect
             name="status"
             defaultValue={statusFilter ?? "open"}
@@ -70,40 +85,49 @@ export default async function MentorHelpInboxPage({
       </div>
 
       {threads.length === 0 ? (
-        <div className="mt-12 flex flex-col items-center gap-2 text-center">
-          <Inbox className="size-8 text-muted-foreground" aria-hidden />
-          <p className="text-sm font-medium text-foreground">
-            {statusFilter === "resolved" ? copy.mentorEmptyResolved : copy.mentorEmptyOpen}
+        <div className="mt-12 flex flex-col items-center gap-3 text-center">
+          <span className="flex size-16 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Inbox className="size-8" aria-hidden />
+          </span>
+          <p className="text-base font-semibold text-foreground">
+            {statusFilter === "resolved"
+              ? copy.mentorEmptyResolved
+              : copy.mentorEmptyOpen}
           </p>
-          <p className="max-w-md text-sm text-muted-foreground">{copy.mentorEmpty}</p>
+          <p className="max-w-md text-sm text-muted-foreground">
+            {copy.mentorEmpty}
+          </p>
         </div>
       ) : (
-        <ul className="mt-6 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+        <ul className="mt-6 divide-y divide-border overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
           {threads.map((thread) => {
-            const isAging = thread.status === "OPEN" && thread.ageHours >= AGING_HOURS;
+            const isAging =
+              thread.status === "OPEN" && thread.ageHours >= AGING_HOURS;
 
             return (
               <li key={thread.id}>
                 <Link
                   href={`/help/${thread.id}`}
-                  className="flex items-center gap-4 px-4 py-4 transition-colors hover:bg-muted/50 sm:px-5"
+                  className="group flex items-center gap-4 border-l-[3px] border-transparent px-4 py-4 outline-none transition-colors hover:border-primary hover:bg-primary/5 focus-visible:border-primary focus-visible:bg-primary/5 sm:px-5"
                 >
                   <div
-                    className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground"
+                    className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
                     aria-hidden
                   >
                     {initials(thread.menteeLabel)}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate text-sm font-medium text-foreground">{thread.menteeLabel}</p>
+                      <p className="truncate text-[15px] font-semibold text-foreground">
+                        {thread.menteeLabel}
+                      </p>
                       {isAging && (
-                        <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-200">
+                        <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-200">
                           {Math.floor(thread.ageHours)}h waiting
                         </span>
                       )}
                       {thread.status === "RESOLVED" && (
-                        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        <span className="rounded-full bg-ok-soft px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ok">
                           Resolved
                         </span>
                       )}
@@ -117,7 +141,10 @@ export default async function MentorHelpInboxPage({
                       </p>
                     )}
                   </div>
-                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                  <ChevronRight
+                    className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+                    aria-hidden
+                  />
                 </Link>
               </li>
             );

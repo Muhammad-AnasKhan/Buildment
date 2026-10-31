@@ -12,6 +12,7 @@ import { loginErrorMessage } from "@/lib/auth-errors";
 import { apiAuthErrors, zodAuthErrors, type AuthFormState } from "@/lib/auth-form-state";
 import { setSessionCookie } from "@/server/auth/session-cookie";
 import { testAccountsEnabled } from "@/server/auth/dev-test-accounts";
+import { homeRouteForRole } from "@/server/auth/access-rules";
 
 export type LoginState = AuthFormState;
 
@@ -32,7 +33,7 @@ export async function signInAsTestAccountAction(_prev: LoginState, formData: For
 }
 
 async function signInAndRedirect(credentials: { email: string; password: string; code?: string }, formData: FormData): Promise<LoginState> {
-  const redirectTo = safeRedirectTo(String(formData.get("redirectTo") ?? "")) ?? "/dashboard";
+  const requestedRedirect = safeRedirectTo(String(formData.get("redirectTo") ?? ""));
 
   let session: AuthSession;
   try {
@@ -56,5 +57,7 @@ async function signInAndRedirect(credentials: { email: string; password: string;
   }
 
   await setSessionCookie(session.session);
-  redirect(redirectTo);
+  // A direct sign-in should land on the workspace that exists for the account's
+  // role. A deliberately supplied, local redirect still takes precedence.
+  redirect(requestedRedirect ?? homeRouteForRole(session.user.role));
 }

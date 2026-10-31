@@ -15,7 +15,7 @@ import {
 import { UserAvatar } from "@/components/user-avatar";
 
 type UserMenuDropdownProps = {
-  user: { name?: string | null; email?: string | null; image?: string | null };
+  user: { id?: string; name?: string | null; email?: string | null; image?: string | null };
   compact?: boolean;
   signOutAction: () => Promise<void>;
   homeHref?: string;
@@ -78,6 +78,7 @@ export function UserMenuDropdown({
           variant="destructive"
           disabled={pending}
           onClick={() => {
+            if (user.id) window.sessionStorage.removeItem(`account-setup-prompted:${user.id}`);
             startTransition(async () => { await signOutAction(); });
           }}
         >

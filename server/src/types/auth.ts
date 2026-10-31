@@ -8,6 +8,8 @@ export type SessionUser = {
   image: string | null;
   role: Role;
   emailVerified: Date | null;
+  hasPassword?: boolean;
+  loginSessionId?: string;
 };
 
 /** Organisation authenticated through integration credentials on /integrations/v1. */

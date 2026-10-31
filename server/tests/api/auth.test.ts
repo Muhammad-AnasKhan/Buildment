@@ -159,14 +159,36 @@ describe("magic links", () => {
     await prisma.user.delete({ where: { id: user.id } });
   });
 
-  it("always answers 200 and stores a one-time token", async () => {
+  it("does not issue a link for unknown emails and stores one for an existing account", async () => {
+    const unknown = await request(app).post("/api/v1/auth/magic-link").send({ email, redirectTo: "/catalog" });
+    expect(unknown.status).toBe(200);
+    expect(await prisma.verificationToken.findFirst({ where: { identifier: `magic-link:${email}` } })).toBeNull();
+
+    await prisma.user.create({
+      data: { email, name: "Magic Link Learner", role: "MENTEE", profile: { create: { timezone: "UTC", skills: [] } } },
+    });
     const res = await request(app).post("/api/v1/auth/magic-link").send({ email, redirectTo: "/catalog" });
     expect(res.status).toBe(200);
     const row = await prisma.verificationToken.findFirst({ where: { identifier: `magic-link:${email}` } });
     expect(row).not.toBeNull();
   });
 
-  it("signs in (creating the account) and consumes the token", async () => {
+  it("does not issue a magic link to an existing account with a disposable email", async () => {
+    const disposableEmail = `magic-disposable-${Date.now()}@mailinator.com`;
+    const user = await prisma.user.create({
+      data: { email: disposableEmail, name: "Disposable Learner", role: "MENTEE", profile: { create: { timezone: "UTC", skills: [] } } },
+    });
+
+    try {
+      const res = await request(app).post("/api/v1/auth/magic-link").send({ email: disposableEmail });
+      expect(res.status).toBe(200);
+      expect(await prisma.verificationToken.findFirst({ where: { identifier: `magic-link:${disposableEmail}` } })).toBeNull();
+    } finally {
+      await prisma.user.delete({ where: { id: user.id } });
+    }
+  });
+
+  it("signs in the existing account and consumes the token", async () => {
     const row = await prisma.verificationToken.findFirstOrThrow({ where: { identifier: `magic-link:${email}` } });
     const res = await request(app).get("/api/v1/auth/magic-link/verify").query({ token: row.token, redirectTo: "/catalog" });
     expect(res.status).toBe(302);

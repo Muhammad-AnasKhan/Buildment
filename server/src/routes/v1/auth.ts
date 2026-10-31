@@ -10,6 +10,7 @@ import { z } from "zod";
 import {
   changePasswordBody,
   mfaCodeBody,
+  accountSetupBody,
   confirmEmailQuery,
   devLoginQuery,
   loginBody,
@@ -40,6 +41,7 @@ router.post(
 router.post("/logout", optionalAuth, auth.logout);
 router.get("/me", authenticate, auth.me);
 router.patch("/password", authenticate, userRateLimit({ scope: "change-password", max: 10, windowMs: 15 * 60_000 }), validateBody(changePasswordBody), auth.updatePassword);
+router.patch("/account-setup", authenticate, userRateLimit({ scope: "account-setup", max: 5, windowMs: 15 * 60_000 }), validateBody(accountSetupBody), auth.completeAccountSetup);
 
 const mfaLimiter = userRateLimit({ scope: "account-mfa", max: 10, windowMs: 15 * 60_000 });
 router.get("/mfa", authenticate, requireVerified, accountSecurity.getMfaStatus);

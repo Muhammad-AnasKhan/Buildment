@@ -5,6 +5,7 @@ import { MentorWorkspaceSidebar } from "@/components/teach/mentor-workspace-side
 import { signOutAction } from "@/server/auth/actions";
 import { AppActivityTracker } from "@/components/app-activity-tracker";
 import { NotificationCenter } from "@/components/notifications/notification-center";
+import { AccountSetupPrompt } from "@/components/auth/account-setup-prompt";
 
 export default async function TeachLayout({ children }: { children: React.ReactNode }) {
   const user = await requireTeachSurface();
@@ -14,6 +15,7 @@ export default async function TeachLayout({ children }: { children: React.ReactN
     <div className="min-h-dvh bg-background text-foreground">
       <AppActivityTracker />
       <NotificationCenter />
+      <AccountSetupPrompt user={user} />
       <MentorWorkspaceSidebar
         courses={courses}
         user={user}
