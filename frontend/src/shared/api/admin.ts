@@ -151,6 +151,7 @@ export type AdminCourseRequestsView = {
 
 export type AdminUserRow = {
   zipImportEnabled: boolean;
+  testerEnabled: boolean;
   suspended: boolean;
   id: string;
   email: string;
@@ -194,6 +195,7 @@ export type AdminUserDetail = {
     role: Role;
     emailVerified: boolean;
     zipImportEnabled: boolean;
+    testerEnabled: boolean;
     suspended: boolean;
     suspensionNote: string | null;
     mfaEnabled: boolean;

@@ -89,6 +89,7 @@ export default async function AdminUserDetailPage({
           <DetailItem label="Courses owned" value={<span className="tabular-nums">{user.courseCount}</span>} />
           <DetailItem label="Active sessions" value={<span className="tabular-nums">{user.activeSessions}</span>} />
           <DetailItem label="ZIP import" value={user.zipImportEnabled ? "Enabled" : "Disabled"} />
+          <DetailItem label="Tester" value={user.testerEnabled ? "Enabled (skips sequential locks)" : "Disabled"} />
         </dl>
       </AdminPanel>
 

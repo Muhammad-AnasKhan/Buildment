@@ -185,20 +185,51 @@ function WeeklySnapshot({ model }: { model: MenteeDashboardViewModel }) {
           </div>
         ))}
       </dl>
-      {model.habit.weeklyGoal ? (
+      {(model.habit.goal ?? model.habit.weeklyGoal) ? (
         <div className="mt-5 rounded-xl border bg-muted/20 p-4">
-          <div className="flex items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-2 text-sm font-semibold"><Target className="size-4" aria-hidden /> Weekly goal</span>
-            <span className="text-xs font-medium tabular-nums text-muted-foreground">{Math.min(model.habit.weeklyGoal.progress, model.habit.weeklyGoal.target)} / {model.habit.weeklyGoal.target}</span>
-          </div>
-          <p className="mt-2 text-sm text-muted-foreground">
-            {model.habit.weeklyGoal.progress >= model.habit.weeklyGoal.target ? "You reached your goal. Your effort adds up." : `${model.habit.weeklyGoal.target - model.habit.weeklyGoal.progress} ${model.habit.weeklyGoal.kind === "CHAPTERS" ? "chapters" : "sessions"} to go this week`}
-          </p>
-          <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted" role="progressbar" aria-label="Weekly goal progress" aria-valuenow={Math.min(model.habit.weeklyGoal.progress, model.habit.weeklyGoal.target)} aria-valuemin={0} aria-valuemax={model.habit.weeklyGoal.target}>
-            <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, Math.round((model.habit.weeklyGoal.progress / model.habit.weeklyGoal.target) * 100))}%` }} />
-          </div>
-          {model.habit.weeklyGoal.note ? <p className="mt-3 text-xs leading-5 text-muted-foreground">Focus: {model.habit.weeklyGoal.note}</p> : null}
-          {model.habit.weeklyGoal.dailyReminder ? <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground"><Mail className="size-3.5" aria-hidden /> Daily email reminder on</p> : null}
+          {(() => {
+            const studyGoal = (model.habit.goal ?? model.habit.weeklyGoal)!;
+            const unit =
+              studyGoal.kind === "MINUTES" ? "minutes" : studyGoal.kind === "CHAPTERS" ? "chapters" : "sessions";
+            const remaining = Math.max(0, studyGoal.target - studyGoal.progress);
+            const windowLabel = studyGoal.period === "DAILY" ? "today" : "this week";
+            return (
+              <>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold">
+                    <Target className="size-4" aria-hidden /> {studyGoal.period === "DAILY" ? "Daily goal" : "Weekly goal"}
+                  </span>
+                  <span className="text-xs font-medium tabular-nums text-muted-foreground">
+                    {Math.min(studyGoal.progress, studyGoal.target)} / {studyGoal.target}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {studyGoal.progress >= studyGoal.target
+                    ? "You reached your goal. Your effort adds up."
+                    : `${remaining} ${unit} to go ${windowLabel}`}
+                </p>
+                <div
+                  className="mt-3 h-2 overflow-hidden rounded-full bg-muted"
+                  role="progressbar"
+                  aria-label="Study goal progress"
+                  aria-valuenow={Math.min(studyGoal.progress, studyGoal.target)}
+                  aria-valuemin={0}
+                  aria-valuemax={studyGoal.target}
+                >
+                  <div
+                    className="h-full rounded-full bg-primary"
+                    style={{ width: `${Math.min(100, Math.round((studyGoal.progress / studyGoal.target) * 100))}%` }}
+                  />
+                </div>
+                {studyGoal.note ? <p className="mt-3 text-xs leading-5 text-muted-foreground">Focus: {studyGoal.note}</p> : null}
+                {studyGoal.dailyReminder ? (
+                  <p className="mt-2 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Mail className="size-3.5" aria-hidden /> Email reminder on
+                  </p>
+                ) : null}
+              </>
+            );
+          })()}
         </div>
       ) : null}
       <Link href="/progress" className="mt-4 inline-flex items-center gap-1 text-sm font-medium hover:underline">

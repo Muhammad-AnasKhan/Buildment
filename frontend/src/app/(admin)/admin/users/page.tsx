@@ -12,6 +12,7 @@ import { requireRole } from "@/server/auth/guards";
 import {
   revokeAdminAction,
   setUserInstructorAccessAction,
+  setUserTesterAccessAction,
   setUserZipImportAccessAction,
 } from "@/server/actions/admin/users";
 import {
@@ -215,6 +216,7 @@ export default async function AdminUsersPage({
               <AdminTableHeaderCell align="right">Courses</AdminTableHeaderCell>
               <AdminTableHeaderCell>Access</AdminTableHeaderCell>
               <AdminTableHeaderCell>ZIP import</AdminTableHeaderCell>
+              <AdminTableHeaderCell>Tester</AdminTableHeaderCell>
             </tr>
           </AdminTableHead>
           <AdminTableBody>
@@ -321,6 +323,27 @@ export default async function AdminUsersPage({
                   >
                     <input type="hidden" name="userId" value={user.id} />
                     <input type="hidden" name="enabled" value={String(!user.zipImportEnabled)} />
+                  </AdminActionForm>
+                </AdminTableCell>
+                <AdminTableCell>
+                  <AdminActionForm
+                    action={setUserTesterAccessAction}
+                    submitLabel={user.testerEnabled ? "Disable" : "Enable"}
+                    pendingLabel={user.testerEnabled ? "Disabling…" : "Enabling…"}
+                    variant="outline"
+                    size="sm"
+                    confirm={
+                      user.testerEnabled
+                        ? {
+                            question: `Disable tester access for ${user.email}?`,
+                            description: "They will follow sequential chapter locks again like other learners.",
+                            confirmLabel: "Disable tester access",
+                          }
+                        : undefined
+                    }
+                  >
+                    <input type="hidden" name="userId" value={user.id} />
+                    <input type="hidden" name="enabled" value={String(!user.testerEnabled)} />
                   </AdminActionForm>
                 </AdminTableCell>
               </AdminTableRow>

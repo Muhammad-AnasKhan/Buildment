@@ -1,11 +1,25 @@
 export const STREAK_MILESTONES = [3, 7, 14] as const;
 export type StreakMilestone = (typeof STREAK_MILESTONES)[number];
 
+export type StudyGoalKind = "SESSIONS" | "CHAPTERS" | "MINUTES";
+export type StudyGoalPeriod = "DAILY" | "WEEKLY";
+
+export type StudyGoal = {
+  period: StudyGoalPeriod;
+  kind: StudyGoalKind;
+  target: number;
+  progress: number;
+  note: string | null;
+  dailyReminder: boolean;
+};
+
 export type LearnerHabit = {
   streakCount: number;
   graceUsed: boolean;
   streakMilestone: StreakMilestone | null;
-  weeklyGoal: { kind: "SESSIONS" | "CHAPTERS"; target: number; progress: number; note: string | null; dailyReminder: boolean } | null;
+  /** @deprecated Prefer `goal`. Kept so older clients still read weekly progress. */
+  weeklyGoal: StudyGoal | null;
+  goal: StudyGoal | null;
 };
 
 export function shiftUtcDate(isoDate: string, days: number): string {

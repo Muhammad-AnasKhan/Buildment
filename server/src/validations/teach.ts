@@ -49,6 +49,8 @@ export const courseSettingsBody = z.object({
   // Optional so older clients keep working; omitted means "leave the category as it is".
   category: z.enum(["TECH", "SOFT_SKILLS"]).optional(),
   sequential: z.boolean(),
+  /** Text open questions grade with the learner's OpenRouter key instead of the mentor queue. */
+  autoGradeOpenQuestions: z.boolean(),
   // How learners get a variant in a course family. Optional; omitted leaves it as it is.
   variantAssignment: z.enum(VARIANT_ASSIGNMENTS).optional(),
   pricingType: z.enum(["FREE", "PAID"]),

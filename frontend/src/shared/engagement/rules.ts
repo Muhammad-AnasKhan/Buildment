@@ -187,6 +187,14 @@ export const ENGAGEMENT_RULES: readonly EngagementRule[] = [
     matches: (event) => event.type === "weekly_goal_met" && !event.payload.freezeEarned,
   },
   {
+    id: "daily-goal-met",
+    priority: 73,
+    role: "celebrator",
+    state: "goal",
+    messages: lines("daily-goal-met"),
+    matches: (event) => event.type === "daily_goal_met",
+  },
+  {
     id: "message-approved",
     priority: 65,
     role: "messenger",

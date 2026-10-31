@@ -4,7 +4,7 @@ import { AiInterviewConfigSchema, type SanitizedAiInterviewConfig } from "../../
 import { CodeConfigSchema, type SanitizedCodeConfig } from "../../shared/blocks/code/schema.js";
 import { MustReadConfigSchema } from "../../shared/blocks/must-read/schema.js";
 import {
-  isLlmGradedOpenQuestion,
+  shouldLlmGradeOpenQuestion,
   OpenQuestionConfigSchema,
   type OpenQuestionStoredPayload,
   type SanitizedOpenQuestionConfig,
@@ -36,14 +36,28 @@ const strings = (value: unknown) => (Array.isArray(value) ? value.filter((item):
  * hidden tests and solutions are stripped before the config is returned.
  */
 export async function loadBlockState(blockId: string, user: SessionUser | undefined): Promise<BlockState> {
-  const block = await prisma.block.findUnique({ where: { id: blockId }, include: { chapter: { select: { id: true, archivedAt: true, course: { select: { id: true, familySlug: true, variantFamily: true } } } } } });
+  const block = await prisma.block.findUnique({
+    where: { id: blockId },
+    include: {
+      chapter: {
+        select: {
+          id: true,
+          archivedAt: true,
+          course: { select: { id: true, familySlug: true, variantFamily: true, autoGradeOpenQuestions: true } },
+        },
+      },
+    },
+  });
   if (!block || block.archivedAt || block.chapter.archivedAt) throw new NotFoundError("Block not found");
 
   // Prompts and options read in the caller's variant; anonymous previews get the fallbacks.
   const { course } = block.chapter;
   const enrollment = user ? await findEnrollmentForBlockState(course.id, user.id) : null;
   if (enrollment && !(await releaseContainsChapter(course.id, enrollment, course.familySlug, block.chapter.id))) throw new NotFoundError("Block not found");
-  return withTokens(await blockStateFor(block, user), contentTokenValues(resolveCourseFamily(course.familySlug, course.variantFamily), enrollment?.variantSlug));
+  return withTokens(
+    await blockStateFor(block, user, { autoGradeOpenQuestions: course.autoGradeOpenQuestions }),
+    contentTokenValues(resolveCourseFamily(course.familySlug, course.variantFamily), enrollment?.variantSlug),
+  );
 }
 
 /** Resolve placeholders in what the author wrote (config and explanations), never in the learner's own answer. */
@@ -58,7 +72,11 @@ function withTokens(state: BlockState, values: ContentTokenValues): BlockState {
   } as BlockState;
 }
 
-async function blockStateFor(block: Block, user: SessionUser | undefined): Promise<BlockState> {
+async function blockStateFor(
+  block: Block,
+  user: SessionUser | undefined,
+  options: { autoGradeOpenQuestions?: boolean } = {},
+): Promise<BlockState> {
   const blockId = block.id;
 
   const latest = user
@@ -109,15 +127,17 @@ async function blockStateFor(block: Block, user: SessionUser | undefined): Promi
       const submitted = latest && latest.status !== "DRAFT" ? latest : null;
       const stored = (payload ?? null) as OpenQuestionStoredPayload | null;
       const llmFeedback = stored?.llmFeedback;
-      const llmMode = isLlmGradedOpenQuestion(config);
+      const llmMode = shouldLlmGradeOpenQuestion(config, options.autoGradeOpenQuestions ?? false);
       const aiStatus = llmMode
         ? user?.id
           ? await getAiCredentialStatus(user.id)
           : { configured: false, hasKey: false }
         : null;
+      const clientConfig = sanitizeBlockConfig<typeof config, SanitizedOpenQuestionConfig>(config);
       return {
         type: "OPEN_QUESTION",
-        config: sanitizeBlockConfig<typeof config, SanitizedOpenQuestionConfig>(config),
+        // Course-level auto-grade must look like llm mode so the learner UI asks for an OpenRouter key.
+        config: llmMode ? { ...clientConfig, autoGrade: "llm" as const } : clientConfig,
         group: getOpenQuestionGroupPosition(chapterBlocks, blockId),
         ...(aiStatus
           ? { ai: { configured: aiStatus.configured, hasKey: aiStatus.hasKey } }

@@ -105,7 +105,7 @@ describe("variant assignment on new enrollment", () => {
 describe("course assignment setting", () => {
   const payload = (variantAssignment: string) => ({
     title: fx.course.title, description: "", coverUrl: "", projectGoal: "", difficulty: "",
-    estimatedHours: "", sequential: true, pricingType: "FREE", priceDollars: "", currency: "USD",
+    estimatedHours: "", sequential: true, autoGradeOpenQuestions: false, pricingType: "FREE", priceDollars: "", currency: "USD",
     variantAssignment,
   });
   const patch = (mode: string) => request(app).patch(`/api/v1/teach/courses/${fx.course.id}/settings`)

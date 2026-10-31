@@ -66,6 +66,7 @@ export async function listUsers(filters: ListUsersQuery = {}): Promise<AdminUser
         role: true,
         emailVerified: true,
         zipImportEnabled: true,
+        testerEnabled: true,
         suspendedAt: true,
         createdAt: true,
         _count: { select: { enrollments: true, coursesOwned: true } },
@@ -101,6 +102,7 @@ export async function exportUsers(filters: ListUsersQuery = {}): Promise<CsvTabl
       role: true,
       emailVerified: true,
       zipImportEnabled: true,
+      testerEnabled: true,
       suspendedAt: true,
       totpEnabledAt: true,
       createdAt: true,
@@ -108,7 +110,7 @@ export async function exportUsers(filters: ListUsersQuery = {}): Promise<CsvTabl
     },
   });
   return {
-    header: ["id", "email", "name", "role", "verified", "suspended", "mfa", "zipImport", "enrollments", "courses", "createdAt"],
+    header: ["id", "email", "name", "role", "verified", "suspended", "mfa", "zipImport", "tester", "enrollments", "courses", "createdAt"],
     rows: users.map((user) => [
       user.id,
       user.email,
@@ -118,6 +120,7 @@ export async function exportUsers(filters: ListUsersQuery = {}): Promise<CsvTabl
       user.suspendedAt ? "yes" : "no",
       user.totpEnabledAt ? "yes" : "no",
       user.zipImportEnabled ? "yes" : "no",
+      user.testerEnabled ? "yes" : "no",
       user._count.enrollments,
       user._count.coursesOwned,
       user.createdAt.toISOString(),
@@ -135,6 +138,7 @@ export async function getUserDetail(userId: string): Promise<AdminUserDetail> {
       role: true,
       emailVerified: true,
       zipImportEnabled: true,
+      testerEnabled: true,
       suspendedAt: true,
       suspensionNote: true,
       totpEnabledAt: true,
@@ -168,6 +172,7 @@ export async function getUserDetail(userId: string): Promise<AdminUserDetail> {
       role: user.role,
       emailVerified: user.emailVerified !== null,
       zipImportEnabled: user.zipImportEnabled,
+      testerEnabled: user.testerEnabled,
       suspended: user.suspendedAt !== null,
       suspensionNote: user.suspensionNote,
       mfaEnabled: user.totpEnabledAt !== null,
@@ -356,6 +361,23 @@ export async function setZipImportAccess(actor: AdminActor, userId: string, enab
       targetType: "User",
       targetId: userId,
       summary: `${enabled ? "Enabled" : "Disabled"} ZIP import for ${user.email}`,
+      metadata: { enabled },
+    });
+  });
+}
+
+/** Marks a normal learner as a tester so sequential chapter locks are skipped. Role is unchanged. */
+export async function setTesterAccess(actor: AdminActor, userId: string, enabled: boolean): Promise<void> {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, email: true } });
+  if (!user) throw new NotFoundError("User not found");
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: userId }, data: { testerEnabled: enabled } });
+    await recordAdminAction(tx, {
+      actor,
+      action: ADMIN_AUDIT_ACTIONS.USER_SET_TESTER,
+      targetType: "User",
+      targetId: userId,
+      summary: `${enabled ? "Enabled" : "Disabled"} tester access for ${user.email}`,
       metadata: { enabled },
     });
   });

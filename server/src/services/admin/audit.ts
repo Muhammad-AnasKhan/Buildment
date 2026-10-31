@@ -24,6 +24,7 @@ export const ADMIN_AUDIT_ACTIONS = {
   USER_GRANT_INSTRUCTOR: "user.grant-instructor",
   USER_SET_INSTRUCTOR_ACCESS: "user.set-instructor-access",
   USER_SET_ZIP_IMPORT: "user.set-zip-import",
+  USER_SET_TESTER: "user.set-tester",
   USER_GRANT_ADMIN: "user.grant-admin",
   USER_REVOKE_ADMIN: "user.revoke-admin",
   USER_FORCE_VERIFY: "user.force-verify",

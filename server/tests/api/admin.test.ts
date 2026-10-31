@@ -751,7 +751,7 @@ describe("CSV exports", () => {
     expect(res.headers["content-disposition"]).toContain("attachment");
 
     const lines = res.text.trim().split("\n");
-    expect(lines[0]).toBe("id,email,name,role,verified,suspended,mfa,zipImport,enrollments,courses,createdAt");
+    expect(lines[0]).toBe("id,email,name,role,verified,suspended,mfa,zipImport,tester,enrollments,courses,createdAt");
     expect(lines.length).toBeGreaterThan(1);
     // The export honours the same filters as the list.
     expect(lines.slice(1).every((line) => line.split(",")[3] === "ADMIN")).toBe(true);

@@ -10,6 +10,7 @@ export const XP_SOURCES = [
   "answer_approved",
   "course_completed",
   "weekly_goal_met",
+  "daily_goal_met",
 ] as const;
 export type XpSource = (typeof XP_SOURCES)[number];
 
@@ -26,6 +27,8 @@ export const XP_AMOUNTS = {
   answer_approved: 15,
   course_completed: 100,
   weekly_goal_met: 25,
+  /** Brand daily-goal reward; no streak freeze (freezes stay on the weekly goal). */
+  daily_goal_met: 10,
 } as const satisfies Record<XpSource, number>;
 
 /** XP for passing a quiz chapter on a given try. Retakes after passing earn nothing (one key per chapter). */
@@ -51,4 +54,5 @@ export const xpKeys = {
   answerApproved: (blockId: string) => `answer:${blockId}`,
   course: (courseId: string) => `course:${courseId}`,
   weeklyGoal: (weekStartDayKey: string) => `weekly_goal:${weekStartDayKey}`,
+  dailyGoal: (dayKey: string) => `daily_goal:${dayKey}`,
 };

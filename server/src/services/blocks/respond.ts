@@ -3,7 +3,7 @@ import type { GradeResult } from "../../shared/blocks/types.js";
 import { QuizPayloadSchema } from "../../shared/blocks/quiz/schema.js";
 import { PredictPayloadSchema } from "../../shared/blocks/predict/schema.js";
 import {
-  isLlmGradedOpenQuestion,
+  shouldLlmGradeOpenQuestion,
   OpenQuestionConfigSchema,
   OpenQuestionPayloadSchema,
   type OpenQuestionConfig,
@@ -152,7 +152,7 @@ export async function submitBlockResponse(input: {
   let graded: Graded;
   let storedPayload: object = payload;
 
-  if (block.type === "OPEN_QUESTION" && isLlmGradedOpenQuestion(block.config)) {
+  if (block.type === "OPEN_QUESTION" && shouldLlmGradeOpenQuestion(block.config, block.chapter.course.autoGradeOpenQuestions)) {
     const config = OpenQuestionConfigSchema.parse(block.config);
     const latest = await prisma.response.findFirst({
       where: { blockId, userId: learner.id, status: { not: "DRAFT" } },

@@ -26,6 +26,7 @@ function settingsFromCourse(course: CourseSettingsView): CourseSettingsInput {
     estimatedHours: course.estimatedHours == null ? "" : String(course.estimatedHours),
     category: course.category,
     sequential: course.sequential,
+    autoGradeOpenQuestions: course.autoGradeOpenQuestions,
     ...(course.hasVariants ? { variantAssignment: course.variantAssignment } : {}),
     pricingType: course.pricingType,
     priceDollars: course.pricingType === "PAID" && course.priceCents > 0 ? (course.priceCents / 100).toFixed(2) : "",
@@ -45,6 +46,7 @@ function settingsFromForm(form: HTMLFormElement): CourseSettingsInput {
     estimatedHours: String(data.get("estimatedHours") ?? ""),
     category: String(data.get("category") ?? "TECH"),
     sequential: data.get("sequential") === "on",
+    autoGradeOpenQuestions: data.get("autoGradeOpenQuestions") === "on",
     ...(variantAssignment === null ? {} : { variantAssignment: String(variantAssignment) }),
     pricingType: String(data.get("pricingType") ?? "FREE"),
     priceDollars: String(data.get("priceDollars") ?? ""),
@@ -54,13 +56,34 @@ function settingsFromForm(form: HTMLFormElement): CourseSettingsInput {
 
 function sectionChanged(current: CourseSettingsInput, saved: CourseSettingsInput, section: SettingsSection): boolean {
   if (section === "details") return current.title !== saved.title || current.description !== saved.description || current.coverUrl !== saved.coverUrl;
-  if (section === "learning") return current.projectGoal !== saved.projectGoal || current.difficulty !== saved.difficulty || current.estimatedHours !== saved.estimatedHours || current.category !== saved.category || current.sequential !== saved.sequential || current.variantAssignment !== saved.variantAssignment;
+  if (section === "learning") {
+    return (
+      current.projectGoal !== saved.projectGoal ||
+      current.difficulty !== saved.difficulty ||
+      current.estimatedHours !== saved.estimatedHours ||
+      current.category !== saved.category ||
+      current.sequential !== saved.sequential ||
+      current.autoGradeOpenQuestions !== saved.autoGradeOpenQuestions ||
+      current.variantAssignment !== saved.variantAssignment
+    );
+  }
   return current.pricingType !== saved.pricingType || current.priceDollars !== saved.priceDollars || current.currency !== saved.currency;
 }
 
 function mergeSection(saved: CourseSettingsInput, current: CourseSettingsInput, section: SettingsSection): CourseSettingsInput {
   if (section === "details") return { ...saved, title: current.title, description: current.description, coverUrl: current.coverUrl };
-  if (section === "learning") return { ...saved, projectGoal: current.projectGoal, difficulty: current.difficulty, estimatedHours: current.estimatedHours, category: current.category, sequential: current.sequential, variantAssignment: current.variantAssignment };
+  if (section === "learning") {
+    return {
+      ...saved,
+      projectGoal: current.projectGoal,
+      difficulty: current.difficulty,
+      estimatedHours: current.estimatedHours,
+      category: current.category,
+      sequential: current.sequential,
+      autoGradeOpenQuestions: current.autoGradeOpenQuestions,
+      variantAssignment: current.variantAssignment,
+    };
+  }
   return { ...saved, pricingType: current.pricingType, priceDollars: current.priceDollars, currency: current.currency };
 }
 
@@ -217,6 +240,15 @@ export function CourseSettings({ course }: { course: CourseSettingsView }) {
           <label className="flex items-start gap-3 rounded-xl border bg-muted/25 p-4">
             <input type="checkbox" name="sequential" defaultChecked={course.sequential} className="mt-1 size-4 accent-primary" />
             <span><span className="block text-sm font-medium">Require chapters in order</span><span className="mt-1 block text-xs leading-5 text-muted-foreground">Learners finish the previous chapter before opening the next one.</span></span>
+          </label>
+          <label className="flex items-start gap-3 rounded-xl border bg-muted/25 p-4">
+            <input type="checkbox" name="autoGradeOpenQuestions" defaultChecked={course.autoGradeOpenQuestions} className="mt-1 size-4 accent-primary" />
+            <span>
+              <span className="block text-sm font-medium">Auto-grade text open questions with AI</span>
+              <span className="mt-1 block text-xs leading-5 text-muted-foreground">
+                Short answers are graded instantly with the learner&apos;s OpenRouter key instead of the mentor review queue. Learners must add a key if they have not already. URL and project submissions still go to mentors.
+              </span>
+            </span>
           </label>
           {course.hasVariants && (
             <Field label="Course variant" htmlFor="course-variant-assignment" hint="New learners get a variant with the fewest learners and cannot change it. Existing learners keep their choice and progress.">

@@ -12,7 +12,7 @@ import {
   NotFoundError,
 } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
-import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
+import { shouldBypassProgressGating } from "../auth/seed-access.js";
 import {
   notifyMenteeHelpReply,
   notifyMenteeHelpThreadResolved,
@@ -186,7 +186,7 @@ export async function askFromChapter(
         courseId: chapter.courseId,
         enrollmentId: enrollment.id,
         chapterId: chapter.id,
-        bypassLocking: bypassProgressGatingForEmail(user.email),
+        bypassLocking: shouldBypassProgressGating(user),
       });
     } catch (error) {
       if (error instanceof ChapterLockedError) {
