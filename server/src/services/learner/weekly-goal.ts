@@ -3,9 +3,11 @@ import { STREAK_MILESTONES, type StreakMilestone } from "../../shared/lib/streak
 import { prisma } from "../../db/prisma.js";
 
 export async function setWeeklyGoal(userId: string, goal: WeeklyGoalInput) {
+  const period = goal.period ?? "WEEKLY";
   await prisma.user.update({
     where: { id: userId },
     data: {
+      goalPeriod: period,
       weeklyGoalKind: goal.kind,
       weeklyGoalTarget: goal.target,
       weeklyGoalNote: goal.note?.trim() || null,
@@ -17,7 +19,14 @@ export async function setWeeklyGoal(userId: string, goal: WeeklyGoalInput) {
 export async function clearWeeklyGoal(userId: string) {
   await prisma.user.update({
     where: { id: userId },
-    data: { weeklyGoalKind: null, weeklyGoalTarget: null, weeklyGoalNote: null, weeklyGoalReminderEnabled: false, weeklyGoalReminderSentOn: null },
+    data: {
+      goalPeriod: null,
+      weeklyGoalKind: null,
+      weeklyGoalTarget: null,
+      weeklyGoalNote: null,
+      weeklyGoalReminderEnabled: false,
+      weeklyGoalReminderSentOn: null,
+    },
   });
 }
 

@@ -60,6 +60,14 @@ enum Role {
 enum WeeklyGoalKind {
   SESSIONS
   CHAPTERS
+  /// Active study minutes (from DailyActivity / study sessions). Best fit for daily goals.
+  MINUTES
+}
+
+/// How often the learner's study goal resets. Null when no goal is set.
+enum GoalPeriod {
+  DAILY
+  WEEKLY
 }
 
 enum CourseStatus {
@@ -219,6 +227,8 @@ model User {
   suspensionNote String?      @db.VarChar(240)
   weeklyGoalKind WeeklyGoalKind?
   weeklyGoalTarget Int?
+  /// DAILY or WEEKLY when a goal is set; null means no goal.
+  goalPeriod GoalPeriod?
   weeklyGoalNote String? @db.VarChar(240)
   weeklyGoalReminderEnabled Boolean @default(false)
   weeklyGoalReminderSentOn DateTime? @db.Date

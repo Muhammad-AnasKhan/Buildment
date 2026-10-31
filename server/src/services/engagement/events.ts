@@ -242,7 +242,11 @@ async function addGamification(
       // A learner who hides game elements still hears about the goal, just not the freeze.
       if (recorded.type === "weekly_goal_met" && (hidden || !features.streakFreezes)) recorded.payload = { freezeEarned: false };
       events.push(recorded);
-      if (settled.dedupeKey) keys.add(xpKeys.weeklyGoal(settled.dedupeKey.slice("weekly_goal_met:".length)));
+      if (settled.dedupeKey?.startsWith("weekly_goal_met:")) {
+        keys.add(xpKeys.weeklyGoal(settled.dedupeKey.slice("weekly_goal_met:".length)));
+      } else if (settled.dedupeKey?.startsWith("daily_goal_met:")) {
+        keys.add(xpKeys.dailyGoal(settled.dedupeKey.slice("daily_goal_met:".length)));
+      }
     }
   }
 

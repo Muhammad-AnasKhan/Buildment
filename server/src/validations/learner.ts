@@ -3,10 +3,20 @@ import { STREAK_MILESTONES } from "../shared/lib/streak.js";
 import { realNameSchema } from "../shared/lib/auth-validation.js";
 
 export const weeklyGoalBody = z.object({
-  kind: z.enum(["SESSIONS", "CHAPTERS"]),
-  target: z.number().int().min(1).max(50),
+  period: z.enum(["DAILY", "WEEKLY"]).optional().default("WEEKLY"),
+  kind: z.enum(["SESSIONS", "CHAPTERS", "MINUTES"]),
+  // Daily minutes presets go up to 20; weekly chapter/session targets stay within 50.
+  target: z.number().int().min(1).max(120),
   note: z.string().trim().max(240).optional(),
   dailyReminder: z.boolean().optional(),
+}).superRefine((val, ctx) => {
+  if (val.kind !== "MINUTES" && val.target > 50) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["target"],
+      message: "Weekly targets must be at most 50",
+    });
+  }
 });
 
 export const streakMilestoneParams = z.object({

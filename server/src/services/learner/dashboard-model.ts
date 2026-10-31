@@ -398,6 +398,7 @@ export function buildMenteeDashboardViewModel(args: {
       graceUsed: false,
       streakMilestone: null,
       weeklyGoal: null,
+      goal: null,
     },
     gamification,
   };
