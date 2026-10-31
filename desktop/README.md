@@ -53,3 +53,20 @@ Support files live in src/auth/ (browser sign-in), src/domain/ (course types and
 Start learning opens a native React reader in the desktop app, with course curriculum replacing the catalog sidebar. Lessons, quizzes, grading, and progress use the backend through authenticated IPC. Browser sign-in still uses BUILDMENT_WEB_URL; reading does not embed the website. MDX is parsed as literal data without executing expressions. Callouts, diagrams, visual walkthroughs, media, roadmaps, file trees, request traces, and interactive canvases use the same rendering components as web.
 
 Reader state, parsing, and IPC adapters live in src/ui/learning/ and src/learning/. Course-block renderers live in ../packages/learning-ui and are registered through its shared src/lesson-blocks.tsx map, also used by web. This includes labs, course content blocks, exercises, Checklist, and Learning Log. Keep desktop API/IPC work in host adapters and use the package components for block presentation and interaction. Both apps install the package as @buildment/learning-ui; after editing it, run install in each app to refresh its local snapshot. Desktop quizzes use the shared integrity hook through an IPC transport: focus and clipboard events, fullscreen reminders, and optional camera snapshots follow the web rules. Signals are advisory mentor notes and never automatically fail a learner. Snapshot capture requires consent; screenshot detection is best effort.
+
+## Enrolled course overview
+
+After enrollment, desktop uses the same `CourseOverviewContent` and variant picker as web from `@buildment/learning-ui`. The learner overview endpoint supplies progress, pending reviews, chapter checkpoints and locks, resume links, and course tracks. Keep presentation changes in the shared package; desktop's `EnrolledCourse` adapter owns IPC requests and native lesson navigation. Project showcase images use the configured `BUILDMENT_WEB_URL` origin. Variant and specialisation choices use narrowly scoped `learning:update-track` IPC calls; credentials remain in the main process.
+
+For the hosted service on macOS:
+
+```sh
+BUILDMENT_API_URL=https://buildment-eca06ffd3e8f.herokuapp.com \
+BUILDMENT_WEB_URL=https://edorax.com npm --prefix desktop start
+```
+
+The reader sidebar and heading outline are shared with web. Desktop bundles DM Sans, Unbounded, and JetBrains Mono locally, so typography does not require a font-network request. HTTPS links in lesson prose open in the system browser; same-course chapter links stay in the desktop reader.
+
+## Edorax branding
+
+The desktop name is Edorax. Sidebar/startup branding and packaged/Dock icons use `frontend/public/logo.svg`, the web app's current mark. After a web logo change, run `node desktop/scripts/sync-brand.mjs` on macOS with frontend dependencies installed to regenerate the SVG copy and PNG/ICNS/ICO assets. Restart Electron to refresh the native app name and Dock icon.

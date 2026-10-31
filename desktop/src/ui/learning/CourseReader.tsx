@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { DesktopToolbar } from '../layout/DesktopToolbar';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Lesson } from '../../domain/learning';
 import type { QuizChapterState } from '../../../../server/src/shared/api/blocks';
 import { LessonContent } from './LessonContent';
@@ -6,15 +7,34 @@ import { Exercise } from './Exercise';
 import { QuizSession } from './quiz/QuizSession';
 import { AccountMenu } from '../auth/AccountMenu';
 import type { Session } from '../auth/useSession';
-import { ArrowLeft, BookOpen } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import {
+  ChapterSidebar,
+  SidebarToggle,
+} from '@buildment/learning-ui/components/learn/chapter-sidebar';
+import {
+  ChapterToc,
+  TocToggle,
+} from '@buildment/learning-ui/components/learn/chapter-toc';
+import { CourseNavigationProvider } from '@buildment/learning-ui/components/learn/course-navigation';
+import {
+  VariantThemeScope,
+  variantForTrack,
+} from '@buildment/learning-ui/components/learn/variant-theme';
+import { lessonHeadings } from './lesson-headings';
+import { LessonLoading } from './LessonLoading';
 
 export function CourseReader({
   courseSlug,
+  courseTitle,
+  initialChapter,
   onBack,
   onSignedOut,
   session,
 }: {
   courseSlug: string;
+  courseTitle: string;
+  initialChapter?: string;
   onBack: () => void;
   onSignedOut: () => void;
   session: Session;
@@ -24,6 +44,35 @@ export function CourseReader({
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [quiz, setQuiz] = useState<QuizChapterState | null>(null);
+  const [sidebarClosed, setSidebarClosed] = useState(false);
+  const [tocClosed, setTocClosed] = useState(false);
+  const [smallWindow, setSmallWindow] = useState(() => window.innerWidth < 768);
+  const annotated = useMemo(
+    () => (lesson ? lessonHeadings(lesson.document) : null),
+    [lesson?.document],
+  );
+  const showHeadings =
+    lesson?.chapter.readerMode !== 'QUIZ' &&
+    !(lesson?.content?.predictGate && !lesson.content.predictRevealed);
+  useEffect(() => {
+    const media = matchMedia('(max-width: 767px)');
+    const update = () => {
+      setSmallWindow(media.matches);
+      setSidebarClosed(media.matches);
+      setTocClosed(media.matches);
+    };
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+  function navigate(href: string) {
+    if (href === `/courses/${courseSlug}`) return onBack();
+    const prefix = `/courses/${courseSlug}/`;
+    if (href.startsWith(prefix)) {
+      if (smallWindow) setSidebarClosed(true);
+      void load(decodeURIComponent(href.slice(prefix.length)));
+    }
+  }
   const generation = useRef(0);
   const heading = useRef<HTMLHeadingElement>(null);
 
@@ -110,11 +159,12 @@ export function CourseReader({
     }
   }
   useEffect(() => {
-    void start();
+    if (initialChapter) void load(initialChapter);
+    else void start();
     return () => {
       generation.current++;
     };
-  }, [courseSlug]);
+  }, [courseSlug, initialChapter]);
   useEffect(() => {
     if (!loading) heading.current?.focus();
   }, [lesson?.chapter.id, loading]);
@@ -139,210 +189,212 @@ export function CourseReader({
     if (lesson) void load(lesson.chapter.slug, true);
   };
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-30 flex h-[72px] items-center justify-between gap-4 border-b border-border bg-background/95 px-5 backdrop-blur lg:px-8">
-        <div className="flex min-w-0 items-center gap-4">
-          <button
-            aria-label="Back to course preview"
-            title="Back to course preview"
-            onClick={onBack}
-            className="rounded-lg border border-border p-2.5 hover:bg-muted"
-          >
-            <ArrowLeft size={18} />
-          </button>
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Learning workspace
-            </p>
-            <p className="truncate text-sm font-medium">
-              {lesson?.course.title || 'Your course'}
-            </p>
-          </div>
-        </div>
-        <AccountMenu session={session} />
-      </header>
-      {session.authError && (
-        <p role="alert" className="m-5 rounded border border-border p-4">
-          {session.authError}
-        </p>
-      )}
-      {error && (
-        <div role="alert" className="mb-5 rounded-xl border border-border p-4">
-          <p>{error}</p>
-          <button
-            className="mt-2 underline"
-            onClick={() =>
-              lesson ? void load(lesson.chapter.slug) : void start()
-            }
-          >
-            Try again
-          </button>
-        </div>
-      )}
-      {loading && <p role="status">Loading lesson…</p>}
-      {lesson && !loading && (
-        <div className="grid grid-cols-[220px_minmax(0,1fr)] items-start xl:grid-cols-[280px_minmax(0,1fr)]">
-          <nav
-            aria-label="Course lessons"
-            className="sticky top-[72px] h-[calc(100vh-72px)] space-y-6 overflow-y-auto border-r border-border bg-card p-5"
-          >
-            <h2 className="flex items-center gap-2 text-sm font-semibold">
-              <BookOpen size={17} />
-              Course curriculum
-            </h2>
-            {lesson.modules.map((module) => (
-              <details
-                key={module.id}
-                open={module.chapters.some(
-                  (chapter) => chapter.id === lesson.chapter.id,
-                )}
-                className="group border-t border-border pt-4"
+    <CourseNavigationProvider onNavigate={navigate}>
+      <VariantThemeScope variant={variantForTrack(lesson?.track ?? null)}>
+        <div className="course-overview-surface flex h-full flex-col overflow-hidden bg-background">
+          <DesktopToolbar>
+            <div className="flex min-w-0 items-center gap-2">
+              <SidebarToggle
+                collapsed={sidebarClosed}
+                onClick={() => setSidebarClosed(!sidebarClosed)}
+              />
+              <button
+                aria-label="Back to course preview"
+                title="Back to course preview"
+                onClick={onBack}
+                className="flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
-                <summary className="mb-3 cursor-pointer text-sm font-semibold leading-6 marker:text-muted-foreground">
-                  {module.title}
-                  <span className="ml-2 text-xs font-normal text-muted-foreground">
-                    {module.chapters.length}
-                  </span>
-                </summary>
-                <ul className="space-y-1">
-                  {module.chapters.map((chapter) => (
-                    <li key={chapter.id}>
-                      <button
-                        disabled={chapter.locked || busy}
-                        aria-current={
-                          chapter.id === lesson.chapter.id ? 'page' : undefined
-                        }
-                        onClick={() => void load(chapter.slug)}
-                        className="w-full rounded-lg border-l-2 border-transparent px-3 py-2.5 text-left text-[13px] leading-5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground aria-[current=page]:border-ok aria-[current=page]:bg-ok/10 aria-[current=page]:font-medium aria-[current=page]:text-foreground disabled:opacity-50"
-                      >
-                        {chapter.status === 'COMPLETED'
-                          ? '✓ '
-                          : chapter.locked
-                            ? 'Locked · '
-                            : ''}
-                        {chapter.title}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            ))}
-          </nav>
-          <article className="mx-auto w-full min-w-0 max-w-[860px] px-7 py-10 lg:px-12 lg:py-14">
-            <p className="mb-3 text-xs text-muted-foreground">
-              Lesson {lesson.chapter.lessonLabel}
-              {lesson.chapter.estimatedMinutes
-                ? ' · ' + lesson.chapter.estimatedMinutes + ' min'
-                : ''}
-            </p>
-            <h1
-              ref={heading}
-              tabIndex={-1}
-              className="max-w-[24ch] text-3xl font-semibold leading-tight tracking-tight outline-none lg:text-4xl"
-            >
-              {lesson.chapter.title}
-            </h1>
-            {lesson.locked ? (
-              <div className="mt-6">
-                <p>
-                  This lesson is locked. Finish{' '}
-                  {lesson.previous?.title || 'the previous lesson'} first.
+                <ArrowLeft size={16} />
+                <span>Course</span>
+              </button>
+              <div className="min-w-0 border-l border-border pl-3">
+                <p className="truncate text-[11px] font-medium text-muted-foreground">
+                  {lesson?.course.title || courseTitle}
                 </p>
-                {lesson.previous && (
-                  <button
-                    className="mt-4 underline"
-                    onClick={() => void load(lesson.previous!.slug)}
-                  >
-                    Open previous lesson
-                  </button>
-                )}
+                <p className="truncate text-[13px] font-semibold">
+                  {lesson?.chapter.title || 'Loading lesson…'}
+                </p>
               </div>
-            ) : (
-              lesson.content && (
-                <>
-                  {lesson.chapter.readerMode === 'QUIZ' ? (
-                    quiz ? (
-                      <QuizSession
-                        key={lesson.chapter.id}
-                        chapterId={lesson.chapter.id}
-                        state={quiz}
-                        complete={lesson.content.chapterComplete}
-                        onSaved={refresh}
-                      />
-                    ) : (
-                      <p role="status">Loading quiz…</p>
-                    )
-                  ) : (
-                    <div key={lesson.chapter.id} className="lesson-prose mt-8">
-                      {lesson.content.predictGate &&
-                      !lesson.content.predictRevealed ? (
-                        <>
-                          <p>
-                            Answer the prediction before reading the lesson.
-                          </p>
-                          <PredictionContent
-                            node={lesson.document}
-                            onSaved={refresh}
-                          />
-                        </>
-                      ) : (
-                        <LessonContent
-                          node={lesson.document}
-                          lesson={lesson}
-                          onSaved={refresh}
-                        />
-                      )}
-                    </div>
-                  )}
-                  <footer className="mt-10 space-y-4 border-t border-border pt-6">
-                    <p className="text-sm text-muted-foreground">
-                      {lesson.content.checkpointsCompleted} /{' '}
-                      {lesson.content.checkpointsTotal} checkpoints complete
-                    </p>
-                    {lesson.content.reflectionPending && (
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {showHeadings && Boolean(annotated?.headings.length) && (
+                <TocToggle
+                  collapsed={tocClosed}
+                  onClick={() => setTocClosed(!tocClosed)}
+                />
+              )}
+              <AccountMenu session={session} />
+            </div>
+          </DesktopToolbar>
+          {session.authError && (
+            <p role="alert" className="m-5 rounded border border-border p-4">
+              {session.authError}
+            </p>
+          )}
+          {error && (
+            <div
+              role="alert"
+              className="mb-5 rounded-xl border border-border p-4"
+            >
+              <p>{error}</p>
+              <button
+                className="mt-2 underline"
+                onClick={() =>
+                  lesson ? void load(lesson.chapter.slug) : void start()
+                }
+              >
+                Try again
+              </button>
+            </div>
+          )}
+          {loading && <LessonLoading />}
+          {lesson && !loading && (
+            <div className="flex min-h-0 flex-1 overflow-hidden">
+              <ChapterSidebar
+                courseSlug={courseSlug}
+                courseTitle={lesson.course.title}
+                modules={lesson.modules}
+                currentChapterSlug={lesson.chapter.slug}
+                collapsed={sidebarClosed}
+                mobileSheet={smallWindow}
+                onToggle={() => setSidebarClosed(true)}
+              />
+              <div
+                className="min-w-0 flex-1 overflow-y-auto"
+                key={lesson.chapter.id}
+              >
+                <article className="mx-auto w-full min-w-0 max-w-[860px] px-7 py-10 lg:px-12 lg:py-14">
+                  <p className="mb-3 text-xs text-muted-foreground">
+                    Lesson {lesson.chapter.lessonLabel}
+                    {lesson.chapter.estimatedMinutes
+                      ? ' · ' + lesson.chapter.estimatedMinutes + ' min'
+                      : ''}
+                  </p>
+                  <h1
+                    ref={heading}
+                    tabIndex={-1}
+                    className="max-w-[24ch] text-3xl font-semibold leading-tight tracking-tight outline-none lg:text-4xl"
+                  >
+                    {lesson.chapter.title}
+                  </h1>
+                  {lesson.locked ? (
+                    <div className="mt-6">
                       <p>
-                        Save your learning reflection to complete this lesson.
+                        This lesson is locked. Finish{' '}
+                        {lesson.previous?.title || 'the previous lesson'} first.
                       </p>
-                    )}
-                    <div className="flex flex-wrap gap-3">
-                      {lesson.prev && (
+                      {lesson.previous && (
                         <button
-                          disabled={busy}
-                          onClick={() => void load(lesson.prev!.slug)}
-                          className="rounded-lg border border-border px-4 py-2"
+                          className="mt-4 underline"
+                          onClick={() => void load(lesson.previous!.slug)}
                         >
-                          Previous lesson
-                        </button>
-                      )}
-                      <button
-                        disabled={busy || !lesson.content.canMarkComplete}
-                        onClick={() => void complete()}
-                        className="rounded-lg bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
-                      >
-                        {lesson.content.chapterComplete
-                          ? 'Lesson completed'
-                          : busy
-                            ? 'Saving…'
-                            : 'Mark lesson complete'}
-                      </button>
-                      {lesson.next && (
-                        <button
-                          disabled={busy || lesson.content.nextLocked}
-                          onClick={() => void load(lesson.next!.slug)}
-                          className="rounded-lg border border-border px-4 py-2 disabled:opacity-50"
-                        >
-                          Next lesson
+                          Open previous lesson
                         </button>
                       )}
                     </div>
-                  </footer>
-                </>
-              )
-            )}
-          </article>
+                  ) : (
+                    lesson.content && (
+                      <>
+                        {lesson.chapter.readerMode === 'QUIZ' ? (
+                          quiz ? (
+                            <QuizSession
+                              key={lesson.chapter.id}
+                              chapterId={lesson.chapter.id}
+                              state={quiz}
+                              complete={lesson.content.chapterComplete}
+                              onSaved={refresh}
+                            />
+                          ) : (
+                            <p role="status">Loading quiz…</p>
+                          )
+                        ) : (
+                          <div
+                            key={lesson.chapter.id}
+                            className="lesson-prose mt-8"
+                          >
+                            {lesson.content.predictGate &&
+                            !lesson.content.predictRevealed ? (
+                              <>
+                                <p>
+                                  Answer the prediction before reading the
+                                  lesson.
+                                </p>
+                                <PredictionContent
+                                  node={lesson.document}
+                                  onSaved={refresh}
+                                />
+                              </>
+                            ) : (
+                              <LessonContent
+                                node={annotated?.document || lesson.document}
+                                lesson={lesson}
+                                onSaved={refresh}
+                              />
+                            )}
+                          </div>
+                        )}
+                        <footer className="mt-10 space-y-4 border-t border-border pt-6">
+                          <p className="text-sm text-muted-foreground">
+                            {lesson.content.checkpointsCompleted} /{' '}
+                            {lesson.content.checkpointsTotal} checkpoints
+                            complete
+                          </p>
+                          {lesson.content.reflectionPending && (
+                            <p>
+                              Save your learning reflection to complete this
+                              lesson.
+                            </p>
+                          )}
+                          <div className="flex flex-wrap gap-3">
+                            {lesson.prev && (
+                              <button
+                                disabled={busy}
+                                onClick={() => void load(lesson.prev!.slug)}
+                                className="rounded-lg border border-border px-4 py-2"
+                              >
+                                Previous lesson
+                              </button>
+                            )}
+                            <button
+                              disabled={busy || !lesson.content.canMarkComplete}
+                              onClick={() => void complete()}
+                              className="rounded-lg bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
+                            >
+                              {lesson.content.chapterComplete
+                                ? 'Lesson completed'
+                                : busy
+                                  ? 'Saving…'
+                                  : 'Mark lesson complete'}
+                            </button>
+                            {lesson.next && (
+                              <button
+                                disabled={busy || lesson.content.nextLocked}
+                                onClick={() => void load(lesson.next!.slug)}
+                                className="rounded-lg border border-border px-4 py-2 disabled:opacity-50"
+                              >
+                                Next lesson
+                              </button>
+                            )}
+                          </div>
+                        </footer>
+                      </>
+                    )
+                  )}
+                </article>
+              </div>
+              {showHeadings && (
+                <ChapterToc
+                  headings={annotated?.headings || []}
+                  collapsed={tocClosed}
+                  mobileSheet={smallWindow}
+                  onToggle={() => setTocClosed(true)}
+                />
+              )}
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </VariantThemeScope>
+    </CourseNavigationProvider>
   );
 }
 function PredictionContent({

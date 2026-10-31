@@ -15,5 +15,9 @@
   "diagram/layout.ts",
   "diagram/draw.ts",
   "diagram/describe.ts",
-  "diagram/from-mermaid.ts"
+  "diagram/from-mermaid.ts",
+  "api/catalog.ts",
+  "api/syllabus.ts",
+  "domain/enums.ts",
+  "lib/course-tracks.ts"
 ]

@@ -1,4 +1,9 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/dm-sans';
+@import '@fontsource-variable/jetbrains-mono';
+@import '@fontsource/unbounded/700.css';
+@import '@buildment/learning-ui/course-theme.css';
+@custom-variant dark (&:where(.dark, .dark *));
 @source '../../node_modules/@buildment/learning-ui/src';
 @source '../';
 
@@ -36,6 +41,13 @@
   }
 }
 @theme inline {
+  --color-card-foreground: var(--foreground);
+  --color-secondary: var(--secondary, var(--muted));
+  --color-secondary-foreground: var(--foreground);
+  --color-accent: var(--accent, var(--muted));
+  --color-brand-yellow: var(--brand-yellow, #ffc933);
+  --font-heading: 'Unbounded', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -48,8 +60,27 @@
   --color-sidebar: var(--sidebar);
   --color-ok: var(--ok);
   --color-ok-soft: var(--ok-soft);
-  --font-sans: 'Segoe UI', system-ui, sans-serif;
-  --font-display: 'Segoe UI', system-ui, sans-serif;
+  --font-sans: 'DM Sans Variable', system-ui, sans-serif;
+  --font-display: 'DM Sans Variable', system-ui, sans-serif;
+}
+/* The desktop window owns the viewport. Only its content panes may scroll. */
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+#root {
+  position: fixed;
+  inset: 0;
+}
+#root main {
+  overscroll-behavior-y: none;
+}
+#root .course-overview-surface {
+  min-height: 100%;
 }
 body {
   margin: 0;
@@ -103,4 +134,33 @@ input:focus-visible {
 }
 .lesson-prose img {
   margin-inline: auto;
+}
+
+@layer base {
+  html { font-family: var(--font-sans); }
+  h1, h2, h3 {
+    font-family: var(--font-heading), var(--font-sans), system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* The title area drags the native window; controls remain clickable. */
+.desktop-toolbar {
+  -webkit-app-region: drag;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  height: 56px;
+  gap: 12px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--background);
+  position: relative;
+  z-index: 30;
+}
+.desktop-toolbar[data-platform='darwin'] { padding-left: 92px; }
+.desktop-toolbar :is(button, a, input, select, textarea, summary, details) {
+  -webkit-app-region: no-drag;
 }

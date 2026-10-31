@@ -1,3 +1,4 @@
+import logo from '../../assets/edorax.svg';
 import {
   PanelLeftClose,
   PanelLeftOpen,
@@ -21,12 +22,10 @@ export function Sidebar({
       <div
         className={`flex h-24 items-center ${collapsed ? 'justify-center' : 'gap-3 px-6'}`}
       >
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary text-xl font-bold tracking-tighter text-primary-foreground">
-          b.
-        </span>
+        <img src={logo} alt="Edorax logo" className="size-9 shrink-0" />
         {!collapsed && (
           <span className="text-lg font-semibold tracking-tight">
-            buildment
+            edorax
             <span className="mt-0.5 block text-[9px] font-normal uppercase tracking-[0.25em] text-muted-foreground">
               Learning workspace
             </span>

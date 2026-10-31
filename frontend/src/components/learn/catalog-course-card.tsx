@@ -1,3 +1,4 @@
+import { EnrollmentBadge } from "@buildment/learning-ui/components/learn/enrollment-badge";
 import Link from "next/link";
 import { CourseCover } from "@/components/learn/course-cover";
 import { formatPriceCents } from "@/lib/format-price";
@@ -48,6 +49,7 @@ export function CatalogCourseCard({
         ) : (
           <div className="flex-1" />
         )}
+{enrolledLabel ? <div className="mt-4"><EnrollmentBadge label={enrolledLabel} /></div> : null}
         <span className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg bg-primary px-4 text-center text-sm font-semibold text-primary-foreground transition-colors group-hover:bg-primary/90">
           {enrolledLabel === "Enrolled"
             ? "Continue learning"

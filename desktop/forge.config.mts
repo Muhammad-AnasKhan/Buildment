@@ -10,6 +10,9 @@ import { FuseV1Options, FuseVersion } from '@electron/fuses';
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
+    name: 'Edorax',
+    icon: './assets/edorax',
+    extraResource: ['./assets/edorax.png', './assets/edorax-dock.png'],
   },
   rebuildConfig: {},
   makers: [

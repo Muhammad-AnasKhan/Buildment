@@ -1,3 +1,7 @@
+import {
+  EnrollmentBadge,
+  enrollmentLabel,
+} from '@buildment/learning-ui/components/learn/enrollment-badge';
 import { useState } from 'react';
 import { BookOpen, Clock3, Layers3, Code2, ArrowUpRight } from 'lucide-react';
 import { coursePrice, type Course } from '../../domain/catalog';
@@ -11,6 +15,14 @@ export function CourseCard({
   index: number;
   onOpen: () => void;
 }) {
+  const enrolled = ['ACTIVE', 'COMPLETED'].includes(
+    course.enrollmentLifecycle || '',
+  );
+  const action = enrolled
+    ? 'Open course'
+    : course.enrollmentLifecycle === 'PAYMENT_REQUIRED'
+      ? 'View enrollment'
+      : 'Preview course';
   const [imageFailed, setImageFailed] = useState(false);
   const cover =
     course.coverUrl &&
@@ -40,7 +52,7 @@ export function CourseCard({
               <Code2 size={38} strokeWidth={1.3} />
             </div>
             <span className="absolute right-5 bottom-4 font-mono text-[10px] tracking-[0.2em] text-primary/60">
-              BUILDMENT / {String(index + 1).padStart(2, '0')}
+              EDORAX / {String(index + 1).padStart(2, '0')}
             </span>
           </>
         )}
@@ -49,6 +61,13 @@ export function CourseCard({
         </span>
       </div>
       <div className="flex flex-1 flex-col p-5">
+        {course.enrollmentLifecycle && (
+          <div className="mb-3">
+            <EnrollmentBadge
+              label={enrollmentLabel(course.enrollmentLifecycle)}
+            />
+          </div>
+        )}
         <div className="mb-3 flex items-center gap-2 text-[11px] text-muted-foreground">
           <span className="size-1.5 rounded-full bg-ok" />
           {course.difficulty || 'All levels'}
@@ -80,7 +99,7 @@ export function CourseCard({
         <div className="mt-auto pt-5">
           <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
             <span className="truncate text-xs text-muted-foreground">
-              {course.instructorName || 'Buildment'}
+              {course.instructorName || 'Edorax'}
             </span>
             <span className="text-sm font-semibold text-primary">
               {coursePrice(course)}
@@ -89,10 +108,10 @@ export function CourseCard({
           <button
             id={`preview-${course.id}`}
             onClick={onOpen}
-            aria-label={`Preview ${course.title}`}
+            aria-label={`${enrolled ? 'Open' : course.enrollmentLifecycle === 'PAYMENT_REQUIRED' ? 'View enrollment for' : 'Preview'} ${course.title}`}
             className="mt-4 flex items-center gap-2 text-sm font-medium text-primary after:absolute after:inset-0"
           >
-            Preview course
+            {action}
             <ArrowUpRight size={15} />
           </button>
         </div>

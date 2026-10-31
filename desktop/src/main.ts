@@ -8,9 +8,16 @@ import {
 } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
-import { backendBase, fetchCatalog } from './api';
+import { backendBase } from './api';
 import { createPreviewClient } from './api';
 import { createBrowserAuth } from './auth/browser-auth';
+
+app.setName('Edorax');
+const iconFile =
+  process.platform === 'darwin' ? 'edorax-dock.png' : 'edorax.png';
+const appIcon = app.isPackaged
+  ? path.join(process.resourcesPath, iconFile)
+  : path.join(app.getAppPath(), 'assets', iconFile);
 
 let mainWindow: BrowserWindow | null = null;
 const apiBase = process.env.BUILDMENT_API_URL || 'http://localhost:4000';
@@ -37,8 +44,16 @@ function requireRenderer(event: IpcMainInvokeEvent) {
 }
 
 function createWindow() {
+  if (process.platform === 'darwin') app.dock?.setIcon(appIcon);
   mainWindow = new BrowserWindow({
-    title: 'Buildment',
+    title: 'Edorax',
+    ...(process.platform === 'darwin'
+      ? {
+          titleBarStyle: 'hiddenInset' as const,
+          trafficLightPosition: { x: 16, y: 20 },
+        }
+      : {}),
+    icon: appIcon,
     width: 1240,
     height: 840,
     minWidth: 760,
@@ -89,10 +104,10 @@ function createWindow() {
     mainWindow = null;
   });
   const showLoadError = (error: unknown) => {
-    console.error('Could not load the Buildment renderer:', error);
+    console.error('Could not load the Edorax renderer:', error);
     if (window.isDestroyed()) return;
     const html =
-      '<!doctype html><html><head><meta charset="utf-8"><title>Buildment</title></head><body style="background:#ffffff;color:#171717;padding:48px;font:16px Segoe UI,sans-serif"><h1>Buildment could not open</h1><p>The local interface could not be loaded.</p><p>Close this window, stop the development command with Ctrl+C, and run <strong>pnpm start</strong> again from the desktop folder.</p></body></html>';
+      '<!doctype html><html><head><meta charset="utf-8"><title>Edorax</title></head><body style="background:#ffffff;color:#171717;padding:48px;font:16px Segoe UI,sans-serif"><h1>Edorax could not open</h1><p>The local interface could not be loaded.</p><p>Close this window, stop the development command with Ctrl+C, and run <strong>pnpm start</strong> again from the desktop folder.</p></body></html>';
     void window.loadURL(
       `data:text/html;charset=utf-8,${encodeURIComponent(html)}`,
     );
@@ -116,6 +131,11 @@ else {
       requireRenderer(event);
       return previewClient.nextLesson(slug);
     });
+    ipcMain.handle('app:web-origin', (event) => {
+      requireRenderer(event);
+      return new URL(process.env.BUILDMENT_WEB_URL || 'http://localhost:3000')
+        .origin;
+    });
     ipcMain.handle('learning:integrity', (event, path, method, body) => {
       requireRenderer(event);
       return previewClient.integrityRequest(path, method, body);
@@ -123,6 +143,10 @@ else {
     ipcMain.handle('learning:lesson', (event, course, chapter) => {
       requireRenderer(event);
       return previewClient.learning.lesson(course, chapter);
+    });
+    ipcMain.handle('learning:update-track', (event, course, kind, slug) => {
+      requireRenderer(event);
+      return previewClient.learning.updateTrack(course, kind, slug);
     });
     ipcMain.handle('learning:overview', (event, course) => {
       requireRenderer(event);
@@ -205,7 +229,7 @@ else {
               : 'Invalid backend configuration.',
         };
       }
-      return fetchCatalog(apiBase);
+      return previewClient.listCourses();
     });
     createWindow();
     app.on('activate', () => {

@@ -9,6 +9,7 @@ import { useSession } from './auth/useSession';
 
 export function App() {
   const [selected, setSelected] = useState<Course | null>(null);
+  const [chapter, setChapter] = useState<string | undefined>();
   const [reading, setReading] = useState(false);
   const session = useSession();
   const { signedIn, setSignedIn, authBusy, authRevision, changeSession } =
@@ -52,24 +53,31 @@ export function App() {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');
 
+  const catalogGeneration = useRef(0);
   async function load() {
-    setLoading(true);
+    const request = ++catalogGeneration.current;
+    setLoading(courses.length === 0);
     setError('');
     try {
       const result = await window.buildment.listCourses();
+      if (request !== catalogGeneration.current) return;
       if (result.ok) setCourses(result.courses);
       else setError(result.message);
     } catch {
+      if (request !== catalogGeneration.current) return;
       setError(
         'The desktop connection is unavailable. Restart the app and try again.',
       );
     } finally {
-      setLoading(false);
+      if (request === catalogGeneration.current) setLoading(false);
     }
   }
   useEffect(() => {
-    void load();
-  }, []);
+    if (!selected) void load();
+    return () => {
+      catalogGeneration.current++;
+    };
+  }, [authRevision, signedIn, selected?.id]);
   const visible = filterCourses(courses, query, category);
   const categories = [...new Set(courses.map((course) => course.category))];
 
@@ -85,64 +93,72 @@ export function App() {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background text-foreground">
+    <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
       {!(reading && signedIn) && (
-        <Sidebar
-          collapsed={collapsed}
-          toggleSidebar={toggleSidebar}
+        <WorkspaceHeader
+          selected={Boolean(selected)}
+          courseTitle={selected?.title}
           backToCourses={backToCourses}
+          session={session}
         />
       )}
-
-      <main ref={main} className="min-w-0 flex-1 overflow-y-auto">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         {!(reading && signedIn) && (
-          <WorkspaceHeader
-            selected={Boolean(selected)}
-            reading={reading && signedIn}
+          <Sidebar
+            collapsed={collapsed}
+            toggleSidebar={toggleSidebar}
             backToCourses={backToCourses}
-            session={session}
           />
         )}
-        {selected && reading && signedIn ? (
-          <CourseReader
-            key={selected.slug + ':' + authRevision}
-            courseSlug={selected.slug}
-            session={session}
-            onBack={() => setReading(false)}
-            onSignedOut={() => {
-              setSignedIn(false);
-              setReading(false);
-            }}
-          />
-        ) : selected ? (
-          <CoursePreview
-            key={selected.slug}
-            course={selected}
-            signedIn={signedIn}
-            busy={authBusy}
-            authRevision={authRevision}
-            onSignIn={() => void changeSession(true)}
-            onSession={setSignedIn}
-            onStart={() => setReading(true)}
-          />
-        ) : (
-          <CourseCatalog
-            {...{
-              courses,
-              visible,
-              categories,
-              loading,
-              error,
-              query,
-              category,
-              setQuery,
-              setCategory,
-              load,
-              openCourse,
-            }}
-          />
-        )}
-      </main>
+
+        <main ref={main} className="min-w-0 flex-1 overflow-y-auto">
+          {selected && reading && signedIn ? (
+            <CourseReader
+              key={selected.slug + ':' + authRevision}
+              courseSlug={selected.slug}
+              courseTitle={selected.title}
+              initialChapter={chapter}
+              session={session}
+              onBack={() => setReading(false)}
+              onSignedOut={() => {
+                setSignedIn(false);
+                setReading(false);
+              }}
+            />
+          ) : selected ? (
+            <CoursePreview
+              key={selected.slug}
+              course={selected}
+              signedIn={signedIn}
+              busy={authBusy}
+              authRevision={authRevision}
+              onSignIn={() => void changeSession(true)}
+              onSession={setSignedIn}
+              onBack={backToCourses}
+              onStart={(chapter) => {
+                setChapter(chapter);
+                setReading(true);
+              }}
+            />
+          ) : (
+            <CourseCatalog
+              {...{
+                courses,
+                visible,
+                categories,
+                loading,
+                error,
+                query,
+                category,
+                setQuery,
+                setCategory,
+                load,
+                openCourse,
+              }}
+            />
+          )}
+        </main>
+      </div>
     </div>
   );
 }

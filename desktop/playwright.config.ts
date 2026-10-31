@@ -10,6 +10,7 @@ export default defineConfig({
     viewport: { width: 1240, height: 840 },
   },
   webServer: {
+    env: { TEST_UI_PORT: String(port) },
     command: `node node_modules/vite/bin/vite.js --config vite.renderer.config.mts --host 127.0.0.1 --port ${port} --strictPort`,
     url,
     reuseExistingServer: false,

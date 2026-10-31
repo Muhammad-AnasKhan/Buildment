@@ -7,6 +7,8 @@ This is a **guided build**. Learn one idea, try it in your project, and check th
 
 <BigWordAlert term="Idempotency" plainEnglish="Repeating a request has the same effect as doing it once." whyItMatters="Retries must not create duplicate orders." />
 
+[Reference](https://edorax.com)
+
 ## Follow the request
 
 <Callout type="tip" title="Start small" content="Change one thing at a time." />
@@ -31,6 +33,7 @@ test('native content renders shared blocks, diagrams and working canvas controls
   await page.addInitScript(
     ({ courses, courseDetail, document }) => {
       window.buildment = {
+        webOrigin: async () => 'https://edorax.com',
         listCourses: async () => ({ ok: true, courses }),
         courseDetail: async () => ({
           ok: true,
@@ -43,10 +46,29 @@ test('native content renders shared blocks, diagrams and working canvas controls
           data: { href: '/courses/' + courses[0].slug + '/intro' },
         }),
         learning: {
+          overview: async () => ({
+            ok: true,
+            data: {
+              course: { ...courses[0], status: 'PUBLISHED' },
+              access: 'active',
+              track: null,
+              enrollment: {
+                percentComplete: 0,
+                chaptersCompleted: 0,
+                pendingReviews: 0,
+              },
+              syllabus: {
+                modules: [],
+                chapterCount: 1,
+                continueHref: '/courses/' + courses[0].slug + '/intro',
+                defaultOpenModuleId: null,
+              },
+            },
+          }),
           lesson: async () => ({
             ok: true,
             data: {
-              course: { title: courses[0].title },
+              course: { title: courses[0].title, slug: courses[0].slug },
               chapter: {
                 id: 'intro',
                 slug: 'intro',
@@ -58,6 +80,8 @@ test('native content renders shared blocks, diagrams and working canvas controls
               modules: [
                 {
                   id: 'module',
+                  order: 1,
+                  completedCount: 0,
                   title: 'Introduction',
                   chapters: [
                     {
@@ -88,9 +112,7 @@ test('native content renders shared blocks, diagrams and working canvas controls
   await page
     .getByRole('button', { name: 'Preview ' + courses[0].title, exact: true })
     .click();
-  await page
-    .getByRole('button', { name: 'Start learning', exact: true })
-    .click();
+  await page.getByRole('link', { name: 'Start learning', exact: true }).click();
   await expect(page.getByText('Idempotency', { exact: true })).toBeVisible();
   await expect(
     page.getByText('Retries must not create duplicate orders.'),
@@ -112,6 +134,36 @@ test('native content renders shared blocks, diagrams and working canvas controls
     page.getByText(/not yet supported in the desktop reader/),
   ).toHaveCount(0);
   expect(errors).toEqual([]);
+  await expect(
+    page.getByRole('link', { name: 'Reference', exact: true }),
+  ).toHaveAttribute('target', '_blank');
+  await page
+    .getByRole('link', { name: 'Follow the request', exact: true })
+    .click();
+  await expect(page.locator('#follow-the-request')).toBeInViewport();
+  await page.setViewportSize({ width: 700, height: 700 });
+  await page
+    .getByRole('button', { name: 'Show contents', exact: true })
+    .click();
+  await expect(
+    page.getByRole('navigation', { name: 'Course chapters' }),
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Close sidebar', exact: true })
+    .click();
+  await page
+    .getByRole('button', { name: "Show this page's headings", exact: true })
+    .click();
+  await page
+    .getByRole('link', { name: 'Follow the request', exact: true })
+    .click();
+  await expect(page.locator('#follow-the-request')).toBeInViewport();
+  expect(
+    await page.evaluate(
+      () => window.document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.setViewportSize({ width: 1240, height: 840 });
   await page.getByRole('heading', { level: 1 }).scrollIntoViewIfNeeded();
   await page.screenshot({ path: 'test-results/lesson-blocks-light.png' });
   await page.emulateMedia({ colorScheme: 'dark' });
