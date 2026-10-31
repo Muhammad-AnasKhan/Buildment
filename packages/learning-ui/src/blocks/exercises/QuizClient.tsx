@@ -28,6 +28,12 @@ export type QuizInitialState = {
   explanation?: string;
 };
 
+/** "1-4 to answer" for the visible keyboard hint. One-based counting: option 1 is key "1". */
+function keyHint(count: number): string {
+  if (count <= 0) return "";
+  return `1-${count} to answer`;
+}
+
 function ResultBanner({ result }: { result: RespondResult }) {
   const correct = result.isCorrect === true;
   return (
@@ -101,6 +107,7 @@ export function QuizClient({
   const quizSession = useQuizSession();
   const cardRef = useRef<HTMLDivElement>(null);
   const isMultiple = config.quizType === "multiple";
+  const optionCount = config.options.length;
   const [localSelected, setLocalSelected] = useState<string[]>(initialState?.selected ?? []);
   const [localResult, setResult] = useState<RespondResult | null>(
     initialState
@@ -276,17 +283,68 @@ export function QuizClient({
   const showWrongOptions = result?.isCorrect === false;
   const showCorrectOptions = result?.isCorrect === true;
 
+  // A-D / 1-N select an option; Enter submits (standalone "Check answer"). Scoped to this quiz, and
+  // guarded so it never fires while typing or with a modifier, matching the reader's `[`/`]` guard.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable=''], [contenteditable='true'], dialog[open]")) return;
+      // Scoped to this quiz. In the wizard (one question visible at a time) the learner gapes at the
+      // active question without focusing it, so react when this quiz has a *visible* option. On a
+      // standalone page with many quizzes, require focus inside this one so keys can't hit several.
+      if (presentation === "wizard") {
+        const visible = cardRef.current
+          ? [...cardRef.current.querySelectorAll('[role="radio"], [role="checkbox"]')].some(
+              (el) => (el as HTMLElement).offsetParent !== null
+            )
+          : false;
+        if (!visible) return;
+      } else {
+        const active = document.activeElement;
+        if (!cardRef.current || !active || !cardRef.current.contains(active)) return;
+      }
+
+      if (event.key === "Enter") {
+        // With nothing selected yet, let native Enter activate a focused option; once an answer is
+        // chosen, Enter submits (and preventDefault stops a focused option re-activating too).
+        if (presentation === "wizard") return; // wizard saves per-block, submits once at the end
+        if (submitting || result?.isCorrect === true) return;
+        if (selected.length === 0) return;
+        event.preventDefault();
+        void submit();
+        return;
+      }
+
+      let index = -1;
+      if (/^[1-9]$/.test(event.key)) index = Number(event.key) - 1; // numbers only: 1-4 picks option 1-4
+      if (index < 0 || index >= optionCount) return; // keys beyond the option count do nothing
+      if (optionsLocked || submitting) return;
+      event.preventDefault();
+      toggle(config.options[index].id);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [config.options, optionCount, optionsLocked, presentation, result, selected, submitting, toggle, submit]);
+
   const optionsBlock = (
-    <QuizOptions
-      options={config.options}
-      selected={selected}
-      onToggle={toggle}
-      disabled={optionsLocked}
-      multiple={isMultiple}
-      incorrectOptionIds={showWrongOptions ? wrongSelection : []}
-      correctOptionIds={showCorrectOptions ? selected : []}
-      showAnswerState={showWrongOptions || showCorrectOptions}
-    />
+    <>
+      <QuizOptions
+        options={config.options}
+        selected={selected}
+        onToggle={toggle}
+        disabled={optionsLocked}
+        multiple={isMultiple}
+        incorrectOptionIds={showWrongOptions ? wrongSelection : []}
+        correctOptionIds={showCorrectOptions ? selected : []}
+        showAnswerState={showWrongOptions || showCorrectOptions}
+      />
+      {optionCount > 0 && !optionsLocked ? (
+        <p className="mt-2 text-xs text-muted-foreground" data-slot="quiz-keys">
+          Keyboard: {keyHint(optionCount)}
+        </p>
+      ) : null}
+    </>
   );
 
   const actionsBlock = hasAnswered && result && (presentation !== "wizard" || wizardShowingReview) ? (

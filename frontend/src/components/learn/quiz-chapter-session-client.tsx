@@ -290,6 +290,44 @@ export function QuizChapterSessionClient({
     }
   };
 
+  // Full keyboard flow for the assessment: Enter starts it; 1-N selects an option (handled in
+  // QuizClient); ArrowLeft / ArrowRight / Enter move between questions; at the last question (or on
+  // the submit screen) Enter submits the assessment. Guards match the reader's shortcut guard.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable=''], [contenteditable='true'], dialog[open]")) return;
+
+      if (!launched) {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          setLaunched(true);
+          requestQuizFullscreen();
+        }
+        return;
+      }
+      if (submitting || movingNext) return;
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        if (position > 0) go(position - 1);
+        return;
+      }
+      if (event.key === "ArrowRight" || event.key === "Enter") {
+        event.preventDefault();
+        if (position < visibleIndices.length - 1) {
+          go(position + 1);
+        } else if (quizBlockIds.length > 0 && !perfectScore && !submitting) {
+          void submitQuiz();
+        }
+        return;
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [launched, submitting, movingNext, position, visibleIndices.length, quizBlockIds.length, perfectScore, go, submitQuiz]);
+
   const moveToNextChapter = async () => {
     if (!nextHref || movingNext) return;
     if (chapterComplete || (!nextLocked && (!assessmentPassed || !canCompleteChapter))) {
