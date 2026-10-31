@@ -8,12 +8,10 @@ import { learnerTimeZone } from "../learner/time-zone.js";
 import { gamificationFeatures } from "./flags.js";
 import { awardXp } from "./xp.js";
 
-// Streak freezes and the weekly-goal reward.
+// Streak freezes and study-goal rewards.
 //
-// A learner earns one freeze each week they meet their weekly goal, holding at most two. When the
-// streak walk (shared/lib/streak.ts computeStreak) finds a gap it can bridge, the days it covers are
-// recorded in StreakFreezeDay and the balance goes down, in one transaction, so a freeze is spent
-// exactly once even when two pages compute the streak at the same moment.
+// Weekly goals: first meet in a learner-local week pays 25 XP + one streak freeze (cap 2).
+// Daily goals: first meet today pays 10 XP only (no freeze — freezes stay a weekly reward).
 
 type Tx = Prisma.TransactionClient;
 
@@ -33,7 +31,6 @@ export async function spendStreakFreezes(userId: string, dayKeys: string[]): Pro
         skipDuplicates: true,
       });
       if (count === 0) {
-        // Another request already covered this day: give the freeze back.
         await tx.user.update({ where: { id: userId }, data: { streakFreezes: { increment: 1 } } });
         continue;
       }
@@ -50,13 +47,12 @@ export async function grantStreakFreeze(tx: Tx, userId: string): Promise<boolean
     where: { id: userId, streakFreezes: { lt: MAX_STREAK_FREEZES } },
     data: { streakFreezes: { increment: 1 } },
   });
-  return count > 0;
+  return count === 1;
 }
 
 /**
- * The first time the weekly goal is met in a learner-local week (Monday to Sunday), records the
- * moment and pays for it: XP and a streak freeze. The once-per-week `weekly_goal_met` event is the
- * key for both, so they are paid once even with XP switched off. Returns the new event, or null.
+ * Pays for meeting the learner's study goal. Weekly goals still use `weekly_goal_met` (XP + freeze).
+ * Daily goals use `daily_goal_met` (XP only). Returns the new event, or null.
  */
 export async function settleWeeklyGoal(
   userId: string,
@@ -64,10 +60,41 @@ export async function settleWeeklyGoal(
   platform: EngagementPlatform = "web",
   now: Date = new Date()
 ): Promise<EngagementEvent | null> {
-  const goal = habit.weeklyGoal;
+  const goal = habit.goal ?? habit.weeklyGoal;
   if (!goal || goal.progress < goal.target) return null;
-  const week = weekStartKey(localDayKey(now, await learnerTimeZone(userId)));
 
+  const timeZone = await learnerTimeZone(userId);
+  const today = localDayKey(now, timeZone);
+
+  if (goal.period === "DAILY") {
+    return prisma.$transaction(async (tx) => {
+      const [created] = await tx.engagementEvent.createManyAndReturn({
+        data: [
+          {
+            userId,
+            platform,
+            type: "daily_goal_met",
+            payload: { freezeEarned: false, period: "DAILY" },
+            dedupeKey: `daily_goal_met:${today}`,
+          },
+        ],
+        skipDuplicates: true,
+      });
+      if (!created) return null;
+
+      await awardXp(tx, {
+        userId,
+        enrollmentId: null,
+        courseId: null,
+        source: "daily_goal_met",
+        sourceKey: xpKeys.dailyGoal(today),
+        at: now,
+      });
+      return created;
+    });
+  }
+
+  const week = weekStartKey(today);
   return prisma.$transaction(async (tx) => {
     const [created] = await tx.engagementEvent.createManyAndReturn({
       data: [
@@ -75,7 +102,7 @@ export async function settleWeeklyGoal(
           userId,
           platform,
           type: "weekly_goal_met",
-          payload: { freezeEarned: false },
+          payload: { freezeEarned: false, period: "WEEKLY" },
           dedupeKey: `weekly_goal_met:${week}`,
         },
       ],
@@ -92,6 +119,6 @@ export async function settleWeeklyGoal(
       at: now,
     });
     if (!(await grantStreakFreeze(tx, userId))) return created;
-    return tx.engagementEvent.update({ where: { id: created.id }, data: { payload: { freezeEarned: true } } });
+    return tx.engagementEvent.update({ where: { id: created.id }, data: { payload: { freezeEarned: true, period: "WEEKLY" } } });
   });
 }

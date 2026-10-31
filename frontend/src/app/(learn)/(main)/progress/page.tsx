@@ -95,7 +95,13 @@ export default async function MenteeProgressPage({ searchParams }: { searchParam
                     <div className="h-full rounded-sm bg-primary" style={{ width: `${Math.min(100, Math.round((weeklyGoal.progress / Math.max(1, weeklyGoal.target)) * 100))}%` }} />
                   </div>
                   <p className="mt-2 text-base text-muted-foreground">
-                    {weeklyGoal.progress} of {weeklyGoal.target} {weeklyGoal.kind === "SESSIONS" ? "study sessions" : "chapters"} this week.
+                    {weeklyGoal.progress} of {weeklyGoal.target}{" "}
+                    {weeklyGoal.kind === "MINUTES"
+                      ? "minutes"
+                      : weeklyGoal.kind === "SESSIONS"
+                        ? "study sessions"
+                        : "chapters"}{" "}
+                    {weeklyGoal.period === "DAILY" ? "today" : "this week"}.
                   </p>
                 </>
               ) : (

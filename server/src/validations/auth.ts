@@ -13,6 +13,9 @@ export const changePasswordBody = z.object({
 });
 export type ChangePasswordBody = z.infer<typeof changePasswordBody>;
 
+export const mfaCodeBody = z.object({ code: z.string().trim().min(6, "Enter the 6-digit code").max(10) });
+export type MfaCodeBody = z.infer<typeof mfaCodeBody>;
+
 export const accountSetupBody = z.object({
   name: realNameSchema.optional(),
   newPassword: z.string().min(8, "Password must be at least 8 characters").max(128).optional(),

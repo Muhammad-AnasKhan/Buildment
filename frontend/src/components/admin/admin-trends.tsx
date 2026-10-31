@@ -72,8 +72,8 @@ function TrendChart({
   const linePath = coords.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x.toFixed(2)},${y.toFixed(2)}`).join(" ");
 
   return (
-    <AdminPanel>
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <AdminPanel padding="none">
+      <div className="flex flex-wrap items-start justify-between gap-3 p-4 sm:p-5">
         <div className="min-w-0">
           <h2 className="text-sm font-semibold">{label}</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
@@ -94,12 +94,13 @@ function TrendChart({
         </div>
       </div>
 
+      <div className="px-4 pb-3 sm:px-5">
       <svg
         viewBox="0 0 100 30"
         preserveAspectRatio="none"
         role="img"
         aria-label={`${label} (${type === "bars" ? "bar" : "line"} chart): ${total} total over ${points.length} days, daily peak ${max}`}
-        className="mt-5 h-44 w-full text-foreground"
+        className="mt-1 h-24 w-full text-foreground sm:h-28"
       >
         {type === "bars"
           ? points.map((point, index) => (
@@ -135,10 +136,11 @@ function TrendChart({
         ))}
       </svg>
 
-      <div className="mt-2 flex justify-between text-[10px] text-muted-foreground">
+      <div className="mt-1 flex justify-between text-[10px] text-muted-foreground">
         <span>{points[0]?.date}</span>
         <span>peak {max}</span>
         <span>{points[points.length - 1]?.date}</span>
+      </div>
       </div>
     </AdminPanel>
   );
@@ -146,7 +148,7 @@ function TrendChart({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <div className="rounded-xl border border-border bg-card p-3 sm:p-3.5">
       <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
     </div>
@@ -229,7 +231,7 @@ export function AdminTrends({
         description="Daily platform activity in UTC. Study time is credited while a chapter is open."
       />
 
-      <div className="mt-6">
+      <div className="mt-4">
         <Toggle
           options={RANGES}
           value={range as (typeof RANGES)[number]["value"]}
@@ -237,15 +239,15 @@ export function AdminTrends({
         />
       </div>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
         <Stat label={`New accounts (${days}d)`} value={String(metrics.totals.newUsers)} />
         <Stat label={`New enrollments (${days}d)`} value={String(metrics.totals.newEnrollments)} />
         <Stat label={`Active learners (${days}d)`} value={String(metrics.totals.activeLearners)} />
         <Stat label={`Study hours (${days}d)`} value={(metrics.totals.studySeconds / 3600).toFixed(1)} />
       </div>
 
-      <AdminSection title="Daily charts" description="Each chart has its own Bars/Line switch.">
-        <div className="mb-4">
+      <AdminSection title="Daily charts" description="Each chart has its own Bars/Line switch." className="mt-6">
+        <div className="mb-3">
           <Toggle
             options={[{ value: "all", label: "All metrics" }, ...METRICS.map((m) => ({ value: m.key, label: m.label }))]}
             value={selected?.key ?? "all"}
@@ -253,7 +255,7 @@ export function AdminTrends({
           />
         </div>
 
-        <div className="space-y-4">
+        <div className="grid gap-3 sm:grid-cols-2 2xl:grid-cols-3">
           {visible.map((entry) => (
             <TrendChart
               key={entry.key}

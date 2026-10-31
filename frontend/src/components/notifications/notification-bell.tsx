@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Dialog } from "@base-ui/react/dialog";
 import {
   ArrowRight,
@@ -28,7 +28,22 @@ import {
   refreshNotifications,
 } from "@/lib/notifications/notification-store";
 import { formatRelativeTime } from "@/lib/notifications/format-relative-time";
+import { sortNotificationsForInbox } from "@/lib/notifications/sort-notifications";
 import { cn } from "@/lib/utils";
+
+function settingsHrefForPath(pathname: string | null): string {
+  if (pathname?.startsWith("/admin")) return "/admin/settings/profile#notifications";
+  if (
+    pathname?.startsWith("/workspace") ||
+    pathname?.startsWith("/teach") ||
+    pathname?.startsWith("/help") ||
+    pathname?.startsWith("/mentees") ||
+    (pathname?.startsWith("/courses") && pathname.includes("/teach"))
+  ) {
+    return "/workspace/settings/profile#notifications";
+  }
+  return "/settings/profile#notifications";
+}
 
 const CATEGORY_ICON: Record<NotificationCategory, LucideIcon> = {
   activity: MessageSquareText,
@@ -65,13 +80,28 @@ const iconButton =
  * tabs, mark read per item or all at once, and older pages on demand. Needs a mounted
  * NotificationCenter (it reads the shared, live-updated feed).
  */
-export function NotificationBell({ className }: { className?: string }) {
+export function NotificationBell({
+  className,
+  settingsHref,
+}: {
+  className?: string;
+  /** Profile notification settings. Defaults from the current surface path. */
+  settingsHref?: string;
+}) {
   const router = useRouter();
+  const pathname = usePathname();
+  const resolvedSettingsHref = settingsHref ?? settingsHrefForPath(pathname);
   const { items, unreadCount, status, nextCursor, loadingMore } = useNotifications();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
-  const visible = filter === "unread" ? items.filter((item) => !item.readAt) : items;
+  const sorted = useMemo(() => sortNotificationsForInbox(items), [items]);
+  const visible = filter === "unread" ? sorted.filter((item) => !item.readAt) : sorted;
   const unreadLabel = unreadCount > 99 ? "99+" : String(unreadCount);
+
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next);
+    if (next) setFilter(unreadCount > 0 ? "unread" : "all");
+  };
 
   const select = (item: NotificationItem) => {
     void markNotificationRead(item.id);
@@ -82,7 +112,7 @@ export function NotificationBell({ className }: { className?: string }) {
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Dialog.Root open={open} onOpenChange={handleOpenChange}>
       <Dialog.Trigger
         className={cn(
           "relative grid size-9 shrink-0 place-items-center rounded-lg border bg-card text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-popup-open:bg-muted data-popup-open:text-foreground",
@@ -111,7 +141,7 @@ export function NotificationBell({ className }: { className?: string }) {
             </div>
             <div className="-mr-2 flex items-center gap-0.5">
               <Link
-                href="/notifications#notification-settings"
+                href={resolvedSettingsHref}
                 onClick={() => setOpen(false)}
                 aria-label="Notification settings"
                 title="Notification settings"

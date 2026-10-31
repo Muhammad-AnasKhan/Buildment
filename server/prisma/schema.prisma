@@ -60,6 +60,14 @@ enum Role {
 enum WeeklyGoalKind {
   SESSIONS
   CHAPTERS
+  /// Active study minutes (from DailyActivity / study sessions). Best fit for daily goals.
+  MINUTES
+}
+
+/// How often the learner's study goal resets. Null when no goal is set.
+enum GoalPeriod {
+  DAILY
+  WEEKLY
 }
 
 enum CourseStatus {
@@ -212,11 +220,15 @@ model User {
   /// SHA-256 hashes of unused recovery codes. The plaintext is shown exactly once.
   totpRecoveryCodes String[] @default([])
   zipImportEnabled Boolean @default(false)
+  /// Admin-granted tester: still a normal learner, but sequential chapter locks are skipped.
+  testerEnabled Boolean @default(false)
   /// Set by a platform admin to block sign-in; null means the account is active.
   suspendedAt   DateTime?
   suspensionNote String?      @db.VarChar(240)
   weeklyGoalKind WeeklyGoalKind?
   weeklyGoalTarget Int?
+  /// DAILY or WEEKLY when a goal is set; null means no goal.
+  goalPeriod GoalPeriod?
   weeklyGoalNote String? @db.VarChar(240)
   weeklyGoalReminderEnabled Boolean @default(false)
   weeklyGoalReminderSentOn DateTime? @db.Date
@@ -359,6 +371,8 @@ model Course {
   priceCents     Int          @default(0)
   currency       String       @default("USD")
   sequential     Boolean      @default(true)
+  /// When true, text open questions grade instantly with the learner's OpenRouter key instead of the mentor queue.
+  autoGradeOpenQuestions Boolean @default(false)
   familySlug     String? // course family in src/shared/lib/course-tracks.ts; null = no variants
   variantFamily  Json? // creator-defined variant catalog; null uses a built-in family
   assistant      Json? // tutor settings from course.yaml (effort, guidance, starters); null means defaults

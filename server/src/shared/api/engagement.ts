@@ -27,6 +27,7 @@ export type EngagementEventType = (typeof ENGAGEMENT_EVENT_TYPES)[number];
 export const ENGAGEMENT_SERVER_EVENT_TYPES = [
   "level_up",
   "weekly_goal_met",
+  "daily_goal_met",
   "course_first_chapter",
   "course_halfway",
   "course_one_left",
@@ -81,6 +82,12 @@ export type LevelUpFacts = { level: number };
 export type WeeklyGoalMetFacts = {
   /** A streak freeze came with it (the learner had room for one and freezes are on). */
   freezeEarned: boolean;
+  period?: "DAILY" | "WEEKLY";
+};
+
+export type DailyGoalMetFacts = {
+  freezeEarned: false;
+  period: "DAILY";
 };
 
 export type SessionStartFacts = {
@@ -115,6 +122,7 @@ export type RecordedEngagementEvent = RecordedBase &
     | { type: "quiz_submitted"; payload: QuizSubmittedFacts }
     | { type: "level_up"; payload: LevelUpFacts }
     | { type: "weekly_goal_met"; payload: WeeklyGoalMetFacts }
+    | { type: "daily_goal_met"; payload: DailyGoalMetFacts }
     | { type: "course_first_chapter" | "course_halfway" | "course_one_left"; payload: CourseMilestoneFacts }
     | { type: "message_received"; payload: MessageReceivedFacts }
     | {

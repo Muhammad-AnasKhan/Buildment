@@ -5,7 +5,7 @@ import { BadRequestError, ForbiddenError, NotFoundError } from "../../utils/erro
 import type { SessionUser } from "../../types/auth.js";
 import type { QuizSubmitBody } from "../../validations/chapters.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
-import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
+import { shouldBypassProgressGating } from "../auth/seed-access.js";
 import { ChapterLockedError, assertChapterUnlocked } from "../progress/gate.js";
 import { lockEnrollmentVariant, recomputeChapterProgress, recordBlockStats } from "../progress/compute.js";
 import { assertEnrollmentChapter } from "../courses/releases.js";
@@ -47,7 +47,7 @@ export async function submitChapterQuiz(input: {
       courseId: chapter.courseId,
       enrollmentId: enrollment.id,
       chapterId,
-      bypassLocking: bypassProgressGatingForEmail(learner.email),
+      bypassLocking: shouldBypassProgressGating(learner),
     });
   } catch (error) {
     if (error instanceof ChapterLockedError) {

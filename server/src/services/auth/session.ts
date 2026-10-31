@@ -20,6 +20,7 @@ export function toSessionUser(user: {
   role: SessionUser["role"];
   emailVerified: Date | null;
   passwordHash: string | null;
+  testerEnabled?: boolean;
 }): SessionUser {
   return {
     id: user.id,
@@ -29,6 +30,7 @@ export function toSessionUser(user: {
     role: user.role,
     emailVerified: user.emailVerified,
     hasPassword: user.passwordHash !== null,
+    testerEnabled: Boolean(user.testerEnabled),
   };
 }
 

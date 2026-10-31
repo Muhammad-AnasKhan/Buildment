@@ -16,7 +16,6 @@ import { setActiveSurfaceAction } from "@/server/actions/active-surface";
 import { requestInstructorAccessAction } from "@/server/actions/instructor-access";
 import type { InstructorAccessView } from "@/shared/lib/instructor-access";
 import { cn } from "@/lib/utils";
-import { ThemeMenuItems } from "@/components/theme-menu-items";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function WorkspaceAccountMenu({
@@ -108,8 +107,6 @@ export function WorkspaceAccountMenu({
         {isAdmin && <DropdownMenuItem disabled={pending} className="min-h-9 gap-2 px-2" onClick={() => runAction(() => router.push("/integrations"))}>
           <Plug className="size-4" /> Integration API
         </DropdownMenuItem>}
-        <DropdownMenuSeparator />
-        <ThemeMenuItems />
         <DropdownMenuSeparator />
         <DropdownMenuItem disabled={pending} className="min-h-9 gap-2 px-2" variant="destructive" onClick={() => runAction(signOutAction)}>
           <LogOut className="size-4" /> Sign out

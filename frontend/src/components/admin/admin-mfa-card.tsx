@@ -10,6 +10,12 @@ import {
   disableMfaAction,
   regenerateRecoveryCodesAction,
 } from "@/server/actions/admin/mfa";
+import {
+  activateAccountMfaAction,
+  beginAccountMfaEnrollmentAction,
+  disableAccountMfaAction,
+  regenerateAccountRecoveryCodesAction,
+} from "@/server/actions/account-mfa";
 import type { AdminTotpEnrollment } from "@/shared/api/admin";
 
 // Two-step TOTP setup: the secret is shown once, then a code confirms it before
@@ -87,22 +93,28 @@ function RecoveryCodesPanel({ codes, onDone }: { codes: string[]; onDone: () => 
   );
 }
 
-export function AdminMfaCard({
+export function MfaSettingsCard({
   enabled,
   recoveryCodesRemaining,
+  mode = "admin",
 }: {
   enabled: boolean;
   recoveryCodesRemaining: number;
+  mode?: "admin" | "account";
 }) {
   const [enrollment, setEnrollment] = useState<AdminTotpEnrollment | null>(null);
   const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const beginEnrollmentAction = mode === "admin" ? beginMfaEnrollmentAction : beginAccountMfaEnrollmentAction;
+  const activateAction = mode === "admin" ? activateMfaAction : activateAccountMfaAction;
+  const regenerateAction = mode === "admin" ? regenerateRecoveryCodesAction : regenerateAccountRecoveryCodesAction;
+  const disableAction = mode === "admin" ? disableMfaAction : disableAccountMfaAction;
 
   function begin() {
     setError(null);
     startTransition(async () => {
-      const result = await beginMfaEnrollmentAction();
+      const result = await beginEnrollmentAction();
       if (result.ok) setEnrollment(result.enrollment);
       else setError(result.message);
     });
@@ -115,7 +127,7 @@ export function AdminMfaCard({
         <p className="mt-1 text-sm text-muted-foreground">
           {enabled
             ? `Enabled. You will be asked for a code when you sign in. ${recoveryCodesRemaining} backup code${recoveryCodesRemaining === 1 ? "" : "s"} remaining.`
-            : "Protect your admin account with a time-based code from an authenticator app."}
+            : "Protect your account with a time-based code from an authenticator app."}
         </p>
       </div>
 
@@ -129,7 +141,7 @@ export function AdminMfaCard({
             submitLabel="Regenerate backup codes"
             pendingLabel="Generating…"
             onSubmit={async (formData) => {
-              const result = await regenerateRecoveryCodesAction(formData);
+              const result = await regenerateAction(formData);
               if (result.ok) {
                 setRecoveryCodes(result.recoveryCodes);
                 return null;
@@ -138,7 +150,7 @@ export function AdminMfaCard({
             }}
           />
           <AdminActionForm
-            action={disableMfaAction}
+            action={disableAction}
             submitLabel="Disable"
             pendingLabel="Disabling…"
             variant="outline"
@@ -189,7 +201,7 @@ export function AdminMfaCard({
             submitLabel="Confirm and enable"
             pendingLabel="Confirming…"
             onSubmit={async (formData) => {
-              const result = await activateMfaAction(formData);
+              const result = await activateAction(formData);
               if (result.ok) {
                 setRecoveryCodes(result.recoveryCodes);
                 setEnrollment(null);
@@ -213,4 +225,8 @@ export function AdminMfaCard({
       )}
     </section>
   );
+}
+
+export function AdminMfaCard(props: { enabled: boolean; recoveryCodesRemaining: number }) {
+  return <MfaSettingsCard {...props} mode="admin" />;
 }

@@ -97,6 +97,7 @@ router.post("/mfa/activate", validateBody(totpCodeBody), admin.activateMfa);
 router.post("/mfa/recovery-codes", validateBody(totpCodeBody), admin.regenerateRecoveryCodes);
 router.post("/mfa/disable", validateBody(totpCodeBody), admin.disableMfa);
 router.patch("/users/:userId/zip-import", validate({ params: userIdParams, body: instructorAccessBody }), admin.setZipImportAccess);
+router.patch("/users/:userId/tester", validate({ params: userIdParams, body: instructorAccessBody }), admin.setTesterAccess);
 
 router.get("/app-activity", validateQuery(appActivityOverviewQuery), admin.getAppActivity);
 router.get("/app-activity/users", validateQuery(appActivityUsersQuery), admin.listAppActivityUsers);

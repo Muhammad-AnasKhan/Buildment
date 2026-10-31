@@ -165,7 +165,7 @@ async function publish(packages: Package[], instructorEmail: string) {
   const { publishCourse } = await import("../src/services/teach/courses.js");
   try {
     const owner = await prisma.user.findUnique({ where: { email: instructorEmail },
-      select: { id: true, email: true, name: true, image: true, role: true, emailVerified: true, zipImportEnabled: true } });
+      select: { id: true, email: true, name: true, image: true, role: true, emailVerified: true, zipImportEnabled: true, testerEnabled: true } });
     if (!owner || !["MENTOR", "ADMIN"].includes(owner.role) || !owner.emailVerified || !owner.zipImportEnabled) {
       throw new Error(`${instructorEmail} must be a verified instructor with ZIP import access before repository publishing runs`);
     }

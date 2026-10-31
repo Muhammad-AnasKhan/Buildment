@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import type { WeeklyGoalInput } from "../shared/api/learner.js";
 import type { StreakMilestone } from "../shared/lib/streak.js";
 import { created, noContent, ok } from "../utils/responses.js";
-import { bypassProgressGatingForEmail } from "../services/auth/seed-access.js";
+import { shouldBypassProgressGating } from "../services/auth/seed-access.js";
 import { loadLearnerWorkspace } from "../services/learner/workspace.js";
 import { loadMenteeDashboard } from "../services/learner/load-mentee-dashboard.js";
 import { loadLearnerProgress } from "../services/learner/progress.js";
@@ -31,7 +31,7 @@ export async function dashboard(req: Request, res: Response) {
     await loadMenteeDashboard({
       learnerId: user.id,
       learnerName: displayName(user),
-      bypassLocking: bypassProgressGatingForEmail(user.email),
+      bypassLocking: shouldBypassProgressGating(user),
     })
   );
 }
@@ -39,7 +39,7 @@ export async function dashboard(req: Request, res: Response) {
 // GET /api/v1/learner/progress
 export async function progress(req: Request, res: Response) {
   const user = req.user!;
-  ok(res, await loadLearnerProgress({ userId: user.id, bypassLocking: bypassProgressGatingForEmail(user.email) }));
+  ok(res, await loadLearnerProgress({ userId: user.id, bypassLocking: shouldBypassProgressGating(user) }));
 }
 
 // PUT /api/v1/learner/weekly-goal

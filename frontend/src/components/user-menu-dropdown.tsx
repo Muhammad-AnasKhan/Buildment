@@ -13,7 +13,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar } from "@/components/user-avatar";
-import { ThemeMenuItems } from "@/components/theme-menu-items";
 
 type UserMenuDropdownProps = {
   user: { id?: string; name?: string | null; email?: string | null; image?: string | null };
@@ -74,8 +73,6 @@ export function UserMenuDropdown({
             My progress
           </DropdownMenuItem>
         )}
-        <DropdownMenuSeparator />
-        <ThemeMenuItems />
         <DropdownMenuSeparator />
         <DropdownMenuItem
           variant="destructive"

@@ -22,6 +22,25 @@ export async function setUserZipImportAccessAction(
   });
 }
 
+/** Grant or revoke tester access: learner stays a mentee, sequential locks are skipped. */
+export async function setUserTesterAccessAction(
+  _prev: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  const userId = String(formData.get("userId") ?? "");
+  const enabled = formData.get("enabled") === "true";
+  if (!userId) return { ok: false, message: "Missing user." };
+  return runAdminAction(async () => {
+    await adminCall<void>(`/api/v1/admin/users/${encodeURIComponent(userId)}/tester`, {
+      method: "PATCH",
+      json: { enabled },
+    });
+    revalidatePath("/admin/users");
+    revalidatePath(`/admin/users/${userId}`);
+    return enabled ? "Tester access enabled." : "Tester access disabled.";
+  });
+}
+
 export async function setUserInstructorAccessAction(
   _prev: AdminActionState,
   formData: FormData
@@ -71,6 +90,24 @@ export async function grantAdminByEmailAction(
     revalidatePath("/admin/users");
     revalidatePath("/", "layout");
     return `Platform admin added: ${email}.`;
+  });
+}
+
+/** Invite a person to Edorax with the selected platform role. */
+export async function inviteUserByEmailAction(
+  _prev: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  const email = String(formData.get("email") ?? "").trim();
+  const role = String(formData.get("role") ?? "MENTOR");
+  const name = String(formData.get("name") ?? "").trim() || undefined;
+  if (role !== "MENTOR" && role !== "ADMIN") return { ok: false, message: "Choose a valid role." };
+  return runAdminAction(async () => {
+    const endpoint = role === "ADMIN" ? "/api/v1/admin/admins" : "/api/v1/admin/instructors";
+    await adminCall<void>(endpoint, { method: "POST", json: { email, ...(name ? { name } : {}) } });
+    revalidatePath("/admin/users");
+    revalidatePath("/", "layout");
+    return `Invitation email sent to ${email} with ${role === "ADMIN" ? "platform admin" : "instructor"} access.`;
   });
 }
 

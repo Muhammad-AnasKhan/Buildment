@@ -56,8 +56,11 @@ export type EnrollStatus = (typeof ENROLL_STATUSES)[number];
 export const HELP_THREAD_STATUSES = ["OPEN", "RESOLVED"] as const;
 export type HelpThreadStatus = (typeof HELP_THREAD_STATUSES)[number];
 
-export const WEEKLY_GOAL_KINDS = ["SESSIONS", "CHAPTERS"] as const;
+export const WEEKLY_GOAL_KINDS = ["SESSIONS", "CHAPTERS", "MINUTES"] as const;
 export type WeeklyGoalKind = (typeof WEEKLY_GOAL_KINDS)[number];
+
+export const GOAL_PERIODS = ["DAILY", "WEEKLY"] as const;
+export type GoalPeriod = (typeof GOAL_PERIODS)[number];
 
 export const REVIEW_VERDICTS = ["APPROVED", "NEEDS_REVISION"] as const;
 export type ReviewVerdict = (typeof REVIEW_VERDICTS)[number];

@@ -146,6 +146,7 @@ export type CourseSettingsView = Pick<CourseBuilderCourse,
   "estimatedHours" | "category" | "sequential" | "coverUrl" | "status" | "pricingType" |
   "priceCents" | "currency"
 > & {
+  autoGradeOpenQuestions: boolean;
   enrollmentCount: number;
   chapterCount: number;
   integritySnapshots: boolean;
@@ -216,6 +217,7 @@ export type CourseSettingsInput = {
   estimatedHours: string;
   category: string;
   sequential: boolean;
+  autoGradeOpenQuestions: boolean;
   /** Only sent for a course in a family; omitted leaves it as it is. */
   variantAssignment?: string;
   pricingType: string;

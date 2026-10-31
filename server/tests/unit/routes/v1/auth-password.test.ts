@@ -29,14 +29,14 @@ describe("password changes for signed-in users", () => {
   });
 
   it.each(["MENTEE", "MENTOR"] as const)("allows %s to change only their own password", async (role) => {
-    vi.mocked(findSessionState).mockResolvedValue({ user: { id: `self-${role}`, role, email: "user@test.local", name: "User", image: null, emailVerified: new Date() }, suspended: false });
+    vi.mocked(findSessionState).mockResolvedValue({ user: { id: `self-${role}`, role, email: "user@test.local", name: "User", image: null, emailVerified: new Date(), testerEnabled: false }, suspended: false });
     const response = await request(app).patch("/auth/password").set("Authorization", "Bearer own-session").send({ ...body, userId: "someone-else" });
     expect(response.status).toBe(204);
     expect(changePassword).toHaveBeenCalledWith(`self-${role}`, "own-session", body);
   });
 
   it("rejects mismatched confirmation before calling the service", async () => {
-    vi.mocked(findSessionState).mockResolvedValue({ user: { id: "mismatch", role: "MENTEE", email: "user@test.local", name: "User", image: null, emailVerified: new Date() }, suspended: false });
+    vi.mocked(findSessionState).mockResolvedValue({ user: { id: "mismatch", role: "MENTEE", email: "user@test.local", name: "User", image: null, emailVerified: new Date(), testerEnabled: false }, suspended: false });
     const response = await request(app).patch("/auth/password").set("Authorization", "Bearer own-session").send({ ...body, confirmPassword: "different" });
     expect(response.status).toBe(400);
     expect(changePassword).not.toHaveBeenCalled();

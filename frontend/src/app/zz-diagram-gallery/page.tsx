@@ -1,11 +1,8 @@
-import { DM_Sans } from "next/font/google";
 import { ChapterMdx } from "@/mdx/compile";
 
 // Dev-only specimen sheet of the diagram fences, like /zz-lab-gallery. Public,
 // no auth, no data. Each example goes through the real chapter pipeline
-// (remark-diagram, then the Diagram block). The app redesign defines
-// --font-dm-sans for every page; until it lands, this page loads it itself.
-const dmSans = DM_Sans({ variable: "--font-dm-sans", subsets: ["latin"], weight: ["500", "600", "700"], display: "swap" });
+// (remark-diagram, then the Diagram block). DM Sans is loaded globally by layout.tsx.
 
 const TICKS = "```";
 
@@ -179,7 +176,7 @@ draw an arrow to the server`,
 
 export default function DiagramGalleryPage() {
   return (
-    <main className={`${dmSans.variable} mx-auto w-full max-w-[1200px] px-4 py-6`}>
+    <main className="mx-auto w-full max-w-[1200px] px-4 py-6">
       <h1 className="mb-1 text-xl font-semibold">Diagram fences</h1>
       <p className="mb-6 max-w-[70ch] text-sm text-muted-foreground">
         Each example is a {TICKS}flow or {TICKS}sequence fence in a chapter, shown with the text an author writes. See
