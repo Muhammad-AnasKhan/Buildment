@@ -25,6 +25,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async headers() {
+    return [
+      // Browsers must check for a changed worker on every app launch so PWA
+      // updates roll out promptly instead of being held by a CDN cache.
+      {
+        source: "/sw.js",
+        headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }],
+      },
+    ];
+  },
   async rewrites() {
     return {
       beforeFiles: [],
