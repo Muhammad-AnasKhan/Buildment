@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { DM_Sans, Unbounded } from "next/font/google";
 import { ChoiceGroup } from "./choice-group";
 import { Dot } from "@/components/brand/dot";
 import { HeroQuestion } from "./hero-question";
@@ -8,10 +7,8 @@ import s from "./edorax-landing.module.css";
 
 // The Edorax home page. Static markup with inline brand values so it matches the
 // approved design one to one; only the hero question and the leaderboard choice
-// are interactive.
-
-const unbounded = Unbounded({ subsets: ["latin"], weight: ["700"], variable: "--font-unbounded", display: "swap" });
-const dmSans = DM_Sans({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-dm-sans", display: "swap" });
+// are interactive. Font variables (--font-unbounded, --font-dm-sans) are defined
+// globally in layout.tsx.
 
 function SignInLink() {
   return <Link href="/login" style={{ color: "#0A0F2C", textDecoration: "none", fontWeight: 700, padding: "12px 0", whiteSpace: "nowrap" }}>Sign in</Link>;
@@ -28,7 +25,6 @@ function CatalogLink() {
 
 export function EdoraxLanding() {
   return (
-    <div className={`${unbounded.variable} ${dmSans.variable}`}>
     <div className={s.root} style={{ width: "100%", boxSizing: "border-box", background: "#F6F7FB", color: "#0A0F2C", fontFamily: "var(--font-dm-sans), system-ui, sans-serif", fontSize: "18px", lineHeight: "1.55" }}>
       <header style={{ width: "100%" }}>
         <div className={s.header} style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px 24px", boxSizing: "border-box", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "16px" }}>
@@ -331,7 +327,6 @@ export function EdoraxLanding() {
           </nav>
         </div>
       </footer>
-    </div>
     </div>
   );
 }
