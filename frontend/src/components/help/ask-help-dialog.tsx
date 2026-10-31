@@ -14,6 +14,8 @@ export function AskHelpDialog({
   chapterTitle,
   viewerId,
   thread,
+  open: controlledOpen,
+  onOpenChange,
 }: {
   courseId: string;
   courseSlug: string;
@@ -21,9 +23,17 @@ export function AskHelpDialog({
   chapterTitle: string;
   viewerId: string;
   thread: HelpThreadView | null;
+  /** Lets the reader open this dialog from elsewhere (the "Still stuck?" link). Without it the dialog keeps its own state. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const [open, setOpen] = useState(false);
+  const [ownOpen, setOwnOpen] = useState(false);
+  const open = controlledOpen ?? ownOpen;
+  const setOpen = (next: boolean) => {
+    setOwnOpen(next);
+    onOpenChange?.(next);
+  };
 
   const isOpen = thread?.status === "OPEN";
   const lastMessage = thread?.messages[thread.messages.length - 1];
@@ -53,12 +63,12 @@ export function AskHelpDialog({
         type="button"
         onClick={() => setOpen(true)}
         className={cn(
-          "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-md border-2 px-2.5 text-[15px] font-bold transition-colors outline-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow sm:px-4",
+          "inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-md border px-2.5 text-[15px] font-semibold transition-colors outline-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-brand-yellow sm:px-4",
           mentorReplied
             ? "border-primary bg-primary text-primary-foreground hover:bg-primary/90"
             : isOpen
               ? "border-border bg-muted text-foreground hover:bg-muted/80"
-              : "border-input bg-card text-foreground hover:border-primary"
+              : "border-input bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
         )}
       >
         <HandHelping className="size-5 shrink-0" aria-hidden />
