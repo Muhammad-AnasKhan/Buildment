@@ -52,7 +52,17 @@ describe("signInAsTestAccountAction", () => {
 
   it("signs a seeded user in through the regular login call", async () => {
     vi.stubEnv("NODE_ENV", "development");
-    serverApiFetch.mockResolvedValue({ session: { token: "t", expiresAt: new Date().toISOString() } });
+    serverApiFetch.mockResolvedValue({
+      user: {
+        id: "mentor-id",
+        email: "mentor@buildment.dev",
+        name: "Test Mentor",
+        image: null,
+        role: "MENTOR",
+        emailVerified: new Date().toISOString(),
+      },
+      session: { token: "t", expiresAt: new Date().toISOString() },
+    });
     await signInAsTestAccountAction(initial, pick("mentor@buildment.dev"));
     expect(serverApiFetch).toHaveBeenCalledWith("/api/v1/auth/login", {
       method: "POST",
