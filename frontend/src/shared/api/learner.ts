@@ -159,7 +159,13 @@ export type LearnerProgressView = {
   };
 };
 
-export type WeeklyGoalInput = { kind: "SESSIONS" | "CHAPTERS"; target: number; note?: string; dailyReminder?: boolean };
+export type WeeklyGoalInput = {
+  period?: "DAILY" | "WEEKLY";
+  kind: "SESSIONS" | "CHAPTERS" | "MINUTES";
+  target: number;
+  note?: string;
+  dailyReminder?: boolean;
+};
 
 export type LearnerProfile = {
   name: string | null;
