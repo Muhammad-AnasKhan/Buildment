@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { XMark } from "@/components/brand/wordmark";
 
 type Connection = { challenge: string; state: string; port: number };
 export function DesktopConnect() {
@@ -51,10 +52,10 @@ export function DesktopConnect() {
     } catch (error) { setMessage(error instanceof Error ? error.message : "Unable to connect."); setStatus("ready"); }
   }
 
-  return <main className="flex min-h-screen items-center justify-center bg-background px-6 py-12 text-foreground"><section className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm"><div className="mb-6 flex size-12 items-center justify-center rounded-xl bg-primary text-2xl font-bold text-primary-foreground">b.</div><h1 className="text-2xl font-semibold tracking-tight">Connect Buildment desktop</h1><p className="mt-3 text-sm leading-6 text-muted-foreground">Sign in on the web, then securely return to your learning workspace.</p>
+  return <main className="flex min-h-screen items-center justify-center bg-background px-6 py-12 text-foreground"><section className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-sm"><div className="mb-6 flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground"><XMark size={28} /></div><h1 className="text-2xl font-semibold tracking-tight">Connect Edorax desktop</h1><p className="mt-3 text-sm leading-6 text-muted-foreground">Sign in on the web, then securely return to your learning workspace.</p>
     {status === "loading" && <p role="status" className="mt-6 text-sm">Checking your account…</p>}
-    {status === "login" && <Link href={loginHref} className="mt-6 inline-block rounded-lg bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">Sign in to Buildment</Link>}
-    {(status === "ready" || status === "busy") && <><p className="mt-6 break-all text-sm">Continue as <strong>{account}</strong></p><p className="mt-2 text-xs leading-5 text-muted-foreground">Only continue if you started this request in the Buildment desktop app on this computer.</p><button onClick={() => void connect()} disabled={status === "busy"} className="mt-5 rounded-lg bg-primary px-5 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50">{status === "busy" ? "Connecting…" : "Connect desktop"}</button></>}
+    {status === "login" && <Link href={loginHref} className="mt-6 inline-block rounded-lg bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">Sign in to Edorax</Link>}
+    {(status === "ready" || status === "busy") && <><p className="mt-6 break-all text-sm">Continue as <strong>{account}</strong></p><p className="mt-2 text-xs leading-5 text-muted-foreground">Only continue if you started this request in the Edorax desktop app on this computer.</p><button onClick={() => void connect()} disabled={status === "busy"} className="mt-5 rounded-lg bg-primary px-5 py-3 text-sm font-medium text-primary-foreground disabled:opacity-50">{status === "busy" ? "Connecting…" : "Connect desktop"}</button></>}
     {status === "done" && <p role="status" className="mt-6 text-sm">Returning to the desktop app…</p>}
     {message && <p role="alert" className="mt-5 text-sm text-muted-foreground">{message}</p>}
   </section></main>;

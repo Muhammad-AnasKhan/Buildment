@@ -6,7 +6,16 @@
   "exports": {
     ".": "./src/index.ts",
     "./package.json": "./package.json",
-    "./styles.css": "./styles.css",
+    "./styles.css": {
+      "style": "./styles.css",
+      "import": "./styles.css",
+      "default": "./styles.css"
+    },
+    "./course-theme.css": {
+      "style": "./course-theme.css",
+      "import": "./course-theme.css",
+      "default": "./course-theme.css"
+    },
     "./components/learn/go-deeper": "./src/components/learn/go-deeper.tsx",
     "./components/learn/checklist": "./src/components/learn/checklist.tsx",
     "./components/learn/learning-log": "./src/components/learn/learning-log.tsx",
@@ -1071,7 +1080,6 @@
     "./labs/*": "./src/labs/*",
     "./brand-dot": "./src/components/brand/dot.tsx",
     "./marketplace-weeks": "./src/lib/marketplace-weeks.ts",
-    "./course-theme.css": "./course-theme.css",
     "./components/learn/course-cover": "./src/components/learn/course-cover.tsx",
     "./components/learn/variant-theme": "./src/components/learn/variant-theme.tsx",
     "./components/learn/course-project-showcase": "./src/components/learn/course-project-showcase.tsx",
