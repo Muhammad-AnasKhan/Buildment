@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { DM_Sans, IBM_Plex_Sans, JetBrains_Mono, Space_Grotesk, Unbounded } from "next/font/google";
 import { PostHogProvider } from "@/components/posthog-provider";
 import { AppToast } from "@/components/ui/app-toast";
+import { PwaSupport } from "@/components/pwa-support";
 import { ThemeProvider } from "@/components/theme-provider";
 import { THEME_INIT_SCRIPT } from "@/lib/theme-init-script";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_SHARE_IMAGE, SITE_URL } from "@/lib/site";
@@ -87,6 +88,7 @@ export default function RootLayout({
           <PostHogProvider>{children}</PostHogProvider>
           <AppToast />
         </ThemeProvider>
+        <PwaSupport />
       </body>
     </html>
   );
