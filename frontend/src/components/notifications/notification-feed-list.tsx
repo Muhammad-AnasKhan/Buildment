@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCheck } from "lucide-react";
 import type { NotificationItem } from "@/shared/api/notifications";
@@ -12,6 +12,7 @@ import {
   markNotificationRead,
 } from "@/lib/notifications/notification-store";
 import { formatRelativeTime } from "@/lib/notifications/format-relative-time";
+import { sortNotificationsForInbox } from "@/lib/notifications/sort-notifications";
 import { cn } from "@/lib/utils";
 
 /** The full feed for /notifications, from the shared store (so the bell and this list stay in step). */
@@ -19,7 +20,15 @@ export function NotificationFeedList() {
   const router = useRouter();
   const { items, unreadCount, nextCursor, status, loadingMore } = useNotifications();
   const [unreadOnly, setUnreadOnly] = useState(false);
-  const visible = unreadOnly ? items.filter((item) => !item.readAt) : items;
+  const seededFilter = useRef(false);
+  const sorted = useMemo(() => sortNotificationsForInbox(items), [items]);
+  const visible = unreadOnly ? sorted.filter((item) => !item.readAt) : sorted;
+
+  useEffect(() => {
+    if (seededFilter.current || status !== "ready") return;
+    seededFilter.current = true;
+    if (unreadCount > 0) setUnreadOnly(true);
+  }, [status, unreadCount]);
 
   const open = (item: NotificationItem) => {
     void markNotificationRead(item.id);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export type ProfileSettingsTab = {
@@ -10,10 +10,36 @@ export type ProfileSettingsTab = {
 };
 
 /** Shared accessible tab pattern for learner, instructor, and admin profile settings. */
-export function ProfileSettingsTabs({ tabs }: { tabs: ProfileSettingsTab[] }) {
-  const [active, setActive] = useState(tabs[0]?.id ?? "");
+export function ProfileSettingsTabs({
+  tabs,
+  defaultTabId,
+}: {
+  tabs: ProfileSettingsTab[];
+  /** Opens this tab when present (e.g. `notifications` from `/settings/profile#notifications`). */
+  defaultTabId?: string;
+}) {
+  const initial =
+    (defaultTabId && tabs.some((tab) => tab.id === defaultTabId) ? defaultTabId : null) ??
+    tabs[0]?.id ??
+    "";
+  const [active, setActive] = useState(initial);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const id = useId();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const fromHash = window.location.hash.replace(/^#/, "");
+    if (fromHash && tabs.some((tab) => tab.id === fromHash)) setActive(fromHash);
+  }, [tabs]);
+
+  function select(tabId: string) {
+    setActive(tabId);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.hash = tabId;
+      window.history.replaceState(null, "", `${url.pathname}${url.search}#${tabId}`);
+    }
+  }
 
   function handleKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     let next = index;
@@ -25,7 +51,7 @@ export function ProfileSettingsTabs({ tabs }: { tabs: ProfileSettingsTab[] }) {
     event.preventDefault();
     const tab = tabs[next];
     if (!tab) return;
-    setActive(tab.id);
+    select(tab.id);
     tabRefs.current[next]?.focus();
   }
 
@@ -37,18 +63,20 @@ export function ProfileSettingsTabs({ tabs }: { tabs: ProfileSettingsTab[] }) {
           return (
             <button
               key={tab.id}
-              ref={(node) => { tabRefs.current[index] = node; }}
+              ref={(node) => {
+                tabRefs.current[index] = node;
+              }}
               id={`${id}-tab-${tab.id}`}
               type="button"
               role="tab"
               aria-selected={selected}
               aria-controls={`${id}-panel-${tab.id}`}
               tabIndex={selected ? 0 : -1}
-              onClick={() => setActive(tab.id)}
+              onClick={() => select(tab.id)}
               onKeyDown={(event) => handleKeyDown(event, index)}
               className={cn(
                 "min-h-10 shrink-0 rounded-lg px-4 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                selected ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                selected ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground",
               )}
             >
               {tab.label}

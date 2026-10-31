@@ -20,14 +20,21 @@ export default async function InstructorProfilePage() {
     <div className="max-w-2xl space-y-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Profile settings</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Manage your profile and password. Your details are shared across Learn and Teach.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Manage your profile, alerts, and password. Your details are shared across Learn and Teach.
+        </p>
       </header>
       <ProfileSettingsTabs
         tabs={[
           {
             id: "profile",
             label: "Profile",
-            content: <ProfileForm email={profile.email} initial={{ name: profile.name ?? "", timezone: profile.timezone, skills: profile.skills.join(", ") }} />,
+            content: (
+              <ProfileForm
+                email={profile.email}
+                initial={{ name: profile.name ?? "", timezone: profile.timezone, skills: profile.skills.join(", ") }}
+              />
+            ),
           },
           {
             id: "notifications",
@@ -35,7 +42,9 @@ export default async function InstructorProfilePage() {
             content: (
               <div className="rounded-xl border bg-card p-6 shadow-sm">
                 <h2 className="text-lg font-semibold">Notification settings</h2>
-                <p className="mt-1 text-sm text-muted-foreground">Choose where each kind of notification reaches you.</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Choose where each kind of update reaches you — questions, reviews, and course activity.
+                </p>
                 <NotificationPreferencesForm initial={notifications} showAdmin={false} />
               </div>
             ),

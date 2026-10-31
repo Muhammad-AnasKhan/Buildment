@@ -40,7 +40,9 @@ export function AdminProfileForms({ name, email, security, notifications }: { na
           content: (
             <section className="rounded-xl border bg-card p-6 shadow-sm">
               <h2 className="text-lg font-semibold">Notification settings</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Choose where each kind of notification reaches you.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Choose where platform and account alerts reach you.
+              </p>
               {notifications}
             </section>
           ),

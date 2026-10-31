@@ -50,7 +50,7 @@ export default async function ProfileSettingsPage() {
                     <h2 className="text-lg font-semibold tracking-tight">Profile details</h2>
                     <p className="mt-1 text-sm leading-6 text-muted-foreground">
                       Update how you appear in the workspace. Your timezone decides when your day ends for
-                      streaks and weekly goals. Skills are optional and used for future recommendations.
+                      streaks and study goals. Skills are optional and used for future recommendations.
                     </p>
                   </div>
                   <ProfileForm
@@ -82,7 +82,8 @@ export default async function ProfileSettingsPage() {
                 <div className="rounded-2xl border bg-card p-6 sm:p-8">
                   <h2 className="text-lg font-semibold tracking-tight">Notification settings</h2>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    Choose where each kind of notification reaches you. Study reminders come at most once a day across all your courses.
+                    Choose where each kind of update reaches you. Study reminders come at most once a day across
+                    all your courses.
                   </p>
                   <NotificationPreferencesForm initial={notifications} showAdmin={false} />
                 </div>
@@ -93,7 +94,11 @@ export default async function ProfileSettingsPage() {
               label: "Security",
               content: (
                 <div className="space-y-4">
-                  <MfaSettingsCard mode="account" enabled={mfa.enabled} recoveryCodesRemaining={mfa.recoveryCodesRemaining} />
+                  <MfaSettingsCard
+                    mode="account"
+                    enabled={mfa.enabled}
+                    recoveryCodesRemaining={mfa.recoveryCodesRemaining}
+                  />
                   <PasswordForm />
                 </div>
               ),
