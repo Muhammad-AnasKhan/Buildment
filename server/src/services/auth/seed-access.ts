@@ -5,3 +5,15 @@ import { isProduction } from "../../config/env.js";
 export function bypassProgressGatingForEmail(email: string): boolean {
   return !isProduction && isSeedTestEmail(email);
 }
+
+/**
+ * Sequential chapter locks are skipped for:
+ * - local seed test emails (dev only), or
+ * - accounts an admin marked as tester (still a normal learner otherwise).
+ */
+export function shouldBypassProgressGating(user: {
+  email: string;
+  testerEnabled?: boolean;
+}): boolean {
+  return Boolean(user.testerEnabled) || bypassProgressGatingForEmail(user.email);
+}

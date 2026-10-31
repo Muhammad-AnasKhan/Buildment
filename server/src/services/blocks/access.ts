@@ -3,7 +3,7 @@ import { prisma } from "../../db/prisma.js";
 import { ForbiddenError, NotFoundError, NotImplementedError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
-import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
+import { shouldBypassProgressGating } from "../auth/seed-access.js";
 import { ChapterLockedError, assertChapterUnlocked } from "../progress/gate.js";
 
 // The checks every learner write to a block goes through: the block exists, the
@@ -17,7 +17,17 @@ export async function loadBlockForSubmission(
 ) {
   const block = await prisma.block.findUnique({
     where: { id: blockId },
-    include: { chapter: { select: { archivedAt: true, id: true, courseId: true, readerMode: true, course: { select: { familySlug: true, variantFamily: true } } } } },
+    include: {
+      chapter: {
+        select: {
+          archivedAt: true,
+          id: true,
+          courseId: true,
+          readerMode: true,
+          course: { select: { familySlug: true, variantFamily: true, autoGradeOpenQuestions: true } },
+        },
+      },
+    },
   });
   if (!block || block.archivedAt || block.chapter.archivedAt) throw new NotFoundError("Block not found");
   if (!isRegisteredBlockType(block.type)) {
@@ -33,7 +43,7 @@ export async function loadBlockForSubmission(
       courseId: block.chapter.courseId,
       enrollmentId: enrollment.id,
       chapterId: block.chapter.id,
-      bypassLocking: bypassProgressGatingForEmail(learner.email),
+      bypassLocking: shouldBypassProgressGating(learner),
     });
   } catch (error) {
     if (error instanceof ChapterLockedError) {

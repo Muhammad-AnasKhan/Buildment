@@ -2,7 +2,7 @@ import { HELP_ERROR_CODES, type HelpThreadDetail, type HelpThreadSummary } from 
 import { prisma } from "../../db/prisma.js";
 import { ConflictError, ForbiddenError, NotFoundError } from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
-import { bypassProgressGatingForEmail } from "../auth/seed-access.js";
+import { shouldBypassProgressGating } from "../auth/seed-access.js";
 import { notifyMenteeHelpReply, notifyMenteeHelpThreadResolved, notifyMentorHelpQuestion } from "../notifications/events.js";
 import { dispatchNotification } from "../notifications/service.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
@@ -117,7 +117,7 @@ export async function askFromChapter(user: SessionUser, input: { courseId: strin
         courseId: chapter.courseId,
         enrollmentId: enrollment.id,
         chapterId: chapter.id,
-        bypassLocking: bypassProgressGatingForEmail(user.email),
+        bypassLocking: shouldBypassProgressGating(user),
       });
     } catch (error) {
       if (error instanceof ChapterLockedError) {

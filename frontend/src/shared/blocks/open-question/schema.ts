@@ -56,6 +56,20 @@ export function isLlmGradedOpenQuestion(config: unknown): boolean {
   return (config as { autoGrade?: unknown }).autoGrade === "llm";
 }
 
+/**
+ * Instant LLM grading when the block opts in, or when the course enables auto-grade
+ * for text short answers (URL/project submissions stay on the mentor queue).
+ */
+export function shouldLlmGradeOpenQuestion(
+  config: unknown,
+  courseAutoGradeOpenQuestions = false,
+): boolean {
+  if (isLlmGradedOpenQuestion(config)) return true;
+  if (!courseAutoGradeOpenQuestions || !config || typeof config !== "object") return false;
+  const mode = (config as { submissionMode?: unknown }).submissionMode;
+  return mode === undefined || mode === "text";
+}
+
 export const OpenQuestionPayloadSchema = z
   .object({
     text: z.string(),

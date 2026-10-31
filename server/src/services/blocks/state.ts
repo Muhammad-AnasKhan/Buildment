@@ -4,7 +4,7 @@ import { AiInterviewConfigSchema, type SanitizedAiInterviewConfig } from "../../
 import { CodeConfigSchema, type SanitizedCodeConfig } from "../../shared/blocks/code/schema.js";
 import { MustReadConfigSchema } from "../../shared/blocks/must-read/schema.js";
 import {
-  isLlmGradedOpenQuestion,
+  shouldLlmGradeOpenQuestion,
   OpenQuestionConfigSchema,
   type OpenQuestionStoredPayload,
   type SanitizedOpenQuestionConfig,
@@ -36,7 +36,18 @@ const strings = (value: unknown) => (Array.isArray(value) ? value.filter((item):
  * hidden tests and solutions are stripped before the config is returned.
  */
 export async function loadBlockState(blockId: string, user: SessionUser | undefined): Promise<BlockState> {
-  const block = await prisma.block.findUnique({ where: { id: blockId }, include: { chapter: { select: { id: true, archivedAt: true, course: { select: { id: true, familySlug: true, variantFamily: true } } } } } });
+  const block = await prisma.block.findUnique({
+    where: { id: blockId },
+    include: {
+      chapter: {
+        select: {
+          id: true,
+          archivedAt: true,
+          course: { select: { id: true, familySlug: true, variantFamily: true, autoGradeOpenQuestions: true } },
+        },
+      },
+    },
+  });
   if (!block || block.archivedAt || block.chapter.archivedAt) throw new NotFoundError("Block not found");
 
   // Prompts and options read in the caller's variant; anonymous previews get the fallbacks.
@@ -109,15 +120,17 @@ async function blockStateFor(block: Block, user: SessionUser | undefined): Promi
       const submitted = latest && latest.status !== "DRAFT" ? latest : null;
       const stored = (payload ?? null) as OpenQuestionStoredPayload | null;
       const llmFeedback = stored?.llmFeedback;
-      const llmMode = isLlmGradedOpenQuestion(config);
+      const llmMode = shouldLlmGradeOpenQuestion(config, block.chapter.course.autoGradeOpenQuestions);
       const aiStatus = llmMode
         ? user?.id
           ? await getAiCredentialStatus(user.id)
           : { configured: false, hasKey: false }
         : null;
+      const clientConfig = sanitizeBlockConfig<typeof config, SanitizedOpenQuestionConfig>(config);
       return {
         type: "OPEN_QUESTION",
-        config: sanitizeBlockConfig<typeof config, SanitizedOpenQuestionConfig>(config),
+        // Course-level auto-grade must look like llm mode so the learner UI asks for an OpenRouter key.
+        config: llmMode ? { ...clientConfig, autoGrade: "llm" as const } : clientConfig,
         group: getOpenQuestionGroupPosition(chapterBlocks, blockId),
         ...(aiStatus
           ? { ai: { configured: aiStatus.configured, hasKey: aiStatus.hasKey } }

@@ -10,6 +10,8 @@ export type SessionUser = {
   emailVerified: Date | null;
   hasPassword?: boolean;
   loginSessionId?: string;
+  /** Admin-granted: skip sequential chapter locks while remaining a normal learner. */
+  testerEnabled: boolean;
 };
 
 /** Organisation authenticated through integration credentials on /integrations/v1. */
