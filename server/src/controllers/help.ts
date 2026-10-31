@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { created, ok } from "../utils/responses.js";
 import * as threads from "../services/help/threads.js";
-import type { AskFromChapterBody } from "../validations/help.js";
+import type { AskFromChapterBody, ReplyBody } from "../validations/help.js";
 
 // GET /api/v1/help/threads — the learner's own questions
 export async function list(req: Request, res: Response) {
@@ -22,8 +22,24 @@ export async function ask(req: Request, res: Response) {
 
 // POST /api/v1/help/threads/:threadId/messages
 export async function postMessage(req: Request, res: Response) {
-  const { body } = req.body as { body: string };
-  created(res, await threads.reply(req.user!, req.params.threadId as string, body));
+  const { body, replyToId } = req.body as ReplyBody;
+  created(
+    res,
+    await threads.reply(
+      req.user!,
+      req.params.threadId as string,
+      body,
+      replyToId,
+    ),
+  );
+}
+
+// POST /api/v1/help/threads/:threadId/seen — the viewer has this conversation open
+export async function markSeen(req: Request, res: Response) {
+  ok(
+    res,
+    await threads.markThreadSeen(req.user!, req.params.threadId as string),
+  );
 }
 
 // POST /api/v1/help/threads/:threadId/resolve — course mentor only

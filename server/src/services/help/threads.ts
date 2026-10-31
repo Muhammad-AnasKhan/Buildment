@@ -1,29 +1,68 @@
-import { HELP_ERROR_CODES, type HelpThreadDetail, type HelpThreadSummary } from "../../shared/api/help.js";
+import {
+  HELP_ERROR_CODES,
+  type HelpMessageView,
+  type HelpThreadDetail,
+  type HelpThreadSummary,
+} from "../../shared/api/help.js";
 import { prisma } from "../../db/prisma.js";
-import { ConflictError, ForbiddenError, NotFoundError } from "../../utils/errors.js";
+import {
+  BadRequestError,
+  ConflictError,
+  ForbiddenError,
+  NotFoundError,
+} from "../../utils/errors.js";
 import type { SessionUser } from "../../types/auth.js";
 import { shouldBypassProgressGating } from "../auth/seed-access.js";
-import { notifyMenteeHelpReply, notifyMenteeHelpThreadResolved, notifyMentorHelpQuestion } from "../notifications/events.js";
+import {
+  notifyMenteeHelpReply,
+  notifyMenteeHelpThreadResolved,
+  notifyMentorHelpQuestion,
+} from "../notifications/events.js";
 import { dispatchNotification } from "../notifications/service.js";
 import { requireBlockSubmissionAccess } from "../enrollment/api-learn-access.js";
 import { mentorReplyUnread } from "../progress/attention.js";
+import { isOnline, publish } from "../realtime/hub.js";
 import { ChapterLockedError, assertChapterUnlocked } from "../progress/gate.js";
-import { canAccessHelpThread, canReplyToHelpThread, canResolveHelpThread } from "./access.js";
+import {
+  canAccessHelpThread,
+  canReplyToHelpThread,
+  canResolveHelpThread,
+} from "./access.js";
 import { mapHelpMessages } from "./serialize.js";
 
+const messageRelations = {
+  author: { select: { id: true, name: true, role: true } },
+  replyTo: {
+    select: { id: true, body: true, author: { select: { name: true } } },
+  },
+} as const;
 const messageInclude = {
   orderBy: { createdAt: "asc" },
-  include: { author: { select: { id: true, name: true, role: true } } },
+  include: messageRelations,
 } as const;
 
-export async function listMenteeThreads(user: SessionUser): Promise<HelpThreadSummary[]> {
+/** Everyone who takes part in a thread: the learner and the course's mentor. */
+function participantIds(thread: {
+  menteeId: string;
+  course: { mentorId: string };
+}): string[] {
+  return [...new Set([thread.menteeId, thread.course.mentorId])];
+}
+
+export async function listMenteeThreads(
+  user: SessionUser,
+): Promise<HelpThreadSummary[]> {
   const threads = await prisma.helpThread.findMany({
     where: { menteeId: user.id },
     orderBy: { updatedAt: "desc" },
     include: {
       course: { select: { slug: true, title: true } },
       chapter: { select: { slug: true, title: true } },
-      messages: { orderBy: { createdAt: "desc" }, take: 1, select: { body: true, createdAt: true, authorId: true } },
+      messages: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { body: true, createdAt: true, authorId: true },
+      },
     },
   });
 
@@ -35,7 +74,9 @@ export async function listMenteeThreads(user: SessionUser): Promise<HelpThreadSu
         select: { threadId: true, body: true },
       })
     : [];
-  const questionsByThread = new Map(firstMessages.map((message) => [message.threadId, message.body]));
+  const questionsByThread = new Map(
+    firstMessages.map((message) => [message.threadId, message.body]),
+  );
 
   return threads.map((thread) => {
     const preview = thread.messages[0] ?? null;
@@ -47,11 +88,19 @@ export async function listMenteeThreads(user: SessionUser): Promise<HelpThreadSu
       course: thread.course,
       chapter: thread.chapter,
       question: questionsByThread.get(thread.id) ?? null,
-      preview: preview ? { body: preview.body, createdAt: preview.createdAt.toISOString(), fromMentor: preview.authorId !== user.id } : null,
+      preview: preview
+        ? {
+            body: preview.body,
+            createdAt: preview.createdAt.toISOString(),
+            fromMentor: preview.authorId !== user.id,
+          }
+        : null,
       unread: mentorReplyUnread({
         menteeId: user.id,
         menteeLastReadAt: thread.menteeLastReadAt,
-        latestMessage: preview ? { authorId: preview.authorId, createdAt: preview.createdAt } : null,
+        latestMessage: preview
+          ? { authorId: preview.authorId, createdAt: preview.createdAt }
+          : null,
       }),
     };
   });
@@ -75,12 +124,21 @@ async function loadAccessibleThread(threadId: string, user: SessionUser) {
 }
 
 /** Opening a thread as its mentee marks the mentor's replies as read. */
-export async function getThread(threadId: string, user: SessionUser): Promise<HelpThreadDetail> {
+export async function getThread(
+  threadId: string,
+  user: SessionUser,
+): Promise<HelpThreadDetail> {
   const thread = await loadAccessibleThread(threadId, user);
-  const messages = await prisma.helpMessage.findMany({ where: { threadId: thread.id }, ...messageInclude });
+  const messages = await prisma.helpMessage.findMany({
+    where: { threadId: thread.id },
+    ...messageInclude,
+  });
 
   if (user.id === thread.menteeId) {
-    await prisma.helpThread.update({ where: { id: thread.id }, data: { menteeLastReadAt: new Date() } });
+    await prisma.helpThread.update({
+      where: { id: thread.id },
+      data: { menteeLastReadAt: new Date() },
+    });
   }
 
   return {
@@ -91,18 +149,29 @@ export async function getThread(threadId: string, user: SessionUser): Promise<He
     menteeId: thread.menteeId,
     mentee: thread.mentee,
     course: { slug: thread.course.slug, title: thread.course.title },
-    chapter: thread.chapter ? { slug: thread.chapter.slug, title: thread.chapter.title } : null,
+    chapter: thread.chapter
+      ? { slug: thread.chapter.slug, title: thread.chapter.title }
+      : null,
     messages: mapHelpMessages(messages),
   };
 }
 
 /** Mentee asks from a chapter — creates a thread or adds to the open one for this chapter. */
-export async function askFromChapter(user: SessionUser, input: { courseId: string; chapterId: string; body: string }) {
+export async function askFromChapter(
+  user: SessionUser,
+  input: { courseId: string; chapterId: string; body: string },
+) {
   const chapter = await prisma.chapter.findUnique({
     where: { id: input.chapterId },
-    select: { id: true, courseId: true },
+    select: {
+      id: true,
+      courseId: true,
+      title: true,
+      course: { select: { mentorId: true, title: true } },
+    },
   });
-  if (!chapter || chapter.courseId !== input.courseId) throw new NotFoundError("Chapter not found.");
+  if (!chapter || chapter.courseId !== input.courseId)
+    throw new NotFoundError("Chapter not found.");
 
   const enrollment = await requireBlockSubmissionAccess(chapter.courseId, user);
 
@@ -121,7 +190,10 @@ export async function askFromChapter(user: SessionUser, input: { courseId: strin
       });
     } catch (error) {
       if (error instanceof ChapterLockedError) {
-        throw new ForbiddenError("Finish the previous chapter before asking for help here.", HELP_ERROR_CODES.CHAPTER_LOCKED);
+        throw new ForbiddenError(
+          "Finish the previous chapter before asking for help here.",
+          HELP_ERROR_CODES.CHAPTER_LOCKED,
+        );
       }
       throw error;
     }
@@ -130,32 +202,134 @@ export async function askFromChapter(user: SessionUser, input: { courseId: strin
   const thread =
     existingOpen ??
     (await prisma.helpThread.create({
-      data: { courseId: chapter.courseId, chapterId: chapter.id, menteeId: user.id },
+      data: {
+        courseId: chapter.courseId,
+        chapterId: chapter.id,
+        menteeId: user.id,
+      },
       select: { id: true },
     }));
 
-  const messageId = await appendMessage(thread.id, user.id, input.body);
+  const message = await appendMessage(
+    thread.id,
+    user.id,
+    input.body,
+    undefined,
+    [user.id, chapter.course.mentorId],
+  );
   await dispatchNotification(() =>
-    notifyMentorHelpQuestion({ threadId: thread.id, messageId, body: input.body, menteeName: user.name })
+    notifyMentorHelpQuestion({
+      threadId: thread.id,
+      messageId: message.id,
+      body: input.body,
+      menteeName: user.name,
+    }),
   );
 
   return { threadId: thread.id, created: !existingOpen };
 }
 
-export async function reply(user: SessionUser, threadId: string, body: string) {
+export async function reply(
+  user: SessionUser,
+  threadId: string,
+  body: string,
+  replyToId?: string,
+) {
   const thread = await loadAccessibleThread(threadId, user);
-  if (!canReplyToHelpThread(user, { menteeId: thread.menteeId, status: thread.status }, thread.course)) {
-    throw new ConflictError("This conversation is closed.", HELP_ERROR_CODES.THREAD_CLOSED);
+  if (
+    !canReplyToHelpThread(
+      user,
+      { menteeId: thread.menteeId, status: thread.status },
+      thread.course,
+    )
+  ) {
+    throw new ConflictError(
+      "This conversation is closed.",
+      HELP_ERROR_CODES.THREAD_CLOSED,
+    );
   }
 
-  const messageId = await appendMessage(thread.id, user.id, body);
+  if (replyToId) {
+    const replyTarget = await prisma.helpMessage.findFirst({
+      where: { id: replyToId, threadId: thread.id },
+      select: { id: true },
+    });
+    if (!replyTarget) {
+      throw new BadRequestError(
+        "The message you are replying to is not in this conversation.",
+        HELP_ERROR_CODES.REPLY_TARGET_NOT_IN_THREAD,
+      );
+    }
+  }
+
+  const message = await appendMessage(
+    thread.id,
+    user.id,
+    body,
+    replyToId,
+    participantIds(thread),
+  );
 
   if (user.id === thread.menteeId) {
-    await dispatchNotification(() => notifyMentorHelpQuestion({ threadId: thread.id, messageId, body, menteeName: user.name }));
+    await dispatchNotification(() =>
+      notifyMentorHelpQuestion({
+        threadId: thread.id,
+        messageId: message.id,
+        body,
+        menteeName: user.name,
+      }),
+    );
   } else {
-    await dispatchNotification(() => notifyMenteeHelpReply({ threadId: thread.id, messageId, body, mentorName: user.name }));
+    await dispatchNotification(() =>
+      notifyMenteeHelpReply({
+        threadId: thread.id,
+        messageId: message.id,
+        body,
+        mentorName: user.name,
+      }),
+    );
   }
-  return { threadId: thread.id };
+  return { threadId: thread.id, message };
+}
+
+/** Marks incoming messages as seen and sends receipts to their authors. */
+export async function markThreadSeen(user: SessionUser, threadId: string) {
+  const thread = await loadAccessibleThread(threadId, user);
+  const now = new Date();
+  const unseen = await prisma.helpMessage.findMany({
+    where: { threadId: thread.id, authorId: { not: user.id }, seenAt: null },
+    select: { id: true, authorId: true },
+  });
+
+  if (unseen.length > 0) {
+    await prisma.helpMessage.updateMany({
+      where: { id: { in: unseen.map((message) => message.id) }, seenAt: null },
+      data: { deliveredAt: now, seenAt: now },
+    });
+    const messagesByAuthor = new Map<string, string[]>();
+    for (const message of unseen) {
+      const messageIds = messagesByAuthor.get(message.authorId) ?? [];
+      messageIds.push(message.id);
+      messagesByAuthor.set(message.authorId, messageIds);
+    }
+    for (const [authorId, messageIds] of messagesByAuthor) {
+      publish(authorId, "help-status", {
+        threadId: thread.id,
+        messageIds,
+        status: "seen",
+        at: now.toISOString(),
+      });
+    }
+  }
+
+  if (user.id === thread.menteeId) {
+    await prisma.helpThread.update({
+      where: { id: thread.id },
+      data: { menteeLastReadAt: now },
+    });
+  }
+
+  return { threadId: thread.id, seenAt: now.toISOString() };
 }
 
 export async function resolve(user: SessionUser, threadId: string) {
@@ -163,17 +337,66 @@ export async function resolve(user: SessionUser, threadId: string) {
   if (!canResolveHelpThread(user, thread.course)) {
     throw new ForbiddenError("Only the course mentor can resolve this thread.");
   }
-  if (thread.status === "RESOLVED") return { threadId: thread.id, alreadyResolved: true };
+  if (thread.status === "RESOLVED")
+    return { threadId: thread.id, alreadyResolved: true };
 
-  await prisma.helpThread.update({ where: { id: thread.id }, data: { status: "RESOLVED", resolvedAt: new Date() } });
+  await prisma.helpThread.update({
+    where: { id: thread.id },
+    data: { status: "RESOLVED", resolvedAt: new Date() },
+  });
+  for (const participantId of participantIds(thread)) {
+    publish(participantId, "help-thread", {
+      threadId: thread.id,
+      status: "RESOLVED",
+    });
+  }
   await dispatchNotification(() => notifyMenteeHelpThreadResolved(thread.id));
   return { threadId: thread.id, alreadyResolved: false };
 }
 
-async function appendMessage(threadId: string, authorId: string, body: string): Promise<string> {
-  const message = await prisma.helpMessage.create({ data: { threadId, authorId, body }, select: { id: true } });
-  await prisma.helpThread.update({ where: { id: threadId }, data: { updatedAt: new Date() } });
-  return message.id;
+async function appendMessage(
+  threadId: string,
+  authorId: string,
+  body: string,
+  replyToId: string | undefined,
+  participants: string[],
+): Promise<HelpMessageView> {
+  const deliveredAt = new Date();
+  const onlineRecipients = participants.filter(
+    (participantId) => participantId !== authorId && isOnline(participantId),
+  );
+  const message = await prisma.helpMessage.create({
+    data: {
+      threadId,
+      authorId,
+      body,
+      ...(replyToId ? { replyToId } : {}),
+      ...(onlineRecipients.length > 0 ? { deliveredAt } : {}),
+    },
+    include: messageRelations,
+  });
+  await prisma.helpThread.update({
+    where: { id: threadId },
+    data: { updatedAt: new Date() },
+  });
+
+  const messageView = mapHelpMessages([message])[0];
+  if (!messageView) throw new Error("Created help message could not be serialized.");
+
+  for (const participantId of participants) {
+    if (onlineRecipients.includes(participantId)) {
+      publish(participantId, "help-message", { threadId, message: messageView });
+    }
+  }
+  if (onlineRecipients.length > 0) {
+    publish(authorId, "help-status", {
+      threadId,
+      messageIds: [message.id],
+      status: "delivered",
+      at: deliveredAt.toISOString(),
+    });
+  }
+  return messageView;
 }
 
 /** Latest help thread for this mentee + chapter (open or resolved), for the chapter reader. */

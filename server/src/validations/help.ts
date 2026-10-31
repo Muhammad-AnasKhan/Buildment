@@ -9,7 +9,15 @@ const messageBody = z
 
 export const threadParams = params("threadId");
 
-export const askFromChapterBody = z.object({ courseId: id, chapterId: id, body: messageBody });
+export const askFromChapterBody = z.object({
+  courseId: id,
+  chapterId: id,
+  body: messageBody,
+});
 export type AskFromChapterBody = z.infer<typeof askFromChapterBody>;
 
-export const replyBody = z.object({ body: messageBody });
+export const replyBody = z.object({
+  body: messageBody,
+  replyToId: id.optional(),
+});
+export type ReplyBody = z.infer<typeof replyBody>;

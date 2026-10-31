@@ -1077,9 +1077,19 @@ model HelpMessage {
   authorId  String
   author    User       @relation("HelpMessagesAuthored", fields: [authorId], references: [id], onDelete: Cascade)
   body      String     @db.Text
+  // Reply points at the specific earlier message it answers; null for a plain
+  // follow-up or the first message in a thread.
+  replyToId String?
+  replyTo   HelpMessage?  @relation("HelpMessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   HelpMessage[] @relation("HelpMessageReplies")
+  // Chat receipts for the author's ticks: delivered = the other side was online / came
+  // online (grey double tick), seen = they opened the conversation (blue double tick).
+  deliveredAt DateTime?
+  seenAt      DateTime?
   createdAt DateTime   @default(now())
 
   @@index([threadId, createdAt])
+  @@index([replyToId])
 }
 
 // Private margin notes on a chapter heading. Mentors do not read these.
