@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import type { WeeklyGoalInput } from "../shared/api/learner.js";
 import type { StreakMilestone } from "../shared/lib/streak.js";
+import { BadRequestError } from "../utils/errors.js";
 import { created, noContent, ok } from "../utils/responses.js";
 import { shouldBypassProgressGating } from "../services/auth/seed-access.js";
 import { loadLearnerWorkspace } from "../services/learner/workspace.js";
@@ -13,6 +14,8 @@ import type { ProfileUpdateInput } from "../shared/api/learner.js";
 import type { GamificationPreferencesInput } from "../shared/api/gamification.js";
 import { loadGamificationSummary, updateGamificationPreferences } from "../services/gamification/summary.js";
 import { loadLeaderboard } from "../services/gamification/leaderboard.js";
+import { loadLeaderboardHub } from "../services/gamification/leaderboard-categories.js";
+import type { LeaderboardHubQuery } from "../validations/learner.js";
 
 function displayName(user: { name: string | null; email: string }) {
   return user.name?.trim() || user.email.split("@")[0] || "there";
@@ -93,4 +96,17 @@ export async function patchGamification(req: Request, res: Response) {
 export async function leaderboard(req: Request, res: Response) {
   const { courseId } = req.query as unknown as { courseId: string };
   ok(res, await loadLeaderboard(req.user!.id, courseId));
+}
+
+// GET /api/v1/learner/leaderboards?category=&scope=&courseId=
+export async function leaderboards(req: Request, res: Response) {
+  const { category, scope, courseId } = req.query as unknown as LeaderboardHubQuery;
+  const effectiveScope = scope ?? "global";
+  if (effectiveScope === "course" && category !== "weekly_xp") {
+    throw new BadRequestError("Course boards are weekly XP only.");
+  }
+  if (effectiveScope === "course" && !courseId) {
+    throw new BadRequestError("Course scope needs a courseId.");
+  }
+  ok(res, await loadLeaderboardHub(req.user!.id, { category, scope: effectiveScope, courseId: courseId ?? null }));
 }

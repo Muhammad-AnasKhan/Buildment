@@ -7,6 +7,7 @@ import { pruneNotifications } from "../services/notifications/cleanup.js";
 import { relayUnpushedNotifications } from "../services/notifications/service.js";
 import { runWeeklyGoalReminders } from "../services/jobs/weekly-goal-reminders.js";
 import { runIntegrityRetention } from "../services/jobs/integrity-retention.js";
+import { previousLeagueWeek, resetLeaguesForWeek } from "../services/gamification/league.js";
 
 // POST /api/v1/jobs/study-reminders (alias: /inactivity-nudge) — call hourly from an external
 // scheduler; each user is reminded at their own hour, so a once-a-day call reaches only some.
@@ -33,4 +34,10 @@ export async function weeklyGoalReminder(_req: Request, res: Response) {
 // POST /api/v1/jobs/integrity-retention: triggered by an external scheduler.
 export async function integrityRetention(_req: Request, res: Response) {
   ok(res, await runIntegrityRetention());
+}
+
+// POST /api/v1/jobs/leaderboard-reset — settles the closed week's league tiers (promotion and
+// demotion) and records each learner's placement. Idempotent, so a retry is safe.
+export async function leaderboardReset(_req: Request, res: Response) {
+  ok(res, await resetLeaguesForWeek(previousLeagueWeek()));
 }

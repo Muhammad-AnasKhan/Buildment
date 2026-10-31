@@ -9,6 +9,7 @@ import { aiCredentialModelBody, aiCredentialSaveBody } from "../../validations/a
 import {
   gamificationPreferencesBody,
   instructorAccessRequestBody,
+  leaderboardHubQuery,
   leaderboardQuery,
   profileBody,
   streakMilestoneParams,
@@ -29,6 +30,7 @@ router.post("/streak-milestones/:milestone/acknowledge", validateParams(streakMi
 router.get("/gamification", learner.gamification);
 router.patch("/gamification", validateBody(gamificationPreferencesBody), learner.patchGamification);
 router.get("/leaderboard", validateQuery(leaderboardQuery), learner.leaderboard);
+router.get("/leaderboards", validateQuery(leaderboardHubQuery), learner.leaderboards);
 router.get("/profile", learner.profile);
 router.patch("/profile", validateBody(profileBody), learner.patchProfile);
 router.post("/instructor-access-requests", validateBody(instructorAccessRequestBody), learner.requestInstructor);

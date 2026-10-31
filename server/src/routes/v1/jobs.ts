@@ -13,5 +13,6 @@ router.post("/notification-emails", jobs.notificationEmails);
 router.post("/app-activity-cleanup", jobs.appActivityCleanup);
 router.post("/weekly-goal-reminder", jobs.weeklyGoalReminder);
 router.post("/integrity-retention", jobs.integrityRetention);
+router.post("/leaderboard-reset", jobs.leaderboardReset);
 
 export default router;

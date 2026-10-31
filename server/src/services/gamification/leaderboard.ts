@@ -5,6 +5,7 @@ import {
   LEADERBOARD_NEIGHBOURS,
   type LeaderboardEntry,
   type LeaderboardView,
+  type LeagueTier,
   type TopThreeFinishes,
 } from "../../shared/api/gamification.js";
 import { dateToDayKey, dayKeyToDate, shiftDayKey, weekStartKey } from "../../shared/lib/local-date.js";
@@ -292,4 +293,56 @@ export async function loadLeaderboard(userId: string, courseId: string, now: Dat
     entries,
     lastWeek: winners,
   };
+}
+
+/** A learner the hub boards may list: opted in, showing game elements, with a live enrollment. */
+export type ListableLearner = {
+  userId: string;
+  name: string;
+  avatarUrl: string | null;
+  leagueTier: LeagueTier;
+  createdAt: Date;
+  xpTotal: number;
+  timezone: string | null;
+  streakFreezes: number;
+  enrollmentIds: string[];
+};
+
+/**
+ * Every learner eligible for the global hub boards, with the fields the category builders need.
+ * Filters exactly like the per-course board's `listable`: opted in, showing game elements, at
+ * least one live enrollment. No role filter — the course board has never had one, and mentors
+ * previewing courses opt in through the same preference.
+ */
+export async function loadListableLearners(db: Tx | typeof prisma = prisma): Promise<ListableLearner[]> {
+  const users = await db.user.findMany({
+    where: { leaderboardOptIn: true, gamificationHidden: false },
+    select: {
+      id: true,
+      name: true,
+      image: true,
+      leagueTier: true,
+      createdAt: true,
+      xpTotal: true,
+      streakFreezes: true,
+      profile: { select: { timezone: true } },
+      enrollments: {
+        where: { status: { not: "DROPPED" }, lifecycle: { in: ["ACTIVE", "COMPLETED"] } },
+        select: { id: true },
+      },
+    },
+  });
+  return users
+    .filter((user) => user.enrollments.length > 0)
+    .map((user) => ({
+      userId: user.id,
+      name: leaderboardName(user.name),
+      avatarUrl: user.image,
+      leagueTier: user.leagueTier,
+      createdAt: user.createdAt,
+      xpTotal: user.xpTotal,
+      timezone: user.profile?.timezone ?? null,
+      streakFreezes: user.streakFreezes,
+      enrollmentIds: user.enrollments.map((enrollment) => enrollment.id),
+    }));
 }
