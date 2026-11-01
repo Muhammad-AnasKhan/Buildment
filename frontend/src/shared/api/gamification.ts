@@ -12,6 +12,8 @@ export type GamificationFeatures = {
   streakFreezes: boolean;
   /** Levels and module stages. Needs XP. */
   levels: boolean;
+  /** The permanent mastery-gated career ladder (Intern → Principal). Needs XP. */
+  career: boolean;
   /** Needs XP. */
   leaderboards: boolean;
 };
@@ -30,9 +32,36 @@ export type GamificationSummary = {
   leaderboardOptIn: boolean;
   xp: { total: number; thisWeek: number } | null;
   level: LevelProgress | null;
+  /** The permanent career tier (highest reached, never demotes); null when the feature is off. */
+  career: CareerProgress | null;
   freezes: StreakFreezeSummary | null;
   /** Finished weekly boards the learner ended in the top three; null when leaderboards are off or there are none. */
   topThree: TopThreeFinishes | null;
+};
+
+export type CareerTier = "INTERN" | "JUNIOR" | "MID" | "SENIOR" | "STAFF" | "PRINCIPAL";
+
+export type CareerRequirement = {
+  /** Completed courses needed for the next tier. */
+  courses: number;
+  /** Minimum average quiz score (0–100) needed for the next tier. */
+  minScore: number;
+};
+
+export type CareerProgress = {
+  tier: CareerTier;
+  title: string;
+  nextTier: CareerTier | null;
+  nextTitle: string | null;
+  totalTiers: number;
+  /** 1-based position (Intern = 1). */
+  tierIndex: number;
+  completedCourses: number;
+  /** Average weighted chapter score, 0–100. */
+  avgScore: number;
+  requiredForNext: CareerRequirement | null;
+  /** 0–100 progress toward the next tier. */
+  percent: number;
 };
 
 export type TopThreeFinishes = {
