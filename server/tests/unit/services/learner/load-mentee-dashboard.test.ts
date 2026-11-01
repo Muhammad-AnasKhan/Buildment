@@ -8,14 +8,14 @@ const { enrollmentFindMany, helpFindMany, helpCount } = vi.hoisted(() => ({
 
 vi.mock("../../../../src/db/prisma.js", () => ({
   prisma: {
-    enrollment: { findMany: enrollmentFindMany },
+    enrollment: { findMany: enrollmentFindMany, count: vi.fn().mockResolvedValue(0) },
     helpThread: { findMany: helpFindMany, count: helpCount },
     dailyActivity: { findMany: vi.fn().mockResolvedValue([]), groupBy: vi.fn().mockResolvedValue([]) },
     studySession: { findMany: vi.fn(), count: vi.fn().mockResolvedValue(0) },
     response: { findMany: vi.fn() },
     user: { findUnique: vi.fn().mockResolvedValue(null) },
     userProfile: { findUnique: vi.fn().mockResolvedValue(null) },
-    chapterProgress: { count: vi.fn().mockResolvedValue(0) },
+    chapterProgress: { count: vi.fn().mockResolvedValue(0), findMany: vi.fn().mockResolvedValue([]) },
     streakFreezeDay: { findMany: vi.fn().mockResolvedValue([]) },
     xpEntry: { aggregate: vi.fn().mockResolvedValue({ _sum: { amount: null } }) },
     leaderboardMember: { findMany: vi.fn().mockResolvedValue([]) },
