@@ -42,6 +42,7 @@ test('native reader submits quizzes, saves completion, enforces locks and signs 
           },
         ];
       window.buildment = {
+        ...window.buildment,
         webOrigin: async () => 'https://edorax.com',
         integrityRequest: async (path, _method, body) => {
           if (path.endsWith('/integrity'))
