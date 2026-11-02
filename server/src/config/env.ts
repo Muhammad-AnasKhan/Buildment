@@ -118,6 +118,10 @@ const schema = z.object({
     .string()
     .optional()
     .transform((value) => value !== "false"),
+  GAMIFICATION_CAREER_LEVELS: z
+    .string()
+    .optional()
+    .transform((value) => value !== "false"),
   GAMIFICATION_LEADERBOARDS: z
     .string()
     .optional()

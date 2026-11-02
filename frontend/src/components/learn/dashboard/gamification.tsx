@@ -159,7 +159,48 @@ export function LearningMomentum({ summary, streak }: { summary: GamificationSum
           {numberFormat.format(summary.xp.total)} XP total
         </p>
       ) : null}
+      {summary.career ? (
+        <div className="border-t border-border pt-4">
+          <CareerRow career={summary.career} />
+        </div>
+      ) : null}
     </div>
+  );
+}
+
+/** The permanent career tier and progress toward the next one. */
+function CareerRow({ career }: { career: NonNullable<GamificationSummary["career"]> }) {
+  return (
+    <>
+      <div className="flex items-center gap-2">
+        <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-primary px-2 text-xs font-semibold text-primary-foreground">
+          {career.title}
+        </span>
+        <p className="text-sm font-semibold">
+          {career.title} <span className="font-normal text-muted-foreground">· {career.tierIndex} of {career.totalTiers}</span>
+        </p>
+        {career.nextTitle ? (
+          <span className="ml-auto text-xs text-muted-foreground">Next: {career.nextTitle}</span>
+        ) : null}
+        <InfoTip label="About the career path">
+          <p>Your career tier is earned from completed courses and your average quiz score — and it is never lost.</p>
+          <p className="mt-2">The career is your permanent level of mastery, separate from your weekly league tier.</p>
+        </InfoTip>
+      </div>
+      {career.requiredForNext ? (
+        <Progress
+          value={career.percent}
+          aria-label={`Progress to ${career.nextTitle}`}
+          className="mt-3 gap-2 [&_[data-slot=progress-track]]:h-2 [&_[data-slot=progress-indicator]]:duration-500 motion-reduce:[&_[data-slot=progress-indicator]]:transition-none"
+        >
+          <ProgressLabel className="text-xs font-normal text-muted-foreground">
+            {career.completedCourses}/{career.requiredForNext.courses} courses · {career.avgScore}% avg · need {career.requiredForNext.minScore}%
+          </ProgressLabel>
+        </Progress>
+      ) : (
+        <p className="mt-2 text-xs text-muted-foreground">You&apos;ve reached the top of the career path.</p>
+      )}
+    </>
   );
 }
 
