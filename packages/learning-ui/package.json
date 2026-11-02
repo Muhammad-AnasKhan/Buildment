@@ -1095,7 +1095,8 @@
     "./components/learn/enrollment-badge": "./src/components/learn/enrollment-badge.tsx",
     "./components/learn/course-coupon-banner": "./src/components/learn/course-coupon-banner.tsx",
     "./components/learn/chapter-sidebar": "./src/components/learn/chapter-sidebar.tsx",
-    "./components/learn/chapter-toc": "./src/components/learn/chapter-toc.tsx"
+    "./components/learn/chapter-toc": "./src/components/learn/chapter-toc.tsx",
+    "./lib/sound-feedback": "./src/lib/sound-feedback.ts"
   },
   "files": [
     "src",
