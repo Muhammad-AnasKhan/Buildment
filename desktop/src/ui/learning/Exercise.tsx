@@ -1,4 +1,5 @@
 import { IDEExercise } from '../labs/CourseIDE';
+import { playFeedback } from '../../lib/sound-feedback';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { lessonBlocks } from './blocks/registry';
 import { lessonAsset } from './blocks/assets';
@@ -142,6 +143,7 @@ export function Exercise({
   if (block.type === 'QUIZ')
     return (
       <QuizClient
+        onFeedback={playFeedback}
         id={id}
         config={block.config}
         initialState={

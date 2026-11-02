@@ -111,11 +111,12 @@ export type {
 
 /** What a caller that loads no gamification gets: every feature off. */
 export const GAMIFICATION_OFF: GamificationSummary = {
-  features: { xp: false, streakFreezes: false, levels: false, leaderboards: false },
+  features: { xp: false, streakFreezes: false, levels: false, career: false, leaderboards: false },
   hidden: false,
   leaderboardOptIn: false,
   xp: null,
   level: null,
+  career: null,
   freezes: null,
   topThree: null,
 };
